@@ -1,4 +1,4 @@
-package com.mapconductor.here
+package com.mapconductor.mapbox
 
 import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
@@ -10,10 +10,8 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
-fun HereMapView(
-    state: HereMapViewState = rememberHereMapViewState(
-        id = "map",
-    ),
+fun MapboxMapView(
+    state: MapboxViewState = rememberMBoxMapViewState(id = "map")
 ) {
     val isInitialized by state.isInitialized.collectAsState()
     val containerRef = remember { Ref<FrameLayout>() }
@@ -41,4 +39,5 @@ fun HereMapView(
             }
         }
     }
+
 }

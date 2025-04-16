@@ -2,15 +2,18 @@ package com.mapconductor.here
 
 import android.content.Context
 import android.content.pm.PackageManager
+import com.here.sdk.mapview.HereMap
+import com.here.sdk.mapview.MapView
+import com.mapconductor.core.MapViewHolderImpl
+import com.mapconductor.core.MapViewHolderStoreBaseSync
 
-object MapViewHolderStore {
-    private val holders = mutableMapOf<String, MapViewHolder>()
+internal object MapViewHolderStore : MapViewHolderStoreBaseSync<MapView, HereMap>() {
 
-    fun getOrCreate(
-        id: String,
+    override fun getOrCreate(
         context: Context,
-    ): MapViewHolder {
-        val existing = holders[id]
+        id: String,
+    ): MapViewHolderImpl<MapView, HereMap> {
+        val existing = this.get(id)
         if (existing != null) return existing
 
         val accessKeyId = context.applicationContext.getHereAccessKeyId()
@@ -23,25 +26,11 @@ object MapViewHolderStore {
             accessKeyId,
             accessKeySecret,
         )
-        holders[id] = newHolder
+        this.set(id, newHolder)
         return newHolder
     }
-
-    fun has(id: String): Boolean {
-        return holders.containsKey(id)
-    }
-
-    fun get(id: String): MapViewHolder? = holders[id]
-
-    fun clear(id: String) {
-        holders.remove(id)?.destroy()
-    }
-
-    fun clearAll() {
-        holders.values.forEach { it.destroy() }
-        holders.clear()
-    }
 }
+
 internal fun Context.getHereAccessKeyId(): String? =
     packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
         .metaData?.getString("HERE_ACCESS_KEY_ID")

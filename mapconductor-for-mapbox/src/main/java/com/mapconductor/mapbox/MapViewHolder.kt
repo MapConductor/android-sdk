@@ -4,12 +4,12 @@ import android.content.Context
 import android.view.ViewGroup
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.mapconductor.core.MapViewHolderImpl
 
 class MapViewHolder private constructor(
-    val mapView: MapView
-) {
-    lateinit var map: MapboxMap
+    override val mapView: MapView
+): MapViewHolderImpl<MapView, MapboxMap> {
+    override lateinit var map: MapboxMap
 
     companion object {
         fun create(context: Context): MapViewHolder {
@@ -21,14 +21,17 @@ class MapViewHolder private constructor(
         }
     }
 
-    fun attachTo(container: ViewGroup) {
+    override fun attachTo(container: ViewGroup) {
         if (mapView.parent === container) return
-        (mapView.parent as? ViewGroup)?.removeView(mapView)
+        this.detach()
         container.addView(mapView)
     }
 
-    fun destroy() {
-        // Do nothing here
-        Unit
+    override fun detach() {
+        if (mapView.parent == null) return
+        (mapView.parent as ViewGroup).removeView(mapView)
     }
+
+    // Do nothing here
+    override fun destroy() = Unit
 }

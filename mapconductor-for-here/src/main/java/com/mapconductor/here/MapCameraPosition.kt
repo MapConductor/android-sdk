@@ -1,25 +1,70 @@
 package com.mapconductor.here
 
 import androidx.annotation.Keep
+import com.here.sdk.core.GeoOrientation
 import com.here.sdk.mapview.MapCamera
+import com.here.sdk.mapview.MapCameraUpdate
+import com.here.sdk.mapview.MapCameraUpdateFactory
+import com.here.sdk.mapview.MapMeasure
+import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.MapPaddings
+import com.mapconductor.core.MapPaddingsImpl
 
+interface MapCameraPositionHereImpl: MapCameraPositionImpl {
+    fun toMapCameraUpdate(): MapCameraUpdate
+    fun copy(
+        target: GeoPoint? = null,
+        zoom: Double? = null,
+        bearing: Double? = null,
+        tilt: Double? = null,
+        paddings: MapPaddingsImpl? = null,
+    ): MapCameraPositionHereImpl
+}
 @Keep
 data class MapCameraPosition @JvmOverloads constructor(
-    val target: GeoPoint,
-    val zoom: Double = 2.0,
-    val bearing: Double = 0.0,
-    val tilt: Double = 0.0,
-    val paddings: MapPadding = MapPadding.Zeros,
-) {
+    override val target: GeoPoint,
+    override val zoom: Double = 2.0,
+    override val bearing: Double = 0.0,
+    override val tilt: Double = 0.0,
+    override val paddings: MapPaddingsImpl = MapPaddings.Zeros,
+): MapCameraPositionHereImpl {
 
-//    internal fun toCameraState() = MapCamera.State(
-//        target.toGeoCoordinates(),
-//        GeoOrientation(bearing, tilt),
-//        zoom,
-//    )
+    override fun copy(
+        target: GeoPoint?,
+        zoom: Double?,
+        bearing: Double?,
+        tilt: Double?,
+        paddings: MapPaddingsImpl?
+    ): MapCameraPositionHereImpl = MapCameraPosition(
+        target = target ?: this.target,
+        zoom = zoom ?: this.zoom,
+        bearing = bearing ?: this.bearing,
+        tilt = tilt ?: this.tilt,
+        paddings = paddings ?: this.paddings
+    )
+
+    override fun toMapCameraUpdate() = MapCameraUpdateFactory.lookAt(
+        target.toGeoCoordinates().toUpdate(),
+        GeoOrientation(bearing, tilt).toUpdate(),
+        MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, zoom)
+    )
+
+    companion object {
+        fun fromImpl(mapCameraPositionImpl: MapCameraPositionImpl) =
+            when(mapCameraPositionImpl) {
+                is MapCameraPosition -> mapCameraPositionImpl
+                else -> MapCameraPosition(
+                    target = GeoPoint.fromImpl(mapCameraPositionImpl.target),
+                    zoom = mapCameraPositionImpl.zoom,
+                    bearing = mapCameraPositionImpl.bearing,
+                    tilt = mapCameraPositionImpl.tilt,
+                    paddings = MapPaddings.fromImpl(mapCameraPositionImpl.paddings),
+                )
+            }
+    }
 }
 
-internal fun MapCamera.State.toMapCameraPosition() =
+fun MapCamera.State.toMapCameraPosition() =
     MapCameraPosition(
         target = targetCoordinates.toGeoPoint(),
         zoom = zoomLevel,

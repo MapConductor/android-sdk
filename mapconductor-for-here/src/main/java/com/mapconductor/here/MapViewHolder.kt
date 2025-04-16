@@ -1,12 +1,8 @@
 package com.mapconductor.here
 
 import android.content.Context
-import android.graphics.Color
-import android.util.Log
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import com.here.sdk.core.GeoCoordinates
-import com.here.sdk.core.GeoCoordinatesUpdate
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
@@ -15,11 +11,12 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
+import com.mapconductor.core.MapViewHolderImpl
 
 class MapViewHolder private constructor(
-    val mapView: MapView
-) {
-    lateinit var map: HereMap
+    override val mapView: MapView
+): MapViewHolderImpl<MapView, HereMap> {
+    override lateinit var map: HereMap
 
     companion object {
         private var mapCount: Int = 0
@@ -51,22 +48,22 @@ class MapViewHolder private constructor(
         }
     }
 
-    fun detach() {
+    override fun detach() {
         (mapView.parent as? ViewGroup)?.removeView(mapView)
     }
 
-    fun attachTo(container: ViewGroup) {
+    override fun attachTo(container: ViewGroup) {
         if (mapView.parent === container) return
 
-        (mapView.parent as? ViewGroup)?.removeView(mapView)
+        this.detach()
         container.addView(mapView)
     }
 
-    fun destroy() {
+    override fun destroy() {
         mapView.onPause()
         mapView.onDestroy()
-        MapViewHolder.mapCount--
-        if (MapViewHolder.mapCount > 0) return
+        mapCount--
+        if (mapCount > 0) return
 
         // Dispose the shared instance when all maps are removed.
         SDKNativeEngine.getSharedInstance()?.dispose()

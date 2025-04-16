@@ -1,19 +1,49 @@
 package com.mapconductor.mapbox
 
-import com.mapbox.maps.CameraOptions
 import androidx.annotation.Keep
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.EdgeInsets
+import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.MapPaddingsImpl
+
+interface MapCameraPositionMBoxImpl: MapCameraPositionImpl {
+    fun toCameraOptions(): CameraOptions
+    fun toCameraState(): CameraState
+
+    fun copy(
+        target: GeoPoint? = null,
+        zoom: Double? = null,
+        bearing: Double? = null,
+        tilt: Double? = null,
+        paddings: MapPaddingsImpl? = null,
+    ): MapCameraPositionMBoxImpl
+}
 
 @Keep
 data class MapCameraPosition @JvmOverloads constructor(
-    val target: GeoPoint,
-    val zoom: Double = 2.0,
-    val bearing: Double = 0.0,
-    val tilt: Double = 0.0,
-    val paddings: MapPaddings = MapPaddings.Zeros,
-) {
-    internal fun toCameraOptions() = CameraOptions.Builder()
+    override val target: GeoPoint,
+    override val zoom: Double = 2.0,
+    override val bearing: Double = 0.0,
+    override val tilt: Double = 0.0,
+    override val paddings: MapPaddingsMBoxImpl = MapPaddingsMbox.Zeros,
+): MapCameraPositionMBoxImpl {
+
+    override fun copy(
+        target: GeoPoint?,
+        zoom: Double?,
+        bearing: Double?,
+        tilt: Double?,
+        paddings: MapPaddingsImpl?
+    ) = MapCameraPosition(
+            target = target ?: this.target,
+            zoom = zoom ?: this.zoom,
+            bearing = bearing ?: this.bearing,
+            tilt = tilt ?: this.tilt,
+            paddings = (paddings ?: this.paddings) as MapPaddingsMBoxImpl
+        )
+
+    override fun toCameraOptions() = CameraOptions.Builder()
         .center(target.toPoint())
         .zoom(zoom)
         .pitch(tilt)
@@ -21,15 +51,29 @@ data class MapCameraPosition @JvmOverloads constructor(
         .padding(paddings.toEdgeInsects())
         .build()
 
-    internal fun toCameraState() = CameraState(
+    override fun toCameraState() = CameraState(
         target.toPoint(),
         EdgeInsets(0.0, 0.0, 0.0, 0.0),
         zoom,
         bearing,
         tilt,
     )
+
+    companion object {
+        fun fromImpl(MapCameraPositionImpl: MapCameraPositionImpl) =
+            when(MapCameraPositionImpl) {
+                is MapCameraPosition -> MapCameraPositionImpl
+                else -> MapCameraPosition(
+                    target = GeoPoint.fromImpl(MapCameraPositionImpl.target),
+                    zoom = MapCameraPositionImpl.zoom,
+                    bearing = MapCameraPositionImpl.bearing,
+                    tilt = MapCameraPositionImpl.tilt,
+                    paddings = MapPaddingsMbox.fromImpl(MapCameraPositionImpl.paddings),
+                )
+            }
+    }
 }
-internal fun CameraOptions.toMapCameraPosition() =
+fun CameraOptions.toMapCameraPosition() =
     MapCameraPosition(
         target = center?.toGeoPoint() ?: GeoPoint.fromLongLat(0.0, 0.0),
         zoom = zoom ?: 2.0,
@@ -37,7 +81,7 @@ internal fun CameraOptions.toMapCameraPosition() =
         tilt = pitch ?: 0.0,
     )
 
-internal fun CameraState.toMapCameraPosition() =
+fun CameraState.toMapCameraPosition() =
     MapCameraPosition(
         target = center.toGeoPoint(),
         zoom = zoom,

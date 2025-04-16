@@ -2,15 +2,10 @@ package com.mapconductor.googlemaps
 
 import android.content.Context
 import android.view.ViewGroup
-import androidx.compose.runtime.LaunchedEffect
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.mapconductor.core.MapViewHolderImpl
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 //class MapViewHolder private constructor(context: Context) {
 //    private var destroyed = false
@@ -55,9 +50,9 @@ import kotlin.coroutines.suspendCoroutine
 //}
 
 class MapViewHolder private constructor(
-    val mapView: MapView
-) {
-    lateinit var map: GoogleMap
+    override val mapView: MapView
+): MapViewHolderImpl<MapView, GoogleMap> {
+    override lateinit var map: GoogleMap
 
     companion object {
         suspend fun create(context: Context): MapViewHolder {
@@ -76,13 +71,18 @@ class MapViewHolder private constructor(
         }
     }
 
-    fun attachTo(container: ViewGroup) {
-        if (mapView.parent === container) return
-        (mapView.parent as? ViewGroup)?.removeView(mapView)
+    override fun attachTo(container: ViewGroup) {
+        if (mapView.parent == container) return
+        this.detach()
         container.addView(mapView)
     }
 
-    fun destroy() {
+    override fun detach() {
+        if (mapView.parent == null) return
+        (mapView.parent as ViewGroup).removeView(mapView)
+    }
+
+    override fun destroy() {
         mapView.onPause()
         mapView.onDestroy()
     }

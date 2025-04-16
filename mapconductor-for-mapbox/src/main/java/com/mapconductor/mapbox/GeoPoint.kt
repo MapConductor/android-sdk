@@ -8,10 +8,11 @@ import com.mapconductor.core.GeoPointImpl
 interface GeoPointMapboxImpl: GeoPointImpl {
     fun toPoint(): Point
 }
+@ConsistentCopyVisibility
 data class GeoPoint private constructor(
     override val latitude: Double,
     override val longitude: Double,
-): GeoPointBase(), GeoPointMapboxImpl {
+): GeoPointBase(latitude, longitude), GeoPointMapboxImpl {
     override fun toPoint() = Point.fromLngLat(longitude, latitude)
     companion object {
         @Keep
@@ -21,6 +22,16 @@ data class GeoPoint private constructor(
         @Keep
         @JvmStatic
         fun fromLongLat(longitude: Double, latitude: Double) = GeoPoint(latitude, longitude)
+
+        @Keep
+        @JvmStatic
+        fun fromImpl(geoPointImpl: GeoPointImpl) = when(geoPointImpl) {
+            is GeoPoint -> geoPointImpl
+            else -> GeoPoint(
+                geoPointImpl.latitude,
+                geoPointImpl.longitude,
+            )
+        }
     }
 }
 

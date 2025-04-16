@@ -27,9 +27,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MapConductorSDK"
-include(":here-app")
-include(":mapbox-app")
-include(":googlemaps-app")
+include(":example-app")
 include(":mapconductor-for-here")
 include(":mapconductor-for-mapbox")
 include(":mapconductor-for-googlemaps")

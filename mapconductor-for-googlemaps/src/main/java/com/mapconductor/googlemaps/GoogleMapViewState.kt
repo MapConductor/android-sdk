@@ -1,10 +1,12 @@
-package com.mapconductor.here
+package com.mapconductor.googlemaps
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.util.Log
 import android.view.ViewGroup
+import androidx.annotation.Keep
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -12,19 +14,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.here.sdk.animation.AnimationListener
-import com.here.sdk.animation.AnimationState
-import com.here.sdk.core.GeoOrientation
-import com.here.sdk.mapview.HereMap
-import com.here.sdk.mapview.MapCamera
-import com.here.sdk.mapview.MapCameraAnimationFactory
-import com.here.sdk.mapview.MapCameraListener
-import com.here.sdk.mapview.MapMeasure
-import com.here.sdk.mapview.MapScheme
-import com.here.sdk.mapview.MapView
-import com.here.time.Duration
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.CancelableCallback
+import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
+import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.GeoPointImpl
 import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.MapPaddings
 import com.mapconductor.core.MapViewHolderImpl
 import com.mapconductor.core.MapViewStateImpl
 import kotlinx.coroutines.MainScope
@@ -37,55 +36,51 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class HereMapViewState(
-    private val context: Context,
+class GoogleMapViewState(
+    val context: Context,
     private val id: String,
 ): MapViewStateImpl,
-    MapCameraListener, AnimationListener {
-    private var mapViewHolder: MapViewHolderImpl<MapView, HereMap>? = null
+    OnCameraMoveListener, OnCameraIdleListener, CancelableCallback {
+    private var mapViewHolder: MapViewHolderImpl<MapView, GoogleMap>? = null
 
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     private val coroutineScope = MainScope() // = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    // Camera center position
-    private val _cameraState = MutableStateFlow<MapCamera.State?>(null)
-    private val cameraState: StateFlow<MapCamera.State?> = _cameraState.asStateFlow()
+    // Map padding
+    private val _padding = MutableStateFlow(MapPaddings.Zeros)
+    val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
+
+    // Camera position
+    private val _cameraPosition = MutableStateFlow<CameraPosition?>(null)
+    private val cameraPosition: StateFlow<CameraPosition?> = _cameraPosition.asStateFlow()
     override val mapCameraPosition: StateFlow<MapCameraPosition?> =
-        cameraState.map { it?.toMapCameraPosition() }.stateIn(
+        cameraPosition.map { it?.toMapCameraPosition(padding.value) }.stateIn(
             scope = this.coroutineScope,
             started = SharingStarted.Eagerly,
             initialValue = null,
         )
 
-
     init {
         coroutineScope.launch {
             val existed = MapViewHolderStore.has(id)
-            val holder = MapViewHolderStore.getOrCreate(
-                context,
-                id,
-            )
-            this@HereMapViewState.mapViewHolder = holder
+            val holder = MapViewHolderStore.getOrCreate(context, id)
+            this@GoogleMapViewState.mapViewHolder = holder
             if (existed) {
                 _isInitialized.value = true
-                holder.mapView.camera.removeListener(this@HereMapViewState)
-                holder.mapView.camera.addListener(this@HereMapViewState)
+                holder.map.setOnCameraMoveListener(this@GoogleMapViewState)
+                holder.map.setOnCameraIdleListener(this@GoogleMapViewState)
+                this@GoogleMapViewState._cameraPosition.value = holder.map.cameraPosition
                 return@launch
             }
-            _isInitialized.value = true
 
-            holder.mapView.mapScene.loadScene(MapScheme.NORMAL_DAY) { mapError ->
-                if (mapError != null) {
-                    Log.e("HereMapViewState", "Loading map failed: mapError: " + mapError.name)
-                    return@loadScene
-                }
-                holder.mapView.camera.addListener(this@HereMapViewState)
-            }
+            val map = holder.map
+            _isInitialized.value = true
+            map.setOnCameraMoveListener(this@GoogleMapViewState)
+            map.setOnCameraIdleListener(this@GoogleMapViewState)
         }
     }
-
 
     override fun moveCameraTo(geoPoint: GeoPointImpl, durationMs: Long): Boolean {
         if (!this.isInitialized.value) {
@@ -95,7 +90,7 @@ class HereMapViewState(
         val currCameraPosition = this.mapCameraPosition.value
         if (currCameraPosition == null) return false
         val newPosition = currCameraPosition.copy(
-            target = GeoPoint.fromImpl(geoPoint),
+            target = geoPoint,
         )
         return this.moveCameraTo(newPosition, durationMs)
     }
@@ -104,36 +99,37 @@ class HereMapViewState(
             Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
             return false
         }
-        val camera = this.mapViewHolder?.mapView?.camera ?: return false
 
-        val dst = MapCameraPosition.fromImpl(dstPosition)
+        val dstCameraPosition = MapCameraPosition
+            .fromImpl(dstPosition)
+            .toCameraPosition()
+        val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
+        val map = this.mapViewHolder?.map
+        if (map ==  null) return false
         if (durationMs == 0L) {
-            camera.applyUpdate(
-                dst.toMapCameraUpdate(),
-            )
+            map.moveCamera(cameraUpdate)
         } else {
-//            bowFactor > 0: 最初にズームアウト → 到達時にズームイン
-//            bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
-//            bowFactor = 0: 常に同じズーム（直線的）
-            val bowFactor = 1.0
-            val animation = MapCameraAnimationFactory.flyTo(
-                dst.target.toGeoCoordinates().toUpdate(),
-                GeoOrientation(dst.bearing, dst.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dst.zoom),
-                bowFactor,
-                Duration.ofMillis(durationMs),
-            )
-            camera.startAnimation(animation, this)
+            map.animateCamera(cameraUpdate, durationMs.toInt(), this)
         }
-
         return true
     }
+
+    @Keep
+    fun setPadding(padding: MapPaddings) {
+        this._padding.value = padding
+        mapViewHolder?.map?.setPadding(
+            padding.left.toInt(),
+            padding.top.toInt(),
+            padding.right.toInt(),
+            padding.bottom.toInt(),
+        )
+    }
+
 
     override fun onResume() {
         this.mapViewHolder?.mapView?.onResume()
     }
     override fun onPause() {
-        this.mapViewHolder?.detach()
         this.mapViewHolder?.mapView?.onPause()
     }
 
@@ -158,22 +154,31 @@ class HereMapViewState(
         this.mapViewHolder?.detach()
     }
 
-    override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        this._cameraState.value = cameraState
+    override fun onCameraMove() {
+        _cameraPosition.value = this.mapViewHolder?.map?.cameraPosition
     }
 
-    override fun onAnimationStateChanged(p0: AnimationState) {
-        val cameraState = this.mapViewHolder?.mapView?.camera?.state ?: return
-        this._cameraState.value = cameraState
+    override fun onCameraIdle() {
+        _cameraPosition.value = this.mapViewHolder?.map?.cameraPosition
+    }
+
+    override fun onCancel() {
+        _cameraPosition.value = this.mapViewHolder?.map?.cameraPosition
+    }
+
+    override fun onFinish() {
+        _cameraPosition.value = this.mapViewHolder?.map?.cameraPosition
     }
 }
 
 @Composable
-fun rememberHereMapViewState(
+fun rememberGMapViewState(
     id: String = "map",
     context: Context = LocalContext.current,
-): HereMapViewState {
-    val state = remember(id) { HereMapViewState(context, id) }
+): GoogleMapViewState {
+    val state = remember(id) {
+        GoogleMapViewState(context, id)
+    }
 
     // Synchronize the lifecycle with the target compose.
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -185,7 +190,7 @@ fun rememberHereMapViewState(
             override fun onPause(owner: LifecycleOwner) {
                 state.onPause()
             }
-
+            @SuppressLint("RestrictedApi")
             override fun onDestroy(owner: LifecycleOwner) {
                 state.cancelCoroutine()
 
