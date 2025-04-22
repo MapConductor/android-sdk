@@ -61,7 +61,7 @@ class AppViewModelImpl(
 //            IconItem("arcgis", "ArcGIS", R.drawable.esri_logo)
         )
         _items.value = sdkOptions
-        this.selectItem(sdkOptions.get(1))
+        this.selectItem(sdkOptions.get(2))
     }
     private fun getOrCreate(key: String): MapViewState = when (key) {
         "google" -> this.googleMapViewState ?: GoogleMapViewState(application, "map")

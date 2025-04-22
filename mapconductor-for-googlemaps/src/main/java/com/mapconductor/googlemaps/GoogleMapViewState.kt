@@ -32,6 +32,7 @@ import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.MapViewState
 import com.mapconductor.core.MarkerDataWithHandler
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateZIndex
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,6 +149,7 @@ class GoogleMapViewState(
             val marker = map.addMarker(MarkerOptions()
                 .position(GeoPoint.fromImpl(data.pointBase).toLatLng())
                 .icon(defaultIconBitmapDescriptor)
+                .zIndex(calculateZIndex(data.pointBase).toFloat())
             )
             // marker hashCode -> data key
             this._markerToData.set(marker.hashCode(), key)
