@@ -2,9 +2,10 @@ package com.mapconductor.googlemaps
 
 import android.content.Context
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
-import com.mapconductor.core.MapViewHolderImpl
+import com.mapconductor.core.MapViewHolder
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 //class MapViewHolder private constructor(context: Context) {
@@ -49,16 +50,16 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 //    }
 //}
 
-class MapViewHolder private constructor(
+class MapViewHolderImpl private constructor(
     override val mapView: MapView
-): MapViewHolderImpl<MapView, GoogleMap> {
+): MapViewHolder<MapView, GoogleMap> {
     override lateinit var map: GoogleMap
 
     companion object {
-        suspend fun create(context: Context): MapViewHolder {
+        suspend fun create(context: Context): MapViewHolder<MapView, GoogleMap> {
             val mapView = MapView(context).apply { onCreate(null) }
 
-            val holder = MapViewHolder(mapView)
+            val holder = MapViewHolderImpl(mapView)
 
             suspendCancellableCoroutine<Unit> { cont ->
                 mapView.getMapAsync {
@@ -82,7 +83,7 @@ class MapViewHolder private constructor(
         (mapView.parent as ViewGroup).removeView(mapView)
     }
 
-    override fun destroy() {
+    override fun destroy(owner: LifecycleOwner?) {
         mapView.onPause()
         mapView.onDestroy()
     }

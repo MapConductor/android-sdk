@@ -4,12 +4,13 @@ plugins {
     id("maven-publish")
     alias(libs.plugins.kotlin.compose) // ← 任意（配布したい場合）
 }
+
 android {
     namespace = "com.mapconductor.here"
-    compileSdk = 35
+    compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
-        minSdk = 24
+        minSdk = project.property("minSdk").toString().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -19,12 +20,13 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14" // Composeのバージョンに合わせて
+        kotlinCompilerExtensionVersion =
+            project.property("kotlinCompilerExtensionVersion").toString()
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -32,11 +34,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
+        targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = project.property("jvmTarget").toString()
     }
 }
 

@@ -6,9 +6,9 @@ import com.here.sdk.core.GeoCoordinatesUpdate
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.GeoOrientationUpdate
 import com.mapconductor.core.GeoPointBase
-import com.mapconductor.core.GeoPointImpl
+import com.mapconductor.core.GeoPointInterface
 
-interface GeoPointHereImpl: GeoPointImpl {
+interface GeoPointHereImpl: GeoPointInterface {
     fun toGeoCoordinates(): GeoCoordinates
 
 }
@@ -31,7 +31,7 @@ data class GeoPoint private constructor(
 
         @Keep
         @JvmStatic
-        fun fromImpl(geoPointImpl: GeoPointImpl) = when(geoPointImpl) {
+        fun fromImpl(geoPointImpl: GeoPointInterface) = when(geoPointImpl) {
             is GeoPoint -> geoPointImpl
             else -> GeoPoint(
                 geoPointImpl.latitude,

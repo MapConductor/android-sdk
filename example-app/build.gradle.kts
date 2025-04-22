@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,25 +6,28 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
+
 android {
     namespace = "com.mapconductor.example"
-    compileSdk = 35
+    compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
         applicationId = "com.mapconductor.example"
-        minSdk = 24
-        targetSdk = 35
+        minSdk = project.property("minSdk").toString().toInt()
+        targetSdk =  project.property("targetSdk").toString().toInt()
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14" // Composeのバージョンに合わせて
+        kotlinCompilerExtensionVersion =
+            project.property("kotlinCompilerExtensionVersion").toString()
     }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -31,11 +35,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
+        targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = project.property("jvmTarget").toString()
     }
     buildFeatures {
         compose = true
@@ -78,12 +82,18 @@ dependencies {
     // Mapbox SDK
     implementation(libs.mapbox.android)
 
+    // ArcGIS Maps for Kotlin - SDK dependency
+//    implementation(libs.arcgis.maps.kotlin)
+//    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+//    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+//    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+
     // Map Conductor
     implementation(project(":mapconductor-core"))
     implementation(project(":mapconductor-for-googlemaps"))
     implementation(project(":mapconductor-for-here"))
     implementation(project(":mapconductor-for-mapbox"))
-
+//    implementation(project(":mapconductor-for-arcgis"))
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core)

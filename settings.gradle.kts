@@ -16,9 +16,13 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // Mapbox Maven repository
         maven {
+            // Mapbox Maven repository
             url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+        }
+        maven {
+            // ArcGIS Maven repository
+            url = uri("https://esri.jfrog.io/artifactory/arcgis")
         }
         flatDir {
             dirs(rootDir.resolve("libs")) // ← プロジェクトルートの libs/
@@ -27,8 +31,10 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MapConductorSDK"
-include(":example-app")
-include(":mapconductor-for-here")
-include(":mapconductor-for-mapbox")
-include(":mapconductor-for-googlemaps")
-include(":mapconductor-core")
+include(
+    ":example-app",
+    ":mapconductor-for-here",
+    ":mapconductor-for-mapbox",
+    ":mapconductor-for-googlemaps",
+    ":mapconductor-core"
+)

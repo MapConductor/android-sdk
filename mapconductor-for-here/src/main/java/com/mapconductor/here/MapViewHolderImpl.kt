@@ -2,6 +2,7 @@ package com.mapconductor.here
 
 import android.content.Context
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
@@ -11,17 +12,18 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
-import com.mapconductor.core.MapViewHolderImpl
+import com.mapconductor.core.MapViewHolder
 
-class MapViewHolder private constructor(
+class MapViewHolderImpl private constructor(
     override val mapView: MapView
-): MapViewHolderImpl<MapView, HereMap> {
+): MapViewHolder<MapView, HereMap> {
     override lateinit var map: HereMap
 
     companion object {
         private var mapCount: Int = 0
 
-        fun create(context: Context, accessKeyId: String, accessKeySecret: String): MapViewHolder {
+        fun create(context: Context, accessKeyId: String, accessKeySecret: String):
+                MapViewHolder<MapView, HereMap> {
 
             if (this.mapCount == 0) {
                 val authenticationMode = AuthenticationMode.withKeySecret(
@@ -37,12 +39,12 @@ class MapViewHolder private constructor(
             val options = MapViewOptions()
             options.renderMode = MapRenderMode.TEXTURE
 
-            val mapView = MapView(context, options).also { it ->
-                it.onCreate(null)
-                it.camera.lookAt(GeoCoordinates(0.0, 0.0), MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, 4.0))
+            val mapView = MapView(context, options).apply {
+                onCreate(null)
+                camera.lookAt(GeoCoordinates(0.0, 0.0), MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, 4.0))
             }
 
-            val holder = MapViewHolder(mapView)
+            val holder = MapViewHolderImpl(mapView)
             holder.map = mapView.hereMap
             return holder
         }
@@ -59,7 +61,7 @@ class MapViewHolder private constructor(
         container.addView(mapView)
     }
 
-    override fun destroy() {
+    override fun destroy(owner: LifecycleOwner?) {
         mapView.onPause()
         mapView.onDestroy()
         mapCount--

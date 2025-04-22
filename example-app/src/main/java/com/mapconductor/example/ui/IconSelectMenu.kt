@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.mapconductor.example.AppViewModel
+import com.mapconductor.example.AppViewModelImpl
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 data class IconItem(
@@ -37,7 +37,7 @@ data class IconItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IconSelectMenu(viewModel: AppViewModel = viewModel<AppViewModel>()) {
+fun IconSelectMenu(viewModel: AppViewModelImpl = viewModel<AppViewModelImpl>()) {
 
     val itemList by viewModel.items.collectAsState()
     val selectedItem by viewModel.selectedItem.collectAsState()

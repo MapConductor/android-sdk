@@ -2,25 +2,30 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
-    // alias(libs.plugins.kotlin.compose) ← 不要なので削除
+     alias(libs.plugins.kotlin.compose)
 }
+
 
 android {
     namespace = "com.mapconductor.core"
-    compileSdk = 35
+    compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
-        minSdk = 24
+        minSdk = project.property("minSdk").toString().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Compose 不使用のため完全に削除（buildFeatures/composeOptions 両方）
-    // buildFeatures { compose = false } ← 不要
-    // composeOptions { ... } ← 不要
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion =
+            project.property("kotlinCompilerExtensionVersion").toString()
+    }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -29,18 +34,23 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
+        targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = project.property("jvmTarget").toString()
     }
 }
 
 dependencies {
     compileOnly(libs.androidx.core.ktx)
     compileOnly(libs.androidx.appcompat)
+
+    compileOnly(libs.androidx.ui)
+    compileOnly(libs.androidx.ui.tooling.preview)
+    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    // Lifecycle（MapView用）
     compileOnly(libs.androidx.lifecycle.runtime.ktx)
     compileOnly(libs.androidx.lifecycle.common.java8)
 

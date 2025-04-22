@@ -2,20 +2,21 @@ package com.mapconductor.mapbox
 
 import android.content.Context
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
-import com.mapconductor.core.MapViewHolderImpl
+import com.mapconductor.core.MapViewHolder
 
-class MapViewHolder private constructor(
+class MapViewHolderImpl private constructor(
     override val mapView: MapView
-): MapViewHolderImpl<MapView, MapboxMap> {
+): MapViewHolder<MapView, MapboxMap> {
     override lateinit var map: MapboxMap
 
     companion object {
-        fun create(context: Context): MapViewHolder {
+        fun create(context: Context): MapViewHolder<MapView, MapboxMap> {
             val mapView = MapView(context)
 
-            val holder = MapViewHolder(mapView)
+            val holder = MapViewHolderImpl(mapView)
             holder.map = mapView.mapboxMap
             return holder
         }
@@ -33,5 +34,5 @@ class MapViewHolder private constructor(
     }
 
     // Do nothing here
-    override fun destroy() = Unit
+    override fun destroy(owner: LifecycleOwner?) = Unit
 }

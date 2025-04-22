@@ -3,9 +3,9 @@ package com.mapconductor.mapbox
 import androidx.annotation.Keep
 import com.mapbox.geojson.Point
 import com.mapconductor.core.GeoPointBase
-import com.mapconductor.core.GeoPointImpl
+import com.mapconductor.core.GeoPointInterface
 
-interface GeoPointMapboxImpl: GeoPointImpl {
+interface GeoPointMapboxImpl: GeoPointInterface {
     fun toPoint(): Point
 }
 @ConsistentCopyVisibility
@@ -25,7 +25,7 @@ data class GeoPoint private constructor(
 
         @Keep
         @JvmStatic
-        fun fromImpl(geoPointImpl: GeoPointImpl) = when(geoPointImpl) {
+        fun fromImpl(geoPointImpl: GeoPointInterface) = when(geoPointImpl) {
             is GeoPoint -> geoPointImpl
             else -> GeoPoint(
                 geoPointImpl.latitude,

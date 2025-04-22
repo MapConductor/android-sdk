@@ -2,7 +2,7 @@ package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.model.CameraPosition
 import androidx.annotation.Keep // 必要に応じて @Keep も追加検討
-import com.mapconductor.core.GeoPointImpl
+import com.mapconductor.core.GeoPointInterface
 import com.mapconductor.core.MapCameraPositionImpl
 import com.mapconductor.core.MapPaddings
 import com.mapconductor.core.MapPaddingsImpl
@@ -21,7 +21,7 @@ interface MapCameraPositionGMapsImpl: MapCameraPositionImpl {
 
 @Keep
 data class MapCameraPosition @JvmOverloads constructor(
-    override val target: GeoPointImpl,
+    override val target: GeoPointInterface,
     override val zoom: Double = 2.0,
     override val bearing: Double = 0.0,
     override val tilt: Double = 0.0,

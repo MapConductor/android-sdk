@@ -23,10 +23,11 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.GeoPointImpl
+import com.mapconductor.core.GeoPointInterface
 import com.mapconductor.core.MapCameraPositionImpl
-import com.mapconductor.core.MapViewHolderImpl
-import com.mapconductor.core.MapViewStateImpl
+import com.mapconductor.core.MapViewHolder
+import com.mapconductor.core.MapViewState
+import com.mapconductor.core.MarkerDataWithHandler
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,9 +41,9 @@ import kotlinx.coroutines.launch
 class HereMapViewState(
     private val context: Context,
     private val id: String,
-): MapViewStateImpl,
+): MapViewState,
     MapCameraListener, AnimationListener {
-    private var mapViewHolder: MapViewHolderImpl<MapView, HereMap>? = null
+    private var mapViewHolder: MapViewHolder<MapView, HereMap>? = null
 
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
@@ -87,7 +88,7 @@ class HereMapViewState(
     }
 
 
-    override fun moveCameraTo(geoPoint: GeoPointImpl, durationMs: Long): Boolean {
+    override fun moveCameraTo(geoPoint: GeoPointInterface, durationMs: Long): Boolean {
         if (!this.isInitialized.value) {
             Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
             return false
@@ -99,6 +100,11 @@ class HereMapViewState(
         )
         return this.moveCameraTo(newPosition, durationMs)
     }
+
+    override fun addMarkers(markerDataList: List<MarkerDataWithHandler>) {
+        TODO("Not yet implemented")
+    }
+
     override fun moveCameraTo(dstPosition: MapCameraPositionImpl, durationMs: Long): Boolean {
         if (!this.isInitialized.value) {
             Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
@@ -129,16 +135,16 @@ class HereMapViewState(
         return true
     }
 
-    override fun onResume() {
+    override fun onResume(owner: LifecycleOwner?) {
         this.mapViewHolder?.mapView?.onResume()
     }
-    override fun onPause() {
+    override fun onPause(owner: LifecycleOwner?) {
         this.mapViewHolder?.detach()
         this.mapViewHolder?.mapView?.onPause()
     }
 
     // Destroy the mapView by hand
-    override fun destroy() {
+    override fun destroy(owner: LifecycleOwner?) {
         this.cancelCoroutine()
         MapViewHolderStore.clear(id)
     }
@@ -154,7 +160,7 @@ class HereMapViewState(
         this.mapViewHolder?.attachTo(container)
     }
 
-    override fun detach() {
+    override fun detach(owner: LifecycleOwner?) {
         this.mapViewHolder?.detach()
     }
 

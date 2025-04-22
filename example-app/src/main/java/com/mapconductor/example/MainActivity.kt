@@ -1,29 +1,33 @@
 package com.mapconductor.example
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mapconductor.core.GeoPointBase
-import com.mapconductor.core.MapCameraPositionBase
-import com.mapconductor.core.MapViewStateImpl
+import com.mapconductor.core.MapViewState
+import com.mapconductor.core.Marker
 import com.mapconductor.example.ui.IconSelectMenu
-import com.mapconductor.example.ui.theme.OverlayTestTheme
+import com.mapconductor.example.ui.theme.MapConductorTheme
+import com.mapconductor.googlemaps.GeoPoint
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapView
@@ -32,28 +36,34 @@ import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewState
 
 class MainActivity : ComponentActivity() {
-    private val appViewModel : AppViewModel by viewModels()
+    private val appViewModel : AppViewModelImpl by viewModels {
+        AppViewModelFactory(
+            application = application,
+            lifecycleOwner = this,
+        )
+    }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-//            val gMapState = rememberGMapViewState()
-//            val hereMapState = rememberHereMapViewState()
-//            val mBoxViewHolder = rememberMBoxMapViewState()
-
-            OverlayTestTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column (
-                        modifier = Modifier.padding(innerPadding)
-                    ){
-                        IconSelectMenu(viewModel = appViewModel)
-                        MapAppView(
-                            viewModel = appViewModel,
-                            modifier = Modifier,
+            MapConductorTheme {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                IconSelectMenu(viewModel = appViewModel)
+                            }
                         )
-                    }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                ) { innerPadding ->
+                    MapAppView(
+                        appViewModel = appViewModel,
+                        modifier = Modifier.padding(innerPadding),
+                    )
                 }
             }
         }
@@ -63,28 +73,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MapAppView(
     modifier: Modifier = Modifier,
-    viewModel: AppViewModelImpl = viewModel<AppViewModel>(),
+    appViewModel: AppViewModel = viewModel<AppViewModelImpl>(),
 ) {
-    val state by viewModel.mapViewState.collectAsState()
+    val state by appViewModel.mapViewState.collectAsState()
+
     Column (
         modifier = modifier,
     ) {
         if (state != null) {
             val camera by state!!.mapCameraPosition.collectAsState()
             Row {
-                Button(onClick = {
-                    state!!.moveCameraTo(
-                        dstPosition = MapCameraPositionBase(
-                            target = GeoPointBase(
-                                latitude = 40.689184289566214,
-                                longitude =  -74.04454331830473,
-                            ),
-                            tilt = 82.0,
-                            zoom = 17.0,
-                        ),
-                        durationMs = 3000,
-                    )
-                }) {
+                Button(onClick = appViewModel::flyTo) {
                     Text("Fly to!")
                 }
                 Column {
@@ -94,13 +93,7 @@ fun MapAppView(
                     Text("tilt: ${camera?.tilt}")
                 }
             }
-
-
-            Box (
-                modifier = Modifier.fillMaxSize(),
-            ){
-                MapViewContainer(state)
-            }
+            MapViewContainer(state = state,)
         } else {
             Text(
                 text = "Loading...",
@@ -111,11 +104,39 @@ fun MapAppView(
 }
 
 @Composable
-fun MapViewContainer(state: MapViewStateImpl?) {
+fun MapViewContainer(
+    modifier: Modifier = Modifier,
+    state: MapViewState? = null,
+) {
+    val context = LocalContext.current
     when (state) {
-        is GoogleMapViewState -> GoogleMapView(state)
+        is GoogleMapViewState -> {
+            GoogleMapView(
+                modifier = modifier,
+                state = state,
+            ) {
+                Marker(
+                    geoPoint = GeoPoint.fromLatLong(
+                        latitude = 40.689184289566214,
+                        longitude = -74.04454331830473,
+                    )
+                ) {
+                    Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
         is HereMapViewState -> HereMapView(state)
-        is MapboxViewState -> MapboxMapView(state)
+        is MapboxViewState -> MapboxMapView(modifier, state) {
+            Marker(
+                geoPoint = GeoPoint.fromLatLong(
+                    latitude = 40.689184289566214,
+                    longitude = -74.04454331830473,
+                )
+            ) {
+                Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show()
+            }
+        }
+//        is ArcGisMapViewState -> ArcGisMapView(state)
         else -> throw IllegalStateException("unknown state")
     }
 }

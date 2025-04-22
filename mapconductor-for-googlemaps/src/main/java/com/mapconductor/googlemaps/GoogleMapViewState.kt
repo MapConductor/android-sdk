@@ -19,13 +19,19 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
-import com.mapconductor.core.GeoPointImpl
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.mapconductor.core.GeoPointInterface
 import com.mapconductor.core.MapCameraPositionImpl
 import com.mapconductor.core.MapPaddings
-import com.mapconductor.core.MapViewHolderImpl
-import com.mapconductor.core.MapViewStateImpl
+import com.mapconductor.core.MapViewHolder
+import com.mapconductor.core.MapViewState
+import com.mapconductor.core.MarkerDataWithHandler
+import com.mapconductor.core.ResourceProvider
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,9 +45,11 @@ import kotlinx.coroutines.launch
 class GoogleMapViewState(
     val context: Context,
     private val id: String,
-): MapViewStateImpl,
-    OnCameraMoveListener, OnCameraIdleListener, CancelableCallback {
-    private var mapViewHolder: MapViewHolderImpl<MapView, GoogleMap>? = null
+): MapViewState,
+    OnCameraMoveListener, OnCameraIdleListener, CancelableCallback,
+    OnMarkerClickListener
+{
+    private var mapViewHolder: MapViewHolder<MapView, GoogleMap>? = null
 
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
@@ -62,6 +70,9 @@ class GoogleMapViewState(
             initialValue = null,
         )
 
+    private val _markerDataWithHandler: HashMap<Int, MarkerDataWithHandler> = HashMap()
+    private val _markerToData: HashMap<Int, Int> = HashMap()
+
     init {
         coroutineScope.launch {
             val existed = MapViewHolderStore.has(id)
@@ -71,6 +82,7 @@ class GoogleMapViewState(
                 _isInitialized.value = true
                 holder.map.setOnCameraMoveListener(this@GoogleMapViewState)
                 holder.map.setOnCameraIdleListener(this@GoogleMapViewState)
+                holder.map.setOnMarkerClickListener(this@GoogleMapViewState)
                 this@GoogleMapViewState._cameraPosition.value = holder.map.cameraPosition
                 return@launch
             }
@@ -79,10 +91,11 @@ class GoogleMapViewState(
             _isInitialized.value = true
             map.setOnCameraMoveListener(this@GoogleMapViewState)
             map.setOnCameraIdleListener(this@GoogleMapViewState)
+            map.setOnMarkerClickListener(this@GoogleMapViewState)
         }
     }
 
-    override fun moveCameraTo(geoPoint: GeoPointImpl, durationMs: Long): Boolean {
+    override fun moveCameraTo(geoPoint: GeoPointInterface, durationMs: Long): Boolean {
         if (!this.isInitialized.value) {
             Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
             return false
@@ -104,14 +117,42 @@ class GoogleMapViewState(
             .fromImpl(dstPosition)
             .toCameraPosition()
         val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
-        val map = this.mapViewHolder?.map
-        if (map ==  null) return false
+        val map = this.mapViewHolder?.map ?: return false
         if (durationMs == 0L) {
             map.moveCamera(cameraUpdate)
         } else {
             map.animateCamera(cameraUpdate, durationMs.toInt(), this)
         }
         return true
+    }
+
+    override fun addMarkers(markerDataList: List<MarkerDataWithHandler>) {
+
+        val map = this.mapViewHolder?.map ?: return
+        val defaultIcon = ResourceProvider.getIconResourceWithBitmap(
+            ResourceProvider.DEFAULT_MARKER.name,
+        )
+        var defaultIconBitmapDescriptor = if (defaultIcon?.bitmap != null) {
+            BitmapDescriptorFactory.fromBitmap(defaultIcon.bitmap)
+        } else {
+            BitmapDescriptorFactory.defaultMarker()
+        }
+
+        markerDataList.forEach { markerDataWithHandler ->
+            val data = markerDataWithHandler.first
+            val handler = markerDataWithHandler.second
+
+            val key = data.hashCode() xor handler.hashCode()
+            if (this._markerDataWithHandler.containsKey(key)) return@forEach
+
+            val marker = map.addMarker(MarkerOptions()
+                .position(GeoPoint.fromImpl(data.pointBase).toLatLng())
+                .icon(defaultIconBitmapDescriptor)
+            )
+            // marker hashCode -> data key
+            this._markerToData.set(marker.hashCode(), key)
+            this._markerDataWithHandler.set(key, markerDataWithHandler)
+        }
     }
 
     @Keep
@@ -126,15 +167,15 @@ class GoogleMapViewState(
     }
 
 
-    override fun onResume() {
+    override fun onResume(owner: LifecycleOwner?) {
         this.mapViewHolder?.mapView?.onResume()
     }
-    override fun onPause() {
+    override fun onPause(owner: LifecycleOwner?) {
         this.mapViewHolder?.mapView?.onPause()
     }
 
     // Destroy the mapView by hand
-    override fun destroy() {
+    override fun destroy(owner: LifecycleOwner?) {
         this.cancelCoroutine()
         MapViewHolderStore.clear(id)
     }
@@ -150,7 +191,7 @@ class GoogleMapViewState(
         this.mapViewHolder?.attachTo(container)
     }
 
-    override fun detach() {
+    override fun detach(owner: LifecycleOwner?) {
         this.mapViewHolder?.detach()
     }
 
@@ -168,6 +209,17 @@ class GoogleMapViewState(
 
     override fun onFinish() {
         _cameraPosition.value = this.mapViewHolder?.map?.cameraPosition
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        val dataKey = _markerToData.get(marker.hashCode()) ?: return false
+        val dataWithHandler = _markerDataWithHandler.get(dataKey) ?: return false
+        val data = dataWithHandler.first
+        val onClick = dataWithHandler.second
+        coroutineScope.launch {
+            onClick(data)
+        }
+        return true
     }
 }
 

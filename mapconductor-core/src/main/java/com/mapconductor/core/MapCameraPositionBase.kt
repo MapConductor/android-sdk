@@ -1,7 +1,7 @@
 package com.mapconductor.core
 
 interface MapCameraPositionImpl {
-    val target: GeoPointImpl
+    val target: GeoPointInterface
     val zoom: Double
     val bearing: Double
     val tilt: Double
@@ -9,7 +9,7 @@ interface MapCameraPositionImpl {
 }
 
 open class MapCameraPositionBase @JvmOverloads constructor(
-    override val target: GeoPointImpl,
+    override val target: GeoPointInterface,
     override val zoom: Double = 0.0,
     override val bearing: Double = 0.0,
     override val tilt: Double = 0.0,

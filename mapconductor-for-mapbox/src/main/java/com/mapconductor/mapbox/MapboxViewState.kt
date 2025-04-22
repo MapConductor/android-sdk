@@ -18,12 +18,21 @@ import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
+import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
-import com.mapconductor.core.GeoPointImpl
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapconductor.core.GeoPointInterface
 import com.mapconductor.core.MapCameraPositionImpl
-import com.mapconductor.core.MapViewHolderImpl
-import com.mapconductor.core.MapViewStateImpl
+import com.mapconductor.core.MapViewHolder
+import com.mapconductor.core.MapViewState
+import com.mapconductor.core.MarkerDataWithHandler
+import com.mapconductor.core.ResourceProvider
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,13 +46,15 @@ import kotlinx.coroutines.launch
 class MapboxViewState(
     val context: Context,
     private val id: String,
-): MapViewStateImpl, CameraChangedCallback {
-    private var mapViewHolder: MapViewHolderImpl<MapView, MapboxMap>? = null
+): MapViewState, CameraChangedCallback,
+    OnPointAnnotationClickListener {
+    private var mapViewHolder: MapViewHolder<MapView, MapboxMap>? = null
 
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     private val coroutineScope = MainScope() // = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private lateinit var pointAnnotationManager: PointAnnotationManager
 
     // Camera center position
     private val _cameraState = MutableStateFlow<CameraState?>(null)
@@ -55,6 +66,9 @@ class MapboxViewState(
             initialValue = null,
         )
 
+    private val _markerDataWithHandler: HashMap<Int, MarkerDataWithHandler> = HashMap()
+    private val _markerToData: HashMap<Int, Int> = HashMap()
+
     init {
         coroutineScope.launch {
             val existed = MapViewHolderStore.has(id)
@@ -62,17 +76,29 @@ class MapboxViewState(
             this@MapboxViewState.mapViewHolder = holder
             if (existed) {
                 _isInitialized.value = true
-                holder.map.subscribeCameraChanged(this@MapboxViewState)
+                this@MapboxViewState.setListeners()
                 this@MapboxViewState._cameraState.value = holder.map.cameraState
                 return@launch
             }
 
             _isInitialized.value = true
             holder.map.subscribeCameraChanged(this@MapboxViewState)
+            this@MapboxViewState.setListeners()
+
         }
     }
 
-    override fun moveCameraTo(geoPoint: GeoPointImpl, durationMs: Long): Boolean {
+    private fun setListeners() {
+        val map = this.mapViewHolder?.map ?: return
+        val mapView = this.mapViewHolder?.mapView ?: return
+
+        map.subscribeCameraChanged(this)
+        val annotationApi = mapView.annotations
+        this@MapboxViewState.pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        pointAnnotationManager.addClickListener(this@MapboxViewState)
+    }
+
+    override fun moveCameraTo(geoPoint: GeoPointInterface, durationMs: Long): Boolean {
         if (!this.isInitialized.value) {
             Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
             return false
@@ -84,6 +110,43 @@ class MapboxViewState(
         )
         return this.moveCameraTo(newPosition, durationMs)
     }
+
+    override fun addMarkers(markerDataList: List<MarkerDataWithHandler>) {
+        markerDataList.forEach { markerDataWithHandler ->
+            val data = markerDataWithHandler.first
+            val handler = markerDataWithHandler.second
+
+            val key = data.hashCode() xor handler.hashCode()
+            if (this._markerDataWithHandler.containsKey(key)) return@forEach
+
+            var pointAnnotationOptions = PointAnnotationOptions()
+                .withPoint(GeoPoint.fromImpl(data.pointBase).toPoint())
+            if (data.icon == null) {
+                pointAnnotationOptions = this.setDefaultMarker(pointAnnotationOptions)
+            }
+            val marker = pointAnnotationManager.create(pointAnnotationOptions)
+
+            // marker hashCode -> data key
+            this._markerToData.set(marker.hashCode(), key)
+            this._markerDataWithHandler.set(key, markerDataWithHandler)
+        }
+    }
+
+
+    private fun setDefaultMarker(options: PointAnnotationOptions): PointAnnotationOptions {
+        val icon = ResourceProvider.getIconResourceWithBitmap(ResourceProvider.DEFAULT_MARKER.name)
+        if (icon == null) return options;
+
+        val iconW = icon.width.toDouble()
+        val anchorX = (iconW / 2.0) - ResourceProvider.DEFAULT_MARKER.anchorX.toDouble()
+        val iconH = icon.height.toDouble()
+        val anchorY = (iconH / 2.0) - ResourceProvider.DEFAULT_MARKER.anchorY.toDouble()
+
+        return options.withIconImage(icon.bitmap)
+            .withIconAnchor(IconAnchor.CENTER)
+            .withIconOffset(listOf(anchorX, anchorY))
+    }
+
     override fun moveCameraTo(dstPosition: MapCameraPositionImpl, durationMs: Long): Boolean {
         if (!this.isInitialized.value) {
             Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
@@ -105,11 +168,11 @@ class MapboxViewState(
         return true
     }
 
-    override fun onResume() = Unit
-    override fun onPause() = Unit
+    override fun onResume(owner: LifecycleOwner?) = Unit
+    override fun onPause(owner: LifecycleOwner?) = Unit
 
     // Destroy the mapView by hand
-    override fun destroy() {
+    override fun destroy(owner: LifecycleOwner?) {
         this.cancelCoroutine()
         MapViewHolderStore.clear(id)
     }
@@ -125,12 +188,23 @@ class MapboxViewState(
         this.mapViewHolder?.attachTo(container)
     }
 
-    override fun detach() {
+    override fun detach(owner: LifecycleOwner?) {
         this.mapViewHolder?.detach()
     }
 
     override fun run(cameraChanged: CameraChanged) {
         this._cameraState.value = cameraChanged.cameraState
+    }
+
+    override fun onAnnotationClick(annotation: PointAnnotation): Boolean {
+        val dataKey = _markerToData.get(annotation.hashCode()) ?: return false
+        val dataWithHandler = _markerDataWithHandler.get(dataKey) ?: return false
+        val data = dataWithHandler.first
+        val onClick = dataWithHandler.second
+        coroutineScope.launch {
+            onClick(data)
+        }
+        return true
     }
 }
 
