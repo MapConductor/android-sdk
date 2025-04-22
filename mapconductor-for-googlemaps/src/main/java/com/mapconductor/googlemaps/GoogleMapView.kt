@@ -16,12 +16,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.LocalMarkerCollector
 import com.mapconductor.core.MarkerData
 import com.mapconductor.core.MarkerDataWithHandler
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 
+@OptIn(FlowPreview::class)
 @SuppressLint("FlowOperatorInvokedInComposition")
 @Composable
 fun GoogleMapView(

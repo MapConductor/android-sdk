@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.MapViewState
 import com.mapconductor.core.Marker
 import com.mapconductor.example.ui.IconSelectMenu
@@ -76,6 +77,7 @@ fun MapAppView(
     appViewModel: AppViewModel = viewModel<AppViewModelImpl>(),
 ) {
     val state by appViewModel.mapViewState.collectAsState()
+    val context = LocalContext.current
 
     Column (
         modifier = modifier,
@@ -93,7 +95,16 @@ fun MapAppView(
                     Text("tilt: ${camera?.tilt}")
                 }
             }
-            MapViewContainer(state = state,)
+            MapViewContainer(state = state,) {
+                Marker(
+                    geoPoint = GeoPoint.fromLatLong(
+                        latitude = 40.689184289566214,
+                        longitude = -74.04454331830473,
+                    )
+                ) {
+                    Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show()
+                }
+            }
         } else {
             Text(
                 text = "Loading...",
@@ -107,35 +118,26 @@ fun MapAppView(
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     state: MapViewState? = null,
+    content: @Composable MapViewScope.() -> Unit,
 ) {
-    val context = LocalContext.current
     when (state) {
         is GoogleMapViewState -> {
             GoogleMapView(
                 modifier = modifier,
                 state = state,
-            ) {
-                Marker(
-                    geoPoint = GeoPoint.fromLatLong(
-                        latitude = 40.689184289566214,
-                        longitude = -74.04454331830473,
-                    )
-                ) {
-                    Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show()
-                }
-            }
+                content = content,
+            )
         }
-        is HereMapViewState -> HereMapView(state)
-        is MapboxViewState -> MapboxMapView(modifier, state) {
-            Marker(
-                geoPoint = GeoPoint.fromLatLong(
-                    latitude = 40.689184289566214,
-                    longitude = -74.04454331830473,
-                )
-            ) {
-                Toast.makeText(context, "clicked", Toast.LENGTH_SHORT).show()
-            }
-        }
+        is HereMapViewState -> HereMapView(
+            modifier = modifier,
+            state = state,
+            content = content,
+        )
+        is MapboxViewState -> MapboxMapView(
+            modifier = modifier,
+            state = state,
+            content = content,
+        )
 //        is ArcGisMapViewState -> ArcGisMapView(state)
         else -> throw IllegalStateException("unknown state")
     }

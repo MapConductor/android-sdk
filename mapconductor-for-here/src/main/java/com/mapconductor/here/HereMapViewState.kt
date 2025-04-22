@@ -3,6 +3,8 @@ package com.mapconductor.here
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.Resources
+import android.graphics.Bitmap
 import android.util.Log
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
@@ -14,20 +16,33 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.here.sdk.animation.AnimationListener
 import com.here.sdk.animation.AnimationState
+import com.here.sdk.core.Anchor2D
 import com.here.sdk.core.GeoOrientation
+import com.here.sdk.core.Metadata
+import com.here.sdk.core.Point2D
+import com.here.sdk.core.Rectangle2D
+import com.here.sdk.core.Size2D
+import com.here.sdk.gestures.TapListener
 import com.here.sdk.mapview.HereMap
+import com.here.sdk.mapview.ImageFormat
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
+import com.here.sdk.mapview.MapImage
+import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
+import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
+import com.here.sdk.mapview.MapViewBase
 import com.here.time.Duration
 import com.mapconductor.core.GeoPointInterface
 import com.mapconductor.core.MapCameraPositionImpl
 import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.MapViewState
 import com.mapconductor.core.MarkerDataWithHandler
+import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateZIndex
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,18 +52,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.util.WeakHashMap
 
 class HereMapViewState(
     private val context: Context,
     private val id: String,
 ): MapViewState,
-    MapCameraListener, AnimationListener {
+    MapCameraListener, AnimationListener,
+    TapListener {
     private var mapViewHolder: MapViewHolder<MapView, HereMap>? = null
 
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
     private val coroutineScope = MainScope() // = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val _markerDataWithHandler: HashMap<Int, MarkerDataWithHandler> = HashMap()
 
     // Camera center position
     private val _cameraState = MutableStateFlow<MapCamera.State?>(null)
@@ -73,6 +92,7 @@ class HereMapViewState(
                 _isInitialized.value = true
                 holder.mapView.camera.removeListener(this@HereMapViewState)
                 holder.mapView.camera.addListener(this@HereMapViewState)
+                holder.mapView.gestures.tapListener = this@HereMapViewState
                 return@launch
             }
             _isInitialized.value = true
@@ -83,6 +103,7 @@ class HereMapViewState(
                     return@loadScene
                 }
                 holder.mapView.camera.addListener(this@HereMapViewState)
+                holder.mapView.gestures.tapListener = this@HereMapViewState
             }
         }
     }
@@ -101,8 +122,55 @@ class HereMapViewState(
         return this.moveCameraTo(newPosition, durationMs)
     }
 
+    private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        return outputStream.toByteArray()
+    }
+
     override fun addMarkers(markerDataList: List<MarkerDataWithHandler>) {
-        TODO("Not yet implemented")
+        val defaultIcon = ResourceProvider.getIconResourceWithBitmap(
+            ResourceProvider.DEFAULT_MARKER.name,
+        )
+        val defaultIconBitmap = defaultIcon!!.bitmap
+        val defaultIconBytes = bitmapToByteArray(defaultIconBitmap)
+        val defaultIconMapImage = MapImage(
+            defaultIconBytes,
+            ImageFormat.PNG,
+            defaultIcon.width.toLong(),
+            defaultIcon.height.toLong(),
+        )
+        val defaultIconAnchor = Anchor2D(
+            defaultIcon.anchorX.toDouble() / defaultIcon.width.toDouble(),
+            defaultIcon.anchorY.toDouble() / defaultIcon.height.toDouble(),
+        )
+
+        val markers = mutableListOf<MapMarker>()
+        markerDataList.forEach { markerDataWithHandler ->
+            val data = markerDataWithHandler.first
+            val handler = markerDataWithHandler.second
+
+            val key = data.hashCode() xor handler.hashCode()
+            if (this._markerDataWithHandler.containsKey(key)) return@forEach
+
+            val metadata = Metadata().apply {
+                setInteger("dataKey", key)
+            }
+            val marker = MapMarker(
+                GeoPoint.fromImpl(data.pointBase).toGeoCoordinates(),
+                defaultIconMapImage,
+                defaultIconAnchor,
+            ).apply {
+                drawOrder = calculateZIndex(data.pointBase).toInt()
+            }
+            marker.metadata = metadata
+            markers.add(marker)
+
+
+            // marker hashCode -> data key
+            this._markerDataWithHandler.set(key, markerDataWithHandler)
+        }
+        this.mapViewHolder?.mapView?.mapScene?.addMapMarkers(markers)
     }
 
     override fun moveCameraTo(dstPosition: MapCameraPositionImpl, durationMs: Long): Boolean {
@@ -171,6 +239,36 @@ class HereMapViewState(
     override fun onAnimationStateChanged(p0: AnimationState) {
         val cameraState = this.mapViewHolder?.mapView?.camera?.state ?: return
         this._cameraState.value = cameraState
+    }
+
+    override fun onTap(touchPoint: Point2D) {
+        val originInPixels = Point2D(touchPoint.x, touchPoint.y)
+        val density = Resources.getSystem().displayMetrics.density
+        val sizeInPixels = Size2D(32.0 * density, 32.0 * density)
+        val rectangle = Rectangle2D(originInPixels, sizeInPixels)
+
+        this.mapViewHolder?.mapView?.pick(null, rectangle,
+            MapViewBase.MapPickCallback { mapPickResult ->
+                if (mapPickResult == null) return@MapPickCallback
+                val tappedMarker = mapPickResult.mapItems?.markers?.
+                    filter { it: MapMarker ->
+                        val dataKey = it.metadata?.getInteger("dataKey") ?: 0
+                        this._markerDataWithHandler.containsKey(dataKey)
+                    }?.maxByOrNull { it: MapMarker -> it.drawOrder }
+
+                if (tappedMarker != null) {
+                    val dataKey = tappedMarker.metadata?.getInteger("dataKey") ?: return@MapPickCallback
+                    val dataWithHandler = this._markerDataWithHandler.get(dataKey) ?: return@MapPickCallback
+                    val data = dataWithHandler.first
+                    val onClick = dataWithHandler.second
+                    coroutineScope.launch {
+                        onClick(data)
+                    }
+
+                    return@MapPickCallback
+                }
+                // TODO: find tapped overlay (do not remove this comment)
+            })
     }
 }
 
