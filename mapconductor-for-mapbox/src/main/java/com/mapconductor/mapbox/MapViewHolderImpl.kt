@@ -14,7 +14,11 @@ class MapViewHolderImpl private constructor(
 
     companion object {
         fun create(context: Context): MapViewHolder<MapView, MapboxMap> {
-            val mapView = MapView(context)
+            val mapInitOptions = MapInitOptions(
+                context = context,
+                textureView = true,
+            )
+            val mapView = MapView(context, mapInitOptions)
 
             val holder = MapViewHolderImpl(mapView)
             holder.map = mapView.mapboxMap
