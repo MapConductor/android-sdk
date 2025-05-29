@@ -1,259 +1,167 @@
 package com.mapconductor.mapbox
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.util.Log
-import android.view.ViewGroup
+import android.os.Bundle
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.mapbox.maps.CameraChanged
-import com.mapbox.maps.CameraChangedCallback
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapbox.maps.CameraState
-import com.mapbox.maps.MapView
-import com.mapbox.maps.MapboxMap
-import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
-import com.mapbox.maps.plugin.animation.MapAnimationOptions
-import com.mapbox.maps.plugin.animation.flyTo
-import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
-import com.mapconductor.core.GeoPointInterface
-import com.mapconductor.core.MapCameraPositionImpl
-import com.mapconductor.core.MapViewHolder
-import com.mapconductor.core.MapViewState
-import com.mapconductor.core.MarkerDataWithHandler
-import com.mapconductor.core.ResourceProvider
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import com.mapconductor.core.IMapCameraPosition
+import com.mapconductor.core.MapCameraPositionBase
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.InitState
+import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateImpl
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.mapbox.MapboxMapDesign.Standard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import java.util.UUID
 
-class MapboxViewState(
-    val context: Context,
-    private val id: String,
-): MapViewState, CameraChangedCallback,
-    OnPointAnnotationClickListener {
-    private var mapViewHolder: MapViewHolder<MapView, MapboxMap>? = null
+interface IMapboxMapViewState: MapViewState<String>
 
-    private val _isInitialized = MutableStateFlow(false)
-    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+class MapboxMapViewState(
+    override val stateId: String,
+    override val mapDesignType: MapboxDesignType,
+    override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
+) : MapViewStateImpl<String>(), IMapboxMapViewState, IMapboxMapEventHandler {
 
-    private val coroutineScope = MainScope() // = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private lateinit var pointAnnotationManager: PointAnnotationManager
+    internal var controller: IMapboxMapViewController? = null
 
     // Camera center position
-    private val _cameraState = MutableStateFlow<CameraState?>(null)
-    private val cameraState: StateFlow<CameraState?> = _cameraState.asStateFlow()
+    private val _cameraState = MutableStateFlow<CameraState>(initCameraPosition.toCameraState())
+//    private val cameraState: StateFlow<CameraState> = _cameraState.asStateFlow()
     override val mapCameraPosition: StateFlow<MapCameraPosition?> =
-        cameraState.map { it?.toMapCameraPosition() }.stateIn(
-            scope = this.coroutineScope,
+        _cameraState.map { it.toMapCameraPosition() }.stateIn(
+            scope = this.mainCoroutine,
             started = SharingStarted.Eagerly,
             initialValue = null,
         )
 
-    private val _markerDataWithHandler: HashMap<Int, MarkerDataWithHandler> = HashMap()
-    private val _markerToData: HashMap<Int, Int> = HashMap()
-
-    init {
-        coroutineScope.launch {
-            val existed = MapViewHolderStore.has(id)
-            val holder = MapViewHolderStore.getOrCreate(context, id)
-            this@MapboxViewState.mapViewHolder = holder
-            if (existed) {
-                _isInitialized.value = true
-                this@MapboxViewState.setListeners()
-                this@MapboxViewState._cameraState.value = holder.map.cameraState
-                return@launch
-            }
-
-            _isInitialized.value = true
-            holder.map.subscribeCameraChanged(this@MapboxViewState)
-            this@MapboxViewState.setListeners()
-
-        }
-    }
-
-    private fun setListeners() {
-        val map = this.mapViewHolder?.map ?: return
-        val mapView = this.mapViewHolder?.mapView ?: return
-
-        map.subscribeCameraChanged(this)
-        val annotationApi = mapView.annotations
-        this@MapboxViewState.pointAnnotationManager = annotationApi.createPointAnnotationManager()
-        pointAnnotationManager.addClickListener(this@MapboxViewState)
-    }
-
-    override fun moveCameraTo(geoPoint: GeoPointInterface, durationMs: Long): Boolean {
-        if (!this.isInitialized.value) {
-            Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
-            return false
+    override fun moveCameraTo(
+        position: IGeoPoint,
+        durationMs: Long,
+        listener: MapViewState.MoveCameraCallback?
+    ) {
+        if (this.isInitialized.value != InitState.Initialized) {
+            this.warningLog("moveCameraTo() called before map is initialized.")
+            listener?.onComplete(false)
+            return
         }
         val currCameraPosition = this.mapCameraPosition.value
-        if (currCameraPosition == null) return false
+        if (currCameraPosition == null) {
+            listener?.onComplete(false)
+            return
+        }
         val newPosition = currCameraPosition.copy(
-            target = GeoPoint.fromImpl(geoPoint),
+            position = GeoPoint.from(position),
         )
-        return this.moveCameraTo(newPosition, durationMs)
+        this.moveCameraTo(newPosition, durationMs, listener)
     }
 
-    override fun addMarkers(markerDataList: List<MarkerDataWithHandler>) {
-        markerDataList.forEach { markerDataWithHandler ->
-            val data = markerDataWithHandler.first
-            val handler = markerDataWithHandler.second
-
-            val key = data.hashCode() xor handler.hashCode()
-            if (this._markerDataWithHandler.containsKey(key)) return@forEach
-
-            var pointAnnotationOptions = PointAnnotationOptions()
-                .withPoint(GeoPoint.fromImpl(data.pointBase).toPoint())
-            if (data.icon == null) {
-                pointAnnotationOptions = this.setDefaultMarker(pointAnnotationOptions)
-            }
-            val marker = pointAnnotationManager.create(pointAnnotationOptions)
-
-            // marker hashCode -> data key
-            this._markerToData.set(marker.hashCode(), key)
-            this._markerDataWithHandler.set(key, markerDataWithHandler)
+    override fun moveCameraTo(
+        position: IMapCameraPosition,
+        durationMs: Long,
+        listener: MapViewState.MoveCameraCallback?
+    ) {
+        if (this.isInitialized.value != InitState.Initialized) {
+            this.warningLog("moveCameraTo() called before map is initialized.")
+            listener?.onComplete(false)
+            return
         }
-    }
-
-
-    private fun setDefaultMarker(options: PointAnnotationOptions): PointAnnotationOptions {
-        val icon = ResourceProvider.getIconResourceWithBitmap(ResourceProvider.DEFAULT_MARKER.name)
-        if (icon == null) return options;
-
-        val iconW = icon.width.toDouble()
-        val anchorX = (iconW / 2.0) - ResourceProvider.DEFAULT_MARKER.anchorX.toDouble()
-        val iconH = icon.height.toDouble()
-        val anchorY = (iconH / 2.0) - ResourceProvider.DEFAULT_MARKER.anchorY.toDouble()
-
-        return options.withIconImage(icon.bitmap)
-            .withIconAnchor(IconAnchor.CENTER)
-            .withIconOffset(listOf(anchorX, anchorY))
-    }
-
-    override fun moveCameraTo(dstPosition: MapCameraPositionImpl, durationMs: Long): Boolean {
-        if (!this.isInitialized.value) {
-            Log.w("GMapViewState", "moveCameraTo() called before map is initialized.")
-            return false
+        val dstCameraPosition = MapCameraPosition.from(position)
+        if (controller == null) {
+            listener?.onComplete(false)
+            return
         }
-
-        val dstCameraOptions = MapCameraPosition.fromImpl(dstPosition).toCameraOptions()
-        val map = this.mapViewHolder?.map ?: return false
         if (durationMs == 0L) {
-            map.setCamera(dstCameraOptions)
+            controller!!.moveCamera(dstCameraPosition, listener)
         } else {
-            map.flyTo(
-                dstCameraOptions,
-                MapAnimationOptions.mapAnimationOptions {
-                    duration(durationMs)
-                },
-            )
+            controller!!.animateCamera(dstCameraPosition, durationMs.toLong(), listener)
         }
-        return true
     }
 
-    override fun onResume(owner: LifecycleOwner?) = Unit
-    override fun onPause(owner: LifecycleOwner?) = Unit
-
-    // Destroy the mapView by hand
-    override fun destroy(owner: LifecycleOwner?) {
-        this.cancelCoroutine()
-        MapViewHolderStore.clear(id)
+    override fun onCameraMove(cameraState: CameraState) {
+        _cameraState.value = cameraState
+        this.debugLog("--->camera = ${cameraState.center.toGeoPoint().toUrlValue()}")
     }
 
-    internal fun cancelCoroutine() {
-        coroutineScope.cancel() // This coroutine scope keeps alive until cancelling.
-        // Don't destroy the mapViewHolder here,
-        // because the activity will re-create soon when rotating the device.
-        // this.mapViewHolder?.destroy()
+    override fun onMarkerAdd(state: MarkerState) {
+        // Do nothing here
     }
 
-    override fun attachTo(container: ViewGroup) {
-        this.mapViewHolder?.attachTo(container)
-    }
-
-    override fun detach(owner: LifecycleOwner?) {
-        this.mapViewHolder?.detach()
-    }
-
-    override fun run(cameraChanged: CameraChanged) {
-        this._cameraState.value = cameraChanged.cameraState
-    }
-
-    override fun onAnnotationClick(annotation: PointAnnotation): Boolean {
-        val dataKey = _markerToData.get(annotation.hashCode()) ?: return false
-        val dataWithHandler = _markerDataWithHandler.get(dataKey) ?: return false
-        val data = dataWithHandler.first
-        val onClick = dataWithHandler.second
-        coroutineScope.launch {
-            onClick(data)
-        }
-        return true
+    override fun onMarkerRemove(id: String) {
+        // Do nothing here
     }
 }
+
+val MapboxMapViewStateSaver = Saver<MapboxMapViewState, Bundle>(
+    save = { state ->
+        val cameraStateBundle = state.mapCameraPosition.value?.let { cameraState ->
+            Bundle().apply {
+                putDouble("zoom", cameraState.zoom)
+                putDouble("tilt", cameraState.tilt)
+                putDouble("bearing", cameraState.bearing)
+                putDouble("latitude", cameraState.position.latitude)
+                putDouble("longitude", cameraState.position.longitude)
+            }
+        }
+
+        val mapDesignBundle = Bundle().apply {
+            putString("id", state.mapDesignType.id)
+        }
+
+        Bundle().apply {
+            putString("stateId", state.stateId)
+            putBundle("mapDesign", mapDesignBundle)
+            putBundle("camera", cameraStateBundle)
+        }
+    },
+    restore = { storedData ->
+        val cameraBundle = storedData.getBundle("camera")
+        val mapDesignBundle = storedData.getBundle("mapDesign")
+
+        MapboxMapViewState(
+            stateId = storedData.getString("stateId")!!,
+            mapDesignType = MapboxMapDesign.Create(
+                layerId = mapDesignBundle?.getString("id") ?: Standard.id,
+            ),
+            initCameraPosition = MapCameraPosition(
+                position = GeoPoint.fromLatLong(
+                    latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
+                    longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
+                ),
+                zoom = cameraBundle?.getDouble("zoom") ?: 0.0,
+                bearing = cameraBundle?.getDouble("bearing") ?: 0.0,
+                tilt = cameraBundle?.getDouble("tilt") ?: 0.0,
+                paddings = null
+            )
+        )
+
+    }
+)
 
 @Composable
-fun rememberMBoxMapViewState(
-    id: String = "map",
-    context: Context = LocalContext.current,
-): MapboxViewState {
-    val state = remember(id) {
-        MapboxViewState(context, id)
+fun rememberMapboxMapViewState(
+    mapDesign: MapboxDesignType = MapboxMapDesign.Standard,
+    cameraPosition: IMapCameraPosition = MapCameraPositionBase.Default,
+): MapboxMapViewState {
+    val stateId by rememberSaveable {
+        val uuid = UUID.randomUUID().toString()
+        mutableStateOf(uuid)
+    }
+    val state = rememberSaveable(stateSaver = MapboxMapViewStateSaver) {
+        mutableStateOf(MapboxMapViewState(
+            stateId = stateId,
+            mapDesignType = mapDesign,
+            initCameraPosition = MapCameraPosition.from(cameraPosition),
+        ))
     }
 
-    // Synchronize the lifecycle with the target compose.
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle) {
-        val observer = object : DefaultLifecycleObserver {
-            override fun onResume(owner: LifecycleOwner) {
-                state.onResume()
-            }
-            override fun onPause(owner: LifecycleOwner) {
-                state.onPause()
-            }
-            @SuppressLint("RestrictedApi")
-            override fun onDestroy(owner: LifecycleOwner) {
-                state.cancelCoroutine()
-
-                // ここでActivityが本当に終了するか確認
-                val activity = context.findActivity()
-                if (activity != null &&
-                    activity.isFinishing &&
-                    !activity.isChangingConfigurations
-                ) {
-                    MapViewHolderStore.clear(id)  // Execute mapView.destroy internally
-                }
-            }
-        }
-        lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycle.removeObserver(observer)
-        }
-    }
-
-    return state
+    return state.value
 }
-
-internal fun Context.findActivity(): Activity? =
-    when (this) {
-        is Activity -> this
-        is ContextWrapper -> baseContext.findActivity()
-        else -> null
-    }

@@ -1,52 +1,37 @@
 package com.mapconductor.core
 
 import android.content.Context
-import androidx.annotation.Keep
-import androidx.lifecycle.LifecycleOwner
 
-abstract class MapViewHolderStoreBase<T, M> {
-    private val holders = mutableMapOf<String, MapViewHolder<T, M>>()
+abstract class StaticHolder<ValueType> {
+    private val holders = mutableMapOf<String, ValueType>()
 
     fun has(id: String): Boolean {
         return holders.containsKey(id)
     }
 
-    fun get(id: String): MapViewHolder<T, M>? = holders[id]
-    fun set(id: String, viewHolder: MapViewHolder<T, M>) {
+    fun get(id: String): ValueType? = holders[id]
+    fun set(id: String, viewHolder: ValueType) {
         holders[id] = viewHolder
     }
 
-    fun clear(id: String, owner: LifecycleOwner? = null) {
-        holders.remove(id)?.destroy(owner)
+    fun remove(id: String) {
+        holders.remove(id)
     }
 
-    @Keep
     fun clearAll() {
-        holders.values.forEach { it.destroy() }
         holders.clear()
     }
 }
 
-abstract class MapViewHolderStoreBaseAsync<T, M>: MapViewHolderStoreBase<T, M>() {
+abstract class MapViewHolderStoreBaseAsync<
+        TMapView,
+        TMap,
+        TOptions
+    >: StaticHolder<MapViewHolder<TMapView, TMap>>() {
     abstract suspend fun getOrCreate(
         context: Context,
         id: String,
-    ): MapViewHolder<T, M>
+        options: TOptions,
+    ): MapViewHolder<TMapView, TMap>
 
 }
-
-abstract class MapViewHolderStoreBaseSync<T, M>: MapViewHolderStoreBase<T, M>() {
-    abstract fun getOrCreate(
-        context: Context,
-        id: String,
-    ): MapViewHolder<T, M>
-}
-
-abstract class MapViewHolderStoreBaseSyncWithLifeCycleOwner<T, M>: MapViewHolderStoreBase<T, M>() {
-    abstract fun getOrCreate(
-        context: Context,
-        id: String,
-        owner: LifecycleOwner,
-    ): MapViewHolder<T, M>
-}
-

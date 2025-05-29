@@ -1,41 +1,42 @@
 package com.mapconductor.arcgis
 
-import androidx.annotation.Keep // 必要に応じて @Keep も追加検討
+import androidx.annotation.Keep
+import com.arcgismaps.geometry.Point
 import com.arcgismaps.mapping.view.Camera
-import com.mapconductor.core.GeoPointInterface
-import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.IMapCameraPosition
 import com.mapconductor.core.MapPaddings
 import com.mapconductor.core.MapPaddingsImpl
-import com.arcgismaps.geometry.Point
-import kotlin.math.*
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
+import kotlin.math.PI
+import kotlin.math.asin
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.log2
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sin
 
-interface MapCameraPositionGMapsImpl: MapCameraPositionImpl {
+
+interface MapCameraPositionArcGIS: IMapCameraPosition {
     fun toCamera(): Camera
-//
-//    fun copy(
-//        target: GeoPoint?,
-//        zoom: Double?,
-//        bearing: Double?,
-//        tilt: Double?,
-//        paddings: MapPaddingsImpl?,
-//    ): MapCameraPositionGMapsImpl
 }
-
 @Keep
 data class MapCameraPosition @JvmOverloads constructor(
-    override val target: GeoPointInterface,
+    override val position: IGeoPoint,
     override val zoom: Double = 2.0,
     override val bearing: Double = 0.0,
     override val tilt: Double = 0.0,
-    override val paddings: MapPaddingsImpl = MapPaddings.Zeros,
-): MapCameraPositionGMapsImpl {
+    override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
+): MapCameraPositionArcGIS {
 
     override fun toCamera(): Camera = calculateCameraForOrbitParameters(
-        targetPoint = GeoPoint.fromImpl(target).toPoint(),
+        targetPoint = GeoPoint.from(position).toPoint(),
         distance = zoomLevelToAltitude(zoom),
-        cameraHeadingOffset = bearing,
+        cameraHeadingOffset = 360 - (bearing + 180),
         cameraPitchOffset = tilt,
     )
+
 
 //
 //    override fun copy(
@@ -53,26 +54,36 @@ data class MapCameraPosition @JvmOverloads constructor(
 //    )
 
     companion object {
-        fun fromImpl(positionImpl: MapCameraPositionImpl): MapCameraPosition {
-            return when(positionImpl) {
-                is MapCameraPosition -> positionImpl
+        val Default = MapCameraPosition(
+            position = GeoPoint.fromLatLong(
+                latitude = 0.0,
+                longitude = 0.0,
+            ),
+            zoom = 0.0,
+            bearing = 0.0,
+            tilt = 0.0,
+        )
+
+        fun from(position: IMapCameraPosition): MapCameraPosition {
+            return when(position) {
+                is MapCameraPosition -> position
                 else -> {
 //                    val altitude = calculateZoomLevelFromScale(
 //                        positionImpl.zoom,
 //                        positionImpl.target.latitude,
 //                        Resources.getSystem().displayMetrics.densityDpi.toDouble(),
 //                    ) * 2.0
-                    val altitude = calculateScaleFromZoomLevel(positionImpl.zoom)
+                    val altitude = calculateScaleFromZoomLevel(position.zoom)
                     MapCameraPosition(
-                        target = GeoPoint.fromLongLat(
-                            longitude = positionImpl.target.longitude,
-                            latitude = positionImpl.target.latitude,
+                        position = GeoPoint.fromLongLat(
+                            longitude = position.position.longitude,
+                            latitude = position.position.latitude,
                             altitude = altitude,
                         ),
-                        zoom = positionImpl.zoom,
-                        bearing = positionImpl.bearing,
-                        tilt = positionImpl.tilt,
-                        paddings = positionImpl.paddings,
+                        zoom = position.zoom,
+                        bearing = position.bearing,
+                        tilt = position.tilt,
+                        paddings = position.paddings,
                     )
                 }
             }
@@ -284,15 +295,15 @@ fun calculateCameraForOrbitParameters(
 }
 
 fun Camera.toMapCameraPosition() = MapCameraPosition(
-        target = GeoPoint.fromLongLat(
+        position = GeoPoint.fromLongLat(
             longitude = this.location.x,
             latitude = this.location.y,
-            altitude = this.location.z,
+            altitude = this.location.z ?: 0.0,
         ),
         zoom = altitudeToZoomLevel(
             altitude = this.location.z ?: 0.0,
         ),
         bearing = 360 - this.heading,
         tilt = this.pitch,
-        paddings = MapPaddings.Zeros,
+        paddings = MapPaddingsImpl.Zeros,
     )

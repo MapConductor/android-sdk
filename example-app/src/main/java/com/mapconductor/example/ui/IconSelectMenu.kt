@@ -1,6 +1,7 @@
 package com.mapconductor.example.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,6 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,40 +26,51 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.mapconductor.example.AppViewModelImpl
-import androidx.lifecycle.viewmodel.compose.viewModel
 
-data class IconItem(
+data class IconItem<T>(
     val key: String,
     val label: String,
-    @DrawableRes val iconResId: Int,
+    @DrawableRes val lightIconResId: Int,
+    @DrawableRes val darkIconResId: Int,
+    val value: T,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IconSelectMenu(viewModel: AppViewModelImpl = viewModel<AppViewModelImpl>()) {
+fun IconSelectMenu(
+    itemList: List<IconItem<*>>,
+    modifier: Modifier = Modifier,
+    selectedIndex: Int = 0,
+    isDark: Boolean = isSystemInDarkTheme(),
+    onSelect: (Int, IconItem<*>) -> Unit = { index, item ->
+        println("Selected index: $index, item: $item")
+    },
+) {
 
-    val itemList by viewModel.items.collectAsState()
-    val selectedItem by viewModel.selectedItem.collectAsState()
     var expanded by remember { mutableStateOf(false) }
+    val selected = itemList.get(selectedIndex)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
+        modifier = modifier,
         onExpandedChange = { expanded = !expanded }
     ) {
         TextField(
             readOnly = true,
-            value = selectedItem?.label ?: "",
+            value = selected.label,
             onValueChange = {},
             label = { Text("使用している地図SDK") },
             trailingIcon = {
                 Icon(Icons.Default.ArrowDropDown, contentDescription = "ドロップダウン")
             },
             leadingIcon = {
-                selectedItem?.let {
+                with(selected) {
                     Icon(
-                        painter = painterResource(id = it.iconResId),
-                        contentDescription = it.label,
+                        painter = painterResource(id = when(isDark) {
+                            true -> darkIconResId
+                            false -> lightIconResId
+                        }),
+                        contentDescription = label,
                         modifier = Modifier.size(30.dp),
                         tint = Color.Unspecified,
                     )
@@ -72,24 +83,29 @@ fun IconSelectMenu(viewModel: AppViewModelImpl = viewModel<AppViewModelImpl>()) 
 
         ExposedDropdownMenu(
             expanded = expanded,
+            modifier = modifier,
             onDismissRequest = { expanded = false }
         ) {
-            itemList.forEach { item ->
+            itemList.forEachIndexed { index, item ->
                 DropdownMenuItem(
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                painter = painterResource(id = item.iconResId),
+                                painter = painterResource(id = when(isDark) {
+                                    true -> item.darkIconResId
+                                    false -> item.lightIconResId
+                                }),
                                 contentDescription = item.label,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(30.dp),
+                                tint = Color.Unspecified,
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(item.label)
                         }
                     },
                     onClick = {
-                        viewModel.selectItem(item)
                         expanded = false
+                        onSelect(index, item)
                     }
                 )
             }
