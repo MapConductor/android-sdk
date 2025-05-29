@@ -1,73 +1,54 @@
 package com.mapconductor.googlemaps
 
+import androidx.annotation.Keep
 import com.google.android.gms.maps.model.CameraPosition
-import androidx.annotation.Keep // 必要に応じて @Keep も追加検討
-import com.mapconductor.core.GeoPointInterface
-import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.IMapCameraPosition
+import com.mapconductor.core.MapCameraPositionBase
 import com.mapconductor.core.MapPaddings
 import com.mapconductor.core.MapPaddingsImpl
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 
-interface MapCameraPositionGMapsImpl: MapCameraPositionImpl {
+interface MapCameraPositionGMaps: IMapCameraPosition {
     fun toCameraPosition(): CameraPosition
-
-    fun copy(
-        target: GeoPoint?,
-        zoom: Double?,
-        bearing: Double?,
-        tilt: Double?,
-        paddings: MapPaddingsImpl?,
-    ): MapCameraPositionGMapsImpl
 }
 
 @Keep
-data class MapCameraPosition @JvmOverloads constructor(
-    override val target: GeoPointInterface,
+data class MapCameraPosition(
+    override val position: IGeoPoint,
     override val zoom: Double = 2.0,
     override val bearing: Double = 0.0,
     override val tilt: Double = 0.0,
-    override val paddings: MapPaddingsImpl = MapPaddings.Zeros,
-): MapCameraPositionGMapsImpl {
+    override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
+): MapCameraPositionBase(position, zoom, bearing, tilt, paddings), MapCameraPositionGMaps {
 
     override fun toCameraPosition() =
         CameraPosition.builder()
-            .target(GeoPoint.fromImpl(target).toLatLng())
+            .target(GeoPoint.from(position).toLatLng())
             .zoom(zoom.toFloat())
             .tilt(tilt.toFloat())
             .bearing(bearing.toFloat())
             .build()
 
-    override fun copy(
-        target: GeoPoint?,
-        zoom: Double?,
-        bearing: Double?,
-        tilt: Double?,
-        paddings: MapPaddingsImpl?
-    ) = MapCameraPosition(
-        target = target ?: this.target,
-        zoom = zoom ?: this.zoom,
-        bearing = bearing ?: this.bearing,
-        tilt = tilt ?: this.tilt,
-        paddings = paddings ?: this.paddings,
-    )
-
     companion object {
-        fun fromImpl(positionImpl: MapCameraPositionImpl) = when(positionImpl) {
-            is MapCameraPosition -> positionImpl
+
+        fun from(position: IMapCameraPosition) = when(position) {
+            is MapCameraPosition -> position
             else -> MapCameraPosition(
-                target = GeoPoint.fromImpl(positionImpl.target),
-                zoom = positionImpl.zoom,
-                bearing = positionImpl.bearing,
-                tilt = positionImpl.tilt,
-                paddings = positionImpl.paddings,
+                position = GeoPoint.from(position.position),
+                zoom = position.zoom,
+                bearing = position.bearing,
+                tilt = position.tilt,
+                paddings = position.paddings,
             )
         }
     }
 }
 
 fun CameraPosition.toMapCameraPosition(
-    paddings: MapPaddingsImpl = MapPaddings.Zeros,
+    paddings: MapPaddings = MapPaddingsImpl.Zeros,
 ) = MapCameraPosition(
-        target = target.toGeoPoint(),
+        position = target.toGeoPoint(),
         zoom = zoom.toDouble(),
         bearing = bearing.toDouble(),
         tilt = tilt.toDouble(),

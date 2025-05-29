@@ -45,7 +45,7 @@ android {
 
 dependencies {
     compileOnly(libs.androidx.core.ktx)
-    compileOnly(libs.androidx.appcompat)
+    compileOnly(libs.androidx.foundation)
 
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.ui.tooling.preview)

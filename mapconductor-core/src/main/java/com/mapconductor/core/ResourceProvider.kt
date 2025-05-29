@@ -2,58 +2,53 @@ package com.mapconductor.core
 
 import android.content.Context
 import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
 import android.util.LruCache
 import androidx.annotation.Keep
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
+import com.mapconductor.core.marker.BitmapIcon
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 data class IconResource(
     val name: String,
-    val width: Int,
-    val height: Int,
-    val anchorX: Int,
-    val anchorY: Int,
+    val width: Double,
+    val height: Double,
+    val anchorX: Double,
+    val anchorY: Double,
     internal val resourceId: Int,
-)
-data class IconResourceWithBitmap(
-    val name: String,
-    val width: Int,
-    val height: Int,
-    val anchorX: Int,
-    val anchorY: Int,
-    val bitmap: Bitmap,
 )
 
 object ResourceProvider {
+    private val _initialized: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val initialized = _initialized.asStateFlow()
+
     private lateinit var appContext: Context
-    private val density = Resources.getSystem().displayMetrics.density.toDouble()
+    val density = Resources.getSystem().displayMetrics.density.toDouble()
 
     fun init(context: Context) {
         appContext = context.applicationContext
+        _initialized.value = true
     }
 
-    private val bitmapCache: LruCache<Int, Bitmap> by lazy {
+    fun toDp(value: Double): Double = value * density
+
+    private val bitmapCache: LruCache<Int, BitmapIcon> by lazy {
         // Get max memory size by bytes
         val maxMemory = Runtime.getRuntime().maxMemory()
         val cacheSize = maxMemory / 8
 
         // Cache bytes
-        object : LruCache<Int, Bitmap>(cacheSize.toInt()) {
-            override fun sizeOf(key: Int, bitmap: Bitmap): Int {
-                return bitmap.byteCount / 1024
+        object : LruCache<Int, BitmapIcon>(cacheSize.toInt()) {
+            override fun sizeOf(key: Int, iconRes: BitmapIcon): Int {
+                return iconRes.bitmap.byteCount / 1024
             }
         }
     }
     val DEFAULT_MARKER = IconResource(
         name = "DEFAULT_MARKER",
-        width = 42,
-        height = 42,
-        anchorX = 24,
-        anchorY = 42,
+        width = 42.0,
+        height = 42.0,
+        anchorX = 24.0,
+        anchorY = 42.0,
         resourceId = R.drawable.default_marker,
     )
 
@@ -61,62 +56,37 @@ object ResourceProvider {
         DEFAULT_MARKER.name to DEFAULT_MARKER,
     )
 
-    @Keep
-    fun getIconResourceWithBitmap(name: String): IconResourceWithBitmap? {
-        synchronized(bitmapCache) {
-            val icon = this.resourceIDs.get(name) ?: return null
-            val scaledWidth = (icon.width.toDouble() * density).toInt()
-            val scaledHeight = (icon.height.toDouble() * density).toInt()
-            val scaledAnchorX = (icon.anchorX.toDouble() * density).toInt()
-            val scaledAnchorY = (icon.anchorY.toDouble() * density).toInt()
-
-            // If we have the bitmap in cache, return it
-            bitmapCache.get(icon.resourceId)?.let {
-                return IconResourceWithBitmap(
-                    name = icon.name,
-                    width = scaledWidth,
-                    height = scaledHeight,
-                    anchorX = scaledAnchorX,
-                    anchorY = scaledAnchorY,
-                    bitmap = it,
-                )
-            }
-
-            val bitmap = getBitmapFromDrawableRes(
-                resId = icon.resourceId,
-                width = scaledWidth,
-                height = scaledHeight,
-            ) ?: return null
-            // Save into the cache
-            bitmapCache.put(icon.resourceId, bitmap)
-
-            return IconResourceWithBitmap(
-                name = icon.name,
-                width = scaledWidth,
-                height = scaledHeight,
-                anchorX = scaledAnchorX,
-                anchorY = scaledAnchorY,
-                bitmap = bitmap,
-            )
-        }
-    }
-
-    private fun getBitmapFromDrawableRes(resId: Int, width: Int, height: Int): Bitmap? {
-        val drawable = AppCompatResources.getDrawable(appContext, resId) ?: return null
-
-        return when (drawable) {
-            is BitmapDrawable -> {
-                drawable.bitmap.scale(width, height)
-            }
-            else -> {
-                val bitmap = createBitmap(width, height)
-                val canvas = Canvas(bitmap)
-                drawable.setBounds(0, 0, canvas.width, canvas.height)
-                drawable.draw(canvas)
-                return bitmap
-            }
-        }
-    }
+//    fun getIconResourceWithBitmap(name: String): BitmapIcon? {
+//        synchronized(bitmapCache) {
+//            val icon = this.resourceIDs.get(name) ?: return null
+//            val scaledWidth = toDp(icon.width.toDouble())
+//            val scaledHeight = toDp(icon.height.toDouble())
+//
+//            // If we have the bitmap in cache, return it
+//            bitmapCache.get(icon.resourceId)?.let {
+//                return it
+//            }
+//
+//            val bitmap = getBitmapFromDrawableRes(
+//                resId = icon.resourceId,
+//                width = scaledWidth,
+//                height = scaledHeight,
+//            ) ?: return null
+//
+//            // Save into the cache
+//            val iconRes = BitmapIcon(
+//                name = icon.name,
+//                width = scaledWidth,
+//                height = scaledHeight,
+//                anchorX = 0.5,
+//                anchorY = 1.0,
+//                bitmap = bitmap,
+//            )
+//            bitmapCache.put(icon.resourceId, iconRes)
+//
+//            return iconRes
+//        }
+//    }
 
     @Keep
     fun clearCache() {

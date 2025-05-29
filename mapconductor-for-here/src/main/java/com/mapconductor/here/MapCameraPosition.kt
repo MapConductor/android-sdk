@@ -6,59 +6,60 @@ import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraUpdate
 import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
-import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.IMapCameraPosition
+import com.mapconductor.core.MapCameraPositionBase
 import com.mapconductor.core.MapPaddings
 import com.mapconductor.core.MapPaddingsImpl
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 
-interface MapCameraPositionHereImpl: MapCameraPositionImpl {
+interface MapCameraPositionHere: IMapCameraPosition {
     fun toMapCameraUpdate(): MapCameraUpdate
-    fun copy(
-        target: GeoPoint? = null,
-        zoom: Double? = null,
-        bearing: Double? = null,
-        tilt: Double? = null,
-        paddings: MapPaddingsImpl? = null,
-    ): MapCameraPositionHereImpl
+    fun toCameraState(): MapCamera.State
 }
+
 @Keep
 data class MapCameraPosition @JvmOverloads constructor(
-    override val target: GeoPoint,
+    override val position: IGeoPoint,
     override val zoom: Double = 2.0,
     override val bearing: Double = 0.0,
     override val tilt: Double = 0.0,
-    override val paddings: MapPaddingsImpl = MapPaddings.Zeros,
-): MapCameraPositionHereImpl {
-
-    override fun copy(
-        target: GeoPoint?,
-        zoom: Double?,
-        bearing: Double?,
-        tilt: Double?,
-        paddings: MapPaddingsImpl?
-    ): MapCameraPositionHereImpl = MapCameraPosition(
-        target = target ?: this.target,
-        zoom = zoom ?: this.zoom,
-        bearing = bearing ?: this.bearing,
-        tilt = tilt ?: this.tilt,
-        paddings = paddings ?: this.paddings
-    )
+    override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
+): MapCameraPositionBase(position, zoom, bearing, tilt, paddings), MapCameraPositionHere {
 
     override fun toMapCameraUpdate() = MapCameraUpdateFactory.lookAt(
-        target.toGeoCoordinates().toUpdate(),
+        GeoPoint.from(position).toGeoCoordinates().toUpdate(),
         GeoOrientation(bearing, tilt).toUpdate(),
-        MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, zoom)
+        MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, zoom),
+    )
+
+    override fun toCameraState() = MapCamera.State(
+        GeoPoint.from(position).toGeoCoordinates(),
+        GeoOrientation(bearing, tilt),
+        0.0,
+        zoom,
     )
 
     companion object {
-        fun fromImpl(mapCameraPositionImpl: MapCameraPositionImpl) =
-            when(mapCameraPositionImpl) {
-                is MapCameraPosition -> mapCameraPositionImpl
+        val Default = MapCameraPosition(
+            position = GeoPoint.fromLatLong(
+                latitude = 0.0,
+                longitude = 0.0,
+            ),
+            zoom = 0.0,
+            bearing = 0.0,
+            tilt = 0.0,
+        )
+
+        fun from(position: IMapCameraPosition) =
+            when(position) {
+                is MapCameraPosition -> position
                 else -> MapCameraPosition(
-                    target = GeoPoint.fromImpl(mapCameraPositionImpl.target),
-                    zoom = mapCameraPositionImpl.zoom,
-                    bearing = mapCameraPositionImpl.bearing,
-                    tilt = mapCameraPositionImpl.tilt,
-                    paddings = MapPaddings.fromImpl(mapCameraPositionImpl.paddings),
+                    position = GeoPoint.from(position.position),
+                    zoom = position.zoom,
+                    bearing = position.bearing,
+                    tilt = position.tilt,
+                    paddings = position.paddings,
                 )
             }
     }
@@ -66,7 +67,7 @@ data class MapCameraPosition @JvmOverloads constructor(
 
 fun MapCamera.State.toMapCameraPosition() =
     MapCameraPosition(
-        target = targetCoordinates.toGeoPoint(),
+        position = targetCoordinates.toGeoPoint(),
         zoom = zoomLevel,
         bearing = this.orientationAtTarget.bearing,
         tilt = this.orientationAtTarget.tilt,

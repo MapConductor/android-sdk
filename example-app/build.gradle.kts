@@ -73,6 +73,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.appcompat)
+
 
     // Google Maps SDK
     implementation(libs.play.services.maps)
@@ -83,17 +85,18 @@ dependencies {
     implementation(libs.mapbox.android)
 
     // ArcGIS Maps for Kotlin - SDK dependency
-//    implementation(libs.arcgis.maps.kotlin)
-//    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-//    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-//    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+    implementation(libs.arcgis.maps.kotlin)
+    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     // Map Conductor
     implementation(project(":mapconductor-core"))
     implementation(project(":mapconductor-for-googlemaps"))
     implementation(project(":mapconductor-for-here"))
     implementation(project(":mapconductor-for-mapbox"))
-//    implementation(project(":mapconductor-for-arcgis"))
+    implementation(project(":mapconductor-for-arcgis"))
+    implementation(libs.androidx.vectordrawable)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core)

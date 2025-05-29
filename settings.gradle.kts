@@ -36,5 +36,6 @@ include(
     ":mapconductor-for-here",
     ":mapconductor-for-mapbox",
     ":mapconductor-for-googlemaps",
+    ":mapconductor-for-arcgis",
     ":mapconductor-core"
 )

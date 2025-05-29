@@ -1,6 +1,6 @@
 package com.mapconductor.here
 
-import com.mapconductor.core.MapViewScope
+import com.mapconductor.core.map.MapViewScope
 
 class HereMapViewScope: MapViewScope() {
 }

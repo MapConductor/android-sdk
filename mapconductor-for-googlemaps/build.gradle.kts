@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -46,8 +44,9 @@ android {
 
 dependencies {
 
+    compileOnly(libs.androidx.core.ktx)
     compileOnly(libs.androidx.ui)
-//    compileOnly(libs.androidx.foundation)
+    compileOnly(libs.androidx.foundation)
     compileOnly(libs.androidx.ui.tooling.preview)
     compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）

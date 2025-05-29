@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
-    alias(libs.plugins.kotlin.compose) // ← 任意（配布したい場合）
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -48,6 +46,7 @@ dependencies {
 
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.ui.tooling.preview)
+    compileOnly(libs.androidx.core.ktx)
     compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）
     compileOnly(libs.androidx.lifecycle.runtime.ktx)

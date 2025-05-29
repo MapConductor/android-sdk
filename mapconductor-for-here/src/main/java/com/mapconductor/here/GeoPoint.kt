@@ -1,46 +1,13 @@
 package com.mapconductor.here
 
-import androidx.annotation.Keep
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoCoordinatesUpdate
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.GeoOrientationUpdate
-import com.mapconductor.core.GeoPointBase
-import com.mapconductor.core.GeoPointInterface
+import com.mapconductor.core.features.GeoPoint
 
-interface GeoPointHereImpl: GeoPointInterface {
-    fun toGeoCoordinates(): GeoCoordinates
-
-}
-
-@ConsistentCopyVisibility
-data class GeoPoint private constructor(
-    override val latitude: Double,
-    override val longitude: Double,
-): GeoPointBase(latitude, longitude), GeoPointHereImpl {
-    override fun toGeoCoordinates() = GeoCoordinates(latitude, longitude)
-
-    companion object {
-        @Keep
-        @JvmStatic
-        fun fromLatLong(latitude: Double, longitude: Double) = GeoPoint(latitude, longitude)
-
-        @Keep
-        @JvmStatic
-        fun fromLongLat(longitude: Double, latitude: Double) = GeoPoint(latitude, longitude)
-
-        @Keep
-        @JvmStatic
-        fun fromImpl(geoPointImpl: GeoPointInterface) = when(geoPointImpl) {
-            is GeoPoint -> geoPointImpl
-            else -> GeoPoint(
-                geoPointImpl.latitude,
-                geoPointImpl.longitude,
-            )
-        }
-    }
-}
-
-internal fun GeoCoordinates.toGeoPoint() = GeoPoint.fromLatLong(latitude, longitude)
-internal fun GeoCoordinates.toUpdate() = GeoCoordinatesUpdate(this)
-internal fun GeoOrientation.toUpdate() = GeoOrientationUpdate(this)
+fun GeoPoint.toGeoCoordinates() : GeoCoordinates = GeoCoordinates(latitude, longitude)
+fun GeoPoint.Companion.from(geoCoordinates: GeoCoordinates) = GeoPoint(geoCoordinates.latitude, geoCoordinates.longitude)
+fun GeoCoordinates.toGeoPoint() = GeoPoint.fromLatLong(latitude, longitude)
+fun GeoCoordinates.toUpdate() = GeoCoordinatesUpdate(this)
+fun GeoOrientation.toUpdate() = GeoOrientationUpdate(this)
