@@ -21,14 +21,24 @@ interface MapViewController {
     fun toScreenOffset(position: IGeoPoint): Offset?
 }
 
+interface MarkerAddParams {
+    val entry: MarkerEntry
+    val icon: BitmapIcon
+}
+interface MarkerUpdateParams<ActualMarker>  {
+    val entry: MarkerEntry
+    val icon: BitmapIcon
+    val marker: ActualMarker
+}
+
 class BaseMapViewController<
         ActualMarker: Any,   // Actual marker instance type
     >(
     val geocell: HexGeocell = HexGeocell(WebMercator),
     val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val onMarkerRemove: (id: String, marker: ActualMarker) -> Unit,
-    val onMarkerAdd: (entry: MarkerEntry, bitmapIcon: BitmapIcon) -> ActualMarker?,
-    val onMarkerChanged: (marker: ActualMarker, entry: MarkerEntry, bitmapIcon: BitmapIcon) -> Unit,
+    val onMarkerAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
+    val onMarkerChanged: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
 ) {
     val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
 
@@ -67,42 +77,43 @@ class BaseMapViewController<
 
         // Add new markers
         if (added.isNotEmpty()) {
-            val willAdd: List<Pair<MarkerEntry, BitmapIcon>> = added.map { entry ->
+            val willAdd: List<MarkerAddParams> = added.map { entry ->
                 val markerIcon = entry.state.icon?.let {
                     markerManager.getBitmapIcon(it)
                 } ?: defaultIcon
-                Pair(entry, markerIcon)
+                object : MarkerAddParams {
+                    override val entry: MarkerEntry = entry
+                    override val icon: BitmapIcon = markerIcon
+                }
             }
-            withContext(coroutine.coroutineContext) {
-                willAdd.forEach {
-                    val entry = it.first
-                    val markerIcon = it.second
-                    val marker = onMarkerAdd(entry, markerIcon)
-                    marker?.also {
-                        markerManager.registerEntry(entry, marker)
-                    }
+            val actualMarkers: List<ActualMarker?> = withContext(coroutine.coroutineContext) {
+                return@withContext onMarkerAdd.invoke(willAdd)
+            }
+            actualMarkers.forEachIndexed { index, actualMarker ->
+                actualMarker?.let {
+                    val entry = added[index]
+                    markerManager.registerEntry(entry, actualMarker)
                 }
             }
         }
 
         // Update changed markers
         if (updated.isNotEmpty()) {
-            val willUpdate: List<Pair<MarkerEntry, BitmapIcon>> = updated.map { entry ->
+            val willUpdate: List<MarkerUpdateParams<ActualMarker>> = updated.map { entry ->
                 val markerIcon = entry.state.icon?.let {
                     markerManager.getBitmapIcon(it)
                 } ?: defaultIcon
                 markerManager.updateEntry(entry)
-                Pair(entry, markerIcon)
+                val marker = markerManager.getMarker(entry.id)!!
+                object : MarkerUpdateParams<ActualMarker> {
+                    override val entry: MarkerEntry = entry
+                    override val icon: BitmapIcon = markerIcon
+                    override val marker: ActualMarker = marker
+                }
             }
 
             withContext(coroutine.coroutineContext) {
-                willUpdate.forEach {
-                    val entry = it.first
-                    val icon = it.second
-                    markerManager.getMarker(entry.id)?.also { marker ->
-                        onMarkerChanged(marker, entry, icon)
-                    }
-                }
+                onMarkerChanged(willUpdate)
             }
         }
     }

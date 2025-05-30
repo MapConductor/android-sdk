@@ -117,6 +117,7 @@ fun DemoAppScreen(
         fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
         strokeColor = Color.LightGray.toArgb()
     )
+
     val messages = remember { mutableStateListOf<ToastMessage>() }
 
     fun showToast(text: String) {

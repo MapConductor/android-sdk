@@ -37,6 +37,7 @@ fun MapArea(
             MapViewContainer(
                 state = state,
             ) {
+
                 markers.forEach { state ->
                     Marker(
                         state = state,
