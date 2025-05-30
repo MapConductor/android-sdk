@@ -1,11 +1,11 @@
 package com.mapconductor.core.projection
 
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.Offset
+import com.mapconductor.core.features.IGeoPoint
+import kotlin.math.atan
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.tan
-import kotlin.math.atan
 
 object WebMercator: Projection {
     override fun project(position: IGeoPoint): Offset {

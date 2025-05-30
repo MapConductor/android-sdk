@@ -53,28 +53,31 @@ internal class HereMapController(
                 eventHandlerRef.get()?.onMarkerRemove(id)
             }
         },
-        onMarkerAdd = { entry, bitmapIcon ->
-            val marker = MapMarker(
-                GeoPoint.from(entry.state.position).toGeoCoordinates(),
-                bitmapIcon.toMapImage(),
-                bitmapIcon.toAnchor2D(),
-            ).apply {
-                drawOrder = calculateZIndex(entry.state.position).toInt()
-                metadata = Metadata().apply {
-                    setString("id", entry.state.id)
+        onMarkerAdd = { newMarkers ->
+            val markers = newMarkers.map { params ->
+                val marker = MapMarker(
+                    GeoPoint.from(params.entry.state.position).toGeoCoordinates(),
+                    params.icon.toMapImage(),
+                    params.icon.toAnchor2D(),
+                ).apply {
+                    drawOrder = calculateZIndex(params.entry.state.position).toInt()
+                    metadata = Metadata().apply {
+                        setString("id", params.entry.state.id)
+                    }
                 }
+                return@map marker
             }
-            holder.mapView.mapScene.addMapMarker(marker)
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerAdd(entry.state)
-            }
-            marker
+
+            holder.mapView.mapScene.addMapMarkers(markers)
+            return@BaseMapViewController markers
         },
-        onMarkerChanged = { marker, entry, bitmapIcon ->
-            // TODO: アイコンに変更があったかどうかを比較
-            marker.image = bitmapIcon.toMapImage()
-            marker.coordinates = GeoPoint.from(entry.state.position).toGeoCoordinates()
-            marker.anchor = bitmapIcon.toAnchor2D()
+        onMarkerChanged = { changes ->
+            changes.forEach { params ->
+                // TODO: アイコンに変更があったかどうかを比較
+                params.marker.image = params.icon.toMapImage()
+                params.marker.coordinates = GeoPoint.from(params.entry.state.position).toGeoCoordinates()
+                params.marker.anchor = params.icon.toAnchor2D()
+            }
         },
     )
 
