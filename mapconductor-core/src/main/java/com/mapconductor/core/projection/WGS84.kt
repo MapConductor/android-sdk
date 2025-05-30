@@ -1,7 +1,7 @@
 package com.mapconductor.core.projection
 
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.Offset
+import com.mapconductor.core.features.IGeoPoint
 
 /*
  * Copyright 2013 Google Inc.

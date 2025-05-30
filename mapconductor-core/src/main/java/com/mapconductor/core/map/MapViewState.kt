@@ -1,9 +1,9 @@
 package com.mapconductor.core.map
 
 import android.util.Log
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.IMapCameraPosition
 import com.mapconductor.core.MapDesignType
+import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
