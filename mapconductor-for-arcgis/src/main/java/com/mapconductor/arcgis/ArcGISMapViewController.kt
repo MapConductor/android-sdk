@@ -44,51 +44,54 @@ class ArcGISMapViewController(
                 eventHandlerRef.get()?.onMarkerRemove(id)
             }
         },
-        onMarkerAdd = { entry, bitmapIcon ->
-            val bitmapDrawable = bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
-            val density = ResourceProvider.density
-            val width = (bitmapIcon.size.width / density)
-            val height = (bitmapIcon.size.height / density)
-            val anchorX = (bitmapIcon.anchor.x - 0.5) * width
-            val anchorY = (bitmapIcon.anchor.y - 0.5) * height
+        onMarkerAdd = { newMarkers ->
+            val markers = newMarkers.map { params ->
+                val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
+                val density = ResourceProvider.density
+                val width = (params.icon.size.width / density)
+                val height = (params.icon.size.height / density)
+                val anchorX = (params.icon.anchor.x - 0.5) * width
+                val anchorY = (params.icon.anchor.y - 0.5) * height
 
-            val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                it.width = width.toFloat()
-                it.height = height.toFloat()
-                it.offsetX = anchorX.toFloat()
-                it.offsetY = anchorY.toFloat()
+                val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                    it.width = width.toFloat()
+                    it.height = height.toFloat()
+                    it.offsetX = anchorX.toFloat()
+                    it.offsetY = anchorY.toFloat()
+                }
+
+                val marker = Graphic(
+                    geometry = params.entry.state.position.toPoint(),
+                    symbol = pictureSymbolFuture,
+                )
+                marker.attributes.set("id", params.entry.id)
+                return@map marker
             }
 
-            val marker = Graphic(
-                geometry = entry.state.position.toPoint(),
-                symbol = pictureSymbolFuture,
-            )
-            marker.attributes.set("id", entry.id)
-            this.markerLayer.graphics.add(marker)
+            this.markerLayer.graphics.addAll(markers)
 
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerAdd(entry.state)
-            }
-
-            return@BaseMapViewController marker
+            return@BaseMapViewController markers
         },
-        onMarkerChanged = { marker, entry, bitmapIcon ->
-            val bitmapDrawable = bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
-            val density = ResourceProvider.density
-            val width = (bitmapIcon.size.width / density)
-            val height = (bitmapIcon.size.height / density)
-            val anchorX = (bitmapIcon.anchor.x - 0.5) * width
-            val anchorY = (bitmapIcon.anchor.y - 0.5) * height
+        onMarkerChanged = { changes ->
+            changes.forEach { params ->
+                // TODO: アイコンに変更があったかどうかを比較
+                val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
+                val density = ResourceProvider.density
+                val width = (params.icon.size.width / density)
+                val height = (params.icon.size.height / density)
+                val anchorX = (params.icon.anchor.x - 0.5) * width
+                val anchorY = (params.icon.anchor.y - 0.5) * height
 
-            val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                it.width = width.toFloat()
-                it.height = height.toFloat()
-                it.offsetX = anchorX.toFloat()
-                it.offsetY = anchorY.toFloat()
+                val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                    it.width = width.toFloat()
+                    it.height = height.toFloat()
+                    it.offsetX = anchorX.toFloat()
+                    it.offsetY = anchorY.toFloat()
+                }
+
+                params.marker.geometry = params.entry.state.position.toPoint()
+                params.marker.symbol = pictureSymbolFuture
             }
-
-            marker.geometry = entry.state.position.toPoint()
-            marker.symbol = pictureSymbolFuture
         },
     )
 

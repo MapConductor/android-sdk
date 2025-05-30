@@ -84,34 +84,32 @@ internal class MapboxMapViewController(
                 eventHandlerRef.get()?.onMarkerRemove(id)
             }
         },
-        onMarkerAdd = { entry, bitmapIcon ->
-            val option = bitmapIcon.toPointAnnotationOptions()
-                .withPoint(
-                    GeoPoint.from(entry.state.position).toPoint(),
-                )
-
-            val tag = JsonObject().apply {
-                addProperty("id", entry.id)
-            }
-            val marker = pointAnnotationManager.create(option = option)
-            marker.setData(tag)
-
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerAdd(entry.state)
+        onMarkerAdd = { newMarkers ->
+            val options = newMarkers.map { params ->
+                return@map params.icon.toPointAnnotationOptions()
+                    .withPoint(
+                        GeoPoint.from(params.entry.state.position).toPoint(),
+                    )
+                    .withData(JsonObject().apply {
+                        addProperty("id", params.entry.id)
+                    })
             }
 
-            return@BaseMapViewController marker
+            return@BaseMapViewController pointAnnotationManager.create(options)
         },
-        onMarkerChanged = { marker, entry, bitmapIcon ->
-            val option = bitmapIcon.toPointAnnotationOptions()
-                .withPoint(
-                    GeoPoint.from(entry.state.position).toPoint(),
-                )
-            marker.point = GeoPoint.from(entry.state.position).toPoint()
-            marker.iconSize = option.iconSize
-            marker.iconImage = option.iconImage
-            marker.iconAnchor = option.iconAnchor
-            marker.iconOffset = option.iconOffset
+        onMarkerChanged = { changes ->
+            changes.forEach { params ->
+                // TODO: アイコンに変更があったかどうかを比較
+                val option = params.icon.toPointAnnotationOptions()
+                    .withPoint(
+                        GeoPoint.from(params.entry.state.position).toPoint(),
+                    )
+                params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
+                params.marker.iconSize = option.iconSize
+                params.marker.iconImage = option.iconImage
+                params.marker.iconAnchor = option.iconAnchor
+                params.marker.iconOffset = option.iconOffset
+            }
         },
     )
 

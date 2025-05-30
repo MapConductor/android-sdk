@@ -47,27 +47,27 @@ class GoogleMapViewController(
                 eventHandlerRef.get()?.onMarkerRemove(id)
             }
          },
-        onMarkerAdd = { entry, bitmapIcon ->
-            val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmapIcon.bitmap)
+        onMarkerAdd = { newMarkers ->
+            newMarkers.map { params ->
+                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
 
-            val options = MarkerOptions()
-                .position(GeoPoint.from(entry.state.position).toLatLng())
-                .anchor(bitmapIcon.anchor.x.toFloat(), bitmapIcon.anchor.y.toFloat())
-                .icon(bitmapDescriptor)
-                .draggable(true)
-
-            return@BaseMapViewController holder.map.addMarker(options)?.let { marker ->
-                marker.tag = entry.state.id
-                coroutine.launch {
-                    eventHandlerRef.get()?.onMarkerAdd(entry.state)
+                val options = MarkerOptions()
+                    .position(GeoPoint.from(params.entry.state.position).toLatLng())
+                    .anchor(params.icon.anchor.x.toFloat(), params.icon.anchor.y.toFloat())
+                    .icon(bitmapDescriptor)
+                    .draggable(true)
+                val marker = holder.map.addMarker(options)?.also {
+                    it.tag = params.entry.state.id
                 }
-                return@let marker
+                return@map marker
             }
         },
-        onMarkerChanged = { marker, entry, bitmapIcon ->
-            val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmapIcon.bitmap)
-            marker.position = GeoPoint.from(entry.state.position).toLatLng()
-            marker.setIcon(bitmapDescriptor)
+        onMarkerChanged = { changes ->
+            changes.forEach { params ->
+                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
+                params.marker.position = GeoPoint.from(params.entry.state.position).toLatLng()
+                params.marker.setIcon(bitmapDescriptor)
+            }
         },
     )
 
