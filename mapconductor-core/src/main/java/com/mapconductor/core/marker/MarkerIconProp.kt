@@ -1,18 +1,8 @@
 package com.mapconductor.core.marker
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import androidx.annotation.DrawableRes
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.createBitmap
 import com.mapconductor.core.Offset
 
 data class MarkerIconProp(
