@@ -282,8 +282,8 @@ fun calculateCameraForOrbitParameters(
     // 5. カメラの位置 (Location)
     // ターゲット地点から、逆方位 (cameraHeadingOffset) に水平距離だけ離れた地点を計算
     val cameraCoordinates = calculateDestinationPoint(
-        targetPoint.y, // latitude
-        targetPoint.x, // longitude
+        targetPoint.x, // latitude
+        targetPoint.y, // longitude
         cameraHeadingOffset, // ターゲットからカメラへの方位
         horizontalDistance
     )
