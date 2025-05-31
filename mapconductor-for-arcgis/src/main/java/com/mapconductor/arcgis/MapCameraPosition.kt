@@ -30,12 +30,15 @@ data class MapCameraPosition @JvmOverloads constructor(
     override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
 ): MapCameraPositionArcGIS {
 
-    override fun toCamera(): Camera = calculateCameraForOrbitParameters(
-        targetPoint = GeoPoint.from(position).toPoint(),
-        distance = zoomLevelToAltitude(zoom),
-        cameraHeadingOffset = 360 - (bearing + 180),
-        cameraPitchOffset = tilt,
-    )
+    override fun toCamera(): Camera {
+        val targetPoint = GeoPoint.from(position).toPoint()
+        return calculateCameraForOrbitParameters(
+            targetPoint = targetPoint,
+            distance = zoomLevelToAltitude(zoom),
+            cameraHeadingOffset = 360 - (bearing + 180),
+            cameraPitchOffset = tilt,
+        )
+    }
 
 
 //
@@ -54,15 +57,6 @@ data class MapCameraPosition @JvmOverloads constructor(
 //    )
 
     companion object {
-        val Default = MapCameraPosition(
-            position = GeoPoint.fromLatLong(
-                latitude = 0.0,
-                longitude = 0.0,
-            ),
-            zoom = 0.0,
-            bearing = 0.0,
-            tilt = 0.0,
-        )
 
         fun from(position: IMapCameraPosition): MapCameraPosition {
             return when(position) {
@@ -176,7 +170,7 @@ fun zoomLevelToAltitude(zoomLevel: Double): Double {
  * @param distance 距離 (メートル)
  * @return Pair<Double, Double> 新しい地点の緯度と経度 (度)
  */
-fun calculateDestinationPoint(lat: Double, lon: Double, bearing: Double, distance: Double): Pair<Double, Double> {
+fun calculateDestinationPoint(lat: Double, lon: Double, bearing: Double, distance: Double): IGeoPoint {
     val latRad = lat.toRadians()
     val lonRad = lon.toRadians()
     val bearingRad = bearing.toRadians()
@@ -191,7 +185,11 @@ fun calculateDestinationPoint(lat: Double, lon: Double, bearing: Double, distanc
     // 経度を -180 ～ +180 の範囲に正規化 (atan2の結果による)
     destLonRad = (destLonRad + 3 * PI) % (2 * PI) - PI
 
-    return Pair(destLatRad.toDegrees(), destLonRad.toDegrees())
+    return object : IGeoPoint {
+        override val latitude: Double get() = destLatRad.toDegrees()
+        override val longitude: Double get() = destLonRad.toDegrees()
+        override val altitude: Double? get() = null
+    }
 }
 /**
  * ArcGISの高度 (メートル単位) を Google Maps のズームレベル (近似値) に変換します。
@@ -282,16 +280,28 @@ fun calculateCameraForOrbitParameters(
     // 5. カメラの位置 (Location)
     // ターゲット地点から、逆方位 (cameraHeadingOffset) に水平距離だけ離れた地点を計算
     val cameraCoordinates = calculateDestinationPoint(
-        targetPoint.y, // latitude
-        targetPoint.x, // longitude
-        cameraHeadingOffset, // ターゲットからカメラへの方位
-        horizontalDistance
+        lat = targetPoint.y, // latitude
+        lon = targetPoint.x, // longitude
+        bearing = cameraHeadingOffset, // ターゲットからカメラへの方位
+        distance = horizontalDistance
     )
 
-    val cameraLocation = Point(cameraCoordinates.second, cameraCoordinates.first, altitude, targetPoint.spatialReference)
+    val cameraLocation = Point(
+        x = cameraCoordinates.longitude,
+        y = cameraCoordinates.latitude,
+        z = altitude,
+        spatialReference = targetPoint.spatialReference,
+    )
 
     // 6. 最終的なCameraオブジェクトを作成
-    return Camera(cameraLocation, finalHeading, finalPitch, 0.0) // roll = 0
+    return Camera(
+        latitude = cameraLocation.y,
+        longitude = cameraLocation.x,
+        altitude = cameraLocation.z ?: 0.0,
+        heading = finalHeading,
+        pitch = finalPitch,
+        roll = 0.0,
+    )
 }
 
 fun Camera.toMapCameraPosition() = MapCameraPosition(

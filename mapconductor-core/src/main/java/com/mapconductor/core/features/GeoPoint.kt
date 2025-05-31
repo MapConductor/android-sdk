@@ -55,8 +55,9 @@ class GeoPoint(
         fun from(position: IGeoPoint) = when(position) {
             is GeoPoint -> position
             else -> GeoPoint(
-                position.latitude,
-                position.longitude,
+                latitude = position.latitude,
+                longitude = position.longitude,
+                altitude = position.altitude ?: 0.0,
             )
         }
     }
