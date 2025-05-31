@@ -78,24 +78,24 @@ internal class MapboxMapViewController(
     private val baseMapViewController = BaseMapViewController<PointAnnotation>(
         coroutine = coroutine,
         onMarkerRemove = { id, marker ->
-            pointAnnotationManager.delete(marker)
-
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerRemove(id)
+            synchronized(pointAnnotationManager) {
+                pointAnnotationManager.delete(marker)
             }
         },
         onMarkerAdd = { newMarkers ->
-            val options = newMarkers.map { params ->
-                return@map params.icon.toPointAnnotationOptions()
-                    .withPoint(
-                        GeoPoint.from(params.entry.state.position).toPoint(),
-                    )
-                    .withData(JsonObject().apply {
-                        addProperty("id", params.entry.id)
-                    })
+            synchronized(pointAnnotationManager) {
+                val options = newMarkers.map { params ->
+                    return@map params.icon.toPointAnnotationOptions()
+                        .withPoint(
+                            GeoPoint.from(params.entry.state.position).toPoint(),
+                        )
+                        .withData(JsonObject().apply {
+                            addProperty("id", params.entry.id)
+                        })
+                }
+                return@BaseMapViewController pointAnnotationManager.create(options)
             }
 
-            return@BaseMapViewController pointAnnotationManager.create(options)
         },
         onMarkerChanged = { changes ->
             changes.forEach { params ->
