@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -18,14 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.MapOverlayRegistry
@@ -142,37 +139,33 @@ fun <
             }
         }
     }
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .clipToBounds(),
-    ) {
-        val controller = controllerRef.value
-        val cameraPosition = state.mapCameraPosition.collectAsState().value
+    val controller = controllerRef.value
+    val cameraPosition = state.mapCameraPosition.collectAsState().value
 
-        if (controller != null && cameraPosition != null) {
+    if (controller != null && cameraPosition != null) {
+
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .clipToBounds(),
+        ) {
             bubbles.forEach { entry ->
                 val marker = entry.state.marker.value ?: return@forEach
                 val position = marker.position
                 val icon = marker.icon ?: return@forEach
-                val infoAnchor = icon.infoAnchor
-                val iconSize = icon.size
-                val iconAnchor = icon.anchor
                 val iconScale = icon.scale ?: 2f
-                val screenOffset = controller.toScreenOffset(position) ?: return@forEach
-
-                val offset = Offset(
-                    (screenOffset.x - iconSize.width * iconScale * (iconAnchor.x - 0.5)).toFloat(),
-                    (screenOffset.y - iconSize.height * iconScale * (iconAnchor.y - 0.5)).toFloat()
-                )
+                val positionOffset = controller.toScreenOffset(position) ?: return@forEach
 
                 InfoWindowCompose(
-                    screenOffset = offset,
-                    anchor = Offset(
-                        (infoAnchor.x - 0.5f) * iconScale,
-                        infoAnchor.y * iconScale,
-                    ),
+                    positionOffset = positionOffset,
+                    tailOffset = entry.state.tailOffset,
                     content = entry.content,
+                    iconSize = Size(
+                        icon.size.width * iconScale,
+                        icon.size.height * iconScale,
+                    ),
+                    iconOffset = icon.anchor,
+                    infoAnchorOffset = icon.infoAnchor,
                 )
             }
         }
