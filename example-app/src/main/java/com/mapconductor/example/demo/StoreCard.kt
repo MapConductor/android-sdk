@@ -113,14 +113,15 @@ fun StoreCard(
     fun PortraitLayout(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier
+                .wrapContentSize()
         ) {
             BackgroundImage()
-            Column(modifier = Modifier.padding(10.dp)) {
-                StoreInfo(modifier = Modifier.padding(10.dp))
+            Column(modifier = Modifier) {
+                StoreInfo(modifier = Modifier)
                 CallButtonPortrait(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(4.dp)
                 )
             }
         }
@@ -130,11 +131,11 @@ fun StoreCard(
     fun LandscapeLayout(modifier: Modifier = Modifier) {
         Box(modifier = modifier) {
             BackgroundImage()
-            StoreInfo(modifier = Modifier.padding(10.dp))
+            StoreInfo(modifier = Modifier)
             CallButtonLandScape(
                 modifier = Modifier
                     .align(alignment = Alignment.CenterEnd)
-                    .padding(end = 10.dp)
+                    .padding(end = 4.dp)
             )
         }
     }

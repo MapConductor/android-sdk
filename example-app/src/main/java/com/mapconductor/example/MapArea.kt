@@ -7,53 +7,73 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.info.InfoBubble
+import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.MarkerClickHandler
+import com.mapconductor.core.marker.OnMarkerClickHandler
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.example.demo.StoreCard
 
 @Composable
 fun MapArea(
     state: MapViewState<*>?,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
-    onMarkerClickHandler: MarkerClickHandler = {},
-    onCallButtonClick: MarkerClickHandler = {},
+//    onMarkerClickHandler: MarkerClickHandler = {},
+    onCallButtonClick: OnMarkerClickHandler = {},
 ) {
     val camera = state?.mapCameraPosition?.collectAsStateWithLifecycle()?.value
     val darkTheme: Boolean = isSystemInDarkTheme()
-    val bubbleColor = if (darkTheme) Color.Black else Color.White
-    val context = LocalContext.current
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+    val infoBubbleState by remember { mutableStateOf(InfoBubbleState()) }
+    val bubbleColor by remember { mutableStateOf(if (darkTheme) Color.Black.copy(alpha = 0.5f) else Color.White) }
+//    infoBubbleState.bubbleColor = bubbleColor
 
-    Box(
-        modifier = modifier,
-    ) {
-        if (state != null) {
+    val onMapClickHandler = { _: GeoPoint ->
+        selectedMarker = null
+        infoBubbleState.close()
+    }
+    val onMarkerClickHandler = { state: MarkerState -> selectedMarker = state }
+
+    state?.let { mapViewState ->
+        Box(
+            modifier = modifier,
+        ) {
             MapViewContainer(
-                state = state,
+                state = mapViewState,
+                onMapClick = onMapClickHandler,
             ) {
-
-                markers.forEach { state ->
+                markers.forEach { markerState ->
                     Marker(
-                        state = state,
+                        state = markerState,
                         onClick = onMarkerClickHandler,
+                    )
+                }
+
+                selectedMarker?.let {
+                    infoBubbleState.open(it)
+
+                    InfoBubble(
+                        bubbleColor = bubbleColor,
+                        state = infoBubbleState
                     ) {
-//                        InfoBubble(
-//                            markerState = state,
-//                            bubbleColor = bubbleColor,
-//                            contentPadding = 0.dp,
-//                        ) {
-//                            StoreCard(
-//                                onClick = {
-//                                    onCallButtonClick(props)
-//                                }
-//                            )
-//                        }
+                        StoreCard(
+                            onClick = {
+                                onCallButtonClick(it)
+                            }
+                        )
                     }
                 }
             }
@@ -73,11 +93,6 @@ fun MapArea(
                 Text("bearing: ${camera?.bearing}", color = Color.Black)
                 Text("tilt: ${camera?.tilt}", color = Color.Black)
             }
-
-        } else {
-            Text(
-                text = "Loading...",
-            )
         }
     }
 }

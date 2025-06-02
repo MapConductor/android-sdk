@@ -28,16 +28,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.util.UUID
 
-interface IArcGISMapViewState: MapViewState<String> {
-
-}
+interface IArcGISMapViewState: MapViewState<String>
 
 class ArcGISMapViewState(
     override val stateId: String,
     override val initCameraPosition: IMapCameraPosition,
     override val mapDesignType: ArcGISDesign
 
-): MapViewStateImpl<String>(), IArcGISMapViewState, IArcGISMapEventHandler {
+): MapViewStateImpl<String>(), IArcGISMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
@@ -83,16 +81,8 @@ class ArcGISMapViewState(
         // Do nothing here
     }
 
-    override fun onCameraMove(cameraPosition: Camera) {
+    internal fun OnCameraChange(cameraPosition: Camera) {
         this._cameraPosition.value = cameraPosition
-    }
-
-    override fun onMarkerRemove(id: String) {
-        // Do nothing here
-    }
-
-    override fun onMarkerAdd(state: MarkerState) {
-        // Do nothing here
     }
 }
 

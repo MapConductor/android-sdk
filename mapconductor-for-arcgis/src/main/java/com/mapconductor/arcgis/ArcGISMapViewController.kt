@@ -2,22 +2,26 @@ package com.mapconductor.arcgis
 
 import androidx.core.graphics.drawable.toDrawable
 import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
+import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SurfacePlacement
-import com.mapconductor.core.Offset
+import com.mapconductor.core.MarkerManager
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnCameraMoveHandler
+import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
-import java.util.WeakHashMap
 
 interface IArcGISMapViewController: MapViewController {
     fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
@@ -26,25 +30,20 @@ interface IArcGISMapViewController: MapViewController {
 
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
-    eventHandler: IArcGISMapEventHandler?,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    onCameraMove: (OnCameraMoveHandler<Camera>)? = null,
+    onMapClick: OnMapClickHandler? = null,
 ) : IArcGISMapViewController {
     lateinit var markerLayer: GraphicsOverlay
-    private val _markers: WeakHashMap<String, Graphic> = WeakHashMap()
-    private val _markerProps: HashMap<String, MarkerEntry> = HashMap()
 
-    private val eventHandlerRef = WeakReference(eventHandler)
-
-    private val baseMapViewController = BaseMapViewController<Graphic>(
+    private val markerOverlayManager = MarkerOverlayManager<Graphic>(
         coroutine = coroutine,
-        onMarkerRemove = { id, marker ->
-            this.markerLayer.graphics.remove(marker)
-
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerRemove(id)
-            }
+        markerManager = MarkerManager(HexGeocell(WebMercator)),
+        onRemove = { removes ->
+            val elements: List<Graphic> = removes.map { params -> params.marker }
+            this.markerLayer.graphics.removeAll(elements)
         },
-        onMarkerAdd = { newMarkers ->
+        onAdd = { newMarkers ->
             val markers = newMarkers.map { params ->
                 val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
                 val density = ResourceProvider.density
@@ -70,9 +69,9 @@ class ArcGISMapViewController(
 
             this.markerLayer.graphics.addAll(markers)
 
-            return@BaseMapViewController markers
+            return@MarkerOverlayManager markers
         },
-        onMarkerChanged = { changes ->
+        onChange = { changes ->
             changes.forEach { params ->
                 // TODO: アイコンに変更があったかどうかを比較
                 val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
@@ -102,18 +101,34 @@ class ArcGISMapViewController(
         }
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(markerLayer)
+
+        onMapClick?.let { clickHandler ->
+            coroutine.launch {
+                holder.map.onSingleTapConfirmed.collect { event ->
+                    event.mapPoint?.let {
+                        clickHandler(it.toGeoPoint())
+                    }
+                }
+            }
+        }
+
+        onCameraMove?.let {
+            coroutine.launch {
+                it(holder.map.getCurrentViewpointCamera())
+            }
+        }
     }
     override suspend fun addMarkers(markerList: List<MarkerEntry>) =
-        baseMapViewController.addMarkers(markerList)
+        markerOverlayManager.addMarkers(markerList)
 
-    override suspend fun clearOverlays() = baseMapViewController.clearOverlays()
+    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val result = this.holder.map.locationToScreen(
             point = GeoPoint.from(position).toPoint(),
         )
         return result?.let {
-            Offset(it.screenPoint.x, it.screenPoint.y)
+            Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }
     }
 

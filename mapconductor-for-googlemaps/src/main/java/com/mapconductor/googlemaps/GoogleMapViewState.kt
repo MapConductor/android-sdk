@@ -15,7 +15,6 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
-import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +29,7 @@ class GoogleMapViewState(
     override val stateId: String,
     override val mapDesignType: GoogleMapDesignType,
     override val initCameraPosition: MapCameraPosition,
-): MapViewStateImpl<Int>(), IGoogleMapViewState, IGoogleMapEventHandler {
+): MapViewStateImpl<Int>(), IGoogleMapViewState {
 
 
     // Map padding
@@ -87,25 +86,29 @@ class GoogleMapViewState(
         } ?: listener?.onComplete(false)
     }
 
-    override fun onCameraMoveStart(cameraPosition: CameraPosition) {
+    internal fun OnCameraChange(cameraPosition: CameraPosition) {
         this._cameraPosition.value = cameraPosition
     }
 
-    override fun onCameraMove(cameraPosition: CameraPosition) {
-        this._cameraPosition.value = cameraPosition
-    }
-
-    override fun onCameraMoveEnd(cameraPosition: CameraPosition) {
-        this._cameraPosition.value = cameraPosition
-    }
-
-    override fun onMarkerAdd(state: MarkerState) {
-        // Do nothing here
-    }
-
-    override fun onMarkerRemove(id: String) {
-        // Do nothing here
-    }
+//    override fun onCameraMoveStart(cameraPosition: CameraPosition) {
+//        this._cameraPosition.value = cameraPosition
+//    }
+//
+//    override fun onCameraMove(cameraPosition: CameraPosition) {
+//        this._cameraPosition.value = cameraPosition
+//    }
+//
+//    override fun onCameraMoveEnd(cameraPosition: CameraPosition) {
+//        this._cameraPosition.value = cameraPosition
+//    }
+//
+//    override fun onMarkerAdd(state: MarkerState) {
+//        // Do nothing here
+//    }
+//
+//    override fun onMarkerRemove(id: String) {
+//        // Do nothing here
+//    }
 
 }
 

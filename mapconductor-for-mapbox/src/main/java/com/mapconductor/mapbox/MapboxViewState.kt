@@ -29,7 +29,7 @@ class MapboxMapViewState(
     override val stateId: String,
     override val mapDesignType: MapboxDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<String>(), IMapboxMapViewState, IMapboxMapEventHandler {
+) : MapViewStateImpl<String>(), IMapboxMapViewState {
 
     internal var controller: IMapboxMapViewController? = null
 
@@ -86,17 +86,8 @@ class MapboxMapViewState(
         }
     }
 
-    override fun onCameraMove(cameraState: CameraState) {
+    internal fun OnCameraChange(cameraState: CameraState) {
         _cameraState.value = cameraState
-        this.debugLog("--->camera = ${cameraState.center.toGeoPoint().toUrlValue()}")
-    }
-
-    override fun onMarkerAdd(state: MarkerState) {
-        // Do nothing here
-    }
-
-    override fun onMarkerRemove(id: String) {
-        // Do nothing here
     }
 }
 

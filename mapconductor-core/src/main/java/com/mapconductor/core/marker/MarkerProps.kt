@@ -2,9 +2,9 @@ package com.mapconductor.core.marker
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.MapOverlay
-import com.mapconductor.core.Offset
 import com.mapconductor.core.controller.MapViewController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnMapClickHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -21,6 +22,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun HereMapView(
     state: IHereMapViewState,
     modifier: Modifier = Modifier,
+    onMapClick: OnMapClickHandler = {},
     content: (@Composable HereMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<HereMapViewHolder>() }
@@ -52,15 +54,16 @@ fun HereMapView(
                 options = mapInitOptions,
             )
 
-            // Cast state if it implements event handlers
-            val eventHandler = state as? IHereMapEventHandler
+            val onCameraMove = (state as? HereMapViewState)?.let {
+                it::OnCameraChange
+            }
 
             val controller = HereMapController(
                 holder = holder,
-                eventHandler = eventHandler,
+                onCameraMove = onCameraMove,
+                onMapClick = onMapClick,
             )
             (state as? HereMapViewState)?.controller = controller
-
 
             holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
                 if (mapError != null) {

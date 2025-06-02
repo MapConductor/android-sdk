@@ -11,12 +11,13 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapViewBase
-import kotlinx.coroutines.launch
+import com.mapconductor.core.map.OnMapClickHandler
 
 @Composable
 fun ArcGISMapView(
     state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
+    onMapClick: OnMapClickHandler = {},
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
@@ -51,20 +52,15 @@ fun ArcGISMapView(
             )
             holder.mapView.onCreate(owner)
             holder.mapView.onResume(owner)
-            val eventHandler = state
 
             val controller = ArcGISMapViewController(
                 holder = holder,
-                eventHandler = eventHandler,
+                onCameraMove = state::OnCameraChange,
+                onMapClick = onMapClick,
             )
+
             state.controller = controller
-            controller.coroutine.launch {
-                holder.map.viewpointChanged
-                    .collect {
-                        val camera = holder.map.getCurrentViewpointCamera()
-                        eventHandler.onCameraMove(camera)
-                    }
-            }
+
             val restoreCameraPosition = state.mapCameraPosition.value ?:
                 MapCameraPosition.from(state.initCameraPosition)
             controller.moveCamera(restoreCameraPosition)

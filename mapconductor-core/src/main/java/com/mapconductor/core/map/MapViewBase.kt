@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -13,14 +14,18 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.node.Ref
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.MapOverlayRegistry
@@ -28,10 +33,13 @@ import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.collectAndRenderOverlays
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.info.InfoBubbleSpec
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.LocalMarkerCollector
-import kotlinx.coroutines.flow.MutableStateFlow
+
+typealias OnMapClickHandler = (GeoPoint) -> Unit
+typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
 
 @Composable
 fun <
@@ -60,32 +68,31 @@ fun <
 ) {
     val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
     val initState by state.isInitialized.collectAsState()
-    val cameraPosition by state.mapCameraPosition.collectAsState()
-    val bubbleFlow = remember { MutableStateFlow<List<InfoBubbleSpec>>(emptyList()) }
-    val bubbles by bubbleFlow.collectAsState()
+//    val cameraPosition by state.mapCameraPosition.collectAsState()
+    val bubbles by scope.bubbleFlow.collectAsState()
+    val context = LocalContext.current
 
     if (initState == InitState.Initialized) {
         CompositionLocalProvider(
             LocalMarkerCollector provides scope.markerFlow,
-            LocalInfoBubbleCollector provides bubbleFlow,
+            LocalInfoBubbleCollector provides scope.bubbleFlow,
         ) {
             with(scope) {
                 content?.invoke(this)
             }
         }
-
-        controllerRef.value?.let { controller ->
-            holderRef.value?.let { holder ->
-                mapProvider(holder)?.let { map ->
-                    collectAndRenderOverlays(
-                        map = map,
-                        registry = registry, // This should come from the specific scope or be passed
-                        controller = controller,
-                    )
-                }
-            }
+        val controller = controllerRef.value
+        val holder = holderRef.value
+        val map = holder?.map
+        if (controller != null && holder != null && map != null) {
+            collectAndRenderOverlays(
+                map = map,
+                registry = registry, // This should come from the specific scope or be passed
+                controller = controller,
+            )
         }
     }
+
 
     Box(
         modifier = modifier
@@ -134,26 +141,41 @@ fun <
                 }
             }
         }
+    }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clipToBounds(),
+    ) {
+        val controller = controllerRef.value
+        val cameraPosition = state.mapCameraPosition.collectAsState().value
 
-//        controllerRef.value?.let { controller ->
-//            cameraPosition?.position?.let { centerPosition ->
-//                controller.toScreenOffset(centerPosition)?.let { centerOffset ->
-//                    for (bubble in bubbles) {
-//                        controller.toScreenOffset(bubble.props.position)?.let { screenOffset ->
-//                            bubble.props
-//
-//                            InfoWindowCompose(
-//                                centerOffset = centerOffset,
-//                                screenOffset = screenOffset,
-//                                anchor = bubble.anchor,
-//                                content = bubble.content,
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        if (controller != null && cameraPosition != null) {
+            bubbles.forEach { entry ->
+                val marker = entry.state.marker.value ?: return@forEach
+                val position = marker.position
+                val icon = marker.icon ?: return@forEach
+                val infoAnchor = icon.infoAnchor
+                val iconSize = icon.size
+                val iconAnchor = icon.anchor
+                val iconScale = icon.scale ?: 2f
+                val screenOffset = controller.toScreenOffset(position) ?: return@forEach
 
+                val offset = Offset(
+                    (screenOffset.x - iconSize.width * iconScale * (iconAnchor.x - 0.5)).toFloat(),
+                    (screenOffset.y - iconSize.height * iconScale * (iconAnchor.y - 0.5)).toFloat()
+                )
+
+                InfoWindowCompose(
+                    screenOffset = offset,
+                    anchor = Offset(
+                        (infoAnchor.x - 0.5f) * iconScale,
+                        infoAnchor.y * iconScale,
+                    ),
+                    content = entry.content,
+                )
+            }
+        }
     }
 
     LaunchedEffect(isResourceProviderReady, initState) {

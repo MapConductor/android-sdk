@@ -1,13 +1,11 @@
 package com.mapconductor.mapbox
 
 import android.animation.Animator
-import android.util.AttributeSet
 import com.google.gson.JsonObject
+import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapOptions
-import com.mapbox.maps.plugin.Plugin
+import com.mapbox.maps.CameraState
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
 import com.mapbox.maps.plugin.annotation.annotations
@@ -15,36 +13,43 @@ import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListene
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
-import com.mapconductor.core.Offset
-import com.mapconductor.core.controller.BaseMapViewController
+import com.mapbox.maps.plugin.gestures.OnMapClickListener
+import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
+import com.mapconductor.core.MarkerManager
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnCameraMoveHandler
+import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
-interface IMapboxMapInitOptions {
-    val mapOptions: MapOptions?
-    val plugins: List<Plugin>?
-    val cameraOptions: CameraOptions?
-    val textureView: Boolean?
-    val styleUri: String?
-    val attrs: AttributeSet?
-    val antialiasingSampleCount: Int?
-}
-data class MapboxMapInitOptions(
-    override val mapOptions: MapOptions? = null,
-    override val plugins: List<Plugin>? = null,
-    override val cameraOptions: CameraOptions? = null,
-    override val textureView: Boolean? = null,
-    override val styleUri: String? = null,
-    override val attrs: AttributeSet? = null,
-    override val antialiasingSampleCount: Int? = null,
-) : IMapboxMapInitOptions
+//interface IMapboxMapInitOptions {
+//    val mapOptions: MapOptions?
+//    val plugins: List<Plugin>?
+//    val cameraOptions: CameraOptions?
+//    val textureView: Boolean?
+//    val styleUri: String?
+//    val attrs: AttributeSet?
+//    val antialiasingSampleCount: Int?
+//}
+//data class MapboxMapInitOptions(
+//    override val mapOptions: MapOptions? = null,
+//    override val plugins: List<Plugin>? = null,
+//    override val cameraOptions: CameraOptions? = null,
+//    override val textureView: Boolean? = null,
+//    override val styleUri: String? = null,
+//    override val attrs: AttributeSet? = null,
+//    override val antialiasingSampleCount: Int? = null,
+//) : IMapboxMapInitOptions
 
 interface IMapboxMapViewController: MapViewController {
     fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
@@ -53,11 +58,13 @@ interface IMapboxMapViewController: MapViewController {
 
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
-    eventHandler: IMapboxMapEventHandler?,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    val onCameraMove: (OnCameraMoveHandler<CameraState>)? = null,
+    val onMapClick: OnMapClickHandler? = null,
 ): IMapboxMapViewController,
     CameraChangedCallback,
-    OnPointAnnotationClickListener
+    OnPointAnnotationClickListener,
+    OnMapClickListener
 {
 
     private lateinit var pointAnnotationManager: PointAnnotationManager
@@ -69,35 +76,33 @@ internal class MapboxMapViewController(
         pointAnnotationManager.addClickListener(this@MapboxMapViewController)
     }
 
-    private val eventHandlerRef = WeakReference(eventHandler)
-
     private fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
+        holder.map.removeOnMapClickListener(this)
+        holder.map.addOnMapClickListener(this)
     }
 
-    private val baseMapViewController = BaseMapViewController<PointAnnotation>(
+    private val markerOverlayManager = MarkerOverlayManager<PointAnnotation>(
         coroutine = coroutine,
-        onMarkerRemove = { id, marker ->
-            synchronized(pointAnnotationManager) {
-                pointAnnotationManager.delete(marker)
-            }
+        markerManager = MarkerManager(HexGeocell(WebMercator)),
+        onRemove = { removes ->
+            val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
+            pointAnnotationManager.delete(annotations)
         },
-        onMarkerAdd = { newMarkers ->
-            synchronized(pointAnnotationManager) {
-                val options = newMarkers.map { params ->
-                    return@map params.icon.toPointAnnotationOptions()
-                        .withPoint(
-                            GeoPoint.from(params.entry.state.position).toPoint(),
-                        )
-                        .withData(JsonObject().apply {
-                            addProperty("id", params.entry.id)
-                        })
-                }
-                return@BaseMapViewController pointAnnotationManager.create(options)
+        onAdd = { newMarkers ->
+            val options = newMarkers.map { params ->
+                return@map params.icon.toPointAnnotationOptions()
+                    .withPoint(
+                        GeoPoint.from(params.entry.state.position).toPoint(),
+                    )
+                    .withData(JsonObject().apply {
+                        addProperty("id", params.entry.id)
+                    })
             }
 
+            return@MarkerOverlayManager pointAnnotationManager.create(options)
         },
-        onMarkerChanged = { changes ->
+        onChange = { changes ->
             changes.forEach { params ->
                 // TODO: アイコンに変更があったかどうかを比較
                 val option = params.icon.toPointAnnotationOptions()
@@ -114,22 +119,26 @@ internal class MapboxMapViewController(
     )
 
     override suspend fun addMarkers(markerList: List<MarkerEntry>) =
-        baseMapViewController.addMarkers(markerList)
+        markerOverlayManager.addMarkers(markerList)
 
-    override suspend fun clearOverlays() = baseMapViewController.clearOverlays()
+    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val pixel = holder.map.pixelForCoordinate(
             coordinate = GeoPoint.from(position).toPoint(),
         )
         return Offset(
-            x = pixel.x,
-            y = pixel.y,
+            x = pixel.x.toFloat(),
+            y = pixel.y.toFloat(),
         )
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        eventHandlerRef.get()?.onCameraMove(cameraChanged.cameraState)
+        onCameraMove?.let {
+            coroutine.let {
+                it(cameraChanged.cameraState)
+            }
+        }
     }
 
     override fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback?) {
@@ -179,11 +188,20 @@ internal class MapboxMapViewController(
     override fun onAnnotationClick(annotation: PointAnnotation): Boolean {
         val tag = annotation.getData() ?: return false
         val key = tag.asJsonObject.get("id")?.asString ?: return false
-        val stateWithHandler = baseMapViewController.getMarkerEntry(key) ?: return false
+        val stateWithHandler = markerOverlayManager.getMarkerEntry(key) ?: return false
         val handlers = stateWithHandler.handlers
         handlers.onClick?.let {
             coroutine.launch {
                 it(stateWithHandler.state)
+            }
+        }
+        return true
+    }
+
+    override fun onMapClick(point: Point): Boolean {
+        onMapClick?.let {
+            coroutine.let {
+                it(point.toGeoPoint())
             }
         }
         return true

@@ -28,7 +28,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mapconductor.StarbucksHI_list
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.marker.MarkerIconProp
+import com.mapconductor.core.icons.Default
+import com.mapconductor.core.icons.StarInCircle
+import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.toast.ToastMessage
@@ -106,17 +108,18 @@ fun DemoAppScreen(
     )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(2) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
 
     val drawable = AppCompatResources.getDrawable(context, R.drawable.coffee_svg)
-    val icon = MarkerIconProp(
-        iconDrawable = drawable,
-        fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
-        strokeColor = Color.LightGray.toArgb()
-    )
+//    val icon = MarkerIcon(
+//        iconDrawable = drawable,
+//        fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
+//        strokeColor = Color.LightGray.toArgb()
+//    )
+    val icon = MarkerIcon.Default()
 
     val messages = remember { mutableStateListOf<ToastMessage>() }
 
@@ -161,15 +164,14 @@ fun DemoAppScreen(
                             position = it.position,
                             extra = it.extra,
                             icon = icon,
-
-                            )
+                        )
                     },
                     onCallButtonClick = {
                         showToast("clicked")
                     },
-                    onMarkerClickHandler = { state ->
-                        (state.extra as Bundle).getString("name")?.let { showToast(it) }
-                    },
+//                    onMarkerClickHandler = { state ->
+//                        (state.extra as Bundle).getString("name")?.let { showToast(it) }
+//                    },
                     modifier = Modifier.padding(innerPadding),
                 )
                 ToastHost(

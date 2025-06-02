@@ -1,25 +1,12 @@
 package com.mapconductor.core.controller
 
-import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.MarkerManager
-import com.mapconductor.core.Offset
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntry
-import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-interface MapViewController {
-    val holder: MapViewHolder<*, *>
-    val coroutine: CoroutineScope
-    suspend fun addMarkers(markerList : List<MarkerEntry>)
-    suspend fun clearOverlays()
-    fun toScreenOffset(position: IGeoPoint): Offset?
-}
 
 interface MarkerAddParams {
     val entry: MarkerEntry
@@ -31,16 +18,20 @@ interface MarkerUpdateParams<ActualMarker>  {
     val marker: ActualMarker
 }
 
-class BaseMapViewController<
+interface MarkerRemoveParams<ActualMarker> {
+    val entry: MarkerEntry
+    val marker: ActualMarker
+}
+
+class MarkerOverlayManager<
         ActualMarker: Any,   // Actual marker instance type
     >(
-    val geocell: HexGeocell = HexGeocell(WebMercator),
+    val markerManager: MarkerManager<ActualMarker>,
     val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    val onMarkerRemove: (id: String, marker: ActualMarker) -> Unit,
-    val onMarkerAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
-    val onMarkerChanged: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
+    val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
+    val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
+    val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
 ) {
-    val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
 
     suspend fun addMarkers(markerList: List<MarkerEntry>) {
 
@@ -60,18 +51,19 @@ class BaseMapViewController<
 
         // Remove markers
         if (removed.isNotEmpty()) {
-            val willRemoveMarkers: List<Pair<String, ActualMarker?>> = removed
+            val willRemoveMarkers: List<MarkerRemoveParams<ActualMarker>> = removed
                 .map { removedEntry ->
                     val id = removedEntry.state.id
-                    val marker = markerManager.getMarker(id)
+                    val marker = markerManager.getMarker(id)!!
                     markerManager.removeEntry(id)
-                    return@map Pair(id, marker)
+                    object : MarkerRemoveParams<ActualMarker> {
+                        override val entry: MarkerEntry = removedEntry
+                        override val marker: ActualMarker = marker
+                    }
                 }
 
-            coroutine.launch {
-                willRemoveMarkers.forEach { pair ->
-                    pair.second?.also { onMarkerRemove(pair.first, it) }
-                }
+            withContext(coroutine.coroutineContext) {
+                return@withContext onRemove.invoke(willRemoveMarkers)
             }
         }
 
@@ -87,7 +79,7 @@ class BaseMapViewController<
                 }
             }
             val actualMarkers: List<ActualMarker?> = withContext(coroutine.coroutineContext) {
-                return@withContext onMarkerAdd.invoke(willAdd)
+                return@withContext onAdd.invoke(willAdd)
             }
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
@@ -113,15 +105,23 @@ class BaseMapViewController<
             }
 
             withContext(coroutine.coroutineContext) {
-                onMarkerChanged(willUpdate)
+                onChange(willUpdate)
             }
         }
     }
 
 
     suspend fun clearOverlays() {
+        val markerIDs: List<String> = markerManager.allKeys()
+        val removes: List<MarkerRemoveParams<ActualMarker>> = markerIDs.map { markerId ->
+            return@map object : MarkerRemoveParams<ActualMarker> {
+                override val entry : MarkerEntry = markerManager.getEntry(markerId)!!
+                override val marker: ActualMarker = markerManager.getMarker(markerId)!!
+            }
+        }
+
         withContext(coroutine.coroutineContext) {
-            markerManager.forEach { entry, marker -> onMarkerRemove(entry.id, marker) }
+            onRemove(removes)
         }
         markerManager.clear()
     }

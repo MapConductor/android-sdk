@@ -20,7 +20,6 @@ import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.MapViewStateImpl
-import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +33,7 @@ class HereMapViewState(
     override val stateId: String,
     override val mapDesignType: HereMapDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<MapScheme>(), IHereMapViewState, IHereMapEventHandler {
+) : MapViewStateImpl<MapScheme>(), IHereMapViewState {
 
     internal var controller: IHereMapViewController? = null
 
@@ -92,18 +91,9 @@ class HereMapViewState(
         }
     }
 
-    override fun onCameraMove(cameraState: MapCamera.State) {
+    internal fun OnCameraChange(cameraState: MapCamera.State) {
         this._cameraPosition.value = cameraState
     }
-
-    override fun onMarkerRemove(id: String) {
-        // Do nothing here
-    }
-
-    override fun onMarkerAdd(state: MarkerState) {
-        // Do nothing here
-    }
-
 }
 
 val HereMapViewStateSaver = Saver<HereMapViewState, Bundle>(

@@ -12,9 +12,9 @@ annotation class MarkerDsl
 class MarkerBuilder {
     private val point = GeoPointBuilder()
     private val extraData: Parcelable? = null
-    private val iconData: MarkerIconProp? = null
+    private val iconData: MarkerIcon? = null
 
-    var onClick: MarkerClickHandler = {}
+    var onClick: OnMarkerClickHandler = {}
 
     fun position(block: GeoPointBuilder.() -> Unit) {
         point.apply(block)
@@ -24,7 +24,7 @@ class MarkerBuilder {
         extraData.apply(block)
     }
 
-    fun icon(block: MarkerIconProp?.() -> Unit) {
+    fun icon(block: MarkerIcon?.() -> Unit) {
         iconData.apply(block)
     }
 

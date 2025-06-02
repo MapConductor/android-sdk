@@ -15,6 +15,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
@@ -25,7 +26,7 @@ import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntry
-import com.mapconductor.core.marker.MarkerIconProp
+import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -105,11 +106,7 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         _cellRegistry.setPoint(entry)
     }
 
-    fun forEach(action: (MarkerEntry, ActualMarker) -> Unit) {
-        _markers.keys.forEach { key ->
-            action(_entries[key]!!, _markers[key]!!)
-        }
-    }
+    fun allKeys(): List<String> = _markers.keys.toList()
 
     fun clear() {
         _markers.clear()
@@ -117,7 +114,7 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         _cellRegistry.clear()
     }
 
-    fun getBitmapIcon(icon: MarkerIconProp) : BitmapIcon {
+    fun getBitmapIcon(icon: MarkerIcon) : BitmapIcon {
         val key = icon.hashCode()
         val cache = bitmapCache.get(key)
         if (cache != null) return cache
@@ -135,6 +132,7 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         )
         bitmapCache.put(key, iconBitmap)
         return iconBitmap
+
     }
 
     fun drawIcon(
@@ -391,26 +389,26 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
 
 
             // --- 3. ラベルの描画 (labelが指定されている場合) ---
-            if (label != null) {
-                val textPaint = Paint().apply {
-                    this.color = labelTextColor ?: Color.BLACK
-                    this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
-                    this.textAlign = Paint.Align.CENTER
-                    this.typeface = Typeface.DEFAULT_BOLD
-                    this.isAntiAlias = true
-                    this.isSubpixelText = true // より滑らかなテキスト描画のため
-                }
-
-                // 丸い部分の中心の論理座標 (32x32系)
-                val centerXLogical = 16f
-                val centerYLogical = 34f / 3f // 約 11.333f
-
-                // テキストの垂直位置を調整して中央揃えにする
-                val fm = textPaint.fontMetrics
-                val yForDrawTextLogical = centerYLogical - (fm.ascent + fm.descent) / 2f
-
-                canvas.drawText(label.substring(0, 1).toString(), centerXLogical, yForDrawTextLogical, textPaint)
-            }
+//            if (label != null) {
+//                val textPaint = Paint().apply {
+//                    this.color = labelTextColor ?: Color.BLACK
+//                    this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
+//                    this.textAlign = Paint.Align.CENTER
+//                    this.typeface = Typeface.DEFAULT_BOLD
+//                    this.isAntiAlias = true
+//                    this.isSubpixelText = true // より滑らかなテキスト描画のため
+//                }
+//
+//                // 丸い部分の中心の論理座標 (32x32系)
+//                val centerXLogical = 16f
+//                val centerYLogical = 34f / 3f // 約 11.333f
+//
+//                // テキストの垂直位置を調整して中央揃えにする
+//                val fm = textPaint.fontMetrics
+//                val yForDrawTextLogical = centerYLogical - (fm.ascent + fm.descent) / 2f
+//
+//                canvas.drawText(label.substring(0, 1).toString(), centerXLogical, yForDrawTextLogical, textPaint)
+//            }
 
 //            // -- ストローク --
             drawPath(strokePath, strokePaint)
@@ -418,8 +416,8 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
 
         val visualNormalizedTipY = 0.9375f
         val anchor = Offset(
-            x = 0.5,
-            y = visualNormalizedTipY + (0.5 / 64.0)
+            x = 0.5f,
+            y = (visualNormalizedTipY + (0.5 / 64.0)).toFloat()
         )
 
         val size = Size(

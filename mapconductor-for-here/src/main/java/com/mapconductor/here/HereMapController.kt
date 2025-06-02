@@ -14,21 +14,23 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.MapViewHolder
-import com.mapconductor.core.Offset
+import com.mapconductor.core.MarkerManager
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
+import com.mapconductor.core.map.OnCameraMoveHandler
+import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.core.spherical.haversineDistance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 import kotlin.math.pow
 
 interface IHereMapViewController: MapViewController {
@@ -37,23 +39,22 @@ interface IHereMapViewController: MapViewController {
 }
 internal class HereMapController(
     override val holder: MapViewHolder<MapView, HereMap>,
-    eventHandler: IHereMapEventHandler?,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    val onCameraMove: (OnCameraMoveHandler<MapCamera.State>)? = null,
+    val onMapClick: OnMapClickHandler? = null,
 ) : IHereMapViewController,
     MapCameraListener,
     TapListener
 {
 
-    private val baseMapViewController = BaseMapViewController<MapMarker>(
-        geocell = HexGeocell(WebMercator, 1),
+    private val markerOverlayManager = MarkerOverlayManager<MapMarker>(
+        markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
         coroutine = coroutine,
-        onMarkerRemove = { id, marker ->
-            holder.mapView.mapScene.removeMapMarker(marker)
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerRemove(id)
-            }
+        onRemove = { removes ->
+            val markers: List<MapMarker> = removes.map { params -> params.marker }
+            holder.mapView.mapScene.removeMapMarkers(markers)
         },
-        onMarkerAdd = { newMarkers ->
+        onAdd = { newMarkers ->
             val markers = newMarkers.map { params ->
                 val marker = MapMarker(
                     GeoPoint.from(params.entry.state.position).toGeoCoordinates(),
@@ -69,9 +70,9 @@ internal class HereMapController(
             }
 
             holder.mapView.mapScene.addMapMarkers(markers)
-            return@BaseMapViewController markers
+            return@MarkerOverlayManager markers
         },
-        onMarkerChanged = { changes ->
+        onChange = { changes ->
             changes.forEach { params ->
                 // TODO: アイコンに変更があったかどうかを比較
                 params.marker.image = params.icon.toMapImage()
@@ -81,9 +82,9 @@ internal class HereMapController(
         },
     )
 
-    override suspend fun addMarkers(markerList: List<MarkerEntry>) = baseMapViewController.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
 
-    override suspend fun clearOverlays() = baseMapViewController.clearOverlays()
+    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val result = holder.mapView.geoToViewCoordinates(
@@ -91,12 +92,10 @@ internal class HereMapController(
         ) ?: return null
 
         return Offset(
-            x = result.x,
-            y = result.y,
+            x = result.x.toFloat(),
+            y = result.y.toFloat(),
         )
     }
-
-    private val eventHandlerRef = WeakReference(eventHandler)
 
     init {
         setupListeners()
@@ -150,8 +149,10 @@ internal class HereMapController(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        coroutine.launch {
-            eventHandlerRef.get()?.onCameraMove(cameraState)
+        onCameraMove?.let {
+            coroutine.launch {
+                it(cameraState)
+            }
         }
     }
 
@@ -162,19 +163,9 @@ internal class HereMapController(
         val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
         val acceptDPI = 14 * holder.mapView.context.resources.displayMetrics.density
         val radius = acceptDPI * meterInMapPixel
+        var processed: Boolean = false
 
-//        baseMapViewController.geocell.projection.unproject()
-
-//        val touchedPointCell = baseMapViewController.geocell.latLngToHexCell(
-//            position = touchPosition,
-//            zoom = zoom,
-//        )
-//        val prefixLevel = zoomToIdPrefixLevel(zoom)
-//        val targetPrefix = touchedPointCell.toString()
-//
-//        val cells = baseMapViewController.markerManager.findByIdPrefix(targetPrefix)
-
-        baseMapViewController.markerManager.findNearest(touchPosition)?.let { entry ->
+        markerOverlayManager.markerManager.findNearest(touchPosition)?.let { entry ->
             val distance = haversineDistance(touchPosition, entry.point)
             if (distance > radius) return@let
 
@@ -182,47 +173,18 @@ internal class HereMapController(
                 coroutine.launch {
                     it(entry.state)
                 }
+                processed = true
             }
         }
+        if (processed) return
 
 
-//        baseMapViewController.findMarker(touchPosition, 32.0 * holder.mapView.context.resources.displayMetrics.density, zoom)?.also { entry ->
-//            entry.handlers.onClick?.let {
-//                coroutine.launch {
-//                    it(entry.state)
-//                }
-//            }
-//        }
+        // TODO: Implement click handling for other overlays
 
-//        val originInPixels = Point2D(touchPoint.x, touchPoint.y)
-//        val density = Resources.getSystem().displayMetrics.density
-//        val sizeInPixels = Size2D(32.0 * density, 32.0 * density)
-//        val rectangle = Rectangle2D(originInPixels, sizeInPixels)
-//        holder.mapView.pick(null, rectangle,
-//            MapViewBase.MapPickCallback { mapPickResult ->
-//                if (mapPickResult == null) return@MapPickCallback
-//
-//                val tappedMarker = mapPickResult.mapItems?.markers?.
-//                filter { it: MapMarker ->
-//                    val dataKey = it.metadata?.getInteger("dataKey") ?: 0
-//                    _markerProps.containsKey(dataKey)
-//                }?.maxByOrNull { it: MapMarker -> it.drawOrder }
-//
-//                if (tappedMarker != null) {
-//                    val dataKey = tappedMarker.metadata?.getInteger("dataKey") ?: return@MapPickCallback
-//                    val stateWithHandler = _markerProps[dataKey] ?: return@MapPickCallback
-//                    val handlers = stateWithHandler.handlers
-//                    handlers.onClick?.let {
-//                        coroutine.launch {
-//                            it(stateWithHandler.state)
-//                        }
-//                    }
-//
-//                    return@MapPickCallback
-//                }
-//                // TODO: find tapped overlay (do not remove this comment)
-//            })
+        // If no overlay is processed, process the tap as onMapClick
+        onMapClick?.let { it(touchPosition) }
     }
+
     private fun zoomToIdPrefixLevel(zoom: Double): Int {
         return when {
             zoom <= 5 -> 2    // 数10km 単位でまとめる

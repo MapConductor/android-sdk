@@ -9,17 +9,17 @@ import com.mapconductor.core.geocell.IdentifiedPoint
 import java.util.UUID
 
 // ------- Core Types ----------
-typealias MarkerClickHandler = (MarkerState) -> Unit
+typealias OnMarkerClickHandler = (MarkerState) -> Unit
 
 data class MarkerHandlers(
-    val onClick: MarkerClickHandler? = {},
+    val onClick: OnMarkerClickHandler? = {},
 )
 
 class MarkerState(
     val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     var extra: Parcelable? = null,
-    icon: MarkerIconProp? = null,
+    icon: MarkerIcon? = null,
 ) {
 
     // -- position and positionState properties --
@@ -34,9 +34,9 @@ class MarkerState(
         }
 
     // -- icon and iconState properties --
-    private val _icon = mutableStateOf<MarkerIconProp?>(icon)
-    val iconState: State<MarkerIconProp?> get() = _icon
-    var icon: MarkerIconProp?
+    private val _icon = mutableStateOf<MarkerIcon?>(icon)
+    val iconState: State<MarkerIcon?> get() = _icon
+    var icon: MarkerIcon?
         get() = _icon.value
         set(value) {
             if (_icon.value != value) {

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.map.MapViewScope
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.googlemaps.GoogleMapViewState
@@ -17,29 +18,32 @@ import com.mapconductor.mapbox.MapboxMapViewState
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     state: MapViewState<*>? = null,
+    onMapClick: OnMapClickHandler,
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
-        is GoogleMapViewState -> {
-            GoogleMapsView(
-                modifier = modifier,
-                state = state,
-                content = content,
-            )
-        }
+        is GoogleMapViewState -> GoogleMapsView(
+            modifier = modifier,
+            state = state,
+            onMapClick = onMapClick,
+            content = content,
+        )
         is HereMapViewState -> HereMapView(
             modifier = modifier,
             state = state,
+            onMapClick = onMapClick,
             content = content,
         )
         is MapboxMapViewState -> MapboxMapView(
             modifier = modifier,
             state = state,
+            onMapClick = onMapClick,
             content = content,
         )
         is ArcGISMapViewState -> ArcGISMapView(
             modifier = modifier,
             state = state,
+            onMapClick = onMapClick,
             content = content,
         )
         else -> throw IllegalStateException("unknown state")

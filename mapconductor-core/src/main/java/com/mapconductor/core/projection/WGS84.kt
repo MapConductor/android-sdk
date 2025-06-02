@@ -1,6 +1,6 @@
 package com.mapconductor.core.projection
 
-import com.mapconductor.core.Offset
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
 
 /*
@@ -28,7 +28,7 @@ object WGS84: Projection {
         val x = position.longitude / 360 + .5
         val siny = Math.sin(Math.toRadians(position.latitude))
         val y = 0.5 * Math.log((1 + siny) / (1 - siny)) / -(2 * Math.PI) + .5
-        return Offset(x * 256, y * 256)
+        return Offset((x * 256).toFloat(), (y * 256).toFloat())
     }
 
     override fun unproject(point: Offset): IGeoPoint {

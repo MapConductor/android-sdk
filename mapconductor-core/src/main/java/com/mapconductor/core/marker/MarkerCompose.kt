@@ -5,19 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubbleSpec
-import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.map.MapViewScope
-import kotlinx.coroutines.flow.MutableStateFlow
 
-open class MarkerScope (
-    val bubbleCollector: MutableStateFlow<List<InfoBubbleSpec>>,
-)
+open class MarkerScope ()
 
 @Composable
 fun MapViewScope.Marker(
     entry: MarkerEntry,
-    content: (@Composable MarkerScope.() -> Unit)? = null,
 ) {
     val rememberEntry = remember { entry }
 
@@ -28,27 +22,20 @@ fun MapViewScope.Marker(
             markerFlow.value = markerFlow.value + rememberEntry
         }
     }
-
-    val bubbleCollector = LocalInfoBubbleCollector.current
-    content?.let {
-        MarkerScope(bubbleCollector).it()
-    }
 }
 
 @Composable
 fun MapViewScope.Marker(
     builder: MarkerBuilder.() -> Unit,
-    content: (@Composable MarkerScope.() -> Unit)? = null,
 ) {
     val entry = MarkerBuilder().apply(builder).build()
-    Marker(entry, content)
+    Marker(entry)
 }
 
 @Composable
 fun MapViewScope.Marker(
     state: MarkerState,
-    onClick: MarkerClickHandler? = null,
-    content: (@Composable MarkerScope.() -> Unit)? = null,
+    onClick: OnMarkerClickHandler? = null,
 ) {
     val handlers = MarkerHandlers(
         onClick = onClick,
@@ -57,16 +44,15 @@ fun MapViewScope.Marker(
         state = state,
         handlers = handlers,
     )
-    Marker(entry, content)
+    Marker(entry)
 }
 
 @Composable
 fun MapViewScope.Marker(
     position: GeoPoint,
-    icon: MarkerIconProp? = null,
+    icon: MarkerIcon? = null,
     extra: Parcelable? = null,
-    onClick: MarkerClickHandler? = null,
-    content: (@Composable MarkerScope.() -> Unit)? = null,
+    onClick: OnMarkerClickHandler? = null,
 ) {
     val state = MarkerState(
         position = position,
@@ -80,5 +66,5 @@ fun MapViewScope.Marker(
         state = state,
         handlers = handlers,
     )
-    Marker(entry, content)
+    Marker(entry)
 }

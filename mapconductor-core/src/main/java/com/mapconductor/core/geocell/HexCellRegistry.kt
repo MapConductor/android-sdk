@@ -140,7 +140,7 @@ class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, priv
 
         val dx = p2.x - p1.x
         val dy = p2.y - p1.y
-        return sqrt(dx * dx + dy * dy)
+        return sqrt(dx * dx + dy * dy).toDouble()
     }
 
     fun findWithinPixelRadius(
