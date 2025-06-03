@@ -16,6 +16,7 @@ jobs:
           name: lint-hash-cache
           path: .lint-hash-cache
           if-no-files-found: ignore
+        continue-on-error: true
 
       - name: Checkout
         uses: actions/checkout@v4
