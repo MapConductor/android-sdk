@@ -1,0 +1,40 @@
+name: Static Analysis on Commit (Selective)
+
+on:
+  push:
+    branches: [ "**" ]
+
+jobs:
+  lint:
+    name: Run Lint if .kt changed
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Detect changed .kt files
+        id: changes
+        run: |
+          git fetch origin main --depth=1
+          CHANGED=$(git diff --name-only HEAD^ | grep '\.kt$' || true)
+          echo "changed_files=${CHANGED}" >> $GITHUB_OUTPUT
+          if [ -z "$CHANGED" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run ktlint
+        if: steps.changes.outputs.skip == 'false'
+        run: ./gradlew ktlintCheck
+
+      - name: Run Android Lint
+        if: steps.changes.outputs.skip == 'false'
+        run: ./gradlew lint
