@@ -1,4 +1,4 @@
-name: Static Analysis on Commit (Selective)
+name: Android Lint + KtLint by Module (Selective)
 
 on:
   push:
@@ -6,35 +6,85 @@ on:
 
 jobs:
   lint:
-    name: Run Lint if .kt changed
     runs-on: ubuntu-latest
+    name: Run Lint and KtLint on Changed Modules
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Download previous hash cache
+        uses: actions/download-artifact@v4
+        with:
+          name: lint-hash-cache
+          path: .lint-hash-cache
+          if-no-files-found: ignore
+
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Detect changed .kt files
-        id: changes
-        run: |
-          git fetch origin main --depth=1
-          CHANGED=$(git diff --name-only HEAD^ | grep '\.kt$' || true)
-          echo "changed_files=${CHANGED}" >> $GITHUB_OUTPUT
-          if [ -z "$CHANGED" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Download previous hash cache
+        uses: actions/download-artifact@v4
+        with:
+          name: lint-hash-cache
+          path: .lint-hash-cache
+          if-no-files-found: ignore
 
-      - name: Run ktlint
-        if: steps.changes.outputs.skip == 'false'
-        run: ./gradlew ktlintCheck
+      - name: Define modules
+        id: define
+        run: |
+          echo "modules=app feature/login core/common" >> $GITHUB_OUTPUT
+
+      - name: Detect changed modules
+        id: detect
+        run: |
+          changed_modules=""
+          mkdir -p .lint-hash-cache
+
+          for module in ${{ steps.define.outputs.modules }}; do
+            key="lint-hash-${module//\//-}-${{ runner.os }}"
+            hash=$(find "$module/src" -type f \( -name "*.kt" -o -name "*.xml" \) | sort | xargs sha256sum | sha256sum | cut -d ' ' -f1)
+
+            echo "Current hash for $module: $hash"
+
+            CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
+
+            if [ -f "$CACHE_KEY_FILE" ]; then
+              old_hash=$(cat "$CACHE_KEY_FILE")
+              if [ "$hash" == "$old_hash" ]; then
+                echo "No change in $module, skipping."
+                continue
+              fi
+            fi
+
+            echo "Module changed: $module"
+            changed_modules="$changed_modules $module"
+            echo "$hash" > "$CACHE_KEY_FILE"
+          done
+
+          echo "changed_modules=${changed_modules}" >> $GITHUB_OUTPUT
 
       - name: Run Android Lint
-        if: steps.changes.outputs.skip == 'false'
-        run: ./gradlew lint
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running Android Lint for $module"
+            ./gradlew ":$module:lint"
+          done
+
+      - name: Run ktlintCheck
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running ktlintCheck for $module"
+            ./gradlew ":$module:ktlintCheck"
+          done
+
+      - name: Upload hash cache
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-hash-cache
+          path: .lint-hash-cache/
