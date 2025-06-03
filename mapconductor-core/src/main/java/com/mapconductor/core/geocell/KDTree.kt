@@ -61,7 +61,7 @@ class KDTree(private val points: List<HexCell>) {
         val distSq = squaredDistance(query, node.cell.centerXY)
         if (queue.size < k) {
             queue.offer(distSq to node.cell)
-        } else if (distSq < queue.peek().first) {
+        } else if (distSq < queue.peek()!!.first) {
             queue.poll()
             queue.offer(distSq to node.cell)
         }
@@ -71,7 +71,7 @@ class KDTree(private val points: List<HexCell>) {
         val (near, far) = if (queryVal < nodeVal) node.left to node.right else node.right to node.left
         nearestK(near, query, k, queue)
         val axisDist = (queryVal - nodeVal).pow(2)
-        if (queue.size < k || axisDist < queue.peek().first) {
+        if (queue.size < k || axisDist < queue.peek()!!.first) {
             nearestK(far, query, k, queue)
         }
     }
