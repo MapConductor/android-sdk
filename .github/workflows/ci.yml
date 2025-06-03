@@ -1,82 +1,90 @@
-name: Android Lint + KtLint by Module (Selective)
+name: Android Code Check (Lint + KtLint + ReviewDog)
 
 on:
   push:
     branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
 
 jobs:
-  lint:
+  code-check:
     runs-on: ubuntu-latest
-    name: Run Lint and KtLint on Changed Modules
+    name: Lint & ReviewDog on Changed Modules
 
     steps:
-
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Download previous hash cache
+      - name: Download hash cache
         uses: actions/download-artifact@v4
         with:
           name: lint-hash-cache
           path: .lint-hash-cache
-          if-no-files-found: ignore
         continue-on-error: true
 
-      - name: Define modules
+      - name: Read module list from projects.properties
         id: define
         run: |
-          echo "modules=app feature/login core/common" >> $GITHUB_OUTPUT
+          modules=$(grep '^modules=' projects.properties | cut -d= -f2)
+          echo "modules=$modules" >> $GITHUB_OUTPUT
 
-      - name: Detect changed modules
+      - name: Detect changed modules by hashing src/
         id: detect
         run: |
           changed_modules=""
           mkdir -p .lint-hash-cache
-
           for module in ${{ steps.define.outputs.modules }}; do
-            key="lint-hash-${module//\//-}-${{ runner.os }}"
             hash=$(find "$module/src" -type f \( -name "*.kt" -o -name "*.xml" \) | sort | xargs sha256sum | sha256sum | cut -d ' ' -f1)
-
-            echo "Current hash for $module: $hash"
-
             CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
-
             if [ -f "$CACHE_KEY_FILE" ]; then
               old_hash=$(cat "$CACHE_KEY_FILE")
               if [ "$hash" == "$old_hash" ]; then
-                echo "No change in $module, skipping."
                 continue
               fi
             fi
-
             echo "Module changed: $module"
             changed_modules="$changed_modules $module"
             echo "$hash" > "$CACHE_KEY_FILE"
           done
-
           echo "changed_modules=${changed_modules}" >> $GITHUB_OUTPUT
-
-      - name: Run Android Lint
-        if: steps.detect.outputs.changed_modules != ''
-        run: |
-          for module in ${{ steps.detect.outputs.changed_modules }}; do
-            echo "Running Android Lint for $module"
-            ./gradlew ":$module:lint"
-          done
 
       - name: Run ktlintCheck
         if: steps.detect.outputs.changed_modules != ''
         run: |
           for module in ${{ steps.detect.outputs.changed_modules }}; do
-            echo "Running ktlintCheck for $module"
             ./gradlew ":$module:ktlintCheck"
           done
+
+      - name: Run Android Lint
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            ./gradlew ":$module:lint"
+          done
+
+      - name: Run ReviewDog (only on pull_request)
+        if: github.event_name == 'pull_request' && steps.detect.outputs.changed_modules != ''
+        run: |
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            lint_file=$(find "$module" -name "lint-results.xml" | head -n 1)
+            if [ -f "$lint_file" ]; then
+              echo "Reporting Lint results for $module"
+              reviewdog -name="android-lint ($module)" \
+                -f=checkstyle \
+                -f.diff="git diff origin/${{ github.base_ref }}" \
+                -reporter=github-pr-review \
+                -level=warning \
+                < "$lint_file"
+            fi
+          done
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload hash cache
         uses: actions/upload-artifact@v4
