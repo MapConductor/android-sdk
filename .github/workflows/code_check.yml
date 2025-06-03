@@ -10,13 +10,6 @@ jobs:
     name: Run Lint and KtLint on Changed Modules
 
     steps:
-      - name: Download previous hash cache
-        uses: actions/download-artifact@v4
-        with:
-          name: lint-hash-cache
-          path: .lint-hash-cache
-          if-no-files-found: ignore
-        continue-on-error: true
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +26,7 @@ jobs:
           name: lint-hash-cache
           path: .lint-hash-cache
           if-no-files-found: ignore
+        continue-on-error: true
 
       - name: Define modules
         id: define
