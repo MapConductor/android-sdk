@@ -31,7 +31,7 @@ jobs:
       - name: Read module list from projects.properties
         id: define
         run: |
-          modules=$(grep '^modules=' projects.properties | cut -d= -f2)
+          modules=$(grep '^modules=' projects.properties | cut -d= -f2 | tr ',' ' ')
           echo "modules=$modules" >> $GITHUB_OUTPUT
 
       - name: Detect changed modules by hashing src/
