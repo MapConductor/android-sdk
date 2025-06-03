@@ -31,11 +31,19 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MapConductorSDK"
-include(
-    ":example-app",
-    ":mapconductor-for-here",
-    ":mapconductor-for-mapbox",
-    ":mapconductor-for-googlemaps",
-    ":mapconductor-for-arcgis",
-    ":mapconductor-core",
-)
+//include(
+//    ":example-app",
+//    ":mapconductor-for-here",
+//    ":mapconductor-for-mapbox",
+//    ":mapconductor-for-googlemaps",
+//    ":mapconductor-for-arcgis",
+//    ":mapconductor-core",
+//)
+val modulesProp = rootDir.resolve("projects.properties").readLines()
+    .firstOrNull { it.startsWith("modules=") }
+    ?.removePrefix("modules=")
+    ?.split(",")
+    ?.map { it.trim() }
+    ?: emptyList()
+
+modulesProp.forEach { include(":$it") }
