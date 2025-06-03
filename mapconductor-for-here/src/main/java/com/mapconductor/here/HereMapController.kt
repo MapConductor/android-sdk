@@ -17,6 +17,9 @@ import com.here.time.Duration
 import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.MarkerManager
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Dp
+import com.here.sdk.gestures.GestureState
+import com.here.sdk.gestures.LongPressListener
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
@@ -45,7 +48,8 @@ internal class HereMapController(
     val onMapClick: OnMapClickHandler? = null,
 ) : IHereMapViewController,
     MapCameraListener,
-    TapListener
+    TapListener,
+    LongPressListener
 {
 
     private val markerOverlayManager = MarkerOverlayManager<MapMarker>(
@@ -106,6 +110,7 @@ internal class HereMapController(
         holder.mapView.camera.removeListener(this)
         holder.mapView.camera.addListener(this)
         holder.mapView.gestures.tapListener = this
+        holder.mapView.gestures.setLongPressListener(this)
     }
 
     override fun moveCamera(
@@ -158,26 +163,17 @@ internal class HereMapController(
     }
 
     override fun onTap(touchPoint: Point2D) {
-        val coordinates = holder.mapView.viewToGeoCoordinates(touchPoint) ?: return
-        val touchPosition = coordinates.toGeoPoint()
-        val zoom = holder.mapView.camera.state.zoomLevel
-        val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
-        val acceptDPI = 14 * holder.mapView.context.resources.displayMetrics.density
-        val radius = acceptDPI * meterInMapPixel
-        var processed: Boolean = false
+        val touchPosition = this.getGeoPointFromPoint(touchPoint) ?: return
 
-        markerOverlayManager.markerManager.findNearest(touchPosition)?.let { entry ->
-            val distance = haversineDistance(touchPosition, entry.point)
-            if (distance > radius) return@let
-
-            entry.handlers.onClick?.let {
+        val markerEntry = this.findMarkerFromPoint(touchPosition)
+        if (markerEntry != null) {
+            markerEntry.handlers.onClick?.let {
                 coroutine.launch {
-                    it(entry.state)
+                    it(markerEntry.state)
                 }
-                processed = true
             }
+            return
         }
-        if (processed) return
 
 
         // TODO: Implement click handling for other overlays
@@ -203,5 +199,29 @@ internal class HereMapController(
         val earthCircumference = 40075016.686
         val tileSize = 256
         return earthCircumference / (tileSize * 2.0.pow(zoom))
+    }
+
+    override fun onLongPress(state: GestureState, point: Point2D) {
+        TODO("Not yet implemented")
+    }
+
+    private fun getGeoPointFromPoint(point: Point2D) : GeoPoint? {
+        return holder.mapView.viewToGeoCoordinates(point)?.toGeoPoint()
+    }
+
+    private fun findMarkerFromPoint(position: IGeoPoint, radiusInDp: Int = 14) : MarkerEntry? {
+        val zoom = holder.mapView.camera.state.zoomLevel
+        val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
+        val acceptDPI = radiusInDp.toFloat() * holder.mapView.context.resources.displayMetrics.density
+        val radius = acceptDPI * meterInMapPixel
+
+        val entry = markerOverlayManager.markerManager.findNearest(position) ?: return null
+
+        val distance = haversineDistance(position, entry.point)
+        return if (distance <= radius) {
+            entry
+        } else {
+            null
+        }
     }
 }
