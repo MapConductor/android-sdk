@@ -1,5 +1,6 @@
 package com.mapconductor.example
 
+import android.os.Bundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -38,7 +39,7 @@ fun MapArea(
     val darkTheme: Boolean = isSystemInDarkTheme()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val infoBubbleState by remember { mutableStateOf(InfoBubbleState()) }
-    val bubbleColor by remember { mutableStateOf(if (darkTheme) Color.Black.copy(alpha = 0.5f) else Color.White) }
+    val bubbleColor by remember { mutableStateOf(if (darkTheme) Color.Black else Color.White) }
 //    infoBubbleState.bubbleColor = bubbleColor
 
     val onMapClickHandler = { _: GeoPoint ->
@@ -70,6 +71,7 @@ fun MapArea(
                         state = infoBubbleState
                     ) {
                         StoreCard(
+                            info = it.extra as Bundle,
                             onClick = {
                                 onCallButtonClick(it)
                             }

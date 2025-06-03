@@ -1,7 +1,9 @@
 package com.mapconductor.example.demo
 
 import android.content.res.Configuration
+import android.os.Bundle
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
@@ -32,12 +35,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapconductor.example.R
 
-@Preview(widthDp = 600, heightDp = 300, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(widthDp = 400, heightDp = 600)
 @Composable
 fun StoreCard(
+    info: Bundle,
     onClick: () -> Unit = {},
 ) {
+    val darkTheme: Boolean = isSystemInDarkTheme()
+    val iconTintColor = if (!darkTheme) Color.Black else Color.White
 
     @Composable
     fun CallButtonPortrait(modifier: Modifier = Modifier) {
@@ -87,51 +91,56 @@ fun StoreCard(
     }
 
     @Composable
-    fun StoreInfo(modifier: Modifier = Modifier) {
-        Column(modifier = modifier) {
-            Text("Pearlridge Center", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            TableRow("In store", "Available")
-            TableRow("Drive", "---")
-            TableRow("Only Reserved", "Yes")
-        }
-    }
+    fun StoreInfo() {
+        Column {
+            val name = info.getString("name", "Starbucks")
+            val address = info.getString("address", "address")
+            val instore = info.getBoolean("instore", false)
+            val drive_through = info.getBoolean("drive_through", false)
+            Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text(address, fontSize = 13.sp)
+            if (instore || drive_through) {
+                Row {
+                    if (instore) {
+                        Icon(
+                            painter = painterResource(R.drawable.instore),
+                            contentDescription = "In store",
+                            modifier = Modifier.size(32.dp),
+                            tint = iconTintColor,
+                        )
+                    }
 
-    @Composable
-    fun BoxScope.BackgroundImage() {
-        Image(
-            painter = painterResource(id = R.drawable.human),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize(),
-            alpha = 0.1f
-        )
+                    if (drive_through) {
+                        Icon(
+                            painter = painterResource(R.drawable.drivethrough),
+                            contentDescription = "Drive through",
+                            modifier = Modifier.size(32.dp),
+                            tint = iconTintColor,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     val configuration = LocalConfiguration.current
 
     @Composable
     fun PortraitLayout(modifier: Modifier = Modifier) {
-        Box(
-            modifier = modifier
-                .wrapContentSize()
-        ) {
-            BackgroundImage()
-            Column(modifier = Modifier) {
-                StoreInfo(modifier = Modifier)
-                CallButtonPortrait(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                )
-            }
+        Column(modifier = Modifier) {
+            StoreInfo()
+            CallButtonPortrait(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            )
         }
     }
 
     @Composable
     fun LandscapeLayout(modifier: Modifier = Modifier) {
         Box(modifier = modifier) {
-            BackgroundImage()
-            StoreInfo(modifier = Modifier)
+            StoreInfo()
             CallButtonLandScape(
                 modifier = Modifier
                     .align(alignment = Alignment.CenterEnd)

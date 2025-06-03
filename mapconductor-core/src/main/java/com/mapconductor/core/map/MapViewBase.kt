@@ -34,9 +34,11 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.LocalMarkerCollector
+import com.mapconductor.core.marker.MarkerState
 
 typealias OnMapClickHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
+typealias OnMarkerDragHandler = (String, GeoPoint) -> Unit
 
 @Composable
 fun <
@@ -70,6 +72,7 @@ fun <
     val context = LocalContext.current
 
     if (initState == InitState.Initialized) {
+        // 子コンポーネントを収集すr
         CompositionLocalProvider(
             LocalMarkerCollector provides scope.markerFlow,
             LocalInfoBubbleCollector provides scope.bubbleFlow,
@@ -78,6 +81,7 @@ fun <
                 content?.invoke(this)
             }
         }
+        // 収集した子コンポーネントを描画する
         val controller = controllerRef.value
         val holder = holderRef.value
         val map = holder?.map

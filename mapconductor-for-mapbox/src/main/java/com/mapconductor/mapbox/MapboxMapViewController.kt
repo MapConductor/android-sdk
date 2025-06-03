@@ -18,6 +18,8 @@ import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapconductor.core.MarkerManager
 import androidx.compose.ui.geometry.Offset
+import com.mapbox.maps.plugin.annotation.Annotation
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationDragListener
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
@@ -64,7 +66,8 @@ internal class MapboxMapViewController(
 ): IMapboxMapViewController,
     CameraChangedCallback,
     OnPointAnnotationClickListener,
-    OnMapClickListener
+    OnMapClickListener,
+    OnPointAnnotationDragListener
 {
 
     private lateinit var pointAnnotationManager: PointAnnotationManager
@@ -80,40 +83,49 @@ internal class MapboxMapViewController(
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
+        pointAnnotationManager.dragListeners.remove(this)
+        pointAnnotationManager.dragListeners.add(this)
     }
 
     private val markerOverlayManager = MarkerOverlayManager<PointAnnotation>(
         coroutine = coroutine,
         markerManager = MarkerManager(HexGeocell(WebMercator)),
         onRemove = { removes ->
-            val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
-            pointAnnotationManager.delete(annotations)
+            synchronized(pointAnnotationManager) {
+                val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
+                pointAnnotationManager.delete(annotations)
+            }
         },
         onAdd = { newMarkers ->
-            val options = newMarkers.map { params ->
-                return@map params.icon.toPointAnnotationOptions()
-                    .withPoint(
-                        GeoPoint.from(params.entry.state.position).toPoint(),
-                    )
-                    .withData(JsonObject().apply {
-                        addProperty("id", params.entry.id)
-                    })
-            }
+            synchronized(pointAnnotationManager) {
+                val options = newMarkers.map { params ->
+                    return@map params.icon.toPointAnnotationOptions()
+                        .withPoint(
+                            GeoPoint.from(params.entry.state.position).toPoint(),
+                        )
+                        .withData(JsonObject().apply {
+                            addProperty("id", params.entry.id)
+                        })
+                        .withDraggable(true)
+                }
 
-            return@MarkerOverlayManager pointAnnotationManager.create(options)
+                return@MarkerOverlayManager pointAnnotationManager.create(options)
+            }
         },
         onChange = { changes ->
-            changes.forEach { params ->
-                // TODO: アイコンに変更があったかどうかを比較
-                val option = params.icon.toPointAnnotationOptions()
-                    .withPoint(
-                        GeoPoint.from(params.entry.state.position).toPoint(),
-                    )
-                params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
-                params.marker.iconSize = option.iconSize
-                params.marker.iconImage = option.iconImage
-                params.marker.iconAnchor = option.iconAnchor
-                params.marker.iconOffset = option.iconOffset
+            synchronized(pointAnnotationManager) {
+                changes.forEach { params ->
+                    // TODO: アイコンに変更があったかどうかを比較
+                    val option = params.icon.toPointAnnotationOptions()
+                        .withPoint(
+                            GeoPoint.from(params.entry.state.position).toPoint(),
+                        )
+                    params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
+                    params.marker.iconSize = option.iconSize
+                    params.marker.iconImage = option.iconImage
+                    params.marker.iconAnchor = option.iconAnchor
+                    params.marker.iconOffset = option.iconOffset
+                }
             }
         },
     )
@@ -205,6 +217,31 @@ internal class MapboxMapViewController(
             }
         }
         return true
+    }
+
+    override fun onAnnotationDrag(annotation: Annotation<*>) {
+
+        val tag = annotation.getData() ?: return
+        val id = tag.asJsonObject.get("id")?.asString ?: return
+        when {
+            annotation is PointAnnotation -> onPointAnnotationDrag(id, annotation)
+            else -> {
+                // Do nothing here
+            }
+        }
+    }
+
+    fun onPointAnnotationDrag(id: String, annotation: PointAnnotation) {
+        val entry = markerOverlayManager.getMarkerEntry(id) ?: return
+        entry.state.position = annotation.point.toGeoPoint()
+    }
+
+    override fun onAnnotationDragFinished(annotation: Annotation<*>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onAnnotationDragStarted(annotation: Annotation<*>) {
+        TODO("Not yet implemented")
     }
 
 }

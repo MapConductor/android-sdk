@@ -7,13 +7,14 @@ import androidx.compose.runtime.remember
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewScope
 
-open class MarkerScope ()
+open class MarkerScope
 
 @Composable
 fun MapViewScope.Marker(
     entry: MarkerEntry,
 ) {
     val rememberEntry = remember { entry }
+
 
     if (!allMarkerKeys.contains(rememberEntry.state.id)) {
         allMarkerKeys.add(rememberEntry.state.id)
@@ -22,14 +23,6 @@ fun MapViewScope.Marker(
             markerFlow.value = markerFlow.value + rememberEntry
         }
     }
-}
-
-@Composable
-fun MapViewScope.Marker(
-    builder: MarkerBuilder.() -> Unit,
-) {
-    val entry = MarkerBuilder().apply(builder).build()
-    Marker(entry)
 }
 
 @Composable

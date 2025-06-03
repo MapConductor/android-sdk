@@ -9,6 +9,7 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
+import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -23,6 +24,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMarkerDragHandler
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +48,8 @@ class GoogleMapViewController(
     OnCameraMoveListener,
     OnCameraIdleListener,
     OnMarkerClickListener,
-    OnMapClickListener
+    OnMapClickListener,
+    OnMarkerDragListener
 {
 //    private val infoBubbles = InfoBubbleManager(
 //        coroutine = coroutine,
@@ -91,6 +94,7 @@ class GoogleMapViewController(
         holder.map.setOnCameraIdleListener(this)
         holder.map.setOnMarkerClickListener(this)
         holder.map.setOnMapClickListener(this)
+        holder.map.setOnMarkerDragListener(this)
     }
 
     override fun moveCamera(
@@ -179,6 +183,24 @@ class GoogleMapViewController(
         onMapTap?.let {
             coroutine.launch { it(position.toGeoPoint()) }
         }
+    }
+
+    override fun onMarkerDrag(marker: Marker) {
+        val markerId = marker.tag as? String ?: return
+        val entry = markerOverlayManager.getMarkerEntry(markerId) ?: return
+        entry.state.position = marker.position.toGeoPoint()
+    }
+
+    override fun onMarkerDragEnd(marker: Marker) {
+        val markerId = marker.tag as? String ?: return
+        val entry = markerOverlayManager.getMarkerEntry(markerId) ?: return
+        entry.state.position = marker.position.toGeoPoint()
+    }
+
+    override fun onMarkerDragStart(marker: Marker) {
+        val markerId = marker.tag as? String ?: return
+        val entry = markerOverlayManager.getMarkerEntry(markerId) ?: return
+        entry.state.position = marker.position.toGeoPoint()
     }
 }
 

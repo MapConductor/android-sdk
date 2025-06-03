@@ -1,11 +1,20 @@
 package com.mapconductor.core.marker
 
+import android.graphics.Bitmap
 import android.os.Parcelable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import com.mapconductor.core.MapOverlay
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.IdentifiedPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import java.io.ByteArrayOutputStream
 import java.util.UUID
 
 // ------- Core Types ----------
@@ -19,6 +28,7 @@ class MarkerState(
     val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     var extra: Parcelable? = null,
+    var visible: Boolean = true,
     icon: MarkerIcon? = null,
 ) {
 
@@ -86,4 +96,30 @@ data class MarkerEntry(
 ) : IdentifiedPoint {
     override val id: String get() = state.id
     override val point: IGeoPoint get() = state.position
+}
+
+
+data class BitmapIcon(
+    val bitmap: Bitmap,
+    val anchor: Offset,
+    val size: Size,
+) {
+    fun toByteArray(): ByteArray {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        return outputStream.toByteArray()
+    }
+}
+
+class MarkerOverlay(
+    override val flow: StateFlow<List<MarkerEntry>>,
+) : MapOverlay<MarkerEntry> {
+
+    override suspend fun render(data: List<MarkerEntry>, controller: MapViewController) {
+        controller.addMarkers(data)
+    }
+}
+
+val LocalMarkerCollector = compositionLocalOf<MutableStateFlow<List<MarkerEntry>>> {
+    error("Marker must be under the <MapView />")
 }

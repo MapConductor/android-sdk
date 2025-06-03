@@ -14,7 +14,6 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
-import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
 
 @Composable

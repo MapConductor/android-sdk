@@ -1,5 +1,6 @@
 package com.mapconductor.here
 
+import androidx.compose.foundation.gestures.rememberDraggableState
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.Metadata

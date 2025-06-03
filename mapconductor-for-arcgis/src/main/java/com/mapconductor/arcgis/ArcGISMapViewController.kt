@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import androidx.compose.runtime.collectAsState
 import androidx.core.graphics.drawable.toDrawable
 import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Camera
@@ -8,6 +9,8 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.core.MarkerManager
 import androidx.compose.ui.geometry.Offset
+import com.arcgismaps.geometry.GeometryEngine
+import com.arcgismaps.geometry.SpatialReference
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
@@ -22,6 +25,7 @@ import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.arcgismaps.geometry.Point
 
 interface IArcGISMapViewController: MapViewController {
     fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
@@ -105,6 +109,7 @@ class ArcGISMapViewController(
         onMapClick?.let { clickHandler ->
             coroutine.launch {
                 holder.map.onSingleTapConfirmed.collect { event ->
+
                     event.mapPoint?.let {
                         clickHandler(it.toGeoPoint())
                     }
@@ -124,8 +129,17 @@ class ArcGISMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
+        val spatial = SpatialReference.webMercator()
+        val mapPoint = GeoPoint.from(position).toPoint(spatial)
+
+        // 2. MapView の座標系に変換
+        val mapPointInMap = holder.map.spatialReference?.let { spatialRef ->
+            GeometryEngine.projectOrNull(mapPoint, spatial) as? Point
+        } ?: return Offset(-9999f, -9999f)
+
+
         val result = this.holder.map.locationToScreen(
-            point = GeoPoint.from(position).toPoint(),
+            point = mapPointInMap,
         )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
