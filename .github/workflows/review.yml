@@ -1,129 +1,43 @@
-name: Code Review with ReviewDog
+name: Claude PR Assistant
 
 on:
-  pull_request:
-    branches: [ "**" ] # 全てのターゲットブランチに対するPRで実行
-    # types: [opened, synchronize, reopened] # デフォルトでこれらのイベントでトリガー
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
-  reviewdog:
+  claude-code-action:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
-    name: Lint & ReviewDog on Changed Modules
-
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # ReviewDogが差分を正しく処理するために全履歴を取得
+          fetch-depth: 1
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: '17'
 
-      - name: Setup ReviewDog
-        uses: reviewdog/action-setup@v1
+      - name: Run Claude PR Action
+        id: claude
+        uses: anthropics/claude-code-action@beta
         with:
-          reviewdog_version: latest # または特定のバージョン
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          timeout_minutes: "60"
 
-      - name: Download hash cache
-        uses: actions/download-artifact@v4
-        with:
-          name: lint-hash-cache
-          path: .lint-hash-cache
-        continue-on-error: true # 最初の実行やキャッシュがない場合を考慮
-
-      - name: Read module list from projects.properties
-        id: define
-        run: |
-          modules=$(grep '^modules=' projects.properties | cut -d= -f2 | tr ',' ' ')
-          echo "modules=$modules" >> $GITHUB_OUTPUT
-
-      - name: Detect changed modules by hashing src/
-        id: detect
-        run: |
-          changed_modules=""
-          mkdir -p .lint-hash-cache
-          for module in ${{ steps.define.outputs.modules }}; do
-            hash=$(find "$module/src" -type f \( -name "*.kt" -o -name "*.xml" \) | sort | xargs sha256sum | sha256sum | cut -d ' ' -f1)
-            CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
-            if [ -f "$CACHE_KEY_FILE" ]; then
-              old_hash=$(cat "$CACHE_KEY_FILE")
-              if [ "$hash" == "$old_hash" ]; then
-                echo "Module $module unchanged based on local hash."
-                # PRの場合、ベースブランチとの差分で変更がなくても、
-                # 他の要因でLintが必要な場合もあるため、ここでは単純に続行させるか、
-                # PRの差分全体で変更されたファイルを含むモジュールを対象にするロジックも検討できます。
-                # シンプルにするため、ここでは元のロジックを維持します。
-                # continue # 必要に応じてコメントアウトまたは調整
-              fi
-            fi
-            echo "Module changed (or needs check for PR): $module"
-            changed_modules="$changed_modules $module"
-            echo "$hash" > "$CACHE_KEY_FILE" # PRごとにもハッシュを更新
-          done
-          echo "changed_modules=${changed_modules}" >> $GITHUB_OUTPUT
-
-      - name: Run ktlintCheck
-        if: steps.detect.outputs.changed_modules != ''
-        run: |
-          for module in ${{ steps.detect.outputs.changed_modules }}; do
-            echo "Running ktlintCheck for $module (for ReviewDog)"
-            # ReviewDogがレポートを生成するために、エラーがあっても続行する
-            ./gradlew ":$module:ktlintCheck" || echo "ktlintCheck for $module failed but proceeding to report."
-          done
-
-      - name: Run Android Lint
-        if: steps.detect.outputs.changed_modules != ''
-        run: |
-          for module in ${{ steps.detect.outputs.changed_modules }}; do
-            echo "Running lint for $module (for ReviewDog)"
-            # ReviewDogがレポートを生成するために、エラーがあっても続行する
-            ./gradlew ":$module:lint" || echo "Lint for $module failed but proceeding to report."
-          done
-
-      - name: Run ReviewDog for Ktlint
-        if: steps.detect.outputs.changed_modules != '' # 変更があったモジュールのみ
-        run: |
-          for module in ${{ steps.detect.outputs.changed_modules }}; do
-            ktlint_report_file=$(find "$module/build/reports/ktlint" -name "*.checkstyle.xml" -print -quit)
-            if [ -n "$ktlint_report_file" ] && [ -f "$ktlint_report_file" ]; then
-              echo "Reporting Ktlint results for $module using $ktlint_report_file"
-              reviewdog -name="ktlint ($module)" \
-                -f=checkstyle \
-                -diff="git diff origin/${{ github.base_ref }}" \
-                -reporter=github-pr-review \
-                -level=warning < "$ktlint_report_file"
-            else
-              echo "Ktlint checkstyle report not found for $module."
-            fi
-          done
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run ReviewDog for Android Lint
-        if: steps.detect.outputs.changed_modules != '' # 変更があったモジュールのみ
-        run: |
-          for module in ${{ steps.detect.outputs.changed_modules }}; do
-            lint_file=$(find "$module/build/reports" -name "lint-results.xml" -print -quit)
-            if [ -n "$lint_file" ] && [ -f "$lint_file" ]; then
-              echo "Reporting Android Lint results for $module using $lint_file"
-              reviewdog -name="android-lint ($module)" \
-                -f=checkstyle \
-                -diff="git diff origin/${{ github.base_ref }}" \
-                -reporter=github-pr-review \
-                -level=warning < "$lint_file"
-            else
-              echo "Android Lint report (lint-results.xml) not found for $module."
-            fi
-          done
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload hash cache
-        if: always() # 常にキャッシュをアップロード
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-hash-cache # lint.yml と同じキャッシュ名を使用
-          path: .lint-hash-cache/
