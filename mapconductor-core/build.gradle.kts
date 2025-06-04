@@ -2,9 +2,17 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
-     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.compose)
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
+ktlint {
+    android.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+}
 
 android {
     namespace = "com.mapconductor.core"
@@ -28,7 +36,7 @@ android {
             isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }

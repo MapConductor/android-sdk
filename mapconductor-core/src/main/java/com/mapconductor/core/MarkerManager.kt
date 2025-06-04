@@ -1,5 +1,19 @@
 package com.mapconductor.core
 
+import androidx.compose.ui.geometry.Size
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import androidx.core.graphics.withScale
+import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.geocell.HexCell
+import com.mapconductor.core.geocell.HexCellRegistry
+import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.marker.MarkerIconProp
+import com.mapconductor.core.spherical.haversineDistance
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.BlurMaskFilter
@@ -15,23 +29,10 @@ import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
-import androidx.compose.ui.geometry.Size
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
-import androidx.core.graphics.withScale
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.geocell.HexCell
-import com.mapconductor.core.geocell.HexCellRegistry
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntry
-import com.mapconductor.core.marker.MarkerIconProp
-import com.mapconductor.core.spherical.haversineDistance
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 
-class MarkerManager<ActualMarker>(geocell: HexGeocell) {
-
+class MarkerManager<ActualMarker>(
+    geocell: HexGeocell,
+) {
     val bitmapCache: LruCache<Int, BitmapIcon> by lazy {
         // Get max memory size by bytes
         val maxMemory = Runtime.getRuntime().maxMemory()
@@ -39,35 +40,36 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
 
         // Cache bytes
         object : LruCache<Int, BitmapIcon>(cacheSize.toInt()) {
-            override fun sizeOf(key: Int, iconRes: BitmapIcon): Int {
-                return iconRes.bitmap.byteCount / 1024
-            }
+            override fun sizeOf(
+                key: Int,
+                iconRes: BitmapIcon,
+            ): Int = iconRes.bitmap.byteCount / 1024
         }
     }
 
-    private val _markers: ConcurrentHashMap<String, ActualMarker> = ConcurrentHashMap()
-    private val _entries: ConcurrentMap<String, MarkerEntry> = ConcurrentHashMap()
-    private val _cellRegistry = HexCellRegistry<MarkerEntry>(
-        geocell = geocell,
+    private val markers: ConcurrentHashMap<String, ActualMarker> = ConcurrentHashMap()
+    private val entries: ConcurrentMap<String, MarkerEntry> = ConcurrentHashMap()
+    private val cellRegistry =
+        HexCellRegistry<MarkerEntry>(
+            geocell = geocell,
+            // Maximum zoom level
+            zoom = 20.0,
+        )
 
-        // Maximum zoom level
-        zoom = 20.0,
-    )
+    fun containsKey(id: String): Boolean = markers.containsKey(id)
 
-    fun containsKey(id: String): Boolean = _markers.containsKey(id)
+    fun equalsValue(entry: MarkerEntry): Boolean = entries.get(entry.id)?.equals(entry) ?: false
 
-    fun equalsValue(entry: MarkerEntry): Boolean = _entries.get(entry.id)?.equals(entry) ?: false
+    fun getValueSet(): Set<MarkerEntry> = entries.values.toSet()
 
-    fun getValueSet(): Set<MarkerEntry> = _entries.values.toSet()
+    fun getMarker(id: String): ActualMarker? = markers.get(id)
 
-    fun getMarker(id: String): ActualMarker? = _markers.get(id)
-
-    fun getEntry(id: String): MarkerEntry? = _entries.get(id)
+    fun getEntry(id: String): MarkerEntry? = entries.get(id)
 
     fun removeEntry(id: String) {
-        _markers.remove(id)
-        _entries.remove(id)?.let {
-            _cellRegistry.removePoint(it)
+        markers.remove(id)
+        entries.remove(id)?.let {
+            cellRegistry.removePoint(it)
         }
     }
 
@@ -75,64 +77,69 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         position: IGeoPoint,
         zoom: Double,
         pixels: Double,
-        tileSize: Int = 256
-    ): Double = _cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
+        tileSize: Int = 256,
+    ): Double = cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
 
     fun findNearest(position: IGeoPoint): MarkerEntry? {
-        val cell = _cellRegistry.findNearest(position) ?: return null
-        val entryIDs = _cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
-            entryIDs.sortedBy { entryId ->
-                _entries[entryId]?.let { entry ->
-                    haversineDistance(position, entry.point)
+        val cell = cellRegistry.findNearest(position) ?: return null
+        val entryIDs =
+            cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
+                entryIDs.sortedBy { entryId ->
+                    entries[entryId]?.let { entry ->
+                        haversineDistance(position, entry.point)
+                    }
                 }
-            }
-        } ?: return null
+            } ?: return null
 
         val entryId = entryIDs[0]
-        return _entries[entryId]
+        return entries[entryId]
     }
 
-    fun findByIdPrefix(prefix: String): List<HexCell> =_cellRegistry.findByIdPrefix(prefix)
+    fun findByIdPrefix(prefix: String): List<HexCell> = cellRegistry.findByIdPrefix(prefix)
 
-    fun registerEntry(entry: MarkerEntry, marker: ActualMarker) {
-        _markers[entry.id] = marker
-        _entries[entry.id] = entry
-        _cellRegistry.setPoint(entry)
+    fun registerEntry(
+        entry: MarkerEntry,
+        marker: ActualMarker,
+    ) {
+        markers[entry.id] = marker
+        entries[entry.id] = entry
+        cellRegistry.setPoint(entry)
     }
 
     fun updateEntry(entry: MarkerEntry) {
-        _entries[entry.id] = entry
-        _cellRegistry.setPoint(entry)
+        entries[entry.id] = entry
+        cellRegistry.setPoint(entry)
     }
 
     fun forEach(action: (MarkerEntry, ActualMarker) -> Unit) {
-        _markers.keys.forEach { key ->
-            action(_entries[key]!!, _markers[key]!!)
+        markers.keys.forEach { key ->
+            action(entries[key]!!, markers[key]!!)
         }
     }
 
     fun clear() {
-        _markers.clear()
-        _entries.clear()
-        _cellRegistry.clear()
+        markers.clear()
+        entries.clear()
+        cellRegistry.clear()
     }
 
-    fun getBitmapIcon(icon: MarkerIconProp) : BitmapIcon {
+    fun getBitmapIcon(icon: MarkerIconProp): BitmapIcon {
         val key = icon.hashCode()
         val cache = bitmapCache.get(key)
         if (cache != null) return cache
 
-        val iconBitmap = createDefaultMarkerShape(
-            fillColor = icon.fillColor,
-            strokeColor = icon.strokeColor,
-            strokeWidth = icon.strokeWidth,
-            scale = icon.scale,
-            label = icon.label,
-            labelTextColor = icon.labelTextColor,
-            labelTextSizeLogical = icon.labelTextSizeLogical,
-            fillDrawable = icon.fillDrawable,
-            iconDrawable = icon.iconDrawable,
-        )
+        val iconBitmap =
+            createDefaultMarkerShape(
+                fillColor = icon.fillColor,
+                strokeColor = icon.strokeColor,
+                strokeWidth = icon.strokeWidth,
+                scale = icon.scale,
+                label = icon.label,
+                labelTextColor = icon.labelTextColor,
+                labelTextSizeLogical = icon.labelTextSizeLogical,
+                fillDrawable = icon.fillDrawable,
+                iconDrawable = icon.iconDrawable,
+            )
         bitmapCache.put(key, iconBitmap)
         return iconBitmap
     }
@@ -141,22 +148,29 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         canvasSize: Size,
         iconRect: RectF,
         bitmap: Bitmap,
-        fillColor: Int? = null
+        fillColor: Int? = null,
     ): Bitmap {
-
         val canvasBitmap = createBitmap(canvasSize.width.toInt(), canvasSize.height.toInt())
 
         Canvas(canvasBitmap).apply {
             if (fillColor != null) {
-                drawRect(Rect(0, 0, canvasSize.width.toInt(), canvasSize.height.toInt()), Paint().also {
-                    it.color = fillColor
-                    it.style = Paint.Style.FILL
-                })
+                drawRect(
+                    Rect(0, 0, canvasSize.width.toInt(), canvasSize.height.toInt()),
+                    Paint().also {
+                        it.color = fillColor
+                        it.style = Paint.Style.FILL
+                    },
+                )
             }
-            drawBitmap(bitmap, null, iconRect, Paint().also {
-                it.isAntiAlias = true
-                it.flags = Paint.FILTER_BITMAP_FLAG
-            })
+            drawBitmap(
+                bitmap,
+                null,
+                iconRect,
+                Paint().also {
+                    it.isAntiAlias = true
+                    it.flags = Paint.FILTER_BITMAP_FLAG
+                },
+            )
         }
 
         return canvasBitmap
@@ -187,200 +201,211 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         val scaleX = width / pathCoordinateSystemWidth
         val scaleY = height / pathCoordinateSystemHeight
 
-
         val scaleFactor = 28.0f / 24.0f
         val offsetX = 2.0f
         val offsetY = 2.0f
 
-        val strokePath = Path().apply {
+        val strokePath =
+            Path().apply {
+                // --- 最初のサブパス (外側の形状) ---
+                // "m12 0" -> moveTo(12*s + offsetX, 0*s + offsetY)
+                moveTo(12f * scaleFactor + offsetX, 0f * scaleFactor + offsetY) // (16f, 2f)
 
-            // --- 最初のサブパス (外側の形状) ---
-            // "m12 0" -> moveTo(12*s + offsetX, 0*s + offsetY)
-            moveTo(12f * scaleFactor + offsetX, 0f * scaleFactor + offsetY) // (16f, 2f)
-
-            // "c-4.4183 2.3685e-15 -8 3.5817-8 8" - relative cubicTo (all params scaled)
-            rCubicTo(
-                -4.4183f * scaleFactor,
-                2.3685e-15f * scaleFactor,
-                -8f * scaleFactor,
-                3.5817f * scaleFactor,
-                -8f * scaleFactor,
-                8f * scaleFactor
-            )
-            // (-5.1546833f, 0f, -9.333333f, 4.17865f, -9.333333f, 9.333333f)
-
-            // "0 1.421 0.3816 2.75 1.0312 3.906" - implicit relative cubicTo
-            rCubicTo(
-                0f * scaleFactor,
-                1.421f * scaleFactor,
-                0.3816f * scaleFactor,
-                2.75f * scaleFactor,
-                1.0312f * scaleFactor,
-                3.906f * scaleFactor
-            )
-            // (0f, 1.6578333f, 0.4452f, 3.2083333f, 1.2030667f, 4.557f)
-
-            // "0.1079 0.192 0.221 0.381 0.3438 0.563" - implicit relative cubicTo
-            rCubicTo(
-                0.1079f * scaleFactor,
-                0.192f * scaleFactor,
-                0.221f * scaleFactor,
-                0.381f * scaleFactor,
-                0.3438f * scaleFactor,
-                0.563f * scaleFactor
-            )
-            // (0.12588333f, 0.224f, 0.25783333f, 0.4445f, 0.4011f, 0.6568333f)
-
-            // "l6.625 11.531" - relative lineTo
-            rLineTo(6.625f * scaleFactor, 11.531f * scaleFactor)
-            // (7.7291665f, 13.452833f)
-
-            // "6.625-11.531" - implicit relative lineTo
-            rLineTo(6.625f * scaleFactor, -11.531f * scaleFactor)
-            // (7.7291665f, -13.452833f)
-
-            // "c0.102-0.151 0.19-0.311 0.281-0.469" - relative cubicTo
-            rCubicTo(
-                0.102f * scaleFactor,
-                -0.151f * scaleFactor,
-                0.19f * scaleFactor,
-                -0.311f * scaleFactor,
-                0.281f * scaleFactor,
-                -0.469f * scaleFactor
-            )
-            // (0.119f, -0.17616667f, 0.22166666f, -0.36283332f, 0.32783332f, -0.54716665f)
-
-            // "l0.063-0.094" - relative lineTo
-            rLineTo(0.063f * scaleFactor, -0.094f * scaleFactor)
-            // (0.0735f, -0.10966667f)
-
-            // "c0.649-1.156 1.031-2.485 1.031-3.906" - relative cubicTo
-            rCubicTo(
-                0.649f * scaleFactor,
-                -1.156f * scaleFactor,
-                1.031f * scaleFactor,
-                -2.485f * scaleFactor,
-                1.031f * scaleFactor,
-                -3.906f * scaleFactor
-            )
-            // (0.7571667f, -1.3486667f, 1.2028333f, -2.8991666f, 1.2028333f, -4.557f)
-
-            // "0-4.4183-3.582-8-8-8" - implicit relative cubicTo
-            rCubicTo(
-                0f * scaleFactor,
-                -4.4183f * scaleFactor,
-                -3.582f * scaleFactor,
-                -8f * scaleFactor,
-                -8f * scaleFactor,
-                -8f * scaleFactor
-            )
-            // (0f, -5.1546833f, -4.179f, -9.333333f, -9.333333f, -9.333333f)
-
-            // "z" - closePath
-            close() // 最初のサブパスを閉じる
-        }
-
-        val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-            if (fillDrawable != null) {
-                val iconCanvasSize = Size(
-                    (svgOriginalWidth * 8).toFloat(),
-                    (svgOriginalHeight * 8).toFloat(),
+                // "c-4.4183 2.3685e-15 -8 3.5817-8 8" - relative cubicTo (all params scaled)
+                rCubicTo(
+                    -4.4183f * scaleFactor,
+                    2.3685e-15f * scaleFactor,
+                    -8f * scaleFactor,
+                    3.5817f * scaleFactor,
+                    -8f * scaleFactor,
+                    8f * scaleFactor,
                 )
-                val iconBitmap = this.drawIcon(
-                    canvasSize = iconCanvasSize,
-                    iconRect = RectF(
-                        iconCanvasSize.width * 0f,
-                        0f,
-                        iconCanvasSize.width * 1f,
-                        iconCanvasSize.height * 1f,
-                    ),
-                    bitmap = toBitmap(
-                        fillDrawable,
-                        iconCanvasSize.width.toInt(),
-                        iconCanvasSize.height.toInt(),
-                    ),
-                    fillColor = fillColor ?: Color.RED,
+                // (-5.1546833f, 0f, -9.333333f, 4.17865f, -9.333333f, 9.333333f)
+
+                // "0 1.421 0.3816 2.75 1.0312 3.906" - implicit relative cubicTo
+                rCubicTo(
+                    0f * scaleFactor,
+                    1.421f * scaleFactor,
+                    0.3816f * scaleFactor,
+                    2.75f * scaleFactor,
+                    1.0312f * scaleFactor,
+                    3.906f * scaleFactor,
                 )
-                val iconBitmapTileMode = Shader.TileMode.CLAMP
-                val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
+                // (0f, 1.6578333f, 0.4452f, 3.2083333f, 1.2030667f, 4.557f)
 
-                // BitmapShaderのローカルマトリックスを設定して、
-                // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
-                val shaderMatrix = Matrix()
-                val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap.width.toFloat()
-                val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap.height.toFloat()
-                shaderMatrix.setScale(shaderScaleX, shaderScaleY)
+                // "0.1079 0.192 0.221 0.381 0.3438 0.563" - implicit relative cubicTo
+                rCubicTo(
+                    0.1079f * scaleFactor,
+                    0.192f * scaleFactor,
+                    0.221f * scaleFactor,
+                    0.381f * scaleFactor,
+                    0.3438f * scaleFactor,
+                    0.563f * scaleFactor,
+                )
+                // (0.12588333f, 0.224f, 0.25783333f, 0.4445f, 0.4011f, 0.6568333f)
 
-                // 丸い部分の中心の論理座標 (24x24系)
-                val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
-                val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.5
-                shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
-                bitmapShader.setLocalMatrix(shaderMatrix)
-                it.shader = bitmapShader
+                // "l6.625 11.531" - relative lineTo
+                rLineTo(6.625f * scaleFactor, 11.531f * scaleFactor)
+                // (7.7291665f, 13.452833f)
+
+                // "6.625-11.531" - implicit relative lineTo
+                rLineTo(6.625f * scaleFactor, -11.531f * scaleFactor)
+                // (7.7291665f, -13.452833f)
+
+                // "c0.102-0.151 0.19-0.311 0.281-0.469" - relative cubicTo
+                rCubicTo(
+                    0.102f * scaleFactor,
+                    -0.151f * scaleFactor,
+                    0.19f * scaleFactor,
+                    -0.311f * scaleFactor,
+                    0.281f * scaleFactor,
+                    -0.469f * scaleFactor,
+                )
+                // (0.119f, -0.17616667f, 0.22166666f, -0.36283332f, 0.32783332f, -0.54716665f)
+
+                // "l0.063-0.094" - relative lineTo
+                rLineTo(0.063f * scaleFactor, -0.094f * scaleFactor)
+                // (0.0735f, -0.10966667f)
+
+                // "c0.649-1.156 1.031-2.485 1.031-3.906" - relative cubicTo
+                rCubicTo(
+                    0.649f * scaleFactor,
+                    -1.156f * scaleFactor,
+                    1.031f * scaleFactor,
+                    -2.485f * scaleFactor,
+                    1.031f * scaleFactor,
+                    -3.906f * scaleFactor,
+                )
+                // (0.7571667f, -1.3486667f, 1.2028333f, -2.8991666f, 1.2028333f, -4.557f)
+
+                // "0-4.4183-3.582-8-8-8" - implicit relative cubicTo
+                rCubicTo(
+                    0f * scaleFactor,
+                    -4.4183f * scaleFactor,
+                    -3.582f * scaleFactor,
+                    -8f * scaleFactor,
+                    -8f * scaleFactor,
+                    -8f * scaleFactor,
+                )
+                // (0f, -5.1546833f, -4.179f, -9.333333f, -9.333333f, -9.333333f)
+
+                // "z" - closePath
+                close() // 最初のサブパスを閉じる
             }
-            it.style = Paint.Style.FILL
-            it.color = fillColor ?: Color.RED
-        }
 
-        val iconPaint = iconDrawable?.let {
+        val fillPaint =
             Paint(Paint.ANTI_ALIAS_FLAG).also {
-                it.strokeWidth = 0f
-                val iconCanvasSize = Size(
-                    (svgOriginalWidth * 8).toFloat(),
-                    (svgOriginalHeight * 8).toFloat(),
-                )
-                val iconBitmap2 = this.drawIcon(
-                    canvasSize = iconCanvasSize,
-                    iconRect = RectF(
-                        iconCanvasSize.width * 0.15f,
-                        0f,
-                        iconCanvasSize.width * 0.85f,
-                        iconCanvasSize.height * 0.7f,
-                    ),
-                    bitmap = toBitmap(
-                        iconDrawable,
-                        iconCanvasSize.width.toInt(),
-                        iconCanvasSize.height.toInt(),
-                    ),
-                )
-                val iconBitmapTileMode = Shader.TileMode.CLAMP
-                val bitmapShader = BitmapShader(iconBitmap2, iconBitmapTileMode, iconBitmapTileMode)
+                if (fillDrawable != null) {
+                    val iconCanvasSize =
+                        Size(
+                            (svgOriginalWidth * 8).toFloat(),
+                            (svgOriginalHeight * 8).toFloat(),
+                        )
+                    val iconBitmap =
+                        this.drawIcon(
+                            canvasSize = iconCanvasSize,
+                            iconRect =
+                                RectF(
+                                    iconCanvasSize.width * 0f,
+                                    0f,
+                                    iconCanvasSize.width * 1f,
+                                    iconCanvasSize.height * 1f,
+                                ),
+                            bitmap =
+                                toBitmap(
+                                    fillDrawable,
+                                    iconCanvasSize.width.toInt(),
+                                    iconCanvasSize.height.toInt(),
+                                ),
+                            fillColor = fillColor ?: Color.RED,
+                        )
+                    val iconBitmapTileMode = Shader.TileMode.CLAMP
+                    val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
 
-                // BitmapShaderのローカルマトリックスを設定して、
-                // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
-                val shaderMatrix = Matrix()
-                val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap2.width.toFloat()
-                val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap2.height.toFloat()
-                shaderMatrix.setScale(shaderScaleX, shaderScaleY)
+                    // BitmapShaderのローカルマトリックスを設定して、
+                    // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
+                    val shaderMatrix = Matrix()
+                    val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap.width.toFloat()
+                    val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap.height.toFloat()
+                    shaderMatrix.setScale(shaderScaleX, shaderScaleY)
 
-                // 丸い部分の中心の論理座標 (24x24系)
-                val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
-                val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.35
-                shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
-                bitmapShader.setLocalMatrix(shaderMatrix)
-                it.shader = bitmapShader
+                    // 丸い部分の中心の論理座標 (24x24系)
+                    val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
+                    val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.5
+                    shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
+                    bitmapShader.setLocalMatrix(shaderMatrix)
+                    it.shader = bitmapShader
+                }
+                it.style = Paint.Style.FILL
+                it.color = fillColor ?: Color.RED
             }
-        }
 
-        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-            it.style = Paint.Style.STROKE
-            it.strokeWidth = strokeWidth ?: 0f // SVGでのstrokeWidthに相当
-            it.color = strokeColor ?: Color.WHITE
-        }
+        val iconPaint =
+            iconDrawable?.let {
+                Paint(Paint.ANTI_ALIAS_FLAG).also {
+                    it.strokeWidth = 0f
+                    val iconCanvasSize =
+                        Size(
+                            (svgOriginalWidth * 8).toFloat(),
+                            (svgOriginalHeight * 8).toFloat(),
+                        )
+                    val iconBitmap2 =
+                        this.drawIcon(
+                            canvasSize = iconCanvasSize,
+                            iconRect =
+                                RectF(
+                                    iconCanvasSize.width * 0.15f,
+                                    0f,
+                                    iconCanvasSize.width * 0.85f,
+                                    iconCanvasSize.height * 0.7f,
+                                ),
+                            bitmap =
+                                toBitmap(
+                                    iconDrawable,
+                                    iconCanvasSize.width.toInt(),
+                                    iconCanvasSize.height.toInt(),
+                                ),
+                        )
+                    val iconBitmapTileMode = Shader.TileMode.CLAMP
+                    val bitmapShader = BitmapShader(iconBitmap2, iconBitmapTileMode, iconBitmapTileMode)
 
-        val shadowPaint = Paint().apply {
-            this.color = Color.argb(0.5f, 0.0f, 0.0f, 0.0f)
-            this.isAntiAlias = true
-            // BlurMaskFilterの半径はピクセル単位。論理半径をピクセルに変換。
-            // scaleXとscaleYが異なる場合を考慮し、平均または主要な軸のスケールを使う。ここではscaleYを例に。
-            val pixelBlurRadius = 0.5
-            if (pixelBlurRadius > 0f) { // 半径0だとエラーになるため
-                this.maskFilter = BlurMaskFilter(pixelBlurRadius.toFloat(), BlurMaskFilter.Blur.OUTER)
-            } else {
-                // 半径が非常に小さい場合は、単純な色描画にフォールバック（または何もしない）
-                // ここでは何もしない例（maskFilterがnullのまま）
+                    // BitmapShaderのローカルマトリックスを設定して、
+                    // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
+                    val shaderMatrix = Matrix()
+                    val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap2.width.toFloat()
+                    val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap2.height.toFloat()
+                    shaderMatrix.setScale(shaderScaleX, shaderScaleY)
+
+                    // 丸い部分の中心の論理座標 (24x24系)
+                    val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
+                    val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.35
+                    shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
+                    bitmapShader.setLocalMatrix(shaderMatrix)
+                    it.shader = bitmapShader
+                }
             }
-        }
+
+        val strokePaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).also {
+                it.style = Paint.Style.STROKE
+                it.strokeWidth = strokeWidth ?: 0f // SVGでのstrokeWidthに相当
+                it.color = strokeColor ?: Color.WHITE
+            }
+
+        val shadowPaint =
+            Paint().apply {
+                this.color = Color.argb(0.5f, 0.0f, 0.0f, 0.0f)
+                this.isAntiAlias = true
+                // BlurMaskFilterの半径はピクセル単位。論理半径をピクセルに変換。
+                // scaleXとscaleYが異なる場合を考慮し、平均または主要な軸のスケールを使う。ここではscaleYを例に。
+                val pixelBlurRadius = 0.5
+                if (pixelBlurRadius > 0f) { // 半径0だとエラーになるため
+                    this.maskFilter = BlurMaskFilter(pixelBlurRadius.toFloat(), BlurMaskFilter.Blur.OUTER)
+                } else {
+                    // 半径が非常に小さい場合は、単純な色描画にフォールバック（または何もしない）
+                    // ここでは何もしない例（maskFilterがnullのまま）
+                }
+            }
 
         canvas.withScale(scaleX.toFloat(), scaleY.toFloat()) {
             drawPath(strokePath, shadowPaint)
@@ -389,17 +414,17 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
                 drawPath(strokePath, it)
             }
 
-
             // --- 3. ラベルの描画 (labelが指定されている場合) ---
             if (label != null) {
-                val textPaint = Paint().apply {
-                    this.color = labelTextColor ?: Color.BLACK
-                    this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
-                    this.textAlign = Paint.Align.CENTER
-                    this.typeface = Typeface.DEFAULT_BOLD
-                    this.isAntiAlias = true
-                    this.isSubpixelText = true // より滑らかなテキスト描画のため
-                }
+                val textPaint =
+                    Paint().apply {
+                        this.color = labelTextColor ?: Color.BLACK
+                        this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
+                        this.textAlign = Paint.Align.CENTER
+                        this.typeface = Typeface.DEFAULT_BOLD
+                        this.isAntiAlias = true
+                        this.isSubpixelText = true // より滑らかなテキスト描画のため
+                    }
 
                 // 丸い部分の中心の論理座標 (32x32系)
                 val centerXLogical = 16f
@@ -417,15 +442,17 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         }
 
         val visualNormalizedTipY = 0.9375f
-        val anchor = Offset(
-            x = 0.5,
-            y = visualNormalizedTipY + (0.5 / 64.0)
-        )
+        val anchor =
+            Offset(
+                x = 0.5,
+                y = visualNormalizedTipY + (0.5 / 64.0),
+            )
 
-        val size = Size(
-            width = width.toFloat(),
-            height = height.toFloat(),
-        )
+        val size =
+            Size(
+                width = width.toFloat(),
+                height = height.toFloat(),
+            )
 
         return BitmapIcon(
             bitmap = bitmap,
@@ -434,8 +461,11 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
         )
     }
 
-    private fun toBitmap(drawable: Drawable, width: Int, height: Int): Bitmap {
-
+    private fun toBitmap(
+        drawable: Drawable,
+        width: Int,
+        height: Int,
+    ): Bitmap {
         return when (drawable) {
             is BitmapDrawable -> {
 //                drawable.bitmap.asImageBitmap().asAndroidBitmap()
@@ -450,5 +480,4 @@ class MarkerManager<ActualMarker>(geocell: HexGeocell) {
             }
         }
     }
-
 }

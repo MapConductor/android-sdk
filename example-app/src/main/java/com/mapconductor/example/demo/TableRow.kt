@@ -11,10 +11,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TableRow(label: String, value: String) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 4.dp)
+fun TableRow(
+    label: String,
+    value: String,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
     ) {
         Text(
             text = label,
@@ -25,7 +30,7 @@ fun TableRow(label: String, value: String) {
         Text(
             text = value,
             modifier = Modifier.weight(1f),
-            fontSize = 16.sp
+            fontSize = 16.sp,
         )
     }
 }
