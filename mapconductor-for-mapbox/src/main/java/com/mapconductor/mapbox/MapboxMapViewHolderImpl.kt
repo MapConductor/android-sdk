@@ -1,16 +1,17 @@
 package com.mapconductor.mapbox
 
-import android.content.Context
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxLifecycleObserver
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.plugin.lifecycle.lifecycle
-import com.mapconductor.core.MapViewHolder
+import com.mapconductor.core.map.MapViewHolder
+import android.content.Context
 
 class MapboxMapViewHolderImpl private constructor(
-    override val mapView: MapView
-): MapViewHolder<MapView, MapboxMap>, MapboxLifecycleObserver {
+    override val mapView: MapView,
+) : MapViewHolder<MapView, MapboxMap>,
+    MapboxLifecycleObserver {
     override lateinit var map: MapboxMap
 
     init {
@@ -22,7 +23,7 @@ class MapboxMapViewHolderImpl private constructor(
             context: Context,
             mapInitOptions: MapInitOptions,
         ): MapViewHolder<MapView, MapboxMap> {
-           val mapView = MapView(context, mapInitOptions)
+            val mapView = MapView(context, mapInitOptions)
             val holder = MapboxMapViewHolderImpl(mapView)
             holder.map = mapView.mapboxMap
             return holder
@@ -42,7 +43,10 @@ class MapboxMapViewHolderImpl private constructor(
 //
 //    override fun destroy() = Unit
     override fun onDestroy() = Unit
+
     override fun onLowMemory() = Unit
+
     override fun onStart() = Unit
+
     override fun onStop() = Unit
 }

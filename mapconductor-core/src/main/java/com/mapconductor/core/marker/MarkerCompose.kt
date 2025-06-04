@@ -1,6 +1,5 @@
 package com.mapconductor.core.marker
 
-import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
@@ -9,8 +8,9 @@ import com.mapconductor.core.info.InfoBubbleSpec
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.map.MapViewScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import android.os.Parcelable
 
-open class MarkerScope (
+open class MarkerScope(
     val bubbleCollector: MutableStateFlow<List<InfoBubbleSpec>>,
 )
 
@@ -50,13 +50,15 @@ fun MapViewScope.Marker(
     onClick: MarkerClickHandler? = null,
     content: (@Composable MarkerScope.() -> Unit)? = null,
 ) {
-    val handlers = MarkerHandlers(
-        onClick = onClick,
-    )
-    val entry = MarkerEntry(
-        state = state,
-        handlers = handlers,
-    )
+    val handlers =
+        MarkerHandlers(
+            onClick = onClick,
+        )
+    val entry =
+        MarkerEntry(
+            state = state,
+            handlers = handlers,
+        )
     Marker(entry, content)
 }
 
@@ -68,17 +70,20 @@ fun MapViewScope.Marker(
     onClick: MarkerClickHandler? = null,
     content: (@Composable MarkerScope.() -> Unit)? = null,
 ) {
-    val state = MarkerState(
-        position = position,
-        extra = extra,
-        icon = icon,
-    )
-    val handlers = MarkerHandlers(
-        onClick = onClick,
-    )
-    val entry = MarkerEntry(
-        state = state,
-        handlers = handlers,
-    )
+    val state =
+        MarkerState(
+            position = position,
+            extra = extra,
+            icon = icon,
+        )
+    val handlers =
+        MarkerHandlers(
+            onClick = onClick,
+        )
+    val entry =
+        MarkerEntry(
+            state = state,
+            handlers = handlers,
+        )
     Marker(entry, content)
 }

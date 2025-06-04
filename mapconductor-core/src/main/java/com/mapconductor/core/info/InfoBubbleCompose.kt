@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import com.mapconductor.core.marker.MarkerScope
 import com.mapconductor.core.marker.MarkerState
 
-
 @Composable
 fun MarkerScope.InfoAnchor(
     props: MarkerState,
@@ -35,7 +34,7 @@ fun MarkerScope.InfoBubble(
     contentPadding: Dp = 16.dp,
     cornerRadius: Dp = 8.dp,
     tailSize: Dp = 16.dp,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     InfoAnchor(
         props = markerState,

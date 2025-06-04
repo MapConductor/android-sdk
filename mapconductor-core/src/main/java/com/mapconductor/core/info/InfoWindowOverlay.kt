@@ -21,21 +21,21 @@ internal fun InfoWindowCompose(
     centerOffset: Offset,
     screenOffset: Offset,
     anchor: Offset,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
 
     Box(
-        modifier = Modifier
-            .onGloballyPositioned {
-                size = it.size
-            }
-            .offset {
-                IntOffset(
-                    (screenOffset.x - (anchor.x - 0.5) * size.width - centerOffset.x).toInt(),
-                    (screenOffset.y - (anchor.y - 0.5) * size.height - centerOffset.y).toInt(),
-                )
-            },
+        modifier =
+            Modifier
+                .onGloballyPositioned {
+                    size = it.size
+                }.offset {
+                    IntOffset(
+                        (screenOffset.x - (anchor.x - 0.5) * size.width - centerOffset.x).toInt(),
+                        (screenOffset.y - (anchor.y - 0.5) * size.height - centerOffset.y).toInt(),
+                    )
+                },
     ) {
         content()
     }
@@ -47,6 +47,7 @@ data class InfoBubbleSpec(
     val content: @Composable () -> Unit,
 )
 
-val LocalInfoBubbleCollector = compositionLocalOf<MutableStateFlow<List<InfoBubbleSpec>>> {
-    error("InfoBubble must be under <MapView />")
-}
+val LocalInfoBubbleCollector =
+    compositionLocalOf<MutableStateFlow<List<InfoBubbleSpec>>> {
+        error("InfoBubble must be under <MapView />")
+    }

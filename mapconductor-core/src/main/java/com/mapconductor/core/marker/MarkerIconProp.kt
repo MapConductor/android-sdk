@@ -1,9 +1,9 @@
 package com.mapconductor.core.marker
 
-import android.graphics.Color
-import android.graphics.drawable.Drawable
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.Offset
+import android.graphics.Color
+import android.graphics.drawable.Drawable
 
 data class MarkerIconProp(
     val fillColor: Int? = Color.RED,
@@ -17,11 +17,11 @@ data class MarkerIconProp(
     val iconDrawable: Drawable? = null,
     val anchor: Offset = Offset(0.5, 1.0),
     val size: Size = Size(32f, 32f),
-    val infoAnchor: Offset = Offset(0.5, 0.5)
+    val infoAnchor: Offset = Offset(0.5, 0.5),
 )
 
 //
-//fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {
+// fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {
 //    val bmpWidth = drawable.intrinsicWidth.takeIf { it > 0 } ?: width
 //    val bmpHeight = drawable.intrinsicHeight.takeIf { it > 0 } ?: height
 //
@@ -30,11 +30,11 @@ data class MarkerIconProp(
 //    drawable.setBounds(0, 0, canvas.width, canvas.height)
 //    drawable.draw(canvas)
 //    return bitmap
-//}
+// }
 //
-////
-//@Composable
-//fun RememberDrawable(@DrawableRes resId: Int): Bitmap {
+// //
+// @Composable
+// fun RememberDrawable(@DrawableRes resId: Int): Bitmap {
 //    val context = LocalContext.current
 //
 //    val drawableResId = rememberSaveable { mutableStateOf(resId) }
@@ -44,4 +44,4 @@ data class MarkerIconProp(
 //            throw IllegalArgumentException("Resource is not available")
 //        drawableToBitmap(drawable)
 //    }
-//}
+// }

@@ -1,8 +1,8 @@
 package com.mapconductor.core.marker
 
-import android.os.Parcelable
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointBuilder
+import android.os.Parcelable
 
 // ------- DSL Marker ---------
 @DslMarker
@@ -29,21 +29,24 @@ class MarkerBuilder {
     }
 
     fun build(): MarkerEntry {
-        val initialPosition = GeoPoint(
-            latitude = point.latitude,
-            longitude = point.longitude,
-            altitude = point.altitude ?: 0.0,
-        )
+        val initialPosition =
+            GeoPoint(
+                latitude = point.latitude,
+                longitude = point.longitude,
+                altitude = point.altitude ?: 0.0,
+            )
 
-        val state = MarkerState(
-            position = initialPosition,
-            extra = extraData,
-            icon = iconData,
-        )
+        val state =
+            MarkerState(
+                position = initialPosition,
+                extra = extraData,
+                icon = iconData,
+            )
 
-        val handlers = MarkerHandlers(
-            onClick = onClick,
-        )
+        val handlers =
+            MarkerHandlers(
+                onClick = onClick,
+            )
 
         return MarkerEntry(
             state = state,

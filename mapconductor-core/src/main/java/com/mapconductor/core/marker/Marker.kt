@@ -1,12 +1,12 @@
 package com.mapconductor.core.marker
 
-import android.os.Parcelable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.IdentifiedPoint
 import java.util.UUID
+import android.os.Parcelable
 
 // ------- Core Types ----------
 typealias MarkerClickHandler = (MarkerState) -> Unit
@@ -21,7 +21,6 @@ class MarkerState(
     var extra: Parcelable? = null,
     icon: MarkerIconProp? = null,
 ) {
-
     // -- position and positionState properties --
     private val _position = mutableStateOf(position)
     val positionState: State<GeoPoint> get() = _position

@@ -27,21 +27,24 @@ fun MapViewContainer(
                 content = content,
             )
         }
-        is HereMapViewState -> HereMapView(
-            modifier = modifier,
-            state = state,
-            content = content,
-        )
-        is MapboxMapViewState -> MapboxMapView(
-            modifier = modifier,
-            state = state,
-            content = content,
-        )
-        is ArcGISMapViewState -> ArcGISMapView(
-            modifier = modifier,
-            state = state,
-            content = content,
-        )
+        is HereMapViewState ->
+            HereMapView(
+                modifier = modifier,
+                state = state,
+                content = content,
+            )
+        is MapboxMapViewState ->
+            MapboxMapView(
+                modifier = modifier,
+                state = state,
+                content = content,
+            )
+        is ArcGISMapViewState ->
+            ArcGISMapView(
+                modifier = modifier,
+                state = state,
+                content = content,
+            )
         else -> throw IllegalStateException("unknown state")
     }
 }

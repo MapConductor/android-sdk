@@ -3,6 +3,15 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
     alias(libs.plugins.kotlin.compose) // ← 任意（配布したい場合）
+    id("org.jlleitschuh.gradle.ktlint")
+}
+
+ktlint {
+    android.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
 }
 
 android {
@@ -29,7 +38,7 @@ android {
             isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }

@@ -4,8 +4,16 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
+ktlint {
+    android.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+}
 
 android {
     namespace = "com.mapconductor.example"
@@ -14,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.mapconductor.example"
         minSdk = project.property("minSdk").toString().toInt()
-        targetSdk =  project.property("targetSdk").toString().toInt()
+        targetSdk = project.property("targetSdk").toString().toInt()
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -30,7 +38,7 @@ android {
             isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -74,7 +82,6 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
-
 
     // Google Maps SDK
     implementation(libs.play.services.maps)

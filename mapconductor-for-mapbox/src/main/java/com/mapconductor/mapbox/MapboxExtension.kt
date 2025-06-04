@@ -13,8 +13,8 @@ internal fun BitmapIcon.toPointAnnotationOptions(): PointAnnotationOptions {
     val anchorPixelY = iconH * this.anchor.y
 
     // IconAnchor.BOTTOM は「画像下端の中央」が基準なので、そこからの差分を求める
-    val baseX = iconW / 2.0  // center
-    val baseY = iconH        // bottom
+    val baseX = iconW / 2.0 // center
+    val baseY = iconH // bottom
 
     val offsetX = anchorPixelX - baseX
     val offsetY = anchorPixelY - baseY
@@ -24,4 +24,3 @@ internal fun BitmapIcon.toPointAnnotationOptions(): PointAnnotationOptions {
         .withIconAnchor(IconAnchor.BOTTOM)
         .withIconOffset(listOf(offsetX, offsetY))
 }
-

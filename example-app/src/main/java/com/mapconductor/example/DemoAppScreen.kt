@@ -1,6 +1,5 @@
 package com.mapconductor.example
 
-import android.os.Bundle
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -41,69 +40,71 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
+import android.os.Bundle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DemoAppScreen(
-    appViewModel: AppViewModel,
-) {
-
+fun DemoAppScreen(appViewModel: AppViewModel) {
     // ---------- GoogleMaps ---------------
-    val googleMapState = rememberGoogleMapViewState(
-        mapDesign = GoogleMapDesign.Normal,
-        cameraPosition = appViewModel.initCameraPosition,
-    )
+    val googleMapState =
+        rememberGoogleMapViewState(
+            mapDesign = GoogleMapDesign.Normal,
+            cameraPosition = appViewModel.initCameraPosition,
+        )
     // ---------- Mapbox ---------------
-    val mapboxMapState = rememberMapboxMapViewState(
-        mapDesign = MapboxMapDesign.Standard,
-        cameraPosition = appViewModel.initCameraPosition,
-    )
+    val mapboxMapState =
+        rememberMapboxMapViewState(
+            mapDesign = MapboxMapDesign.Standard,
+            cameraPosition = appViewModel.initCameraPosition,
+        )
     // ---------- Here ---------------
-    val hereMapState = rememberHereMapViewState(
-        mapDesign = HereMapDesign.NormalDay,
-        cameraPosition = appViewModel.initCameraPosition,
-    )
+    val hereMapState =
+        rememberHereMapViewState(
+            mapDesign = HereMapDesign.NormalDay,
+            cameraPosition = appViewModel.initCameraPosition,
+        )
 
     // ---------- ArcGIS ---------------
-    val elevationSources = listOf(
-        "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
-    )
-    val arcGISMapState = rememberArcGISMapViewState(
-        mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
-        cameraPosition = appViewModel.initCameraPosition,
-    )
-    val menuItems = listOf(
-        IconItem(
-            key = "googlemap",
-            label = "Google Map",
-            lightIconResId = R.drawable.google_maps_logo,
-            darkIconResId = R.drawable.google_maps_logo,
-            value = googleMapState,
-        ),
-
-        IconItem(
-            key = "mapbox",
-            label = "Mapbox",
-            lightIconResId = R.drawable.mapbox_logo_black,
-            darkIconResId = R.drawable.mapbox_logo_white,
-            value = mapboxMapState,
-        ),
-
-        IconItem(
-            key = "heremap",
-            label = "Here",
-            lightIconResId = R.drawable.here_logo_black,
-            darkIconResId = R.drawable.here_logo_white,
-            value = hereMapState,
-        ),
-        IconItem(
-            key = "arcgis",
-            label = "ArcGIS",
-            lightIconResId = R.drawable.arcgis_logo_black,
-            darkIconResId = R.drawable.arcgis_logo_white,
-            value = arcGISMapState,
-        ),
-    )
+    val elevationSources =
+        listOf(
+            "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
+        )
+    val arcGISMapState =
+        rememberArcGISMapViewState(
+            mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
+            cameraPosition = appViewModel.initCameraPosition,
+        )
+    val menuItems =
+        listOf(
+            IconItem(
+                key = "googlemap",
+                label = "Google Map",
+                lightIconResId = R.drawable.google_maps_logo,
+                darkIconResId = R.drawable.google_maps_logo,
+                value = googleMapState,
+            ),
+            IconItem(
+                key = "mapbox",
+                label = "Mapbox",
+                lightIconResId = R.drawable.mapbox_logo_black,
+                darkIconResId = R.drawable.mapbox_logo_white,
+                value = mapboxMapState,
+            ),
+            IconItem(
+                key = "heremap",
+                label = "Here",
+                lightIconResId = R.drawable.here_logo_black,
+                darkIconResId = R.drawable.here_logo_white,
+                value = hereMapState,
+            ),
+            IconItem(
+                key = "arcgis",
+                label = "ArcGIS",
+                lightIconResId = R.drawable.arcgis_logo_black,
+                darkIconResId = R.drawable.arcgis_logo_white,
+                value = arcGISMapState,
+            ),
+        )
     val context = LocalContext.current
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(2) }
@@ -112,19 +113,21 @@ fun DemoAppScreen(
     }
 
     val drawable = AppCompatResources.getDrawable(context, R.drawable.coffee_svg)
-    val icon = MarkerIconProp(
-        iconDrawable = drawable,
-        fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
-        strokeColor = Color.LightGray.toArgb()
-    )
+    val icon =
+        MarkerIconProp(
+            iconDrawable = drawable,
+            fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
+            strokeColor = Color.LightGray.toArgb(),
+        )
 
     val messages = remember { mutableStateListOf<ToastMessage>() }
 
     fun showToast(text: String) {
-        messages += ToastMessage(
-            text = text,
-            onDismiss = { messages.removeIf { it.text == text } }
-        )
+        messages +=
+            ToastMessage(
+                text = text,
+                onDismiss = { messages.removeIf { it.text == text } },
+            )
     }
 
     AppTheme {
@@ -139,7 +142,7 @@ fun DemoAppScreen(
                                 modifier = Modifier.weight(0.2f),
                                 itemList = menuItems,
                                 selectedIndex = selectedIndex,
-                                onSelect = { index, _ -> selectedIndex = index }
+                                onSelect = { index, _ -> selectedIndex = index },
                             )
                             Button(
                                 modifier = Modifier.weight(0.1f),
@@ -148,7 +151,7 @@ fun DemoAppScreen(
                                 Text("Fly to!")
                             }
                         }
-                    }
+                    },
                 )
             },
             modifier = Modifier.fillMaxSize(),
@@ -156,14 +159,14 @@ fun DemoAppScreen(
             Box {
                 MapArea(
                     state = appViewModel.state.collectAsStateWithLifecycle().value,
-                    markers = StarbucksHI_list.slice(IntRange(0, 10)).map {
-                        MarkerState(
-                            position = it.position,
-                            extra = it.extra,
-                            icon = icon,
-
+                    markers =
+                        StarbucksHI_list.slice(IntRange(0, 10)).map {
+                            MarkerState(
+                                position = it.position,
+                                extra = it.extra,
+                                icon = icon,
                             )
-                    },
+                        },
                     onCallButtonClick = {
                         showToast("clicked")
                     },
@@ -174,7 +177,7 @@ fun DemoAppScreen(
                 )
                 ToastHost(
                     messages = messages,
-                    onDismiss = { messages.remove(it) }
+                    onDismiss = { messages.remove(it) },
                 )
             }
         }
