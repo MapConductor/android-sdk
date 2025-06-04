@@ -1,15 +1,15 @@
-name: Android Code Check (Lint + KtLint + ReviewDog)
+name: Lint Check on Push
 
 on:
   push:
-    branches: [ "**" ]
-  pull_request:
-    branches: [ "**" ]
+    branches: # 必要に応じて特定のブランチを除外・指定できます
+      - '**' # 全てのブランチへのpushで実行
+      # - '!main' # 例: mainブランチへの直接pushでは実行しない場合
 
 jobs:
-  code-check:
+  lint:
     runs-on: ubuntu-latest
-    name: Lint & ReviewDog on Changed Modules
+    name: Lint Changed Modules
 
     steps:
       - name: Checkout
@@ -45,6 +45,7 @@ jobs:
             if [ -f "$CACHE_KEY_FILE" ]; then
               old_hash=$(cat "$CACHE_KEY_FILE")
               if [ "$hash" == "$old_hash" ]; then
+                echo "Module $module unchanged."
                 continue
               fi
             fi
@@ -58,6 +59,8 @@ jobs:
         if: steps.detect.outputs.changed_modules != ''
         run: |
           for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running ktlintCheck for $module"
+            # エラーがあってもCIを止めない場合は `|| true` やエラーハンドリングを追加
             ./gradlew ":$module:ktlintCheck"
           done
 
@@ -65,28 +68,13 @@ jobs:
         if: steps.detect.outputs.changed_modules != ''
         run: |
           for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running lint for $module"
+            # エラーがあってもCIを止めない場合は `|| true` やエラーハンドリングを追加
             ./gradlew ":$module:lint"
           done
 
-      - name: Run ReviewDog (only on pull_request)
-        if: github.event_name == 'pull_request' && steps.detect.outputs.changed_modules != ''
-        run: |
-          for module in ${{ steps.detect.outputs.changed_modules }}; do
-            lint_file=$(find "$module" -name "lint-results.xml" | head -n 1)
-            if [ -f "$lint_file" ]; then
-              echo "Reporting Lint results for $module"
-              reviewdog -name="android-lint ($module)" \
-                -f=checkstyle \
-                -f.diff="git diff origin/${{ github.base_ref }}" \
-                -reporter=github-pr-review \
-                -level=warning \
-                < "$lint_file"
-            fi
-          done
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload hash cache
+        if: always() # 常にキャッシュをアップロード
         uses: actions/upload-artifact@v4
         with:
           name: lint-hash-cache
