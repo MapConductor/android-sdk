@@ -1,10 +1,10 @@
 package com.mapconductor.core.marker
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import android.graphics.Color
 import android.graphics.Path
 import android.graphics.drawable.Drawable
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.Offset
 
 class MarkerIcon internal constructor(
     val fillColor: Int? = Color.RED,

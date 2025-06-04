@@ -23,7 +23,9 @@ interface AppViewModel {
     fun flyTo(listener: MapViewState.MoveCameraCallback? = null)
 
     fun onCallButtonClick()
+
     fun onMarkerClick(clicked: MarkerState)
+
     fun onMapClick(clicked: GeoPoint)
 }
 

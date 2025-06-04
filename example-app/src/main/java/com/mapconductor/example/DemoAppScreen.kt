@@ -16,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -26,9 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mapconductor.StarbucksHI_list
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.icons.Default
-import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastHost
@@ -160,13 +157,14 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
             Box {
                 MapArea(
                     mapViewState = appViewModel.mapViewState.collectAsStateWithLifecycle().value,
-                    markers = StarbucksHI_list.slice(IntRange(0, 10)).map {
-                        MarkerState(
-                            position = it.position,
-                            extra = it.extra,
-                            icon = icon,
-                        )
-                    },
+                    markers =
+                        StarbucksHI_list.slice(IntRange(0, 10)).map {
+                            MarkerState(
+                                position = it.position,
+                                extra = it.extra,
+                                icon = icon,
+                            )
+                        },
                     onCallButtonClick = {
                         showToast("clicked")
                     },
@@ -177,7 +175,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     infoBubbleState = appViewModel.infoBubbleState,
                     onMapClickHandler = appViewModel::onMapClick,
                     onMarkerClickHandler = appViewModel::onMarkerClick,
-                    selectedMarker = appViewModel.selectedMarker
+                    selectedMarker = appViewModel.selectedMarker,
                 )
                 ToastHost(
                     messages = messages,

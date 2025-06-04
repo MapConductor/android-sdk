@@ -8,7 +8,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapbox.maps.CameraState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
+import com.mapconductor.core.map.MapCameraPositionBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.mapbox.MapboxMapDesign.Standard
@@ -19,8 +21,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.util.UUID
 import android.os.Bundle
-import com.mapconductor.core.map.IMapCameraPosition
-import com.mapconductor.core.map.MapCameraPositionBase
 
 interface IMapboxMapViewState : MapViewState<String>
 
@@ -28,8 +28,8 @@ class MapboxMapViewState(
     override val stateId: String,
     override val mapDesignType: MapboxDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<String>(), IMapboxMapViewState {
-
+) : MapViewStateImpl<String>(),
+    IMapboxMapViewState {
     internal var controller: IMapboxMapViewController? = null
 
     // Camera center position

@@ -49,7 +49,7 @@ fun <
     // and uses the ActualMapView and ActualMap generic types.
     SpecificViewHolder : MapViewHolder<ActualMapView, ActualMap>,
     SpecificScope : MapViewScope,
-    > MapViewBase(
+> MapViewBase(
     state: SpecificState,
     modifier: Modifier = Modifier,
     holderRef: Ref<SpecificViewHolder>,
@@ -90,7 +90,6 @@ fun <
             )
         }
     }
-
 
     Box(
         modifier =
@@ -150,11 +149,11 @@ fun <
     val cameraPosition = state.mapCameraPosition.collectAsState().value
 
     if (controller != null && cameraPosition != null) {
-
         Box(
-            modifier = modifier
-                .fillMaxSize()
-                .clipToBounds(),
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .clipToBounds(),
         ) {
             bubbles.forEach { entry ->
                 val marker = entry.state.marker.value ?: return@forEach
@@ -167,10 +166,11 @@ fun <
                     positionOffset = positionOffset,
                     tailOffset = entry.state.tailOffset,
                     content = entry.content,
-                    iconSize = Size(
-                        icon.size.width * iconScale,
-                        icon.size.height * iconScale,
-                    ),
+                    iconSize =
+                        Size(
+                            icon.size.width * iconScale,
+                            icon.size.height * iconScale,
+                        ),
                     iconOffset = icon.anchor,
                     infoAnchorOffset = icon.infoAnchor,
                 )

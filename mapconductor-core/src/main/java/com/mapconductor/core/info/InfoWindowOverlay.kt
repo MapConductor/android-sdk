@@ -21,34 +21,35 @@ import java.util.UUID
 
 @Composable
 internal fun InfoWindowCompose(
-    positionOffset: Offset,  // マーカーのposition
+    positionOffset: Offset, // マーカーのposition
     iconSize: Size, // アイコンのサイズ
     iconOffset: Offset, // アイコンと地図が接続するポイント (0.0 - 1.0)
-    infoAnchorOffset: Offset,  // アイコンと吹き出しが接続するポイント
+    infoAnchorOffset: Offset, // アイコンと吹き出しが接続するポイント
     tailOffset: Offset, // 吹き出し側で、アイコンと接続するポイント (0.0 - 1.0)
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
 
-    val x = positionOffset.x +
+    val x =
+        positionOffset.x +
             (-tailOffset.x * size.width) + // tailOffset.x = 0.5のとき、吹き出しの中央
             (-iconOffset.x * iconSize.width) + // iconOffset.x = 0.5のとき、アイコンの中央
             (infoAnchorOffset.x * iconSize.width) // infoAnchorOffset.x = 0.5のとき、アイコンの中央
 
-    val y = positionOffset.y +
+    val y =
+        positionOffset.y +
             (-tailOffset.y * size.height) + // tailOffset.y = 1.0 のとき、吹き出しの下部
             (-iconOffset.y * iconSize.height) + // iconOffset.x = 0.5のとき、アイコンの中央
-            (-infoAnchorOffset.y * iconSize.height)  // infoAnchorOffset.x = 0.5のとき、アイコンの中央
-
+            (-infoAnchorOffset.y * iconSize.height) // infoAnchorOffset.x = 0.5のとき、アイコンの中央
 
     Box(
-        modifier = Modifier
-            .onGloballyPositioned {
-                size = it.size
-            }
-            .offset {
-                IntOffset(x.toInt(), y.toInt())
-            },
+        modifier =
+            Modifier
+                .onGloballyPositioned {
+                    size = it.size
+                }.offset {
+                    IntOffset(x.toInt(), y.toInt())
+                },
     ) {
         content()
     }
@@ -63,15 +64,18 @@ class InfoBubbleState(
     fun open(markerState: MarkerState) {
         this.marker.value = markerState
     }
+
     fun close() {
         this.marker.value = null
     }
 }
+
 data class InfoBubbleEntry(
     val state: InfoBubbleState,
     val content: @Composable () -> Unit,
 )
 
-val LocalInfoBubbleCollector = compositionLocalOf<MutableStateFlow<List<InfoBubbleEntry>>> {
-    error("InfoBubble must be under <MapView />")
-}
+val LocalInfoBubbleCollector =
+    compositionLocalOf<MutableStateFlow<List<InfoBubbleEntry>>> {
+        error("InfoBubble must be under <MapView />")
+    }

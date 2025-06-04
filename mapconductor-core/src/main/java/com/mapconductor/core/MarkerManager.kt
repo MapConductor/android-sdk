@@ -410,7 +410,6 @@ class MarkerManager<ActualMarker>(
                 drawPath(strokePath, it)
             }
 
-
             // --- 3. ラベルの描画 (labelが指定されている場合) ---
 //            if (label != null) {
 //                val textPaint = Paint().apply {
@@ -438,10 +437,11 @@ class MarkerManager<ActualMarker>(
         }
 
         val visualNormalizedTipY = 0.9375f
-        val anchor = Offset(
-            x = 0.5f,
-            y = (visualNormalizedTipY + (0.5 / 64.0)).toFloat()
-        )
+        val anchor =
+            Offset(
+                x = 0.5f,
+                y = (visualNormalizedTipY + (0.5 / 64.0)).toFloat(),
+            )
 
         val size =
             Size(

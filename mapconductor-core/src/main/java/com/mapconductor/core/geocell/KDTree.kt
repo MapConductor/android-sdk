@@ -139,11 +139,17 @@ class KDTree(
         }
     }
 
-    private fun squaredDistance(a: Offset, b: Offset): Float {
+    private fun squaredDistance(
+        a: Offset,
+        b: Offset,
+    ): Float {
         val dx = a.x - b.x
         val dy = a.y - b.y
         return dx * dx + dy * dy
     }
 
-    private fun distanceMeters(a: Offset, b: Offset): Float = sqrt(squaredDistance(a, b))
+    private fun distanceMeters(
+        a: Offset,
+        b: Offset,
+    ): Float = sqrt(squaredDistance(a, b))
 }

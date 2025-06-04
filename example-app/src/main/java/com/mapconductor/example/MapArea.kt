@@ -57,13 +57,13 @@ fun MapArea(
                 selectedMarker?.let {
                     InfoBubble(
                         bubbleColor = bubbleColor,
-                        state = infoBubbleState
+                        state = infoBubbleState,
                     ) {
                         StoreCard(
                             info = it.extra as Bundle,
                             onClick = {
                                 onCallButtonClick(it)
-                            }
+                            },
                         )
                     }
                 }
@@ -79,8 +79,7 @@ fun MapArea(
                                 blue = 0.9f,
                                 alpha = 0.75f,
                             ),
-                        )
-                        .wrapContentHeight(),
+                        ).wrapContentHeight(),
             ) {
                 Text("LatLng: (${camera?.position?.latitude}, ${camera?.position?.longitude})", color = Color.Black)
                 Text("Zoom: ${camera?.zoom}", color = Color.Black)

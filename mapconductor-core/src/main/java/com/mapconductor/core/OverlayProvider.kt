@@ -50,6 +50,7 @@ fun <T> CollectAndRenderOverlays(
         }
     }
 }
+
 @Composable
 fun <T> collectAndRenderOverlays(
     map: T?,

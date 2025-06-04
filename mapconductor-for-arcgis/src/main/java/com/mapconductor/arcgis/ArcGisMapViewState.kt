@@ -32,9 +32,9 @@ interface IArcGISMapViewState : MapViewState<String>
 class ArcGISMapViewState(
     override val stateId: String,
     override val initCameraPosition: IMapCameraPosition,
-    override val mapDesignType: ArcGISDesign
-
-) : MapViewStateImpl<String>(), IArcGISMapViewState {
+    override val mapDesignType: ArcGISDesign,
+) : MapViewStateImpl<String>(),
+    IArcGISMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()

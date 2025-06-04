@@ -1,6 +1,5 @@
 package com.mapconductor.arcgis
 
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -12,6 +11,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapClickHandler
+import android.view.ViewGroup
 
 @Composable
 fun ArcGISMapView(
@@ -54,16 +54,18 @@ fun ArcGISMapView(
             holder.mapView.onCreate(owner)
             holder.mapView.onResume(owner)
 
-            val controller = ArcGISMapViewController(
-                holder = holder,
-                onCameraMove = state::OnCameraChange,
-                onMapClick = onMapClick,
-            )
+            val controller =
+                ArcGISMapViewController(
+                    holder = holder,
+                    onCameraMove = state::OnCameraChange,
+                    onMapClick = onMapClick,
+                )
 
             state.controller = controller
 
-            val restoreCameraPosition = state.mapCameraPosition.value ?:
-                MapCameraPosition.from(state.initCameraPosition)
+            val restoreCameraPosition =
+                state.mapCameraPosition.value
+                    ?: MapCameraPosition.from(state.initCameraPosition)
             controller.moveCamera(restoreCameraPosition)
 
             controllerRef.value = controller

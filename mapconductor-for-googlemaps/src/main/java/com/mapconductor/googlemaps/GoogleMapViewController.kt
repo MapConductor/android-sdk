@@ -24,7 +24,6 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
-import com.mapconductor.core.map.OnMarkerDragHandler
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
@@ -49,51 +48,58 @@ class GoogleMapViewController(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val onCameraMove: (OnCameraMoveHandler<CameraPosition>)? = null,
     val onMapTap: OnMapClickHandler? = null,
-): IGoogleMapViewController,
+) : IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
     OnCameraIdleListener,
     OnMarkerClickListener,
     OnMapClickListener,
-    OnMarkerDragListener
-{
+    OnMarkerDragListener {
 //    private val infoBubbles = InfoBubbleManager(
 //        coroutine = coroutine,
 //    )
-    private val markerOverlayManager = MarkerOverlayManager<Marker>(
-        coroutine = coroutine,
-        markerManager = MarkerManager(HexGeocell(WebMercator)),
-        onRemove = { removes ->
-            removes.forEach { params -> params.marker.remove() }
-        },
-        onAdd = { newMarkers ->
-            newMarkers.map { params ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
+    private val markerOverlayManager =
+        MarkerOverlayManager<Marker>(
+            coroutine = coroutine,
+            markerManager = MarkerManager(HexGeocell(WebMercator)),
+            onRemove = { removes ->
+                removes.forEach { params -> params.marker.remove() }
+            },
+            onAdd = { newMarkers ->
+                newMarkers.map { params ->
+                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
 
-                val options = MarkerOptions()
-                    .position(GeoPoint.from(params.entry.state.position).toLatLng())
-                    .anchor(params.icon.anchor.x.toFloat(), params.icon.anchor.y.toFloat())
-                    .icon(bitmapDescriptor)
-                    .draggable(true)
-                val marker = holder.map.addMarker(options)?.also {
-                    it.tag = params.entry.state.id
+                    val options =
+                        MarkerOptions()
+                            .position(GeoPoint.from(params.entry.state.position).toLatLng())
+                            .anchor(
+                                params.icon.anchor.x
+                                    .toFloat(),
+                                params.icon.anchor.y
+                                    .toFloat(),
+                            ).icon(bitmapDescriptor)
+                            .draggable(true)
+                    val marker =
+                        holder.map.addMarker(options)?.also {
+                            it.tag = params.entry.state.id
+                        }
+                    return@map marker
                 }
-                return@map marker
-            }
-        },
-        onChange = { changes ->
-            changes.forEach { params ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
-                params.marker.position = GeoPoint.from(params.entry.state.position).toLatLng()
-                params.marker.setIcon(bitmapDescriptor)
-            }
-        },
-    )
+            },
+            onChange = { changes ->
+                changes.forEach { params ->
+                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
+                    params.marker.position = GeoPoint.from(params.entry.state.position).toLatLng()
+                    params.marker.setIcon(bitmapDescriptor)
+                }
+            },
+        )
 
     init {
         setupListeners()
     }
+
     private fun setupListeners() {
         holder.map.setOnCameraMoveStartedListener(this)
         holder.map.setOnCameraMoveCanceledListener(this)
@@ -140,15 +146,15 @@ class GoogleMapViewController(
         }
     }
 
-    override suspend fun addMarkers(markerList : List<MarkerEntry>) =
-        markerOverlayManager.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val point = holder.map.projection.toScreenLocation(
-            GeoPoint.from(position).toLatLng(),
-        )
+        val point =
+            holder.map.projection.toScreenLocation(
+                GeoPoint.from(position).toLatLng(),
+            )
         return Offset(
             x = point.x.toFloat(),
             y = point.y.toFloat(),

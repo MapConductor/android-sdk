@@ -1,6 +1,5 @@
 package com.mapconductor.googlemaps
 
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -15,6 +14,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapClickHandler
+import android.view.ViewGroup
 
 @Composable
 fun GoogleMapsView(
@@ -58,19 +58,22 @@ fun GoogleMapsView(
                     .mapType(state.mapDesignType.getValue())
                     .camera(cameraPosition)
 
-            val holder = GoogleMapViewHolderStore.getOrCreate(
-                context = context, // Use context from the outer scope
-                id = state.stateId,
-                options = mapInitOptions,
-            )
-            val onCameraMove = (state as? GoogleMapViewState)?.let {
-                it::OnCameraChange
-            }
-            val controller = GoogleMapViewController(
-                holder = holder,
-                onCameraMove = onCameraMove,
-                onMapTap = onMapClick,
-            )
+            val holder =
+                GoogleMapViewHolderStore.getOrCreate(
+                    context = context, // Use context from the outer scope
+                    id = state.stateId,
+                    options = mapInitOptions,
+                )
+            val onCameraMove =
+                (state as? GoogleMapViewState)?.let {
+                    it::OnCameraChange
+                }
+            val controller =
+                GoogleMapViewController(
+                    holder = holder,
+                    onCameraMove = onCameraMove,
+                    onMapTap = onMapClick,
+                )
             (state as? GoogleMapViewState)?.controller = controller
 
             holderRef.value = holder

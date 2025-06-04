@@ -9,20 +9,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.map.MapViewScope
-import com.mapconductor.core.marker.MarkerState
-import java.util.UUID
 
-//@Composable
-//fun MapViewScope.InfoAnchor(
+// @Composable
+// fun MapViewScope.InfoAnchor(
 //    props: MarkerState,
 //    anchor: Offset = Offset(0.5f, 1f),
 //    content: @Composable () -> Unit,
-//) {
+// ) {
 //    val bubble = remember { InfoBubbleSpec(props, anchor, content) }
 //    SideEffect {
 //        selectedInfo.value = bubble
 //    }
-//}
+// }
 
 @Composable
 fun MapViewScope.InfoBubble(
@@ -32,27 +30,29 @@ fun MapViewScope.InfoBubble(
     contentPadding: Dp = 8.dp,
     cornerRadius: Dp = 4.dp,
     tailSize: Dp = 8.dp,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
+    val entry =
+        remember {
+            val wrapped: @Composable () -> Unit = {
+                DrawInfoBubble(
+                    modifier = Modifier,
+                    bubbleColor = bubbleColor,
+                    borderColor = borderColor,
+                    contentPadding = contentPadding,
+                    cornerRadius = cornerRadius,
+                    tailSize = tailSize,
+                    content = content,
+                )
+            }
 
-    val entry = remember {
-        val wrapped: @Composable () -> Unit = {
-            DrawInfoBubble(
-                modifier = Modifier,
-                bubbleColor = bubbleColor,
-                borderColor = borderColor,
-                contentPadding = contentPadding,
-                cornerRadius = cornerRadius,
-                tailSize = tailSize,
-                content = content,
+            mutableStateOf(
+                InfoBubbleEntry(
+                    state = state,
+                    content = wrapped,
+                ),
             )
         }
-
-        mutableStateOf(InfoBubbleEntry(
-            state = state,
-            content = wrapped,
-        ))
-    }
 
     if (!allBubblesKeys.contains(state.id)) {
         SideEffect {

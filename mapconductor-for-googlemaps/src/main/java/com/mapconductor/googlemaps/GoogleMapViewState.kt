@@ -29,9 +29,8 @@ class GoogleMapViewState(
     override val stateId: String,
     override val mapDesignType: GoogleMapDesignType,
     override val initCameraPosition: MapCameraPosition,
-) : MapViewStateImpl<Int>(), IGoogleMapViewState {
-
-
+) : MapViewStateImpl<Int>(),
+    IGoogleMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddingsImpl> = _padding.asStateFlow()
@@ -113,7 +112,6 @@ class GoogleMapViewState(
 //    override fun onMarkerRemove(id: String) {
 //        // Do nothing here
 //    }
-
 }
 
 val GoogleMapViewStateSaver =

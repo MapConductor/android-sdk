@@ -33,8 +33,8 @@ class HereMapViewState(
     override val stateId: String,
     override val mapDesignType: HereMapDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<MapScheme>(), IHereMapViewState {
-
+) : MapViewStateImpl<MapScheme>(),
+    IHereMapViewState {
     internal var controller: IHereMapViewController? = null
 
     // Camera center position

@@ -57,41 +57,44 @@ internal class HereMapController(
     MapCameraListener,
     TapListener,
     LongPressListener {
-
-    private val markerOverlayManager = MarkerOverlayManager<MapMarker>(
-        markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
-        coroutine = coroutine,
-        onRemove = { removes ->
-            val markers: List<MapMarker> = removes.map { params -> params.marker }
-            holder.mapView.mapScene.removeMapMarkers(markers)
-        },
-        onAdd = { newMarkers ->
-            val markers = newMarkers.map { params ->
-                val marker = MapMarker(
-                    GeoPoint.from(params.entry.state.position).toGeoCoordinates(),
-                    params.icon.toMapImage(),
-                    params.icon.toAnchor2D(),
-                ).apply {
-                    drawOrder = calculateZIndex(params.entry.state.position).toInt()
-                    metadata = Metadata().apply {
-                        setString("id", params.entry.state.id)
+    private val markerOverlayManager =
+        MarkerOverlayManager<MapMarker>(
+            markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
+            coroutine = coroutine,
+            onRemove = { removes ->
+                val markers: List<MapMarker> = removes.map { params -> params.marker }
+                holder.mapView.mapScene.removeMapMarkers(markers)
+            },
+            onAdd = { newMarkers ->
+                val markers =
+                    newMarkers.map { params ->
+                        val marker =
+                            MapMarker(
+                                GeoPoint.from(params.entry.state.position).toGeoCoordinates(),
+                                params.icon.toMapImage(),
+                                params.icon.toAnchor2D(),
+                            ).apply {
+                                drawOrder = calculateZIndex(params.entry.state.position).toInt()
+                                metadata =
+                                    Metadata().apply {
+                                        setString("id", params.entry.state.id)
+                                    }
+                            }
+                        return@map marker
                     }
-                }
-                return@map marker
-            }
 
-            holder.mapView.mapScene.addMapMarkers(markers)
-            return@MarkerOverlayManager markers
-        },
-        onChange = { changes ->
-            changes.forEach { params ->
-                // TODO: アイコンに変更があったかどうかを比較
-                params.marker.image = params.icon.toMapImage()
-                params.marker.coordinates = GeoPoint.from(params.entry.state.position).toGeoCoordinates()
-                params.marker.anchor = params.icon.toAnchor2D()
-            }
-        },
-    )
+                holder.mapView.mapScene.addMapMarkers(markers)
+                return@MarkerOverlayManager markers
+            },
+            onChange = { changes ->
+                changes.forEach { params ->
+                    // TODO: アイコンに変更があったかどうかを比較
+                    params.marker.image = params.icon.toMapImage()
+                    params.marker.coordinates = GeoPoint.from(params.entry.state.position).toGeoCoordinates()
+                    params.marker.anchor = params.icon.toAnchor2D()
+                }
+            },
+        )
 
     override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
 
@@ -183,25 +186,23 @@ internal class HereMapController(
             return
         }
 
-
         // TODO: Implement click handling for other overlays
 
         // If no overlay is processed, process the tap as onMapClick
         onMapClick?.let { it(touchPosition) }
     }
 
-    private fun zoomToIdPrefixLevel(zoom: Double): Int {
-        return when {
-            zoom <= 5 -> 2    // 数10km 単位でまとめる
-            zoom <= 8 -> 3    // 数km 単位
-            zoom <= 10 -> 4   // 500m ～ 1km
-            zoom <= 12 -> 5   // 100～300m
-            zoom <= 14 -> 6   // 50～100m
-            zoom <= 16 -> 7   // 20～50m
-            zoom <= 18 -> 8   // 5～20m
-            else -> 9         // ~1mまで細分化
+    private fun zoomToIdPrefixLevel(zoom: Double): Int =
+        when {
+            zoom <= 5 -> 2 // 数10km 単位でまとめる
+            zoom <= 8 -> 3 // 数km 単位
+            zoom <= 10 -> 4 // 500m ～ 1km
+            zoom <= 12 -> 5 // 100～300m
+            zoom <= 14 -> 6 // 50～100m
+            zoom <= 16 -> 7 // 20～50m
+            zoom <= 18 -> 8 // 5～20m
+            else -> 9 // ~1mまで細分化
         }
-    }
 
     private fun hereZoomToMetersPerPixel(zoom: Double): Double {
         val earthCircumference = 40075016.686
@@ -209,15 +210,22 @@ internal class HereMapController(
         return earthCircumference / (tileSize * 2.0.pow(zoom))
     }
 
-    override fun onLongPress(state: GestureState, point: Point2D) {
+    override fun onLongPress(
+        state: GestureState,
+        point: Point2D,
+    ) {
         TODO("Not yet implemented")
     }
 
-    private fun getGeoPointFromPoint(point: Point2D): GeoPoint? {
-        return holder.mapView.viewToGeoCoordinates(point)?.toGeoPoint()
-    }
+    private fun getGeoPointFromPoint(point: Point2D): GeoPoint? =
+        holder.mapView
+            .viewToGeoCoordinates(point)
+            ?.toGeoPoint()
 
-    private fun findMarkerFromPoint(position: IGeoPoint, radiusInDp: Int = 14): MarkerEntry? {
+    private fun findMarkerFromPoint(
+        position: IGeoPoint,
+        radiusInDp: Int = 14,
+    ): MarkerEntry? {
         val zoom = holder.mapView.camera.state.zoomLevel
         val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
         val acceptDPI = radiusInDp.toFloat() * holder.mapView.context.resources.displayMetrics.density

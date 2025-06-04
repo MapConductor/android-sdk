@@ -9,7 +9,10 @@ import kotlinx.coroutines.CoroutineScope
 interface MapViewController {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
-    suspend fun addMarkers(markerList : List<MarkerEntry>)
+
+    suspend fun addMarkers(markerList: List<MarkerEntry>)
+
     suspend fun clearOverlays()
+
     fun toScreenOffset(position: IGeoPoint): Offset?
 }

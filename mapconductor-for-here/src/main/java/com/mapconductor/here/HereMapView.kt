@@ -1,7 +1,5 @@
 package com.mapconductor.here
 
-import android.util.Log
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -16,6 +14,8 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapClickHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
+import android.util.Log
+import android.view.ViewGroup
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
@@ -56,15 +56,17 @@ fun HereMapView(
                     options = mapInitOptions,
                 )
 
-            val onCameraMove = (state as? HereMapViewState)?.let {
-                it::OnCameraChange
-            }
+            val onCameraMove =
+                (state as? HereMapViewState)?.let {
+                    it::OnCameraChange
+                }
 
-            val controller = HereMapController(
-                holder = holder,
-                onCameraMove = onCameraMove,
-                onMapClick = onMapClick,
-            )
+            val controller =
+                HereMapController(
+                    holder = holder,
+                    onCameraMove = onCameraMove,
+                    onMapClick = onMapClick,
+                )
             (state as? HereMapViewState)?.controller = controller
 
             holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
