@@ -28,11 +28,5 @@ jobs:
             以下の点にフォーカスしてください
             - Code quality and best practices
             - Potential bugs or issues
-            - Performance considerations
-            - Security implications
-            - Test coverage
-            - Documentation updates if needed
 
-            Provide constructive feedback with specific suggestions for improvement.
-            Use inline comments to highlight specific areas of concern.
-          # allowed_tools: "mcp__github__add_pull_request_review_comment"
+          allowed_tools: "mcp__github__add_pull_request_review_comment"
