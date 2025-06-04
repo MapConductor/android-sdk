@@ -13,7 +13,6 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.Offset
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
@@ -21,6 +20,7 @@ import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
@@ -31,64 +31,76 @@ import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.pow
 
-interface IHereMapViewController: MapViewController {
-    fun moveCamera(dstPosition: MapCameraPosition, listener: MoveCameraCallback? = null)
-    fun animateCamera(dstPosition: MapCameraPosition, durationMs: Long, listener: MoveCameraCallback? = null)
+interface IHereMapViewController : MapViewController {
+    fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MoveCameraCallback? = null,
+    )
+
+    fun animateCamera(
+        dstPosition: MapCameraPosition,
+        durationMs: Long,
+        listener: MoveCameraCallback? = null,
+    )
 }
+
 internal class HereMapController(
     override val holder: MapViewHolder<MapView, HereMap>,
     eventHandler: IHereMapEventHandler?,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : IHereMapViewController,
     MapCameraListener,
-    TapListener
-{
-
-    private val baseMapViewController = BaseMapViewController<MapMarker>(
-        geocell = HexGeocell(WebMercator, 1),
-        coroutine = coroutine,
-        onMarkerRemove = { id, marker ->
-            holder.mapView.mapScene.removeMapMarker(marker)
-            coroutine.launch {
-                eventHandlerRef.get()?.onMarkerRemove(id)
-            }
-        },
-        onMarkerAdd = { newMarkers ->
-            val markers = newMarkers.map { params ->
-                val marker = MapMarker(
-                    GeoPoint.from(params.entry.state.position).toGeoCoordinates(),
-                    params.icon.toMapImage(),
-                    params.icon.toAnchor2D(),
-                ).apply {
-                    drawOrder = calculateZIndex(params.entry.state.position).toInt()
-                    metadata = Metadata().apply {
-                        setString("id", params.entry.state.id)
-                    }
+    TapListener {
+    private val baseMapViewController =
+        BaseMapViewController<MapMarker>(
+            geocell = HexGeocell(WebMercator, 1),
+            coroutine = coroutine,
+            onMarkerRemove = { id, marker ->
+                holder.mapView.mapScene.removeMapMarker(marker)
+                coroutine.launch {
+                    eventHandlerRef.get()?.onMarkerRemove(id)
                 }
-                return@map marker
-            }
+            },
+            onMarkerAdd = { newMarkers ->
+                val markers =
+                    newMarkers.map { params ->
+                        val marker =
+                            MapMarker(
+                                GeoPoint.from(params.entry.state.position).toGeoCoordinates(),
+                                params.icon.toMapImage(),
+                                params.icon.toAnchor2D(),
+                            ).apply {
+                                drawOrder = calculateZIndex(params.entry.state.position).toInt()
+                                metadata =
+                                    Metadata().apply {
+                                        setString("id", params.entry.state.id)
+                                    }
+                            }
+                        return@map marker
+                    }
 
-            holder.mapView.mapScene.addMapMarkers(markers)
-            return@BaseMapViewController markers
-        },
-        onMarkerChanged = { changes ->
-            changes.forEach { params ->
-                // TODO: アイコンに変更があったかどうかを比較
-                params.marker.image = params.icon.toMapImage()
-                params.marker.coordinates = GeoPoint.from(params.entry.state.position).toGeoCoordinates()
-                params.marker.anchor = params.icon.toAnchor2D()
-            }
-        },
-    )
+                holder.mapView.mapScene.addMapMarkers(markers)
+                return@BaseMapViewController markers
+            },
+            onMarkerChanged = { changes ->
+                changes.forEach { params ->
+                    // TODO: アイコンに変更があったかどうかを比較
+                    params.marker.image = params.icon.toMapImage()
+                    params.marker.coordinates = GeoPoint.from(params.entry.state.position).toGeoCoordinates()
+                    params.marker.anchor = params.icon.toAnchor2D()
+                }
+            },
+        )
 
     override suspend fun addMarkers(markerList: List<MarkerEntry>) = baseMapViewController.addMarkers(markerList)
 
     override suspend fun clearOverlays() = baseMapViewController.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result = holder.mapView.geoToViewCoordinates(
-            GeoPoint.from(position).toGeoCoordinates(),
-        ) ?: return null
+        val result =
+            holder.mapView.geoToViewCoordinates(
+                GeoPoint.from(position).toGeoCoordinates(),
+            ) ?: return null
 
         return Offset(
             x = result.x,
@@ -110,7 +122,7 @@ internal class HereMapController(
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,
-        listener: MoveCameraCallback?
+        listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
         camera.applyUpdate(
@@ -122,7 +134,7 @@ internal class HereMapController(
     override fun animateCamera(
         dstPosition: MapCameraPosition,
         durationMs: Long,
-        listener: MoveCameraCallback?
+        listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
 
@@ -130,13 +142,14 @@ internal class HereMapController(
 //      bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
 //      bowFactor = 0: 常に同じズーム（直線的）
         val bowFactor = 1.0
-        val animation = MapCameraAnimationFactory.flyTo(
-            GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
-            GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-            MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
-            bowFactor,
-            Duration.ofMillis(durationMs),
-        )
+        val animation =
+            MapCameraAnimationFactory.flyTo(
+                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
+                bowFactor,
+                Duration.ofMillis(durationMs),
+            )
         coroutine.launch {
             camera.startAnimation(animation) { animState ->
                 when (animState) {
@@ -185,7 +198,6 @@ internal class HereMapController(
             }
         }
 
-
 //        baseMapViewController.findMarker(touchPosition, 32.0 * holder.mapView.context.resources.displayMetrics.density, zoom)?.also { entry ->
 //            entry.handlers.onClick?.let {
 //                coroutine.launch {
@@ -223,18 +235,18 @@ internal class HereMapController(
 //                // TODO: find tapped overlay (do not remove this comment)
 //            })
     }
-    private fun zoomToIdPrefixLevel(zoom: Double): Int {
-        return when {
-            zoom <= 5 -> 2    // 数10km 単位でまとめる
-            zoom <= 8 -> 3    // 数km 単位
-            zoom <= 10 -> 4   // 500m ～ 1km
-            zoom <= 12 -> 5   // 100～300m
-            zoom <= 14 -> 6   // 50～100m
-            zoom <= 16 -> 7   // 20～50m
-            zoom <= 18 -> 8   // 5～20m
-            else -> 9         // ~1mまで細分化
+
+    private fun zoomToIdPrefixLevel(zoom: Double): Int =
+        when {
+            zoom <= 5 -> 2 // 数10km 単位でまとめる
+            zoom <= 8 -> 3 // 数km 単位
+            zoom <= 10 -> 4 // 500m ～ 1km
+            zoom <= 12 -> 5 // 100～300m
+            zoom <= 14 -> 6 // 50～100m
+            zoom <= 16 -> 7 // 20～50m
+            zoom <= 18 -> 8 // 5～20m
+            else -> 9 // ~1mまで細分化
         }
-    }
 
     private fun hereZoomToMetersPerPixel(zoom: Double): Double {
         val earthCircumference = 40075016.686

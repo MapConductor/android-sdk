@@ -1,0 +1,35 @@
+# Top-level EditorConfig configuration file
+root = true
+
+# Global defaults
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Kotlin-specific rules
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+continuation_indent_size = 4
+max_line_length = 120
+insert_final_newline = true
+ktlint_standard_argument-list-wrapping = disabled
+ktlint_standard_function-naming = disabled
+
+# Disable wildcard imports
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,android.**
+ij_kotlin_allow_wildcard_imports = false
+
+# Sort imports alphabetically and by groups
+ij_kotlin_optimize_imports = true
+
+# Do not align multiline parameters or arguments
+ij_formatter_align_multiline_parameters = false
+ij_formatter_align_multiline_method_brackets = false
+
+# XML files (layout, manifest, etc.)
+[*.xml]
+indent_style = space
+indent_size = 4

@@ -1,25 +1,22 @@
 package com.mapconductor.arcgis
 
 import com.arcgismaps.mapping.BasemapStyle
-import com.mapconductor.core.MapDesignType
+import com.mapconductor.core.map.MapDesignType
 
 interface ArcGISDesignType : MapDesignType<String>
 
 data class ArcGISDesign(
     override val id: String,
     val elevationSources: List<String> = emptyList<String>(),
-): ArcGISDesignType {
-
+) : ArcGISDesignType {
     override fun getValue(): String = id
 
-    fun withElevationSources(sources: List<String>): ArcGISDesign {
-        return copy(
+    fun withElevationSources(sources: List<String>): ArcGISDesign =
+        copy(
             elevationSources = sources,
         )
-    }
 
     companion object {
-
         val Streets = ArcGISDesign("arc_gis_streets")
         val Imagery = ArcGISDesign("arc_gis_imagery")
         val ImageryStandard = ArcGISDesign("arc_gis_imagery_standard")
@@ -80,73 +77,77 @@ data class ArcGISDesign(
         val OsmHybridDetail = ArcGISDesign("osm_hybrid_detail")
         val OsmNavigation = ArcGISDesign("osm_navigation")
         val OsmNavigationDark = ArcGISDesign("osm_navigation_dark")
-        
-        fun Create(id: String, sources: List<String> = emptyList<String>()): ArcGISDesign = when(id) {
-            Streets.id -> Streets
-            Imagery.id -> Imagery
-            ImageryStandard.id -> ImageryStandard
-            ImageryLabels.id -> ImageryLabels
-            LightGray.id -> LightGray
-            LightGrayBase.id -> LightGrayBase
-            LightGrayLabels.id -> LightGrayLabels
-            DarkGray.id -> DarkGray
-            DarkGrayBase.id -> DarkGrayBase
-            DarkGrayLabels.id -> DarkGrayLabels
-            Navigation.id -> Navigation
-            NavigationNight.id -> NavigationNight
-            StreetsNight.id -> StreetsNight
-            StreetsRelief.id -> StreetsRelief
-            Topographic.id -> Topographic
-            Oceans.id -> Oceans
-            OceansBase.id -> OceansBase
-            OceansLabels.id -> OceansLabels
-            Terrain.id -> Terrain
-            TerrainBase.id -> TerrainBase
-            TerrainDetail.id -> TerrainDetail
-            Community.id -> Community
-            ChartedTerritory.id -> ChartedTerritory
-            ColoredPencil.id -> ColoredPencil
-            Nova.id -> Nova
-            ModernAntique.id -> ModernAntique
-            Midcentury.id -> Midcentury
-            Newspaper.id -> Newspaper
-            HillshadeLight.id -> HillshadeLight
-            HillshadeDark.id -> HillshadeDark
-            StreetsReliefBase.id -> StreetsReliefBase
-            TopographicBase.id -> TopographicBase
-            ChartedTerritoryBase.id -> ChartedTerritoryBase
-            ModernAntiqueBase.id -> ModernAntiqueBase
-            HumanGeography.id -> HumanGeography
-            HumanGeographyBase.id -> HumanGeographyBase
-            HumanGeographyDetail.id -> HumanGeographyDetail
-            HumanGeographyLabels.id -> HumanGeographyLabels
-            HumanGeographyDark.id -> HumanGeographyDark
-            HumanGeographyDarkBase.id -> HumanGeographyDarkBase
-            HumanGeographyDarkDetail.id -> HumanGeographyDarkDetail
-            HumanGeographyDarkLabels.id -> HumanGeographyDarkLabels
-            Outdoor.id -> Outdoor
-            OsmStandard.id -> OsmStandard
-            OsmStandardRelief.id -> OsmStandardRelief
-            OsmStandardReliefBase.id -> OsmStandardReliefBase
-            OsmStreets.id -> OsmStreets
-            OsmStreetsRelief.id -> OsmStreetsRelief
-            OsmLightGray.id -> OsmLightGray
-            OsmLightGrayBase.id -> OsmLightGrayBase
-            OsmLightGrayLabels.id -> OsmLightGrayLabels
-            OsmDarkGray.id -> OsmDarkGray
-            OsmDarkGrayBase.id -> OsmDarkGrayBase
-            OsmDarkGrayLabels.id -> OsmDarkGrayLabels
-            OsmStreetsReliefBase.id -> OsmStreetsReliefBase
-            OsmBlueprint.id -> OsmBlueprint
-            OsmHybrid.id -> OsmHybrid
-            OsmHybridDetail.id -> OsmHybridDetail
-            OsmNavigation.id -> OsmNavigation
-            OsmNavigationDark.id -> OsmNavigationDark
-            else -> throw Throwable("unknown design id: \"$id\"")
-        }
 
-        fun toBasemapStyle(designType: ArcGISDesignType): BasemapStyle {
-            return when(designType.getValue()) {
+        fun Create(
+            id: String,
+            sources: List<String> = emptyList<String>(),
+        ): ArcGISDesign =
+            when (id) {
+                Streets.id -> Streets
+                Imagery.id -> Imagery
+                ImageryStandard.id -> ImageryStandard
+                ImageryLabels.id -> ImageryLabels
+                LightGray.id -> LightGray
+                LightGrayBase.id -> LightGrayBase
+                LightGrayLabels.id -> LightGrayLabels
+                DarkGray.id -> DarkGray
+                DarkGrayBase.id -> DarkGrayBase
+                DarkGrayLabels.id -> DarkGrayLabels
+                Navigation.id -> Navigation
+                NavigationNight.id -> NavigationNight
+                StreetsNight.id -> StreetsNight
+                StreetsRelief.id -> StreetsRelief
+                Topographic.id -> Topographic
+                Oceans.id -> Oceans
+                OceansBase.id -> OceansBase
+                OceansLabels.id -> OceansLabels
+                Terrain.id -> Terrain
+                TerrainBase.id -> TerrainBase
+                TerrainDetail.id -> TerrainDetail
+                Community.id -> Community
+                ChartedTerritory.id -> ChartedTerritory
+                ColoredPencil.id -> ColoredPencil
+                Nova.id -> Nova
+                ModernAntique.id -> ModernAntique
+                Midcentury.id -> Midcentury
+                Newspaper.id -> Newspaper
+                HillshadeLight.id -> HillshadeLight
+                HillshadeDark.id -> HillshadeDark
+                StreetsReliefBase.id -> StreetsReliefBase
+                TopographicBase.id -> TopographicBase
+                ChartedTerritoryBase.id -> ChartedTerritoryBase
+                ModernAntiqueBase.id -> ModernAntiqueBase
+                HumanGeography.id -> HumanGeography
+                HumanGeographyBase.id -> HumanGeographyBase
+                HumanGeographyDetail.id -> HumanGeographyDetail
+                HumanGeographyLabels.id -> HumanGeographyLabels
+                HumanGeographyDark.id -> HumanGeographyDark
+                HumanGeographyDarkBase.id -> HumanGeographyDarkBase
+                HumanGeographyDarkDetail.id -> HumanGeographyDarkDetail
+                HumanGeographyDarkLabels.id -> HumanGeographyDarkLabels
+                Outdoor.id -> Outdoor
+                OsmStandard.id -> OsmStandard
+                OsmStandardRelief.id -> OsmStandardRelief
+                OsmStandardReliefBase.id -> OsmStandardReliefBase
+                OsmStreets.id -> OsmStreets
+                OsmStreetsRelief.id -> OsmStreetsRelief
+                OsmLightGray.id -> OsmLightGray
+                OsmLightGrayBase.id -> OsmLightGrayBase
+                OsmLightGrayLabels.id -> OsmLightGrayLabels
+                OsmDarkGray.id -> OsmDarkGray
+                OsmDarkGrayBase.id -> OsmDarkGrayBase
+                OsmDarkGrayLabels.id -> OsmDarkGrayLabels
+                OsmStreetsReliefBase.id -> OsmStreetsReliefBase
+                OsmBlueprint.id -> OsmBlueprint
+                OsmHybrid.id -> OsmHybrid
+                OsmHybridDetail.id -> OsmHybridDetail
+                OsmNavigation.id -> OsmNavigation
+                OsmNavigationDark.id -> OsmNavigationDark
+                else -> throw Throwable("unknown design id: \"$id\"")
+            }
+
+        fun toBasemapStyle(designType: ArcGISDesignType): BasemapStyle =
+            when (designType.getValue()) {
                 Streets.id -> BasemapStyle.ArcGISStreets
                 Imagery.id -> BasemapStyle.ArcGISImagery
                 ImageryStandard.id -> BasemapStyle.ArcGISImageryStandard
@@ -209,7 +210,5 @@ data class ArcGISDesign(
                 OsmNavigationDark.id -> BasemapStyle.OsmNavigationDark
                 else -> throw Throwable("unknown design id: \"$designType.id\"")
             }
-        }
     }
 }
-

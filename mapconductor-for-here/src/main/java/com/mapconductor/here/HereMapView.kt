@@ -1,7 +1,5 @@
 package com.mapconductor.here
 
-import android.util.Log
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -15,6 +13,8 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
+import android.util.Log
+import android.view.ViewGroup
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
@@ -42,25 +42,27 @@ fun HereMapView(
         onInitialize = {
             HereMapViewHolderStore.initSDK(context)
 
-            val mapInitOptions = HereMapViewInitOptions(
-                scheme = state.mapDesignType.id,
-            )
+            val mapInitOptions =
+                HereMapViewInitOptions(
+                    scheme = state.mapDesignType.id,
+                )
 
-            val holder = HereMapViewHolderStore.getOrCreate(
-                context = context,
-                id = state.stateId,
-                options = mapInitOptions,
-            )
+            val holder =
+                HereMapViewHolderStore.getOrCreate(
+                    context = context,
+                    id = state.stateId,
+                    options = mapInitOptions,
+                )
 
             // Cast state if it implements event handlers
             val eventHandler = state as? IHereMapEventHandler
 
-            val controller = HereMapController(
-                holder = holder,
-                eventHandler = eventHandler,
-            )
+            val controller =
+                HereMapController(
+                    holder = holder,
+                    eventHandler = eventHandler,
+                )
             (state as? HereMapViewState)?.controller = controller
-
 
             holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
                 if (mapError != null) {
@@ -75,11 +77,12 @@ fun HereMapView(
                     val restoreCameraPosition = state.mapCameraPosition.value ?: state.initCameraPosition
                     controller.moveCamera(
                         dstPosition = MapCameraPosition.from(restoreCameraPosition),
-                        listener = object : MapViewState.MoveCameraCallback {
-                            override fun onComplete(result: Boolean) {
-                                cont.resume(result) {  }
-                            }
-                        }
+                        listener =
+                            object : MapViewState.MoveCameraCallback {
+                                override fun onComplete(result: Boolean) {
+                                    cont.resume(result) { }
+                                }
+                            },
                     )
                 }
             } catch (e: Exception) {
@@ -87,36 +90,38 @@ fun HereMapView(
                 false // Scene loading failed
             }
         },
-
         customDisposableEffect = { _state, _holderRef ->
 
             // HERE specific DisposableEffect logic
             DisposableEffect(lifecycle) {
                 val stateId = _state.stateId // from BaseMapViewState
-                val observer = object : DefaultLifecycleObserver {
-                    override fun onResume(owner: LifecycleOwner) {
-                        // Do not call here to keep the MapView instance
-                        // _holderRef.value?.mapView?.onResume()
-                    }
-                    override fun onPause(owner: LifecycleOwner) {
-                        // Do not call here to keep the MapView instance
-                        // _holderRef.value?.mapView?.onPause()
-                    }
-                    override fun onDestroy(owner: LifecycleOwner) {
-                        val currentHolder = _holderRef.value
-                        if (currentHolder != null) {
-                            val activity = context.findActivity()
-                            if (activity?.isChangingConfigurations == true) {
-                                (currentHolder.mapView.parent as? ViewGroup)?.removeView(currentHolder.mapView)
-                            } else {
-                                // Ensure these calls are safe if mapView might be null or already destroyed
-                                currentHolder.mapView.onPause()
-                                currentHolder.mapView.onDestroy()
-                                HereMapViewHolderStore.remove(stateId) // Clean up from your store
+                val observer =
+                    object : DefaultLifecycleObserver {
+                        override fun onResume(owner: LifecycleOwner) {
+                            // Do not call here to keep the MapView instance
+                            // _holderRef.value?.mapView?.onResume()
+                        }
+
+                        override fun onPause(owner: LifecycleOwner) {
+                            // Do not call here to keep the MapView instance
+                            // _holderRef.value?.mapView?.onPause()
+                        }
+
+                        override fun onDestroy(owner: LifecycleOwner) {
+                            val currentHolder = _holderRef.value
+                            if (currentHolder != null) {
+                                val activity = context.findActivity()
+                                if (activity?.isChangingConfigurations == true) {
+                                    (currentHolder.mapView.parent as? ViewGroup)?.removeView(currentHolder.mapView)
+                                } else {
+                                    // Ensure these calls are safe if mapView might be null or already destroyed
+                                    currentHolder.mapView.onPause()
+                                    currentHolder.mapView.onDestroy()
+                                    HereMapViewHolderStore.remove(stateId) // Clean up from your store
+                                }
                             }
                         }
                     }
-                }
                 lifecycle.addObserver(observer)
                 onDispose {
                     _state.resetInitState()
@@ -127,6 +132,6 @@ fun HereMapView(
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
-        content = content // This might need adjustment based on how overlays are handled
+        content = content, // This might need adjustment based on how overlays are handled
     )
 }

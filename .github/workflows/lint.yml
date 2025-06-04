@@ -1,0 +1,83 @@
+name: Lint Check on Push
+
+on:
+  push:
+    branches: # 必要に応じて特定のブランチを除外・指定できます
+      - '**' # 全てのブランチへのpushで実行
+      # - '!main' # 例: mainブランチへの直接pushでは実行しない場合
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint Changed Modules
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Download hash cache
+        uses: actions/download-artifact@v4
+        with:
+          name: lint-hash-cache
+          path: .lint-hash-cache
+        continue-on-error: true
+
+      - name: Read module list from projects.properties
+        id: define
+        run: |
+          modules=$(grep '^modules=' projects.properties | cut -d= -f2 | tr ',' ' ')
+          echo "modules=$modules" >> $GITHUB_OUTPUT
+
+      - name: Detect changed modules by hashing src/
+        id: detect
+        run: |
+          changed_modules=""
+          mkdir -p .lint-hash-cache
+          for module in ${{ steps.define.outputs.modules }}; do
+            hash=$(find "$module/src" -type f \( -name "*.kt" -o -name "*.xml" \) | sort | xargs sha256sum | sha256sum | cut -d ' ' -f1)
+            CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
+            if [ -f "$CACHE_KEY_FILE" ]; then
+              old_hash=$(cat "$CACHE_KEY_FILE")
+              if [ "$hash" == "$old_hash" ]; then
+                echo "Module $module unchanged."
+                continue
+              fi
+            fi
+            echo "Module changed: $module"
+            changed_modules="${changed_modules:+$changed_modules }$module"
+            echo "$hash" > "$CACHE_KEY_FILE"
+          done
+          # 余分な空白や改行を除去
+          changed_modules=$(echo "$changed_modules" | xargs)
+          echo "changed_modules=$changed_modules" >> $GITHUB_OUTPUT
+
+      - name: Run ktlintCheck
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running ktlintCheck for $module"
+            # エラーがあってもCIを止めない場合は `|| true` やエラーハンドリングを追加
+            ./gradlew ":$module:ktlintCheck"
+          done
+
+      - name: Run Android Lint
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running lint for $module"
+            # エラーがあってもCIを止めない場合は `|| true` やエラーハンドリングを追加
+            ./gradlew ":$module:lint"
+          done
+
+      - name: Upload hash cache
+        if: always() # 常にキャッシュをアップロード
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-hash-cache
+          path: .lint-hash-cache/

@@ -5,14 +5,12 @@ import com.here.sdk.mapview.ImageFormat
 import com.here.sdk.mapview.MapImage
 import com.mapconductor.core.marker.BitmapIcon
 
-internal fun BitmapIcon.toMapImage(): MapImage {
-    return MapImage(
+internal fun BitmapIcon.toMapImage(): MapImage =
+    MapImage(
         this.toByteArray(),
         ImageFormat.PNG,
         this.bitmap.width.toLong(),
         this.bitmap.height.toLong(),
     )
-}
-internal fun BitmapIcon.toAnchor2D() : Anchor2D {
-    return Anchor2D(this.anchor.x.toDouble(), this.anchor.y.toDouble())
-}
+
+internal fun BitmapIcon.toAnchor2D(): Anchor2D = Anchor2D(this.anchor.x.toDouble(), this.anchor.y.toDouble())
