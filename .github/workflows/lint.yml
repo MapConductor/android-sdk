@@ -50,10 +50,12 @@ jobs:
               fi
             fi
             echo "Module changed: $module"
-            changed_modules="$changed_modules $module"
+            changed_modules="${changed_modules:+$changed_modules }$module"
             echo "$hash" > "$CACHE_KEY_FILE"
           done
-          echo "changed_modules=${changed_modules}" >> $GITHUB_OUTPUT
+          # 余分な空白や改行を除去
+          changed_modules=$(echo "$changed_modules" | xargs)
+          echo "changed_modules=$changed_modules" >> $GITHUB_OUTPUT
 
       - name: Run ktlintCheck
         if: steps.detect.outputs.changed_modules != ''
