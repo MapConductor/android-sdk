@@ -1,7 +1,5 @@
 package com.mapconductor.mapbox
 
-import android.animation.Animator
-import android.util.AttributeSet
 import com.google.gson.JsonObject
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
@@ -26,6 +24,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import android.animation.Animator
+import android.util.AttributeSet
 
 interface IMapboxMapInitOptions {
     val mapOptions: MapOptions?
@@ -36,6 +36,7 @@ interface IMapboxMapInitOptions {
     val attrs: AttributeSet?
     val antialiasingSampleCount: Int?
 }
+
 data class MapboxMapInitOptions(
     override val mapOptions: MapOptions? = null,
     override val plugins: List<Plugin>? = null,
@@ -46,20 +47,26 @@ data class MapboxMapInitOptions(
     override val antialiasingSampleCount: Int? = null,
 ) : IMapboxMapInitOptions
 
-interface IMapboxMapViewController: MapViewController {
-    fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
-    fun animateCamera(dstPosition: MapCameraPosition, duration: Long, listener: MapViewState.MoveCameraCallback? = null)
+interface IMapboxMapViewController : MapViewController {
+    fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
+
+    fun animateCamera(
+        dstPosition: MapCameraPosition,
+        duration: Long,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
 }
 
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
     eventHandler: IMapboxMapEventHandler?,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-): IMapboxMapViewController,
+) : IMapboxMapViewController,
     CameraChangedCallback,
-    OnPointAnnotationClickListener
-{
-
+    OnPointAnnotationClickListener {
     private lateinit var pointAnnotationManager: PointAnnotationManager
 
     init {
@@ -75,53 +82,58 @@ internal class MapboxMapViewController(
         holder.map.subscribeCameraChanged(this)
     }
 
-    private val baseMapViewController = BaseMapViewController<PointAnnotation>(
-        coroutine = coroutine,
-        onMarkerRemove = { id, marker ->
-            synchronized(pointAnnotationManager) {
-                pointAnnotationManager.delete(marker)
-            }
-        },
-        onMarkerAdd = { newMarkers ->
-            synchronized(pointAnnotationManager) {
-                val options = newMarkers.map { params ->
-                    return@map params.icon.toPointAnnotationOptions()
-                        .withPoint(
-                            GeoPoint.from(params.entry.state.position).toPoint(),
-                        )
-                        .withData(JsonObject().apply {
-                            addProperty("id", params.entry.id)
-                        })
+    private val baseMapViewController =
+        BaseMapViewController<PointAnnotation>(
+            coroutine = coroutine,
+            onMarkerRemove = { id, marker ->
+                synchronized(pointAnnotationManager) {
+                    pointAnnotationManager.delete(marker)
                 }
-                return@BaseMapViewController pointAnnotationManager.create(options)
-            }
+            },
+            onMarkerAdd = { newMarkers ->
+                synchronized(pointAnnotationManager) {
+                    val options =
+                        newMarkers.map { params ->
+                            return@map params.icon
+                                .toPointAnnotationOptions()
+                                .withPoint(
+                                    GeoPoint.from(params.entry.state.position).toPoint(),
+                                ).withData(
+                                    JsonObject().apply {
+                                        addProperty("id", params.entry.id)
+                                    },
+                                )
+                        }
+                    return@BaseMapViewController pointAnnotationManager.create(options)
+                }
+            },
+            onMarkerChanged = { changes ->
+                changes.forEach { params ->
+                    // TODO: アイコンに変更があったかどうかを比較
+                    val option =
+                        params.icon
+                            .toPointAnnotationOptions()
+                            .withPoint(
+                                GeoPoint.from(params.entry.state.position).toPoint(),
+                            )
+                    params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
+                    params.marker.iconSize = option.iconSize
+                    params.marker.iconImage = option.iconImage
+                    params.marker.iconAnchor = option.iconAnchor
+                    params.marker.iconOffset = option.iconOffset
+                }
+            },
+        )
 
-        },
-        onMarkerChanged = { changes ->
-            changes.forEach { params ->
-                // TODO: アイコンに変更があったかどうかを比較
-                val option = params.icon.toPointAnnotationOptions()
-                    .withPoint(
-                        GeoPoint.from(params.entry.state.position).toPoint(),
-                    )
-                params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
-                params.marker.iconSize = option.iconSize
-                params.marker.iconImage = option.iconImage
-                params.marker.iconAnchor = option.iconAnchor
-                params.marker.iconOffset = option.iconOffset
-            }
-        },
-    )
-
-    override suspend fun addMarkers(markerList: List<MarkerEntry>) =
-        baseMapViewController.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerEntry>) = baseMapViewController.addMarkers(markerList)
 
     override suspend fun clearOverlays() = baseMapViewController.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val pixel = holder.map.pixelForCoordinate(
-            coordinate = GeoPoint.from(position).toPoint(),
-        )
+        val pixel =
+            holder.map.pixelForCoordinate(
+                coordinate = GeoPoint.from(position).toPoint(),
+            )
         return Offset(
             x = pixel.x,
             y = pixel.y,
@@ -132,7 +144,10 @@ internal class MapboxMapViewController(
         eventHandlerRef.get()?.onCameraMove(cameraChanged.cameraState)
     }
 
-    override fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback?) {
+    override fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MapViewState.MoveCameraCallback?,
+    ) {
         coroutine.launch {
             holder.map.setCamera(dstPosition.toCameraOptions())
         }
@@ -142,34 +157,37 @@ internal class MapboxMapViewController(
     override fun animateCamera(
         dstPosition: MapCameraPosition,
         durationMs: Long,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
-        val targetCamera  = dstPosition.toCameraOptions()
-        val animationOptions = MapAnimationOptions.Builder()
-            .duration(durationMs)
-            .build()
+        val targetCamera = dstPosition.toCameraOptions()
+        val animationOptions =
+            MapAnimationOptions
+                .Builder()
+                .duration(durationMs)
+                .build()
 
-        val animatorListener = object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                // Do nothing here
-            }
+        val animatorListener =
+            object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {
+                    // Do nothing here
+                }
 
-            override fun onAnimationEnd(animation: Animator) {
-                listener?.onComplete(true)
-            }
+                override fun onAnimationEnd(animation: Animator) {
+                    listener?.onComplete(true)
+                }
 
-            override fun onAnimationCancel(animation: Animator) {
-                listener?.onComplete(false)
-            }
+                override fun onAnimationCancel(animation: Animator) {
+                    listener?.onComplete(false)
+                }
 
-            override fun onAnimationRepeat(animation: Animator) {
-                // Do nothing here
+                override fun onAnimationRepeat(animation: Animator) {
+                    // Do nothing here
+                }
             }
-        }
 
         coroutine.launch {
             holder.map.flyTo(
-                cameraOptions  = targetCamera,
+                cameraOptions = targetCamera,
                 animationOptions = animationOptions,
                 animatorListener = animatorListener,
             )
@@ -188,5 +206,4 @@ internal class MapboxMapViewController(
         }
         return true
     }
-
 }

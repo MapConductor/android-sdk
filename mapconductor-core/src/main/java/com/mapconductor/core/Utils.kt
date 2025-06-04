@@ -7,4 +7,3 @@ fun calculateZIndex(geoPointBase: GeoPoint): Double {
     // 同じ緯度内では西が上（前）に来る
     return (-geoPointBase.latitude * 1_000_000 - geoPointBase.longitude)
 }
-

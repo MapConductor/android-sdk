@@ -1,14 +1,14 @@
 package com.mapconductor.core.marker
 
-import android.graphics.Bitmap
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.MapOverlay
 import com.mapconductor.core.Offset
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.map.MapOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.ByteArrayOutputStream
+import android.graphics.Bitmap
 
 data class BitmapIcon(
     val bitmap: Bitmap,
@@ -25,12 +25,15 @@ data class BitmapIcon(
 class MarkerOverlay(
     override val flow: StateFlow<List<MarkerEntry>>,
 ) : MapOverlay<MarkerEntry> {
-
-    override suspend fun render(data: List<MarkerEntry>, controller: MapViewController) {
+    override suspend fun render(
+        data: List<MarkerEntry>,
+        controller: MapViewController,
+    ) {
         controller.addMarkers(data)
     }
 }
 
-val LocalMarkerCollector = compositionLocalOf<MutableStateFlow<List<MarkerEntry>>> {
-    error("Marker must be under the <MapView />")
-}
+val LocalMarkerCollector =
+    compositionLocalOf<MutableStateFlow<List<MarkerEntry>>> {
+        error("Marker must be under the <MapView />")
+    }

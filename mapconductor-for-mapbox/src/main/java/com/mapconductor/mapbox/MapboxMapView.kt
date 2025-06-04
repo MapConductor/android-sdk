@@ -1,8 +1,5 @@
 package com.mapconductor.mapbox
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,6 +9,9 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 
 @Composable
 fun MapboxMapView(
@@ -35,22 +35,26 @@ fun MapboxMapView(
         scope = scope,
         registry = registry,
         onInitialize = {
-            val cameraOptions = state.mapCameraPosition.value?.let { it ->
-                CameraOptions.Builder().apply {
-                    center(GeoPoint.from(it.position).toPoint())
-                    zoom(it.zoom)
-                    pitch(it.tilt)
-                    bearing(it.bearing)
-                }.build()
-            }
+            val cameraOptions =
+                state.mapCameraPosition.value?.let { it ->
+                    CameraOptions
+                        .Builder()
+                        .apply {
+                            center(GeoPoint.from(it.position).toPoint())
+                            zoom(it.zoom)
+                            pitch(it.tilt)
+                            bearing(it.bearing)
+                        }.build()
+                }
 
             val styleUri = state.mapDesignType.getValue()
-            val mapInitOptions = MapInitOptions(
-                context = context,
-                textureView = true,
-                styleUri = styleUri,
-                cameraOptions = cameraOptions,
-            )
+            val mapInitOptions =
+                MapInitOptions(
+                    context = context,
+                    textureView = true,
+                    styleUri = styleUri,
+                    cameraOptions = cameraOptions,
+                )
 
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
 //            val holder = MapboxMapViewHolderStore.getOrCreate(
@@ -59,10 +63,11 @@ fun MapboxMapView(
 //                options = mapInitOptions,
 //            )
             val eventHandler = state as? IMapboxMapEventHandler
-            val controller = MapboxMapViewController(
-                holder = holder,
-                eventHandler = eventHandler,
-            )
+            val controller =
+                MapboxMapViewController(
+                    holder = holder,
+                    eventHandler = eventHandler,
+                )
             (state as? MapboxMapViewState)?.controller = controller
 
             holderRef.value = holder
@@ -72,7 +77,7 @@ fun MapboxMapView(
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
-        content = content // This might need adjustment based on how overlays are handled
+        content = content, // This might need adjustment based on how overlays are handled
     )
 }
 

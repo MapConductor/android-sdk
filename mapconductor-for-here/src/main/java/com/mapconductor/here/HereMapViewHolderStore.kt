@@ -1,19 +1,18 @@
 package com.mapconductor.here
 
-import android.content.Context
-import android.content.pm.PackageManager
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapView
-import com.mapconductor.core.MapViewHolder
-import com.mapconductor.core.MapViewHolderStoreBaseAsync
+import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderStoreBaseAsync
+import android.content.Context
+import android.content.pm.PackageManager
 
 typealias HereMapViewHolder = MapViewHolder<MapView, HereMap>
 
 object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, HereMapViewInitOptions>() {
-
     private var mapCount: Int = 0
 
     fun initSDK(context: Context) {
@@ -24,17 +23,22 @@ object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, He
         // 初めて使うときはApplicationContextで認証する
         val accessKeyId = context.applicationContext.getHereAccessKeyId()
         val accessKeySecret = context.applicationContext.getHereAccessKeySecret()
-        if (accessKeyId == null) throw Exception(
-            "<meta-data android:name=\"HERE_ACCESS_KEY_ID\" /> is required"
-        )
-        if (accessKeySecret == null) throw Exception(
-            "<meta-data android:name=\"HERE_ACCESS_KEY_SECRET\" /> is required"
-        )
+        if (accessKeyId == null) {
+            throw Exception(
+                "<meta-data android:name=\"HERE_ACCESS_KEY_ID\" /> is required",
+            )
+        }
+        if (accessKeySecret == null) {
+            throw Exception(
+                "<meta-data android:name=\"HERE_ACCESS_KEY_SECRET\" /> is required",
+            )
+        }
 
-        val authenticationMode = AuthenticationMode.withKeySecret(
-            accessKeyId,
-            accessKeySecret,
-        )
+        val authenticationMode =
+            AuthenticationMode.withKeySecret(
+                accessKeyId,
+                accessKeySecret,
+            )
         val sdkOption = SDKOptions(authenticationMode)
         SDKNativeEngine.makeSharedInstance(context.applicationContext, sdkOption)
         this.mapCount++
@@ -43,7 +47,6 @@ object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, He
     override suspend fun getOrCreate(
         context: Context,
         id: String,
-
         // NOTE: 使ってないけど、将来のために残しておく
         options: HereMapViewInitOptions,
     ): HereMapViewHolder {
@@ -53,9 +56,10 @@ object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, He
         }
         initSDK(context.applicationContext)
 
-        val newHolder = HereMapViewHolderImpl.create(
-            context.applicationContext,
-        )
+        val newHolder =
+            HereMapViewHolderImpl.create(
+                context.applicationContext,
+            )
 
 //        val mapView = newHolder.mapView
 //        options.let { it ->
@@ -90,9 +94,13 @@ object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, He
 }
 
 internal fun Context.getHereAccessKeyId(): String? =
-    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-        .metaData?.getString("HERE_ACCESS_KEY_ID")
+    packageManager
+        .getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+        .metaData
+        ?.getString("HERE_ACCESS_KEY_ID")
 
 internal fun Context.getHereAccessKeySecret(): String? =
-    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-        .metaData?.getString("HERE_ACCESS_KEY_SECRET")
+    packageManager
+        .getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+        .metaData
+        ?.getString("HERE_ACCESS_KEY_SECRET")

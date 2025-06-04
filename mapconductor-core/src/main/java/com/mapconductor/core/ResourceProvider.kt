@@ -1,12 +1,12 @@
 package com.mapconductor.core
 
-import android.content.Context
-import android.content.res.Resources
-import android.util.LruCache
 import androidx.annotation.Keep
 import com.mapconductor.core.marker.BitmapIcon
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import android.content.Context
+import android.content.res.Resources
+import android.util.LruCache
 
 data class IconResource(
     val name: String,
@@ -22,7 +22,11 @@ object ResourceProvider {
     val initialized = _initialized.asStateFlow()
 
     private lateinit var appContext: Context
-    val density = Resources.getSystem().displayMetrics.density.toDouble()
+    val density =
+        Resources
+            .getSystem()
+            .displayMetrics.density
+            .toDouble()
 
     fun init(context: Context) {
         appContext = context.applicationContext
@@ -38,23 +42,26 @@ object ResourceProvider {
 
         // Cache bytes
         object : LruCache<Int, BitmapIcon>(cacheSize.toInt()) {
-            override fun sizeOf(key: Int, iconRes: BitmapIcon): Int {
-                return iconRes.bitmap.byteCount / 1024
-            }
+            override fun sizeOf(
+                key: Int,
+                iconRes: BitmapIcon,
+            ): Int = iconRes.bitmap.byteCount / 1024
         }
     }
-    val DEFAULT_MARKER = IconResource(
-        name = "DEFAULT_MARKER",
-        width = 42.0,
-        height = 42.0,
-        anchorX = 24.0,
-        anchorY = 42.0,
-        resourceId = R.drawable.default_marker,
-    )
+    val DEFAULT_MARKER =
+        IconResource(
+            name = "DEFAULT_MARKER",
+            width = 42.0,
+            height = 42.0,
+            anchorX = 24.0,
+            anchorY = 42.0,
+            resourceId = R.drawable.default_marker,
+        )
 
-    private val resourceIDs = hashMapOf<String, IconResource>(
-        DEFAULT_MARKER.name to DEFAULT_MARKER,
-    )
+    private val resourceIDs =
+        hashMapOf<String, IconResource>(
+            DEFAULT_MARKER.name to DEFAULT_MARKER,
+        )
 
 //    fun getIconResourceWithBitmap(name: String): BitmapIcon? {
 //        synchronized(bitmapCache) {

@@ -1,6 +1,5 @@
 package com.mapconductor.arcgis
 
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -12,6 +11,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapViewBase
 import kotlinx.coroutines.launch
+import android.view.ViewGroup
 
 @Composable
 fun ArcGISMapView(
@@ -37,26 +37,28 @@ fun ArcGISMapView(
         scope = scope,
         registry = registry,
         onInitialize = {
-
             val basemapStyle = ArcGISDesign.toBasemapStyle(state.mapDesignType)
-            val options = ArcGISMapViewInitOptions(
-                basemapStyle = basemapStyle,
-                elevationSources = state.mapDesignType.elevationSources,
-            )
+            val options =
+                ArcGISMapViewInitOptions(
+                    basemapStyle = basemapStyle,
+                    elevationSources = state.mapDesignType.elevationSources,
+                )
 
-            val holder = ArcGISMapViewHolderStore.getOrCreate(
-                context = context,
-                id = state.stateId,
-                options = options,
-            )
+            val holder =
+                ArcGISMapViewHolderStore.getOrCreate(
+                    context = context,
+                    id = state.stateId,
+                    options = options,
+                )
             holder.mapView.onCreate(owner)
             holder.mapView.onResume(owner)
             val eventHandler = state
 
-            val controller = ArcGISMapViewController(
-                holder = holder,
-                eventHandler = eventHandler,
-            )
+            val controller =
+                ArcGISMapViewController(
+                    holder = holder,
+                    eventHandler = eventHandler,
+                )
             state.controller = controller
             controller.coroutine.launch {
                 holder.map.viewpointChanged
@@ -65,41 +67,45 @@ fun ArcGISMapView(
                         eventHandler.onCameraMove(camera)
                     }
             }
-            val restoreCameraPosition = state.mapCameraPosition.value ?:
-                MapCameraPosition.from(state.initCameraPosition)
+            val restoreCameraPosition =
+                state.mapCameraPosition.value
+                    ?: MapCameraPosition.from(state.initCameraPosition)
             controller.moveCamera(restoreCameraPosition)
 
             controllerRef.value = controller
             holderRef.value = holder
             true
         },
-        customDisposableEffect =  {_state, _holderRef ->
+        customDisposableEffect = { _state, _holderRef ->
 
             // ArcGIS specific DisposableEffect logic
             DisposableEffect(lifecycle) {
                 val stateId = _state.stateId // from BaseMapViewState
-                val observer = object : DefaultLifecycleObserver {
-                    override fun onResume(owner: LifecycleOwner) {
-                         _holderRef.value?.mapView?.onResume(owner)
-                    }
-                    override fun onPause(owner: LifecycleOwner) {
-                         _holderRef.value?.mapView?.onPause(owner)
-                    }
-                    override fun onDestroy(owner: LifecycleOwner) {
-                        val currentHolder = _holderRef.value
-                        if (currentHolder != null) {
-                            val activity = context.findActivity()
-                            if (activity?.isChangingConfigurations == true) {
-                                (currentHolder.mapView.parent as? ViewGroup)?.removeView(currentHolder.mapView)
-                            } else {
-                                // Ensure these calls are safe if mapView might be null or already destroyed
-                                currentHolder.mapView.onPause(owner)
-                                currentHolder.mapView.onDestroy(owner)
-                                ArcGISMapViewHolderStore.remove(stateId) // Clean up from your store
+                val observer =
+                    object : DefaultLifecycleObserver {
+                        override fun onResume(owner: LifecycleOwner) {
+                            _holderRef.value?.mapView?.onResume(owner)
+                        }
+
+                        override fun onPause(owner: LifecycleOwner) {
+                            _holderRef.value?.mapView?.onPause(owner)
+                        }
+
+                        override fun onDestroy(owner: LifecycleOwner) {
+                            val currentHolder = _holderRef.value
+                            if (currentHolder != null) {
+                                val activity = context.findActivity()
+                                if (activity?.isChangingConfigurations == true) {
+                                    (currentHolder.mapView.parent as? ViewGroup)?.removeView(currentHolder.mapView)
+                                } else {
+                                    // Ensure these calls are safe if mapView might be null or already destroyed
+                                    currentHolder.mapView.onPause(owner)
+                                    currentHolder.mapView.onDestroy(owner)
+                                    ArcGISMapViewHolderStore.remove(stateId) // Clean up from your store
+                                }
                             }
                         }
                     }
-                }
                 lifecycle.addObserver(observer)
                 onDispose {
                     _state.resetInitState()

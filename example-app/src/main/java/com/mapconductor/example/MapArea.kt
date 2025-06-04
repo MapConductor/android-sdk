@@ -37,7 +37,6 @@ fun MapArea(
             MapViewContainer(
                 state = state,
             ) {
-
                 markers.forEach { state ->
                     Marker(
                         state = state,
@@ -58,22 +57,23 @@ fun MapArea(
                 }
             }
             Column(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(Color(
-                        red = 0.9f,
-                        green = 0.9f,
-                        blue = 0.9f,
-                        alpha = 0.75f,
-                    ))
-                    .wrapContentHeight()
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .background(
+                            Color(
+                                red = 0.9f,
+                                green = 0.9f,
+                                blue = 0.9f,
+                                alpha = 0.75f,
+                            ),
+                        ).wrapContentHeight(),
             ) {
                 Text("LatLng: (${camera?.position?.latitude}, ${camera?.position?.longitude})", color = Color.Black)
                 Text("Zoom: ${camera?.zoom}", color = Color.Black)
                 Text("bearing: ${camera?.bearing}", color = Color.Black)
                 Text("tilt: ${camera?.tilt}", color = Color.Black)
             }
-
         } else {
             Text(
                 text = "Loading...",

@@ -1,6 +1,5 @@
 package com.mapconductor.example.demo
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -31,23 +30,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapconductor.example.R
+import android.content.res.Configuration
 
 @Preview(widthDp = 600, heightDp = 300, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Preview(widthDp = 400, heightDp = 600)
 @Composable
-fun StoreCard(
-    onClick: () -> Unit = {},
-) {
-
+fun StoreCard(onClick: () -> Unit = {}) {
     @Composable
     fun CallButtonPortrait(modifier: Modifier = Modifier) {
         Button(
             onClick = onClick,
             modifier = modifier,
             shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00704A),
-            )
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF00704A),
+                ),
         ) {
             Row {
                 Icon(
@@ -67,10 +65,11 @@ fun StoreCard(
     fun CallButtonLandScape(modifier: Modifier = Modifier) {
         Button(
             onClick = onClick,
-            modifier = modifier
-                .heightIn(max = 100.dp)
-                .fillMaxHeight(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00704A))
+            modifier =
+                modifier
+                    .heightIn(max = 100.dp)
+                    .fillMaxHeight(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00704A)),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
@@ -103,7 +102,7 @@ fun StoreCard(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize(),
-            alpha = 0.1f
+            alpha = 0.1f,
         )
     }
 
@@ -112,15 +111,16 @@ fun StoreCard(
     @Composable
     fun PortraitLayout(modifier: Modifier = Modifier) {
         Box(
-            modifier = modifier
+            modifier = modifier,
         ) {
             BackgroundImage()
             Column(modifier = Modifier.padding(10.dp)) {
                 StoreInfo(modifier = Modifier.padding(10.dp))
                 CallButtonPortrait(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
                 )
             }
         }
@@ -132,15 +132,17 @@ fun StoreCard(
             BackgroundImage()
             StoreInfo(modifier = Modifier.padding(10.dp))
             CallButtonLandScape(
-                modifier = Modifier
-                    .align(alignment = Alignment.CenterEnd)
-                    .padding(end = 10.dp)
+                modifier =
+                    Modifier
+                        .align(alignment = Alignment.CenterEnd)
+                        .padding(end = 10.dp),
             )
         }
     }
-    val modifier = Modifier
-        .widthIn(max = 350.dp)
-        .wrapContentSize()
+    val modifier =
+        Modifier
+            .widthIn(max = 350.dp)
+            .wrapContentSize()
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
         LandscapeLayout(modifier = modifier)
     } else {

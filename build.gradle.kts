@@ -16,12 +16,3 @@ buildscript {
         classpath(libs.secrets.gradle.plugin)
     }
 }
-ktlint {
-    debug.set(false)
-    android.set(true)
-    outputColorName.set("RED")
-    reporters {
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
-        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
-    }
-}
