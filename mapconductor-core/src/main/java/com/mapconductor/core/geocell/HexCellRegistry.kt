@@ -7,7 +7,10 @@ import kotlin.math.sqrt
 
 // HexCellRegistry（KDTree + markDirty制御）
 
-class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, private val zoom: Double) {
+class HexCellRegistry<T : IdentifiedPoint>(
+    private val geocell: HexGeocell,
+    private val zoom: Double,
+) {
     private var kdTree: KDTree? = null
     private val allCells = ConcurrentHashMap<String, HexCell>()
     private val entryIDsByCell = ConcurrentHashMap<String, List<String>>()
@@ -53,7 +56,7 @@ class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, priv
 
         allCells[cellId] = cell
         allEntries[entry.id] = cell.id
-        entryIDsByCell[cellId] =  (entryIDsByCell[cellId] ?: emptyList<String>()) + entry.id
+        entryIDsByCell[cellId] = (entryIDsByCell[cellId] ?: emptyList<String>()) + entry.id
         markDirty()
         return cell
     }
@@ -86,7 +89,9 @@ class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, priv
         kdTree = null
     }
 
-    fun markDirty() { needsRebuild = true }
+    fun markDirty() {
+        needsRebuild = true
+    }
 
     private fun rebuildIfNeeded() {
         if (needsRebuild) {
@@ -105,12 +110,18 @@ class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, priv
         return kdTree?.nearestWithDistance(geocell.projection.project(point))
     }
 
-    fun findNearestKWithDistance(point: IGeoPoint, k: Int): List<HexCellWithDistance> {
+    fun findNearestKWithDistance(
+        point: IGeoPoint,
+        k: Int,
+    ): List<HexCellWithDistance> {
         rebuildIfNeeded()
         return kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
     }
 
-    fun findWithinRadiusWithDistance(point: IGeoPoint, radius: Double): List<HexCellWithDistance> {
+    fun findWithinRadiusWithDistance(
+        point: IGeoPoint,
+        radius: Double,
+    ): List<HexCellWithDistance> {
         rebuildIfNeeded()
         return kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
     }
@@ -123,20 +134,23 @@ class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, priv
         position: IGeoPoint,
         zoom: Double,
         pixels: Double,
-        tileSize: Int = 256
+        tileSize: Int = 256,
     ): Double {
         // val scale = 1.0 / (2.0.pow(zoom)) // ピクセルの地図上のスケール
         val deltaLng = 360.0 * pixels / (tileSize * 2.0.pow(zoom)) // 経度方向にずらす
 
         val p1 = geocell.projection.project(position)
-        val p2 = geocell.projection.project(object : IGeoPoint {
-            override val latitude
-                get() = position.latitude
-            override val longitude: Double
-                get() = position.longitude + deltaLng
-            override val altitude: Double?
-                get() = position.altitude
-        })
+        val p2 =
+            geocell.projection.project(
+                object : IGeoPoint {
+                    override val latitude
+                        get() = position.latitude
+                    override val longitude: Double
+                        get() = position.longitude + deltaLng
+                    override val altitude: Double?
+                        get() = position.altitude
+                },
+            )
 
         val dx = p2.x - p1.x
         val dy = p2.y - p1.y
@@ -147,13 +161,11 @@ class HexCellRegistry<T : IdentifiedPoint>(private val geocell: HexGeocell, priv
         position: IGeoPoint,
         zoom: Double,
         pixels: Double,
-        tileSize: Int = 256
+        tileSize: Int = 256,
     ): List<HexCellWithDistance> {
         val meters = metersPerPixel(position, zoom, pixels, tileSize)
         return findWithinRadiusWithDistance(position, meters)
     }
 
-    fun findByIdPrefix(prefix: String): List<HexCell> {
-        return all().filter { it.id.startsWith(prefix) }
-    }
+    fun findByIdPrefix(prefix: String): List<HexCell> = all().filter { it.id.startsWith(prefix) }
 }

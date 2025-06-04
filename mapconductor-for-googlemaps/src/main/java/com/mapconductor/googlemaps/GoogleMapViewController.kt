@@ -31,10 +31,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController: MapViewController
-{
-    fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
-    fun animateCamera(dstPosition: MapCameraPosition, duration: Int, listener: MapViewState.MoveCameraCallback? = null)
+interface IGoogleMapViewController : MapViewController {
+    fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
+
+    fun animateCamera(
+        dstPosition: MapCameraPosition,
+        duration: Int,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
 }
 
 class GoogleMapViewController(
@@ -117,15 +124,19 @@ class GoogleMapViewController(
         val dstCameraPosition = position.toCameraPosition()
         coroutine.launch {
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
-            holder.map.animateCamera(cameraUpdate, duration, object : CancelableCallback {
-                override fun onCancel() {
-                    listener?.onComplete(false)
-                }
+            holder.map.animateCamera(
+                cameraUpdate,
+                duration,
+                object : CancelableCallback {
+                    override fun onCancel() {
+                        listener?.onComplete(false)
+                    }
 
-                override fun onFinish() {
-                    listener?.onComplete(true)
-                }
-            })
+                    override fun onFinish() {
+                        listener?.onComplete(true)
+                    }
+                },
+            )
         }
     }
 
@@ -203,4 +214,3 @@ class GoogleMapViewController(
         entry.state.position = marker.position.toGeoPoint()
     }
 }
-

@@ -7,15 +7,16 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.MapOverlay
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.IdentifiedPoint
+import com.mapconductor.core.map.MapOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.ByteArrayOutputStream
 import java.util.UUID
+
 
 // ------- Core Types ----------
 typealias OnMarkerClickHandler = (MarkerState) -> Unit
@@ -31,7 +32,6 @@ class MarkerState(
     var visible: Boolean = true,
     icon: MarkerIcon? = null,
 ) {
-
     // -- position and positionState properties --
     private val _position = mutableStateOf(position)
     val positionState: State<GeoPoint> get() = _position
@@ -45,7 +45,6 @@ class MarkerState(
 
     // -- icon and iconState properties --
     private val _icon = mutableStateOf<MarkerIcon?>(icon)
-    val iconState: State<MarkerIcon?> get() = _icon
     var icon: MarkerIcon?
         get() = _icon.value
         set(value) {
@@ -97,7 +96,6 @@ data class MarkerEntry(
     override val id: String get() = state.id
     override val point: IGeoPoint get() = state.position
 }
-
 
 data class BitmapIcon(
     val bitmap: Bitmap,

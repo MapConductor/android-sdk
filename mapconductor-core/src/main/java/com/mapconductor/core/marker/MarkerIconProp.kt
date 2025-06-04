@@ -24,7 +24,7 @@ class MarkerIcon internal constructor(
     companion object { }
 }
 //
-//fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {
+// fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {
 //    val bmpWidth = drawable.intrinsicWidth.takeIf { it > 0 } ?: width
 //    val bmpHeight = drawable.intrinsicHeight.takeIf { it > 0 } ?: height
 //
@@ -33,11 +33,11 @@ class MarkerIcon internal constructor(
 //    drawable.setBounds(0, 0, canvas.width, canvas.height)
 //    drawable.draw(canvas)
 //    return bitmap
-//}
+// }
 //
-////
-//@Composable
-//fun RememberDrawable(@DrawableRes resId: Int): Bitmap {
+// //
+// @Composable
+// fun RememberDrawable(@DrawableRes resId: Int): Bitmap {
 //    val context = LocalContext.current
 //
 //    val drawableResId = rememberSaveable { mutableStateOf(resId) }
@@ -47,4 +47,4 @@ class MarkerIcon internal constructor(
 //            throw IllegalArgumentException("Resource is not available")
 //        drawableToBitmap(drawable)
 //    }
-//}
+// }

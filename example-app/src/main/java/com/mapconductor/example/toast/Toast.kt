@@ -1,22 +1,16 @@
 package com.mapconductor.example.toast
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,23 +31,24 @@ import kotlinx.coroutines.delay
 fun ToastHost(
     messages: List<ToastMessage>,
     onDismiss: (ToastMessage) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = Alignment.BottomCenter,
     ) {
         Column(
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(bottom = 48.dp)
+            modifier =
+                Modifier
+                    .padding(bottom = 48.dp),
         ) {
             // 下から順に表示（最新は一番上）
             messages.reversed().forEach { message ->
                 ToastItem(
                     message = message,
-                    onDismiss = { onDismiss(message) }
+                    onDismiss = { onDismiss(message) },
                 )
             }
         }
@@ -63,7 +58,7 @@ fun ToastHost(
 @Composable
 fun ToastItem(
     message: ToastMessage,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     var visible by remember { mutableStateOf(true) }
 
@@ -77,22 +72,22 @@ fun ToastItem(
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
     ) {
         Card(
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF323232)),
-            modifier = Modifier
-                .padding(4.dp)
-                .fillMaxWidth(0.85f)
+            modifier =
+                Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth(0.85f),
         ) {
             Text(
                 text = message.text,
                 color = Color.White,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
             )
         }
     }
 }
-

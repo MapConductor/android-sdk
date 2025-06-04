@@ -7,8 +7,6 @@ import androidx.compose.runtime.remember
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewScope
 
-open class MarkerScope
-
 @Composable
 fun MapViewScope.Marker(
     entry: MarkerEntry,

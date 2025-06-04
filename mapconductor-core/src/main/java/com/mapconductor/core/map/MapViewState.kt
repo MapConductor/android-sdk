@@ -1,8 +1,6 @@
 package com.mapconductor.core.map
 
-import android.util.Log
-import com.mapconductor.core.IMapCameraPosition
-import com.mapconductor.core.MapDesignType
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
 
 enum class InitState {
     NotStarted,
@@ -30,16 +29,27 @@ interface MapViewState<T> {
     val mapDesignType: MapDesignType<T>
 
     fun initAsync(init: suspend () -> Boolean)
+
     fun resetInitState()
-    fun moveCameraTo(position: IMapCameraPosition, durationMs: Long = 0, listener: MoveCameraCallback? = null)
-    fun moveCameraTo(position: IGeoPoint, durationMs: Long = 0, listener: MoveCameraCallback? = null)
+
+    fun moveCameraTo(
+        position: IMapCameraPosition,
+        durationMs: Long = 0,
+        listener: MoveCameraCallback? = null,
+    )
+
+    fun moveCameraTo(
+        position: IGeoPoint,
+        durationMs: Long = 0,
+        listener: MoveCameraCallback? = null,
+    )
 //    fun addMarkers(markerDataList: List<MarkerEntry>, listener: AddMarkersCallback? = null)
 }
 
 abstract class MapViewStateImpl<T>(
     protected val mainCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-): MapViewState<T> {
-    private val TAG = this.javaClass.name
+) : MapViewState<T> {
+    private val tag = this.javaClass.name
 
     private val _isInitialized = MutableStateFlow(InitState.NotStarted)
     override val isInitialized: StateFlow<InitState> = _isInitialized.asStateFlow()
@@ -49,11 +59,11 @@ abstract class MapViewStateImpl<T>(
     }
 
     protected fun warningLog(message: String) {
-        Log.w(TAG, message)
+        Log.w(tag, message)
     }
 
     protected fun debugLog(message: String) {
-        Log.d(TAG, message)
+        Log.d(tag, message)
     }
 
     override fun initAsync(init: suspend () -> Boolean) {
@@ -70,4 +80,24 @@ abstract class MapViewStateImpl<T>(
             }
         }
     }
+}
+
+interface MapOverlay<T> {
+    val flow: StateFlow<List<T>>
+
+    suspend fun render(
+        data: List<T>,
+        controller: MapViewController,
+    )
+}
+
+class MapOverlayRegistry {
+    private val overlays = mutableListOf<MapOverlay<*>>()
+
+    fun register(overlay: MapOverlay<*>) {
+        if (overlays.toSet().contains(overlay)) return
+        overlays.add(overlay)
+    }
+
+    fun getAll(): List<MapOverlay<*>> = overlays
 }

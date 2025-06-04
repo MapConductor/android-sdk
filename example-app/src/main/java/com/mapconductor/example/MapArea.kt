@@ -1,6 +1,5 @@
 package com.mapconductor.example
 
-import android.os.Bundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -11,44 +10,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.OnMarkerClickHandler
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerClickHandler
 import com.mapconductor.example.demo.StoreCard
+import android.os.Bundle
 
 @Composable
 fun MapArea(
-    state: MapViewState<*>?,
+    mapViewState: MapViewState<*>?,
+    selectedMarker: MarkerState?,
+    infoBubbleState: InfoBubbleState,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
-//    onMarkerClickHandler: MarkerClickHandler = {},
     onCallButtonClick: OnMarkerClickHandler = {},
+    onMapClickHandler: OnMapClickHandler = {},
+    onMarkerClickHandler: OnMarkerClickHandler = {},
 ) {
-    val camera = state?.mapCameraPosition?.collectAsStateWithLifecycle()?.value
+    val camera = mapViewState?.mapCameraPosition?.collectAsStateWithLifecycle()?.value
     val darkTheme: Boolean = isSystemInDarkTheme()
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-    val infoBubbleState by remember { mutableStateOf(InfoBubbleState()) }
     val bubbleColor by remember { mutableStateOf(if (darkTheme) Color.Black else Color.White) }
-//    infoBubbleState.bubbleColor = bubbleColor
 
-    val onMapClickHandler = { _: GeoPoint ->
-        selectedMarker = null
-        infoBubbleState.close()
-    }
-    val onMarkerClickHandler = { state: MarkerState -> selectedMarker = state }
-
-    state?.let { mapViewState ->
+    mapViewState?.let { mapViewState ->
         Box(
             modifier = modifier,
         ) {
@@ -64,8 +55,6 @@ fun MapArea(
                 }
 
                 selectedMarker?.let {
-                    infoBubbleState.open(it)
-
                     InfoBubble(
                         bubbleColor = bubbleColor,
                         state = infoBubbleState
@@ -80,15 +69,18 @@ fun MapArea(
                 }
             }
             Column(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(Color(
-                        red = 0.9f,
-                        green = 0.9f,
-                        blue = 0.9f,
-                        alpha = 0.75f,
-                    ))
-                    .wrapContentHeight()
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .background(
+                            Color(
+                                red = 0.9f,
+                                green = 0.9f,
+                                blue = 0.9f,
+                                alpha = 0.75f,
+                            ),
+                        )
+                        .wrapContentHeight(),
             ) {
                 Text("LatLng: (${camera?.position?.latitude}, ${camera?.position?.longitude})", color = Color.Black)
                 Text("Zoom: ${camera?.zoom}", color = Color.Black)

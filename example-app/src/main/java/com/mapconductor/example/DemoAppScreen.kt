@@ -1,6 +1,5 @@
 package com.mapconductor.example
 
-import android.os.Bundle
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -17,19 +16,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mapconductor.StarbucksHI_list
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.icons.Default
-import com.mapconductor.core.icons.StarInCircle
+import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastHost
@@ -46,66 +45,67 @@ import com.mapconductor.mapbox.rememberMapboxMapViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DemoAppScreen(
-    appViewModel: AppViewModel,
-) {
-
+fun DemoAppScreen(appViewModel: AppViewModel) {
     // ---------- GoogleMaps ---------------
-    val googleMapState = rememberGoogleMapViewState(
-        mapDesign = GoogleMapDesign.Normal,
-        cameraPosition = appViewModel.initCameraPosition,
-    )
+    val googleMapState =
+        rememberGoogleMapViewState(
+            mapDesign = GoogleMapDesign.Normal,
+            cameraPosition = appViewModel.initCameraPosition,
+        )
     // ---------- Mapbox ---------------
-    val mapboxMapState = rememberMapboxMapViewState(
-        mapDesign = MapboxMapDesign.Standard,
-        cameraPosition = appViewModel.initCameraPosition,
-    )
+    val mapboxMapState =
+        rememberMapboxMapViewState(
+            mapDesign = MapboxMapDesign.Standard,
+            cameraPosition = appViewModel.initCameraPosition,
+        )
     // ---------- Here ---------------
-    val hereMapState = rememberHereMapViewState(
-        mapDesign = HereMapDesign.NormalDay,
-        cameraPosition = appViewModel.initCameraPosition,
-    )
+    val hereMapState =
+        rememberHereMapViewState(
+            mapDesign = HereMapDesign.NormalDay,
+            cameraPosition = appViewModel.initCameraPosition,
+        )
 
     // ---------- ArcGIS ---------------
-    val elevationSources = listOf(
-        "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
-    )
-    val arcGISMapState = rememberArcGISMapViewState(
-        mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
-        cameraPosition = appViewModel.initCameraPosition,
-    )
-    val menuItems = listOf(
-        IconItem(
-            key = "googlemap",
-            label = "Google Map",
-            lightIconResId = R.drawable.google_maps_logo,
-            darkIconResId = R.drawable.google_maps_logo,
-            value = googleMapState,
-        ),
-
-        IconItem(
-            key = "mapbox",
-            label = "Mapbox",
-            lightIconResId = R.drawable.mapbox_logo_black,
-            darkIconResId = R.drawable.mapbox_logo_white,
-            value = mapboxMapState,
-        ),
-
-        IconItem(
-            key = "heremap",
-            label = "Here",
-            lightIconResId = R.drawable.here_logo_black,
-            darkIconResId = R.drawable.here_logo_white,
-            value = hereMapState,
-        ),
-        IconItem(
-            key = "arcgis",
-            label = "ArcGIS",
-            lightIconResId = R.drawable.arcgis_logo_black,
-            darkIconResId = R.drawable.arcgis_logo_white,
-            value = arcGISMapState,
-        ),
-    )
+    val elevationSources =
+        listOf(
+            "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
+        )
+    val arcGISMapState =
+        rememberArcGISMapViewState(
+            mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
+            cameraPosition = appViewModel.initCameraPosition,
+        )
+    val menuItems =
+        listOf(
+            IconItem(
+                key = "googlemap",
+                label = "Google Map",
+                lightIconResId = R.drawable.google_maps_logo,
+                darkIconResId = R.drawable.google_maps_logo,
+                value = googleMapState,
+            ),
+            IconItem(
+                key = "mapbox",
+                label = "Mapbox",
+                lightIconResId = R.drawable.mapbox_logo_black,
+                darkIconResId = R.drawable.mapbox_logo_white,
+                value = mapboxMapState,
+            ),
+            IconItem(
+                key = "heremap",
+                label = "Here",
+                lightIconResId = R.drawable.here_logo_black,
+                darkIconResId = R.drawable.here_logo_white,
+                value = hereMapState,
+            ),
+            IconItem(
+                key = "arcgis",
+                label = "ArcGIS",
+                lightIconResId = R.drawable.arcgis_logo_black,
+                darkIconResId = R.drawable.arcgis_logo_white,
+                value = arcGISMapState,
+            ),
+        )
     val context = LocalContext.current
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -124,10 +124,11 @@ fun DemoAppScreen(
     val messages = remember { mutableStateListOf<ToastMessage>() }
 
     fun showToast(text: String) {
-        messages += ToastMessage(
-            text = text,
-            onDismiss = { messages.removeIf { it.text == text } }
-        )
+        messages +=
+            ToastMessage(
+                text = text,
+                onDismiss = { messages.removeIf { it.text == text } },
+            )
     }
 
     AppTheme {
@@ -142,7 +143,7 @@ fun DemoAppScreen(
                                 modifier = Modifier.weight(0.2f),
                                 itemList = menuItems,
                                 selectedIndex = selectedIndex,
-                                onSelect = { index, _ -> selectedIndex = index }
+                                onSelect = { index, _ -> selectedIndex = index },
                             )
                             Button(
                                 modifier = Modifier.weight(0.1f),
@@ -151,14 +152,14 @@ fun DemoAppScreen(
                                 Text("Fly to!")
                             }
                         }
-                    }
+                    },
                 )
             },
             modifier = Modifier.fillMaxSize(),
         ) { innerPadding ->
             Box {
                 MapArea(
-                    state = appViewModel.state.collectAsStateWithLifecycle().value,
+                    mapViewState = appViewModel.mapViewState.collectAsStateWithLifecycle().value,
                     markers = StarbucksHI_list.slice(IntRange(0, 10)).map {
                         MarkerState(
                             position = it.position,
@@ -173,10 +174,14 @@ fun DemoAppScreen(
 //                        (state.extra as Bundle).getString("name")?.let { showToast(it) }
 //                    },
                     modifier = Modifier.padding(innerPadding),
+                    infoBubbleState = appViewModel.infoBubbleState,
+                    onMapClickHandler = appViewModel::onMapClick,
+                    onMarkerClickHandler = appViewModel::onMarkerClick,
+                    selectedMarker = appViewModel.selectedMarker
                 )
                 ToastHost(
                     messages = messages,
-                    onDismiss = { messages.remove(it) }
+                    onDismiss = { messages.remove(it) },
                 )
             }
         }

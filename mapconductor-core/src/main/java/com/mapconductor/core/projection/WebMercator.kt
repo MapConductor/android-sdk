@@ -7,7 +7,7 @@ import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.tan
 
-object WebMercator: Projection {
+object WebMercator : Projection {
     override fun project(position: IGeoPoint): Offset {
         val x = position.longitude * 20037508.34 / 180
         val y = ln(tan((90 + position.latitude) * Math.PI / 360)) * 20037508.34 / Math.PI
@@ -23,5 +23,4 @@ object WebMercator: Projection {
             override val altitude: Double? = null
         }
     }
-
 }

@@ -49,9 +49,10 @@ fun StoreCard(
             onClick = onClick,
             modifier = modifier,
             shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00704A),
-            )
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF00704A),
+                ),
         ) {
             Row {
                 Icon(
@@ -71,10 +72,11 @@ fun StoreCard(
     fun CallButtonLandScape(modifier: Modifier = Modifier) {
         Button(
             onClick = onClick,
-            modifier = modifier
-                .heightIn(max = 100.dp)
-                .fillMaxHeight(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00704A))
+            modifier =
+                modifier
+                    .heightIn(max = 100.dp)
+                    .fillMaxHeight(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00704A)),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
@@ -148,9 +150,10 @@ fun StoreCard(
             )
         }
     }
-    val modifier = Modifier
-        .widthIn(max = 350.dp)
-        .wrapContentSize()
+    val modifier =
+        Modifier
+            .widthIn(max = 350.dp)
+            .wrapContentSize()
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
         LandscapeLayout(modifier = modifier)
     } else {

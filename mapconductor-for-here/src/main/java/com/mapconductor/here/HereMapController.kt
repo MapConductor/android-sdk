@@ -1,10 +1,12 @@
 package com.mapconductor.here
 
-import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.ui.geometry.Offset
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.Metadata
 import com.here.sdk.core.Point2D
+import com.here.sdk.gestures.GestureState
+import com.here.sdk.gestures.LongPressListener
 import com.here.sdk.gestures.TapListener
 import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapCamera
@@ -14,18 +16,14 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.MarkerManager
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Dp
-import com.here.sdk.gestures.GestureState
-import com.here.sdk.gestures.LongPressListener
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
@@ -37,10 +35,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 
-interface IHereMapViewController: MapViewController {
-    fun moveCamera(dstPosition: MapCameraPosition, listener: MoveCameraCallback? = null)
-    fun animateCamera(dstPosition: MapCameraPosition, durationMs: Long, listener: MoveCameraCallback? = null)
+interface IHereMapViewController : MapViewController {
+    fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MoveCameraCallback? = null,
+    )
+
+    fun animateCamera(
+        dstPosition: MapCameraPosition,
+        durationMs: Long,
+        listener: MoveCameraCallback? = null,
+    )
 }
+
 internal class HereMapController(
     override val holder: MapViewHolder<MapView, HereMap>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
@@ -49,8 +56,7 @@ internal class HereMapController(
 ) : IHereMapViewController,
     MapCameraListener,
     TapListener,
-    LongPressListener
-{
+    LongPressListener {
 
     private val markerOverlayManager = MarkerOverlayManager<MapMarker>(
         markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
@@ -92,9 +98,10 @@ internal class HereMapController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result = holder.mapView.geoToViewCoordinates(
-            GeoPoint.from(position).toGeoCoordinates(),
-        ) ?: return null
+        val result =
+            holder.mapView.geoToViewCoordinates(
+                GeoPoint.from(position).toGeoCoordinates(),
+            ) ?: return null
 
         return Offset(
             x = result.x.toFloat(),
@@ -110,12 +117,12 @@ internal class HereMapController(
         holder.mapView.camera.removeListener(this)
         holder.mapView.camera.addListener(this)
         holder.mapView.gestures.tapListener = this
-        holder.mapView.gestures.setLongPressListener(this)
+        holder.mapView.gestures.longPressListener = this
     }
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,
-        listener: MoveCameraCallback?
+        listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
         camera.applyUpdate(
@@ -127,7 +134,7 @@ internal class HereMapController(
     override fun animateCamera(
         dstPosition: MapCameraPosition,
         durationMs: Long,
-        listener: MoveCameraCallback?
+        listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
 
@@ -135,13 +142,14 @@ internal class HereMapController(
 //      bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
 //      bowFactor = 0: 常に同じズーム（直線的）
         val bowFactor = 1.0
-        val animation = MapCameraAnimationFactory.flyTo(
-            GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
-            GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-            MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
-            bowFactor,
-            Duration.ofMillis(durationMs),
-        )
+        val animation =
+            MapCameraAnimationFactory.flyTo(
+                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
+                bowFactor,
+                Duration.ofMillis(durationMs),
+            )
         coroutine.launch {
             camera.startAnimation(animation) { animState ->
                 when (animState) {
@@ -205,11 +213,11 @@ internal class HereMapController(
         TODO("Not yet implemented")
     }
 
-    private fun getGeoPointFromPoint(point: Point2D) : GeoPoint? {
+    private fun getGeoPointFromPoint(point: Point2D): GeoPoint? {
         return holder.mapView.viewToGeoCoordinates(point)?.toGeoPoint()
     }
 
-    private fun findMarkerFromPoint(position: IGeoPoint, radiusInDp: Int = 14) : MarkerEntry? {
+    private fun findMarkerFromPoint(position: IGeoPoint, radiusInDp: Int = 14): MarkerEntry? {
         val zoom = holder.mapView.camera.state.zoomLevel
         val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
         val acceptDPI = radiusInDp.toFloat() * holder.mapView.context.resources.displayMetrics.density

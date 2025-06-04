@@ -34,18 +34,18 @@ class MarkerOverlayManager<
 ) {
 
     suspend fun addMarkers(markerList: List<MarkerEntry>) {
-
         val current = markerList.filter { !markerManager.containsKey(it.state.id) }
         if (current.size == 0) return
 
         val entriesSet = markerManager.getValueSet()
         val added = current - entriesSet
-        val removed =  entriesSet - current
-        val updated = markerList
-            .filter { entry ->
-                if (!markerManager.containsKey(entry.state.id)) return@filter false
-                return@filter !markerManager.equalsValue(entry)
-            }
+        val removed = entriesSet - current
+        val updated =
+            markerList
+                .filter { entry ->
+                    if (!markerManager.containsKey(entry.state.id)) return@filter false
+                    return@filter !markerManager.equalsValue(entry)
+                }
 
         val defaultIcon = markerManager.createDefaultMarkerShape()
 
@@ -91,18 +91,20 @@ class MarkerOverlayManager<
 
         // Update changed markers
         if (updated.isNotEmpty()) {
-            val willUpdate: List<MarkerUpdateParams<ActualMarker>> = updated.map { entry ->
-                val markerIcon = entry.state.icon?.let {
-                    markerManager.getBitmapIcon(it)
-                } ?: defaultIcon
-                markerManager.updateEntry(entry)
-                val marker = markerManager.getMarker(entry.id)!!
-                object : MarkerUpdateParams<ActualMarker> {
-                    override val entry: MarkerEntry = entry
-                    override val icon: BitmapIcon = markerIcon
-                    override val marker: ActualMarker = marker
+            val willUpdate: List<MarkerUpdateParams<ActualMarker>> =
+                updated.map { entry ->
+                    val markerIcon =
+                        entry.state.icon?.let {
+                            markerManager.getBitmapIcon(it)
+                        } ?: defaultIcon
+                    markerManager.updateEntry(entry)
+                    val marker = markerManager.getMarker(entry.id)!!
+                    object : MarkerUpdateParams<ActualMarker> {
+                        override val entry: MarkerEntry = entry
+                        override val icon: BitmapIcon = markerIcon
+                        override val marker: ActualMarker = marker
+                    }
                 }
-            }
 
             withContext(coroutine.coroutineContext) {
                 onChange(willUpdate)
@@ -127,5 +129,4 @@ class MarkerOverlayManager<
     }
 
     fun getMarkerEntry(id: String): MarkerEntry? = markerManager.getEntry(id)
-
 }

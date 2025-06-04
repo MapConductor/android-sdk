@@ -37,22 +37,26 @@ fun MapboxMapView(
         scope = scope,
         registry = registry,
         onInitialize = {
-            val cameraOptions = state.mapCameraPosition.value?.let { it ->
-                CameraOptions.Builder().apply {
-                    center(GeoPoint.from(it.position).toPoint())
-                    zoom(it.zoom)
-                    pitch(it.tilt)
-                    bearing(it.bearing)
-                }.build()
-            }
+            val cameraOptions =
+                state.mapCameraPosition.value?.let { it ->
+                    CameraOptions
+                        .Builder()
+                        .apply {
+                            center(GeoPoint.from(it.position).toPoint())
+                            zoom(it.zoom)
+                            pitch(it.tilt)
+                            bearing(it.bearing)
+                        }.build()
+                }
 
             val styleUri = state.mapDesignType.getValue()
-            val mapInitOptions = MapInitOptions(
-                context = context,
-                textureView = true,
-                styleUri = styleUri,
-                cameraOptions = cameraOptions,
-            )
+            val mapInitOptions =
+                MapInitOptions(
+                    context = context,
+                    textureView = true,
+                    styleUri = styleUri,
+                    cameraOptions = cameraOptions,
+                )
 
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
 
@@ -72,7 +76,7 @@ fun MapboxMapView(
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
-        content = content // This might need adjustment based on how overlays are handled
+        content = content, // This might need adjustment based on how overlays are handled
     )
 }
 

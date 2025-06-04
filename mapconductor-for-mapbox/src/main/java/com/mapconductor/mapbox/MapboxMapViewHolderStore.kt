@@ -1,20 +1,19 @@
 package com.mapconductor.mapbox
 
-import android.annotation.SuppressLint
-import android.content.Context
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
-import com.mapconductor.core.MapViewHolder
-import com.mapconductor.core.MapViewHolderStoreBaseAsync
-import com.mapconductor.core.StaticHolder
+import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderStoreBaseAsync
+import com.mapconductor.core.map.StaticHolder
+import android.annotation.SuppressLint
+import android.content.Context
 
 typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
 
 object MapboxMapViewOptionsStore : StaticHolder<MapInitOptions?>()
 
 object MapboxMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, MapboxMap, MapInitOptions>() {
-
     @SuppressLint("RestrictedApi")
     override suspend fun getOrCreate(
         context: Context,
@@ -29,10 +28,11 @@ object MapboxMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, MapboxMap
         //     }
         //     return existing
         // }
-        val mapInitOptions = MapInitOptions(
-            context = context,
-            textureView = true,
-        )
+        val mapInitOptions =
+            MapInitOptions(
+                context = context,
+                textureView = true,
+            )
         options.mapOptions?.let {
             mapInitOptions.mapOptions = it
         }

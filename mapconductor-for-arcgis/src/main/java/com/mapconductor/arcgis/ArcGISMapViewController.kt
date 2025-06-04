@@ -27,9 +27,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.arcgismaps.geometry.Point
 
-interface IArcGISMapViewController: MapViewController {
-    fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
-    fun animateCamera(dstPosition: MapCameraPosition, duration: Int, listener: MapViewState.MoveCameraCallback? = null)
+interface IArcGISMapViewController : MapViewController {
+    fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
+
+    fun animateCamera(
+        dstPosition: MapCameraPosition,
+        duration: Int,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
 }
 
 class ArcGISMapViewController(
@@ -56,22 +64,26 @@ class ArcGISMapViewController(
                 val anchorX = (params.icon.anchor.x - 0.5) * width
                 val anchorY = (params.icon.anchor.y - 0.5) * height
 
-                val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                    it.width = width.toFloat()
-                    it.height = height.toFloat()
-                    it.offsetX = anchorX.toFloat()
-                    it.offsetY = anchorY.toFloat()
-                }
+                        val pictureSymbolFuture =
+                            PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                it.width = width.toFloat()
+                                it.height = height.toFloat()
+                                it.offsetX = anchorX.toFloat()
+                                it.offsetY = anchorY.toFloat()
+                            }
 
-                val marker = Graphic(
-                    geometry = params.entry.state.position.toPoint(),
-                    symbol = pictureSymbolFuture,
-                )
-                marker.attributes.set("id", params.entry.id)
-                return@map marker
-            }
+                        val marker =
+                            Graphic(
+                                geometry =
+                                    params.entry.state.position
+                                        .toPoint(),
+                                symbol = pictureSymbolFuture,
+                            )
+                        marker.attributes.set("id", params.entry.id)
+                        return@map marker
+                    }
 
-            this.markerLayer.graphics.addAll(markers)
+                this.markerLayer.graphics.addAll(markers)
 
             return@MarkerOverlayManager markers
         },
@@ -85,24 +97,28 @@ class ArcGISMapViewController(
                 val anchorX = (params.icon.anchor.x - 0.5) * width
                 val anchorY = (params.icon.anchor.y - 0.5) * height
 
-                val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                    it.width = width.toFloat()
-                    it.height = height.toFloat()
-                    it.offsetX = anchorX.toFloat()
-                    it.offsetY = anchorY.toFloat()
-                }
+                    val pictureSymbolFuture =
+                        PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                            it.width = width.toFloat()
+                            it.height = height.toFloat()
+                            it.offsetX = anchorX.toFloat()
+                            it.offsetY = anchorY.toFloat()
+                        }
 
-                params.marker.geometry = params.entry.state.position.toPoint()
-                params.marker.symbol = pictureSymbolFuture
-            }
-        },
-    )
+                    params.marker.geometry =
+                        params.entry.state.position
+                            .toPoint()
+                    params.marker.symbol = pictureSymbolFuture
+                }
+            },
+        )
 
     init {
 
-        this.markerLayer = GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.Relative
-        }
+        this.markerLayer =
+            GraphicsOverlay().apply {
+                sceneProperties.surfacePlacement = SurfacePlacement.Relative
+            }
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(markerLayer)
 
@@ -148,7 +164,7 @@ class ArcGISMapViewController(
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
         val dstCameraPosition = dstPosition.toCamera()
 
@@ -161,16 +177,16 @@ class ArcGISMapViewController(
     override fun animateCamera(
         dstPosition: MapCameraPosition,
         duration: Int,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
-
         val dstCameraPosition = dstPosition.toCamera()
 
         coroutine.launch {
-            val result = holder.map.setViewpointCameraAnimated(
-                camera = dstCameraPosition,
-                duration = duration.toFloat() / 1000.0f,
-            )
+            val result =
+                holder.map.setViewpointCameraAnimated(
+                    camera = dstCameraPosition,
+                    duration = duration.toFloat() / 1000.0f,
+                )
             listener?.onComplete(result.isSuccess)
         }
     }

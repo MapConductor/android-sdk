@@ -53,9 +53,17 @@ import kotlinx.coroutines.launch
 //    override val antialiasingSampleCount: Int? = null,
 //) : IMapboxMapInitOptions
 
-interface IMapboxMapViewController: MapViewController {
-    fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback? = null)
-    fun animateCamera(dstPosition: MapCameraPosition, duration: Long, listener: MapViewState.MoveCameraCallback? = null)
+interface IMapboxMapViewController : MapViewController {
+    fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
+
+    fun animateCamera(
+        dstPosition: MapCameraPosition,
+        duration: Long,
+        listener: MapViewState.MoveCameraCallback? = null,
+    )
 }
 
 internal class MapboxMapViewController(
@@ -73,16 +81,16 @@ internal class MapboxMapViewController(
     private lateinit var pointAnnotationManager: PointAnnotationManager
 
     init {
-        setupListeners()
         val annotationApi = holder.mapView.annotations
         pointAnnotationManager = annotationApi.createPointAnnotationManager()
-        pointAnnotationManager.addClickListener(this@MapboxMapViewController)
+        setupListeners()
     }
 
     private fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
+        pointAnnotationManager.addClickListener(this@MapboxMapViewController)
         pointAnnotationManager.dragListeners.remove(this)
         pointAnnotationManager.dragListeners.add(this)
     }
@@ -136,9 +144,10 @@ internal class MapboxMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val pixel = holder.map.pixelForCoordinate(
-            coordinate = GeoPoint.from(position).toPoint(),
-        )
+        val pixel =
+            holder.map.pixelForCoordinate(
+                coordinate = GeoPoint.from(position).toPoint(),
+            )
         return Offset(
             x = pixel.x.toFloat(),
             y = pixel.y.toFloat(),
@@ -153,7 +162,10 @@ internal class MapboxMapViewController(
         }
     }
 
-    override fun moveCamera(dstPosition: MapCameraPosition, listener: MapViewState.MoveCameraCallback?) {
+    override fun moveCamera(
+        dstPosition: MapCameraPosition,
+        listener: MapViewState.MoveCameraCallback?,
+    ) {
         coroutine.launch {
             holder.map.setCamera(dstPosition.toCameraOptions())
         }
@@ -163,34 +175,37 @@ internal class MapboxMapViewController(
     override fun animateCamera(
         dstPosition: MapCameraPosition,
         durationMs: Long,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
-        val targetCamera  = dstPosition.toCameraOptions()
-        val animationOptions = MapAnimationOptions.Builder()
-            .duration(durationMs)
-            .build()
+        val targetCamera = dstPosition.toCameraOptions()
+        val animationOptions =
+            MapAnimationOptions
+                .Builder()
+                .duration(durationMs)
+                .build()
 
-        val animatorListener = object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {
-                // Do nothing here
-            }
+        val animatorListener =
+            object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {
+                    // Do nothing here
+                }
 
-            override fun onAnimationEnd(animation: Animator) {
-                listener?.onComplete(true)
-            }
+                override fun onAnimationEnd(animation: Animator) {
+                    listener?.onComplete(true)
+                }
 
-            override fun onAnimationCancel(animation: Animator) {
-                listener?.onComplete(false)
-            }
+                override fun onAnimationCancel(animation: Animator) {
+                    listener?.onComplete(false)
+                }
 
-            override fun onAnimationRepeat(animation: Animator) {
-                // Do nothing here
+                override fun onAnimationRepeat(animation: Animator) {
+                    // Do nothing here
+                }
             }
-        }
 
         coroutine.launch {
             holder.map.flyTo(
-                cameraOptions  = targetCamera,
+                cameraOptions = targetCamera,
                 animationOptions = animationOptions,
                 animatorListener = animatorListener,
             )

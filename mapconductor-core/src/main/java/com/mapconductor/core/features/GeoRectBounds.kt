@@ -3,10 +3,9 @@ package com.mapconductor.core.features
 import kotlin.math.max
 import kotlin.math.min
 
-
 data class GeoRectBounds(
     var southWest: GeoPoint? = null,
-    var northEast: GeoPoint? = null
+    var northEast: GeoPoint? = null,
 ) {
     val isEmpty: Boolean
         get() = southWest == null || northEast == null
@@ -46,23 +45,32 @@ data class GeoRectBounds(
         northEast = GeoPoint(north, east)
     }
 
-    private fun distanceEast(lon1: Double, lon2: Double): Double {
+    private fun distanceEast(
+        lon1: Double,
+        lon2: Double,
+    ): Double {
         val d = (lon2 - lon1 + 360) % 360
         return if (d <= 180) d else 360 - d
     }
 
-    private fun distanceWest(lon1: Double, lon2: Double): Double {
+    private fun distanceWest(
+        lon1: Double,
+        lon2: Double,
+    ): Double {
         val d = (lon1 - lon2 + 360) % 360
         return if (d <= 180) d else 360 - d
     }
 
-    private fun containsLongitude(lon: Double, west: Double, east: Double): Boolean {
-        return if (west <= east) {
+    private fun containsLongitude(
+        lon: Double,
+        west: Double,
+        east: Double,
+    ): Boolean =
+        if (west <= east) {
             lon in west..east
         } else {
             lon >= west || lon <= east
         }
-    }
 
     fun contains(point: IGeoPoint): Boolean {
         if (isEmpty) return false
@@ -87,12 +95,13 @@ data class GeoRectBounds(
 
         val lng1 = sw.longitude
         val lng2 = ne.longitude
-        val centerLng = if (lng1 <= lng2) {
-            (lng1 + lng2) / 2.0
-        } else {
-            val mid = (lng1 + (lng2 + 360)) / 2.0
-            if (mid > 180) mid - 360 else mid
-        }
+        val centerLng =
+            if (lng1 <= lng2) {
+                (lng1 + lng2) / 2.0
+            } else {
+                val mid = (lng1 + (lng2 + 360)) / 2.0
+                if (mid > 180) mid - 360 else mid
+            }
 
         return GeoPoint(centerLat, centerLng)
     }
@@ -134,7 +143,7 @@ data class GeoRectBounds(
             sw.latitude.toFixed(precision),
             sw.longitude.toFixed(precision),
             ne.latitude.toFixed(precision),
-            ne.longitude.toFixed(precision)
+            ne.longitude.toFixed(precision),
         ).joinToString(",")
     }
 
@@ -148,21 +157,19 @@ data class GeoRectBounds(
 
         val latOverlap = sw1.latitude <= ne2.latitude && ne1.latitude >= sw2.latitude
 
-        val lngOverlap = containsLongitude(sw2.longitude, sw1.longitude, ne1.longitude) ||
+        val lngOverlap =
+            containsLongitude(sw2.longitude, sw1.longitude, ne1.longitude) ||
                 containsLongitude(ne2.longitude, sw1.longitude, ne1.longitude)
 
         return latOverlap && lngOverlap
     }
 
-    override fun toString(): String {
-        return if (isEmpty) {
+    override fun toString(): String =
+        if (isEmpty) {
             "((1, 180), (-1, -180))"
         } else {
             "((${southWest!!.latitude}, ${southWest!!.longitude}), (${northEast!!.latitude}, ${northEast!!.longitude}))"
         }
-    }
 
-    fun equalsTo(other: GeoRectBounds): Boolean {
-        return this.southWest == other.southWest && this.northEast == other.northEast
-    }
+    fun equalsTo(other: GeoRectBounds): Boolean = this.southWest == other.southWest && this.northEast == other.northEast
 }

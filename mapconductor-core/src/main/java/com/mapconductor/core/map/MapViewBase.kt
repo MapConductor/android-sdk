@@ -1,7 +1,5 @@
 package com.mapconductor.core.map
 
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.Ref
@@ -25,8 +22,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.mapconductor.core.MapOverlayRegistry
-import com.mapconductor.core.MapViewHolder
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.collectAndRenderOverlays
 import com.mapconductor.core.controller.MapViewController
@@ -34,7 +29,8 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.LocalMarkerCollector
-import com.mapconductor.core.marker.MarkerState
+import android.view.View
+import android.view.ViewGroup
 
 typealias OnMapClickHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
@@ -42,17 +38,18 @@ typealias OnMarkerDragHandler = (String, GeoPoint) -> Unit
 
 @Composable
 fun <
-        SpecificState : MapViewState<*>,
-        SpecificController : MapViewController, // Replace Any with a base MapViewController if you have one
-        // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-        ActualMapView : View,
-        // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
-        ActualMap : Any,
-        // SpecificViewHolder is now constrained by your MapViewHolder interface
-        // and uses the ActualMapView and ActualMap generic types.
-        SpecificViewHolder : MapViewHolder<ActualMapView, ActualMap>,
-        SpecificScope : MapViewScope
-> MapViewBase(
+    SpecificState : MapViewState<*>,
+    // Replace Any with a base MapViewController if you have one
+    // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
+    SpecificController : MapViewController,
+    ActualMapView : View,
+    // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
+    ActualMap : Any,
+    // SpecificViewHolder is now constrained by your MapViewHolder interface
+    // and uses the ActualMapView and ActualMap generic types.
+    SpecificViewHolder : MapViewHolder<ActualMapView, ActualMap>,
+    SpecificScope : MapViewScope,
+    > MapViewBase(
     state: SpecificState,
     modifier: Modifier = Modifier,
     holderRef: Ref<SpecificViewHolder>,
@@ -69,7 +66,7 @@ fun <
     val initState by state.isInitialized.collectAsState()
 //    val cameraPosition by state.mapCameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
-    val context = LocalContext.current
+    LocalContext.current
 
     if (initState == InitState.Initialized) {
         // 子コンポーネントを収集すr
@@ -96,10 +93,11 @@ fun <
 
 
     Box(
-        modifier = modifier
-            .background(color = Color.LightGray)
-            .fillMaxSize()
-            .clipToBounds(),
+        modifier =
+            modifier
+                .background(color = Color.LightGray)
+                .fillMaxSize()
+                .clipToBounds(),
         contentAlignment = Alignment.Center,
     ) {
         when (initState) {
@@ -107,12 +105,14 @@ fun <
                 BasicText(
                     text = "Not initialized yet",
                     modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle.Default.merge(
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center,
-                    ),
+                    style =
+                        TextStyle.Default.merge(
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                        ),
                 )
             }
+
             InitState.Failed -> {
                 BasicText(
                     text = "Failed to initialize",
@@ -120,6 +120,7 @@ fun <
                     style = TextStyle.Default.merge(fontSize = 13.sp),
                 )
             }
+
             InitState.Initializing -> {
                 BasicText(
                     text = "Initializing",
@@ -127,16 +128,18 @@ fun <
                     style = TextStyle.Default.merge(fontSize = 13.sp),
                 )
             }
+
             InitState.Initialized -> {
                 if (holderRef.value == null) {
                     state.resetInitState() // Or handle error appropriately
                 } else {
                     AndroidView(factory = { _ ->
                         val view = viewProvider(holderRef.value!!)
-                        (view as ViewGroup).layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                        )
+                        (view as ViewGroup).layoutParams =
+                            ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                            )
                         view
                     })
                 }
