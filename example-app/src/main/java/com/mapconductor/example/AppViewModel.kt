@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.StarbucksHI_list
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubbleState
-import com.mapconductor.core.map.MapCameraPositionBase
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import android.os.Bundle
 
 interface AppViewModel {
-    val initCameraPosition: MapCameraPositionBase
+    val initCameraPosition: MapCameraPosition
     val mapViewState: StateFlow<MapViewState<*>?>
     val selectedMarker: MarkerState?
     val infoBubbleState: InfoBubbleState
@@ -47,7 +47,7 @@ class AppViewModelImpl :
 
     // カメラの初期位置
     override val initCameraPosition =
-        MapCameraPositionBase(
+        MapCameraPosition(
             position =
                 GeoPoint.fromLatLong(
                     latitude = 21.382314,
@@ -81,7 +81,7 @@ class AppViewModelImpl :
     override fun flyTo(listener: MapViewState.MoveCameraCallback?) {
         this@AppViewModelImpl.mapViewState.value?.moveCameraTo(
             position =
-                MapCameraPositionBase(
+                MapCameraPosition(
                     position =
                         GeoPoint(
                             latitude = 40.689184289566214,
@@ -101,7 +101,7 @@ class AppViewModelImpl :
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
         this._infoBubbleState.value.open(clicked)
-        showToast((clicked.extra as Bundle).getString("name", ""))
+//        showToast((clicked.extra as Bundle).getString("name", ""))
     }
 
     override fun showToast(text: String) {

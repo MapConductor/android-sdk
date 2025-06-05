@@ -7,10 +7,9 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapbox.maps.CameraState
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
-import com.mapconductor.core.map.MapCameraPositionBase
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.mapbox.MapboxMapDesign.Standard
@@ -42,7 +41,7 @@ class MapboxMapViewState(
         )
 
     override fun moveCameraTo(
-        position: IGeoPoint,
+        position: GeoPoint,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -51,20 +50,20 @@ class MapboxMapViewState(
             listener?.onComplete(false)
             return
         }
-        val currCameraPosition = this.mapCameraPosition.value
-        if (currCameraPosition == null) {
+        val currentPosition = this.mapCameraPosition.value
+        if (currentPosition == null) {
             listener?.onComplete(false)
             return
         }
         val newPosition =
-            currCameraPosition.copy(
-                position = GeoPoint.from(position),
+            currentPosition.copy(
+                position = position,
             )
         this.moveCameraTo(newPosition, durationMs, listener)
     }
 
     override fun moveCameraTo(
-        position: IMapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -144,7 +143,7 @@ val MapboxMapViewStateSaver =
 @Composable
 fun rememberMapboxMapViewState(
     mapDesign: MapboxDesignType = Standard,
-    cameraPosition: IMapCameraPosition = MapCameraPositionBase.Default,
+    cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
 ): MapboxMapViewState {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()

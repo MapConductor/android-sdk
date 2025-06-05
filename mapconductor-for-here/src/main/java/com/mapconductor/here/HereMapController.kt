@@ -19,11 +19,13 @@ import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.calculateZIndex
+import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.OnCameraMoveHandler
@@ -55,7 +57,8 @@ internal class HereMapController(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val onCameraMove: (OnCameraMoveHandler<MapCamera.State>)? = null,
     val onMapClick: OnMapClickHandler? = null,
-) : IHereMapViewController,
+) : BaseMapViewController(),
+    IHereMapViewController,
     MapCameraListener,
     TapListener,
     LongPressListener {
@@ -177,7 +180,7 @@ internal class HereMapController(
     override fun onTap(touchPoint: Point2D) {
         val touchPosition = this.getGeoPointFromPoint(touchPoint) ?: return
 
-        val markerEntry = this.findMarkerFromPoint(
+        val markerEntry = this.findNearestMarker(
             position = touchPosition,
             tolerance = Settings.Default.tapTolerance,
         )
@@ -196,24 +199,6 @@ internal class HereMapController(
         onMapClick?.let { it(touchPosition) }
     }
 
-    private fun zoomToIdPrefixLevel(zoom: Double): Int =
-        when {
-            zoom <= 5 -> 2 // 数10km 単位でまとめる
-            zoom <= 8 -> 3 // 数km 単位
-            zoom <= 10 -> 4 // 500m ～ 1km
-            zoom <= 12 -> 5 // 100～300m
-            zoom <= 14 -> 6 // 50～100m
-            zoom <= 16 -> 7 // 20～50m
-            zoom <= 18 -> 8 // 5～20m
-            else -> 9 // ~1mまで細分化
-        }
-
-    private fun hereZoomToMetersPerPixel(zoom: Double): Double {
-        val earthCircumference = 40075016.686
-        val tileSize = 256
-        return earthCircumference / (tileSize * 2.0.pow(zoom))
-    }
-
     override fun onLongPress(
         state: GestureState,
         point: Point2D,
@@ -226,22 +211,18 @@ internal class HereMapController(
             .viewToGeoCoordinates(point)
             ?.toGeoPoint()
 
-    private fun findMarkerFromPoint(
+    private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
     ): MarkerEntry? {
         val zoom = holder.mapView.camera.state.zoomLevel
-        val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
-        val radius = acceptDPI * meterInMapPixel
 
-        val entry = markerOverlayManager.markerManager.findNearest(position) ?: return null
-
-        val distance = haversineDistance(position, entry.point)
-        return if (distance <= radius) {
-            entry
-        } else {
-            null
-        }
+        return findMarkerFromPoint(
+            markerOverlayManager = markerOverlayManager,
+            position = position,
+            zoom = zoom,
+            tolerance = acceptDPI.toDouble(),
+        )
     }
 }

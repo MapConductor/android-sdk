@@ -35,56 +35,34 @@ fun MapArea(
     onMapClickHandler: OnMapClickHandler = {},
     onMarkerClickHandler: OnMarkerClickHandler = {},
 ) {
-    val camera = mapViewState?.mapCameraPosition?.collectAsStateWithLifecycle()?.value
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember { mutableStateOf(if (darkTheme) Color.Black else Color.White) }
 
     mapViewState?.let { mapViewState ->
-        Box(
+        MapViewContainer(
             modifier = modifier,
+            state = mapViewState,
+            onMapClick = onMapClickHandler,
         ) {
-            MapViewContainer(
-                state = mapViewState,
-                onMapClick = onMapClickHandler,
-            ) {
-                markers.forEach { markerState ->
-                    Marker(
-                        state = markerState,
-                        onClick = onMarkerClickHandler,
+            markers.forEach { markerState ->
+                Marker(
+                    state = markerState,
+                    onClick = onMarkerClickHandler,
+                )
+            }
+
+            selectedMarker?.let {
+                InfoBubble(
+                    bubbleColor = bubbleColor,
+                    state = infoBubbleState,
+                ) {
+                    StoreCard(
+                        info = it.extra as Bundle,
+                        onClick = {
+                            onCallButtonClick(it)
+                        },
                     )
                 }
-
-                selectedMarker?.let {
-                    InfoBubble(
-                        bubbleColor = bubbleColor,
-                        state = infoBubbleState,
-                    ) {
-                        StoreCard(
-                            info = it.extra as Bundle,
-                            onClick = {
-                                onCallButtonClick(it)
-                            },
-                        )
-                    }
-                }
-            }
-            Column(
-                modifier =
-                    Modifier
-                        .align(Alignment.TopEnd)
-                        .background(
-                            Color(
-                                red = 0.9f,
-                                green = 0.9f,
-                                blue = 0.9f,
-                                alpha = 0.75f,
-                            ),
-                        ).wrapContentHeight(),
-            ) {
-                Text("LatLng: (${camera?.position?.latitude}, ${camera?.position?.longitude})", color = Color.Black)
-                Text("Zoom: ${camera?.zoom}", color = Color.Black)
-                Text("bearing: ${camera?.bearing}", color = Color.Black)
-                Text("tilt: ${camera?.tilt}", color = Color.Black)
             }
         }
     }

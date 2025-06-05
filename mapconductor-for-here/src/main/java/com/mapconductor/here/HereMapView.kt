@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapClickHandler
@@ -80,7 +81,7 @@ fun HereMapView(
                 return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
                     val restoreCameraPosition = state.mapCameraPosition.value ?: state.initCameraPosition
                     controller.moveCamera(
-                        dstPosition = MapCameraPosition.from(restoreCameraPosition),
+                        dstPosition = restoreCameraPosition,
                         listener =
                             object : MapViewState.MoveCameraCallback {
                                 override fun onComplete(result: Boolean) {

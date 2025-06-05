@@ -1,17 +1,23 @@
 package com.mapconductor.example.demo
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material3.Button
@@ -39,123 +45,59 @@ fun StoreCard(
     val darkTheme: Boolean = isSystemInDarkTheme()
     val iconTintColor = if (!darkTheme) Color.Black else Color.White
 
-    @Composable
-    fun CallButtonPortrait(modifier: Modifier = Modifier) {
-        Button(
-            onClick = onClick,
-            modifier = modifier,
-            shape = CircleShape,
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00704A),
-                ),
-        ) {
-            Row {
-                Icon(
-                    imageVector = Icons.Rounded.Call,
-                    contentDescription = null,
-                    tint = Color.White,
-                )
-                Text(
-                    text = "Call",
-                    color = Color.White,
-                )
-            }
-        }
-    }
+    Column(
+        modifier = Modifier.wrapContentSize(),
+    ) {
+        val name = info.getString("name", "Starbucks")
+        val address = info.getString("address", "address")
+        val instore = info.getBoolean("instore", false)
+        val driveThrough = info.getBoolean("drive_through", false)
+        Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        Text(address, fontSize = 13.sp)
 
-    @Composable
-    fun CallButtonLandScape(modifier: Modifier = Modifier) {
-        Button(
-            onClick = onClick,
-            modifier =
-                modifier
-                    .heightIn(max = 100.dp)
-                    .fillMaxHeight(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00704A)),
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Rounded.Call,
-                    contentDescription = null,
-                    tint = Color.White,
-                )
-                Text(
-                    text = "Call",
-                    color = Color.White,
-                )
-            }
-        }
-    }
+        if (instore || driveThrough) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween, // like justify-content
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (instore) {
+                    Text("● In store eating")
+                }
 
-    @Composable
-    fun StoreInfo() {
-        Column {
-            val name = info.getString("name", "Starbucks")
-            val address = info.getString("address", "address")
-            val instore = info.getBoolean("instore", false)
-            val driveThrough = info.getBoolean("drive_through", false)
-            Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Text(address, fontSize = 13.sp)
-            if (instore || driveThrough) {
-                Row {
-                    if (instore) {
-                        Icon(
-                            painter = painterResource(R.drawable.instore),
-                            contentDescription = "In store",
-                            modifier = Modifier.size(32.dp),
-                            tint = iconTintColor,
-                        )
-                    }
-
-                    if (driveThrough) {
-                        Icon(
-                            painter = painterResource(R.drawable.drivethrough),
-                            contentDescription = "Drive through",
-                            modifier = Modifier.size(32.dp),
-                            tint = iconTintColor,
-                        )
-                    }
+                if (driveThrough) {
+                    Text("● Drive Through")
                 }
             }
         }
+        RoundedLabel("Get Directions")
     }
+}
 
-    val configuration = LocalConfiguration.current
+@Composable
+fun RoundedLabel(
+    text: String,
+    onClick: () -> Unit = {},
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
+        shape = RoundedCornerShape(16.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+    ) {
+        // 黒い丸アイコン
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(Color.Black, shape = CircleShape)
+        )
 
-    @Composable
-    fun PortraitLayout(modifier: Modifier = Modifier) {
-        Column(modifier = Modifier) {
-            StoreInfo()
-            CallButtonPortrait(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-            )
-        }
-    }
+        Spacer(modifier = Modifier.width(8.dp))
 
-    @Composable
-    fun LandscapeLayout(modifier: Modifier = Modifier) {
-        Box(modifier = modifier) {
-            StoreInfo()
-            CallButtonLandScape(
-                modifier =
-                    Modifier
-                        .align(alignment = Alignment.CenterEnd)
-                        .padding(end = 4.dp),
-            )
-        }
-    }
-
-    val modifier =
-        Modifier
-            .widthIn(max = 350.dp)
-            .wrapContentSize()
-    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        LandscapeLayout(modifier = modifier)
-    } else {
-        PortraitLayout(modifier = modifier)
+        Text(
+            text = text,
+            color = Color.Black,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

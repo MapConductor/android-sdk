@@ -8,10 +8,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapScheme
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
-import com.mapconductor.core.map.MapCameraPositionBase
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
@@ -47,7 +46,7 @@ class HereMapViewState(
         )
 
     override fun moveCameraTo(
-        position: IGeoPoint,
+        position: GeoPoint,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -69,7 +68,7 @@ class HereMapViewState(
     }
 
     override fun moveCameraTo(
-        position: IMapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -79,16 +78,15 @@ class HereMapViewState(
             return
         }
 
-        val dstCameraPosition = MapCameraPosition.from(position)
         if (controller == null) {
             listener?.onComplete(false)
             return
         }
 
         if (durationMs == 0L) {
-            controller!!.moveCamera(dstCameraPosition, listener)
+            controller!!.moveCamera(position, listener)
         } else {
-            controller!!.animateCamera(dstCameraPosition, durationMs.toLong(), listener)
+            controller!!.animateCamera(position, durationMs.toLong(), listener)
         }
     }
 
@@ -151,7 +149,7 @@ val HereMapViewStateSaver =
 @Composable
 fun rememberHereMapViewState(
     mapDesign: HereMapDesign = HereMapDesign.NormalDay,
-    cameraPosition: IMapCameraPosition = MapCameraPositionBase.Default,
+    cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
 ): HereMapViewState {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()

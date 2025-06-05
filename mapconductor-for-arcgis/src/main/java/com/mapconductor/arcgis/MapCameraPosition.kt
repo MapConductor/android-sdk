@@ -1,12 +1,11 @@
 package com.mapconductor.arcgis
 
-import androidx.annotation.Keep
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
-import com.mapconductor.core.map.MapPaddings
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import kotlin.math.PI
 import kotlin.math.asin
@@ -17,72 +16,34 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sin
 
-interface MapCameraPositionArcGIS : IMapCameraPosition {
-    fun toCamera(): Camera
+fun MapCameraPosition.toCamera(): Camera {
+    val targetPoint = GeoPoint.from(position).toPoint()
+    return calculateCameraForOrbitParameters(
+        targetPoint = targetPoint,
+        distance = zoomLevelToAltitude(zoom),
+        cameraHeadingOffset = 360 - (bearing + 180),
+        cameraPitchOffset = tilt,
+    )
 }
 
-@Keep
-data class MapCameraPosition
-    @JvmOverloads
-    constructor(
-        override val position: IGeoPoint,
-        override val zoom: Double = 2.0,
-        override val bearing: Double = 0.0,
-        override val tilt: Double = 0.0,
-        override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
-    ) : MapCameraPositionArcGIS {
-        override fun toCamera(): Camera {
-            val targetPoint = GeoPoint.from(position).toPoint()
-            return calculateCameraForOrbitParameters(
-                targetPoint = targetPoint,
-                distance = zoomLevelToAltitude(zoom),
-                cameraHeadingOffset = 360 - (bearing + 180),
-                cameraPitchOffset = tilt,
-            )
-        }
-
-//
-//    override fun copy(
-//        target: GeoPoint?,
-//        zoom: Double?,
-//        bearing: Double?,
-//        tilt: Double?,
-//        paddings: MapPaddingsImpl?
-//    ) = MapCameraPosition(
-//        target = target ?: this.target,
-//        zoom = zoom ?: this.zoom,
-//        bearing = bearing ?: this.bearing,
-//        tilt = tilt ?: this.tilt,
-//        paddings = paddings ?: this.paddings,
-//    )
-
-        companion object {
-            fun from(position: IMapCameraPosition): MapCameraPosition =
-                when (position) {
-                    is MapCameraPosition -> position
-                    else -> {
-//                    val altitude = calculateZoomLevelFromScale(
-//                        positionImpl.zoom,
-//                        positionImpl.target.latitude,
-//                        Resources.getSystem().displayMetrics.densityDpi.toDouble(),
-//                    ) * 2.0
-                        val altitude = calculateScaleFromZoomLevel(position.zoom)
-                        MapCameraPosition(
-                            position =
-                                GeoPoint.fromLongLat(
-                                    longitude = position.position.longitude,
-                                    latitude = position.position.latitude,
-                                    altitude = altitude,
-                                ),
-                            zoom = position.zoom,
-                            bearing = position.bearing,
-                            tilt = position.tilt,
-                            paddings = position.paddings,
-                        )
-                    }
-                }
-        }
+fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPosition = when (position) {
+    is MapCameraPosition -> position
+    else -> {
+        val altitude = calculateScaleFromZoomLevel(position.zoom)
+        MapCameraPosition(
+            position =
+                GeoPoint.fromLongLat(
+                    longitude = position.position.longitude,
+                    latitude = position.position.latitude,
+                    altitude = altitude,
+                ),
+            zoom = position.zoom,
+            bearing = position.bearing,
+            tilt = position.tilt,
+            paddings = position.paddings,
+        )
     }
+}
 
 /**
  * Google Maps の zoomLevel を基にArcGIS 用の scale を計算します。

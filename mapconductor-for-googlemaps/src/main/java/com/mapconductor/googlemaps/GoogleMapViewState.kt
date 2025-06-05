@@ -10,7 +10,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
-import com.mapconductor.core.map.MapCameraPositionBase
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
@@ -47,7 +47,7 @@ class GoogleMapViewState(
     internal var controller: IGoogleMapViewController? = null
 
     override fun moveCameraTo(
-        position: IGeoPoint,
+        position: GeoPoint,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -69,7 +69,7 @@ class GoogleMapViewState(
     }
 
     override fun moveCameraTo(
-        position: IMapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -120,18 +120,18 @@ val GoogleMapViewStateSaver =
             val cameraStateBundle =
                 state.mapCameraPosition.value.let { cameraState ->
                     Bundle().apply {
-                        putDouble("zoom", cameraState?.zoom ?: MapCameraPositionBase.Default.zoom)
-                        putDouble("tilt", cameraState?.tilt ?: MapCameraPositionBase.Default.tilt)
-                        putDouble("bearing", cameraState?.bearing ?: MapCameraPositionBase.Default.bearing)
+                        putDouble("zoom", cameraState?.zoom ?: MapCameraPosition.Default.zoom)
+                        putDouble("tilt", cameraState?.tilt ?: MapCameraPosition.Default.tilt)
+                        putDouble("bearing", cameraState?.bearing ?: MapCameraPosition.Default.bearing)
                         putDouble(
                             "latitude",
                             cameraState?.position?.latitude
-                                ?: MapCameraPositionBase.Default.position.latitude,
+                                ?: MapCameraPosition.Default.position.latitude,
                         )
                         putDouble(
                             "longitude",
                             cameraState?.position?.longitude
-                                ?: MapCameraPositionBase.Default.position.longitude,
+                                ?: MapCameraPosition.Default.position.longitude,
                         )
                     }
                 }
@@ -176,7 +176,7 @@ val GoogleMapViewStateSaver =
 @Composable
 fun rememberGoogleMapViewState(
     mapDesign: GoogleMapDesignType = GoogleMapDesign.Normal,
-    cameraPosition: IMapCameraPosition = MapCameraPositionBase.Default,
+    cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
 ): GoogleMapViewState {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()

@@ -31,6 +31,7 @@ import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.key
 
 typealias OnMapClickHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
@@ -142,7 +143,7 @@ fun <
         }
     }
 
-    if (controller != null && cameraPosition != null) {
+    if (controller != null && cameraPosition != null && bubbles.isNotEmpty()) {
         Box(
             modifier =
                 modifier

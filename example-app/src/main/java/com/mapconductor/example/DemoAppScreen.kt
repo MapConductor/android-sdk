@@ -1,11 +1,15 @@
 package com.mapconductor.example
 
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -20,13 +24,18 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
+import com.mapconductor.core.map.IMapCameraPosition
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.toast.ToastMessage
 import com.mapconductor.example.ui.IconItem
@@ -38,6 +47,7 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,8 +132,8 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                 it.copy(icon = icon)
             }
         }
-
-
+    val mapViewState = appViewModel.mapViewState.collectAsState().value
+    val camera = mapViewState?.mapCameraPosition?.collectAsState()?.value
 
     AppTheme {
         Scaffold(
@@ -151,24 +161,50 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
             },
             modifier = Modifier.fillMaxSize(),
         ) { innerPadding ->
-            Box {
+            Box(
+                modifier = Modifier.padding(innerPadding)
+            ) {
                 MapArea(
-                    mapViewState = appViewModel.mapViewState.collectAsStateWithLifecycle().value,
+                    mapViewState = mapViewState,
                     markers = markerList,
                     onCallButtonClick = {
                         appViewModel.showToast("clicked")
                     },
-                    modifier = Modifier.padding(innerPadding),
                     infoBubbleState = appViewModel.infoBubbleState,
                     onMapClickHandler = appViewModel::onMapClick,
                     onMarkerClickHandler = appViewModel::onMarkerClick,
                     selectedMarker = appViewModel.selectedMarker,
                 )
+                DebugPanel(camera = camera)
                 ToastHost(
                     messages = appViewModel.messages.collectAsState().value,
                     onDismiss = { appViewModel.removeToast(it) },
                 )
             }
         }
+    }
+}
+
+@Composable
+fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
+    Column(
+        modifier =
+            Modifier
+                .align(Alignment.TopEnd)
+                .background(
+                    Color(
+                        red = 0.9f,
+                        green = 0.9f,
+                        blue = 0.9f,
+                        alpha = 0.75f,
+                    ),
+                )
+                .wrapContentHeight()
+                .fillMaxWidth()
+    ) {
+        Text("LatLng: (${camera?.position?.toUrlValue()})", color = Color.Black)
+        Text("Zoom: ${camera?.zoom?.toFixed(2)}", color = Color.Black)
+        Text("bearing: ${camera?.bearing?.toInt()}", color = Color.Black)
+        Text("tilt: ${camera?.tilt?.toInt()}", color = Color.Black)
     }
 }

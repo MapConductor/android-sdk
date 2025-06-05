@@ -1,6 +1,7 @@
 package com.mapconductor.arcgis
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toDrawable
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.Point
@@ -13,11 +14,13 @@ import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
@@ -46,8 +49,12 @@ class ArcGISMapViewController(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val onCameraMove: (OnCameraMoveHandler<Camera>)? = null,
     val onMapClick: OnMapClickHandler? = null,
-) : IArcGISMapViewController {
-    lateinit var markerLayer: GraphicsOverlay
+) : BaseMapViewController(),
+    IArcGISMapViewController {
+
+    val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
+        sceneProperties.surfacePlacement = SurfacePlacement.Relative
+    }
 
     private val markerOverlayManager =
         MarkerOverlayManager<Graphic>(
@@ -115,11 +122,6 @@ class ArcGISMapViewController(
         )
 
     init {
-
-        this.markerLayer =
-            GraphicsOverlay().apply {
-                sceneProperties.surfacePlacement = SurfacePlacement.Relative
-            }
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(markerLayer)
         coroutine.launch {
@@ -138,13 +140,28 @@ class ArcGISMapViewController(
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
         val screenPoint = event.screenCoordinate
+//        val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
+//
+//        val markerEntry = this.findNearestMarker(
+//            position = touchPosition,
+//            tolerance = Settings.Default.tapTolerance,
+//        )
+//        if (markerEntry != null) {
+//            markerEntry.handlers.onClick?.let {
+//                coroutine.launch {
+//                    it(markerEntry.state)
+//                }
+//            }
+//            return
+//        }
         val identifyResult = holder.map.identifyGraphicsOverlay(
             graphicsOverlay = markerLayer,
             screenCoordinate = screenPoint,
             tolerance = Settings.Default.tapTolerance.value.toDouble(),
             returnPopupsOnly = false,
         )
-        identifyResult.getOrNull()?.graphics?.firstOrNull()?.also { graphic ->
+        val graphics = identifyResult.getOrNull()?.graphics
+        graphics?.firstOrNull()?.also { graphic ->
             (graphic.attributes.get("id") as? String)?.also { markerId ->
                 markerOverlayManager.getMarkerEntry(markerId)?.also { entry ->
                     entry.handlers.onClick?.also { onMarkerClick ->
@@ -157,6 +174,22 @@ class ArcGISMapViewController(
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {
             onMapClick?.invoke(it.toGeoPoint())
         }
+    }
+
+    private fun findNearestMarker(
+        position: IGeoPoint,
+        tolerance: Dp,
+    ): MarkerEntry? {
+        val camera = holder.map.getCurrentViewpointCamera()
+        val zoom = camera.toMapCameraPosition().zoom
+        val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
+
+        return findMarkerFromPoint(
+            markerOverlayManager = markerOverlayManager,
+            position = position,
+            zoom = zoom,
+            tolerance = acceptDPI.toDouble(),
+        )
     }
 
     override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
