@@ -9,6 +9,7 @@ import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.ResourceProvider
@@ -22,6 +23,7 @@ import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,8 +44,8 @@ interface IArcGISMapViewController : MapViewController {
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    onCameraMove: (OnCameraMoveHandler<Camera>)? = null,
-    onMapClick: OnMapClickHandler? = null,
+    val onCameraMove: (OnCameraMoveHandler<Camera>)? = null,
+    val onMapClick: OnMapClickHandler? = null,
 ) : IArcGISMapViewController {
     lateinit var markerLayer: GraphicsOverlay
 
@@ -89,7 +91,6 @@ class ArcGISMapViewController(
             },
             onChange = { changes ->
                 changes.forEach { params ->
-                    // TODO: アイコンに変更があったかどうかを比較
                     val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.density
                     val width = (params.icon.size.width / density)
@@ -121,21 +122,39 @@ class ArcGISMapViewController(
             }
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(markerLayer)
+        coroutine.launch {
+            holder.map.onSingleTapConfirmed.collect { onMapTap(it) }
+        }
+        coroutine.launch {
+            onCameraMove?.let { callback ->
+                holder.map.viewpointChanged.collect { onViewpointChange(callback) }
+            }
+        }
+    }
 
-        onMapClick?.let { clickHandler ->
-            coroutine.launch {
-                holder.map.onSingleTapConfirmed.collect { event ->
+    private fun onViewpointChange(callback: OnCameraMoveHandler<Camera>) {
+        callback(holder.map.getCurrentViewpointCamera())
+    }
 
-                    event.mapPoint?.let {
-                        clickHandler(it.toGeoPoint())
+    private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
+        val screenPoint = event.screenCoordinate
+        val identifyResult = holder.map.identifyGraphicsOverlay(
+            graphicsOverlay = markerLayer,
+            screenCoordinate = screenPoint,
+            tolerance = Settings.Default.tapTolerance.value.toDouble(),
+            returnPopupsOnly = false,
+        )
+        identifyResult.getOrNull()?.graphics?.firstOrNull()?.also { graphic ->
+            (graphic.attributes.get("id") as? String)?.also { markerId ->
+                markerOverlayManager.getMarkerEntry(markerId)?.also { entry ->
+                    entry.handlers.onClick?.also { onMarkerClick ->
+                        return@onMapTap onMarkerClick(entry.state)
                     }
                 }
             }
-        }
 
-        onCameraMove?.let {
-            coroutine.launch {
-                it(holder.map.getCurrentViewpointCamera())
+            holder.map.screenToLocation(screenPoint).getOrNull()?.also {
+                onMapClick?.invoke(it.toGeoPoint())
             }
         }
     }
