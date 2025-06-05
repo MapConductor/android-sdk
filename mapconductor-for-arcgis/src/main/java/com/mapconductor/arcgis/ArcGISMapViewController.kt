@@ -152,10 +152,10 @@ class ArcGISMapViewController(
                     }
                 }
             }
+        }
 
-            holder.map.screenToLocation(screenPoint).getOrNull()?.also {
-                onMapClick?.invoke(it.toGeoPoint())
-            }
+        holder.map.screenToLocation(screenPoint).getOrNull()?.also {
+            onMapClick?.invoke(it.toGeoPoint())
         }
     }
 
