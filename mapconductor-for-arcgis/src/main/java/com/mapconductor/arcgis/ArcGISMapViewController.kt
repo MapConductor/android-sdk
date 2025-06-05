@@ -164,19 +164,9 @@ class ArcGISMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val spatial = SpatialReference.webMercator()
-        val mapPoint = GeoPoint.from(position).toPoint(spatial)
-
-        // 2. MapView の座標系に変換
-        val mapPointInMap =
-            holder.map.spatialReference?.let { spatialRef ->
-                GeometryEngine.projectOrNull(mapPoint, spatial) as? Point
-            } ?: return Offset(-9999f, -9999f)
-
-        val result =
-            this.holder.map.locationToScreen(
-                point = mapPointInMap,
-            )
+        val result = holder.map.locationToScreen(
+            point = GeoPoint.from(position).toPoint(),
+        )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }
