@@ -37,12 +37,12 @@ import kotlinx.coroutines.flow.StateFlow
 //    wrapped()
 // }
 
-//@Composable
-//fun <T> CollectAndRenderOverlays(
+// @Composable
+// fun <T> CollectAndRenderOverlays(
 //    map: T?,
 //    registry: MapOverlayRegistry,
 //    controller: MapViewController,
-//) {
+// ) {
 //    registry.getAll().forEach { overlay ->
 //        @Suppress("UNCHECKED_CAST")
 //        val typedOverlay = overlay as MapOverlay<Any>
@@ -54,7 +54,7 @@ import kotlinx.coroutines.flow.StateFlow
 //            typedOverlay.render(flowState.value, controller)
 //        }
 //    }
-//}
+// }
 
 open class MapViewScope {
     val markerFlow = MutableStateFlow<List<MarkerEntry>>(emptyList())
@@ -67,7 +67,9 @@ open class MapViewScope {
     }
 }
 
-class MarkerOverlay(override val flow: StateFlow<List<MarkerEntry>>) : MapOverlay<MarkerEntry> {
+class MarkerOverlay(
+    override val flow: StateFlow<List<MarkerEntry>>,
+) : MapOverlay<MarkerEntry> {
     override suspend fun render(
         data: List<MarkerEntry>,
         controller: MapViewController,

@@ -56,7 +56,7 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    //    private val infoBubbles = InfoBubbleManager(
+//    private val infoBubbles = InfoBubbleManager(
 //        coroutine = coroutine,
 //    )
     private val markerOverlayManager =

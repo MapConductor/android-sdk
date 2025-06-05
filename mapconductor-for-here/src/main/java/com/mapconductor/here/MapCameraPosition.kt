@@ -21,57 +21,57 @@ interface MapCameraPositionHere : IMapCameraPosition {
 
 @Keep
 data class MapCameraPosition
-@JvmOverloads
-constructor(
-    override val position: IGeoPoint,
-    override val zoom: Double = 2.0,
-    override val bearing: Double = 0.0,
-    override val tilt: Double = 0.0,
-    override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
-) : MapCameraPositionBase(position, zoom, bearing, tilt, paddings),
-    MapCameraPositionHere {
-    override fun toMapCameraUpdate() =
-        MapCameraUpdateFactory.lookAt(
-            GeoPoint.from(position).toGeoCoordinates().toUpdate(),
-            GeoOrientation(bearing, tilt).toUpdate(),
-            MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, zoom),
-        )
-
-    override fun toCameraState() =
-        MapCamera.State(
-            GeoPoint.from(position).toGeoCoordinates(),
-            GeoOrientation(bearing, tilt),
-            0.0,
-            zoom,
-        )
-
-    companion object {
-        val Default =
-            MapCameraPosition(
-                position =
-                    GeoPoint.fromLatLong(
-                        latitude = 0.0,
-                        longitude = 0.0,
-                    ),
-                zoom = 0.0,
-                bearing = 0.0,
-                tilt = 0.0,
+    @JvmOverloads
+    constructor(
+        override val position: IGeoPoint,
+        override val zoom: Double = 2.0,
+        override val bearing: Double = 0.0,
+        override val tilt: Double = 0.0,
+        override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
+    ) : MapCameraPositionBase(position, zoom, bearing, tilt, paddings),
+        MapCameraPositionHere {
+        override fun toMapCameraUpdate() =
+            MapCameraUpdateFactory.lookAt(
+                GeoPoint.from(position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(bearing, tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, zoom),
             )
 
-        fun from(position: IMapCameraPosition) =
-            when (position) {
-                is MapCameraPosition -> position
-                else ->
-                    MapCameraPosition(
-                        position = GeoPoint.from(position.position),
-                        zoom = position.zoom,
-                        bearing = position.bearing,
-                        tilt = position.tilt,
-                        paddings = position.paddings,
-                    )
-            }
+        override fun toCameraState() =
+            MapCamera.State(
+                GeoPoint.from(position).toGeoCoordinates(),
+                GeoOrientation(bearing, tilt),
+                0.0,
+                zoom,
+            )
+
+        companion object {
+            val Default =
+                MapCameraPosition(
+                    position =
+                        GeoPoint.fromLatLong(
+                            latitude = 0.0,
+                            longitude = 0.0,
+                        ),
+                    zoom = 0.0,
+                    bearing = 0.0,
+                    tilt = 0.0,
+                )
+
+            fun from(position: IMapCameraPosition) =
+                when (position) {
+                    is MapCameraPosition -> position
+                    else ->
+                        MapCameraPosition(
+                            position = GeoPoint.from(position.position),
+                            zoom = position.zoom,
+                            bearing = position.bearing,
+                            tilt = position.tilt,
+                            paddings = position.paddings,
+                        )
+                }
+        }
     }
-}
 
 fun MapCamera.State.toMapCameraPosition() =
     MapCameraPosition(

@@ -47,15 +47,14 @@ class MarkerState(
     fun copy(
         position: GeoPoint = this.position,
         extra: Parcelable? = this.extra,
-        icon: MarkerIcon? = this.icon
-    ): MarkerState {
-        return MarkerState(
-            id = this.id,  // Keep marker id
+        icon: MarkerIcon? = this.icon,
+    ): MarkerState =
+        MarkerState(
+            id = this.id, // Keep marker id
             position = position,
             extra = extra,
             icon = icon,
         )
-    }
 
     override fun equals(other: Any?): Boolean {
         val otherState = (other as? MarkerState) ?: return false

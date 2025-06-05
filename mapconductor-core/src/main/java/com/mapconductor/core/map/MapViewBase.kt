@@ -49,7 +49,7 @@ fun <
     // and uses the ActualMapView and ActualMap generic types.
     SpecificViewHolder : MapViewHolder<ActualMapView, ActualMap>,
     SpecificScope : MapViewScope,
-    > MapViewBase(
+> MapViewBase(
     state: SpecificState,
     modifier: Modifier = Modifier,
     holderRef: Ref<SpecificViewHolder>,

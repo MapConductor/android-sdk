@@ -115,11 +115,12 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 //        strokeColor = Color.LightGray.toArgb()
 //    )
     val icon = MarkerIcon.Default()
-    val markerList = remember {
-        appViewModel.markerList.map {
-            it.copy(icon = icon)
+    val markerList =
+        remember {
+            appViewModel.markerList.map {
+                it.copy(icon = icon)
+            }
         }
-    }
 
     val messages = remember { mutableStateListOf<ToastMessage>() }
 

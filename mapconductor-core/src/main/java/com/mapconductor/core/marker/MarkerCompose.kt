@@ -19,18 +19,20 @@ fun MapViewScope.Marker(
     state: MarkerState,
     onClick: OnMarkerClickHandler? = null,
 ) {
-    val handlers = remember {
-        MarkerHandlers(
-            onClick = onClick,
-        )
-    }
+    val handlers =
+        remember {
+            MarkerHandlers(
+                onClick = onClick,
+            )
+        }
 
-    val entry = remember {
-        MarkerEntry(
-            state = state,
-            handlers = handlers,
-        )
-    }
+    val entry =
+        remember {
+            MarkerEntry(
+                state = state,
+                handlers = handlers,
+            )
+        }
 
     Marker(entry)
 }

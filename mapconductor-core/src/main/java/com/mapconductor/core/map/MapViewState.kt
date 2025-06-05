@@ -84,6 +84,7 @@ abstract class MapViewStateImpl<T>(
 
 interface MapOverlay<T> {
     val flow: StateFlow<List<T>>
+
     suspend fun render(
         data: List<T>,
         controller: MapViewController,

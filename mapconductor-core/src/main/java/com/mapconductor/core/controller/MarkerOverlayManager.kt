@@ -23,13 +23,12 @@ interface MarkerRemoveParams<ActualMarker> {
 class MarkerOverlayManager<
     // Actual marker instance type
     ActualMarker : Any,
-    >(
+>(
     val markerManager: MarkerManager<ActualMarker>,
     val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
     val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
     val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
 ) {
-
     @Synchronized
     fun addMarkers(markerList: List<MarkerEntry>) {
         val current = markerList.toSet()
@@ -65,52 +64,54 @@ class MarkerOverlayManager<
         if (added.isNotEmpty()) {
             val addedList = added.toList()
 
-            addedList.map { entry ->
-                val markerIcon =
-                    entry.state.icon?.let {
-                        markerManager.getBitmapIcon(it)
-                    } ?: defaultIcon
-                object : MarkerAddParams {
-                    override val entry: MarkerEntry = entry
-                    override val icon: BitmapIcon = markerIcon
-                }
-            }.also {
-                val actualMarkers: List<ActualMarker?> = onAdd(it)
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    actualMarker?.let {
-                        val entry = addedList[index]
-                        markerManager.registerEntry(entry, actualMarker)
-                    }
-                }
-            }
-        }
-
-        // Update changed markers
-        if (updated.isNotEmpty()) {
-            (updated
+            addedList
                 .map { entry ->
                     val markerIcon =
                         entry.state.icon?.let {
                             markerManager.getBitmapIcon(it)
                         } ?: defaultIcon
-                    val prevEntry = markerManager.getEntry(entry.id)!!
-                    markerManager.updateEntry(entry)
-
-                    // プロパティが変わっていなければ、マーカーを再描画しない
-                    return@map if (prevEntry.state == entry.state) {
-                        null
-                    } else {
-                        val marker = markerManager.getMarker(entry.id)!!
-                        object : MarkerUpdateParams<ActualMarker> {
-                            override val entry: MarkerEntry = entry
-                            override val icon: BitmapIcon = markerIcon
-                            override val marker: ActualMarker = marker
+                    object : MarkerAddParams {
+                        override val entry: MarkerEntry = entry
+                        override val icon: BitmapIcon = markerIcon
+                    }
+                }.also {
+                    val actualMarkers: List<ActualMarker?> = onAdd(it)
+                    actualMarkers.forEachIndexed { index, actualMarker ->
+                        actualMarker?.let {
+                            val entry = addedList[index]
+                            markerManager.registerEntry(entry, actualMarker)
                         }
                     }
                 }
-                .filter { it -> it != null } as List<MarkerUpdateParams<ActualMarker>>).also {
-                    onChange(it)
-                }
+        }
+
+        // Update changed markers
+        if (updated.isNotEmpty()) {
+            (
+                updated
+                    .map { entry ->
+                        val markerIcon =
+                            entry.state.icon?.let {
+                                markerManager.getBitmapIcon(it)
+                            } ?: defaultIcon
+                        val prevEntry = markerManager.getEntry(entry.id)!!
+                        markerManager.updateEntry(entry)
+
+                        // プロパティが変わっていなければ、マーカーを再描画しない
+                        return@map if (prevEntry.state == entry.state) {
+                            null
+                        } else {
+                            val marker = markerManager.getMarker(entry.id)!!
+                            object : MarkerUpdateParams<ActualMarker> {
+                                override val entry: MarkerEntry = entry
+                                override val icon: BitmapIcon = markerIcon
+                                override val marker: ActualMarker = marker
+                            }
+                        }
+                    }.filter { it -> it != null } as List<MarkerUpdateParams<ActualMarker>>
+            ).also {
+                onChange(it)
+            }
         }
     }
 

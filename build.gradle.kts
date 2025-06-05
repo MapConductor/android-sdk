@@ -21,7 +21,7 @@ tasks.register("allLintChecks") {
     group = "verification"
     description = "Run ktLintCheck and lint for all modules"
     dependsOn(
-        "ktlintFormat",
+        ":ktlintFormat",
         ":mapconductor-core:lint",
         ":mapconductor-for-arcgis:lint",
         ":mapconductor-for-here:lint",

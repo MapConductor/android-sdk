@@ -47,8 +47,7 @@ internal fun InfoWindowCompose(
             Modifier
                 .onGloballyPositioned {
                     size = it.size
-                }
-                .offset {
+                }.offset {
                     IntOffset(x.toInt(), y.toInt())
                 },
     ) {
