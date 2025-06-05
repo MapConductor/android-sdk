@@ -1,6 +1,7 @@
 package com.mapconductor.here
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Dp
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.Metadata
@@ -30,6 +31,7 @@ import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -175,7 +177,10 @@ internal class HereMapController(
     override fun onTap(touchPoint: Point2D) {
         val touchPosition = this.getGeoPointFromPoint(touchPoint) ?: return
 
-        val markerEntry = this.findMarkerFromPoint(touchPosition)
+        val markerEntry = this.findMarkerFromPoint(
+            position = touchPosition,
+            tolerance = Settings.Default.tapTolerance,
+        )
         if (markerEntry != null) {
             markerEntry.handlers.onClick?.let {
                 coroutine.launch {
@@ -223,11 +228,11 @@ internal class HereMapController(
 
     private fun findMarkerFromPoint(
         position: IGeoPoint,
-        radiusInDp: Int = 14,
+        tolerance: Dp,
     ): MarkerEntry? {
         val zoom = holder.mapView.camera.state.zoomLevel
         val meterInMapPixel = hereZoomToMetersPerPixel(zoom)
-        val acceptDPI = radiusInDp.toFloat() * holder.mapView.context.resources.displayMetrics.density
+        val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
         val radius = acceptDPI * meterInMapPixel
 
         val entry = markerOverlayManager.markerManager.findNearest(position) ?: return null
