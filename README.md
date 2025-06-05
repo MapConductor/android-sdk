@@ -5,5 +5,5 @@
 # KtLint
 
 ```
- ./gradlew ktlintFormat
+./gradlew allLintChecks
 ```
