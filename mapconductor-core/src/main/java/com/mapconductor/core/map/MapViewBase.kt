@@ -17,18 +17,18 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.Ref
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.mapconductor.core.CollectAndRenderOverlays
+import com.mapconductor.core.LocalMarkerCollector
+import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.collectAndRenderOverlays
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.LocalMarkerCollector
 import android.view.View
 import android.view.ViewGroup
 
@@ -49,7 +49,7 @@ fun <
     // and uses the ActualMapView and ActualMap generic types.
     SpecificViewHolder : MapViewHolder<ActualMapView, ActualMap>,
     SpecificScope : MapViewScope,
-> MapViewBase(
+    > MapViewBase(
     state: SpecificState,
     modifier: Modifier = Modifier,
     holderRef: Ref<SpecificViewHolder>,
@@ -66,7 +66,7 @@ fun <
     val initState by state.isInitialized.collectAsState()
 //    val cameraPosition by state.mapCameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
-    LocalContext.current
+//    LocalContext.current
 
     if (initState == InitState.Initialized) {
         // 子コンポーネントを収集すr
@@ -80,13 +80,10 @@ fun <
         }
         // 収集した子コンポーネントを描画する
         val controller = controllerRef.value
-        val holder = holderRef.value
-        val map = holder?.map
-        if (controller != null && holder != null && map != null) {
-            collectAndRenderOverlays(
-                map = map,
+        controller?.also { it ->
+            CollectAndRenderOverlays(
                 registry = registry, // This should come from the specific scope or be passed
-                controller = controller,
+                controller = it,
             )
         }
     }

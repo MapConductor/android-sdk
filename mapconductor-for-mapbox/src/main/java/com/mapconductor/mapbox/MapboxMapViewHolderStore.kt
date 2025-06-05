@@ -20,7 +20,7 @@ object MapboxMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, MapboxMap
         id: String,
         options: MapInitOptions,
     ): MapboxMapViewHolder {
-        val existing = this.get(id)
+        this.get(id)
         // The below code does not effect at all.
         // if (existing != null) {
         //     options.cameraOptions?.let {

@@ -3,20 +3,14 @@ package com.mapconductor.core.marker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapViewScope
 import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Marker(entry: MarkerEntry) {
-    val rememberEntry = remember { entry }
-
-    if (!allMarkerKeys.contains(rememberEntry.state.id)) {
-        allMarkerKeys.add(rememberEntry.state.id)
-
-        SideEffect {
-            markerFlow.value = markerFlow.value + rememberEntry
-        }
+    SideEffect {
+        markerFlow.value = markerFlow.value + entry
     }
 }
 
@@ -25,15 +19,19 @@ fun MapViewScope.Marker(
     state: MarkerState,
     onClick: OnMarkerClickHandler? = null,
 ) {
-    val handlers =
+    val handlers = remember {
         MarkerHandlers(
             onClick = onClick,
         )
-    val entry =
+    }
+
+    val entry = remember {
         MarkerEntry(
             state = state,
             handlers = handlers,
         )
+    }
+
     Marker(entry)
 }
 

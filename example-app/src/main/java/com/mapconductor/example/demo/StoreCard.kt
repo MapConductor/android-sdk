@@ -148,6 +148,7 @@ fun StoreCard(
             )
         }
     }
+
     val modifier =
         Modifier
             .widthIn(max = 350.dp)

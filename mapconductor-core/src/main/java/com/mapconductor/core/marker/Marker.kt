@@ -1,17 +1,11 @@
 package com.mapconductor.core.marker
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.IdentifiedPoint
-import com.mapconductor.core.map.MapOverlay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import java.io.ByteArrayOutputStream
 import java.util.UUID
 import android.graphics.Bitmap
@@ -28,12 +22,10 @@ class MarkerState(
     val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     var extra: Parcelable? = null,
-    var visible: Boolean = true,
     icon: MarkerIcon? = null,
 ) {
     // -- position and positionState properties --
     private val _position = mutableStateOf(position)
-    val positionState: State<GeoPoint> get() = _position
     var position: GeoPoint
         get() = _position.value
         set(value) {
@@ -52,7 +44,28 @@ class MarkerState(
             }
         }
 
-//    companion object {
+    fun copy(
+        position: GeoPoint = this.position,
+        extra: Parcelable? = this.extra,
+        icon: MarkerIcon? = this.icon
+    ): MarkerState {
+        return MarkerState(
+            id = this.id,  // Keep marker id
+            position = position,
+            extra = extra,
+            icon = icon,
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        val otherState = (other as? MarkerState) ?: return false
+        return position == otherState.position &&
+            id == otherState.id &&
+            extra == otherState.extra &&
+            icon == otherState.icon
+    }
+
+    //    companion object {
 //        val Saver: Saver<MarkerState, Bundle> = Saver(
 //            save = { state ->
 //                Bundle().apply {
@@ -86,6 +99,15 @@ class MarkerState(
 //            }
 //        )
 //    }
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + (extra?.hashCode() ?: 0)
+        result = 31 * result + _position.hashCode()
+        result = 31 * result + _icon.hashCode()
+        result = 31 * result + position.hashCode()
+        result = 31 * result + (icon?.hashCode() ?: 0)
+        return result
+    }
 }
 
 data class MarkerEntry(
@@ -107,19 +129,3 @@ data class BitmapIcon(
         return outputStream.toByteArray()
     }
 }
-
-class MarkerOverlay(
-    override val flow: StateFlow<List<MarkerEntry>>,
-) : MapOverlay<MarkerEntry> {
-    override suspend fun render(
-        data: List<MarkerEntry>,
-        controller: MapViewController,
-    ) {
-        controller.addMarkers(data)
-    }
-}
-
-val LocalMarkerCollector =
-    compositionLocalOf<MutableStateFlow<List<MarkerEntry>>> {
-        error("Marker must be under the <MapView />")
-    }

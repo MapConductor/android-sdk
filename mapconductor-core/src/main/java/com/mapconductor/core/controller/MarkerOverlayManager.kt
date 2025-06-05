@@ -3,9 +3,6 @@ package com.mapconductor.core.controller
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 interface MarkerAddParams {
     val entry: MarkerEntry
@@ -26,22 +23,21 @@ interface MarkerRemoveParams<ActualMarker> {
 class MarkerOverlayManager<
     // Actual marker instance type
     ActualMarker : Any,
->(
+    >(
     val markerManager: MarkerManager<ActualMarker>,
-    val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
     val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
     val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
 ) {
-    suspend fun addMarkers(markerList: List<MarkerEntry>) {
-        val current = markerList.filter { !markerManager.containsKey(it.state.id) }
-        if (current.size == 0) return
 
-        val entriesSet = markerManager.getValueSet()
-        val added = current - entriesSet
-        val removed = entriesSet - current
+    @Synchronized
+    fun addMarkers(markerList: List<MarkerEntry>) {
+        val current = markerList.toSet()
+        val previous = markerManager.getValueSet()
+        val added = current - previous
+        val removed = previous - current
         val updated =
-            markerList
+            current
                 .filter { entry ->
                     if (!markerManager.containsKey(entry.state.id)) return@filter false
                     return@filter !markerManager.equalsValue(entry)
@@ -51,72 +47,74 @@ class MarkerOverlayManager<
 
         // Remove markers
         if (removed.isNotEmpty()) {
-            val willRemoveMarkers: List<MarkerRemoveParams<ActualMarker>> =
-                removed
-                    .map { removedEntry ->
-                        val id = removedEntry.state.id
-                        val marker = markerManager.getMarker(id)!!
-                        markerManager.removeEntry(id)
-                        object : MarkerRemoveParams<ActualMarker> {
-                            override val entry: MarkerEntry = removedEntry
-                            override val marker: ActualMarker = marker
-                        }
+            removed
+                .map { removedEntry ->
+                    val id = removedEntry.state.id
+                    val marker = markerManager.getMarker(id)!!
+                    markerManager.removeEntry(id)
+                    object : MarkerRemoveParams<ActualMarker> {
+                        override val entry: MarkerEntry = removedEntry
+                        override val marker: ActualMarker = marker
                     }
-
-            withContext(coroutine.coroutineContext) {
-                return@withContext onRemove.invoke(willRemoveMarkers)
-            }
+                }.also {
+                    onRemove(it)
+                }
         }
 
         // Add new markers
         if (added.isNotEmpty()) {
-            val willAdd: List<MarkerAddParams> =
-                added.map { entry ->
-                    val markerIcon =
-                        entry.state.icon?.let {
-                            markerManager.getBitmapIcon(it)
-                        } ?: defaultIcon
-                    object : MarkerAddParams {
-                        override val entry: MarkerEntry = entry
-                        override val icon: BitmapIcon = markerIcon
+            val addedList = added.toList()
+
+            addedList.map { entry ->
+                val markerIcon =
+                    entry.state.icon?.let {
+                        markerManager.getBitmapIcon(it)
+                    } ?: defaultIcon
+                object : MarkerAddParams {
+                    override val entry: MarkerEntry = entry
+                    override val icon: BitmapIcon = markerIcon
+                }
+            }.also {
+                val actualMarkers: List<ActualMarker?> = onAdd(it)
+                actualMarkers.forEachIndexed { index, actualMarker ->
+                    actualMarker?.let {
+                        val entry = addedList[index]
+                        markerManager.registerEntry(entry, actualMarker)
                     }
-                }
-            val actualMarkers: List<ActualMarker?> =
-                withContext(coroutine.coroutineContext) {
-                    return@withContext onAdd.invoke(willAdd)
-                }
-            actualMarkers.forEachIndexed { index, actualMarker ->
-                actualMarker?.let {
-                    val entry = added[index]
-                    markerManager.registerEntry(entry, actualMarker)
                 }
             }
         }
 
         // Update changed markers
         if (updated.isNotEmpty()) {
-            val willUpdate: List<MarkerUpdateParams<ActualMarker>> =
-                updated.map { entry ->
+            (updated
+                .map { entry ->
                     val markerIcon =
                         entry.state.icon?.let {
                             markerManager.getBitmapIcon(it)
                         } ?: defaultIcon
+                    val prevEntry = markerManager.getEntry(entry.id)!!
                     markerManager.updateEntry(entry)
-                    val marker = markerManager.getMarker(entry.id)!!
-                    object : MarkerUpdateParams<ActualMarker> {
-                        override val entry: MarkerEntry = entry
-                        override val icon: BitmapIcon = markerIcon
-                        override val marker: ActualMarker = marker
+
+                    // プロパティが変わっていなければ、マーカーを再描画しない
+                    return@map if (prevEntry.state == entry.state) {
+                        null
+                    } else {
+                        val marker = markerManager.getMarker(entry.id)!!
+                        object : MarkerUpdateParams<ActualMarker> {
+                            override val entry: MarkerEntry = entry
+                            override val icon: BitmapIcon = markerIcon
+                            override val marker: ActualMarker = marker
+                        }
                     }
                 }
-
-            withContext(coroutine.coroutineContext) {
-                onChange(willUpdate)
-            }
+                .filter { it -> it != null } as List<MarkerUpdateParams<ActualMarker>>).also {
+                    onChange(it)
+                }
         }
     }
 
-    suspend fun clearOverlays() {
+    fun clearOverlays() {
         val markerIDs: List<String> = markerManager.allKeys()
         val removes: List<MarkerRemoveParams<ActualMarker>> =
             markerIDs.map { markerId ->
@@ -126,9 +124,7 @@ class MarkerOverlayManager<
                 }
             }
 
-        withContext(coroutine.coroutineContext) {
-            onRemove(removes)
-        }
+        onRemove(removes)
         markerManager.clear()
     }
 

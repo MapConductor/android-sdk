@@ -22,12 +22,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mapconductor.StarbucksHI_list
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.MarkerIcon
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.toast.ToastMessage
 import com.mapconductor.example.ui.IconItem
@@ -110,13 +108,18 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
 
-    val drawable = AppCompatResources.getDrawable(context, R.drawable.coffee_svg)
+    AppCompatResources.getDrawable(context, R.drawable.coffee_svg)
 //    val icon = MarkerIcon(
 //        iconDrawable = drawable,
 //        fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
 //        strokeColor = Color.LightGray.toArgb()
 //    )
     val icon = MarkerIcon.Default()
+    val markerList = remember {
+        appViewModel.markerList.map {
+            it.copy(icon = icon)
+        }
+    }
 
     val messages = remember { mutableStateListOf<ToastMessage>() }
 
@@ -157,14 +160,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
             Box {
                 MapArea(
                     mapViewState = appViewModel.mapViewState.collectAsStateWithLifecycle().value,
-                    markers =
-                        StarbucksHI_list.slice(IntRange(0, 10)).map {
-                            MarkerState(
-                                position = it.position,
-                                extra = it.extra,
-                                icon = icon,
-                            )
-                        },
+                    markers = markerList,
                     onCallButtonClick = {
                         showToast("clicked")
                     },

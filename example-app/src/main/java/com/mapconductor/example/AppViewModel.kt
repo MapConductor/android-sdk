@@ -3,6 +3,7 @@ package com.mapconductor.example
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.mapconductor.StarbucksHI_list
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapCameraPositionBase
@@ -17,6 +18,7 @@ interface AppViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val selectedMarker: MarkerState?
     val infoBubbleState: InfoBubbleState
+    val markerList: List<MarkerState>
 
     fun changeState(state: MapViewState<*>)
 
@@ -45,6 +47,8 @@ class AppViewModelImpl :
             tilt = 0.0,
             paddings = null,
         )
+
+    override val markerList = StarbucksHI_list.slice(IntRange(0, 10))
 
     private val _infoBubbleState: MutableState<InfoBubbleState> = mutableStateOf(InfoBubbleState())
     override val infoBubbleState: InfoBubbleState

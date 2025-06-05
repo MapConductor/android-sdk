@@ -17,7 +17,7 @@ class HexCellRegistry<T : IdentifiedPoint>(
     private val allEntries = ConcurrentHashMap<String, String>()
     private var needsRebuild = false
 
-//    fun registerPoints(points: List<T>) {
+    //    fun registerPoints(points: List<T>) {
 //        allCells.clear()
 //        points.forEach {
 //            val coord = geocell.latLngToHex(it.point, zoom)

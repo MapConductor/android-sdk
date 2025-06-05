@@ -102,7 +102,8 @@ internal fun DrawInfoBubble(
                         top = contentPadding,
                         bottom = contentPadding + tailSize,
                         end = contentPadding,
-                    ).wrapContentSize()
+                    )
+                    .wrapContentSize()
                     .clip(RoundedCornerShape(cornerRadius)),
         ) {
             content()

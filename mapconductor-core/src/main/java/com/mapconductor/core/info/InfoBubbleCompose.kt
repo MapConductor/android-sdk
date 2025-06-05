@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.map.MapViewScope
+import com.mapconductor.core.MapViewScope
 
 // @Composable
 // fun MapViewScope.InfoAnchor(
@@ -54,9 +54,7 @@ fun MapViewScope.InfoBubble(
             )
         }
 
-    if (!allBubblesKeys.contains(state.id)) {
-        SideEffect {
-            bubbleFlow.value = bubbleFlow.value + entry.value
-        }
+    SideEffect {
+        bubbleFlow.value = bubbleFlow.value + entry.value
     }
 }

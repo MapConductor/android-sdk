@@ -21,7 +21,7 @@ class MarkerIcon internal constructor(
     val infoAnchor: Offset = Offset(0.5f, 0.5f),
     val strokePath: Path,
 ) {
-    companion object { }
+    companion object
 }
 //
 // fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {

@@ -95,7 +95,6 @@ internal class MapboxMapViewController(
 
     private val markerOverlayManager =
         MarkerOverlayManager<PointAnnotation>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 synchronized(pointAnnotationManager) {

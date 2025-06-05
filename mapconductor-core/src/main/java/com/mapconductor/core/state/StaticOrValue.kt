@@ -15,9 +15,9 @@ sealed class StateOrValue<T> {
         // Immutable by default
     }
 
-    fun isDynamic() = this is StateOrValue.Dynamic
+    fun isDynamic() = this is Dynamic
 
-    fun isStatic() = this is StateOrValue.Static
+    fun isStatic() = this is Static
 
     @SuppressLint("UnrememberedMutableState")
     @Composable

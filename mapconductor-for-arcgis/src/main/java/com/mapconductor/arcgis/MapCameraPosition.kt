@@ -23,23 +23,23 @@ interface MapCameraPositionArcGIS : IMapCameraPosition {
 
 @Keep
 data class MapCameraPosition
-    @JvmOverloads
-    constructor(
-        override val position: IGeoPoint,
-        override val zoom: Double = 2.0,
-        override val bearing: Double = 0.0,
-        override val tilt: Double = 0.0,
-        override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
-    ) : MapCameraPositionArcGIS {
-        override fun toCamera(): Camera {
-            val targetPoint = GeoPoint.from(position).toPoint()
-            return calculateCameraForOrbitParameters(
-                targetPoint = targetPoint,
-                distance = zoomLevelToAltitude(zoom),
-                cameraHeadingOffset = 360 - (bearing + 180),
-                cameraPitchOffset = tilt,
-            )
-        }
+@JvmOverloads
+constructor(
+    override val position: IGeoPoint,
+    override val zoom: Double = 2.0,
+    override val bearing: Double = 0.0,
+    override val tilt: Double = 0.0,
+    override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
+) : MapCameraPositionArcGIS {
+    override fun toCamera(): Camera {
+        val targetPoint = GeoPoint.from(position).toPoint()
+        return calculateCameraForOrbitParameters(
+            targetPoint = targetPoint,
+            distance = zoomLevelToAltitude(zoom),
+            cameraHeadingOffset = 360 - (bearing + 180),
+            cameraPitchOffset = tilt,
+        )
+    }
 
 //
 //    override fun copy(
@@ -56,33 +56,33 @@ data class MapCameraPosition
 //        paddings = paddings ?: this.paddings,
 //    )
 
-        companion object {
-            fun from(position: IMapCameraPosition): MapCameraPosition =
-                when (position) {
-                    is MapCameraPosition -> position
-                    else -> {
+    companion object {
+        fun from(position: IMapCameraPosition): MapCameraPosition =
+            when (position) {
+                is MapCameraPosition -> position
+                else -> {
 //                    val altitude = calculateZoomLevelFromScale(
 //                        positionImpl.zoom,
 //                        positionImpl.target.latitude,
 //                        Resources.getSystem().displayMetrics.densityDpi.toDouble(),
 //                    ) * 2.0
-                        val altitude = calculateScaleFromZoomLevel(position.zoom)
-                        MapCameraPosition(
-                            position =
-                                GeoPoint.fromLongLat(
-                                    longitude = position.position.longitude,
-                                    latitude = position.position.latitude,
-                                    altitude = altitude,
-                                ),
-                            zoom = position.zoom,
-                            bearing = position.bearing,
-                            tilt = position.tilt,
-                            paddings = position.paddings,
-                        )
-                    }
+                    val altitude = calculateScaleFromZoomLevel(position.zoom)
+                    MapCameraPosition(
+                        position =
+                            GeoPoint.fromLongLat(
+                                longitude = position.position.longitude,
+                                latitude = position.position.latitude,
+                                altitude = altitude,
+                            ),
+                        zoom = position.zoom,
+                        bearing = position.bearing,
+                        tilt = position.tilt,
+                        paddings = position.paddings,
+                    )
                 }
-        }
+            }
     }
+}
 
 /**
  * Google Maps の zoomLevel を基にArcGIS 用の scale を計算します。

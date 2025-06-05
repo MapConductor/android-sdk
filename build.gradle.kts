@@ -16,3 +16,16 @@ buildscript {
         classpath(libs.secrets.gradle.plugin)
     }
 }
+
+tasks.register("allLintChecks") {
+    group = "verification"
+    description = "Run ktLintCheck and lint for all modules"
+    dependsOn(
+        "ktlintFormat",
+        ":mapconductor-core:lint",
+        ":mapconductor-for-arcgis:lint",
+        ":mapconductor-for-here:lint",
+        ":mapconductor-for-googlemaps:lint",
+        ":mapconductor-for-mapbox:lint",
+    )
+}

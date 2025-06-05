@@ -20,7 +20,6 @@ fun MarkerIcon.Companion.StarInCircle(
     val originalContentXMin = 50f
     val originalContentYMin = 140f
     val originalContentWidth = 512f // (562 - 50)
-    val originalContentHeight = 512f // (652 - 140) (このアイコンは正方形が基準)
 
     // 全体のターゲットサイズとマージン
     // val overallSize = 28f // この値は直接計算には使わないが、以下の値の導出元

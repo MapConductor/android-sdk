@@ -5,10 +5,10 @@ import com.mapconductor.core.marker.MarkerState
 import android.os.Bundle
 
 /**
-* This example uses publicly available business addresses (e.g., Starbucks) and geocodes them
-* using the U.S. Census Bureau Geocoding API.
-* No personally identifiable information (PII) is used or inferred.
-*/
+ * This example uses publicly available business addresses (e.g., Starbucks) and geocodes them
+ * using the U.S. Census Bureau Geocoding API.
+ * No personally identifiable information (PII) is used or inferred.
+ */
 val StarbucksHI_list =
     listOf(
         MarkerState(

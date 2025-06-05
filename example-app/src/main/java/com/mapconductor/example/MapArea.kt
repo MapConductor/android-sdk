@@ -79,7 +79,8 @@ fun MapArea(
                                 blue = 0.9f,
                                 alpha = 0.75f,
                             ),
-                        ).wrapContentHeight(),
+                        )
+                        .wrapContentHeight(),
             ) {
                 Text("LatLng: (${camera?.position?.latitude}, ${camera?.position?.longitude})", color = Color.Black)
                 Text("Zoom: ${camera?.zoom}", color = Color.Black)

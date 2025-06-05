@@ -58,7 +58,7 @@ class MarkerManager<ActualMarker>(
 
     fun containsKey(id: String): Boolean = markers.containsKey(id)
 
-    fun equalsValue(entry: MarkerEntry): Boolean = entries.get(entry.id)?.equals(entry) ?: false
+    fun equalsValue(entry: MarkerEntry): Boolean = entries.get(entry.id)?.equals(entry) == true
 
     fun getValueSet(): Set<MarkerEntry> = entries.values.toSet()
 

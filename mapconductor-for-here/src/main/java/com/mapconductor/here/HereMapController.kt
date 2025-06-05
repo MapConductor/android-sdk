@@ -60,7 +60,6 @@ internal class HereMapController(
     private val markerOverlayManager =
         MarkerOverlayManager<MapMarker>(
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
-            coroutine = coroutine,
             onRemove = { removes ->
                 val markers: List<MapMarker> = removes.map { params -> params.marker }
                 holder.mapView.mapScene.removeMapMarkers(markers)

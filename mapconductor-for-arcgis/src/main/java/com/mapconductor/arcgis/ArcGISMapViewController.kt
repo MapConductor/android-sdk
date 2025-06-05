@@ -49,7 +49,6 @@ class ArcGISMapViewController(
 
     private val markerOverlayManager =
         MarkerOverlayManager<Graphic>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 val elements: List<Graphic> = removes.map { params -> params.marker }

@@ -56,12 +56,11 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-//    private val infoBubbles = InfoBubbleManager(
+    //    private val infoBubbles = InfoBubbleManager(
 //        coroutine = coroutine,
 //    )
     private val markerOverlayManager =
         MarkerOverlayManager<Marker>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 removes.forEach { params -> params.marker.remove() }
