@@ -54,7 +54,6 @@ fun <
     modifier: Modifier = Modifier,
     holderRef: Ref<SpecificViewHolder>,
     controllerRef: Ref<SpecificController>,
-    mapProvider: SpecificViewHolder.() -> ActualMap?, // Function to get the map object from ViewHolder
     viewProvider: SpecificViewHolder.() -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
@@ -64,12 +63,12 @@ fun <
 ) {
     val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
     val initState by state.isInitialized.collectAsState()
-//    val cameraPosition by state.mapCameraPosition.collectAsState()
+    val cameraPosition by state.mapCameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
-//    LocalContext.current
+    val controller = controllerRef.value
 
     if (initState == InitState.Initialized) {
-        // 子コンポーネントを収集すr
+        // 子コンポーネントを収集する
         CompositionLocalProvider(
             LocalMarkerCollector provides scope.markerFlow,
             LocalInfoBubbleCollector provides scope.bubbleFlow,
@@ -142,8 +141,6 @@ fun <
             }
         }
     }
-    val controller = controllerRef.value
-    val cameraPosition = state.mapCameraPosition.collectAsState().value
 
     if (controller != null && cameraPosition != null) {
         Box(

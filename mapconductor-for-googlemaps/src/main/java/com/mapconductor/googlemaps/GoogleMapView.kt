@@ -34,7 +34,6 @@ fun GoogleMapsView(
         modifier = modifier,
         holderRef = holderRef,
         controllerRef = controllerRef,
-        mapProvider = { this.map }, // Assuming GoogleMapViewHolder has a 'map' property
         viewProvider = { this.mapView }, // Assuming GoogleMapViewHolder has a 'mapView' property
         scope = scope,
         registry = registry,

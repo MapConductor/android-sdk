@@ -32,7 +32,6 @@ fun MapboxMapView(
         modifier = modifier,
         holderRef = holderRef,
         controllerRef = controllerRef,
-        mapProvider = { this.map },
         viewProvider = { this.mapView },
         scope = scope,
         registry = registry,
