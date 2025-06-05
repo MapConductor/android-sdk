@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -103,7 +104,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -122,15 +123,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
             }
         }
 
-    val messages = remember { mutableStateListOf<ToastMessage>() }
 
-    fun showToast(text: String) {
-        messages +=
-            ToastMessage(
-                text = text,
-                onDismiss = { messages.removeIf { it.text == text } },
-            )
-    }
 
     AppTheme {
         Scaffold(
@@ -163,11 +156,8 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     mapViewState = appViewModel.mapViewState.collectAsStateWithLifecycle().value,
                     markers = markerList,
                     onCallButtonClick = {
-                        showToast("clicked")
+                        appViewModel.showToast("clicked")
                     },
-//                    onMarkerClickHandler = { state ->
-//                        (state.extra as Bundle).getString("name")?.let { showToast(it) }
-//                    },
                     modifier = Modifier.padding(innerPadding),
                     infoBubbleState = appViewModel.infoBubbleState,
                     onMapClickHandler = appViewModel::onMapClick,
@@ -175,8 +165,8 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     selectedMarker = appViewModel.selectedMarker,
                 )
                 ToastHost(
-                    messages = messages,
-                    onDismiss = { messages.remove(it) },
+                    messages = appViewModel.messages.collectAsState().value,
+                    onDismiss = { appViewModel.removeToast(it) },
                 )
             }
         }

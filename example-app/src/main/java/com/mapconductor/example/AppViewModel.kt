@@ -9,9 +9,11 @@ import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapCameraPositionBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import android.os.Bundle
 
 interface AppViewModel {
     val initCameraPosition: MapCameraPositionBase
@@ -19,6 +21,7 @@ interface AppViewModel {
     val selectedMarker: MarkerState?
     val infoBubbleState: InfoBubbleState
     val markerList: List<MarkerState>
+    val messages: StateFlow<List<ToastMessage>>
 
     fun changeState(state: MapViewState<*>)
 
@@ -29,11 +32,19 @@ interface AppViewModel {
     fun onMarkerClick(clicked: MarkerState)
 
     fun onMapClick(clicked: GeoPoint)
+
+    fun showToast(text: String)
+
+    fun removeToast(toastMessage: ToastMessage)
 }
 
 class AppViewModelImpl :
     ViewModel(),
     AppViewModel {
+
+    private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
+    override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
+
     // カメラの初期位置
     override val initCameraPosition =
         MapCameraPositionBase(
@@ -90,6 +101,19 @@ class AppViewModelImpl :
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
         this._infoBubbleState.value.open(clicked)
+        showToast((clicked.extra as Bundle).getString("name", ""))
+    }
+
+    override fun showToast(text: String) {
+        this._messages.value = this._messages.value + ToastMessage(
+            text = text,
+        )
+    }
+
+    override fun removeToast(toastMessage: ToastMessage) {
+        this._messages.value = this._messages.value.filter {
+            it != toastMessage
+        }
     }
 
     override fun onMapClick(clicked: GeoPoint) {
