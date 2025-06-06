@@ -31,7 +31,6 @@ import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.key
 
 typealias OnMapClickHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit

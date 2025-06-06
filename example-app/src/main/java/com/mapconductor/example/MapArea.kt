@@ -1,19 +1,12 @@
 package com.mapconductor.example
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
@@ -31,7 +24,7 @@ fun MapArea(
     infoBubbleState: InfoBubbleState,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
-    onCallButtonClick: OnMarkerClickHandler = {},
+    onDirectionButtonClick: OnMarkerClickHandler = {},
     onMapClickHandler: OnMapClickHandler = {},
     onMarkerClickHandler: OnMarkerClickHandler = {},
 ) {
@@ -59,7 +52,7 @@ fun MapArea(
                     StoreCard(
                         info = it.extra as Bundle,
                         onClick = {
-                            onCallButtonClick(it)
+                            onDirectionButtonClick(it)
                         },
                     )
                 }

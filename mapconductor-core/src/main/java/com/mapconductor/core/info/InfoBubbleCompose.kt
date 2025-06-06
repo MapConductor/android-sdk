@@ -1,7 +1,7 @@
 package com.mapconductor.core.info
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -54,7 +54,13 @@ fun MapViewScope.InfoBubble(
             )
         }
 
-    SideEffect {
+    DisposableEffect(Unit) {
         bubbleFlow.value = bubbleFlow.value + entry.value
+
+        onDispose {
+            bubbleFlow.value = bubbleFlow.value.filter {
+                it.state.id != entry.value.state.id
+            }
+        }
     }
 }

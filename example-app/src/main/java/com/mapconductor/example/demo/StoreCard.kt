@@ -69,7 +69,10 @@ fun StoreCard(
                 }
             }
         }
-        RoundedLabel("Get Directions")
+        RoundedLabel(
+            text = "Get Directions",
+            onClick = onClick,
+        )
     }
 }
 

@@ -9,6 +9,9 @@ typealias ArcGISMapViewHolder = MapViewHolder<WrapSceneView, SceneView>
 
 object ArcGISMapViewHolderStore :
     MapViewHolderStoreBaseAsync<WrapSceneView, SceneView, ArcGISMapViewInitOptions>() {
+
+    fun hasCache(id: String): Boolean = this.has(id)
+
     override suspend fun getOrCreate(
         context: Context,
         id: String,

@@ -3,15 +3,14 @@ package com.mapconductor.arcgis
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toDrawable
-import com.arcgismaps.geometry.GeometryEngine
-import com.arcgismaps.geometry.Point
-import com.arcgismaps.geometry.SpatialReference
+import android.util.Log
 import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
+import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
@@ -47,10 +46,19 @@ interface IArcGISMapViewController : MapViewController {
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    val onCameraMove: (OnCameraMoveHandler<Camera>)? = null,
-    val onMapClick: OnMapClickHandler? = null,
 ) : BaseMapViewController(),
     IArcGISMapViewController {
+    private var _onCameraMove: (OnCameraMoveHandler<Camera>)? = null
+    private var _onMapClick: OnMapClickHandler? = null
+
+    fun setOnCameraMove(listener: OnCameraMoveHandler<Camera>? ) {
+        this._onCameraMove = listener
+    }
+
+    fun setOnMapClick(listener: OnMapClickHandler?) {
+        this._onMapClick = listener
+    }
+
 
     val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
         sceneProperties.surfacePlacement = SurfacePlacement.Relative
@@ -128,18 +136,17 @@ class ArcGISMapViewController(
             holder.map.onSingleTapConfirmed.collect { onMapTap(it) }
         }
         coroutine.launch {
-            onCameraMove?.let { callback ->
-                holder.map.viewpointChanged.collect { onViewpointChange(callback) }
-            }
+            holder.map.viewpointChanged.collect { onViewpointChange() }
         }
     }
 
-    private fun onViewpointChange(callback: OnCameraMoveHandler<Camera>) {
-        callback(holder.map.getCurrentViewpointCamera())
+    private fun onViewpointChange() {
+        this._onCameraMove?.invoke(holder.map.getCurrentViewpointCamera())
     }
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
         val screenPoint = event.screenCoordinate
+        Log.d("info", "----->onMapTap:${event.motionEvent.action}")
 //        val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
 //
 //        val markerEntry = this.findNearestMarker(
@@ -172,7 +179,7 @@ class ArcGISMapViewController(
         }
 
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {
-            onMapClick?.invoke(it.toGeoPoint())
+            _onMapClick?.invoke(it.toGeoPoint())
         }
     }
 

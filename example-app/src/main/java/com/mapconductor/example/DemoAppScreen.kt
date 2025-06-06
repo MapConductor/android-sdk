@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -28,16 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
-import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
-import com.mapconductor.example.toast.ToastMessage
 import com.mapconductor.example.ui.IconItem
 import com.mapconductor.example.ui.IconSelectMenu
 import com.mapconductor.example.ui.theme.AppTheme
@@ -47,7 +43,6 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -167,7 +162,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                 MapArea(
                     mapViewState = mapViewState,
                     markers = markerList,
-                    onCallButtonClick = {
+                    onDirectionButtonClick = {
                         appViewModel.showToast("clicked")
                     },
                     infoBubbleState = appViewModel.infoBubbleState,
