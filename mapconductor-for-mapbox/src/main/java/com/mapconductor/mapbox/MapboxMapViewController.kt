@@ -19,6 +19,7 @@ import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapconductor.core.MarkerManager
+import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
@@ -26,9 +27,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnCameraMoveHandler
-import com.mapconductor.core.map.OnMapClickHandler
-import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,9 +69,8 @@ interface IMapboxMapViewController : MapViewController {
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    val onCameraMove: (OnCameraMoveHandler<CameraState>)? = null,
-    val onMapClick: OnMapClickHandler? = null,
-) : IMapboxMapViewController,
+) : BaseMapViewController<CameraState>(),
+    IMapboxMapViewController,
     CameraChangedCallback,
     OnPointAnnotationClickListener,
     OnMapClickListener,
@@ -110,10 +108,10 @@ internal class MapboxMapViewController(
                             return@map params.icon
                                 .toPointAnnotationOptions()
                                 .withPoint(
-                                    GeoPoint.from(params.entry.state.position).toPoint(),
+                                    GeoPoint.from(params.state.position).toPoint(),
                                 ).withData(
                                     JsonObject().apply {
-                                        addProperty("id", params.entry.id)
+                                        addProperty("id", params.state.id)
                                     },
                                 ).withDraggable(true)
                         }
@@ -129,9 +127,9 @@ internal class MapboxMapViewController(
                             params.icon
                                 .toPointAnnotationOptions()
                                 .withPoint(
-                                    GeoPoint.from(params.entry.state.position).toPoint(),
+                                    GeoPoint.from(params.state.position).toPoint(),
                                 )
-                        params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
+                        params.marker.point = GeoPoint.from(params.state.position).toPoint()
                         params.marker.iconSize = option.iconSize
                         params.marker.iconImage = option.iconImage
                         params.marker.iconAnchor = option.iconAnchor
@@ -141,7 +139,7 @@ internal class MapboxMapViewController(
             },
         )
 
-    override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
@@ -157,7 +155,7 @@ internal class MapboxMapViewController(
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        onCameraMove?.let {
+        cameraMoveListener?.let {
             coroutine.let {
                 it(cameraChanged.cameraState)
             }
@@ -217,18 +215,17 @@ internal class MapboxMapViewController(
     override fun onAnnotationClick(annotation: PointAnnotation): Boolean {
         val tag = annotation.getData() ?: return false
         val key = tag.asJsonObject.get("id")?.asString ?: return false
-        val stateWithHandler = markerOverlayManager.getMarkerEntry(key) ?: return false
-        val handlers = stateWithHandler.handlers
-        handlers.onClick?.let {
+        val state = markerOverlayManager.getMarkerState(key) ?: return false
+        markerClickListener?.let {
             coroutine.launch {
-                it(stateWithHandler.state)
+                it(state)
             }
         }
         return true
     }
 
     override fun onMapClick(point: Point): Boolean {
-        onMapClick?.let {
+        mapClickListener?.let {
             coroutine.let {
                 it(point.toGeoPoint())
             }
@@ -251,15 +248,15 @@ internal class MapboxMapViewController(
         id: String,
         annotation: PointAnnotation,
     ) {
-        val entry = markerOverlayManager.getMarkerEntry(id) ?: return
-        entry.state.position = annotation.point.toGeoPoint()
+        val state = markerOverlayManager.getMarkerState(id) ?: return
+        state.position = annotation.point.toGeoPoint()
     }
 
     override fun onAnnotationDragFinished(annotation: Annotation<*>) {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun onAnnotationDragStarted(annotation: Annotation<*>) {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 }

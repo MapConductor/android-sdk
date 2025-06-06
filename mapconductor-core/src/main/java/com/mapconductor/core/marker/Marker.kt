@@ -4,7 +4,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.IdentifiedPoint
 import java.io.ByteArrayOutputStream
 import java.util.UUID
@@ -12,21 +11,15 @@ import android.graphics.Bitmap
 import android.os.Parcelable
 
 // ------- Core Types ----------
-typealias OnMarkerClickHandler = (MarkerState) -> Unit
-
-data class MarkerHandlers(
-    val onClick: OnMarkerClickHandler? = {},
-)
-
 class MarkerState(
-    val id: String = UUID.randomUUID().toString(),
+    override val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
-) {
+) : IdentifiedPoint {
     // -- position and positionState properties --
     private val _position = mutableStateOf(position)
-    var position: GeoPoint
+    override var position: GeoPoint
         get() = _position.value
         set(value) {
             if (!_position.value.equals(value)) {
@@ -62,6 +55,14 @@ class MarkerState(
             id == otherState.id &&
             extra == otherState.extra &&
             icon == otherState.icon
+    }
+
+    enum class Event {
+        CLICK,
+        LONG_PRESS,
+        DRAG_START,
+        DRAG,
+        DRAG_END,
     }
 
     //    companion object {
@@ -109,13 +110,7 @@ class MarkerState(
     }
 }
 
-data class MarkerEntry(
-    val state: MarkerState,
-    val handlers: MarkerHandlers,
-) : IdentifiedPoint {
-    override val id: String get() = state.id
-    override val point: IGeoPoint get() = state.position
-}
+typealias OnMarkerEventHandler = (MarkerState) -> Unit
 
 data class BitmapIcon(
     val bitmap: Bitmap,

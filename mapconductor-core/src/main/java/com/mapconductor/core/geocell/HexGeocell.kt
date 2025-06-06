@@ -33,7 +33,7 @@ enum class Direction6(
 
 interface IdentifiedPoint {
     val id: String
-    val point: IGeoPoint
+    val position: IGeoPoint
 }
 
 data class HexCell(
@@ -110,7 +110,7 @@ class HexGeocell(
         points: List<IdentifiedPoint>,
         zoom: Double,
     ): HexCell {
-        val center = computeCentroid(points.map { it.point })
+        val center = computeCentroid(points.map { it.position })
         val coord = latLngToHexCoord(center, zoom)
         val centerLatLng = hexToLatLngCenter(coord, center.latitude, zoom)
         val centerXY = projection.project(centerLatLng)
@@ -124,8 +124,8 @@ class HexGeocell(
     ): Set<IdentifiedHexCell> =
         points
             .map {
-                val coord = latLngToHexCoord(it.point, zoom)
-                val centerLatLng = hexToLatLngCenter(coord, it.point.latitude, zoom)
+                val coord = latLngToHexCoord(it.position, zoom)
+                val centerLatLng = hexToLatLngCenter(coord, it.position.latitude, zoom)
                 val centerXY = projection.project(centerLatLng)
                 val cellId = hexToCellId(coord)
                 val cell = HexCell(coord, centerLatLng, centerXY, cellId)

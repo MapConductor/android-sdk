@@ -8,6 +8,8 @@ import com.mapbox.maps.plugin.lifecycle.lifecycle
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 
+typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
+
 class MapboxMapViewHolderImpl private constructor(
     override val mapView: MapView,
 ) : MapViewHolder<MapView, MapboxMap>,

@@ -11,7 +11,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import android.util.Log
@@ -22,12 +23,13 @@ import android.view.ViewGroup
 fun HereMapView(
     state: IHereMapViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapClickHandler = {},
+    onMapClick: OnMapEventHandler? = {},
+    onMarkerClick: OnMarkerEventHandler? = {},
     content: (@Composable HereMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<HereMapViewHolder>() }
     val scope = remember { HereMapViewScope() }
-    val controllerRef = remember { Ref<HereMapController>() }
+    val controllerRef = remember { Ref<HereMapViewController>() }
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
@@ -41,17 +43,17 @@ fun HereMapView(
         scope = scope,
         registry = registry,
         onInitialize = {
-            HereMapViewHolderStore.initSDK(context)
+            HereMapViewControllerStore.initSDK(context)
 
             val mapInitOptions =
                 HereMapViewInitOptions(
                     scheme = state.mapDesignType.id,
                 )
 
-            val holder =
-                HereMapViewHolderStore.getOrCreate(
+            val controller =
+                HereMapViewControllerStore.getOrCreate(
                     context = context,
-                    id = state.stateId,
+                    id = state.id,
                     options = mapInitOptions,
                 )
 
@@ -59,22 +61,19 @@ fun HereMapView(
                 (state as? HereMapViewState)?.let {
                     it::OnCameraChange
                 }
+            controller.mapClickListener = onMapClick
+            controller.cameraMoveListener = onCameraMove
+            controller.markerClickListener = onMarkerClick
 
-            val controller =
-                HereMapController(
-                    holder = holder,
-                    onCameraMove = onCameraMove,
-                    onMapClick = onMapClick,
-                )
             (state as? HereMapViewState)?.controller = controller
 
-            holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
+            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
                 if (mapError != null) {
                     throw Throwable("Loading map failed: mapError: " + mapError.name)
                 }
             }
             try {
-                holderRef.value = holder
+                holderRef.value = controller.holder
                 controllerRef.value = controller
 
                 return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
@@ -98,7 +97,7 @@ fun HereMapView(
 
             // HERE specific DisposableEffect logic
             DisposableEffect(lifecycle) {
-                val stateId = _state.stateId // from BaseMapViewState
+                val stateId = _state.id // from BaseMapViewState
                 val observer =
                     object : DefaultLifecycleObserver {
                         override fun onResume(owner: LifecycleOwner) {
@@ -121,7 +120,7 @@ fun HereMapView(
                                     // Ensure these calls are safe if mapView might be null or already destroyed
                                     currentHolder.mapView.onPause()
                                     currentHolder.mapView.onDestroy()
-                                    HereMapViewHolderStore.remove(stateId) // Clean up from your store
+                                    HereMapViewControllerStore.remove(stateId) // Clean up from your store
                                 }
                             }
                         }

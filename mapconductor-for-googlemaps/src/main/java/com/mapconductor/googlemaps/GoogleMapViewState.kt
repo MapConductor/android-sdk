@@ -25,7 +25,7 @@ import android.os.Bundle
 interface IGoogleMapViewState : MapViewState<Int>
 
 class GoogleMapViewState(
-    override val stateId: String,
+    override val id: String,
     override val mapDesignType: GoogleMapDesignType,
     override val initCameraPosition: MapCameraPosition,
 ) : MapViewStateImpl<Int>(),
@@ -141,7 +141,7 @@ val GoogleMapViewStateSaver =
                 }
 
             Bundle().apply {
-                putString("stateId", state.stateId)
+                putString("stateId", state.id)
                 putBundle("mapDesign", mapDesignBundle)
                 putBundle("camera", cameraStateBundle)
             }
@@ -151,7 +151,7 @@ val GoogleMapViewStateSaver =
             val mapDesignBundle = storedData.getBundle("mapDesign")
 
             GoogleMapViewState(
-                stateId = storedData.getString("stateId")!!,
+                id = storedData.getString("stateId")!!,
                 mapDesignType =
                     GoogleMapDesign.Create(
                         id = mapDesignBundle?.getInt("id") ?: GoogleMapDesign.Normal.id,
@@ -187,7 +187,7 @@ fun rememberGoogleMapViewState(
         ) {
             mutableStateOf(
                 GoogleMapViewState(
-                    stateId = stateId,
+                    id = stateId,
                     mapDesignType = mapDesign,
                     initCameraPosition = MapCameraPosition.from(cameraPosition),
                 ),

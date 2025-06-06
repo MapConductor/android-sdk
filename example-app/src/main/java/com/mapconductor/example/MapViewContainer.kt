@@ -6,7 +6,8 @@ import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.here.HereMapView
@@ -18,7 +19,8 @@ import com.mapconductor.mapbox.MapboxMapViewState
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     state: MapViewState<*>? = null,
-    onMapClick: OnMapClickHandler,
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
@@ -27,6 +29,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
                 content = content,
             )
 
@@ -35,6 +38,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
                 content = content,
             )
 
@@ -43,6 +47,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
                 content = content,
             )
 
@@ -51,6 +56,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
                 content = content,
             )
 

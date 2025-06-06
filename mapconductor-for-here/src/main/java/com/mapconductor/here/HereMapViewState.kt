@@ -29,7 +29,7 @@ import android.os.Bundle
 interface IHereMapViewState : MapViewState<MapScheme>
 
 class HereMapViewState(
-    override val stateId: String,
+    override val id: String,
     override val mapDesignType: HereMapDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewStateImpl<MapScheme>(),
@@ -115,7 +115,7 @@ val HereMapViewStateSaver =
                 }
 
             Bundle().apply {
-                putString("stateId", state.stateId)
+                putString("stateId", state.id)
                 putBundle("mapDesign", mapDesignBundle)
                 putBundle("camera", cameraStateBundle)
             }
@@ -125,7 +125,7 @@ val HereMapViewStateSaver =
             val mapDesignBundle = storedData.getBundle("mapDesign")
 
             HereMapViewState(
-                stateId = storedData.getString("stateId")!!,
+                id = storedData.getString("stateId")!!,
                 mapDesignType =
                     HereMapDesign.CreateById(
                         id = mapDesignBundle?.getInt("id") ?: HereMapDesign.NormalDay.id.value,
@@ -161,7 +161,7 @@ fun rememberHereMapViewState(
         ) {
             mutableStateOf(
                 HereMapViewState(
-                    stateId = stateId,
+                    id = stateId,
                     mapDesignType = mapDesign,
                     initCameraPosition = MapCameraPosition.from(cameraPosition),
                 ),

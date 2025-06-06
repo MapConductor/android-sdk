@@ -8,7 +8,7 @@ import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
-import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -57,7 +57,7 @@ import kotlinx.coroutines.flow.StateFlow
 // }
 
 open class MapViewScope {
-    val markerFlow = MutableStateFlow<List<MarkerEntry>>(emptyList())
+    val markerFlow = MutableStateFlow<List<MarkerState>>(emptyList())
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
@@ -68,10 +68,10 @@ open class MapViewScope {
 }
 
 class MarkerOverlay(
-    override val flow: StateFlow<List<MarkerEntry>>,
-) : MapOverlay<MarkerEntry> {
+    override val flow: StateFlow<List<MarkerState>>,
+) : MapOverlay<MarkerState> {
     override suspend fun render(
-        data: List<MarkerEntry>,
+        data: List<MarkerState>,
         controller: MapViewController,
     ) {
         controller.addMarkers(data)
@@ -79,7 +79,7 @@ class MarkerOverlay(
 }
 
 val LocalMarkerCollector =
-    compositionLocalOf<MutableStateFlow<List<MarkerEntry>>> {
+    compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
         error("Marker must be under the <MapView />")
     }
 
