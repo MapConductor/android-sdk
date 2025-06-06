@@ -58,9 +58,10 @@ fun MapViewScope.InfoBubble(
         bubbleFlow.value = bubbleFlow.value + entry.value
 
         onDispose {
-            bubbleFlow.value = bubbleFlow.value.filter {
-                it.state.id != entry.value.state.id
-            }
+            bubbleFlow.value =
+                bubbleFlow.value.filter {
+                    it.state.id != entry.value.state.id
+                }
         }
     }
 }

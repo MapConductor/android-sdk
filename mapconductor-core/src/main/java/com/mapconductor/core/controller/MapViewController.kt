@@ -1,8 +1,6 @@
 package com.mapconductor.core.controller
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Dp
-import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.marker.MarkerEntry
@@ -21,13 +19,13 @@ interface MapViewController {
     fun toScreenOffset(position: IGeoPoint): Offset?
 }
 
-abstract class BaseMapViewController: MapViewController {
-
+abstract class BaseMapViewController : MapViewController {
     protected fun zoomToMetersPerPixel(zoom: Double): Double {
         val earthCircumference = 40075016.686
         val tileSize = 256
         return earthCircumference / (tileSize * 2.0.pow(zoom))
     }
+
     protected fun findMarkerFromPoint(
         markerOverlayManager: MarkerOverlayManager<*>,
         position: IGeoPoint,

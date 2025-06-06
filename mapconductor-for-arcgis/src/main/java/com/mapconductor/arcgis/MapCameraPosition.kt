@@ -26,24 +26,25 @@ fun MapCameraPosition.toCamera(): Camera {
     )
 }
 
-fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPosition = when (position) {
-    is MapCameraPosition -> position
-    else -> {
-        val altitude = calculateScaleFromZoomLevel(position.zoom)
-        MapCameraPosition(
-            position =
-                GeoPoint.fromLongLat(
-                    longitude = position.position.longitude,
-                    latitude = position.position.latitude,
-                    altitude = altitude,
-                ),
-            zoom = position.zoom,
-            bearing = position.bearing,
-            tilt = position.tilt,
-            paddings = position.paddings,
-        )
+fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPosition =
+    when (position) {
+        is MapCameraPosition -> position
+        else -> {
+            val altitude = calculateScaleFromZoomLevel(position.zoom)
+            MapCameraPosition(
+                position =
+                    GeoPoint.fromLongLat(
+                        longitude = position.position.longitude,
+                        latitude = position.position.latitude,
+                        altitude = altitude,
+                    ),
+                zoom = position.zoom,
+                bearing = position.bearing,
+                tilt = position.tilt,
+                paddings = position.paddings,
+            )
+        }
     }
-}
 
 /**
  * Google Maps の zoomLevel を基にArcGIS 用の scale を計算します。

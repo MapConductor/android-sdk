@@ -7,7 +7,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition

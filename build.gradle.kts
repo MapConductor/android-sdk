@@ -17,15 +17,22 @@ buildscript {
     }
 }
 
+val modules: List<String> = rootDir.resolve("projects.properties").readLines()
+    .firstOrNull { it.startsWith("modules=") }
+    ?.removePrefix("modules=")
+    ?.split(",")
+    ?.map { it.trim() }
+    ?.filter { it.isNotEmpty() }
+    ?: emptyList()
+
 tasks.register("allLintChecks") {
     group = "verification"
-    description = "Run ktLintCheck and lint for all modules"
-    dependsOn(
-        ":ktlintFormat",
-        ":mapconductor-core:lint",
-        ":mapconductor-for-arcgis:lint",
-        ":mapconductor-for-here:lint",
-        ":mapconductor-for-googlemaps:lint",
-        ":mapconductor-for-mapbox:lint",
-    )
+    description = "Run ktlintFormat and lint for all modules"
+
+    val lintTasks = modules.flatMap { module ->
+        listOf(":$module:ktlintFormat", ":$module:lint")
+    }
+
+    dependsOn(lintTasks)
 }
+

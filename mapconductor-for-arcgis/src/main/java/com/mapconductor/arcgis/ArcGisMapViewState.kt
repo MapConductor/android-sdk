@@ -7,7 +7,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition

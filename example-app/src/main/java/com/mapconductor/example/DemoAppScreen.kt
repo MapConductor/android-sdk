@@ -157,7 +157,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
             modifier = Modifier.fillMaxSize(),
         ) { innerPadding ->
             Box(
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
             ) {
                 MapArea(
                     mapViewState = mapViewState,
@@ -193,9 +193,8 @@ fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
                         blue = 0.9f,
                         alpha = 0.75f,
                     ),
-                )
-                .wrapContentHeight()
-                .fillMaxWidth()
+                ).wrapContentHeight()
+                .fillMaxWidth(),
     ) {
         Text("LatLng: (${camera?.position?.toUrlValue()})", color = Color.Black)
         Text("Zoom: ${camera?.zoom?.toFixed(2)}", color = Color.Black)

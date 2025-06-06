@@ -21,15 +21,15 @@ data class MapCameraPosition(
     companion object {
         val Default =
             MapCameraPosition(
-                position = GeoPoint(
-                    latitude = 0.0,
-                    longitude = 0.0,
-                    altitude = 0.0,
-                ),
+                position =
+                    GeoPoint(
+                        latitude = 0.0,
+                        longitude = 0.0,
+                        altitude = 0.0,
+                    ),
                 zoom = 0.0,
                 bearing = 0.0,
                 tilt = 0.0,
             )
     }
 }
-

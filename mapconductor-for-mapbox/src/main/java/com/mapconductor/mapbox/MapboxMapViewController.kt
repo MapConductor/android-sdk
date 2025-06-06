@@ -24,7 +24,6 @@ import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnCameraMoveHandler

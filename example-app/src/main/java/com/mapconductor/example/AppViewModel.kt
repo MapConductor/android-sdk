@@ -13,7 +13,6 @@ import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import android.os.Bundle
 
 interface AppViewModel {
     val initCameraPosition: MapCameraPosition
@@ -41,7 +40,6 @@ interface AppViewModel {
 class AppViewModelImpl :
     ViewModel(),
     AppViewModel {
-
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
@@ -105,15 +103,17 @@ class AppViewModelImpl :
     }
 
     override fun showToast(text: String) {
-        this._messages.value = this._messages.value + ToastMessage(
-            text = text,
-        )
+        this._messages.value = this._messages.value +
+            ToastMessage(
+                text = text,
+            )
     }
 
     override fun removeToast(toastMessage: ToastMessage) {
-        this._messages.value = this._messages.value.filter {
-            it != toastMessage
-        }
+        this._messages.value =
+            this._messages.value.filter {
+                it != toastMessage
+            }
     }
 
     override fun onMapClick(clicked: GeoPoint) {

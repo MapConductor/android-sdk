@@ -8,33 +8,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mapconductor.example.R
-import android.content.res.Configuration
 import android.os.Bundle
 
 @Composable
@@ -43,7 +31,7 @@ fun StoreCard(
     onClick: () -> Unit = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
-    val iconTintColor = if (!darkTheme) Color.Black else Color.White
+    if (!darkTheme) Color.Black else Color.White
 
     Column(
         modifier = Modifier.wrapContentSize(),
@@ -58,7 +46,7 @@ fun StoreCard(
         if (instore || driveThrough) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween, // like justify-content
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (instore) {
                     Text("● In store eating")
@@ -86,13 +74,14 @@ fun RoundedLabel(
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
         shape = RoundedCornerShape(16.dp),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
     ) {
         // 黒い丸アイコン
         Box(
-            modifier = Modifier
-                .size(12.dp)
-                .background(Color.Black, shape = CircleShape)
+            modifier =
+                Modifier
+                    .size(12.dp)
+                    .background(Color.Black, shape = CircleShape),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
@@ -100,7 +89,7 @@ fun RoundedLabel(
         Text(
             text = text,
             color = Color.Black,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
     }
 }

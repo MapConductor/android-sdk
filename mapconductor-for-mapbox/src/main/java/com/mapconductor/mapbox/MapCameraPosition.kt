@@ -7,23 +7,25 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 
-fun MapCameraPosition.toCameraOptions(): CameraOptions = CameraOptions
-    .Builder()
-    .center(GeoPoint.from(position).toPoint())
-    .zoom(zoom)
-    .pitch(tilt)
-    .bearing(bearing)
-    // TODO:
+fun MapCameraPosition.toCameraOptions(): CameraOptions =
+    CameraOptions
+        .Builder()
+        .center(GeoPoint.from(position).toPoint())
+        .zoom(zoom)
+        .pitch(tilt)
+        .bearing(bearing)
+        // TODO:
 //    .padding(paddings?.toEdgeInsects())
-    .build()
+        .build()
 
-fun MapCameraPosition.toCameraState(): CameraState = CameraState(
-    GeoPoint.from(position).toPoint(),
-    EdgeInsets(0.0, 0.0, 0.0, 0.0),
-    zoom,
-    bearing,
-    tilt,
-)
+fun MapCameraPosition.toCameraState(): CameraState =
+    CameraState(
+        GeoPoint.from(position).toPoint(),
+        EdgeInsets(0.0, 0.0, 0.0, 0.0),
+        zoom,
+        bearing,
+        tilt,
+    )
 
 fun MapCameraPosition.Companion.from(cameraPosition: IMapCameraPosition) =
     when (cameraPosition) {

@@ -2,7 +2,6 @@ package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

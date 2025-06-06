@@ -32,12 +32,10 @@ import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.projection.WebMercator
-import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.pow
 
 interface IHereMapViewController : MapViewController {
     fun moveCamera(
@@ -180,10 +178,11 @@ internal class HereMapController(
     override fun onTap(touchPoint: Point2D) {
         val touchPosition = this.getGeoPointFromPoint(touchPoint) ?: return
 
-        val markerEntry = this.findNearestMarker(
-            position = touchPosition,
-            tolerance = Settings.Default.tapTolerance,
-        )
+        val markerEntry =
+            this.findNearestMarker(
+                position = touchPosition,
+                tolerance = Settings.Default.tapTolerance,
+            )
         if (markerEntry != null) {
             markerEntry.handlers.onClick?.let {
                 coroutine.launch {

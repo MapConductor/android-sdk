@@ -16,17 +16,18 @@ fun MapCameraPosition.toCameraPosition(): CameraPosition =
         .bearing(bearing.toFloat())
         .build()
 
-fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPosition = when (position) {
-    is MapCameraPosition -> position
-    else ->
-        MapCameraPosition(
-            position = GeoPoint.from(position.position),
-            zoom = position.zoom,
-            bearing = position.bearing,
-            tilt = position.tilt,
-            paddings = position.paddings,
-        )
-}
+fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPosition =
+    when (position) {
+        is MapCameraPosition -> position
+        else ->
+            MapCameraPosition(
+                position = GeoPoint.from(position.position),
+                zoom = position.zoom,
+                bearing = position.bearing,
+                tilt = position.tilt,
+                paddings = position.paddings,
+            )
+    }
 
 fun CameraPosition.toMapCameraPosition(paddings: MapPaddings = MapPaddingsImpl.Zeros) =
     MapCameraPosition(

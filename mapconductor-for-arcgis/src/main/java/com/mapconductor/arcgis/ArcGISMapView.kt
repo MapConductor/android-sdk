@@ -1,18 +1,14 @@
 package com.mapconductor.arcgis
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapClickHandler
-import android.view.ViewGroup
 
 @Composable
 fun ArcGISMapView(
@@ -27,7 +23,7 @@ fun ArcGISMapView(
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
     val owner = LocalLifecycleOwner.current
-    val lifecycle = owner.lifecycle
+    owner.lifecycle
     val basemapStyle = remember { ArcGISDesign.toBasemapStyle(state.mapDesignType) }
 
     MapViewBase(
@@ -39,17 +35,18 @@ fun ArcGISMapView(
         scope = scope,
         registry = registry,
         onInitialize = {
+            val options =
+                ArcGISMapViewInitOptions(
+                    basemapStyle = basemapStyle,
+                    elevationSources = state.mapDesignType.elevationSources,
+                )
 
-            val options = ArcGISMapViewInitOptions(
-                basemapStyle = basemapStyle,
-                elevationSources = state.mapDesignType.elevationSources,
-            )
-
-            val holder = ArcGISMapViewHolderStore.getOrCreate(
-                context = context,
-                id = state.stateId,
-                options = options,
-            )
+            val holder =
+                ArcGISMapViewHolderStore.getOrCreate(
+                    context = context,
+                    id = state.stateId,
+                    options = options,
+                )
             holder.mapView.onCreate(owner)
             holder.mapView.onResume(owner)
 

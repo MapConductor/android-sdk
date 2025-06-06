@@ -3,7 +3,6 @@ package com.mapconductor.arcgis
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toDrawable
-import android.util.Log
 import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
@@ -29,6 +28,7 @@ import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.util.Log
 
 interface IArcGISMapViewController : MapViewController {
     fun moveCamera(
@@ -48,21 +48,21 @@ class ArcGISMapViewController(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     IArcGISMapViewController {
-    private var _onCameraMove: (OnCameraMoveHandler<Camera>)? = null
-    private var _onMapClick: OnMapClickHandler? = null
+    private var cameraMoveListener: (OnCameraMoveHandler<Camera>)? = null
+    private var mapClickListener: OnMapClickHandler? = null
 
-    fun setOnCameraMove(listener: OnCameraMoveHandler<Camera>? ) {
-        this._onCameraMove = listener
+    fun setOnCameraMove(listener: OnCameraMoveHandler<Camera>?) {
+        this.cameraMoveListener = listener
     }
 
     fun setOnMapClick(listener: OnMapClickHandler?) {
-        this._onMapClick = listener
+        this.mapClickListener = listener
     }
 
-
-    val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
-        sceneProperties.surfacePlacement = SurfacePlacement.Relative
-    }
+    val markerLayer: GraphicsOverlay =
+        GraphicsOverlay().apply {
+            sceneProperties.surfacePlacement = SurfacePlacement.Relative
+        }
 
     private val markerOverlayManager =
         MarkerOverlayManager<Graphic>(
@@ -141,7 +141,7 @@ class ArcGISMapViewController(
     }
 
     private fun onViewpointChange() {
-        this._onCameraMove?.invoke(holder.map.getCurrentViewpointCamera())
+        this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
     }
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
@@ -161,12 +161,15 @@ class ArcGISMapViewController(
 //            }
 //            return
 //        }
-        val identifyResult = holder.map.identifyGraphicsOverlay(
-            graphicsOverlay = markerLayer,
-            screenCoordinate = screenPoint,
-            tolerance = Settings.Default.tapTolerance.value.toDouble(),
-            returnPopupsOnly = false,
-        )
+        val identifyResult =
+            holder.map.identifyGraphicsOverlay(
+                graphicsOverlay = markerLayer,
+                screenCoordinate = screenPoint,
+                tolerance =
+                    Settings.Default.tapTolerance.value
+                        .toDouble(),
+                returnPopupsOnly = false,
+            )
         val graphics = identifyResult.getOrNull()?.graphics
         graphics?.firstOrNull()?.also { graphic ->
             (graphic.attributes.get("id") as? String)?.also { markerId ->
@@ -179,7 +182,7 @@ class ArcGISMapViewController(
         }
 
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {
-            _onMapClick?.invoke(it.toGeoPoint())
+            mapClickListener?.invoke(it.toGeoPoint())
         }
     }
 
@@ -204,9 +207,10 @@ class ArcGISMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result = holder.map.locationToScreen(
-            point = GeoPoint.from(position).toPoint(),
-        )
+        val result =
+            holder.map.locationToScreen(
+                point = GeoPoint.from(position).toPoint(),
+            )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }

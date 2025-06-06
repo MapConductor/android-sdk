@@ -9,7 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapClickHandler
