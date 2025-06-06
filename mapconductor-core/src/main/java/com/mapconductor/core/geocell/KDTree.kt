@@ -1,6 +1,6 @@
 package com.mapconductor.core.geocell
 
-import com.mapconductor.core.Offset
+import androidx.compose.ui.geometry.Offset
 import java.util.PriorityQueue
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -56,7 +56,7 @@ class KDTree(
         var newBestDist = bestDist
         if (distSq < newBestDist) {
             newBest = node.cell
-            newBestDist = distSq
+            newBestDist = distSq.toDouble()
         }
 
         val (near, far) = if (queryVal < nodeVal) node.left to node.right else node.right to node.left
@@ -70,7 +70,7 @@ class KDTree(
 
     fun nearestWithDistance(query: Offset): HexCellWithDistance? {
         val cell = nearest(query) ?: return null
-        return HexCellWithDistance(cell, distanceMeters(query, cell.centerXY))
+        return HexCellWithDistance(cell, distanceMeters(query, cell.centerXY).toDouble())
     }
 
     fun nearestKWithDistance(
@@ -89,7 +89,7 @@ class KDTree(
         queue: PriorityQueue<Pair<Double, HexCell>>,
     ) {
         if (node == null) return
-        val distSq = squaredDistance(query, node.cell.centerXY)
+        val distSq = squaredDistance(query, node.cell.centerXY).toDouble()
         if (queue.size < k) {
             queue.offer(distSq to node.cell)
         } else if (distSq < queue.peek()!!.first) {
@@ -126,7 +126,7 @@ class KDTree(
         if (node == null) return
         val distSq = squaredDistance(query, node.cell.centerXY)
         if (distSq <= radiusSq) {
-            result.add(HexCellWithDistance(node.cell, sqrt(distSq)))
+            result.add(HexCellWithDistance(node.cell, sqrt(distSq).toDouble()))
         }
         val axis = node.axis
         val queryVal = if (axis == 0) query.x else query.y
@@ -142,7 +142,7 @@ class KDTree(
     private fun squaredDistance(
         a: Offset,
         b: Offset,
-    ): Double {
+    ): Float {
         val dx = a.x - b.x
         val dy = a.y - b.y
         return dx * dx + dy * dy
@@ -151,5 +151,5 @@ class KDTree(
     private fun distanceMeters(
         a: Offset,
         b: Offset,
-    ): Double = sqrt(squaredDistance(a, b))
+    ): Float = sqrt(squaredDistance(a, b))
 }

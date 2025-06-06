@@ -26,7 +26,7 @@ internal fun DrawInfoBubble(
     tailSize: Dp,
     content: @Composable () -> Unit,
 ) {
-    Box(modifier = modifier) {
+    Box(modifier = modifier.wrapContentSize()) {
         Canvas(modifier = Modifier.matchParentSize()) {
             val width = size.width
             val height = size.height

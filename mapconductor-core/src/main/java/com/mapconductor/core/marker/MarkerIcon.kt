@@ -1,11 +1,12 @@
 package com.mapconductor.core.marker
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.Offset
 import android.graphics.Color
+import android.graphics.Path
 import android.graphics.drawable.Drawable
 
-data class MarkerIconProp(
+class MarkerIcon internal constructor(
     val fillColor: Int? = Color.RED,
     val strokeColor: Int? = Color.WHITE,
     val strokeWidth: Float? = 1f,
@@ -15,11 +16,13 @@ data class MarkerIconProp(
     val labelTextSizeLogical: Float? = 10f,
     val fillDrawable: Drawable? = null,
     val iconDrawable: Drawable? = null,
-    val anchor: Offset = Offset(0.5, 1.0),
+    val anchor: Offset = Offset(0.5f, 1.0f),
     val size: Size = Size(32f, 32f),
-    val infoAnchor: Offset = Offset(0.5, 0.5),
-)
-
+    val infoAnchor: Offset = Offset(0.5f, 0.5f),
+    val strokePath: Path,
+) {
+    companion object
+}
 //
 // fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {
 //    val bmpWidth = drawable.intrinsicWidth.takeIf { it > 0 } ?: width
