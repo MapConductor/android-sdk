@@ -1,5 +1,6 @@
 package com.mapconductor.core
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
@@ -10,7 +11,7 @@ import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntry
-import com.mapconductor.core.marker.MarkerIconProp
+import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -25,7 +26,6 @@ import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
-import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
@@ -58,7 +58,7 @@ class MarkerManager<ActualMarker>(
 
     fun containsKey(id: String): Boolean = markers.containsKey(id)
 
-    fun equalsValue(entry: MarkerEntry): Boolean = entries.get(entry.id)?.equals(entry) ?: false
+    fun equalsValue(entry: MarkerEntry): Boolean = entries.get(entry.id)?.equals(entry) == true
 
     fun getValueSet(): Set<MarkerEntry> = entries.values.toSet()
 
@@ -111,11 +111,7 @@ class MarkerManager<ActualMarker>(
         cellRegistry.setPoint(entry)
     }
 
-    fun forEach(action: (MarkerEntry, ActualMarker) -> Unit) {
-        markers.keys.forEach { key ->
-            action(entries[key]!!, markers[key]!!)
-        }
-    }
+    fun allKeys(): List<String> = markers.keys.toList()
 
     fun clear() {
         markers.clear()
@@ -123,7 +119,7 @@ class MarkerManager<ActualMarker>(
         cellRegistry.clear()
     }
 
-    fun getBitmapIcon(icon: MarkerIconProp): BitmapIcon {
+    fun getBitmapIcon(icon: MarkerIcon): BitmapIcon {
         val key = icon.hashCode()
         val cache = bitmapCache.get(key)
         if (cache != null) return cache
@@ -415,27 +411,26 @@ class MarkerManager<ActualMarker>(
             }
 
             // --- 3. ラベルの描画 (labelが指定されている場合) ---
-            if (label != null) {
-                val textPaint =
-                    Paint().apply {
-                        this.color = labelTextColor ?: Color.BLACK
-                        this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
-                        this.textAlign = Paint.Align.CENTER
-                        this.typeface = Typeface.DEFAULT_BOLD
-                        this.isAntiAlias = true
-                        this.isSubpixelText = true // より滑らかなテキスト描画のため
-                    }
-
-                // 丸い部分の中心の論理座標 (32x32系)
-                val centerXLogical = 16f
-                val centerYLogical = 34f / 3f // 約 11.333f
-
-                // テキストの垂直位置を調整して中央揃えにする
-                val fm = textPaint.fontMetrics
-                val yForDrawTextLogical = centerYLogical - (fm.ascent + fm.descent) / 2f
-
-                canvas.drawText(label.substring(0, 1).toString(), centerXLogical, yForDrawTextLogical, textPaint)
-            }
+//            if (label != null) {
+//                val textPaint = Paint().apply {
+//                    this.color = labelTextColor ?: Color.BLACK
+//                    this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
+//                    this.textAlign = Paint.Align.CENTER
+//                    this.typeface = Typeface.DEFAULT_BOLD
+//                    this.isAntiAlias = true
+//                    this.isSubpixelText = true // より滑らかなテキスト描画のため
+//                }
+//
+//                // 丸い部分の中心の論理座標 (32x32系)
+//                val centerXLogical = 16f
+//                val centerYLogical = 34f / 3f // 約 11.333f
+//
+//                // テキストの垂直位置を調整して中央揃えにする
+//                val fm = textPaint.fontMetrics
+//                val yForDrawTextLogical = centerYLogical - (fm.ascent + fm.descent) / 2f
+//
+//                canvas.drawText(label.substring(0, 1).toString(), centerXLogical, yForDrawTextLogical, textPaint)
+//            }
 
 //            // -- ストローク --
             drawPath(strokePath, strokePaint)
@@ -444,8 +439,8 @@ class MarkerManager<ActualMarker>(
         val visualNormalizedTipY = 0.9375f
         val anchor =
             Offset(
-                x = 0.5,
-                y = visualNormalizedTipY + (0.5 / 64.0),
+                x = 0.5f,
+                y = (visualNormalizedTipY + (0.5 / 64.0)).toFloat(),
             )
 
         val size =
@@ -471,6 +466,7 @@ class MarkerManager<ActualMarker>(
 //                drawable.bitmap.asImageBitmap().asAndroidBitmap()
                 drawable.bitmap.scale(width, height)
             }
+
             else -> {
                 val bitmap = createBitmap(width, height)
                 val canvas = Canvas(bitmap)

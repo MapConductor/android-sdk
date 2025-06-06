@@ -1,6 +1,6 @@
 package com.mapconductor.core.projection
 
-import com.mapconductor.core.Offset
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
 
 interface Projection {

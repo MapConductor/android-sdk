@@ -1,6 +1,6 @@
 package com.mapconductor.core.projection
 
-import com.mapconductor.core.Offset
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
 import kotlin.math.atan
 import kotlin.math.exp
@@ -11,7 +11,7 @@ object WebMercator : Projection {
     override fun project(position: IGeoPoint): Offset {
         val x = position.longitude * 20037508.34 / 180
         val y = ln(tan((90 + position.latitude) * Math.PI / 360)) * 20037508.34 / Math.PI
-        return Offset(x, y)
+        return Offset(x.toFloat(), y.toFloat())
     }
 
     override fun unproject(point: Offset): IGeoPoint {

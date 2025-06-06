@@ -19,7 +19,7 @@ ktlint_standard_argument-list-wrapping = disabled
 ktlint_standard_function-naming = disabled
 
 # Disable wildcard imports
-ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,android.**
+ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**, android.**
 ij_kotlin_allow_wildcard_imports = false
 
 # Sort imports alphabetically and by groups

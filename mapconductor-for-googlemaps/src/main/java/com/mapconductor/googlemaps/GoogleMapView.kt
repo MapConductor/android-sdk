@@ -13,12 +13,14 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.OnMapClickHandler
 import android.view.ViewGroup
 
 @Composable
 fun GoogleMapsView(
     state: IGoogleMapViewState,
     modifier: Modifier = Modifier,
+    onMapClick: OnMapClickHandler = {},
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -32,7 +34,6 @@ fun GoogleMapsView(
         modifier = modifier,
         holderRef = holderRef,
         controllerRef = controllerRef,
-        mapProvider = { this.map }, // Assuming GoogleMapViewHolder has a 'map' property
         viewProvider = { this.mapView }, // Assuming GoogleMapViewHolder has a 'mapView' property
         scope = scope,
         registry = registry,
@@ -62,11 +63,15 @@ fun GoogleMapsView(
                     id = state.stateId,
                     options = mapInitOptions,
                 )
-            val eventHandler = state as? IGoogleMapEventHandler
+            val onCameraMove =
+                (state as? GoogleMapViewState)?.let {
+                    it::OnCameraChange
+                }
             val controller =
                 GoogleMapViewController(
                     holder = holder,
-                    eventHandler = eventHandler,
+                    onCameraMove = onCameraMove,
+                    onMapTap = onMapClick,
                 )
             (state as? GoogleMapViewState)?.controller = controller
 
