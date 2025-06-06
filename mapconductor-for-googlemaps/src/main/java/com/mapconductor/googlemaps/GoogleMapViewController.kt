@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mapconductor.core.MarkerManager
+import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
@@ -23,9 +24,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnCameraMoveHandler
-import com.mapconductor.core.map.OnMapClickHandler
-import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,9 +46,8 @@ interface IGoogleMapViewController : MapViewController {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    val onCameraMove: (OnCameraMoveHandler<CameraPosition>)? = null,
-    val onMapTap: OnMapClickHandler? = null,
-) : IGoogleMapViewController,
+) : BaseMapViewController<CameraPosition>(),
+    IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
@@ -57,9 +55,6 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    //    private val infoBubbles = InfoBubbleManager(
-//        coroutine = coroutine,
-//    )
     private val markerOverlayManager =
         MarkerOverlayManager<Marker>(
             markerManager = MarkerManager(HexGeocell(WebMercator)),
@@ -72,7 +67,7 @@ class GoogleMapViewController(
 
                     val options =
                         MarkerOptions()
-                            .position(GeoPoint.from(params.entry.state.position).toLatLng())
+                            .position(GeoPoint.from(params.state.position).toLatLng())
                             .anchor(
                                 params.icon.anchor.x
                                     .toFloat(),
@@ -82,7 +77,7 @@ class GoogleMapViewController(
                             .draggable(true)
                     val marker =
                         holder.map.addMarker(options)?.also {
-                            it.tag = params.entry.state.id
+                            it.tag = params.state.id
                         }
                     return@map marker
                 }
@@ -90,7 +85,7 @@ class GoogleMapViewController(
             onChange = { changes ->
                 changes.forEach { params ->
                     val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
-                    params.marker.position = GeoPoint.from(params.entry.state.position).toLatLng()
+                    params.marker.position = GeoPoint.from(params.state.position).toLatLng()
                     params.marker.setIcon(bitmapDescriptor)
                 }
             },
@@ -146,7 +141,7 @@ class GoogleMapViewController(
         }
     }
 
-    override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
@@ -162,61 +157,61 @@ class GoogleMapViewController(
     }
 
     override fun onCameraMove() {
-        onCameraMove?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onCameraIdle() {
-        onCameraMove?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onCameraMoveStarted(p0: Int) {
-        onCameraMove?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onCameraMoveCanceled() {
-        onCameraMove?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
         val key = marker.tag?.toString() ?: return true
-        val entry = markerOverlayManager.getMarkerEntry(key) ?: return true
-        entry.handlers.onClick?.let {
+        val state = markerOverlayManager.getMarkerState(key) ?: return true
+        markerClickListener?.let {
             coroutine.launch {
-                it(entry.state)
+                it(state)
             }
         }
         return true
     }
 
     override fun onMapClick(position: LatLng) {
-        onMapTap?.let {
+        mapClickListener?.let {
             coroutine.launch { it(position.toGeoPoint()) }
         }
     }
 
     override fun onMarkerDrag(marker: Marker) {
         val markerId = marker.tag as? String ?: return
-        val entry = markerOverlayManager.getMarkerEntry(markerId) ?: return
-        entry.state.position = marker.position.toGeoPoint()
+        val state = markerOverlayManager.getMarkerState(markerId) ?: return
+        state.position = marker.position.toGeoPoint()
     }
 
     override fun onMarkerDragEnd(marker: Marker) {
         val markerId = marker.tag as? String ?: return
-        val entry = markerOverlayManager.getMarkerEntry(markerId) ?: return
-        entry.state.position = marker.position.toGeoPoint()
+        val state = markerOverlayManager.getMarkerState(markerId) ?: return
+        state.position = marker.position.toGeoPoint()
     }
 
     override fun onMarkerDragStart(marker: Marker) {
         val markerId = marker.tag as? String ?: return
-        val entry = markerOverlayManager.getMarkerEntry(markerId) ?: return
-        entry.state.position = marker.position.toGeoPoint()
+        val state = markerOverlayManager.getMarkerState(markerId) ?: return
+        state.position = marker.position.toGeoPoint()
     }
 }

@@ -32,7 +32,7 @@ import com.mapconductor.core.info.LocalInfoBubbleCollector
 import android.view.View
 import android.view.ViewGroup
 
-typealias OnMapClickHandler = (GeoPoint) -> Unit
+typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
 typealias OnMarkerDragHandler = (String, GeoPoint) -> Unit
 

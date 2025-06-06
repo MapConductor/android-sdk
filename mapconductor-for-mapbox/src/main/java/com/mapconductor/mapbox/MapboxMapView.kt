@@ -9,7 +9,8 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
-import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -18,7 +19,8 @@ import android.content.ContextWrapper
 fun MapboxMapView(
     state: IMapboxMapViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapClickHandler = {},
+    onMapClick: OnMapEventHandler? = {},
+    onMarkerClick: OnMarkerEventHandler? = {},
     content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
@@ -66,9 +68,10 @@ fun MapboxMapView(
             val controller =
                 MapboxMapViewController(
                     holder = holder,
-                    onCameraMove = onCameraMove,
-                    onMapClick = onMapClick,
                 )
+            controller.mapClickListener = onMapClick
+            controller.cameraMoveListener = onCameraMove
+            controller.markerClickListener = onMarkerClick
 
             holderRef.value = holder
             controllerRef.value = controller

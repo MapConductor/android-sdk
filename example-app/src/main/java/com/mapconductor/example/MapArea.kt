@@ -10,10 +10,10 @@ import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.OnMarkerClickHandler
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.demo.StoreCard
 import android.os.Bundle
 
@@ -24,9 +24,9 @@ fun MapArea(
     infoBubbleState: InfoBubbleState,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
-    onDirectionButtonClick: OnMarkerClickHandler = {},
-    onMapClickHandler: OnMapClickHandler = {},
-    onMarkerClickHandler: OnMarkerClickHandler = {},
+    onDirectionButtonClick: OnMarkerEventHandler = {},
+    onMapClickHandler: OnMapEventHandler = {},
+    onMarkerClickHandler: OnMarkerEventHandler = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember { mutableStateOf(if (darkTheme) Color.Black else Color.White) }
@@ -36,13 +36,9 @@ fun MapArea(
             modifier = modifier,
             state = mapViewState,
             onMapClick = onMapClickHandler,
+            onMarkerClick = onMarkerClickHandler,
         ) {
-            markers.forEach { markerState ->
-                Marker(
-                    state = markerState,
-                    onClick = onMarkerClickHandler,
-                )
-            }
+            markers.forEach { markerState -> Marker(markerState) }
 
             selectedMarker?.let {
                 InfoBubble(

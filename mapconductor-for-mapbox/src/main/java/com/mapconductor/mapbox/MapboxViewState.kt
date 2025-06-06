@@ -24,7 +24,7 @@ import android.os.Bundle
 interface IMapboxMapViewState : MapViewState<String>
 
 class MapboxMapViewState(
-    override val stateId: String,
+    override val id: String,
     override val mapDesignType: MapboxDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewStateImpl<String>(),
@@ -109,7 +109,7 @@ val MapboxMapViewStateSaver =
                 }
 
             Bundle().apply {
-                putString("stateId", state.stateId)
+                putString("stateId", state.id)
                 putBundle("mapDesign", mapDesignBundle)
                 putBundle("camera", cameraStateBundle)
             }
@@ -119,7 +119,7 @@ val MapboxMapViewStateSaver =
             val mapDesignBundle = storedData.getBundle("mapDesign")
 
             MapboxMapViewState(
-                stateId = storedData.getString("stateId")!!,
+                id = storedData.getString("stateId")!!,
                 mapDesignType =
                     MapboxMapDesign.Create(
                         layerId = mapDesignBundle?.getString("id") ?: Standard.id,
@@ -153,7 +153,7 @@ fun rememberMapboxMapViewState(
         rememberSaveable(stateSaver = MapboxMapViewStateSaver) {
             mutableStateOf(
                 MapboxMapViewState(
-                    stateId = stateId,
+                    id = stateId,
                     mapDesignType = mapDesign,
                     initCameraPosition = MapCameraPosition.from(cameraPosition),
                 ),

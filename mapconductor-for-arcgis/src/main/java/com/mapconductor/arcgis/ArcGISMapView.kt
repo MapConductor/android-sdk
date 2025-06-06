@@ -8,13 +8,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
-import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.OnMarkerEventHandler
 
 @Composable
 fun ArcGISMapView(
     state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapClickHandler = {},
+    onMapClick: OnMapEventHandler? = {},
+    onMarkerClick: OnMarkerEventHandler? = {},
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
@@ -41,23 +43,17 @@ fun ArcGISMapView(
                     elevationSources = state.mapDesignType.elevationSources,
                 )
 
-            val holder =
-                ArcGISMapViewHolderStore.getOrCreate(
-                    context = context,
-                    id = state.stateId,
-                    options = options,
-                )
-            holder.mapView.onCreate(owner)
-            holder.mapView.onResume(owner)
-
             val controller =
                 ArcGISViewControllerStore.getOrCreate(
-                    id = state.stateId,
-                    holder = holder,
+                    context = context,
+                    id = state.id,
+                    options = options,
                 )
-            controller.setOnCameraMove(state::OnCameraChange)
-            controller.setOnMapClick(onMapClick)
-
+            controller.holder.mapView.onCreate(owner)
+            controller.holder.mapView.onResume(owner)
+            controller.cameraMoveListener = state::OnCameraChange
+            controller.mapClickListener = onMapClick
+            controller.markerClickListener = onMarkerClick
             state.controller = controller
 
             val restoreCameraPosition =
@@ -66,14 +62,14 @@ fun ArcGISMapView(
             controller.moveCamera(restoreCameraPosition)
 
             controllerRef.value = controller
-            holderRef.value = holder
+            holderRef.value = controller.holder
             true
         },
         customDisposableEffect = { _state, _holderRef ->
 
             // ArcGIS specific DisposableEffect logic
 //            DisposableEffect(lifecycle) {
-//                val stateId = _state.stateId // from BaseMapViewState
+//                val stateId = _stateId // from BaseMapViewState
 //                val observer =
 //                    object : DefaultLifecycleObserver {
 //                        override fun onResume(owner: LifecycleOwner) {
