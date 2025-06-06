@@ -13,14 +13,16 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
-import com.mapconductor.core.map.OnMapClickHandler
+import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import android.view.ViewGroup
 
 @Composable
 fun GoogleMapsView(
     state: IGoogleMapViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapClickHandler = {},
+    onMapClick: OnMapEventHandler? = {},
+    onMarkerClick: OnMarkerEventHandler? = {},
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -57,25 +59,21 @@ fun GoogleMapsView(
                     .mapType(state.mapDesignType.getValue())
                     .camera(cameraPosition)
 
-            val holder =
-                GoogleMapViewHolderStore.getOrCreate(
+            val controller =
+                GoogleMapViewControllerStore.getOrCreate(
                     context = context, // Use context from the outer scope
-                    id = state.stateId,
+                    id = state.id,
                     options = mapInitOptions,
                 )
             val onCameraMove =
                 (state as? GoogleMapViewState)?.let {
                     it::OnCameraChange
                 }
-            val controller =
-                GoogleMapViewController(
-                    holder = holder,
-                    onCameraMove = onCameraMove,
-                    onMapTap = onMapClick,
-                )
-            (state as? GoogleMapViewState)?.controller = controller
+            controller.cameraMoveListener = onCameraMove
+            controller.mapClickListener = onMapClick
+            controller.markerClickListener = onMarkerClick
 
-            holderRef.value = holder
+            holderRef.value = controller.holder
             controllerRef.value = controller
             true // Return success/failure of initialization
         },
@@ -83,7 +81,7 @@ fun GoogleMapsView(
             // Specific Google Maps DisposableEffect logic
             val lifecycle = LocalLifecycleOwner.current.lifecycle // Get lifecycle here
             DisposableEffect(lifecycle) {
-                val stateId = _state.stateId
+                val stateId = _state.id
                 val observer =
                     object : DefaultLifecycleObserver {
                         override fun onResume(owner: LifecycleOwner) {}
@@ -97,7 +95,7 @@ fun GoogleMapsView(
                                     _holderRef.value!!.mapView,
                                 )
                             } else {
-                                GoogleMapViewHolderStore.remove(stateId)
+                                GoogleMapViewControllerStore.remove(stateId)
                             }
                         }
                     }

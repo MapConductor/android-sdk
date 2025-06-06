@@ -2,21 +2,21 @@ package com.mapconductor.core.controller
 
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.marker.MarkerState
 
 interface MarkerAddParams {
-    val entry: MarkerEntry
+    val state: MarkerState
     val icon: BitmapIcon
 }
 
 interface MarkerUpdateParams<ActualMarker> {
-    val entry: MarkerEntry
+    val state: MarkerState
     val icon: BitmapIcon
     val marker: ActualMarker
 }
 
 interface MarkerRemoveParams<ActualMarker> {
-    val entry: MarkerEntry
+    val state: MarkerState
     val marker: ActualMarker
 }
 
@@ -25,21 +25,21 @@ class MarkerOverlayManager<
     ActualMarker : Any,
 >(
     val markerManager: MarkerManager<ActualMarker>,
-    val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
-    val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
-    val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
+    var onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
+    var onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
+    var onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
 ) {
     @Synchronized
-    fun addMarkers(markerList: List<MarkerEntry>) {
+    fun addMarkers(markerList: List<MarkerState>) {
         val current = markerList.toSet()
         val previous = markerManager.getValueSet()
         val added = current - previous
         val removed = previous - current
         val updated =
             current
-                .filter { entry ->
-                    if (!markerManager.containsKey(entry.state.id)) return@filter false
-                    return@filter !markerManager.equalsValue(entry)
+                .filter { state ->
+                    val prevState = markerManager.getState(state.id) ?: return@filter false
+                    return@filter !prevState.equals(state)
                 }
 
         val defaultIcon = markerManager.createDefaultMarkerShape()
@@ -47,12 +47,12 @@ class MarkerOverlayManager<
         // Remove markers
         if (removed.isNotEmpty()) {
             removed
-                .map { removedEntry ->
-                    val id = removedEntry.state.id
+                .map { removedState ->
+                    val id = removedState.id
                     val marker = markerManager.getMarker(id)!!
-                    markerManager.removeEntry(id)
+                    markerManager.removeStateAndMarker(id)
                     object : MarkerRemoveParams<ActualMarker> {
-                        override val entry: MarkerEntry = removedEntry
+                        override val state: MarkerState = removedState
                         override val marker: ActualMarker = marker
                     }
                 }.also {
@@ -65,21 +65,21 @@ class MarkerOverlayManager<
             val addedList = added.toList()
 
             addedList
-                .map { entry ->
+                .map { state ->
                     val markerIcon =
-                        entry.state.icon?.let {
+                        state.icon?.let {
                             markerManager.getBitmapIcon(it)
                         } ?: defaultIcon
                     object : MarkerAddParams {
-                        override val entry: MarkerEntry = entry
+                        override val state: MarkerState = state
                         override val icon: BitmapIcon = markerIcon
                     }
                 }.also {
                     val actualMarkers: List<ActualMarker?> = onAdd(it)
                     actualMarkers.forEachIndexed { index, actualMarker ->
                         actualMarker?.let {
-                            val entry = addedList[index]
-                            markerManager.registerEntry(entry, actualMarker)
+                            val state = addedList[index]
+                            markerManager.registerState(state, actualMarker)
                         }
                     }
                 }
@@ -89,21 +89,21 @@ class MarkerOverlayManager<
         if (updated.isNotEmpty()) {
             (
                 updated
-                    .map { entry ->
+                    .map { state ->
                         val markerIcon =
-                            entry.state.icon?.let {
+                            state.icon?.let {
                                 markerManager.getBitmapIcon(it)
                             } ?: defaultIcon
-                        val prevEntry = markerManager.getEntry(entry.id)!!
-                        markerManager.updateEntry(entry)
+                        val prevState = markerManager.getState(state.id)!!
+                        markerManager.updateState(state)
 
                         // プロパティが変わっていなければ、マーカーを再描画しない
-                        return@map if (prevEntry.state == entry.state) {
+                        return@map if (prevState == state) {
                             null
                         } else {
-                            val marker = markerManager.getMarker(entry.id)!!
+                            val marker = markerManager.getMarker(state.id)!!
                             object : MarkerUpdateParams<ActualMarker> {
-                                override val entry: MarkerEntry = entry
+                                override val state: MarkerState = state
                                 override val icon: BitmapIcon = markerIcon
                                 override val marker: ActualMarker = marker
                             }
@@ -120,7 +120,7 @@ class MarkerOverlayManager<
         val removes: List<MarkerRemoveParams<ActualMarker>> =
             markerIDs.map { markerId ->
                 return@map object : MarkerRemoveParams<ActualMarker> {
-                    override val entry: MarkerEntry = markerManager.getEntry(markerId)!!
+                    override val state: MarkerState = markerManager.getState(markerId)!!
                     override val marker: ActualMarker = markerManager.getMarker(markerId)!!
                 }
             }
@@ -129,5 +129,5 @@ class MarkerOverlayManager<
         markerManager.clear()
     }
 
-    fun getMarkerEntry(id: String): MarkerEntry? = markerManager.getEntry(id)
+    fun getMarkerState(id: String): MarkerState? = markerManager.getState(id)
 }

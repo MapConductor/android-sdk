@@ -6,13 +6,13 @@ import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapView
 import com.mapconductor.core.map.MapViewHolder
-import com.mapconductor.core.map.MapViewHolderStoreBaseAsync
+import com.mapconductor.core.map.StaticHolder
 import android.content.Context
 import android.content.pm.PackageManager
 
 typealias HereMapViewHolder = MapViewHolder<MapView, HereMap>
 
-object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, HereMapViewInitOptions>() {
+object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
     private var mapCount: Int = 0
 
     fun initSDK(context: Context) {
@@ -44,19 +44,18 @@ object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, He
         this.mapCount++
     }
 
-    override suspend fun getOrCreate(
+    fun getOrCreate(
         context: Context,
         id: String,
-        // NOTE: 使ってないけど、将来のために残しておく
         options: HereMapViewInitOptions,
-    ): HereMapViewHolder {
+    ): HereMapViewController {
         val existing = this.get(id)
         if (existing != null) {
             return existing
         }
         initSDK(context.applicationContext)
 
-        val newHolder =
+        val holder =
             HereMapViewHolderImpl.create(
                 context.applicationContext,
             )
@@ -79,8 +78,12 @@ object HereMapViewHolderStore : MapViewHolderStoreBaseAsync<MapView, HereMap, He
 //            }
 //        }
 
-        this.set(id, newHolder)
-        return newHolder
+        val controller =
+            HereMapViewController(
+                holder = holder,
+            )
+        this.set(id, controller)
+        return controller
     }
 
 //    fun release() {

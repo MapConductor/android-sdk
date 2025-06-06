@@ -22,7 +22,7 @@ interface MapViewState<T> {
         fun onComplete(result: Boolean)
     }
 
-    val stateId: String
+    val id: String
     val initCameraPosition: MapCameraPosition
     val isInitialized: StateFlow<InitState>
     val mapCameraPosition: StateFlow<MapCameraPosition?>
@@ -43,7 +43,7 @@ interface MapViewState<T> {
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )
-//    fun addMarkers(markerDataList: List<MarkerEntry>, listener: AddMarkersCallback? = null)
+//    fun addMarkers(markerDataList: List<MarkerState>, listener: AddMarkersCallback? = null)
 }
 
 abstract class MapViewStateImpl<T>(

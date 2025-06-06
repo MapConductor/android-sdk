@@ -31,8 +31,8 @@ class HexCellRegistry<T : IdentifiedPoint>(
 //        needsRebuild = false
 //    }
     fun getCell(entry: T): HexCell {
-        val coord = geocell.latLngToHexCoord(entry.point, zoom)
-        val centerLatLng = geocell.hexToLatLngCenter(coord, entry.point.latitude, zoom)
+        val coord = geocell.latLngToHexCoord(entry.position, zoom)
+        val centerLatLng = geocell.hexToLatLngCenter(coord, entry.position.latitude, zoom)
         val centerXY = geocell.projection.project(centerLatLng)
         val cellId = geocell.hexToCellId(coord)
         return HexCell(coord, centerLatLng, centerXY, cellId)

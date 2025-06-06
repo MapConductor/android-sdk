@@ -29,7 +29,7 @@ import android.os.Bundle
 interface IArcGISMapViewState : MapViewState<String>
 
 class ArcGISMapViewState(
-    override val stateId: String,
+    override val id: String,
     override val initCameraPosition: MapCameraPosition,
     override val mapDesignType: ArcGISDesign,
 ) : MapViewStateImpl<String>(),
@@ -111,7 +111,7 @@ val ArcGISMapViewStateSaver =
                 }
 
             Bundle().apply {
-                putString("stateId", state.stateId)
+                putString("stateId", state.id)
                 putBundle("mapDesign", mapDesignBundle)
                 putBundle("camera", cameraStateBundle)
             }
@@ -121,7 +121,7 @@ val ArcGISMapViewStateSaver =
             val mapDesignBundle = storedData.getBundle("mapDesign")
 
             ArcGISMapViewState(
-                stateId = storedData.getString("stateId")!!,
+                id = storedData.getString("stateId")!!,
                 mapDesignType =
                     ArcGISDesign.Create(
                         id = mapDesignBundle?.getString("id") ?: ArcGISDesign.Streets.id,
@@ -157,7 +157,7 @@ fun rememberArcGISMapViewState(
         ) {
             mutableStateOf(
                 ArcGISMapViewState(
-                    stateId = stateId,
+                    id = stateId,
                     mapDesignType = mapDesign,
                     initCameraPosition = MapCameraPosition.from(cameraPosition),
                 ),
