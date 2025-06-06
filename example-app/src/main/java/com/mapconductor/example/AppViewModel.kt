@@ -2,6 +2,7 @@ package com.mapconductor.example
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.mapconductor.StarbucksHI_list
 import com.mapconductor.core.features.GeoPoint
@@ -13,6 +14,9 @@ import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 
 interface AppViewModel {
     val initCameraPosition: MapCameraPosition
@@ -35,6 +39,8 @@ interface AppViewModel {
     fun showToast(text: String)
 
     fun removeToast(toastMessage: ToastMessage)
+
+    fun createIntentForDirection(markerState: MarkerState): Intent
 }
 
 class AppViewModelImpl :
@@ -74,6 +80,17 @@ class AppViewModelImpl :
         this._selectedMarker.value = null
         this._mapViewState.value = newState
         this.infoBubbleState?.close()
+    }
+
+    override fun createIntentForDirection(markerState: MarkerState): Intent {
+        val query =
+            (markerState.extra as? Bundle)?.let {
+                Uri.encode(it.getString("address", ""))
+            } ?: markerState.position.toUrlValue()
+        val gmmIntentUri = "google.navigation:q=$query".toUri()
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        mapIntent.setPackage("com.google.android.apps.maps")
+        return mapIntent
     }
 
     override fun flyTo(listener: MapViewState.MoveCameraCallback?) {

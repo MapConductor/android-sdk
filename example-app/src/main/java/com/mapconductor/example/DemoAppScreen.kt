@@ -162,8 +162,9 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                 MapArea(
                     mapViewState = mapViewState,
                     markers = markerList,
-                    onDirectionButtonClick = {
-                        appViewModel.showToast("clicked")
+                    onDirectionButtonClick = { state ->
+                        val intent = appViewModel.createIntentForDirection(state)
+                        context.startActivity(intent)
                     },
                     infoBubbleState = appViewModel.infoBubbleState,
                     onMapClickHandler = appViewModel::onMapClick,
