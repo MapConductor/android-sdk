@@ -20,9 +20,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnCameraMoveHandler
-import com.mapconductor.core.map.OnMapClickHandler
-import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
@@ -46,19 +44,8 @@ interface IArcGISMapViewController : MapViewController {
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-) : BaseMapViewController(),
+) : BaseMapViewController<Camera>(),
     IArcGISMapViewController {
-    private var cameraMoveListener: (OnCameraMoveHandler<Camera>)? = null
-    private var mapClickListener: OnMapClickHandler? = null
-
-    fun setOnCameraMove(listener: OnCameraMoveHandler<Camera>?) {
-        this.cameraMoveListener = listener
-    }
-
-    fun setOnMapClick(listener: OnMapClickHandler?) {
-        this.mapClickListener = listener
-    }
-
     val markerLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.Relative
@@ -92,11 +79,11 @@ class ArcGISMapViewController(
                         val marker =
                             Graphic(
                                 geometry =
-                                    params.entry.state.position
+                                    params.state.position
                                         .toPoint(),
                                 symbol = pictureSymbolFuture,
                             )
-                        marker.attributes.set("id", params.entry.id)
+                        marker.attributes.set("id", params.state.id)
                         return@map marker
                     }
 
@@ -122,7 +109,7 @@ class ArcGISMapViewController(
                         }
 
                     params.marker.geometry =
-                        params.entry.state.position
+                        params.state.position
                             .toPoint()
                     params.marker.symbol = pictureSymbolFuture
                 }
@@ -149,14 +136,14 @@ class ArcGISMapViewController(
         Log.d("info", "----->onMapTap:${event.motionEvent.action}")
 //        val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
 //
-//        val markerEntry = this.findNearestMarker(
+//        val MarkerState = this.findNearestMarker(
 //            position = touchPosition,
 //            tolerance = Settings.Default.tapTolerance,
 //        )
-//        if (markerEntry != null) {
-//            markerEntry.handlers.onClick?.let {
+//        if (MarkerState != null) {
+//            MarkerState.handlers.onClick?.let {
 //                coroutine.launch {
-//                    it(markerEntry.state)
+//                    it(MarkerState.state)
 //                }
 //            }
 //            return
@@ -173,9 +160,9 @@ class ArcGISMapViewController(
         val graphics = identifyResult.getOrNull()?.graphics
         graphics?.firstOrNull()?.also { graphic ->
             (graphic.attributes.get("id") as? String)?.also { markerId ->
-                markerOverlayManager.getMarkerEntry(markerId)?.also { entry ->
-                    entry.handlers.onClick?.also { onMarkerClick ->
-                        return@onMapTap onMarkerClick(entry.state)
+                markerOverlayManager.getMarkerState(markerId)?.also { state ->
+                    markerClickListener?.also { onMarkerClick ->
+                        return@onMapTap onMarkerClick(state)
                     }
                 }
             }
@@ -189,7 +176,7 @@ class ArcGISMapViewController(
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
-    ): MarkerEntry? {
+    ): MarkerState? {
         val camera = holder.map.getCurrentViewpointCamera()
         val zoom = camera.toMapCameraPosition().zoom
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
@@ -202,7 +189,7 @@ class ArcGISMapViewController(
         )
     }
 
-    override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 

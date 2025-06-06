@@ -10,8 +10,8 @@ import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntry
 import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -48,9 +48,9 @@ class MarkerManager<ActualMarker>(
     }
 
     private val markers: ConcurrentHashMap<String, ActualMarker> = ConcurrentHashMap()
-    private val entries: ConcurrentMap<String, MarkerEntry> = ConcurrentHashMap()
+    private val entries: ConcurrentMap<String, MarkerState> = ConcurrentHashMap()
     private val cellRegistry =
-        HexCellRegistry<MarkerEntry>(
+        HexCellRegistry<MarkerState>(
             geocell = geocell,
             // Maximum zoom level
             zoom = 20.0,
@@ -58,15 +58,15 @@ class MarkerManager<ActualMarker>(
 
     fun containsKey(id: String): Boolean = markers.containsKey(id)
 
-    fun equalsValue(entry: MarkerEntry): Boolean = entries.get(entry.id)?.equals(entry) == true
+    fun equalsValue(entry: MarkerState): Boolean = entries.get(entry.id)?.equals(entry) == true
 
-    fun getValueSet(): Set<MarkerEntry> = entries.values.toSet()
+    fun getValueSet(): Set<MarkerState> = entries.values.toSet()
 
     fun getMarker(id: String): ActualMarker? = markers.get(id)
 
-    fun getEntry(id: String): MarkerEntry? = entries.get(id)
+    fun getState(id: String): MarkerState? = entries.get(id)
 
-    fun removeEntry(id: String) {
+    fun removeStateAndMarker(id: String) {
         markers.remove(id)
         entries.remove(id)?.let {
             cellRegistry.removePoint(it)
@@ -80,13 +80,13 @@ class MarkerManager<ActualMarker>(
         tileSize: Int = 256,
     ): Double = cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
 
-    fun findNearest(position: IGeoPoint): MarkerEntry? {
+    fun findNearest(position: IGeoPoint): MarkerState? {
         val cell = cellRegistry.findNearest(position) ?: return null
         val entryIDs =
             cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
                 entryIDs.sortedBy { entryId ->
-                    entries[entryId]?.let { entry ->
-                        haversineDistance(position, entry.point)
+                    entries[entryId]?.let { state ->
+                        haversineDistance(position, state.position)
                     }
                 }
             } ?: return null
@@ -97,16 +97,16 @@ class MarkerManager<ActualMarker>(
 
     fun findByIdPrefix(prefix: String): List<HexCell> = cellRegistry.findByIdPrefix(prefix)
 
-    fun registerEntry(
-        entry: MarkerEntry,
+    fun registerState(
+        state: MarkerState,
         marker: ActualMarker,
     ) {
-        markers[entry.id] = marker
-        entries[entry.id] = entry
-        cellRegistry.setPoint(entry)
+        markers[state.id] = marker
+        entries[state.id] = state
+        cellRegistry.setPoint(state)
     }
 
-    fun updateEntry(entry: MarkerEntry) {
+    fun updateState(entry: MarkerState) {
         entries[entry.id] = entry
         cellRegistry.setPoint(entry)
     }
