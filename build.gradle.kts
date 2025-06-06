@@ -16,3 +16,23 @@ buildscript {
         classpath(libs.secrets.gradle.plugin)
     }
 }
+
+val modules: List<String> = rootDir.resolve("projects.properties").readLines()
+    .firstOrNull { it.startsWith("modules=") }
+    ?.removePrefix("modules=")
+    ?.split(",")
+    ?.map { it.trim() }
+    ?.filter { it.isNotEmpty() }
+    ?: emptyList()
+
+tasks.register("allLintChecks") {
+    group = "verification"
+    description = "Run ktlintFormat and lint for all modules"
+
+    val lintTasks = modules.flatMap { module ->
+        listOf(":$module:ktlintFormat", ":$module:lint")
+    }
+
+    dependsOn(lintTasks)
+}
+

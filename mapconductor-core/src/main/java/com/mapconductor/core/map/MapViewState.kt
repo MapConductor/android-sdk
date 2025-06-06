@@ -1,7 +1,7 @@
 package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,9 +23,9 @@ interface MapViewState<T> {
     }
 
     val stateId: String
-    val initCameraPosition: IMapCameraPosition
+    val initCameraPosition: MapCameraPosition
     val isInitialized: StateFlow<InitState>
-    val mapCameraPosition: StateFlow<IMapCameraPosition?>
+    val mapCameraPosition: StateFlow<MapCameraPosition?>
     val mapDesignType: MapDesignType<T>
 
     fun initAsync(init: suspend () -> Boolean)
@@ -33,13 +33,13 @@ interface MapViewState<T> {
     fun resetInitState()
 
     fun moveCameraTo(
-        position: IMapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )
 
     fun moveCameraTo(
-        position: IGeoPoint,
+        position: GeoPoint,
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )
@@ -99,5 +99,5 @@ class MapOverlayRegistry {
         overlays.add(overlay)
     }
 
-    fun getAll(): List<MapOverlay<*>> = overlays
+    fun getAll(): List<MapOverlay<*>> = overlays.toList()
 }

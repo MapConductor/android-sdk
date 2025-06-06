@@ -11,10 +11,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.text.TextStyle
@@ -22,14 +22,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
+import com.mapconductor.core.LocalMarkerCollector
+import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.info.InfoBubbleSpec
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.LocalMarkerCollector
-import kotlinx.coroutines.flow.MutableStateFlow
 import android.view.View
 import android.view.ViewGroup
+
+typealias OnMapClickHandler = (GeoPoint) -> Unit
+typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
+typealias OnMarkerDragHandler = (String, GeoPoint) -> Unit
 
 @Composable
 fun <
@@ -49,7 +54,6 @@ fun <
     modifier: Modifier = Modifier,
     holderRef: Ref<SpecificViewHolder>,
     controllerRef: Ref<SpecificController>,
-    mapProvider: SpecificViewHolder.() -> ActualMap?, // Function to get the map object from ViewHolder
     viewProvider: SpecificViewHolder.() -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
@@ -60,29 +64,26 @@ fun <
     val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
     val initState by state.isInitialized.collectAsState()
     val cameraPosition by state.mapCameraPosition.collectAsState()
-    val bubbleFlow = remember { MutableStateFlow<List<InfoBubbleSpec>>(emptyList()) }
-    val bubbles by bubbleFlow.collectAsState()
+    val bubbles by scope.bubbleFlow.collectAsState()
+    val controller = controllerRef.value
 
     if (initState == InitState.Initialized) {
+        // 子コンポーネントを収集する
         CompositionLocalProvider(
             LocalMarkerCollector provides scope.markerFlow,
-            LocalInfoBubbleCollector provides bubbleFlow,
+            LocalInfoBubbleCollector provides scope.bubbleFlow,
         ) {
             with(scope) {
                 content?.invoke(this)
             }
         }
-
-        controllerRef.value?.let { controller ->
-            holderRef.value?.let { holder ->
-                mapProvider(holder)?.let { map ->
-                    CollectAndRenderOverlays(
-                        map = map,
-                        registry = registry, // This should come from the specific scope or be passed
-                        controller = controller,
-                    )
-                }
-            }
+        // 収集した子コンポーネントを描画する
+        val controller = controllerRef.value
+        controller?.also { it ->
+            CollectAndRenderOverlays(
+                registry = registry, // This should come from the specific scope or be passed
+                controller = it,
+            )
         }
     }
 
@@ -106,6 +107,7 @@ fun <
                         ),
                 )
             }
+
             InitState.Failed -> {
                 BasicText(
                     text = "Failed to initialize",
@@ -113,6 +115,7 @@ fun <
                     style = TextStyle.Default.merge(fontSize = 13.sp),
                 )
             }
+
             InitState.Initializing -> {
                 BasicText(
                     text = "Initializing",
@@ -120,6 +123,7 @@ fun <
                     style = TextStyle.Default.merge(fontSize = 13.sp),
                 )
             }
+
             InitState.Initialized -> {
                 if (holderRef.value == null) {
                     state.resetInitState() // Or handle error appropriately
@@ -136,25 +140,36 @@ fun <
                 }
             }
         }
+    }
 
-//        controllerRef.value?.let { controller ->
-//            cameraPosition?.position?.let { centerPosition ->
-//                controller.toScreenOffset(centerPosition)?.let { centerOffset ->
-//                    for (bubble in bubbles) {
-//                        controller.toScreenOffset(bubble.props.position)?.let { screenOffset ->
-//                            bubble.props
-//
-//                            InfoWindowCompose(
-//                                centerOffset = centerOffset,
-//                                screenOffset = screenOffset,
-//                                anchor = bubble.anchor,
-//                                content = bubble.content,
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
+    if (controller != null && cameraPosition != null && bubbles.isNotEmpty()) {
+        Box(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .clipToBounds(),
+        ) {
+            bubbles.forEach { entry ->
+                val marker = entry.state.marker.value ?: return@forEach
+                val position = marker.position
+                val icon = marker.icon ?: return@forEach
+                val iconScale = icon.scale ?: 2f
+                val positionOffset = controller.toScreenOffset(position) ?: return@forEach
+
+                InfoWindowCompose(
+                    positionOffset = positionOffset,
+                    tailOffset = entry.state.tailOffset,
+                    content = entry.content,
+                    iconSize =
+                        Size(
+                            icon.size.width * iconScale,
+                            icon.size.height * iconScale,
+                        ),
+                    iconOffset = icon.anchor,
+                    infoAnchorOffset = icon.infoAnchor,
+                )
+            }
+        }
     }
 
     LaunchedEffect(isResourceProviderReady, initState) {

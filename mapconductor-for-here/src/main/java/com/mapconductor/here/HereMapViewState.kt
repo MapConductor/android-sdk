@@ -8,15 +8,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapScheme
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
-import com.mapconductor.core.map.MapCameraPositionBase
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.MapViewStateImpl
-import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,8 +33,7 @@ class HereMapViewState(
     override val mapDesignType: HereMapDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewStateImpl<MapScheme>(),
-    IHereMapViewState,
-    IHereMapEventHandler {
+    IHereMapViewState {
     internal var controller: IHereMapViewController? = null
 
     // Camera center position
@@ -49,7 +46,7 @@ class HereMapViewState(
         )
 
     override fun moveCameraTo(
-        position: IGeoPoint,
+        position: GeoPoint,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -71,7 +68,7 @@ class HereMapViewState(
     }
 
     override fun moveCameraTo(
-        position: IMapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -81,29 +78,20 @@ class HereMapViewState(
             return
         }
 
-        val dstCameraPosition = MapCameraPosition.from(position)
         if (controller == null) {
             listener?.onComplete(false)
             return
         }
 
         if (durationMs == 0L) {
-            controller!!.moveCamera(dstCameraPosition, listener)
+            controller!!.moveCamera(position, listener)
         } else {
-            controller!!.animateCamera(dstCameraPosition, durationMs.toLong(), listener)
+            controller!!.animateCamera(position, durationMs.toLong(), listener)
         }
     }
 
-    override fun onCameraMove(cameraState: MapCamera.State) {
+    internal fun OnCameraChange(cameraState: MapCamera.State) {
         this.cameraPosition.value = cameraState
-    }
-
-    override fun onMarkerRemove(id: String) {
-        // Do nothing here
-    }
-
-    override fun onMarkerAdd(state: MarkerState) {
-        // Do nothing here
     }
 }
 
@@ -161,7 +149,7 @@ val HereMapViewStateSaver =
 @Composable
 fun rememberHereMapViewState(
     mapDesign: HereMapDesign = HereMapDesign.NormalDay,
-    cameraPosition: IMapCameraPosition = MapCameraPositionBase.Default,
+    cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
 ): HereMapViewState {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()

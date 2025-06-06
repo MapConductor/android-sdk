@@ -1,6 +1,5 @@
 package com.mapconductor.core.features
 
-import com.mapconductor.core.marker.MarkerDsl
 import com.mapconductor.core.toFixed
 import kotlin.math.abs
 
@@ -8,13 +7,6 @@ interface IGeoPoint {
     val latitude: Double
     val longitude: Double
     val altitude: Double?
-}
-
-@MarkerDsl
-class GeoPointBuilder {
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
-    var altitude: Double? = 0.0
 }
 
 class GeoPoint(

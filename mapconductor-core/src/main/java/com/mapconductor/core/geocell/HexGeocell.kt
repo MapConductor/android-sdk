@@ -1,6 +1,6 @@
 package com.mapconductor.core.geocell
 
-import com.mapconductor.core.Offset
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.projection.Projection
 import kotlin.math.PI
@@ -102,7 +102,7 @@ class HexGeocell(
             val angle = Math.toRadians(60.0 * i - 30.0)
             val x = center.x + hexSize * cos(angle)
             val y = center.y + hexSize * sin(angle)
-            projection.unproject(Offset(x, y))
+            projection.unproject(Offset(x.toFloat(), y.toFloat()))
         }
     }
 
@@ -157,7 +157,7 @@ class HexGeocell(
     ): Offset {
         val x = hexSize * (3.0 / 2.0 * coord.q)
         val y = hexSize * (sqrt(3.0) * (coord.r + coord.q / 2.0))
-        return Offset(x, y)
+        return Offset(x.toFloat(), y.toFloat())
     }
 
     private fun pixelToHex(

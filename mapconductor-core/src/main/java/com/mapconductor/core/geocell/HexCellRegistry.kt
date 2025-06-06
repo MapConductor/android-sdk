@@ -17,7 +17,7 @@ class HexCellRegistry<T : IdentifiedPoint>(
     private val allEntries = ConcurrentHashMap<String, String>()
     private var needsRebuild = false
 
-//    fun registerPoints(points: List<T>) {
+    //    fun registerPoints(points: List<T>) {
 //        allCells.clear()
 //        points.forEach {
 //            val coord = geocell.latLngToHex(it.point, zoom)
@@ -154,7 +154,7 @@ class HexCellRegistry<T : IdentifiedPoint>(
 
         val dx = p2.x - p1.x
         val dy = p2.y - p1.y
-        return sqrt(dx * dx + dy * dy)
+        return sqrt(dx * dx + dy * dy).toDouble()
     }
 
     fun findWithinPixelRadius(

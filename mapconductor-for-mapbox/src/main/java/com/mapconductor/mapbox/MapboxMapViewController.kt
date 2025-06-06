@@ -1,51 +1,58 @@
 package com.mapconductor.mapbox
 
+import androidx.compose.ui.geometry.Offset
 import com.google.gson.JsonObject
+import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapOptions
-import com.mapbox.maps.plugin.Plugin
+import com.mapbox.maps.CameraState
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
+import com.mapbox.maps.plugin.annotation.Annotation
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationDragListener
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
-import com.mapconductor.core.Offset
-import com.mapconductor.core.controller.BaseMapViewController
+import com.mapbox.maps.plugin.gestures.OnMapClickListener
+import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
+import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerOverlayManager
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnCameraMoveHandler
+import com.mapconductor.core.map.OnMapClickHandler
 import com.mapconductor.core.marker.MarkerEntry
+import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 import android.animation.Animator
-import android.util.AttributeSet
 
-interface IMapboxMapInitOptions {
-    val mapOptions: MapOptions?
-    val plugins: List<Plugin>?
-    val cameraOptions: CameraOptions?
-    val textureView: Boolean?
-    val styleUri: String?
-    val attrs: AttributeSet?
-    val antialiasingSampleCount: Int?
-}
-
-data class MapboxMapInitOptions(
-    override val mapOptions: MapOptions? = null,
-    override val plugins: List<Plugin>? = null,
-    override val cameraOptions: CameraOptions? = null,
-    override val textureView: Boolean? = null,
-    override val styleUri: String? = null,
-    override val attrs: AttributeSet? = null,
-    override val antialiasingSampleCount: Int? = null,
-) : IMapboxMapInitOptions
+// interface IMapboxMapInitOptions {
+//    val mapOptions: MapOptions?
+//    val plugins: List<Plugin>?
+//    val cameraOptions: CameraOptions?
+//    val textureView: Boolean?
+//    val styleUri: String?
+//    val attrs: AttributeSet?
+//    val antialiasingSampleCount: Int?
+// }
+// data class MapboxMapInitOptions(
+//    override val mapOptions: MapOptions? = null,
+//    override val plugins: List<Plugin>? = null,
+//    override val cameraOptions: CameraOptions? = null,
+//    override val textureView: Boolean? = null,
+//    override val styleUri: String? = null,
+//    override val attrs: AttributeSet? = null,
+//    override val antialiasingSampleCount: Int? = null,
+// ) : IMapboxMapInitOptions
 
 interface IMapboxMapViewController : MapViewController {
     fun moveCamera(
@@ -62,35 +69,41 @@ interface IMapboxMapViewController : MapViewController {
 
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
-    eventHandler: IMapboxMapEventHandler?,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    val onCameraMove: (OnCameraMoveHandler<CameraState>)? = null,
+    val onMapClick: OnMapClickHandler? = null,
 ) : IMapboxMapViewController,
     CameraChangedCallback,
-    OnPointAnnotationClickListener {
+    OnPointAnnotationClickListener,
+    OnMapClickListener,
+    OnPointAnnotationDragListener {
     private lateinit var pointAnnotationManager: PointAnnotationManager
 
     init {
-        setupListeners()
         val annotationApi = holder.mapView.annotations
         pointAnnotationManager = annotationApi.createPointAnnotationManager()
-        pointAnnotationManager.addClickListener(this@MapboxMapViewController)
+        setupListeners()
     }
-
-    private val eventHandlerRef = WeakReference(eventHandler)
 
     private fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
+        holder.map.removeOnMapClickListener(this)
+        holder.map.addOnMapClickListener(this)
+        pointAnnotationManager.addClickListener(this@MapboxMapViewController)
+        pointAnnotationManager.dragListeners.remove(this)
+        pointAnnotationManager.dragListeners.add(this)
     }
 
-    private val baseMapViewController =
-        BaseMapViewController<PointAnnotation>(
-            coroutine = coroutine,
-            onMarkerRemove = { id, marker ->
+    private val markerOverlayManager =
+        MarkerOverlayManager<PointAnnotation>(
+            markerManager = MarkerManager(HexGeocell(WebMercator)),
+            onRemove = { removes ->
                 synchronized(pointAnnotationManager) {
-                    pointAnnotationManager.delete(marker)
+                    val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
+                    pointAnnotationManager.delete(annotations)
                 }
             },
-            onMarkerAdd = { newMarkers ->
+            onAdd = { newMarkers ->
                 synchronized(pointAnnotationManager) {
                     val options =
                         newMarkers.map { params ->
@@ -102,32 +115,35 @@ internal class MapboxMapViewController(
                                     JsonObject().apply {
                                         addProperty("id", params.entry.id)
                                     },
-                                )
+                                ).withDraggable(true)
                         }
-                    return@BaseMapViewController pointAnnotationManager.create(options)
+
+                    return@MarkerOverlayManager pointAnnotationManager.create(options)
                 }
             },
-            onMarkerChanged = { changes ->
-                changes.forEach { params ->
-                    // TODO: アイコンに変更があったかどうかを比較
-                    val option =
-                        params.icon
-                            .toPointAnnotationOptions()
-                            .withPoint(
-                                GeoPoint.from(params.entry.state.position).toPoint(),
-                            )
-                    params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
-                    params.marker.iconSize = option.iconSize
-                    params.marker.iconImage = option.iconImage
-                    params.marker.iconAnchor = option.iconAnchor
-                    params.marker.iconOffset = option.iconOffset
+            onChange = { changes ->
+                synchronized(pointAnnotationManager) {
+                    changes.forEach { params ->
+                        // TODO: アイコンに変更があったかどうかを比較
+                        val option =
+                            params.icon
+                                .toPointAnnotationOptions()
+                                .withPoint(
+                                    GeoPoint.from(params.entry.state.position).toPoint(),
+                                )
+                        params.marker.point = GeoPoint.from(params.entry.state.position).toPoint()
+                        params.marker.iconSize = option.iconSize
+                        params.marker.iconImage = option.iconImage
+                        params.marker.iconAnchor = option.iconAnchor
+                        params.marker.iconOffset = option.iconOffset
+                    }
                 }
             },
         )
 
-    override suspend fun addMarkers(markerList: List<MarkerEntry>) = baseMapViewController.addMarkers(markerList)
+    override suspend fun addMarkers(markerList: List<MarkerEntry>) = markerOverlayManager.addMarkers(markerList)
 
-    override suspend fun clearOverlays() = baseMapViewController.clearOverlays()
+    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val pixel =
@@ -135,13 +151,17 @@ internal class MapboxMapViewController(
                 coordinate = GeoPoint.from(position).toPoint(),
             )
         return Offset(
-            x = pixel.x,
-            y = pixel.y,
+            x = pixel.x.toFloat(),
+            y = pixel.y.toFloat(),
         )
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        eventHandlerRef.get()?.onCameraMove(cameraChanged.cameraState)
+        onCameraMove?.let {
+            coroutine.let {
+                it(cameraChanged.cameraState)
+            }
+        }
     }
 
     override fun moveCamera(
@@ -197,7 +217,7 @@ internal class MapboxMapViewController(
     override fun onAnnotationClick(annotation: PointAnnotation): Boolean {
         val tag = annotation.getData() ?: return false
         val key = tag.asJsonObject.get("id")?.asString ?: return false
-        val stateWithHandler = baseMapViewController.getMarkerEntry(key) ?: return false
+        val stateWithHandler = markerOverlayManager.getMarkerEntry(key) ?: return false
         val handlers = stateWithHandler.handlers
         handlers.onClick?.let {
             coroutine.launch {
@@ -205,5 +225,41 @@ internal class MapboxMapViewController(
             }
         }
         return true
+    }
+
+    override fun onMapClick(point: Point): Boolean {
+        onMapClick?.let {
+            coroutine.let {
+                it(point.toGeoPoint())
+            }
+        }
+        return true
+    }
+
+    override fun onAnnotationDrag(annotation: Annotation<*>) {
+        val tag = annotation.getData() ?: return
+        val id = tag.asJsonObject.get("id")?.asString ?: return
+        when {
+            annotation is PointAnnotation -> onPointAnnotationDrag(id, annotation)
+            else -> {
+                // Do nothing here
+            }
+        }
+    }
+
+    fun onPointAnnotationDrag(
+        id: String,
+        annotation: PointAnnotation,
+    ) {
+        val entry = markerOverlayManager.getMarkerEntry(id) ?: return
+        entry.state.position = annotation.point.toGeoPoint()
+    }
+
+    override fun onAnnotationDragFinished(annotation: Annotation<*>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onAnnotationDragStarted(annotation: Annotation<*>) {
+        TODO("Not yet implemented")
     }
 }

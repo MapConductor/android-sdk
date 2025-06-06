@@ -1,11 +1,15 @@
 package com.mapconductor.example
 
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -13,24 +17,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mapconductor.StarbucksHI_list
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.marker.MarkerIconProp
-import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.icons.Default
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
-import com.mapconductor.example.toast.ToastMessage
 import com.mapconductor.example.ui.IconItem
 import com.mapconductor.example.ui.IconSelectMenu
 import com.mapconductor.example.ui.theme.AppTheme
@@ -40,7 +43,6 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
-import android.os.Bundle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,28 +109,26 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(2) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
 
-    val drawable = AppCompatResources.getDrawable(context, R.drawable.coffee_svg)
-    val icon =
-        MarkerIconProp(
-            iconDrawable = drawable,
-            fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
-            strokeColor = Color.LightGray.toArgb(),
-        )
-
-    val messages = remember { mutableStateListOf<ToastMessage>() }
-
-    fun showToast(text: String) {
-        messages +=
-            ToastMessage(
-                text = text,
-                onDismiss = { messages.removeIf { it.text == text } },
-            )
-    }
+    AppCompatResources.getDrawable(context, R.drawable.coffee_svg)
+//    val icon = MarkerIcon(
+//        iconDrawable = drawable,
+//        fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
+//        strokeColor = Color.LightGray.toArgb()
+//    )
+    val icon = MarkerIcon.Default()
+    val markerList =
+        remember {
+            appViewModel.markerList.map {
+                it.copy(icon = icon)
+            }
+        }
+    val mapViewState = appViewModel.mapViewState.collectAsState().value
+    val camera = mapViewState?.mapCameraPosition?.collectAsState()?.value
 
     AppTheme {
         Scaffold(
@@ -156,30 +156,50 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
             },
             modifier = Modifier.fillMaxSize(),
         ) { innerPadding ->
-            Box {
+            Box(
+                modifier = Modifier.padding(innerPadding),
+            ) {
                 MapArea(
-                    state = appViewModel.state.collectAsStateWithLifecycle().value,
-                    markers =
-                        StarbucksHI_list.slice(IntRange(0, 10)).map {
-                            MarkerState(
-                                position = it.position,
-                                extra = it.extra,
-                                icon = icon,
-                            )
-                        },
-                    onCallButtonClick = {
-                        showToast("clicked")
+                    mapViewState = mapViewState,
+                    markers = markerList,
+                    onDirectionButtonClick = { state ->
+                        val intent = appViewModel.createIntentForDirection(state)
+                        context.startActivity(intent)
                     },
-                    onMarkerClickHandler = { state ->
-                        (state.extra as Bundle).getString("name")?.let { showToast(it) }
-                    },
-                    modifier = Modifier.padding(innerPadding),
+                    infoBubbleState = appViewModel.infoBubbleState,
+                    onMapClickHandler = appViewModel::onMapClick,
+                    onMarkerClickHandler = appViewModel::onMarkerClick,
+                    selectedMarker = appViewModel.selectedMarker,
                 )
+                DebugPanel(camera = camera)
                 ToastHost(
-                    messages = messages,
-                    onDismiss = { messages.remove(it) },
+                    messages = appViewModel.messages.collectAsState().value,
+                    onDismiss = { appViewModel.removeToast(it) },
                 )
             }
         }
+    }
+}
+
+@Composable
+fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
+    Column(
+        modifier =
+            Modifier
+                .align(Alignment.TopEnd)
+                .background(
+                    Color(
+                        red = 0.9f,
+                        green = 0.9f,
+                        blue = 0.9f,
+                        alpha = 0.75f,
+                    ),
+                ).wrapContentHeight()
+                .fillMaxWidth(),
+    ) {
+        Text("LatLng: (${camera?.position?.toUrlValue()})", color = Color.Black)
+        Text("Zoom: ${camera?.zoom?.toFixed(2)}", color = Color.Black)
+        Text("bearing: ${camera?.bearing?.toInt()}", color = Color.Black)
+        Text("tilt: ${camera?.tilt?.toInt()}", color = Color.Black)
     }
 }
