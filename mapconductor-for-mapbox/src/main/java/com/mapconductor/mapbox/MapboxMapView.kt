@@ -79,7 +79,6 @@ fun MapboxMapView(
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
 
-
             holderRef.value = holder
             controllerRef.value = controller
             true

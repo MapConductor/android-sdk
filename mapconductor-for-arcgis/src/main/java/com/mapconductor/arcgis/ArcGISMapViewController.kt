@@ -7,6 +7,7 @@ import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.arcgismaps.mapping.view.extensions.motionEvent
@@ -201,6 +202,18 @@ class ArcGISMapViewController(
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }
+    }
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
+        val result =
+            holder.map.screenToLocation(
+                screenCoordinate =
+                    ScreenCoordinate(
+                        x = offset.x.toDouble(),
+                        y = offset.y.toDouble(),
+                    ),
+            )
+        return result.getOrNull()?.toGeoPoint()
     }
 
     override fun moveCamera(

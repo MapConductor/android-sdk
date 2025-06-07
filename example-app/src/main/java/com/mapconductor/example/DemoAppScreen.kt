@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -33,7 +32,6 @@ import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerIcon
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.IconItem
@@ -111,7 +109,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(1) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(2) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -186,9 +184,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 }
 
 @Composable
-fun BoxScope.DebugPanel(
-    camera: MapCameraPosition?,
-) {
+fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
     Column(
         modifier =
             Modifier

@@ -29,6 +29,7 @@ import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.graphics.Point
 
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
@@ -156,6 +157,15 @@ class GoogleMapViewController(
         )
     }
 
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        holder.map.projection
+            .fromScreenLocation(
+                Point(
+                    offset.x.toInt(),
+                    offset.y.toInt(),
+                ),
+            ).toGeoPoint()
+
     override fun onCameraMove() {
         cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
@@ -196,6 +206,7 @@ class GoogleMapViewController(
             coroutine.launch { it(position.toGeoPoint()) }
         }
     }
+
     private fun getMarkerStateFrom(marker: Marker): MarkerState? {
         val markerId = marker.tag as? String ?: return null
         return markerOverlayManager.getMarkerState(markerId)

@@ -34,7 +34,6 @@ import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.gesture.Gesture
 
 interface IHereMapViewController : MapViewController {
     fun moveCamera(
@@ -57,8 +56,12 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
+    private data class SelectedMarker(
+        val state: MarkerState,
+        val overlay: MapMarker,
+    )
 
-    private var selectedMarker: MarkerState? = null
+    private var selectedMarker: SelectedMarker? = null
 
     private val markerOverlayManager =
         MarkerOverlayManager<MapMarker>(
@@ -113,6 +116,12 @@ class HereMapViewController(
             y = result.y.toFloat(),
         )
     }
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        holder.mapView
+            .viewToGeoCoordinates(
+                Point2D(offset.x.toDouble(), offset.y.toDouble()),
+            )?.toGeoPoint()
 
     init {
         setupListeners()
@@ -204,32 +213,44 @@ class HereMapViewController(
     ) {
         val position = this.getGeoPointFromPoint(point) ?: return
 
-        val state =
-            this.findNearestMarker(
-                position = position,
-                tolerance = Settings.Default.tapTolerance,
-            ) ?: return
-
         when (gesture.value) {
             GestureState.BEGIN.value -> {
+                val state =
+                    this.findNearestMarker(
+                        position = position,
+                        tolerance = Settings.Default.tapTolerance,
+                    ) ?: return
+
+                val overlay = this.markerOverlayManager.markerManager.getMarker(state.id) ?: return
+
                 state.position = position
-                selectedMarker = state
+                selectedMarker =
+                    SelectedMarker(
+                        state = state,
+                        overlay = overlay,
+                    )
                 markerDragStartListener?.let {
                     coroutine.launch { it.invoke(state) }
                 }
             }
             GestureState.UPDATE.value -> {
-                state.position = position
-                selectedMarker = state
-                markerDragListener?.let {
-                    coroutine.launch { it.invoke(state) }
+                selectedMarker?.also { selected ->
+                    holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
+                        selected.overlay.coordinates = coordinates
+                        selected.state.position = coordinates.toGeoPoint()
+                    }
+                    markerDragListener?.let {
+                        coroutine.launch { it.invoke(selected.state) }
+                    }
                 }
             }
             GestureState.END.value, GestureState.CANCEL.value -> {
-                state.position = position
-                selectedMarker = state
-                markerDragEndListener?.let {
-                    coroutine.launch { it.invoke(state) }
+                selectedMarker?.also { selected ->
+                    markerOverlayManager.markerManager.updateState(selected.state)
+                    markerDragEndListener?.let {
+                        coroutine.launch { it.invoke(selected.state) }
+                    }
+                    selectedMarker = null
                 }
             }
         }
