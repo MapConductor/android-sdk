@@ -62,7 +62,6 @@ class HereMapViewController(
     )
 
     private var selectedMarker: SelectedMarker? = null
-
     private val markerOverlayManager =
         MarkerOverlayManager<MapMarker>(
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
@@ -122,7 +121,6 @@ class HereMapViewController(
             .viewToGeoCoordinates(
                 Point2D(offset.x.toDouble(), offset.y.toDouble()),
             )?.toGeoPoint()
-
     init {
         setupListeners()
     }
