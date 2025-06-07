@@ -34,6 +34,7 @@ import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.gesture.Gesture
 
 interface IHereMapViewController : MapViewController {
     fun moveCamera(
@@ -56,6 +57,9 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
+
+    private var selectedMarker: MarkerState? = null
+
     private val markerOverlayManager =
         MarkerOverlayManager<MapMarker>(
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
@@ -171,12 +175,12 @@ class HereMapViewController(
         }
     }
 
-    override fun onTap(touchPoint: Point2D) {
-        val touchPosition = this.getGeoPointFromPoint(touchPoint) ?: return
+    override fun onTap(point: Point2D) {
+        val position = this.getGeoPointFromPoint(point) ?: return
 
         val state =
             this.findNearestMarker(
-                position = touchPosition,
+                position = position,
                 tolerance = Settings.Default.tapTolerance,
             )
         if (state != null) {
@@ -191,14 +195,44 @@ class HereMapViewController(
         // TODO: Implement click handling for other overlays
 
         // If no overlay is processed, process the tap as onMapClick
-        mapClickListener?.let { it(touchPosition) }
+        mapClickListener?.let { it(position) }
     }
 
     override fun onLongPress(
-        state: GestureState,
+        gesture: GestureState,
         point: Point2D,
     ) {
-        TODO("Not yet implemented")
+        val position = this.getGeoPointFromPoint(point) ?: return
+
+        val state =
+            this.findNearestMarker(
+                position = position,
+                tolerance = Settings.Default.tapTolerance,
+            ) ?: return
+
+        when (gesture.value) {
+            GestureState.BEGIN.value -> {
+                state.position = position
+                selectedMarker = state
+                markerDragStartListener?.let {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+            GestureState.UPDATE.value -> {
+                state.position = position
+                selectedMarker = state
+                markerDragListener?.let {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+            GestureState.END.value, GestureState.CANCEL.value -> {
+                state.position = position
+                selectedMarker = state
+                markerDragEndListener?.let {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
     }
 
     private fun getGeoPointFromPoint(point: Point2D): GeoPoint? =

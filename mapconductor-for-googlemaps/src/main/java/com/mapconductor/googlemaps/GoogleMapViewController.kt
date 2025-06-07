@@ -196,22 +196,29 @@ class GoogleMapViewController(
             coroutine.launch { it(position.toGeoPoint()) }
         }
     }
+    private fun getMarkerStateFrom(marker: Marker): MarkerState? {
+        val markerId = marker.tag as? String ?: return null
+        return markerOverlayManager.getMarkerState(markerId)
+    }
 
     override fun onMarkerDrag(marker: Marker) {
-        val markerId = marker.tag as? String ?: return
-        val state = markerOverlayManager.getMarkerState(markerId) ?: return
-        state.position = marker.position.toGeoPoint()
+        this.getMarkerStateFrom(marker)?.also { state ->
+            state.position = marker.position.toGeoPoint()
+            markerDragListener?.invoke(state)
+        }
     }
 
     override fun onMarkerDragEnd(marker: Marker) {
-        val markerId = marker.tag as? String ?: return
-        val state = markerOverlayManager.getMarkerState(markerId) ?: return
-        state.position = marker.position.toGeoPoint()
+        this.getMarkerStateFrom(marker)?.also { state ->
+            state.position = marker.position.toGeoPoint()
+            markerDragEndListener?.invoke(state)
+        }
     }
 
     override fun onMarkerDragStart(marker: Marker) {
-        val markerId = marker.tag as? String ?: return
-        val state = markerOverlayManager.getMarkerState(markerId) ?: return
-        state.position = marker.position.toGeoPoint()
+        this.getMarkerStateFrom(marker)?.also { state ->
+            state.position = marker.position.toGeoPoint()
+            markerDragStartListener?.invoke(state)
+        }
     }
 }

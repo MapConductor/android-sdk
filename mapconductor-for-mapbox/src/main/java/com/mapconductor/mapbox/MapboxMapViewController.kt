@@ -233,30 +233,49 @@ internal class MapboxMapViewController(
         return true
     }
 
-    override fun onAnnotationDrag(annotation: Annotation<*>) {
-        val tag = annotation.getData() ?: return
-        val id = tag.asJsonObject.get("id")?.asString ?: return
-        when {
-            annotation is PointAnnotation -> onPointAnnotationDrag(id, annotation)
+    private fun annotationToMarkerState(annotation: Annotation<*>): MarkerState? {
+        val tag = annotation.getData() ?: return null
+        val id = tag.asJsonObject.get("id")?.asString ?: return null
+        return when {
+            annotation is PointAnnotation -> markerOverlayManager.getMarkerState(id)
             else -> {
                 // Do nothing here
+                null
             }
         }
     }
 
-    fun onPointAnnotationDrag(
-        id: String,
-        annotation: PointAnnotation,
-    ) {
-        val state = markerOverlayManager.getMarkerState(id) ?: return
-        state.position = annotation.point.toGeoPoint()
+    override fun onAnnotationDrag(annotation: Annotation<*>) {
+        (annotation as PointAnnotation).also { point ->
+            this.annotationToMarkerState(annotation)?.also { state ->
+                state.position = point.geometry.toGeoPoint()
+                markerDragListener?.also{
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
     }
 
+
     override fun onAnnotationDragFinished(annotation: Annotation<*>) {
-//        TODO("Not yet implemented")
+        (annotation as PointAnnotation).also { point ->
+            this.annotationToMarkerState(annotation)?.also { state ->
+                state.position = point.geometry.toGeoPoint()
+                markerDragEndListener?.also{
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
     }
 
     override fun onAnnotationDragStarted(annotation: Annotation<*>) {
-//        TODO("Not yet implemented")
+        (annotation as PointAnnotation).also { point ->
+            this.annotationToMarkerState(annotation)?.also { state ->
+                state.position = point.geometry.toGeoPoint()
+                markerDragStartListener?.also{
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
     }
 }
