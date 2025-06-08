@@ -42,7 +42,7 @@ class MarkerOverlayManager<
                     return@filter !prevState.equals(state)
                 }
 
-        val defaultIcon = markerManager.createDefaultMarkerShape()
+        val defaultIcon = markerManager.drawIcon()
 
         // Remove markers
         if (removed.isNotEmpty()) {
