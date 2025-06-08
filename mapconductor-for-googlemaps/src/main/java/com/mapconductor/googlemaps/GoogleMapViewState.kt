@@ -3,10 +3,10 @@ package com.mapconductor.googlemaps
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
@@ -113,64 +113,33 @@ class GoogleMapViewState(
 //    }
 }
 
-val GoogleMapViewStateSaver =
-    Saver<GoogleMapViewState, Bundle>(
-        save = { state ->
-            val cameraStateBundle =
-                state.mapCameraPosition.value.let { cameraState ->
-                    Bundle().apply {
-                        putDouble("zoom", cameraState?.zoom ?: MapCameraPosition.Default.zoom)
-                        putDouble("tilt", cameraState?.tilt ?: MapCameraPosition.Default.tilt)
-                        putDouble("bearing", cameraState?.bearing ?: MapCameraPosition.Default.bearing)
-                        putDouble(
-                            "latitude",
-                            cameraState?.position?.latitude
-                                ?: MapCameraPosition.Default.position.latitude,
-                        )
-                        putDouble(
-                            "longitude",
-                            cameraState?.position?.longitude
-                                ?: MapCameraPosition.Default.position.longitude,
-                        )
-                    }
-                }
+// GoogleMapViewSaver implementation
+class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
+    override fun extractCameraPosition(state: GoogleMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-            val mapDesignBundle =
-                Bundle().apply {
-                    putInt("id", state.mapDesignType.id)
-                }
+    override fun saveMapDesign(
+        state: GoogleMapViewState,
+        bundle: Bundle,
+    ) {
+        bundle.putInt("id", state.mapDesignType.id)
+    }
 
-            Bundle().apply {
-                putString("stateId", state.id)
-                putBundle("mapDesign", mapDesignBundle)
-                putBundle("camera", cameraStateBundle)
-            }
-        },
-        restore = { storedData ->
-            val cameraBundle = storedData.getBundle("camera")
-            val mapDesignBundle = storedData.getBundle("mapDesign")
+    override fun createState(
+        stateId: String,
+        mapDesignBundle: Bundle?,
+        cameraPosition: MapCameraPosition,
+    ): GoogleMapViewState =
+        GoogleMapViewState(
+            id = stateId,
+            mapDesignType =
+                GoogleMapDesign.Create(
+                    id = mapDesignBundle?.getInt("id") ?: GoogleMapDesign.Normal.id,
+                ),
+            initCameraPosition = cameraPosition,
+        )
 
-            GoogleMapViewState(
-                id = storedData.getString("stateId")!!,
-                mapDesignType =
-                    GoogleMapDesign.Create(
-                        id = mapDesignBundle?.getInt("id") ?: GoogleMapDesign.Normal.id,
-                    ),
-                initCameraPosition =
-                    MapCameraPosition(
-                        position =
-                            GeoPoint.fromLatLong(
-                                latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
-                                longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
-                            ),
-                        zoom = cameraBundle?.getDouble("zoom") ?: 0.0,
-                        bearing = cameraBundle?.getDouble("bearing") ?: 0.0,
-                        tilt = cameraBundle?.getDouble("tilt") ?: 0.0,
-                        paddings = null,
-                    ),
-            )
-        },
-    )
+    override fun getStateId(state: GoogleMapViewState): String = state.id
+}
 
 @Composable
 fun rememberGoogleMapViewState(
@@ -183,7 +152,7 @@ fun rememberGoogleMapViewState(
     }
     val state =
         rememberSaveable(
-            stateSaver = GoogleMapViewStateSaver,
+            stateSaver = GoogleMapViewSaver().createSaver(),
         ) {
             mutableStateOf(
                 GoogleMapViewState(
