@@ -1,18 +1,18 @@
 package com.mapconductor.arcgis
 
-import android.content.Context
-import android.content.pm.PackageManager
-import android.util.AttributeSet
-import android.widget.FrameLayout
 import androidx.lifecycle.LifecycleOwner
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.mapping.ArcGISScene
 import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.SceneView
-import com.mapconductor.core.MapViewHolder
+import com.mapconductor.core.map.MapViewHolder
+import android.content.Context
+import android.content.pm.PackageManager
+import android.util.AttributeSet
+import android.widget.FrameLayout
 
-class WrapSceneView: FrameLayout {
+class WrapSceneView : FrameLayout {
     lateinit var sceneView: SceneView
 
     constructor(context: Context) : super(context)
@@ -22,22 +22,27 @@ class WrapSceneView: FrameLayout {
     fun onCreate(owner: LifecycleOwner) {
         this.sceneView.onCreate(owner)
     }
+
     fun onPause(owner: LifecycleOwner) {
         this.sceneView.onPause(owner)
     }
+
     fun onResume(owner: LifecycleOwner) {
         this.sceneView.onResume(owner)
     }
+
     fun onStop(owner: LifecycleOwner) {
         this.sceneView.onStop(owner)
     }
+
     fun onDestroy(owner: LifecycleOwner) {
         this.sceneView.onDestroy(owner)
     }
 }
+
 class ArcGISMapViewHolderImpl private constructor(
     override val mapView: WrapSceneView,
-): MapViewHolder<WrapSceneView, SceneView> {
+) : MapViewHolder<WrapSceneView, SceneView> {
     override lateinit var map: SceneView
 
     companion object {
@@ -50,11 +55,11 @@ class ArcGISMapViewHolderImpl private constructor(
             ArcGISEnvironment.apiKey = ApiKey.create(apiKey)
 
             val sceneView = SceneView(context)
-            val wrapView = WrapSceneView(context).apply {
-                addView(sceneView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-            }
+            val wrapView =
+                WrapSceneView(context).apply {
+                    addView(sceneView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+                }
             wrapView.sceneView = sceneView
-
 
             val holder = ArcGISMapViewHolderImpl(wrapView)
             val scene = ArcGISScene(options.basemapStyle)
@@ -72,5 +77,7 @@ class ArcGISMapViewHolderImpl private constructor(
 }
 
 internal fun Context.getArcGisApiKey(): String? =
-    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-        .metaData?.getString("ARCGIS_API_KEY")
+    packageManager
+        .getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+        .metaData
+        ?.getString("ARCGIS_API_KEY")

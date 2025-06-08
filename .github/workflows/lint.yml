@@ -1,0 +1,129 @@
+name: Lint Check on Push
+
+# branches: [main]
+#   → mainブランチ向けのPRのみで発火します
+# types: [opened, synchronize, reopened, ready_for_review]
+#   → PRが作成された時・更新された時・下書きからreadyにした時だけ実行
+#   ready_for_review で「Draft → 通常PR」に変更時にも実行
+# closed や merged などは含まれません
+# Draft PRでは自動で実行されません
+# Draft中はsynchronizeやopenedイベントでもGitHub側でWorkflow実行がスキップされます
+# ただし「Draft → Ready」に切り替えた瞬間のみ ready_for_review で実行されます
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+# 同じブランチに新しいコミットが追加された場合、前のActionsの実行をキャンセルする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint Changed Modules
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Read module list from projects.properties
+        id: define
+        run: |
+          modules=$(grep '^modules=' projects.properties | cut -d= -f2 | tr ',' ' ')
+          echo "modules=$modules" >> $GITHUB_OUTPUT
+
+      - name: Restore hash cache
+        uses: actions/cache/restore@v4
+        with:
+          key: lint-hash-cache-${{ github.base_ref || 'main' }}
+          path: .lint-hash-cache/
+          restore-keys: |
+            lint-hash-cache-
+
+      - name: Detect changed modules by hashing
+        id: detect
+        run: |
+          changed_modules=""
+          mkdir -p .lint-hash-cache
+
+          for module in ${{ steps.define.outputs.modules }}; do
+            # src配下のKotlinとXMLファイルのハッシュを計算
+            if [ -d "$module/src" ]; then
+              hash=$(find "$module/src" -type f -name "*.kt" -print0 2>/dev/null | \
+                     sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d ' ' -f1)
+            else
+              hash="empty"
+            fi
+
+            CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
+
+            # ハッシュベースの比較
+            if [ -f "$CACHE_KEY_FILE" ]; then
+              old_hash=$(cat "$CACHE_KEY_FILE")
+              if [ "$hash" == "$old_hash" ]; then
+                echo "Module $module unchanged (hash match)"
+                continue
+              else
+                echo "Module $module changed (hash mismatch: $old_hash -> $hash)"
+              fi
+            else
+              echo "Module $module changed (no previous hash)"
+            fi
+
+            changed_modules="${changed_modules:+$changed_modules }$module"
+            echo "$hash" > "$CACHE_KEY_FILE"
+          done
+
+          # 余分な空白や改行を除去
+          changed_modules=$(echo "$changed_modules" | xargs)
+          echo "Changed modules: $changed_modules"
+          echo "changed_modules=$changed_modules" >> $GITHUB_OUTPUT
+
+      - name: Run ktlintCheck
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          echo "Running ktlintCheck for modules: ${{ steps.detect.outputs.changed_modules }}"
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running ktlintCheck for $module"
+            if ./gradlew ":$module:ktlintCheck"; then
+              echo "✅ ktlintCheck passed for $module"
+            else
+              echo "❌ ktlintCheck failed for $module"
+              exit 1
+            fi
+          done
+
+      - name: Run Android Lint
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          echo "Running Android Lint for modules: ${{ steps.detect.outputs.changed_modules }}"
+          for module in ${{ steps.detect.outputs.changed_modules }}; do
+            echo "Running lint for $module"
+            if ./gradlew ":$module:lint"; then
+              echo "✅ Android Lint passed for $module"
+            else
+              echo "❌ Android Lint failed for $module"
+              exit 1
+            fi
+          done
+
+      - name: Save hash cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          key: lint-hash-cache-${{ github.base_ref || 'main' }}-${{ github.run_id }}
+          path: .lint-hash-cache/
+
+      - name: No modules to lint
+        if: steps.detect.outputs.changed_modules == ''
+        run: |
+          echo "🎉 No modules have changed - skipping lint checks"

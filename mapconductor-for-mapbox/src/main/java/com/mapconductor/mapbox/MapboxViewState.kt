@@ -1,20 +1,17 @@
 package com.mapconductor.mapbox
 
-import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapbox.maps.CameraState
-import com.mapconductor.core.IMapCameraPosition
-import com.mapconductor.core.MapCameraPositionBase
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.BaseMapViewSaver
+import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.mapbox.MapboxMapDesign.Standard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,52 +19,53 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.util.UUID
+import android.os.Bundle
 
-interface IMapboxMapViewState: MapViewState<String>
+interface IMapboxMapViewState : MapViewState<String>
 
 class MapboxMapViewState(
-    override val stateId: String,
+    override val id: String,
     override val mapDesignType: MapboxDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<String>(), IMapboxMapViewState, IMapboxMapEventHandler {
-
+) : MapViewStateImpl<String>(),
+    IMapboxMapViewState {
     internal var controller: IMapboxMapViewController? = null
 
     // Camera center position
-    private val _cameraState = MutableStateFlow<CameraState>(initCameraPosition.toCameraState())
-//    private val cameraState: StateFlow<CameraState> = _cameraState.asStateFlow()
+    private val cameraState = MutableStateFlow<CameraState>(initCameraPosition.toCameraState())
     override val mapCameraPosition: StateFlow<MapCameraPosition?> =
-        _cameraState.map { it.toMapCameraPosition() }.stateIn(
+        cameraState.map { it.toMapCameraPosition() }.stateIn(
             scope = this.mainCoroutine,
             started = SharingStarted.Eagerly,
             initialValue = null,
         )
 
     override fun moveCameraTo(
-        position: IGeoPoint,
+        position: GeoPoint,
         durationMs: Long,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
             this.warningLog("moveCameraTo() called before map is initialized.")
             listener?.onComplete(false)
             return
         }
-        val currCameraPosition = this.mapCameraPosition.value
-        if (currCameraPosition == null) {
+        val currentPosition = this.mapCameraPosition.value
+        if (currentPosition == null) {
             listener?.onComplete(false)
             return
         }
-        val newPosition = currCameraPosition.copy(
-            position = GeoPoint.from(position),
-        )
+        val newPosition =
+            currentPosition.copy(
+                position = position,
+            )
         this.moveCameraTo(newPosition, durationMs, listener)
     }
 
     override fun moveCameraTo(
-        position: IMapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
             this.warningLog("moveCameraTo() called before map is initialized.")
@@ -86,82 +84,59 @@ class MapboxMapViewState(
         }
     }
 
-    override fun onCameraMove(cameraState: CameraState) {
-        _cameraState.value = cameraState
-        this.debugLog("--->camera = ${cameraState.center.toGeoPoint().toUrlValue()}")
-    }
-
-    override fun onMarkerAdd(state: MarkerState) {
-        // Do nothing here
-    }
-
-    override fun onMarkerRemove(id: String) {
-        // Do nothing here
+    internal fun OnCameraChange(state: CameraState) {
+        cameraState.value = state
     }
 }
 
-val MapboxMapViewStateSaver = Saver<MapboxMapViewState, Bundle>(
-    save = { state ->
-        val cameraStateBundle = state.mapCameraPosition.value?.let { cameraState ->
-            Bundle().apply {
-                putDouble("zoom", cameraState.zoom)
-                putDouble("tilt", cameraState.tilt)
-                putDouble("bearing", cameraState.bearing)
-                putDouble("latitude", cameraState.position.latitude)
-                putDouble("longitude", cameraState.position.longitude)
-            }
-        }
+class MapboxMapViewSaver : BaseMapViewSaver<MapboxMapViewState>() {
+    override fun extractCameraPosition(state: MapboxMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-        val mapDesignBundle = Bundle().apply {
-            putString("id", state.mapDesignType.id)
-        }
+    override fun saveMapDesign(
+        state: MapboxMapViewState,
+        bundle: Bundle,
+    ) {
+        bundle.putString("id", state.mapDesignType.id)
+    }
 
-        Bundle().apply {
-            putString("stateId", state.stateId)
-            putBundle("mapDesign", mapDesignBundle)
-            putBundle("camera", cameraStateBundle)
-        }
-    },
-    restore = { storedData ->
-        val cameraBundle = storedData.getBundle("camera")
-        val mapDesignBundle = storedData.getBundle("mapDesign")
-
+    override fun createState(
+        stateId: String,
+        mapDesignBundle: Bundle?,
+        cameraPosition: MapCameraPosition,
+    ): MapboxMapViewState =
         MapboxMapViewState(
-            stateId = storedData.getString("stateId")!!,
-            mapDesignType = MapboxMapDesign.Create(
-                layerId = mapDesignBundle?.getString("id") ?: Standard.id,
-            ),
-            initCameraPosition = MapCameraPosition(
-                position = GeoPoint.fromLatLong(
-                    latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
-                    longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
+            id = stateId,
+            mapDesignType =
+                MapboxMapDesign.Create(
+                    layerId = mapDesignBundle?.getString("id") ?: Standard.id,
                 ),
-                zoom = cameraBundle?.getDouble("zoom") ?: 0.0,
-                bearing = cameraBundle?.getDouble("bearing") ?: 0.0,
-                tilt = cameraBundle?.getDouble("tilt") ?: 0.0,
-                paddings = null
-            )
+            initCameraPosition = cameraPosition,
         )
 
-    }
-)
+    override fun getStateId(state: MapboxMapViewState): String = state.id
+}
 
 @Composable
 fun rememberMapboxMapViewState(
-    mapDesign: MapboxDesignType = MapboxMapDesign.Standard,
-    cameraPosition: IMapCameraPosition = MapCameraPositionBase.Default,
+    mapDesign: MapboxDesignType = Standard,
+    cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
 ): MapboxMapViewState {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()
         mutableStateOf(uuid)
     }
-    val state = rememberSaveable(stateSaver = MapboxMapViewStateSaver) {
-        mutableStateOf(MapboxMapViewState(
-            stateId = stateId,
-            mapDesignType = mapDesign,
-            initCameraPosition = MapCameraPosition.from(cameraPosition),
-        ))
-    }
+    val state =
+        rememberSaveable(
+            stateSaver = MapboxMapViewSaver().createSaver(),
+        ) {
+            mutableStateOf(
+                MapboxMapViewState(
+                    id = stateId,
+                    mapDesignType = mapDesign,
+                    initCameraPosition = MapCameraPosition.from(cameraPosition),
+                ),
+            )
+        }
 
     return state.value
 }

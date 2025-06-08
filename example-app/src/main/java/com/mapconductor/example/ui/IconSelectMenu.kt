@@ -46,14 +46,13 @@ fun IconSelectMenu(
         println("Selected index: $index, item: $item")
     },
 ) {
-
     var expanded by remember { mutableStateOf(false) }
     val selected = itemList.get(selectedIndex)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         modifier = modifier,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { expanded = !expanded },
     ) {
         TextField(
             readOnly = true,
@@ -66,35 +65,44 @@ fun IconSelectMenu(
             leadingIcon = {
                 with(selected) {
                     Icon(
-                        painter = painterResource(id = when(isDark) {
-                            true -> darkIconResId
-                            false -> lightIconResId
-                        }),
+                        painter =
+                            painterResource(
+                                id =
+                                    when (isDark) {
+                                        true -> darkIconResId
+                                        false -> lightIconResId
+                                    },
+                            ),
                         contentDescription = label,
                         modifier = Modifier.size(30.dp),
                         tint = Color.Unspecified,
                     )
                 }
             },
-            modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryEditable)
-                .fillMaxWidth()
+            modifier =
+                Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .fillMaxWidth(),
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
             modifier = modifier,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             itemList.forEachIndexed { index, item ->
                 DropdownMenuItem(
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                painter = painterResource(id = when(isDark) {
-                                    true -> item.darkIconResId
-                                    false -> item.lightIconResId
-                                }),
+                                painter =
+                                    painterResource(
+                                        id =
+                                            when (isDark) {
+                                                true -> item.darkIconResId
+                                                false -> item.lightIconResId
+                                            },
+                                    ),
                                 contentDescription = item.label,
                                 modifier = Modifier.size(30.dp),
                                 tint = Color.Unspecified,
@@ -106,7 +114,7 @@ fun IconSelectMenu(
                     onClick = {
                         expanded = false
                         onSelect(index, item)
-                    }
+                    },
                 )
             }
         }

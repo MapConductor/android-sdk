@@ -1,6 +1,6 @@
 package com.mapconductor.core.projection
 
-import com.mapconductor.core.Offset
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
 
 /*
@@ -17,18 +17,16 @@ import com.mapconductor.core.features.IGeoPoint
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/*
+ *
  * port from here
  * https://github.com/googlemaps/android-maps-utils/blob/70a77b066b8391da06a2d708792de8337bf5d3b6/library/src/main/java/com/google/maps/android/projection/SphericalMercatorProjection.java
  */
-object WGS84: Projection {
-
+object WGS84 : Projection {
     override fun project(position: IGeoPoint): Offset {
         val x = position.longitude / 360 + .5
         val siny = Math.sin(Math.toRadians(position.latitude))
         val y = 0.5 * Math.log((1 + siny) / (1 - siny)) / -(2 * Math.PI) + .5
-        return Offset(x * 256, y * 256)
+        return Offset((x * 256).toFloat(), (y * 256).toFloat())
     }
 
     override fun unproject(point: Offset): IGeoPoint {
