@@ -29,6 +29,7 @@ import com.mapconductor.core.projection.WebMercator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.graphics.Point
 
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
@@ -156,6 +157,15 @@ class GoogleMapViewController(
         )
     }
 
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        holder.map.projection
+            .fromScreenLocation(
+                Point(
+                    offset.x.toInt(),
+                    offset.y.toInt(),
+                ),
+            ).toGeoPoint()
+
     override fun onCameraMove() {
         cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
@@ -197,21 +207,29 @@ class GoogleMapViewController(
         }
     }
 
+    private fun getMarkerStateFrom(marker: Marker): MarkerState? {
+        val markerId = marker.tag as? String ?: return null
+        return markerOverlayManager.getMarkerState(markerId)
+    }
+
     override fun onMarkerDrag(marker: Marker) {
-        val markerId = marker.tag as? String ?: return
-        val state = markerOverlayManager.getMarkerState(markerId) ?: return
-        state.position = marker.position.toGeoPoint()
+        this.getMarkerStateFrom(marker)?.also { state ->
+            state.position = marker.position.toGeoPoint()
+            markerDragListener?.invoke(state)
+        }
     }
 
     override fun onMarkerDragEnd(marker: Marker) {
-        val markerId = marker.tag as? String ?: return
-        val state = markerOverlayManager.getMarkerState(markerId) ?: return
-        state.position = marker.position.toGeoPoint()
+        this.getMarkerStateFrom(marker)?.also { state ->
+            state.position = marker.position.toGeoPoint()
+            markerDragEndListener?.invoke(state)
+        }
     }
 
     override fun onMarkerDragStart(marker: Marker) {
-        val markerId = marker.tag as? String ?: return
-        val state = markerOverlayManager.getMarkerState(markerId) ?: return
-        state.position = marker.position.toGeoPoint()
+        this.getMarkerStateFrom(marker)?.also { state ->
+            state.position = marker.position.toGeoPoint()
+            markerDragStartListener?.invoke(state)
+        }
     }
 }
