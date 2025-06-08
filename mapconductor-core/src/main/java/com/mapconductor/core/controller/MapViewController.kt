@@ -1,6 +1,7 @@
 package com.mapconductor.core.controller
 
 import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
@@ -20,11 +21,14 @@ interface MapViewController {
     suspend fun clearOverlays()
 
     fun toScreenOffset(position: IGeoPoint): Offset?
+
+    suspend fun fromScreenOffset(offset: Offset): GeoPoint?
 }
 
 abstract class BaseMapViewController<ActualCamera> : MapViewController {
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
+    var mapLongClickListener: OnMapEventHandler? = null
     var markerClickListener: OnMarkerEventHandler? = null
     var markerDragStartListener: OnMarkerEventHandler? = null
     var markerDragListener: OnMarkerEventHandler? = null
