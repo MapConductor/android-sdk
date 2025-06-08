@@ -15,6 +15,11 @@ on:
     branches:
       - main
 
+# 同じブランチに新しいコミットが追加された場合、前のActionsの実行をキャンセルする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
