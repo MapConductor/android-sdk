@@ -28,6 +28,7 @@ interface MapViewController {
 abstract class BaseMapViewController<ActualCamera> : MapViewController {
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
+    var mapLongClickListener: OnMapEventHandler? = null
     var markerClickListener: OnMarkerEventHandler? = null
     var markerDragStartListener: OnMarkerEventHandler? = null
     var markerDragListener: OnMarkerEventHandler? = null

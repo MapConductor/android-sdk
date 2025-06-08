@@ -121,6 +121,7 @@ class HereMapViewController(
             .viewToGeoCoordinates(
                 Point2D(offset.x.toDouble(), offset.y.toDouble()),
             )?.toGeoPoint()
+
     init {
         setupListeners()
     }
