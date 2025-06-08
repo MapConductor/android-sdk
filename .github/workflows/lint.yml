@@ -1,10 +1,24 @@
 name: Lint Check on Push
 
+# branches: [main]
+#   → mainブランチ向けのPRのみで発火します
+# types: [opened, synchronize, reopened, ready_for_review]
+#   → PRが作成された時・更新された時・下書きからreadyにした時だけ実行
+#   ready_for_review で「Draft → 通常PR」に変更時にも実行
+# closed や merged などは含まれません
+# Draft PRでは自動で実行されません
+# Draft中はsynchronizeやopenedイベントでもGitHub側でWorkflow実行がスキップされます
+# ただし「Draft → Ready」に切り替えた瞬間のみ ready_for_review で実行されます
 on:
-  push:
-    branches: # 必要に応じて特定のブランチを除外・指定できます
-      - '**' # 全てのブランチへのpushで実行
-      # - '!main' # 例: mainブランチへの直接pushでは実行しない場合
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+# 同じブランチに新しいコミットが追加された場合、前のActionsの実行をキャンセルする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
