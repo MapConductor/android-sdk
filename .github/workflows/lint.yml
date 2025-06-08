@@ -1,11 +1,14 @@
 name: Lint Check on Push
 
 on:
-  push:
-    branches: # 必要に応じて特定のブランチを除外・指定できます
-      - '**' # 全てのブランチへのpushで実行
-      # - '!main' # 例: mainブランチへの直接pushでは実行しない場合
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -45,7 +48,7 @@ jobs:
           for module in ${{ steps.define.outputs.modules }}; do
             # src配下のKotlinとXMLファイルのハッシュを計算
             if [ -d "$module/src" ]; then
-              hash=$(find "$module/src" -type f \( -name "*.kt" -o -name "*.xml" \) -print0 2>/dev/null | \
+              hash=$(find "$module/src" -type f -name "*.kt" -print0 2>/dev/null | \
                      sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d ' ' -f1)
             else
               hash="empty"
