@@ -3,7 +3,6 @@ package com.mapconductor.here
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapScheme
@@ -96,34 +95,36 @@ class HereMapViewState(
         this.cameraPosition.value = cameraState
     }
 }
+
 class HereMapViewSaver : BaseMapViewSaver<HereMapViewState>() {
+    override fun extractCameraPosition(state: HereMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-    override fun extractCameraPosition(state: HereMapViewState): MapCameraPosition? {
-        return state.mapCameraPosition.value
-    }
-
-    override fun saveMapDesign(state: HereMapViewState, bundle: Bundle) {
+    override fun saveMapDesign(
+        state: HereMapViewState,
+        bundle: Bundle,
+    ) {
         bundle.putInt("id", state.mapDesignType.getValue().value)
     }
 
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition
-    ): HereMapViewState {
-        return HereMapViewState(
+        cameraPosition: MapCameraPosition,
+    ): HereMapViewState =
+        HereMapViewState(
             id = stateId,
-            mapDesignType = HereMapDesign.CreateById(
-                id = mapDesignBundle?.getInt("id") ?: HereMapDesign.NormalDay.id.value,
-            ),
+            mapDesignType =
+                HereMapDesign.CreateById(
+                    id = mapDesignBundle?.getInt("id") ?: HereMapDesign.NormalDay.id.value,
+                ),
             initCameraPosition = cameraPosition,
         )
-    }
 
     override fun getCameraPaddings(): MapPaddings? = MapPaddingsImpl.Zeros
 
     override fun getStateId(state: HereMapViewState): String = state.id
 }
+
 @Composable
 fun rememberHereMapViewState(
     mapDesign: HereMapDesign = HereMapDesign.NormalDay,

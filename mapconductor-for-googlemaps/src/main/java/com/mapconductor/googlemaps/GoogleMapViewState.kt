@@ -3,7 +3,6 @@ package com.mapconductor.googlemaps
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
@@ -116,28 +115,28 @@ class GoogleMapViewState(
 
 // GoogleMapViewSaver implementation
 class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
+    override fun extractCameraPosition(state: GoogleMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-    override fun extractCameraPosition(state: GoogleMapViewState): MapCameraPosition? {
-        return state.mapCameraPosition.value
-    }
-
-    override fun saveMapDesign(state: GoogleMapViewState, bundle: Bundle) {
+    override fun saveMapDesign(
+        state: GoogleMapViewState,
+        bundle: Bundle,
+    ) {
         bundle.putInt("id", state.mapDesignType.id)
     }
 
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition
-    ): GoogleMapViewState {
-        return GoogleMapViewState(
+        cameraPosition: MapCameraPosition,
+    ): GoogleMapViewState =
+        GoogleMapViewState(
             id = stateId,
-            mapDesignType = GoogleMapDesign.Create(
-                id = mapDesignBundle?.getInt("id") ?: GoogleMapDesign.Normal.id,
-            ),
+            mapDesignType =
+                GoogleMapDesign.Create(
+                    id = mapDesignBundle?.getInt("id") ?: GoogleMapDesign.Normal.id,
+                ),
             initCameraPosition = cameraPosition,
         )
-    }
 
     override fun getStateId(state: GoogleMapViewState): String = state.id
 }

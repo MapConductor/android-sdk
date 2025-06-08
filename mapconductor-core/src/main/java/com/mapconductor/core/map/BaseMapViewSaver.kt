@@ -1,15 +1,14 @@
 package com.mapconductor.core.map
 
-import android.os.Bundle
 import androidx.compose.runtime.saveable.Saver
 import com.mapconductor.core.features.GeoPoint
+import android.os.Bundle
 
 /**
  * Base class for MapView state savers
  * @param T MapViewState type
  */
 abstract class BaseMapViewSaver<T : Any> {
-
     /**
      * Extract camera position from the state, handling null cases
      */
@@ -18,7 +17,10 @@ abstract class BaseMapViewSaver<T : Any> {
     /**
      * Save map design type to bundle
      */
-    protected abstract fun saveMapDesign(state: T, bundle: Bundle)
+    protected abstract fun saveMapDesign(
+        state: T,
+        bundle: Bundle,
+    )
 
     /**
      * Create state instance from restored data
@@ -26,7 +28,7 @@ abstract class BaseMapViewSaver<T : Any> {
     protected abstract fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition
+        cameraPosition: MapCameraPosition,
     ): T
 
     /**
@@ -42,29 +44,31 @@ abstract class BaseMapViewSaver<T : Any> {
     /**
      * Create the actual Saver instance
      */
-    fun createSaver(): Saver<T, Bundle> = Saver(
-        save = { state ->
-            val cameraStateBundle = createCameraBundle(state)
-            val mapDesignBundle = Bundle().apply {
-                saveMapDesign(state, this)
-            }
+    fun createSaver(): Saver<T, Bundle> =
+        Saver(
+            save = { state ->
+                val cameraStateBundle = createCameraBundle(state)
+                val mapDesignBundle =
+                    Bundle().apply {
+                        saveMapDesign(state, this)
+                    }
 
-            Bundle().apply {
-                putString("stateId", getStateId(state))
-                putBundle("mapDesign", mapDesignBundle)
-                putBundle("camera", cameraStateBundle)
-            }
-        },
-        restore = { storedData ->
-            val cameraBundle = storedData.getBundle("camera")
-            val mapDesignBundle = storedData.getBundle("mapDesign")
-            val stateId = storedData.getString("stateId")!!
+                Bundle().apply {
+                    putString("stateId", getStateId(state))
+                    putBundle("mapDesign", mapDesignBundle)
+                    putBundle("camera", cameraStateBundle)
+                }
+            },
+            restore = { storedData ->
+                val cameraBundle = storedData.getBundle("camera")
+                val mapDesignBundle = storedData.getBundle("mapDesign")
+                val stateId = storedData.getString("stateId")!!
 
-            val cameraPosition = createCameraPositionFromBundle(cameraBundle)
+                val cameraPosition = createCameraPositionFromBundle(cameraBundle)
 
-            createState(stateId, mapDesignBundle, cameraPosition)
-        }
-    )
+                createState(stateId, mapDesignBundle, cameraPosition)
+            },
+        )
 
     /**
      * Extract state ID from the state object
@@ -92,16 +96,16 @@ abstract class BaseMapViewSaver<T : Any> {
         }
     }
 
-    private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPosition {
-        return MapCameraPosition(
-            position = GeoPoint.fromLatLong(
-                latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
-                longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
-            ),
+    private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPosition =
+        MapCameraPosition(
+            position =
+                GeoPoint.fromLatLong(
+                    latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
+                    longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
+                ),
             zoom = cameraBundle?.getDouble("zoom") ?: 0.0,
             bearing = cameraBundle?.getDouble("bearing") ?: 0.0,
             tilt = cameraBundle?.getDouble("tilt") ?: 0.0,
             paddings = getCameraPaddings(),
         )
-    }
 }

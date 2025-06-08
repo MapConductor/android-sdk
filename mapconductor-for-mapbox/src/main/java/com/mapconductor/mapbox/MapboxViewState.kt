@@ -3,7 +3,6 @@ package com.mapconductor.mapbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapbox.maps.CameraState
 import com.mapconductor.core.features.GeoPoint
@@ -89,29 +88,30 @@ class MapboxMapViewState(
         cameraState.value = state
     }
 }
+
 class MapboxMapViewSaver : BaseMapViewSaver<MapboxMapViewState>() {
+    override fun extractCameraPosition(state: MapboxMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-    override fun extractCameraPosition(state: MapboxMapViewState): MapCameraPosition? {
-        return state.mapCameraPosition.value
-    }
-
-    override fun saveMapDesign(state: MapboxMapViewState, bundle: Bundle) {
+    override fun saveMapDesign(
+        state: MapboxMapViewState,
+        bundle: Bundle,
+    ) {
         bundle.putString("id", state.mapDesignType.id)
     }
 
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition
-    ): MapboxMapViewState {
-        return MapboxMapViewState(
+        cameraPosition: MapCameraPosition,
+    ): MapboxMapViewState =
+        MapboxMapViewState(
             id = stateId,
-            mapDesignType = MapboxMapDesign.Create(
-                layerId = mapDesignBundle?.getString("id") ?: Standard.id,
-            ),
+            mapDesignType =
+                MapboxMapDesign.Create(
+                    layerId = mapDesignBundle?.getString("id") ?: Standard.id,
+                ),
             initCameraPosition = cameraPosition,
         )
-    }
 
     override fun getStateId(state: MapboxMapViewState): String = state.id
 }

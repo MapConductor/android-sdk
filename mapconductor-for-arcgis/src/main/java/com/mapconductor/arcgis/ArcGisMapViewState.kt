@@ -3,7 +3,6 @@ package com.mapconductor.arcgis
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.core.features.GeoPoint
@@ -85,28 +84,28 @@ class ArcGISMapViewState(
 }
 
 class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewState>() {
+    override fun extractCameraPosition(state: ArcGISMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-    override fun extractCameraPosition(state: ArcGISMapViewState): MapCameraPosition? {
-        return state.mapCameraPosition.value
-    }
-
-    override fun saveMapDesign(state: ArcGISMapViewState, bundle: Bundle) {
+    override fun saveMapDesign(
+        state: ArcGISMapViewState,
+        bundle: Bundle,
+    ) {
         bundle.putString("id", state.mapDesignType.id)
     }
 
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition
-    ): ArcGISMapViewState {
-        return ArcGISMapViewState(
+        cameraPosition: MapCameraPosition,
+    ): ArcGISMapViewState =
+        ArcGISMapViewState(
             id = stateId,
-            mapDesignType = ArcGISDesign.Create(
-                id = mapDesignBundle?.getString("id") ?: ArcGISDesign.Streets.id,
-            ),
+            mapDesignType =
+                ArcGISDesign.Create(
+                    id = mapDesignBundle?.getString("id") ?: ArcGISDesign.Streets.id,
+                ),
             initCameraPosition = cameraPosition,
         )
-    }
 
     override fun getStateId(state: ArcGISMapViewState): String = state.id
 }
