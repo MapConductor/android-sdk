@@ -62,8 +62,8 @@ abstract class MapViewStateImpl<T>(
 
         mainCoroutine.launch {
             try {
-                init()
-                _isInitialized.value = InitState.Initialized
+                val success = init()
+                _isInitialized.value = if (success) InitState.Initialized else InitState.Failed
             } catch (e: Exception) {
                 _isInitialized.value = InitState.Failed
                 Log.e("MapConductor", "Failed to initialize the Map view", e)
