@@ -57,13 +57,6 @@ class MarkerState(
             icon == otherState.icon
     }
 
-    enum class Event {
-        CLICK,
-        LONG_PRESS,
-        DRAG_START,
-        DRAG,
-        DRAG_END,
-    }
 
     //    companion object {
 //        val Saver: Saver<MarkerState, Bundle> = Saver(
