@@ -3,14 +3,15 @@ package com.mapconductor.here
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapScheme
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
@@ -95,56 +96,34 @@ class HereMapViewState(
     }
 }
 
-val HereMapViewStateSaver =
-    Saver<HereMapViewState, Bundle>(
-        save = { state ->
-            val cameraStateBundle =
-                state.mapCameraPosition.value?.let { cameraState ->
-                    Bundle().apply {
-                        putDouble("zoom", cameraState.zoom)
-                        putDouble("tilt", cameraState.tilt)
-                        putDouble("bearing", cameraState.bearing)
-                        putDouble("latitude", cameraState.position.latitude)
-                        putDouble("longitude", cameraState.position.longitude)
-                    }
-                }
+class HereMapViewSaver : BaseMapViewSaver<HereMapViewState>() {
+    override fun extractCameraPosition(state: HereMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
-            val mapDesignBundle =
-                Bundle().apply {
-                    putInt("id", state.mapDesignType.getValue().value)
-                }
+    override fun saveMapDesign(
+        state: HereMapViewState,
+        bundle: Bundle,
+    ) {
+        bundle.putInt("id", state.mapDesignType.getValue().value)
+    }
 
-            Bundle().apply {
-                putString("stateId", state.id)
-                putBundle("mapDesign", mapDesignBundle)
-                putBundle("camera", cameraStateBundle)
-            }
-        },
-        restore = { storedData ->
-            val cameraBundle = storedData.getBundle("camera")
-            val mapDesignBundle = storedData.getBundle("mapDesign")
+    override fun createState(
+        stateId: String,
+        mapDesignBundle: Bundle?,
+        cameraPosition: MapCameraPosition,
+    ): HereMapViewState =
+        HereMapViewState(
+            id = stateId,
+            mapDesignType =
+                HereMapDesign.CreateById(
+                    id = mapDesignBundle?.getInt("id") ?: HereMapDesign.NormalDay.id.value,
+                ),
+            initCameraPosition = cameraPosition,
+        )
 
-            HereMapViewState(
-                id = storedData.getString("stateId")!!,
-                mapDesignType =
-                    HereMapDesign.CreateById(
-                        id = mapDesignBundle?.getInt("id") ?: HereMapDesign.NormalDay.id.value,
-                    ),
-                initCameraPosition =
-                    MapCameraPosition(
-                        position =
-                            GeoPoint.fromLatLong(
-                                latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
-                                longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
-                            ),
-                        zoom = cameraBundle?.getDouble("zoom") ?: 0.0,
-                        bearing = cameraBundle?.getDouble("bearing") ?: 0.0,
-                        tilt = cameraBundle?.getDouble("tilt") ?: 0.0,
-                        paddings = MapPaddingsImpl.Zeros,
-                    ),
-            )
-        },
-    )
+    override fun getCameraPaddings(): MapPaddings? = MapPaddingsImpl.Zeros
+
+    override fun getStateId(state: HereMapViewState): String = state.id
+}
 
 @Composable
 fun rememberHereMapViewState(
@@ -157,7 +136,7 @@ fun rememberHereMapViewState(
     }
     val state =
         rememberSaveable(
-            stateSaver = HereMapViewStateSaver,
+            stateSaver = HereMapViewSaver().createSaver(),
         ) {
             mutableStateOf(
                 HereMapViewState(

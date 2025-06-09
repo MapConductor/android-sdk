@@ -145,7 +145,7 @@ fun <
     if (controller != null && cameraPosition != null && bubbles.isNotEmpty()) {
         Box(
             modifier =
-                modifier
+                Modifier
                     .fillMaxSize()
                     .clipToBounds(),
         ) {

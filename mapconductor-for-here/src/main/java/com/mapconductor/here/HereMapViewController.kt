@@ -56,6 +56,12 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
+    private data class SelectedMarker(
+        val state: MarkerState,
+        val overlay: MapMarker,
+    )
+
+    private var selectedMarker: SelectedMarker? = null
     private val markerOverlayManager =
         MarkerOverlayManager<MapMarker>(
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
@@ -109,6 +115,12 @@ class HereMapViewController(
             y = result.y.toFloat(),
         )
     }
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        holder.mapView
+            .viewToGeoCoordinates(
+                Point2D(offset.x.toDouble(), offset.y.toDouble()),
+            )?.toGeoPoint()
 
     init {
         setupListeners()
@@ -171,12 +183,12 @@ class HereMapViewController(
         }
     }
 
-    override fun onTap(touchPoint: Point2D) {
-        val touchPosition = this.getGeoPointFromPoint(touchPoint) ?: return
+    override fun onTap(point: Point2D) {
+        val position = this.getGeoPointFromPoint(point) ?: return
 
         val state =
             this.findNearestMarker(
-                position = touchPosition,
+                position = position,
                 tolerance = Settings.Default.tapTolerance,
             )
         if (state != null) {
@@ -191,14 +203,56 @@ class HereMapViewController(
         // TODO: Implement click handling for other overlays
 
         // If no overlay is processed, process the tap as onMapClick
-        mapClickListener?.let { it(touchPosition) }
+        mapClickListener?.let { it(position) }
     }
 
     override fun onLongPress(
-        state: GestureState,
+        gesture: GestureState,
         point: Point2D,
     ) {
-        TODO("Not yet implemented")
+        val position = this.getGeoPointFromPoint(point) ?: return
+
+        when (gesture.value) {
+            GestureState.BEGIN.value -> {
+                val state =
+                    this.findNearestMarker(
+                        position = position,
+                        tolerance = Settings.Default.tapTolerance,
+                    ) ?: return
+
+                val overlay = this.markerOverlayManager.markerManager.getMarker(state.id) ?: return
+
+                state.position = position
+                selectedMarker =
+                    SelectedMarker(
+                        state = state,
+                        overlay = overlay,
+                    )
+                markerDragStartListener?.let {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+            GestureState.UPDATE.value -> {
+                selectedMarker?.also { selected ->
+                    holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
+                        selected.overlay.coordinates = coordinates
+                        selected.state.position = coordinates.toGeoPoint()
+                    }
+                    markerDragListener?.let {
+                        coroutine.launch { it.invoke(selected.state) }
+                    }
+                }
+            }
+            GestureState.END.value, GestureState.CANCEL.value -> {
+                selectedMarker?.also { selected ->
+                    markerOverlayManager.markerManager.updateState(selected.state)
+                    markerDragEndListener?.let {
+                        coroutine.launch { it.invoke(selected.state) }
+                    }
+                    selectedMarker = null
+                }
+            }
+        }
     }
 
     private fun getGeoPointFromPoint(point: Point2D): GeoPoint? =

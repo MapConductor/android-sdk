@@ -112,7 +112,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(1) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -178,7 +178,9 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     onMarkerClickHandler = appViewModel::onMarkerClick,
                     selectedMarker = appViewModel.selectedMarker,
                 )
-                DebugPanel(camera = camera)
+                DebugPanel(
+                    camera = camera,
+                )
                 ToastHost(
                     messages = appViewModel.messages.collectAsState().value,
                     onDismiss = { appViewModel.removeToast(it) },

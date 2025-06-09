@@ -21,6 +21,9 @@ fun MapboxMapView(
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler? = {},
     onMarkerClick: OnMarkerEventHandler? = {},
+    onMarkerDragStart: OnMarkerEventHandler? = {},
+    onMarkerDrag: OnMarkerEventHandler? = {},
+    onMarkerDragEnd: OnMarkerEventHandler? = {},
     content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
@@ -72,6 +75,9 @@ fun MapboxMapView(
             controller.mapClickListener = onMapClick
             controller.cameraMoveListener = onCameraMove
             controller.markerClickListener = onMarkerClick
+            controller.markerDragStartListener = onMarkerDragStart
+            controller.markerDragListener = onMarkerDrag
+            controller.markerDragEndListener = onMarkerDragEnd
 
             holderRef.value = holder
             controllerRef.value = controller
