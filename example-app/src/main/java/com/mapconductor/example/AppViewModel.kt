@@ -95,7 +95,7 @@ class AppViewModelImpl :
 
     override fun flyTo(listener: MapViewState.MoveCameraCallback?) {
         this@AppViewModelImpl.mapViewState.value?.moveCameraTo(
-            position =
+            cameraPosition =
                 MapCameraPosition(
                     position =
                         GeoPoint(

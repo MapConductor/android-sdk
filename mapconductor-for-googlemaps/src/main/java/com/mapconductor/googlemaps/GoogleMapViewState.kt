@@ -68,7 +68,7 @@ class GoogleMapViewState(
     }
 
     override fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -78,7 +78,7 @@ class GoogleMapViewState(
             return
         }
 
-        val dstCameraPosition = MapCameraPosition.from(position)
+        val dstCameraPosition = MapCameraPosition.from(cameraPosition)
         controller?.let {
             if (durationMs == 0L) {
                 it.moveCamera(dstCameraPosition, listener)

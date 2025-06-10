@@ -69,7 +69,7 @@ class HereMapViewState(
     }
 
     override fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -85,9 +85,9 @@ class HereMapViewState(
         }
 
         if (durationMs == 0L) {
-            controller!!.moveCamera(position, listener)
+            controller!!.moveCamera(cameraPosition, listener)
         } else {
-            controller!!.animateCamera(position, durationMs.toLong(), listener)
+            controller!!.animateCamera(cameraPosition, durationMs.toLong(), listener)
         }
     }
 

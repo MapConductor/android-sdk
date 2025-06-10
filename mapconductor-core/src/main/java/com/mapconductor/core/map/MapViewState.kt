@@ -33,7 +33,7 @@ interface MapViewState<T> {
     fun resetInitState()
 
     fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )

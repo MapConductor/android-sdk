@@ -63,7 +63,7 @@ class MapboxMapViewState(
     }
 
     override fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -72,7 +72,7 @@ class MapboxMapViewState(
             listener?.onComplete(false)
             return
         }
-        val dstCameraPosition = MapCameraPosition.from(position)
+        val dstCameraPosition = MapCameraPosition.from(cameraPosition)
         if (controller == null) {
             listener?.onComplete(false)
             return
