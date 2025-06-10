@@ -2,6 +2,7 @@ package com.mapconductor.core.geocell
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Projection
 import kotlin.math.PI
 import kotlin.math.abs
@@ -29,11 +30,6 @@ enum class Direction6(
     Left(-1, 0),
     LeftDown(-1, 1),
     RightDown(0, 1),
-}
-
-interface IdentifiedPoint {
-    val id: String
-    val position: IGeoPoint
 }
 
 data class HexCell(
@@ -107,7 +103,7 @@ class HexGeocell(
     }
 
     fun enclosingCellOf(
-        points: List<IdentifiedPoint>,
+        points: List<MarkerState>,
         zoom: Double,
     ): HexCell {
         val center = computeCentroid(points.map { it.position })
@@ -119,7 +115,7 @@ class HexGeocell(
     }
 
     fun hexCellsForPointsWithId(
-        points: List<IdentifiedPoint>,
+        points: List<MarkerState>,
         zoom: Double,
     ): Set<IdentifiedHexCell> =
         points
