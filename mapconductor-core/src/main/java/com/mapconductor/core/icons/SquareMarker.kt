@@ -8,18 +8,16 @@ import com.mapconductor.core.marker.MarkerIcon
 
 fun MarkerIcon.Companion.SquareMarker(
     fillColor: Int? = Color.RED,
-    strokeColor: Int? = Color.WHITE,
+//    strokeColor: Int? = Color.WHITE,
     strokeWidth: Float? = 1f,
     scale: Float? = 2f,
 ): MarkerIcon {
     val scl = 1.5f  // 24 / 16 = 1.5
     val offsetX = (24f - 12f * scl) / 2f  // = 3f
     val offsetY = (24f - 16f * scl) / 2f  // = 0f
-
     fun sx(x: Float) = x * scl + offsetX
     fun sy(y: Float) = y * scl + offsetY
 
-    val dmyPath = Path().apply {}
     val path = Path().apply {
         // スタート：左上角丸の終点（x=8, y=4）
         moveTo(sx(8f), sy(4f))
@@ -69,14 +67,12 @@ fun MarkerIcon.Companion.SquareMarker(
     }
 
     return MarkerIcon(
-        fillColor = fillColor,
-        strokeColor = strokeColor,
-        strokeWidth = strokeWidth,
+        outsideColor = fillColor,
+        outsideWidth = strokeWidth,
         scale = scale,
         anchor = Offset(0.5f, 0.5f),
         size = Size(32f, 32f),
         infoAnchor = Offset(0.5f, 0.5f),
-        fillPath = path,
-        strokePath = dmyPath,
+        outsidePath = path,
     )
 }

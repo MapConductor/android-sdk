@@ -1,7 +1,6 @@
 package com.mapconductor.core.icons
 
 import android.graphics.Color
-import android.graphics.Matrix
 import android.graphics.Path
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -61,14 +60,14 @@ fun MarkerIcon.Companion.StarInCircle(
 
     // 塗りつぶし色（黄色）で円を塗り、五芒星を白色で塗りつぶす
     return MarkerIcon(
-        fillColor = fillColor,      // 塗りつぶし色（黄色）
-        strokeColor = strokeColor,  // 星の色
-        strokeWidth = strokeWidth,
+        outsideColor = fillColor,      // 塗りつぶし色（黄色）
+        insideColor = strokeColor,  // 星の色
+        outsideWidth = strokeWidth,
         scale = 1.5f,
         anchor = Offset(0.5f, 0.5f),
         size = Size(32f, 32f),
         infoAnchor = Offset(0.5f, 0.5f),
-        fillPath = path,
-        strokePath = starFillPath, // 円の外周部分と五芒星の外枠
+        outsidePath = path,
+        insidePath = starFillPath, // 円の外周部分と五芒星の外枠
     )
 }

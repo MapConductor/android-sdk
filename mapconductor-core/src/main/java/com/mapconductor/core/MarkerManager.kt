@@ -179,14 +179,14 @@ class MarkerManager<ActualMarker>(
         val scaleX = width / pathCoordinateSystemWidth
         val scaleY = height / pathCoordinateSystemHeight
 
-        val strokePath = icon.strokePath
-        val fillPath = icon.fillPath
+        val insidePath = icon.insidePath
+        val outsidePath = icon.outsidePath
 
-        val shadowPath = Path(icon.fillPath).apply {
+        val shadowPath = Path(icon.outsidePath).apply {
             offset(1f, 1f)
         }
 
-        val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        val outsidePaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
             if (icon.fillDrawable != null) {
                 val iconCanvasSize = Size(
                     (svgOriginalWidth * 8).toFloat(),
@@ -205,7 +205,7 @@ class MarkerManager<ActualMarker>(
                         iconCanvasSize.width.toInt(),
                         iconCanvasSize.height.toInt(),
                     ),
-                    fillColor = icon.fillColor ?: Color.RED,
+                    fillColor = icon.outsideColor ?: Color.RED,
                 )
                 val iconBitmapTileMode = Shader.TileMode.CLAMP
                 val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
@@ -225,7 +225,7 @@ class MarkerManager<ActualMarker>(
                 it.shader = bitmapShader
             }
             it.style = Paint.Style.FILL
-            it.color = icon.fillColor ?: Color.RED
+            it.color = icon.outsideColor ?: Color.RED
         }
 
         val insidePaint =
@@ -252,7 +252,7 @@ class MarkerManager<ActualMarker>(
                                     iconCanvasSize.width.toInt(),
                                     iconCanvasSize.height.toInt(),
                                 ),
-                            fillColor = icon.strokeColor ?: Color.RED,
+                            fillColor = icon.insideColor ?: Color.RED,
                         )
                     val iconBitmapTileMode = Shader.TileMode.CLAMP
                     val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
@@ -272,7 +272,7 @@ class MarkerManager<ActualMarker>(
                     it.shader = bitmapShader
                 }
                 it.style = Paint.Style.FILL
-                it.color = icon.strokeColor ?: Color.RED
+                it.color = icon.insideColor ?: Color.RED
             }
 
         val iconPaint =
@@ -323,8 +323,8 @@ class MarkerManager<ActualMarker>(
         val strokePaint =
             Paint(Paint.ANTI_ALIAS_FLAG).also {
                 it.style = Paint.Style.STROKE
-                it.strokeWidth = icon.strokeWidth ?: 0f // SVGでのstrokeWidthに相当
-                it.color = icon.strokeColor ?: Color.WHITE
+                it.strokeWidth = icon.outsideWidth ?: 0f // SVGでのstrokeWidthに相当
+                it.color = icon.outsideStrokeColor ?: Color.WHITE
             }
 
         val shadowPaint =
@@ -344,11 +344,11 @@ class MarkerManager<ActualMarker>(
 
         canvas.withScale(scaleX.toFloat(), scaleY.toFloat()) {
             drawPath(shadowPath, shadowPaint)
-            drawPath(fillPath, fillPaint)
-            drawPath(strokePath, insidePaint)
-            drawPath(fillPath, strokePaint)
-            iconPaint?.also {
-                drawPath(strokePath, it)
+            drawPath(outsidePath, outsidePaint)
+            drawPath(outsidePath, strokePaint)
+            if (insidePath != null) {
+                drawPath(insidePath, insidePaint)
+                drawPath(insidePath, strokePaint)
             }
 
             // --- 3. ラベルの描画 (labelが指定されている場合) ---
@@ -372,9 +372,6 @@ class MarkerManager<ActualMarker>(
 //
 //                canvas.drawText(icon.label, centerXLogical, yForDrawTextLogical, textPaint)
 //            }
-
-//            // -- ストローク --
-            drawPath(strokePath, strokePaint)
         }
 
         val visualNormalizedTipY = 0.9375f

@@ -24,9 +24,7 @@ fun MarkerIcon.Companion.Default(
     val offsetX = 2.0f
     val offsetY = 2.0f
 
-    val dmyPath = Path().apply {}
     val strokePath = Path().apply {
-
         // --- 最初のサブパス (外側の形状) ---
         // "m12 0" -> moveTo(12*s + offsetX, 0*s + offsetY)
         moveTo(12f * scaleFactor + offsetX, 0f * scaleFactor + offsetY) // (16f, 2f)
@@ -114,9 +112,9 @@ fun MarkerIcon.Companion.Default(
     }
 
     return MarkerIcon(
-        fillColor = fillColor,
-        strokeColor = strokeColor,
-        strokeWidth = strokeWidth,
+        outsideColor = fillColor,
+        insideColor = strokeColor,
+        outsideWidth = strokeWidth,
         scale = scale,
         label = label?.substring(0, 0)?.toString() ?: "",
         labelTextColor = labelTextColor,
@@ -126,7 +124,6 @@ fun MarkerIcon.Companion.Default(
         anchor = Offset(0.5f, 1.0f),
         size = Size(32f, 32f),
         infoAnchor = Offset(0.5f, 0.5f),
-        fillPath = strokePath,
-        strokePath = dmyPath,
+        outsidePath = strokePath,
     )
 }
