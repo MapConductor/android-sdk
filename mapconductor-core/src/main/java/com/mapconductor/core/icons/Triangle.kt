@@ -12,7 +12,6 @@ fun MarkerIcon.Companion.Triangle(
     triangleHeight: Float? = 24f,
     triangleWidth: Float? = 24f,
 ): MarkerIcon {
-
     // 下向き三角
     val trianglePath = Path().apply {
         moveTo(0f, 0f)    // 左上
