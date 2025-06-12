@@ -6,12 +6,14 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraState
+import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
 import com.mapbox.maps.plugin.annotation.Annotation
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
 import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationDragListener
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationLongClickListener
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
@@ -74,8 +76,11 @@ internal class MapboxMapViewController(
     CameraChangedCallback,
     OnPointAnnotationClickListener,
     OnMapClickListener,
-    OnPointAnnotationDragListener {
+    OnPointAnnotationDragListener,
+    OnPointAnnotationLongClickListener {
     private lateinit var pointAnnotationManager: PointAnnotationManager
+
+    private var selectedMarker: MarkerState? = null
 
     init {
         val annotationApi = holder.mapView.annotations
@@ -90,6 +95,8 @@ internal class MapboxMapViewController(
         pointAnnotationManager.addClickListener(this@MapboxMapViewController)
         pointAnnotationManager.dragListeners.remove(this)
         pointAnnotationManager.dragListeners.add(this)
+//        pointAnnotationManager.longClickListeners.remove(this)
+//        pointAnnotationManager.longClickListeners.add(this)
     }
 
     private val markerOverlayManager =
@@ -153,6 +160,15 @@ internal class MapboxMapViewController(
             y = pixel.y.toFloat(),
         )
     }
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        holder.map
+            .coordinateForPixel(
+                ScreenCoordinate(
+                    offset.x.toDouble(),
+                    offset.y.toDouble(),
+                ),
+            ).toGeoPoint()
 
     override fun run(cameraChanged: CameraChanged) {
         cameraMoveListener?.let {
@@ -233,30 +249,53 @@ internal class MapboxMapViewController(
         return true
     }
 
-    override fun onAnnotationDrag(annotation: Annotation<*>) {
-        val tag = annotation.getData() ?: return
-        val id = tag.asJsonObject.get("id")?.asString ?: return
-        when {
-            annotation is PointAnnotation -> onPointAnnotationDrag(id, annotation)
+    private fun annotationToMarkerState(annotation: Annotation<*>): MarkerState? {
+        val tag = annotation.getData() ?: return null
+        val id = tag.asJsonObject.get("id")?.asString ?: return null
+        return when {
+            annotation is PointAnnotation -> markerOverlayManager.getMarkerState(id)
             else -> {
                 // Do nothing here
+                null
             }
         }
     }
 
-    fun onPointAnnotationDrag(
-        id: String,
-        annotation: PointAnnotation,
-    ) {
-        val state = markerOverlayManager.getMarkerState(id) ?: return
-        state.position = annotation.point.toGeoPoint()
+    override fun onAnnotationDrag(annotation: Annotation<*>) {
+        (annotation as PointAnnotation).also { point ->
+            this.annotationToMarkerState(annotation)?.also { state ->
+                state.position = point.geometry.toGeoPoint()
+                markerDragListener?.also {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
     }
 
     override fun onAnnotationDragFinished(annotation: Annotation<*>) {
-//        TODO("Not yet implemented")
+        (annotation as PointAnnotation).also { point ->
+            this.annotationToMarkerState(annotation)?.also { state ->
+                state.position = point.geometry.toGeoPoint()
+                markerDragEndListener?.also {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
     }
 
     override fun onAnnotationDragStarted(annotation: Annotation<*>) {
-//        TODO("Not yet implemented")
+        (annotation as PointAnnotation).also { point ->
+            this.annotationToMarkerState(annotation)?.also { state ->
+                state.position = point.geometry.toGeoPoint()
+                markerDragStartListener?.also {
+                    coroutine.launch { it.invoke(state) }
+                }
+            }
+        }
+    }
+
+    override fun onAnnotationLongClick(annotation: PointAnnotation): Boolean {
+        selectedMarker = this.annotationToMarkerState(annotation)
+        return selectedMarker != null
     }
 }

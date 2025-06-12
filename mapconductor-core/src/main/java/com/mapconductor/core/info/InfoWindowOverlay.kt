@@ -26,6 +26,7 @@ internal fun InfoWindowCompose(
     iconOffset: Offset, // アイコンと地図が接続するポイント (0.0 - 1.0)
     infoAnchorOffset: Offset, // アイコンと吹き出しが接続するポイント
     tailOffset: Offset, // 吹き出し側で、アイコンと接続するポイント (0.0 - 1.0)
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -44,7 +45,7 @@ internal fun InfoWindowCompose(
 
     Box(
         modifier =
-            Modifier
+            modifier
                 .onGloballyPositioned {
                     size = it.size
                 }.offset {
