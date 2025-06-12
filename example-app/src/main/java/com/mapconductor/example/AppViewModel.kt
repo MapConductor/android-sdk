@@ -30,8 +30,6 @@ interface AppViewModel {
 
     fun flyTo(listener: MapViewState.MoveCameraCallback? = null)
 
-    fun onCallButtonClick()
-
     fun onMarkerClick(clicked: MarkerState)
 
     fun onMapClick(clicked: GeoPoint)
@@ -79,7 +77,7 @@ class AppViewModelImpl :
     override fun changeState(newState: MapViewState<*>) {
         this._selectedMarker.value = null
         this._mapViewState.value = newState
-        this.infoBubbleState?.close()
+        this.infoBubbleState.close()
     }
 
     override fun createIntentForDirection(markerState: MarkerState): Intent {
@@ -110,9 +108,6 @@ class AppViewModelImpl :
         )
     }
 
-    override fun onCallButtonClick() {
-    }
-
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
         this._infoBubbleState.value.open(clicked)
@@ -135,7 +130,7 @@ class AppViewModelImpl :
 
     override fun onMapClick(clicked: GeoPoint) {
         this._selectedMarker.value = null
-        this.infoBubbleState?.close()
+        this.infoBubbleState.close()
     }
 
     override fun onCleared() {
