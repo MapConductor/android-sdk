@@ -8,7 +8,6 @@ import com.mapconductor.core.marker.MarkerIcon
 
 fun MarkerIcon.Companion.SquareMarker(
     fillColor: Int? = Color.RED,
-//    strokeColor: Int? = Color.WHITE,
     strokeWidth: Float? = 1f,
     scale: Float? = 2f,
 ): MarkerIcon {

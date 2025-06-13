@@ -12,13 +12,7 @@ fun MarkerIcon.Companion.StarInCircle(
     fillColor: Int? = 0xFFFFD800.toInt(),  // 円の塗りつぶし色（黄色）
     strokeColor: Int? = Color.WHITE,
     strokeWidth: Float? = 2f,
-    scale: Float? = 2f,
 ): MarkerIcon {
-
-    val scale = 0.91f // 五芒星のスケーリング
-    val offsetX = 0f // 五芒星のX方向のオフセット
-    val offsetY = 0.26f // 五芒星のY方向のオフセット
-
     val path = Path().apply {
         // 黄色い円
         addCircle(14f, 14f, 12f, Path.Direction.CW)
@@ -58,7 +52,6 @@ fun MarkerIcon.Companion.StarInCircle(
 
     val starFillPath = createWhiteStarPath()
 
-    // 塗りつぶし色（黄色）で円を塗り、五芒星を白色で塗りつぶす
     return MarkerIcon(
         outsideColor = fillColor,      // 塗りつぶし色（黄色）
         insideColor = strokeColor,  // 星の色

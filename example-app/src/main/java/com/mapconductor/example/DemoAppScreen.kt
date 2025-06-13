@@ -30,10 +30,10 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
-//import com.mapconductor.core.icons.StarInCircle
-//import com.mapconductor.core.icons.HeartInCircle
-//import com.mapconductor.core.icons.SquareMarker
-//import com.mapconductor.core.icons.Triangle
+import com.mapconductor.core.icons.HeartInCircle
+import com.mapconductor.core.icons.SquareMarker
+import com.mapconductor.core.icons.StarInCircle
+import com.mapconductor.core.icons.Triangle
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.toFixed
