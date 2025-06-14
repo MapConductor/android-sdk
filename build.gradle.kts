@@ -29,7 +29,7 @@ tasks.register("allLintChecks") {
     group = "verification"
     description = "Run ktlintFormat and lint for all modules"
 
-    val lintTasks = modules.flatMap { module ->
+    val lintTasks = modules.map { module ->
         listOf(":$module:ktlintFormat", ":$module:lint")
     }
 
