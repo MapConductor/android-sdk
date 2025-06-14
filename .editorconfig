@@ -20,7 +20,7 @@ ktlint_standard_argument-list-wrapping = disabled
 ktlint_standard_function-naming = disabled
 
 # Import organization (IDE and KtLint will respect this)
-ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,android.**,kotlinx.**
+ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**, android.**, kotlinx.**
 ij_kotlin_allow_wildcard_imports = false
 
 # Android Studio formatter settings that KtLint can also understand
