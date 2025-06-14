@@ -117,7 +117,7 @@ jobs:
           done
 
       - name: Save hash cache
-        if: always()
+        if: success()
         uses: actions/cache/save@v4
         with:
           key: lint-hash-cache-${{ github.base_ref || 'main' }}-${{ github.run_id }}
