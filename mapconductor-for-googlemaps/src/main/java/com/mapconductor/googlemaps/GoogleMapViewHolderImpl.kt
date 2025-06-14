@@ -4,9 +4,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
 import com.mapconductor.core.map.MapViewHolder
+import android.content.Context
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
-import android.content.Context
 
 internal class GoogleMapViewHolderImpl private constructor(
     override val mapView: MapView,

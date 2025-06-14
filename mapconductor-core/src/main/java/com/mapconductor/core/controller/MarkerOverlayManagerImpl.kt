@@ -1,8 +1,15 @@
 package com.mapconductor.core.controller
 
 import com.mapconductor.core.MarkerManager
+import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.withContext
 
 interface MarkerAddParams {
     val state: MarkerState
@@ -20,17 +27,37 @@ interface MarkerRemoveParams<ActualMarker> {
     val marker: ActualMarker
 }
 
-class MarkerOverlayManager<
+interface MarkerOverlayManager {
+    suspend fun addMarkers(markerList: List<MarkerState>)
+
+    suspend fun updateMarker(marker: MarkerState)
+
+    suspend fun clearOverlays()
+
+    fun getMarkerState(id: String): MarkerState?
+
+    suspend fun setIcon(
+        id: String,
+        icon: MarkerIcon?,
+    )
+}
+
+class MarkerOverlayManagerImpl<
     // Actual marker instance type
     ActualMarker : Any,
 >(
     val markerManager: MarkerManager<ActualMarker>,
-    var onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
-    var onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
-    var onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
-) {
-    @Synchronized
-    fun addMarkers(markerList: List<MarkerState>) {
+    val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
+    val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
+    val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> Unit,
+    val onIconChange: (marker: ActualMarker, icon: BitmapIcon) -> Unit,
+    val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+) : MarkerOverlayManager {
+    val semaphore = Semaphore(1)
+
+    override suspend fun addMarkers(markerList: List<MarkerState>) {
+        semaphore.acquire()
+
         val current = markerList.toSet()
         val previous = markerManager.getValueSet()
         val added = current - previous
@@ -38,7 +65,8 @@ class MarkerOverlayManager<
         val updated =
             current
                 .filter { state ->
-                    val prevState = markerManager.getState(state.id) ?: return@filter false
+                    val prevState =
+                        markerManager.getState(state.id) ?: return@filter false
                     return@filter !prevState.equals(state)
                 }
 
@@ -56,7 +84,9 @@ class MarkerOverlayManager<
                         override val marker: ActualMarker = marker
                     }
                 }.also {
-                    onRemove(it)
+                    coroutine.launch {
+                        onRemove(it)
+                    }
                 }
         }
 
@@ -75,7 +105,10 @@ class MarkerOverlayManager<
                         override val icon: BitmapIcon = markerIcon
                     }
                 }.also {
-                    val actualMarkers: List<ActualMarker?> = onAdd(it)
+                    val actualMarkers: List<ActualMarker?> =
+                        withContext(coroutine.coroutineContext) {
+                            onAdd(it)
+                        }
                     actualMarkers.forEachIndexed { index, actualMarker ->
                         actualMarker?.let {
                             val state = addedList[index]
@@ -113,9 +146,40 @@ class MarkerOverlayManager<
                 onChange(it)
             }
         }
+
+        semaphore.release()
     }
 
-    fun clearOverlays() {
+    override suspend fun updateMarker(state: MarkerState) {
+        semaphore.acquire()
+        val defaultIcon = markerManager.createDefaultMarkerShape()
+
+        val markerId = state.id
+        markerManager.updateState(state)
+        val marker = markerManager.getMarker(markerId)
+        if (marker == null) {
+            semaphore.release()
+            return
+        }
+        val markerIcon =
+            state.icon?.let {
+                markerManager.getBitmapIcon(it)
+            } ?: defaultIcon
+        val markerParams =
+            object : MarkerUpdateParams<ActualMarker> {
+                override val state: MarkerState = state
+                override val icon: BitmapIcon = markerIcon
+                override val marker: ActualMarker = marker
+            }
+
+        withContext(coroutine.coroutineContext) {
+            onChange(listOf(markerParams))
+        }
+        semaphore.release()
+    }
+
+    override suspend fun clearOverlays() {
+        semaphore.acquire()
         val markerIDs: List<String> = markerManager.allKeys()
         val removes: List<MarkerRemoveParams<ActualMarker>> =
             markerIDs.map { markerId ->
@@ -127,7 +191,24 @@ class MarkerOverlayManager<
 
         onRemove(removes)
         markerManager.clear()
+        semaphore.release()
     }
 
-    fun getMarkerState(id: String): MarkerState? = markerManager.getState(id)
+    override fun getMarkerState(id: String): MarkerState? = markerManager.getState(id)
+
+    override suspend fun setIcon(
+        id: String,
+        icon: MarkerIcon?,
+    ) {
+        val marker = markerManager.getMarker(id)
+        if (marker == null) {
+            semaphore.release()
+            return
+        }
+        semaphore.acquire()
+        val newIcon = icon ?: MarkerIcon.Default()
+        val bitmapIcon = markerManager.getBitmapIcon(newIcon)
+        onIconChange(marker, bitmapIcon)
+        semaphore.release()
+    }
 }

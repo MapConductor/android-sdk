@@ -23,7 +23,7 @@ import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManager
+import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
@@ -31,10 +31,10 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.animation.Animator
 
 // interface IMapboxMapInitOptions {
 //    val mapOptions: MapOptions?
@@ -78,7 +78,7 @@ internal class MapboxMapViewController(
     OnMapClickListener,
     OnPointAnnotationDragListener,
     OnPointAnnotationLongClickListener {
-    private lateinit var pointAnnotationManager: PointAnnotationManager
+    private val pointAnnotationManager: PointAnnotationManager
 
     private var selectedMarker: MarkerState? = null
 
@@ -95,12 +95,12 @@ internal class MapboxMapViewController(
         pointAnnotationManager.addClickListener(this@MapboxMapViewController)
         pointAnnotationManager.dragListeners.remove(this)
         pointAnnotationManager.dragListeners.add(this)
-//        pointAnnotationManager.longClickListeners.remove(this)
-//        pointAnnotationManager.longClickListeners.add(this)
+        pointAnnotationManager.longClickListeners.remove(this)
+        pointAnnotationManager.longClickListeners.add(this)
     }
 
-    private val markerOverlayManager =
-        MarkerOverlayManager<PointAnnotation>(
+    override val markerOverlayManager =
+        MarkerOverlayManagerImpl<PointAnnotation>(
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 synchronized(pointAnnotationManager) {
@@ -120,10 +120,10 @@ internal class MapboxMapViewController(
                                     JsonObject().apply {
                                         addProperty("id", params.state.id)
                                     },
-                                ).withDraggable(true)
+                                ) // .withDraggable(true)
                         }
 
-                    return@MarkerOverlayManager pointAnnotationManager.create(options)
+                    return@MarkerOverlayManagerImpl pointAnnotationManager.create(options)
                 }
             },
             onChange = { changes ->
@@ -144,11 +144,20 @@ internal class MapboxMapViewController(
                     }
                 }
             },
+            onIconChange = { marker, icon ->
+                val option = icon.toPointAnnotationOptions()
+                marker.iconSize = option.iconSize
+                marker.iconImage = option.iconImage
+                marker.iconAnchor = option.iconAnchor
+                marker.iconOffset = option.iconOffset
+            },
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
+
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val pixel =
@@ -276,6 +285,11 @@ internal class MapboxMapViewController(
         (annotation as PointAnnotation).also { point ->
             this.annotationToMarkerState(annotation)?.also { state ->
                 state.position = point.geometry.toGeoPoint()
+
+                // Restore the recomposition for the position property
+                setDraggingState(state, false)
+                point.isDraggable = false
+
                 markerDragEndListener?.also {
                     coroutine.launch { it.invoke(state) }
                 }
@@ -286,6 +300,9 @@ internal class MapboxMapViewController(
     override fun onAnnotationDragStarted(annotation: Annotation<*>) {
         (annotation as PointAnnotation).also { point ->
             this.annotationToMarkerState(annotation)?.also { state ->
+                // Suppress the recomposition for the position property
+                setDraggingState(state, true)
+
                 state.position = point.geometry.toGeoPoint()
                 markerDragStartListener?.also {
                     coroutine.launch { it.invoke(state) }
@@ -296,6 +313,11 @@ internal class MapboxMapViewController(
 
     override fun onAnnotationLongClick(annotation: PointAnnotation): Boolean {
         selectedMarker = this.annotationToMarkerState(annotation)
-        return selectedMarker != null
+        if (selectedMarker == null) return false
+
+        (annotation as PointAnnotation).also { point ->
+            point.isDraggable = true
+        }
+        return true
     }
 }

@@ -18,7 +18,7 @@ import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManager
+import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
@@ -27,10 +27,10 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
+import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.view.MotionEvent
 
 interface IArcGISMapViewController : MapViewController {
     fun moveCamera(
@@ -52,7 +52,8 @@ internal data class SelectedMarker(
 
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
-    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    override val coroutine: CoroutineScope =
+        CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController<Camera>(),
     IArcGISMapViewController {
     val markerLayer: GraphicsOverlay =
@@ -62,11 +63,14 @@ class ArcGISMapViewController(
 
     private var selectedMarker: SelectedMarker? = null
 
-    private val markerOverlayManager =
-        MarkerOverlayManager<Graphic>(
+    override val markerOverlayManager =
+        MarkerOverlayManagerImpl<Graphic>(
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
-                val elements: List<Graphic> = removes.map { params -> params.marker }
+                val elements: List<Graphic> =
+                    removes.map { params ->
+                        params.marker
+                    }
                 this.markerLayer.graphics.removeAll(elements)
             },
             onAdd = { newMarkers ->
@@ -100,7 +104,7 @@ class ArcGISMapViewController(
 
                 this.markerLayer.graphics.addAll(markers)
 
-                return@MarkerOverlayManager markers
+                return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
                 changes.forEach { params ->
@@ -124,6 +128,23 @@ class ArcGISMapViewController(
                             .toPoint()
                     params.marker.symbol = pictureSymbolFuture
                 }
+            },
+            onIconChange = { marker, icon ->
+                val bitmapDrawable = icon.bitmap.toDrawable(holder.mapView.context.resources)
+                val density = ResourceProvider.density
+                val width = (icon.size.width / density)
+                val height = (icon.size.height / density)
+                val anchorX = (icon.anchor.x - 0.5) * width
+                val anchorY = (icon.anchor.y - 0.5) * height
+
+                val pictureSymbolFuture =
+                    PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                        it.width = width.toFloat()
+                        it.height = height.toFloat()
+                        it.offsetX = anchorX.toFloat()
+                        it.offsetY = anchorY.toFloat()
+                    }
+                marker.symbol = pictureSymbolFuture
             },
         )
 
@@ -169,6 +190,10 @@ class ArcGISMapViewController(
             val position = point.toGeoPoint()
             it.graphic.geometry = point
             it.state.position = position
+
+            // Restore the recomposition for the position property
+            setDraggingState(it.state, false)
+
             markerDragEndListener?.invoke(it.state)
             with(holder.map) {
                 interactionOptions.isPanEnabled = true
@@ -215,6 +240,10 @@ class ArcGISMapViewController(
             interactionOptions.isRotateEnabled = false
             interactionOptions.isZoomEnabled = false
         }
+
+        // Suppress the recomposition for the position property
+        setDraggingState(state, true)
+
         markerDragStartListener?.invoke(state)
     }
 
@@ -276,6 +305,8 @@ class ArcGISMapViewController(
     }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 

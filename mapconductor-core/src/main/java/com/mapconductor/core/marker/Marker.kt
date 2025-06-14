@@ -1,6 +1,10 @@
 package com.mapconductor.core.marker
 
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.features.GeoPoint
@@ -15,37 +19,41 @@ class MarkerState(
     position: GeoPoint,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
+    draggable: Boolean = false,
 ) {
-    // -- position and positionState properties --
-    private val _position = mutableStateOf(position)
-    var position: GeoPoint
-        get() = _position.value
-        set(value) {
-            if (!_position.value.equals(value)) {
-                _position.value = value
+    var icon by mutableStateOf<MarkerIcon?>(icon)
+    var draggable by mutableStateOf(draggable)
+
+    private var dragPosition: GeoPoint = position
+    private var _isDragging by mutableStateOf(false)
+    var isDragging: Boolean
+        get() = _isDragging
+        internal set(value) {
+            _isDragging = value
+
+            Snapshot.withoutReadObservation {
+                dragPosition = position
             }
         }
 
-    // -- icon and iconState properties --
-    private val _icon = mutableStateOf<MarkerIcon?>(icon)
-    var icon: MarkerIcon?
-        get() = _icon.value
-        set(value) {
-            if (_icon.value != value) {
-                _icon.value = value
-            }
-        }
+    var position by mutableStateOf(position)
+
+    internal val internalPosition by derivedStateOf {
+        if (isDragging) dragPosition else position
+    }
 
     fun copy(
         position: GeoPoint = this.position,
         extra: Parcelable? = this.extra,
         icon: MarkerIcon? = this.icon,
+        draggable: Boolean? = this.draggable,
     ): MarkerState =
         MarkerState(
             id = this.id, // Keep marker id
             position = position,
             extra = extra,
             icon = icon,
+            draggable = draggable ?: this.draggable,
         )
 
     override fun equals(other: Any?): Boolean {
@@ -59,8 +67,6 @@ class MarkerState(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + (extra?.hashCode() ?: 0)
-        result = 31 * result + _position.hashCode()
-        result = 31 * result + _icon.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
         return result
