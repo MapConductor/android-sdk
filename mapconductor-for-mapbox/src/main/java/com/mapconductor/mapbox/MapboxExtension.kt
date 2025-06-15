@@ -3,6 +3,7 @@ package com.mapconductor.mapbox
 import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapconductor.core.marker.BitmapIcon
+import android.graphics.Bitmap
 
 internal fun BitmapIcon.toPointAnnotationOptions(): PointAnnotationOptions {
     val iconW = bitmap.width.toDouble()
@@ -20,7 +21,7 @@ internal fun BitmapIcon.toPointAnnotationOptions(): PointAnnotationOptions {
     val offsetY = anchorPixelY - baseY
 
     return PointAnnotationOptions()
-        .withIconImage(bitmap)
+        .withIconImage(bitmap.copy(Bitmap.Config.ARGB_8888, true))
         .withIconAnchor(IconAnchor.BOTTOM)
         .withIconOffset(listOf(offsetX, offsetY))
 }

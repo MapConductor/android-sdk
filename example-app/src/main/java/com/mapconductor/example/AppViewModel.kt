@@ -11,12 +11,12 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 interface AppViewModel {
     val initCameraPosition: MapCameraPosition
@@ -29,8 +29,6 @@ interface AppViewModel {
     fun changeState(state: MapViewState<*>)
 
     fun flyTo(listener: MapViewState.MoveCameraCallback? = null)
-
-    fun onCallButtonClick()
 
     fun onMarkerClick(clicked: MarkerState)
 
@@ -79,7 +77,7 @@ class AppViewModelImpl :
     override fun changeState(newState: MapViewState<*>) {
         this._selectedMarker.value = null
         this._mapViewState.value = newState
-        this.infoBubbleState?.close()
+        this.infoBubbleState.close()
     }
 
     override fun createIntentForDirection(markerState: MarkerState): Intent {
@@ -95,7 +93,7 @@ class AppViewModelImpl :
 
     override fun flyTo(listener: MapViewState.MoveCameraCallback?) {
         this@AppViewModelImpl.mapViewState.value?.moveCameraTo(
-            position =
+            cameraPosition =
                 MapCameraPosition(
                     position =
                         GeoPoint(
@@ -108,9 +106,6 @@ class AppViewModelImpl :
             durationMs = 3000,
             listener = listener,
         )
-    }
-
-    override fun onCallButtonClick() {
     }
 
     override fun onMarkerClick(clicked: MarkerState) {
@@ -135,7 +130,7 @@ class AppViewModelImpl :
 
     override fun onMapClick(clicked: GeoPoint) {
         this._selectedMarker.value = null
-        this.infoBubbleState?.close()
+        this.infoBubbleState.close()
     }
 
     override fun onCleared() {

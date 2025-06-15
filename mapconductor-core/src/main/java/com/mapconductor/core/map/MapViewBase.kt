@@ -34,7 +34,6 @@ import android.view.ViewGroup
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
-typealias OnMarkerDragHandler = (String, GeoPoint) -> Unit
 
 @Composable
 fun <
@@ -68,22 +67,27 @@ fun <
     val controller = controllerRef.value
 
     if (initState == InitState.Initialized) {
-        // 子コンポーネントを収集する
-        CompositionLocalProvider(
-            LocalMarkerCollector provides scope.markerFlow,
-            LocalInfoBubbleCollector provides scope.bubbleFlow,
-        ) {
-            with(scope) {
-                content?.invoke(this)
-            }
-        }
         // 収集した子コンポーネントを描画する
-        val controller = controllerRef.value
-        controller?.also { it ->
+        controllerRef.value?.also { controller ->
             CollectAndRenderOverlays(
                 registry = registry, // This should come from the specific scope or be passed
-                controller = it,
+                controller = controller,
             )
+            // 子コンポーネントを収集する
+            CompositionLocalProvider(
+                LocalMarkerCollector provides scope.markerFlow,
+                LocalInfoBubbleCollector provides scope.bubbleFlow,
+            ) {
+                with(scope) {
+                    content?.invoke(this)
+                }
+            }
+            val markers = scope.markerFlow.collectAsState()
+            markers.value.forEach { markerState ->
+                LaunchedEffect(markerState.icon, markerState.draggable, markerState.internalPosition) {
+                    controller.updateMarker(markerState)
+                }
+            }
         }
     }
 
@@ -150,7 +154,7 @@ fun <
                     .clipToBounds(),
         ) {
             bubbles.forEach { entry ->
-                val marker = entry.state.marker.value ?: return@forEach
+                val marker = entry.state.marker ?: return@forEach
                 val position = marker.position
                 val icon = marker.icon ?: return@forEach
                 val iconScale = icon.scale ?: 2f
