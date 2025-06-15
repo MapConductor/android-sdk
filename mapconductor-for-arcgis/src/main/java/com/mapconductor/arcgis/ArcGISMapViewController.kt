@@ -65,6 +65,7 @@ class ArcGISMapViewController(
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Graphic>(
+            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 val elements: List<Graphic> =
@@ -107,7 +108,7 @@ class ArcGISMapViewController(
                 return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
-                changes.forEach { params ->
+                changes.map { params ->
                     val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.density
                     val width = (params.icon.size.width / density)
@@ -127,6 +128,9 @@ class ArcGISMapViewController(
                         params.state.position
                             .toPoint()
                     params.marker.symbol = pictureSymbolFuture
+
+                    // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                    params.marker
                 }
             },
             onIconChange = { marker, icon ->

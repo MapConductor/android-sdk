@@ -58,15 +58,13 @@ class MarkerState(
 
     override fun equals(other: Any?): Boolean {
         val otherState = (other as? MarkerState) ?: return false
-        return position == otherState.position &&
-            id == otherState.id &&
-            extra == otherState.extra &&
-            icon == otherState.icon
+        return hashCode() == otherState.hashCode()
     }
 
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + (extra?.hashCode() ?: 0)
+        result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
         return result

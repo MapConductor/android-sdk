@@ -32,6 +32,7 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import android.animation.Animator
+import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,7 +71,7 @@ interface IMapboxMapViewController : MapViewController {
 
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
-    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : BaseMapViewController<CameraState>(),
     IMapboxMapViewController,
     CameraChangedCallback,
@@ -101,6 +102,7 @@ internal class MapboxMapViewController(
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<PointAnnotation>(
+            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 synchronized(pointAnnotationManager) {
@@ -127,29 +129,38 @@ internal class MapboxMapViewController(
                 }
             },
             onChange = { changes ->
+                // Mapboxはマーカーの画像が変更された場合、作り直す必要がある
                 synchronized(pointAnnotationManager) {
-                    changes.forEach { params ->
-                        // TODO: アイコンに変更があったかどうかを比較
-                        val option =
+                    // 古いマーカーを削除
+                    val oldMarkers = changes.map { params -> params.marker }
+                    pointAnnotationManager.delete(oldMarkers)
+
+                    val newMarkerOptions =
+                        changes.map { params ->
                             params.icon
                                 .toPointAnnotationOptions()
                                 .withPoint(
                                     GeoPoint.from(params.state.position).toPoint(),
+                                ).withData(
+                                    JsonObject().apply {
+                                        addProperty("id", params.state.id)
+                                    },
                                 )
-                        params.marker.point = GeoPoint.from(params.state.position).toPoint()
-                        params.marker.iconSize = option.iconSize
-                        params.marker.iconImage = option.iconImage
-                        params.marker.iconAnchor = option.iconAnchor
-                        params.marker.iconOffset = option.iconOffset
-                    }
+                        }
+                    // 新しいマーカーのインスタンスを返す
+                    pointAnnotationManager.create(newMarkerOptions)
                 }
             },
             onIconChange = { marker, icon ->
-                val option = icon.toPointAnnotationOptions()
-                marker.iconSize = option.iconSize
-                marker.iconImage = option.iconImage
-                marker.iconAnchor = option.iconAnchor
-                marker.iconOffset = option.iconOffset
+                synchronized(pointAnnotationManager) {
+                    val option = icon.toPointAnnotationOptions()
+                    marker.iconImageBitmap = icon.bitmap.copy(Bitmap.Config.ARGB_8888, true)
+                    marker.iconSize = option.iconSize
+                    marker.iconImage = option.iconImage
+                    marker.iconAnchor = option.iconAnchor
+                    marker.iconOffset = option.iconOffset
+                    pointAnnotationManager.update(marker)
+                }
             },
         )
 
@@ -315,9 +326,7 @@ internal class MapboxMapViewController(
         selectedMarker = this.annotationToMarkerState(annotation)
         if (selectedMarker == null) return false
 
-        (annotation as PointAnnotation).also { point ->
-            point.isDraggable = true
-        }
+        annotation.isDraggable = true
         return true
     }
 }

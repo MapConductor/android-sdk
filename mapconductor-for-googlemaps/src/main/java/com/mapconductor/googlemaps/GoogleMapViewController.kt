@@ -85,10 +85,13 @@ class GoogleMapViewController(
                 }
             },
             onChange = { changes ->
-                changes.forEach { params ->
+                changes.map { params ->
                     val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
                     params.marker.position = GeoPoint.from(params.state.position).toLatLng()
                     params.marker.setIcon(bitmapDescriptor)
+
+                    // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                    params.marker
                 }
             },
             onIconChange = { marker, icon ->

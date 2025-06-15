@@ -64,6 +64,7 @@ class HereMapViewController(
     private var selectedMarker: SelectedMarker? = null
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<MapMarker>(
+            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
             onRemove = { removes ->
                 val markers: List<MapMarker> = removes.map { params -> params.marker }
@@ -91,11 +92,14 @@ class HereMapViewController(
                 return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
-                changes.forEach { params ->
+                changes.map { params ->
                     // TODO: アイコンに変更があったかどうかを比較
                     params.marker.image = params.icon.toMapImage()
                     params.marker.coordinates = GeoPoint.from(params.state.position).toGeoCoordinates()
                     params.marker.anchor = params.icon.toAnchor2D()
+
+                    // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                    params.marker
                 }
             },
             onIconChange = { marker, icon ->
