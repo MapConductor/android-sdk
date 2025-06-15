@@ -2,13 +2,13 @@ package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
 
 enum class InitState {
     NotStarted,
@@ -33,7 +33,7 @@ interface MapViewState<T> {
     fun resetInitState()
 
     fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )
@@ -43,11 +43,11 @@ interface MapViewState<T> {
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )
-//    fun addMarkers(markerDataList: List<MarkerState>, listener: AddMarkersCallback? = null)
 }
 
 abstract class MapViewStateImpl<T>(
-    protected val mainCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    protected val mainCoroutine: CoroutineScope =
+        CoroutineScope(Dispatchers.Main),
 ) : MapViewState<T> {
     private val tag = this.javaClass.name
 

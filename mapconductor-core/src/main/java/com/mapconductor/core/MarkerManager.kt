@@ -49,6 +49,7 @@ class MarkerManager<ActualMarker>(
 
     private val markers: ConcurrentHashMap<String, ActualMarker> = ConcurrentHashMap()
     private val entries: ConcurrentMap<String, MarkerState> = ConcurrentHashMap()
+    private val hashCodes: ConcurrentMap<String, Int> = ConcurrentHashMap()
     private val cellRegistry =
         HexCellRegistry<MarkerState>(
             geocell = geocell,
@@ -66,8 +67,11 @@ class MarkerManager<ActualMarker>(
 
     fun getState(id: String): MarkerState? = entries.get(id)
 
+    fun getStateHashCode(id: String): Int? = hashCodes.get(id)
+
     fun removeStateAndMarker(id: String) {
         markers.remove(id)
+        hashCodes.remove(id)
         entries.remove(id)?.let {
             cellRegistry.removePoint(it)
         }
@@ -103,11 +107,13 @@ class MarkerManager<ActualMarker>(
     ) {
         markers[state.id] = marker
         entries[state.id] = state
+        hashCodes[state.id] = state.hashCode()
         cellRegistry.setPoint(state)
     }
 
     fun updateState(entry: MarkerState) {
         entries[entry.id] = entry
+        hashCodes[entry.id] = entry.hashCode()
         cellRegistry.setPoint(entry)
     }
 
