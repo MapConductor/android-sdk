@@ -17,6 +17,9 @@ fun ArcGISMapView(
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler? = {},
     onMarkerClick: OnMarkerEventHandler? = {},
+    onMarkerDragStart: OnMarkerEventHandler? = {},
+    onMarkerDrag: OnMarkerEventHandler? = {},
+    onMarkerDragEnd: OnMarkerEventHandler? = {},
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
@@ -54,6 +57,10 @@ fun ArcGISMapView(
             controller.cameraMoveListener = state::OnCameraChange
             controller.mapClickListener = onMapClick
             controller.markerClickListener = onMarkerClick
+            controller.markerDragStartListener = onMarkerDragStart
+            controller.markerDragListener = onMarkerDrag
+            controller.markerDragEndListener = onMarkerDragEnd
+
             state.controller = controller
 
             val restoreCameraPosition =

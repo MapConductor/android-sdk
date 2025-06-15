@@ -2,7 +2,6 @@ package com.mapconductor.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.info.InfoBubbleEntry
@@ -92,10 +91,16 @@ fun CollectAndRenderOverlays(
         @Suppress("UNCHECKED_CAST")
         val typedOverlay = overlay as MapOverlay<Any>
 
-        val flowState = typedOverlay.flow.collectAsState()
-
-        LaunchedEffect(flowState.value) {
-            typedOverlay.render(flowState.value.toSet().toList(), controller)
+        LaunchedEffect(Unit) {
+            typedOverlay.flow.collect {
+                typedOverlay.render(it, controller)
+            }
         }
+
+//        val flowState = typedOverlay.flow.collectAsState()
+//
+//        LaunchedEffect(flowState.value) {
+//            typedOverlay.render(flowState.value.toSet().toList(), controller)
+//        }
     }
 }

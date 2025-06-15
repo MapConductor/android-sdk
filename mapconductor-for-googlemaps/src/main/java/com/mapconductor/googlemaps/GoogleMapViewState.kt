@@ -13,14 +13,14 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
+import java.util.UUID
+import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import java.util.UUID
-import android.os.Bundle
 
 interface IGoogleMapViewState : MapViewState<Int>
 
@@ -68,7 +68,7 @@ class GoogleMapViewState(
     }
 
     override fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -78,7 +78,7 @@ class GoogleMapViewState(
             return
         }
 
-        val dstCameraPosition = MapCameraPosition.from(position)
+        val dstCameraPosition = MapCameraPosition.from(cameraPosition)
         controller?.let {
             if (durationMs == 0L) {
                 it.moveCamera(dstCameraPosition, listener)

@@ -3,7 +3,6 @@ package com.mapconductor.core.info
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,8 +15,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.mapconductor.core.marker.MarkerState
-import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.UUID
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 internal fun InfoWindowCompose(
@@ -60,14 +59,16 @@ class InfoBubbleState(
     val id: String = UUID.randomUUID().toString(),
     val tailOffset: Offset = Offset(0.5f, 1.0f),
 ) {
-    internal val marker: MutableState<MarkerState?> = mutableStateOf(null)
+    //    internal val _marker: MutableState<MarkerState?> = mutableStateOf(null)
+    var marker by mutableStateOf<MarkerState?>(null)
+        private set
 
     fun open(markerState: MarkerState) {
-        this.marker.value = markerState
+        this.marker = markerState
     }
 
     fun close() {
-        this.marker.value = null
+        this.marker = null
     }
 }
 

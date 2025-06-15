@@ -9,14 +9,17 @@ import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.spherical.haversineDistance
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow
+import kotlinx.coroutines.CoroutineScope
 
 interface MapViewController {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
+    val markerOverlayManager: MarkerOverlayManagerImpl<*>
 
-    suspend fun addMarkers(markerList: List<MarkerState>)
+    suspend fun addMarkers(data: List<MarkerState>)
+
+    suspend fun updateMarker(state: MarkerState)
 
     suspend fun clearOverlays()
 
@@ -41,7 +44,7 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
     }
 
     protected fun findMarkerFromPoint(
-        markerOverlayManager: MarkerOverlayManager<*>,
+        markerOverlayManager: MarkerOverlayManagerImpl<*>,
         position: IGeoPoint,
         zoom: Double,
         tolerance: Double,
@@ -49,7 +52,9 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
         val meterInMapPixel = zoomToMetersPerPixel(zoom)
         val radius = tolerance * meterInMapPixel
 
-        val state = markerOverlayManager.markerManager.findNearest(position) ?: return null
+        val state =
+            markerOverlayManager.markerManager.findNearest(position)
+                ?: return null
 
         val distance = haversineDistance(position, state.position)
         return if (distance <= radius) {
@@ -57,5 +62,12 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
         } else {
             null
         }
+    }
+
+    protected fun setDraggingState(
+        markerState: MarkerState,
+        dragging: Boolean,
+    ) {
+        markerState.isDragging = dragging
     }
 }

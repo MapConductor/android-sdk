@@ -16,16 +16,16 @@ import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.MapViewStateImpl
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import java.util.UUID
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 interface IHereMapViewState : MapViewState<MapScheme>
 
@@ -69,7 +69,7 @@ class HereMapViewState(
     }
 
     override fun moveCameraTo(
-        position: MapCameraPosition,
+        cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -85,9 +85,9 @@ class HereMapViewState(
         }
 
         if (durationMs == 0L) {
-            controller!!.moveCamera(position, listener)
+            controller!!.moveCamera(cameraPosition, listener)
         } else {
-            controller!!.animateCamera(position, durationMs.toLong(), listener)
+            controller!!.animateCamera(cameraPosition, durationMs.toLong(), listener)
         }
     }
 
