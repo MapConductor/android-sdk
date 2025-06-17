@@ -22,7 +22,7 @@ class MarkerIcon internal constructor(
     val infoAnchor: Offset = Offset(0.5f, 0.5f),
     val outsidePath: Path,                          // 外側のPath
     val insidePath: Path? = null,                   // 内側のPath(nullなら描画しない)
-    val management: Int? = 0,
+//    val management: Int? = 0,
 ) {
     companion object
 }
