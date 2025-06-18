@@ -4,32 +4,54 @@ root = true
 # Global defaults
 [*]
 charset = utf-8
-end_of_line = lf
+end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
 
 # Kotlin-specific rules
 [*.{kt,kts}]
-indent_style = space
-indent_size = 4
-continuation_indent_size = 4
 max_line_length = 120
+ktlint_experimental = true
+continuation_indent_size = 4
 insert_final_newline = true
 ktlint_standard_argument-list-wrapping = disabled
 ktlint_standard_function-naming = disabled
 
-# Disable wildcard imports
-ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**, android.**
+# Import organization (IDE and KtLint will respect this)
+ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**, android.**, kotlinx.**
 ij_kotlin_allow_wildcard_imports = false
 
-# Sort imports alphabetically and by groups
-ij_kotlin_optimize_imports = true
+# Android Studio formatter settings that KtLint can also understand
+ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
 
-# Do not align multiline parameters or arguments
-ij_formatter_align_multiline_parameters = false
-ij_formatter_align_multiline_method_brackets = false
+# --- ▼ここから修正▼ ---
 
-# XML files (layout, manifest, etc.)
+# 引数/パラメータの折り返し設定
+# IDEのUIで「Chop down if long (長い場合は折り返す)」に相当します。
+# 長い場合は、各引数が1行ずつに分割されます。
+ij_kotlin_call_parameters_wrap = on_every_item
+ij_kotlin_method_parameters_wrap = on_every_item
+
+# 括弧の改行設定 (上記と合わせて使うとより一般的です)
+ij_kotlin_call_parameters_new_line_after_left_paren = true
+ij_kotlin_call_parameters_right_paren_on_new_line = true
+ij_kotlin_method_parameters_new_line_after_left_paren = true
+ij_kotlin_method_parameters_right_paren_on_new_line = true
+
+# メソッドチェーンの折り返し
+# IDEのUIで「Wrap if long (長い場合は折り返す)」に相当します。
+ij_kotlin_method_call_chain_wrap = normal
+
+# --- ▲ここまで修正▲ ---
+
+# XML files
 [*.xml]
+indent_style = space
+indent_size = 4
+
+# Gradle files
+[*.{gradle,gradle.kts}]
 indent_style = space
 indent_size = 4

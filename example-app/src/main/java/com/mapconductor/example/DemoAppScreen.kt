@@ -26,9 +26,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
+import com.mapconductor.core.icons.Default
 import com.mapconductor.core.icons.ImageInCircle
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerIcon
@@ -110,7 +112,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -133,7 +135,10 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
     val markerList =
         remember {
             appViewModel.markerList.map {
-                it.copy(icon = icon)
+                it.copy(
+                    icon = icon,
+                    draggable = true,
+                )
             }
         }
     val mapViewState = appViewModel.mapViewState.collectAsState().value
@@ -151,7 +156,9 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                                 modifier = Modifier.weight(0.2f),
                                 itemList = menuItems,
                                 selectedIndex = selectedIndex,
-                                onSelect = { index, _ -> selectedIndex = index },
+                                onSelect = { index, _ ->
+                                    selectedIndex = index
+                                },
                             )
                             Button(
                                 modifier = Modifier.weight(0.1f),
@@ -172,8 +179,12 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     mapViewState = mapViewState,
                     markers = markerList,
                     onDirectionButtonClick = { state ->
-                        val intent = appViewModel.createIntentForDirection(state)
-                        context.startActivity(intent)
+                        state.icon =
+                            MarkerIcon.Default(
+                                fillColor = Color.Blue.toArgb(),
+                            )
+//                        val intent = appViewModel.createIntentForDirection(state)
+//                        context.startActivity(intent)
                     },
                     infoBubbleState = appViewModel.infoBubbleState,
                     onMapClickHandler = appViewModel::onMapClick,

@@ -17,7 +17,6 @@ import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
@@ -31,7 +30,6 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
-import android.content.res.Resources
 
 class MarkerManager<ActualMarker>(
     geocell: HexGeocell,
@@ -52,6 +50,7 @@ class MarkerManager<ActualMarker>(
 
     private val markers: ConcurrentHashMap<String, ActualMarker> = ConcurrentHashMap()
     private val entries: ConcurrentMap<String, MarkerState> = ConcurrentHashMap()
+    private val hashCodes: ConcurrentMap<String, Int> = ConcurrentHashMap()
     private val cellRegistry =
         HexCellRegistry<MarkerState>(
             geocell = geocell,
@@ -69,8 +68,11 @@ class MarkerManager<ActualMarker>(
 
     fun getState(id: String): MarkerState? = entries.get(id)
 
+    fun getStateHashCode(id: String): Int? = hashCodes.get(id)
+
     fun removeStateAndMarker(id: String) {
         markers.remove(id)
+        hashCodes.remove(id)
         entries.remove(id)?.let {
             cellRegistry.removePoint(it)
         }
@@ -106,11 +108,13 @@ class MarkerManager<ActualMarker>(
     ) {
         markers[state.id] = marker
         entries[state.id] = state
+        hashCodes[state.id] = state.hashCode()
         cellRegistry.setPoint(state)
     }
 
     fun updateState(entry: MarkerState) {
         entries[entry.id] = entry
+        hashCodes[entry.id] = entry.hashCode()
         cellRegistry.setPoint(entry)
     }
 
@@ -127,12 +131,12 @@ class MarkerManager<ActualMarker>(
         val cache = bitmapCache.get(key)
         if (cache != null) return cache
 
-        val iconBitmap = drawIcon(icon = icon)
+        val iconBitmap = createIconBitmap(icon = icon)
         bitmapCache.put(key, iconBitmap)
         return iconBitmap
     }
 
-    fun drawIcon(
+    fun createIconCanvas(
         canvasSize: Size,
         iconRect: RectF,
         bitmap: Bitmap,
@@ -164,7 +168,7 @@ class MarkerManager<ActualMarker>(
         return canvasBitmap
     }
 
-    fun drawIcon(
+    fun createIconBitmap(
         icon: MarkerIcon = MarkerIcon.Default(),
     ): BitmapIcon {
         val svgOriginalWidth = 24f // SVGの元のviewBox幅
@@ -194,7 +198,7 @@ class MarkerManager<ActualMarker>(
                     (svgOriginalWidth * 8).toFloat(),
                     (svgOriginalHeight * 8).toFloat(),
                 )
-                val iconBitmap = this.drawIcon(
+                val iconBitmap = this.createIconCanvas(
                     canvasSize = iconCanvasSize,
                     iconRect = RectF(
                         iconCanvasSize.width * 0f,
@@ -239,7 +243,7 @@ class MarkerManager<ActualMarker>(
                             (svgOriginalHeight * 8).toFloat(),
                         )
                     val iconBitmap =
-                        this.drawIcon(
+                        this.createIconCanvas(
                             canvasSize = iconCanvasSize,
                             iconRect =
                                 RectF(
@@ -287,7 +291,7 @@ class MarkerManager<ActualMarker>(
                             (svgOriginalHeight * 8).toFloat(),
                         )
                     val iconBitmap2 =
-                        this.drawIcon(
+                        this.createIconCanvas(
                             canvasSize = iconCanvasSize,
                             iconRect =
                                 RectF(
