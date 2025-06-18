@@ -2,11 +2,11 @@ package com.mapconductor.core
 
 import androidx.annotation.Keep
 import com.mapconductor.core.marker.BitmapIcon
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import android.content.Context
 import android.content.res.Resources
 import android.util.LruCache
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 data class IconResource(
     val name: String,

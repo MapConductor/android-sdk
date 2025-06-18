@@ -13,10 +13,10 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.suspendCancellableCoroutine
 import android.util.Log
 import android.view.ViewGroup
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
@@ -25,6 +25,9 @@ fun HereMapView(
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler? = {},
     onMarkerClick: OnMarkerEventHandler? = {},
+    onMarkerDragStart: OnMarkerEventHandler? = {},
+    onMarkerDrag: OnMarkerEventHandler? = {},
+    onMarkerDragEnd: OnMarkerEventHandler? = {},
     content: (@Composable HereMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<HereMapViewHolder>() }
@@ -64,6 +67,9 @@ fun HereMapView(
             controller.mapClickListener = onMapClick
             controller.cameraMoveListener = onCameraMove
             controller.markerClickListener = onMarkerClick
+            controller.markerDragStartListener = onMarkerDragStart
+            controller.markerDragListener = onMarkerDrag
+            controller.markerDragEndListener = onMarkerDragEnd
 
             (state as? HereMapViewState)?.controller = controller
 

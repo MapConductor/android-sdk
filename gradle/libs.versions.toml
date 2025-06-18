@@ -22,7 +22,7 @@ compose = "1.8.1"
 composeBom = "2025.05.00"
 runner = "1.6.2"
 
-mapboxAndroid = "11.12.0-rc.1"
+mapboxAndroid = "11.12.4"
 playServicesMaps = "19.2.0"
 
 secretsGradlePlugin = "2.0.1"

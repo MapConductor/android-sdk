@@ -65,9 +65,12 @@ fun MarkerIcon.Companion.StarInCircle(
     val c1d2 = Offset(-114.6f, -256f)
     val c1d = Offset(-256f, -256f)
     path.rCubicTo(
-        sDim(c1d1.x), sDim(c1d1.y), // sDim(0)=0.0, sDim(-141.4)=-5.5234375
-        sDim(c1d2.x), sDim(c1d2.y), // sDim(-114.6)=-4.4765625, sDim(-256)=-10.0
-        sDim(c1d.x), sDim(c1d.y), // sDim(-256)=-10.0, sDim(-256)=-10.0
+        sDim(c1d1.x),
+        sDim(c1d1.y), // sDim(0)=0.0, sDim(-141.4)=-5.5234375
+        sDim(c1d2.x),
+        sDim(c1d2.y), // sDim(-114.6)=-4.4765625, sDim(-256)=-10.0
+        sDim(c1d.x),
+        sDim(c1d.y), // sDim(-256)=-10.0, sDim(-256)=-10.0
     )
     lastControlX = currentX + c1d2.x
     lastControlY = currentY + c1d2.y
@@ -91,11 +94,14 @@ fun MarkerIcon.Companion.StarInCircle(
     val s1AbsEnd = Offset(50f, 396f)
     path.cubicTo(
         // sX(164.6)=((164.6-50)*(20/512))+2 = 4.4765625+2 = 6.4765625, sY(140.0)=((140-140)*(20/512))+2 = 0+2 = 2.0
-        sX(s1AbsC1.x), sY(s1AbsC1.y),
+        sX(s1AbsC1.x),
+        sY(s1AbsC1.y),
         // sX(50.0)=2.0, sY(254.6)=((254.6-140)*(20/512))+2=4.4765625+2 = 6.4765625
-        sX(s1absC2.x), sY(s1absC2.y),
+        sX(s1absC2.x),
+        sY(s1absC2.y),
         // sX(50.0)=2.0, sY(396.0)=12.0
-        sX(s1AbsEnd.x), sY(s1AbsEnd.y),
+        sX(s1AbsEnd.x),
+        sY(s1AbsEnd.y),
     )
     lastControlX = s1absC2.x
     lastControlY = s1absC2.y
@@ -120,9 +126,12 @@ fun MarkerIcon.Companion.StarInCircle(
     val s2AbsC2 = Offset(currentX + s2D2.x, currentY + s2D2.y)
     val s2AbsEnd = Offset(currentX + s2D.x, currentY + s2D.y)
     path.cubicTo(
-        sX(s2AbsC1.x), sY(s2AbsC1.y), // sX(50.0)=2.0, sY(537.4)=((537.4-140)*(20/512))+2=15.5234375+2 = 17.523438
-        sX(s2AbsC2.x), sY(s2AbsC2.y), // sX(164.6)=6.4765625, sY(652.0)=((652-140)*(20/512))+2=20+2 = 22.0
-        sX(s2AbsEnd.x), sY(s2AbsEnd.y), // sX(306.0)=((306-50)*(20/512))+2=10+2 = 12.0, sY(652.0)=22.0
+        sX(s2AbsC1.x),
+        sY(s2AbsC1.y), // sX(50.0)=2.0, sY(537.4)=((537.4-140)*(20/512))+2=15.5234375+2 = 17.523438
+        sX(s2AbsC2.x),
+        sY(s2AbsC2.y), // sX(164.6)=6.4765625, sY(652.0)=((652-140)*(20/512))+2=20+2 = 22.0
+        sX(s2AbsEnd.x),
+        sY(s2AbsEnd.y), // sX(306.0)=((306-50)*(20/512))+2=10+2 = 12.0, sY(652.0)=22.0
     )
     lastControlX = s2AbsC2.x
     lastControlY = s2AbsC2.y
@@ -145,9 +154,12 @@ fun MarkerIcon.Companion.StarInCircle(
     val s3AbsC2 = Offset(562f, 537.4f)
     val s3AbsEnd = Offset(562f, 396f)
     path.cubicTo(
-        sX(s3AbsC1.x), sY(s3AbsC1.y), // sX(447.4)=((447.4-50)*(20/512))+2=15.5234375+2 = 17.523438, sY(652.0)=22.0
-        sX(s3AbsC2.x), sY(s3AbsC2.y), // sX(562.0)=22.0, sY(537.4)=17.523438
-        sX(s3AbsEnd.x), sY(s3AbsEnd.y), // sX(562.0)=22.0, sY(396.0)=12.0
+        sX(s3AbsC1.x),
+        sY(s3AbsC1.y), // sX(447.4)=((447.4-50)*(20/512))+2=15.5234375+2 = 17.523438, sY(652.0)=22.0
+        sX(s3AbsC2.x),
+        sY(s3AbsC2.y), // sX(562.0)=22.0, sY(537.4)=17.523438
+        sX(s3AbsEnd.x),
+        sY(s3AbsEnd.y), // sX(562.0)=22.0, sY(396.0)=12.0
     )
     path.close()
 

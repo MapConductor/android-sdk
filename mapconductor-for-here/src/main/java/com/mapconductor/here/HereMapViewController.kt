@@ -21,7 +21,7 @@ import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManager
+import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
@@ -62,8 +62,9 @@ class HereMapViewController(
     )
 
     private var selectedMarker: SelectedMarker? = null
-    private val markerOverlayManager =
-        MarkerOverlayManager<MapMarker>(
+    override val markerOverlayManager =
+        MarkerOverlayManagerImpl<MapMarker>(
+            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
             onRemove = { removes ->
                 val markers: List<MapMarker> = removes.map { params -> params.marker }
@@ -88,21 +89,29 @@ class HereMapViewController(
                     }
 
                 holder.mapView.mapScene.addMapMarkers(markers)
-                return@MarkerOverlayManager markers
+                return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
-                changes.forEach { params ->
+                changes.map { params ->
                     // TODO: アイコンに変更があったかどうかを比較
                     params.marker.image = params.icon.toMapImage()
                     params.marker.coordinates = GeoPoint.from(params.state.position).toGeoCoordinates()
                     params.marker.anchor = params.icon.toAnchor2D()
+
+                    // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                    params.marker
                 }
+            },
+            onIconChange = { marker, icon ->
+                marker.image = icon.toMapImage()
             },
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
+
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val result =
@@ -228,10 +237,15 @@ class HereMapViewController(
                         state = state,
                         overlay = overlay,
                     )
+
+                // Suppress the recomposition for the position property
+                setDraggingState(state, true)
+
                 markerDragStartListener?.let {
                     coroutine.launch { it.invoke(state) }
                 }
             }
+
             GestureState.UPDATE.value -> {
                 selectedMarker?.also { selected ->
                     holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
@@ -243,9 +257,14 @@ class HereMapViewController(
                     }
                 }
             }
+
             GestureState.END.value, GestureState.CANCEL.value -> {
                 selectedMarker?.also { selected ->
                     markerOverlayManager.markerManager.updateState(selected.state)
+
+                    // Restore the recomposition for the position property
+                    setDraggingState(selected.state, false)
+
                     markerDragEndListener?.let {
                         coroutine.launch { it.invoke(selected.state) }
                     }
