@@ -111,9 +111,9 @@ fun MarkerIcon.Companion.Default(
         }
 
     return MarkerIcon(
-        fillColor = fillColor,
-        strokeColor = strokeColor,
-        strokeWidth = strokeWidth,
+        outsideColor = fillColor,
+        insideColor = strokeColor,
+        outsideWidth = strokeWidth,
         scale = scale,
         label = label?.substring(0, 0)?.toString() ?: "",
         labelTextColor = labelTextColor,
@@ -123,6 +123,6 @@ fun MarkerIcon.Companion.Default(
         anchor = Offset(0.5f, 1.0f),
         size = Size(32f, 32f),
         infoAnchor = Offset(0.5f, 0.5f),
-        strokePath = strokePath,
+        outsidePath = strokePath,
     )
 }

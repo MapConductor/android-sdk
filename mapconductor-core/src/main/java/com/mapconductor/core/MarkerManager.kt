@@ -9,6 +9,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
@@ -130,23 +131,12 @@ class MarkerManager<ActualMarker>(
         val cache = bitmapCache.get(key)
         if (cache != null) return cache
 
-        val iconBitmap =
-            createDefaultMarkerShape(
-                fillColor = icon.fillColor,
-                strokeColor = icon.strokeColor,
-                strokeWidth = icon.strokeWidth,
-                scale = icon.scale,
-                label = icon.label,
-                labelTextColor = icon.labelTextColor,
-                labelTextSizeLogical = icon.labelTextSizeLogical,
-                fillDrawable = icon.fillDrawable,
-                iconDrawable = icon.iconDrawable,
-            )
+        val iconBitmap = createIconBitmap(icon = icon)
         bitmapCache.put(key, iconBitmap)
         return iconBitmap
     }
 
-    fun drawIcon(
+    fun createIconCanvas(
         canvasSize: Size,
         iconRect: RectF,
         bitmap: Bitmap,
@@ -178,21 +168,11 @@ class MarkerManager<ActualMarker>(
         return canvasBitmap
     }
 
-    fun createDefaultMarkerShape(
-        fillColor: Int? = null,
-        strokeColor: Int? = null,
-        strokeWidth: Float? = 1f,
-        scale: Float? = 3f,
-        label: String? = null,
-        labelTextColor: Int? = Color.BLACK,
-        labelTextSizeLogical: Float? = 10f, // 32x32論理座標系での文字サイズ
-        fillDrawable: Drawable? = null, // ★塗りつぶし用ビットマップ
-        iconDrawable: Drawable? = null,
-    ): BitmapIcon {
+    fun createIconBitmap(icon: MarkerIcon = MarkerIcon.Default()): BitmapIcon {
         val svgOriginalWidth = 24f // SVGの元のviewBox幅
         val svgOriginalHeight = 24f // SVGの元のviewBox高さ
-        val width = svgOriginalWidth * (scale ?: 2f) * ResourceProvider.density
-        val height = svgOriginalHeight * (scale ?: 2f) * ResourceProvider.density
+        val width = svgOriginalWidth * (icon.scale ?: 2f) * ResourceProvider.density
+        val height = svgOriginalHeight * (icon.scale ?: 2f) * ResourceProvider.density
 
         val bitmap = createBitmap(width.toInt(), height.toInt())
         val canvas = Canvas(bitmap)
@@ -203,108 +183,24 @@ class MarkerManager<ActualMarker>(
         val scaleX = width / pathCoordinateSystemWidth
         val scaleY = height / pathCoordinateSystemHeight
 
-        val scaleFactor = 28.0f / 24.0f
-        val offsetX = 2.0f
-        val offsetY = 2.0f
+        val insidePath = icon.insidePath
+        val outsidePath = icon.outsidePath
 
-        val strokePath =
-            Path().apply {
-                // --- 最初のサブパス (外側の形状) ---
-                // "m12 0" -> moveTo(12*s + offsetX, 0*s + offsetY)
-                moveTo(12f * scaleFactor + offsetX, 0f * scaleFactor + offsetY) // (16f, 2f)
-
-                // "c-4.4183 2.3685e-15 -8 3.5817-8 8" - relative cubicTo (all params scaled)
-                rCubicTo(
-                    -4.4183f * scaleFactor,
-                    2.3685e-15f * scaleFactor,
-                    -8f * scaleFactor,
-                    3.5817f * scaleFactor,
-                    -8f * scaleFactor,
-                    8f * scaleFactor,
-                )
-                // (-5.1546833f, 0f, -9.333333f, 4.17865f, -9.333333f, 9.333333f)
-
-                // "0 1.421 0.3816 2.75 1.0312 3.906" - implicit relative cubicTo
-                rCubicTo(
-                    0f * scaleFactor,
-                    1.421f * scaleFactor,
-                    0.3816f * scaleFactor,
-                    2.75f * scaleFactor,
-                    1.0312f * scaleFactor,
-                    3.906f * scaleFactor,
-                )
-                // (0f, 1.6578333f, 0.4452f, 3.2083333f, 1.2030667f, 4.557f)
-
-                // "0.1079 0.192 0.221 0.381 0.3438 0.563" - implicit relative cubicTo
-                rCubicTo(
-                    0.1079f * scaleFactor,
-                    0.192f * scaleFactor,
-                    0.221f * scaleFactor,
-                    0.381f * scaleFactor,
-                    0.3438f * scaleFactor,
-                    0.563f * scaleFactor,
-                )
-                // (0.12588333f, 0.224f, 0.25783333f, 0.4445f, 0.4011f, 0.6568333f)
-
-                // "l6.625 11.531" - relative lineTo
-                rLineTo(6.625f * scaleFactor, 11.531f * scaleFactor)
-                // (7.7291665f, 13.452833f)
-
-                // "6.625-11.531" - implicit relative lineTo
-                rLineTo(6.625f * scaleFactor, -11.531f * scaleFactor)
-                // (7.7291665f, -13.452833f)
-
-                // "c0.102-0.151 0.19-0.311 0.281-0.469" - relative cubicTo
-                rCubicTo(
-                    0.102f * scaleFactor,
-                    -0.151f * scaleFactor,
-                    0.19f * scaleFactor,
-                    -0.311f * scaleFactor,
-                    0.281f * scaleFactor,
-                    -0.469f * scaleFactor,
-                )
-                // (0.119f, -0.17616667f, 0.22166666f, -0.36283332f, 0.32783332f, -0.54716665f)
-
-                // "l0.063-0.094" - relative lineTo
-                rLineTo(0.063f * scaleFactor, -0.094f * scaleFactor)
-                // (0.0735f, -0.10966667f)
-
-                // "c0.649-1.156 1.031-2.485 1.031-3.906" - relative cubicTo
-                rCubicTo(
-                    0.649f * scaleFactor,
-                    -1.156f * scaleFactor,
-                    1.031f * scaleFactor,
-                    -2.485f * scaleFactor,
-                    1.031f * scaleFactor,
-                    -3.906f * scaleFactor,
-                )
-                // (0.7571667f, -1.3486667f, 1.2028333f, -2.8991666f, 1.2028333f, -4.557f)
-
-                // "0-4.4183-3.582-8-8-8" - implicit relative cubicTo
-                rCubicTo(
-                    0f * scaleFactor,
-                    -4.4183f * scaleFactor,
-                    -3.582f * scaleFactor,
-                    -8f * scaleFactor,
-                    -8f * scaleFactor,
-                    -8f * scaleFactor,
-                )
-                // (0f, -5.1546833f, -4.179f, -9.333333f, -9.333333f, -9.333333f)
-
-                // "z" - closePath
-                close() // 最初のサブパスを閉じる
+        val shadowPath =
+            Path(icon.outsidePath).apply {
+                offset(1f, 1f)
             }
 
-        val fillPaint =
+        val outsidePaint =
             Paint(Paint.ANTI_ALIAS_FLAG).also {
-                if (fillDrawable != null) {
+                if (icon.fillDrawable != null) {
                     val iconCanvasSize =
                         Size(
                             (svgOriginalWidth * 8).toFloat(),
                             (svgOriginalHeight * 8).toFloat(),
                         )
                     val iconBitmap =
-                        this.drawIcon(
+                        this.createIconCanvas(
                             canvasSize = iconCanvasSize,
                             iconRect =
                                 RectF(
@@ -315,11 +211,11 @@ class MarkerManager<ActualMarker>(
                                 ),
                             bitmap =
                                 toBitmap(
-                                    fillDrawable,
+                                    icon.fillDrawable,
                                     iconCanvasSize.width.toInt(),
                                     iconCanvasSize.height.toInt(),
                                 ),
-                            fillColor = fillColor ?: Color.RED,
+                            fillColor = icon.outsideColor ?: Color.RED,
                         )
                     val iconBitmapTileMode = Shader.TileMode.CLAMP
                     val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
@@ -339,11 +235,58 @@ class MarkerManager<ActualMarker>(
                     it.shader = bitmapShader
                 }
                 it.style = Paint.Style.FILL
-                it.color = fillColor ?: Color.RED
+                it.color = icon.outsideColor ?: Color.RED
+            }
+
+        val insidePaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).also {
+                if (icon.fillDrawable != null) {
+                    val iconCanvasSize =
+                        Size(
+                            (svgOriginalWidth * 8).toFloat(),
+                            (svgOriginalHeight * 8).toFloat(),
+                        )
+                    val iconBitmap =
+                        this.createIconCanvas(
+                            canvasSize = iconCanvasSize,
+                            iconRect =
+                                RectF(
+                                    iconCanvasSize.width * 0f,
+                                    0f,
+                                    iconCanvasSize.width * 1f,
+                                    iconCanvasSize.height * 1f,
+                                ),
+                            bitmap =
+                                toBitmap(
+                                    icon.fillDrawable,
+                                    iconCanvasSize.width.toInt(),
+                                    iconCanvasSize.height.toInt(),
+                                ),
+                            fillColor = icon.insideColor ?: Color.RED,
+                        )
+                    val iconBitmapTileMode = Shader.TileMode.CLAMP
+                    val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
+
+                    // BitmapShaderのローカルマトリックスを設定して、
+                    // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
+                    val shaderMatrix = Matrix()
+                    val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap.width.toFloat()
+                    val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap.height.toFloat()
+                    shaderMatrix.setScale(shaderScaleX, shaderScaleY)
+
+                    // 丸い部分の中心の論理座標 (24x24系)
+                    val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
+                    val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.5
+                    shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
+                    bitmapShader.setLocalMatrix(shaderMatrix)
+                    it.shader = bitmapShader
+                }
+                it.style = Paint.Style.FILL
+                it.color = icon.insideColor ?: Color.RED
             }
 
         val iconPaint =
-            iconDrawable?.let {
+            icon.iconDrawable?.let {
                 Paint(Paint.ANTI_ALIAS_FLAG).also {
                     it.strokeWidth = 0f
                     val iconCanvasSize =
@@ -352,7 +295,7 @@ class MarkerManager<ActualMarker>(
                             (svgOriginalHeight * 8).toFloat(),
                         )
                     val iconBitmap2 =
-                        this.drawIcon(
+                        this.createIconCanvas(
                             canvasSize = iconCanvasSize,
                             iconRect =
                                 RectF(
@@ -363,7 +306,7 @@ class MarkerManager<ActualMarker>(
                                 ),
                             bitmap =
                                 toBitmap(
-                                    iconDrawable,
+                                    icon.iconDrawable,
                                     iconCanvasSize.width.toInt(),
                                     iconCanvasSize.height.toInt(),
                                 ),
@@ -390,8 +333,8 @@ class MarkerManager<ActualMarker>(
         val strokePaint =
             Paint(Paint.ANTI_ALIAS_FLAG).also {
                 it.style = Paint.Style.STROKE
-                it.strokeWidth = strokeWidth ?: 0f // SVGでのstrokeWidthに相当
-                it.color = strokeColor ?: Color.WHITE
+                it.strokeWidth = icon.outsideWidth ?: 0f // SVGでのstrokeWidthに相当
+                it.color = icon.outsideStrokeColor ?: Color.WHITE
             }
 
         val shadowPaint =
@@ -400,7 +343,7 @@ class MarkerManager<ActualMarker>(
                 this.isAntiAlias = true
                 // BlurMaskFilterの半径はピクセル単位。論理半径をピクセルに変換。
                 // scaleXとscaleYが異なる場合を考慮し、平均または主要な軸のスケールを使う。ここではscaleYを例に。
-                val pixelBlurRadius = 0.5
+                val pixelBlurRadius = 2
                 if (pixelBlurRadius > 0f) { // 半径0だとエラーになるため
                     this.maskFilter = BlurMaskFilter(pixelBlurRadius.toFloat(), BlurMaskFilter.Blur.OUTER)
                 } else {
@@ -410,17 +353,19 @@ class MarkerManager<ActualMarker>(
             }
 
         canvas.withScale(scaleX.toFloat(), scaleY.toFloat()) {
-            drawPath(strokePath, shadowPaint)
-            drawPath(strokePath, fillPaint)
-            iconPaint?.also {
-                drawPath(strokePath, it)
+            drawPath(shadowPath, shadowPaint)
+            drawPath(outsidePath, outsidePaint)
+            drawPath(outsidePath, strokePaint)
+            if (insidePath != null) {
+                drawPath(insidePath, insidePaint)
+                drawPath(insidePath, strokePaint)
             }
 
             // --- 3. ラベルの描画 (labelが指定されている場合) ---
-//            if (label != null) {
+//            if (icon.label != null) {
 //                val textPaint = Paint().apply {
-//                    this.color = labelTextColor ?: Color.BLACK
-//                    this.textSize = labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
+//                    this.color = icon.labelTextColor ?: Color.BLACK
+//                    this.textSize = icon.labelTextSizeLogical ?: 10f // 論理サイズ。Canvasスケールで実際の大きさが決まる
 //                    this.textAlign = Paint.Align.CENTER
 //                    this.typeface = Typeface.DEFAULT_BOLD
 //                    this.isAntiAlias = true
@@ -435,11 +380,8 @@ class MarkerManager<ActualMarker>(
 //                val fm = textPaint.fontMetrics
 //                val yForDrawTextLogical = centerYLogical - (fm.ascent + fm.descent) / 2f
 //
-//                canvas.drawText(label.substring(0, 1).toString(), centerXLogical, yForDrawTextLogical, textPaint)
+//                canvas.drawText(icon.label, centerXLogical, yForDrawTextLogical, textPaint)
 //            }
-
-//            // -- ストローク --
-            drawPath(strokePath, strokePaint)
         }
 
         val visualNormalizedTipY = 0.9375f
@@ -472,7 +414,6 @@ class MarkerManager<ActualMarker>(
 //                drawable.bitmap.asImageBitmap().asAndroidBitmap()
                 drawable.bitmap.scale(width, height)
             }
-
             else -> {
                 val bitmap = createBitmap(width, height)
                 val canvas = Canvas(bitmap)
