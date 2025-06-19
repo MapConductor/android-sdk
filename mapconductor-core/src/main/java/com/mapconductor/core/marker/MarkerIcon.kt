@@ -7,9 +7,10 @@ import android.graphics.Path
 import android.graphics.drawable.Drawable
 
 class MarkerIcon internal constructor(
-    val fillColor: Int? = Color.RED,
-    val strokeColor: Int? = Color.WHITE,
-    val strokeWidth: Float? = 1f,
+    val outsideColor: Int? = Color.RED, // 外側objectの色
+    val outsideStrokeColor: Int? = Color.WHITE, // 外周の色
+    val insideColor: Int? = Color.WHITE, // 内側objectの色
+    val outsideWidth: Float? = 1f,
     val scale: Float? = 2f,
     val label: String? = null,
     val labelTextColor: Int? = Color.BLACK,
@@ -19,7 +20,9 @@ class MarkerIcon internal constructor(
     val anchor: Offset = Offset(0.5f, 1.0f),
     val size: Size = Size(32f, 32f),
     val infoAnchor: Offset = Offset(0.5f, 0.5f),
-    val strokePath: Path,
+    val outsidePath: Path, // 外側のPath
+    val insidePath: Path? = null, // 内側のPath(nullなら描画しない)
+//    val management: Int? = 0,
 ) {
     companion object
 }

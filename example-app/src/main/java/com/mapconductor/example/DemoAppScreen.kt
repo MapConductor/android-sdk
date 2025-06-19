@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
+import com.mapconductor.core.icons.ImageInCircle
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.toFixed
@@ -121,7 +122,14 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 //        fillColor = Color(0x6f, 0x4e, 0x37).toArgb(),
 //        strokeColor = Color.LightGray.toArgb()
 //    )
-    val icon = MarkerIcon.Default()
+//    val icon = MarkerIcon.Default()
+//    val icon = MarkerIcon.StarInCircle()
+//    val icon = MarkerIcon.HeartInCircle()
+//    val icon = MarkerIcon.SquareMarker()
+//    val icon = MarkerIcon.Triangle()
+    val image = AppCompatResources.getDrawable(context, R.drawable.def)
+    val icon = MarkerIcon.ImageInCircle(image = image!!)
+
     val markerList =
         remember {
             appViewModel.markerList.map {
