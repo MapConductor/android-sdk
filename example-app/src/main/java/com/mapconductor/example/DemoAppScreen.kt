@@ -45,7 +45,6 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
-import android.graphics.drawable.BitmapDrawable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,7 +129,6 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 //    val icon = MarkerIcon.Triangle()
     val image = AppCompatResources.getDrawable(context, R.drawable.def)
     val icon = MarkerIcon.ImageInCircle(image = image!!)
-
 
     val markerList =
         remember {

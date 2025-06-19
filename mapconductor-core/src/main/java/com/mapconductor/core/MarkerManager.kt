@@ -168,9 +168,7 @@ class MarkerManager<ActualMarker>(
         return canvasBitmap
     }
 
-    fun createIconBitmap(
-        icon: MarkerIcon = MarkerIcon.Default(),
-    ): BitmapIcon {
+    fun createIconBitmap(icon: MarkerIcon = MarkerIcon.Default()): BitmapIcon {
         val svgOriginalWidth = 24f // SVGの元のviewBox幅
         val svgOriginalHeight = 24f // SVGの元のviewBox高さ
         val width = svgOriginalWidth * (icon.scale ?: 2f) * ResourceProvider.density
@@ -188,51 +186,57 @@ class MarkerManager<ActualMarker>(
         val insidePath = icon.insidePath
         val outsidePath = icon.outsidePath
 
-        val shadowPath = Path(icon.outsidePath).apply {
-            offset(1f, 1f)
-        }
-
-        val outsidePaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-            if (icon.fillDrawable != null) {
-                val iconCanvasSize = Size(
-                    (svgOriginalWidth * 8).toFloat(),
-                    (svgOriginalHeight * 8).toFloat(),
-                )
-                val iconBitmap = this.createIconCanvas(
-                    canvasSize = iconCanvasSize,
-                    iconRect = RectF(
-                        iconCanvasSize.width * 0f,
-                        0f,
-                        iconCanvasSize.width * 1f,
-                        iconCanvasSize.height * 1f,
-                    ),
-                    bitmap = toBitmap(
-                        icon.fillDrawable,
-                        iconCanvasSize.width.toInt(),
-                        iconCanvasSize.height.toInt(),
-                    ),
-                    fillColor = icon.outsideColor ?: Color.RED,
-                )
-                val iconBitmapTileMode = Shader.TileMode.CLAMP
-                val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
-
-                // BitmapShaderのローカルマトリックスを設定して、
-                // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
-                val shaderMatrix = Matrix()
-                val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap.width.toFloat()
-                val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap.height.toFloat()
-                shaderMatrix.setScale(shaderScaleX, shaderScaleY)
-
-                // 丸い部分の中心の論理座標 (24x24系)
-                val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
-                val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.5
-                shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
-                bitmapShader.setLocalMatrix(shaderMatrix)
-                it.shader = bitmapShader
+        val shadowPath =
+            Path(icon.outsidePath).apply {
+                offset(1f, 1f)
             }
-            it.style = Paint.Style.FILL
-            it.color = icon.outsideColor ?: Color.RED
-        }
+
+        val outsidePaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).also {
+                if (icon.fillDrawable != null) {
+                    val iconCanvasSize =
+                        Size(
+                            (svgOriginalWidth * 8).toFloat(),
+                            (svgOriginalHeight * 8).toFloat(),
+                        )
+                    val iconBitmap =
+                        this.createIconCanvas(
+                            canvasSize = iconCanvasSize,
+                            iconRect =
+                                RectF(
+                                    iconCanvasSize.width * 0f,
+                                    0f,
+                                    iconCanvasSize.width * 1f,
+                                    iconCanvasSize.height * 1f,
+                                ),
+                            bitmap =
+                                toBitmap(
+                                    icon.fillDrawable,
+                                    iconCanvasSize.width.toInt(),
+                                    iconCanvasSize.height.toInt(),
+                                ),
+                            fillColor = icon.outsideColor ?: Color.RED,
+                        )
+                    val iconBitmapTileMode = Shader.TileMode.CLAMP
+                    val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
+
+                    // BitmapShaderのローカルマトリックスを設定して、
+                    // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
+                    val shaderMatrix = Matrix()
+                    val shaderScaleX = svgOriginalWidth.toFloat() / iconBitmap.width.toFloat()
+                    val shaderScaleY = svgOriginalHeight.toFloat() / iconBitmap.height.toFloat()
+                    shaderMatrix.setScale(shaderScaleX, shaderScaleY)
+
+                    // 丸い部分の中心の論理座標 (24x24系)
+                    val centerXLogical = (pathCoordinateSystemWidth - svgOriginalWidth) * 0.5
+                    val centerYLogical = (pathCoordinateSystemHeight - svgOriginalHeight) * 0.5
+                    shaderMatrix.postTranslate(centerXLogical.toFloat(), centerYLogical.toFloat())
+                    bitmapShader.setLocalMatrix(shaderMatrix)
+                    it.shader = bitmapShader
+                }
+                it.style = Paint.Style.FILL
+                it.color = icon.outsideColor ?: Color.RED
+            }
 
         val insidePaint =
             Paint(Paint.ANTI_ALIAS_FLAG).also {
@@ -302,7 +306,7 @@ class MarkerManager<ActualMarker>(
                                 ),
                             bitmap =
                                 toBitmap(
-                                icon.iconDrawable,
+                                    icon.iconDrawable,
                                     iconCanvasSize.width.toInt(),
                                     iconCanvasSize.height.toInt(),
                                 ),

@@ -1,15 +1,15 @@
 package com.mapconductor
 
-//import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.icons.HeartInCircle
-import com.mapconductor.core.icons.StarInCircle
 import com.mapconductor.core.icons.SquareMarker
+import com.mapconductor.core.icons.StarInCircle
 import com.mapconductor.core.icons.Triangle
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
-import android.os.Bundle
 import android.graphics.Color
+import android.os.Bundle
+
 /**
  * This example uses publicly available business addresses (e.g., Starbucks) and geocodes them
  * using the U.S. Census Bureau Geocoding API.
