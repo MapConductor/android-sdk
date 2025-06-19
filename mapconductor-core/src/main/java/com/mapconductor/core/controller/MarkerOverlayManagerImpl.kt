@@ -70,7 +70,7 @@ class MarkerOverlayManagerImpl<
                     return@filter !prevState.equals(state)
                 }
 
-        val defaultIcon = markerManager.createDefaultMarkerShape()
+        val defaultIcon = markerManager.createIconBitmap()
 
         // Remove markers
         if (removed.isNotEmpty()) {
@@ -178,7 +178,7 @@ class MarkerOverlayManagerImpl<
             semaphore.release()
             return
         }
-        val defaultIcon = markerManager.createDefaultMarkerShape()
+        val defaultIcon = markerManager.createIconBitmap()
         val markerIcon =
             state.icon?.let {
                 markerManager.getBitmapIcon(it)
