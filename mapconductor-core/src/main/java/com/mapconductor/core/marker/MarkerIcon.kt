@@ -6,7 +6,7 @@ import android.graphics.Color
 import android.graphics.Path
 import android.graphics.drawable.Drawable
 
-class MarkerIcon internal constructor(
+class MarkerIcon(
     val outsideColor: Int? = Color.RED, // 外側objectの色
     val outsideStrokeColor: Int? = Color.WHITE, // 外周の色
     val insideColor: Int? = Color.WHITE, // 内側objectの色
