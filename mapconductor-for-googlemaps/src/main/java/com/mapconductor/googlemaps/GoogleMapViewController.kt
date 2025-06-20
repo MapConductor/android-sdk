@@ -98,6 +98,9 @@ class GoogleMapViewController(
                 val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
                 marker.setIcon(bitmapDescriptor)
             },
+            onAnimation = { param ->
+
+            }
         )
 
     init {

@@ -150,6 +150,9 @@ class ArcGISMapViewController(
                     }
                 marker.symbol = pictureSymbolFuture
             },
+            onAnimation = { param ->
+
+            },
         )
 
     init {

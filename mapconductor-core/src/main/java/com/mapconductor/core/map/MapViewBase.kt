@@ -84,7 +84,12 @@ fun <
             }
             val markers = scope.markerFlow.collectAsState()
             markers.value.forEach { markerState ->
-                LaunchedEffect(markerState.icon, markerState.draggable, markerState.internalPosition) {
+                LaunchedEffect(
+                    markerState.icon,
+                    markerState.draggable,
+                    markerState.internalPosition,
+                    markerState.animation,
+                ) {
                     controller.updateMarker(markerState)
                 }
             }

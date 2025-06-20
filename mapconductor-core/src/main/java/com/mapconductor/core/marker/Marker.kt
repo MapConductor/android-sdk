@@ -19,6 +19,7 @@ class MarkerState(
     position: GeoPoint,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
+    animation: MarkerAnimation? = null,
     draggable: Boolean = false,
 ) {
     var icon by mutableStateOf<MarkerIcon?>(icon)
@@ -35,6 +36,8 @@ class MarkerState(
                 dragPosition = position
             }
         }
+
+    var animation by mutableStateOf(animation)
 
     var position by mutableStateOf(position)
 
