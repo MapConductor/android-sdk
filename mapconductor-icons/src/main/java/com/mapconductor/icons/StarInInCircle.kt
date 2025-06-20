@@ -1,4 +1,4 @@
-package com.mapconductor.core.icons
+package com.mapconductor.icons
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
