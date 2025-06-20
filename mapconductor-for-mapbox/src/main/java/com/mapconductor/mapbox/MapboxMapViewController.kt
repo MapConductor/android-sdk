@@ -162,6 +162,9 @@ internal class MapboxMapViewController(
                     pointAnnotationManager.update(marker)
                 }
             },
+            onAnimation = { param ->
+
+            },
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)

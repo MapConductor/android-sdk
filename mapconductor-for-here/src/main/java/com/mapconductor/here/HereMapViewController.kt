@@ -105,6 +105,9 @@ class HereMapViewController(
             onIconChange = { marker, icon ->
                 marker.image = icon.toMapImage()
             },
+            onAnimation = { param ->
+
+            },
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)

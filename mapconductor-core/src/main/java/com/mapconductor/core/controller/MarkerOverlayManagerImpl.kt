@@ -27,6 +27,11 @@ interface MarkerRemoveParams<ActualMarker> {
     val marker: ActualMarker
 }
 
+interface MarkerModifyParams<ActualMarker> {
+    val state: MarkerState
+    val marker: ActualMarker
+}
+
 interface MarkerOverlayManager {
     suspend fun addMarkers(markerList: List<MarkerState>)
 
@@ -50,6 +55,7 @@ class MarkerOverlayManagerImpl<
     val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
     val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
     val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> List<ActualMarker?>,
+    val onAnimation: (params: MarkerModifyParams<ActualMarker>) -> Unit,
     val onIconChange: (marker: ActualMarker, icon: BitmapIcon) -> Unit,
     val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : MarkerOverlayManager {
@@ -94,28 +100,36 @@ class MarkerOverlayManagerImpl<
         if (added.isNotEmpty()) {
             val addedList = added.toList()
 
-            addedList
-                .map { state ->
-                    val markerIcon =
-                        state.icon?.let {
-                            markerManager.getBitmapIcon(it)
-                        } ?: defaultIcon
-                    object : MarkerAddParams {
-                        override val state: MarkerState = state
-                        override val icon: BitmapIcon = markerIcon
-                    }
-                }.also {
-                    val actualMarkers: List<ActualMarker?> =
-                        withContext(coroutine.coroutineContext) {
-                            onAdd(it)
-                        }
-                    actualMarkers.forEachIndexed { index, actualMarker ->
-                        actualMarker?.let {
-                            val state = addedList[index]
-                            markerManager.registerState(state, actualMarker)
+            val paramList = addedList.map { state ->
+                val markerIcon = state.icon?.let { markerManager.getBitmapIcon(it) } ?: defaultIcon
+                object : MarkerAddParams {
+                    override val state: MarkerState = state
+                    override val icon: BitmapIcon = markerIcon
+                }
+            }
+
+            val actualMarkers: List<ActualMarker?> = withContext(coroutine.coroutineContext) {
+                onAdd(paramList)
+            }
+
+            val results = added.zip(actualMarkers)
+                .mapNotNull { (state, actualMarker) ->
+                    actualMarker?.let {
+                        markerManager.registerState(state, actualMarker)
+                        object : MarkerModifyParams<ActualMarker> {
+                            override val state: MarkerState = state
+                            override val marker: ActualMarker = actualMarker
                         }
                     }
                 }
+
+            results.forEach { param ->
+                param.state.animation?.let {
+                    coroutine.launch {
+                        onAnimation(param)
+                    }
+                }
+            }
         }
 
         // Update changed markers
