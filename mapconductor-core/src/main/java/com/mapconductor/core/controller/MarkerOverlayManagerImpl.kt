@@ -108,10 +108,12 @@ class MarkerOverlayManagerImpl<
                 }
             }
 
+            // Create actual marker instances on the map view
             val actualMarkers: List<ActualMarker?> = withContext(coroutine.coroutineContext) {
                 onAdd(paramList)
             }
 
+            // Zipping
             val results = added.zip(actualMarkers)
                 .mapNotNull { (state, actualMarker) ->
                     actualMarker?.let {
@@ -124,6 +126,7 @@ class MarkerOverlayManagerImpl<
                 }
 
             results.forEach { param ->
+                // Execute the animation property
                 param.state.animation?.let {
                     coroutine.launch {
                         onAnimation(param)
