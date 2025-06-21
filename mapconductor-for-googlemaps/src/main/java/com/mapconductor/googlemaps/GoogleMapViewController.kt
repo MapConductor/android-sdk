@@ -28,11 +28,17 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import kotlin.math.min
 import android.graphics.Point
 import android.os.SystemClock
 import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 interface IGoogleMapViewController : MapViewController {
@@ -120,8 +126,27 @@ class GoogleMapViewController(
     private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
         val markerLatLng = params.marker.position.toGeoPoint()
         val interpolator = LinearInterpolator()
-        val markerPoint = this.toScreenOffset(markerLatLng)
+        val markerPoint = this.toScreenOffset(markerLatLng) ?: return
+        val startPoint  = Offset(markerPoint.x , 0f)
+        val duration = 100
 
+        flow{
+            val startTime = SystemClock.uptimeMillis()
+            while (true){
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = min(1f, elapsed.toFloat() / duration)
+                emit(interpolator.getInterpolation(t))
+                if (t >= 1f) break
+                delay(16)
+            }
+        }.onEach { t ->
+            val startLatLng  = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = t  * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.position = LatLng(lat, lng)
+        }.onCompletion {
+            params.marker.position = markerLatLng.toLatLng()
+        }.launchIn(coroutine)
     }
 
     private fun setupListeners() {
