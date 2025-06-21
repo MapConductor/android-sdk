@@ -31,8 +31,8 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
-import com.mapconductor.core.icons.ImageInCircle
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
@@ -43,6 +43,7 @@ import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.icons.ImageInCircle
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 
@@ -132,12 +133,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 
     val markerList =
         remember {
-            appViewModel.markerList.map {
-                it.copy(
-                    icon = icon,
-                    draggable = true,
-                )
-            }
+            appViewModel.markerList
         }
     val mapViewState = appViewModel.mapViewState.collectAsState().value
     val camera = mapViewState?.mapCameraPosition?.collectAsState()?.value
@@ -181,6 +177,8 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                             MarkerIcon.Default(
                                 fillColor = Color.Blue.toArgb(),
                             )
+
+                        state.animation = MarkerAnimation.Drop
 //                        val intent = appViewModel.createIntentForDirection(state)
 //                        context.startActivity(intent)
                     },
