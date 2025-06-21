@@ -24,6 +24,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import android.graphics.Point
@@ -98,9 +99,17 @@ class GoogleMapViewController(
                 val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
                 marker.setIcon(bitmapDescriptor)
             },
-            onAnimation = { param ->
+            onAnimation = {
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> {
 
-            }
+                    }
+                    MarkerAnimation.Bounce -> {
+
+                    }
+                    else -> { /* Do nothing here */ }
+                }
+            },
         )
 
     init {
