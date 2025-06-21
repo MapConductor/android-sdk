@@ -11,7 +11,7 @@ name: Lint Check on Push
 # ただし「Draft → Ready」に切り替えた瞬間のみ ready_for_review で実行されます
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [synchronize, requested_review, ready_for_review]
     branches:
       - main
 
@@ -22,6 +22,7 @@ concurrency:
 
 jobs:
   lint:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     name: Lint Changed Modules
 
