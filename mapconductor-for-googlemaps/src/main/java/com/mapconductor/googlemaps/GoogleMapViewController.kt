@@ -128,7 +128,7 @@ class GoogleMapViewController(
         val interpolator = LinearInterpolator()
         val markerPoint = this.toScreenOffset(markerLatLng) ?: return
         val startPoint  = Offset(markerPoint.x , 0f)
-        val duration = 100
+        val duration = 500
 
         flow{
             val startTime = SystemClock.uptimeMillis()
