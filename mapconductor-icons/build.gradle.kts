@@ -54,7 +54,6 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.ui.geometry.android)
     compileOnly(platform(libs.androidx.compose.bom))
     compileOnly(project(":mapconductor-core"))
 //    implementation(libs.androidx.appcompat)
