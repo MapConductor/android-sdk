@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerModifyParams
 import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
@@ -28,6 +29,8 @@ import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import android.graphics.Point
+import android.os.SystemClock
+import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,9 +104,7 @@ class GoogleMapViewController(
             },
             onAnimation = {
                 when (it.state.animation) {
-                    MarkerAnimation.Drop -> {
-
-                    }
+                    MarkerAnimation.Drop -> this.markerDropAnimation(it)
                     MarkerAnimation.Bounce -> {
 
                     }
@@ -114,6 +115,13 @@ class GoogleMapViewController(
 
     init {
         setupListeners()
+    }
+
+    private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
+        val markerLatLng = params.marker.position.toGeoPoint()
+        val interpolator = LinearInterpolator()
+        val markerPoint = this.toScreenOffset(markerLatLng)
+
     }
 
     private fun setupListeners() {
