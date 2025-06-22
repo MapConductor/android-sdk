@@ -169,10 +169,24 @@ class MarkerOverlayManagerImpl<
                         onChange(updates)
                     }
 
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    actualMarker?.let {
-                        val params = updates[index]
-                        markerManager.registerState(params.state, actualMarker)
+                // Zipping
+                val results = added.zip(actualMarkers)
+                    .mapNotNull { (state, actualMarker) ->
+                        actualMarker?.let {
+                            markerManager.registerState(state, actualMarker)
+                            object : MarkerModifyParams<ActualMarker> {
+                                override val state: MarkerState = state
+                                override val marker: ActualMarker = actualMarker
+                            }
+                        }
+                    }
+
+                results.forEach { param ->
+                    // Execute the animation property
+                    param.state.animation?.let {
+                        coroutine.launch {
+                            onAnimation(param)
+                        }
                     }
                 }
             }
@@ -212,11 +226,22 @@ class MarkerOverlayManagerImpl<
                 onChange(listOf(markerParams))
             }
 
-        markers[0]?.let {
+        markers[0]?.let { actualMarker ->
             markerManager.registerState(
                 state = state,
-                marker = it,
+                marker = actualMarker,
             )
+
+            // Execute the animation property
+            state.animation?.let {
+                val params = object : MarkerModifyParams<ActualMarker> {
+                    override val state: MarkerState = state
+                    override val marker: ActualMarker = actualMarker
+                }
+                coroutine.launch {
+                    onAnimation(params)
+                }
+            }
         }
 
         semaphore.release()
