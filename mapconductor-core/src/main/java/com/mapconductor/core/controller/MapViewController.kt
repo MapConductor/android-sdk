@@ -36,6 +36,8 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
     var markerDragStartListener: OnMarkerEventHandler? = null
     var markerDragListener: OnMarkerEventHandler? = null
     var markerDragEndListener: OnMarkerEventHandler? = null
+    var markerAnimateStartListener: OnMarkerEventHandler? = null
+    var markerAnimateEndListener: OnMarkerEventHandler? = null
 
     protected fun zoomToMetersPerPixel(zoom: Double): Double {
         val earthCircumference = 40075016.686
