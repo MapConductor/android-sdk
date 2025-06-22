@@ -5,11 +5,7 @@ import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.withContext
 
 interface MarkerAddParams {
     val state: MarkerState
@@ -52,12 +48,11 @@ class MarkerOverlayManagerImpl<
     ActualMarker : Any,
 >(
     val markerManager: MarkerManager<ActualMarker>,
-    val onRemove: (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
-    val onAdd: (List<MarkerAddParams>) -> List<ActualMarker?>,
-    val onChange: (List<MarkerUpdateParams<ActualMarker>>) -> List<ActualMarker?>,
-    val onAnimation: (params: MarkerModifyParams<ActualMarker>) -> Unit,
-    val onIconChange: (marker: ActualMarker, icon: BitmapIcon) -> Unit,
-    val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    val onRemove: suspend (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
+    val onAdd: suspend (List<MarkerAddParams>) -> List<ActualMarker?>,
+    val onChange: suspend (List<MarkerUpdateParams<ActualMarker>>) -> List<ActualMarker?>,
+    val onAnimation: suspend (params: MarkerModifyParams<ActualMarker>) -> Unit,
+    val onIconChange: suspend (marker: ActualMarker, icon: BitmapIcon) -> Unit,
 ) : MarkerOverlayManager {
     val semaphore = Semaphore(1)
 
@@ -90,9 +85,7 @@ class MarkerOverlayManagerImpl<
                         override val marker: ActualMarker = marker
                     }
                 }.also {
-                    coroutine.launch {
-                        onRemove(it)
-                    }
+                    onRemove(it)
                 }
         }
 
@@ -109,9 +102,7 @@ class MarkerOverlayManagerImpl<
             }
 
             // Create actual marker instances on the map view
-            val actualMarkers: List<ActualMarker?> = withContext(coroutine.coroutineContext) {
-                onAdd(paramList)
-            }
+            val actualMarkers: List<ActualMarker?> = onAdd(paramList)
 
             // Zipping
             val results = added.zip(actualMarkers)
@@ -128,9 +119,7 @@ class MarkerOverlayManagerImpl<
             results.forEach { param ->
                 // Execute the animation property
                 param.state.animation?.let {
-                    coroutine.launch {
-                        onAnimation(param)
-                    }
+                    onAnimation(param)
                 }
             }
         }
@@ -164,10 +153,7 @@ class MarkerOverlayManagerImpl<
                     }.filter { it -> it != null } as List<MarkerUpdateParams<ActualMarker>>
             ).also { updates ->
 
-                val actualMarkers: List<ActualMarker?> =
-                    withContext(coroutine.coroutineContext) {
-                        onChange(updates)
-                    }
+                val actualMarkers: List<ActualMarker?> = onChange(updates)
 
                 // Zipping
                 val results = added.zip(actualMarkers)
@@ -184,9 +170,7 @@ class MarkerOverlayManagerImpl<
                 results.forEach { param ->
                     // Execute the animation property
                     param.state.animation?.let {
-                        coroutine.launch {
-                            onAnimation(param)
-                        }
+                        onAnimation(param)
                     }
                 }
             }
@@ -221,10 +205,7 @@ class MarkerOverlayManagerImpl<
                 override val marker: ActualMarker = marker
             }
 
-        val markers =
-            withContext(coroutine.coroutineContext) {
-                onChange(listOf(markerParams))
-            }
+        val markers = onChange(listOf(markerParams))
 
         markers[0]?.let { actualMarker ->
             markerManager.registerState(
@@ -238,9 +219,7 @@ class MarkerOverlayManagerImpl<
                     override val state: MarkerState = state
                     override val marker: ActualMarker = actualMarker
                 }
-                coroutine.launch {
-                    onAnimation(params)
-                }
+                onAnimation(params)
             }
         }
 
