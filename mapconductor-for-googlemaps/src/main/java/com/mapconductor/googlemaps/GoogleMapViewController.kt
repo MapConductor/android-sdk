@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
@@ -69,10 +70,11 @@ class GoogleMapViewController(
     OnMarkerDragListener {
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Marker>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
-                removes.forEach { params -> params.marker.remove() }
+                withContext(coroutine.coroutineContext) {
+                    removes.forEach { params -> params.marker.remove() }
+                }
             },
             onAdd = { newMarkers ->
                 newMarkers.map { params ->
@@ -88,26 +90,31 @@ class GoogleMapViewController(
                                     .toFloat(),
                             ).icon(bitmapDescriptor)
                             .draggable(params.state.draggable)
-                    val marker =
+                    val marker = withContext(coroutine.coroutineContext) {
                         holder.map.addMarker(options)?.also {
                             it.tag = params.state.id
                         }
+                    }
                     return@map marker
                 }
             },
             onChange = { changes ->
-                changes.map { params ->
-                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
-                    params.marker.position = GeoPoint.from(params.state.position).toLatLng()
-                    params.marker.setIcon(bitmapDescriptor)
+                withContext(coroutine.coroutineContext) {
+                    changes.map { params ->
+                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
+                            params.marker.position = GeoPoint.from(params.state.position).toLatLng()
+                            params.marker.setIcon(bitmapDescriptor)
 
-                    // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.marker
+                        // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                        params.marker
+                    }
                 }
             },
             onIconChange = { marker, icon ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
-                marker.setIcon(bitmapDescriptor)
+                withContext(coroutine.coroutineContext) {
+                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
+                    marker.setIcon(bitmapDescriptor)
+                }
             },
             onAnimation = {
                 when (it.state.animation) {

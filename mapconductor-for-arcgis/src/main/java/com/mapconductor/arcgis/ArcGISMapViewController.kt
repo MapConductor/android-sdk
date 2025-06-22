@@ -31,6 +31,7 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface IArcGISMapViewController : MapViewController {
     fun moveCamera(
@@ -65,17 +66,18 @@ class ArcGISMapViewController(
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Graphic>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
-                val elements: List<Graphic> =
-                    removes.map { params ->
-                        params.marker
-                    }
-                this.markerLayer.graphics.removeAll(elements)
+                withContext(coroutine.coroutineContext) {
+                    val elements: List<Graphic> =
+                        removes.map { params ->
+                            params.marker
+                        }
+                    markerLayer.graphics.removeAll(elements)
+                }
             },
             onAdd = { newMarkers ->
-                val markers =
+                val markers = withContext(coroutine.coroutineContext) {
                     newMarkers.map { params ->
                         val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
                         val density = ResourceProvider.density
@@ -102,19 +104,50 @@ class ArcGISMapViewController(
                         marker.attributes.set("id", params.state.id)
                         return@map marker
                     }
+                }
 
-                this.markerLayer.graphics.addAll(markers)
+                coroutine.launch {
+                    markerLayer.graphics.addAll(markers)
+                }
 
                 return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
-                changes.map { params ->
-                    val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
+                withContext(coroutine.coroutineContext) {
+                    changes.map { params ->
+                        val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
+                        val density = ResourceProvider.density
+                        val width = (params.icon.size.width / density)
+                        val height = (params.icon.size.height / density)
+                        val anchorX = (params.icon.anchor.x - 0.5) * width
+                        val anchorY = (params.icon.anchor.y - 0.5) * height
+
+                        val pictureSymbolFuture =
+                            PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                it.width = width.toFloat()
+                                it.height = height.toFloat()
+                                it.offsetX = anchorX.toFloat()
+                                it.offsetY = anchorY.toFloat()
+                            }
+
+                        params.marker.geometry =
+                            params.state.position
+                                .toPoint()
+                        params.marker.symbol = pictureSymbolFuture
+
+                        // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                        params.marker
+                    }
+                }
+            },
+            onIconChange = { marker, icon ->
+                withContext(coroutine.coroutineContext) {
+                    val bitmapDrawable = icon.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.density
-                    val width = (params.icon.size.width / density)
-                    val height = (params.icon.size.height / density)
-                    val anchorX = (params.icon.anchor.x - 0.5) * width
-                    val anchorY = (params.icon.anchor.y - 0.5) * height
+                    val width = (icon.size.width / density)
+                    val height = (icon.size.height / density)
+                    val anchorX = (icon.anchor.x - 0.5) * width
+                    val anchorY = (icon.anchor.y - 0.5) * height
 
                     val pictureSymbolFuture =
                         PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
@@ -123,32 +156,8 @@ class ArcGISMapViewController(
                             it.offsetX = anchorX.toFloat()
                             it.offsetY = anchorY.toFloat()
                         }
-
-                    params.marker.geometry =
-                        params.state.position
-                            .toPoint()
-                    params.marker.symbol = pictureSymbolFuture
-
-                    // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.marker
+                    marker.symbol = pictureSymbolFuture
                 }
-            },
-            onIconChange = { marker, icon ->
-                val bitmapDrawable = icon.bitmap.toDrawable(holder.mapView.context.resources)
-                val density = ResourceProvider.density
-                val width = (icon.size.width / density)
-                val height = (icon.size.height / density)
-                val anchorX = (icon.anchor.x - 0.5) * width
-                val anchorY = (icon.anchor.y - 0.5) * height
-
-                val pictureSymbolFuture =
-                    PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                        it.width = width.toFloat()
-                        it.height = height.toFloat()
-                        it.offsetX = anchorX.toFloat()
-                        it.offsetY = anchorY.toFloat()
-                    }
-                marker.symbol = pictureSymbolFuture
             },
             onAnimation = { param ->
 

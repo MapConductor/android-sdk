@@ -36,6 +36,7 @@ import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // interface IMapboxMapInitOptions {
 //    val mapOptions: MapOptions?
@@ -102,18 +103,19 @@ internal class MapboxMapViewController(
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<PointAnnotation>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
-                synchronized(pointAnnotationManager) {
-                    val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
-                    pointAnnotationManager.delete(annotations)
+                withContext(coroutine.coroutineContext) {
+                    synchronized(pointAnnotationManager) {
+                        val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
+                        pointAnnotationManager.delete(annotations)
+                    }
                 }
             },
             onAdd = { newMarkers ->
-                synchronized(pointAnnotationManager) {
-                    val options =
-                        newMarkers.map { params ->
+                withContext(coroutine.coroutineContext) {
+                    synchronized(pointAnnotationManager) {
+                        val options = newMarkers.map { params ->
                             return@map params.icon
                                 .toPointAnnotationOptions()
                                 .withPoint(
@@ -123,20 +125,21 @@ internal class MapboxMapViewController(
                                         addProperty("id", params.state.id)
                                     },
                                 ) // .withDraggable(true)
-                        }
+                            }
 
-                    return@MarkerOverlayManagerImpl pointAnnotationManager.create(options)
+                        pointAnnotationManager.create(options)
+                    }
                 }
             },
             onChange = { changes ->
-                // Mapboxはマーカーの画像が変更された場合、作り直す必要がある
-                synchronized(pointAnnotationManager) {
-                    // 古いマーカーを削除
-                    val oldMarkers = changes.map { params -> params.marker }
-                    pointAnnotationManager.delete(oldMarkers)
+                withContext(coroutine.coroutineContext) {
+                    // Mapboxはマーカーの画像が変更された場合、作り直す必要がある
+                    synchronized(pointAnnotationManager) {
+                        // 古いマーカーを削除
+                        val oldMarkers = changes.map { params -> params.marker }
+                        pointAnnotationManager.delete(oldMarkers)
 
-                    val newMarkerOptions =
-                        changes.map { params ->
+                        val newMarkerOptions = changes.map { params ->
                             params.icon
                                 .toPointAnnotationOptions()
                                 .withPoint(
@@ -147,19 +150,22 @@ internal class MapboxMapViewController(
                                     },
                                 )
                         }
-                    // 新しいマーカーのインスタンスを返す
-                    pointAnnotationManager.create(newMarkerOptions)
+                        // 新しいマーカーのインスタンスを返す
+                        pointAnnotationManager.create(newMarkerOptions)
+                    }
                 }
             },
             onIconChange = { marker, icon ->
-                synchronized(pointAnnotationManager) {
-                    val option = icon.toPointAnnotationOptions()
-                    marker.iconImageBitmap = icon.bitmap.copy(Bitmap.Config.ARGB_8888, true)
-                    marker.iconSize = option.iconSize
-                    marker.iconImage = option.iconImage
-                    marker.iconAnchor = option.iconAnchor
-                    marker.iconOffset = option.iconOffset
-                    pointAnnotationManager.update(marker)
+                withContext(coroutine.coroutineContext) {
+                    synchronized(pointAnnotationManager) {
+                        val option = icon.toPointAnnotationOptions()
+                        marker.iconImageBitmap = icon.bitmap.copy(Bitmap.Config.ARGB_8888, true)
+                        marker.iconSize = option.iconSize
+                        marker.iconImage = option.iconImage
+                        marker.iconAnchor = option.iconAnchor
+                        marker.iconOffset = option.iconOffset
+                        pointAnnotationManager.update(marker)
+                    }
                 }
             },
             onAnimation = { param ->

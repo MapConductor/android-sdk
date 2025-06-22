@@ -34,6 +34,7 @@ import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface IHereMapViewController : MapViewController {
     fun moveCamera(
@@ -64,14 +65,15 @@ class HereMapViewController(
     private var selectedMarker: SelectedMarker? = null
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<MapMarker>(
-            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
             onRemove = { removes ->
-                val markers: List<MapMarker> = removes.map { params -> params.marker }
-                holder.mapView.mapScene.removeMapMarkers(markers)
+                withContext(coroutine.coroutineContext) {
+                    val markers: List<MapMarker> = removes.map { params -> params.marker }
+                    holder.mapView.mapScene.removeMapMarkers(markers)
+                }
             },
             onAdd = { newMarkers ->
-                val markers =
+                val markers = withContext(coroutine.coroutineContext) {
                     newMarkers.map { params ->
                         val marker =
                             MapMarker(
@@ -87,23 +89,30 @@ class HereMapViewController(
                             }
                         return@map marker
                     }
+                }
 
-                holder.mapView.mapScene.addMapMarkers(markers)
+                coroutine.launch {
+                    holder.mapView.mapScene.addMapMarkers(markers)
+                }
                 return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
-                changes.map { params ->
-                    // TODO: アイコンに変更があったかどうかを比較
-                    params.marker.image = params.icon.toMapImage()
-                    params.marker.coordinates = GeoPoint.from(params.state.position).toGeoCoordinates()
-                    params.marker.anchor = params.icon.toAnchor2D()
+                withContext(coroutine.coroutineContext) {
+                    changes.map { params ->
+                        // TODO: アイコンに変更があったかどうかを比較
+                        params.marker.image = params.icon.toMapImage()
+                        params.marker.coordinates = GeoPoint.from(params.state.position).toGeoCoordinates()
+                        params.marker.anchor = params.icon.toAnchor2D()
 
-                    // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.marker
+                        // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                        params.marker
+                    }
                 }
             },
             onIconChange = { marker, icon ->
-                marker.image = icon.toMapImage()
+                withContext(coroutine.coroutineContext) {
+                    marker.image = icon.toMapImage()
+                }
             },
             onAnimation = { param ->
 
