@@ -5,10 +5,12 @@ import androidx.compose.ui.unit.dp
 
 sealed class Settings(
     val tapTolerance: Dp,
-    val markerDropAnimeDuration: Int,
+    val markerDropAnimateDuration: Int,
+    val markerBounceAnimateDuration: Int,
 ) {
     object Default : Settings(
         tapTolerance = 14.dp,
-        markerDropAnimeDuration = 100,
+        markerDropAnimateDuration = 100,
+        markerBounceAnimateDuration = 2000,
     )
 }

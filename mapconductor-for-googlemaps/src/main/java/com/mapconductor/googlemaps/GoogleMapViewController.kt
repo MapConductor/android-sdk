@@ -43,6 +43,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import android.view.animation.BounceInterpolator
+import android.view.animation.Interpolator
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -119,9 +124,7 @@ class GoogleMapViewController(
             onAnimation = {
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.markerDropAnimation(it)
-                    MarkerAnimation.Bounce -> {
-
-                    }
+                    MarkerAnimation.Bounce -> this.markerBounceAnimation(it)
                     else -> { /* Do nothing here */ }
                 }
             },
@@ -136,7 +139,7 @@ class GoogleMapViewController(
         val interpolator = LinearInterpolator()
         val markerPoint = this.toScreenOffset(markerLatLng) ?: return
         val startPoint  = Offset(markerPoint.x , 0f)
-        val duration = Settings.Default.markerDropAnimeDuration
+        val duration = Settings.Default.markerDropAnimateDuration
 
         markerAnimateStartListener?.let { it(params.state) }
 
@@ -152,6 +155,36 @@ class GoogleMapViewController(
         }.onEach { t ->
             val startLatLng  = this.fromScreenOffset(startPoint) ?: return@onEach
             val lng = t  * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.position = LatLng(lat, lng)
+        }.onCompletion {
+            params.marker.position = markerLatLng.toLatLng()
+            params.state.animation = null
+
+            markerAnimateEndListener?.let { it(params.state) }
+        }.launchIn(coroutine)
+    }
+
+    private fun markerBounceAnimation(params: MarkerModifyParams<Marker>) {
+        val startTime = SystemClock.uptimeMillis()
+        val duration = Settings.Default.markerBounceAnimateDuration
+        val interpolator: Interpolator = BounceInterpolator()
+        val markerLatLng = params.marker.position.toGeoPoint()
+        val startPoint = Offset(0f , -200f)
+
+        markerAnimateStartListener?.let { it(params.state) }
+
+        flow {
+            while (true) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
+                emit(t)
+                if (t >= 1f) break
+                delay(16L)
+            }
+        }.onEach { t ->
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = markerLatLng.longitude
             val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
             params.marker.position = LatLng(lat, lng)
         }.onCompletion {
