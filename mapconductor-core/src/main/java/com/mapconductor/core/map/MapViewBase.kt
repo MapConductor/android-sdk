@@ -31,6 +31,8 @@ import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
@@ -84,13 +86,10 @@ fun <
             }
             val markers = scope.markerFlow.collectAsState()
             markers.value.forEach { markerState ->
-                LaunchedEffect(
-                    markerState.icon,
-                    markerState.draggable,
-                    markerState.internalPosition,
-                    markerState.animation,
-                ) {
-                    controller.updateMarker(markerState)
+                LaunchedEffect(markerState.id) {
+                    markerState.asFlow().debounce(100).collectLatest {
+                        controller.updateMarker(markerState)
+                    }
                 }
             }
         }
