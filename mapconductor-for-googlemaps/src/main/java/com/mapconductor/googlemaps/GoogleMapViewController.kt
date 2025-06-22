@@ -28,6 +28,7 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.settings.Settings
 import kotlin.math.min
 import android.graphics.Point
 import android.os.SystemClock
@@ -128,8 +129,9 @@ class GoogleMapViewController(
         val interpolator = LinearInterpolator()
         val markerPoint = this.toScreenOffset(markerLatLng) ?: return
         val startPoint  = Offset(markerPoint.x , 0f)
-        val duration = 500
         val duration = Settings.Default.markerDropAnimeDuration
+
+        markerAnimateStartListener?.let { it(params.state) }
 
         flow{
             val startTime = SystemClock.uptimeMillis()
@@ -147,6 +149,9 @@ class GoogleMapViewController(
             params.marker.position = LatLng(lat, lng)
         }.onCompletion {
             params.marker.position = markerLatLng.toLatLng()
+            params.state.animation = null
+
+            markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
 
