@@ -178,7 +178,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                                 fillColor = Color.Blue.toArgb(),
                             )
 
-                        state.animation = MarkerAnimation.Drop
+                        state.animation = MarkerAnimation.Bounce
 //                        val intent = appViewModel.createIntentForDirection(state)
 //                        context.startActivity(intent)
                     },
