@@ -4,6 +4,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -12,6 +13,8 @@ import java.io.ByteArrayOutputStream
 import java.util.UUID
 import android.graphics.Bitmap
 import android.os.Parcelable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
@@ -72,8 +75,20 @@ class MarkerState(
         result = 31 * result + (icon?.hashCode() ?: 0)
         return result
     }
-}
 
+    fun toPayload(): MarkerUpdatePayload {
+        return MarkerUpdatePayload(this.id, icon, draggable, internalPosition, animation)
+    }
+
+    fun asFlow(): Flow<MarkerUpdatePayload> = snapshotFlow { toPayload() }.distinctUntilChanged()
+}
+data class MarkerUpdatePayload(
+    val id: String,
+    val icon: MarkerIcon?,
+    val draggable: Boolean,
+    val position: GeoPoint,
+    val animation: MarkerAnimation?
+)
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 
 data class BitmapIcon(
