@@ -20,6 +20,8 @@ fun ArcGISMapView(
     onMarkerDragStart: OnMarkerEventHandler? = {},
     onMarkerDrag: OnMarkerEventHandler? = {},
     onMarkerDragEnd: OnMarkerEventHandler? = {},
+    onMarkerAnimateStart: OnMarkerEventHandler? = {},
+    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
@@ -60,6 +62,8 @@ fun ArcGISMapView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
+            controller.markerAnimateStartListener = onMarkerAnimateStart
+            controller.markerAnimateEndListener = onMarkerAnimateEnd
 
             state.controller = controller
 

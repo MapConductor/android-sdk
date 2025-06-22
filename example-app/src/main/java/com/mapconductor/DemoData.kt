@@ -1,7 +1,6 @@
 package com.mapconductor
 
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.icons.HeartInCircle
@@ -24,7 +23,6 @@ val StarbucksHI_list =
                     latitude = 21.647441446388,
                     longitude = -158.062544988096,
                 ),
-            animation = MarkerAnimation.Drop,
             extra =
                 Bundle().apply {
                     putString("name", "Pupukea (North Shore)")
@@ -46,7 +44,6 @@ val StarbucksHI_list =
                     latitude = 21.33310051533,
                     longitude = -157.922371535818,
                 ),
-            animation = MarkerAnimation.Drop,
             extra =
                 Bundle().apply {
                     putString("name", "Honolulu Airport (HNL) – Main")
@@ -68,7 +65,6 @@ val StarbucksHI_list =
                     latitude = 21.378981027427,
                     longitude = -157.930536387573,
                 ),
-            animation = MarkerAnimation.Drop,
             extra =
                 Bundle().apply {
                     putString("name", "Aiea Shopping Center")

@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.info.InfoBubble
@@ -35,6 +36,7 @@ fun MapArea(
     val bubbleColor by remember {
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
     }
+    var isMarkerAnimating by remember { mutableStateOf(false) }
 
     mapViewState?.let { mapViewState ->
         MapViewContainer(
@@ -43,6 +45,8 @@ fun MapArea(
             onMapClick = onMapClickHandler,
             onMarkerClick = onMarkerClickHandler,
             onMarkerDrag = onMarkerDragHandler,
+            onMarkerAnimateStart = { isMarkerAnimating = true },
+            onMarkerAnimateEnd = { isMarkerAnimating = false }
         ) {
             markers.forEach { markerState ->
                 key(markerState.id) {
@@ -51,32 +55,34 @@ fun MapArea(
             }
 
             selectedMarker?.let {
-                InfoBubble(
-                    bubbleColor = bubbleColor,
-                    state = infoBubbleState,
-                ) {
-                    Column {
-                        Text(
-                            text =
-                                infoBubbleState.marker?.position?.toUrlValue()
-                                    ?: "null",
-                        )
-                        Button(
-                            onClick = {
-                                onDirectionButtonClick(it)
-                            },
-                        ) {
+                if (isMarkerAnimating == false) {
+                    InfoBubble(
+                        bubbleColor = bubbleColor,
+                        state = infoBubbleState,
+                    ) {
+                        Column {
                             Text(
-                                text = "Change Icon Color",
+                                text =
+                                    infoBubbleState.marker?.position?.toUrlValue()
+                                        ?: "null",
                             )
+                            Button(
+                                onClick = {
+                                    onDirectionButtonClick(it)
+                                },
+                            ) {
+                                Text(
+                                    text = "Change Icon Color",
+                                )
+                            }
                         }
+//                        StoreCard(
+//                            info = it.extra as Bundle,
+//                            onClick = {
+//                                onDirectionButtonClick(it)
+//                            },
+//                        )
                     }
-//                    StoreCard(
-//                        info = it.extra as Bundle,
-//                        onClick = {
-//                            onDirectionButtonClick(it)
-//                        },
-//                    )
                 }
             }
         }
