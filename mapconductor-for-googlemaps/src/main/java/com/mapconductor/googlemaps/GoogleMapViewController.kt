@@ -129,6 +129,7 @@ class GoogleMapViewController(
         val markerPoint = this.toScreenOffset(markerLatLng) ?: return
         val startPoint  = Offset(markerPoint.x , 0f)
         val duration = 500
+        val duration = Settings.Default.markerDropAnimeDuration
 
         flow{
             val startTime = SystemClock.uptimeMillis()
