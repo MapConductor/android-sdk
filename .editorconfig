@@ -17,7 +17,7 @@ ktlint_experimental = true
 continuation_indent_size = 4
 insert_final_newline = true
 ktlint_standard_argument-list-wrapping = disabled
-ktlint_function_naming_ignore_when_annotated_with = Composable
+ktlint_standard_function-naming = disabled
 
 # Import organization (IDE and KtLint will respect this)
 ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**, android.**, kotlinx.**
