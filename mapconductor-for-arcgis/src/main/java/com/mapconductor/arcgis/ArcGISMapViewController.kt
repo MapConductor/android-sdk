@@ -1,5 +1,10 @@
 package com.mapconductor.arcgis
 
+import android.os.SystemClock
+import android.view.MotionEvent
+import android.view.animation.BounceInterpolator
+import android.view.animation.Interpolator
+import android.view.animation.LinearInterpolator
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toDrawable
@@ -18,20 +23,30 @@ import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerModifyParams
 import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
-import android.view.MotionEvent
+import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.arcgismaps.geometry.Point
+import com.arcgismaps.geometry.SpatialReference
+import android.util.Log
 
 interface IArcGISMapViewController : MapViewController {
     fun moveCamera(
@@ -159,8 +174,12 @@ class ArcGISMapViewController(
                     marker.symbol = pictureSymbolFuture
                 }
             },
-            onAnimation = { param ->
-
+            onAnimation = {
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> this.markerDropAnimation(it)
+                    MarkerAnimation.Bounce -> this.markerBounceAnimation(it)
+                    else -> { /* Do nothing here */ }
+                }
             },
         )
 
@@ -182,6 +201,72 @@ class ArcGISMapViewController(
         coroutine.launch {
             holder.map.onPan.collect { onMapPan(it) }
         }
+    }
+
+    private fun markerDropAnimation(params: MarkerModifyParams<Graphic>) {
+        val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
+        val interpolator = LinearInterpolator()
+        val markerPoint = this.toScreenOffset(markerLatLng) ?: return
+        val startPoint  = Offset(markerPoint.x , 0f)
+        val duration = Settings.Default.markerDropAnimateDuration
+
+        markerAnimateStartListener?.let { it(params.state) }
+
+        flow{
+            val startTime = SystemClock.uptimeMillis()
+            while (true){
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = min(1f, elapsed.toFloat() / duration)
+                emit(interpolator.getInterpolation(t))
+                if (t >= 1f) break
+                delay(16)
+            }
+        }.onEach { t ->
+            val startLatLng  = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = t  * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.geometry = Point(lng, lat, SpatialReference.wgs84())
+        }.onCompletion {
+            params.marker.geometry = markerLatLng.toPoint()
+            params.state.animation = null
+
+            markerAnimateEndListener?.let { it(params.state) }
+        }.launchIn(coroutine)
+    }
+
+    private fun markerBounceAnimation(params: MarkerModifyParams<Graphic>) {
+        val startTime = SystemClock.uptimeMillis()
+        val duration = Settings.Default.markerBounceAnimateDuration
+        val interpolator: Interpolator = BounceInterpolator()
+        val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
+        val startPoint = Offset(0f , -200f)
+
+        markerAnimateStartListener?.let { it(params.state) }
+
+        flow {
+            while (true) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
+                emit(t)
+                if (t >= 1f) break
+                delay(16L)
+            }
+        }.onEach { t ->
+//            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val startLatLng = this.fromScreenOffset(startPoint)
+            Log.d("debug", "------>$startLatLng")
+            if (startLatLng == null) return@onEach
+
+            val lng = markerLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.geometry = Point(lng, lat, SpatialReference.wgs84())
+            Log.d("debug", "------>ArcGIS[$lat]")
+        }.onCompletion {
+            params.marker.geometry = markerLatLng.toPoint()
+            params.state.animation = null
+
+            markerAnimateEndListener?.let { it(params.state) }
+        }.launchIn(coroutine)
     }
 
     private fun onViewpointChange() {
