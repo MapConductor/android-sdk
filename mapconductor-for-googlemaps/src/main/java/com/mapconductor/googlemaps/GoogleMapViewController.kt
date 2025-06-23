@@ -47,6 +47,7 @@ import android.view.animation.BounceInterpolator
 import android.view.animation.Interpolator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import android.util.Log
 
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
@@ -183,6 +184,7 @@ class GoogleMapViewController(
                 delay(16L)
             }
         }.onEach { t ->
+            Log.d("debug", "------>GoogleMaps")
             val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
             val lng = markerLatLng.longitude
             val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
