@@ -6,6 +6,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.spherical.haversineDistance
@@ -51,14 +52,11 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
     ): MarkerState? {
         val meterInMapPixel = zoomToMetersPerPixel(zoom)
         val radius = tolerance * meterInMapPixel
+        val entity = markerOverlayManager.markerManager.findNearest(position) ?: return null
 
-        val state =
-            markerOverlayManager.markerManager.findNearest(position)
-                ?: return null
-
-        val distance = haversineDistance(position, state.position)
+        val distance = haversineDistance(position, entity.state.position)
         return if (distance <= radius) {
-            state
+            entity.state
         } else {
             null
         }
@@ -70,4 +68,5 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
     ) {
         markerState.isDragging = dragging
     }
+
 }

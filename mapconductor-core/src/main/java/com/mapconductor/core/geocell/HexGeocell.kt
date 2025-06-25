@@ -11,6 +11,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.atan2
 
 data class HexCoord(
     val q: Int,
@@ -18,6 +19,14 @@ data class HexCoord(
     val depth: Int = 0,
 ) {
     override fun toString(): String = "H${q}_${r}_$depth"
+
+    // Cube coordinates (for easier calculations)
+    val s: Int get() = -q - r
+
+    // Get neighboring coordinates
+    fun neighbors(): List<HexCoord> = Direction6.values().map {
+        HexCoord(q + it.dq, r + it.dr, depth)
+    }
 }
 
 enum class Direction6(
@@ -46,74 +55,110 @@ data class HexCellWithDistance(
     val distanceMeters: Double,
 )
 
+/**
+ * Hexagonal geocell system for spatial indexing
+ *
+ * @param projection The map projection to use for coordinate conversion
+ * @param baseHexSideLength The side length of hexagons in meters at zoom level 0
+ *                          This is the actual edge length of the hexagon, not the radius
+ */
 class HexGeocell(
     val projection: Projection,
-    // The radius in meter when zoom level is zero.
-    // i.e.
-    // - Use the value from 5000 to 500 for high zoom level (12 - 18)
-    // - Use the value from 30000 to 10000 for medium zoom level (9 - 12)
-    // - Use the value from 1000000 to 100000 for low zoom level (6 - 9)
-    val baseHexSize: Int = 10000,
+    // IMPORTANT: This is now the side length, not radius!
+    // Use values like:
+    // - 100-1000m for high zoom levels (15-18)
+    // - 1000-10000m for medium zoom levels (10-15)
+    // - 10000-100000m for low zoom levels (5-10)
+    val baseHexSideLength: Int = 1000,
 ) {
+
+    /**
+     * Convert lat/lng to hexagonal coordinate
+     */
     fun latLngToHexCoord(
         position: IGeoPoint,
         zoom: Double,
     ): HexCoord {
-        val hexSize = adjustedHexSize(position.latitude, zoom)
+        val hexSideLength = adjustedHexSideLength(position.latitude, zoom)
         val offset = projection.project(position)
-        return pixelToHex(offset, hexSize)
+        return pixelToHex(offset, hexSideLength)
     }
 
+    /**
+     * Convert lat/lng to hex cell with all computed properties
+     */
     fun latLngToHexCell(
         position: IGeoPoint,
         zoom: Double,
     ): HexCell {
         val coord = latLngToHexCoord(position, zoom)
-        val id = hexToCellId(coord)
+        val id = hexToCellId(coord, zoom)
         val centerLatLng = hexToLatLngCenter(coord, position.latitude, zoom)
         val centerXY = projection.project(centerLatLng)
         return HexCell(coord, centerLatLng, centerXY, id)
     }
 
+    /**
+     * Convert hex coordinate to lat/lng center
+     */
     fun hexToLatLngCenter(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
     ): IGeoPoint {
-        val hexSize = adjustedHexSize(latHint, zoom)
-        val center = hexCenterXY(coord, hexSize)
+        val hexSideLength = adjustedHexSideLength(latHint, zoom)
+        val center = hexCenterXY(coord, hexSideLength)
         return projection.unproject(center)
     }
 
-    fun hexToCellId(coord: HexCoord): String = "H${coord.q}_${coord.r}"
+    /**
+     * Generate unique cell ID including zoom level to prevent collisions
+     */
+    fun hexToCellId(coord: HexCoord, zoom: Double): String =
+        "H${coord.q}_${coord.r}_Z${zoom.toInt()}"
 
+    /**
+     * Get hexagon polygon vertices in lat/lng coordinates
+     */
     fun hexToPolygonLatLng(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
     ): List<IGeoPoint> {
-        val hexSize = adjustedHexSize(latHint, zoom)
-        val center = hexCenterXY(coord, hexSize)
+        val hexSideLength = adjustedHexSideLength(latHint, zoom)
+        val center = hexCenterXY(coord, hexSideLength)
+
+        // Calculate circumradius from side length
+        val circumRadius = hexSideLength * 2.0 / sqrt(3.0)
+
         return (0 until 6).map { i ->
-            val angle = Math.toRadians(60.0 * i - 30.0)
-            val x = center.x + hexSize * cos(angle)
-            val y = center.y + hexSize * sin(angle)
+            val angle = Math.toRadians(60.0 * i - 30.0) // Start at -30° for flat-top
+            val x = center.x + circumRadius * cos(angle)
+            val y = center.y + circumRadius * sin(angle)
             projection.unproject(Offset(x.toFloat(), y.toFloat()))
         }
     }
 
+    /**
+     * Find the hex cell that encloses the centroid of multiple points
+     */
     fun enclosingCellOf(
         points: List<MarkerState>,
         zoom: Double,
     ): HexCell {
-        val center = computeCentroid(points.map { it.position })
+        require(points.isNotEmpty()) { "Points list cannot be empty" }
+
+        val center = computeGeographicCentroid(points.map { it.position })
         val coord = latLngToHexCoord(center, zoom)
         val centerLatLng = hexToLatLngCenter(coord, center.latitude, zoom)
         val centerXY = projection.project(centerLatLng)
-        val id = hexToCellId(coord)
+        val id = hexToCellId(coord, zoom)
         return HexCell(coord, centerLatLng, centerXY, id)
     }
 
+    /**
+     * Get hex cells for multiple points with their IDs
+     */
     fun hexCellsForPointsWithId(
         points: List<MarkerState>,
         zoom: Double,
@@ -123,73 +168,132 @@ class HexGeocell(
                 val coord = latLngToHexCoord(it.position, zoom)
                 val centerLatLng = hexToLatLngCenter(coord, it.position.latitude, zoom)
                 val centerXY = projection.project(centerLatLng)
-                val cellId = hexToCellId(coord)
+                val cellId = hexToCellId(coord, zoom)
                 val cell = HexCell(coord, centerLatLng, centerXY, cellId)
                 IdentifiedHexCell(it.id, cell)
             }.toSet()
 
-    private fun computeCentroid(points: List<IGeoPoint>): IGeoPoint {
-        val avgLat = points.map { it.latitude }.average()
-        val avgLng = points.map { it.longitude }.average()
+    /**
+     * Compute geographic centroid considering Earth's curvature (improved version)
+     */
+    private fun computeGeographicCentroid(points: List<IGeoPoint>): IGeoPoint {
+        if (points.size == 1) return points[0]
+
+        // Use spherical coordinates for better accuracy
+        var x = 0.0
+        var y = 0.0
+        var z = 0.0
+
+        points.forEach { point ->
+            val latRad = point.latitude * PI / 180
+            val lngRad = point.longitude * PI / 180
+
+            x += cos(latRad) * cos(lngRad)
+            y += cos(latRad) * sin(lngRad)
+            z += sin(latRad)
+        }
+
+        x /= points.size
+        y /= points.size
+        z /= points.size
+
+        val centralLng = atan2(y, x) * 180 / PI
+        val centralSquareRoot = sqrt(x * x + y * y)
+        val centralLat = atan2(z, centralSquareRoot) * 180 / PI
+
         return object : IGeoPoint {
-            override val latitude: Double = avgLat
-            override val longitude: Double = avgLng
+            override val latitude: Double = centralLat
+            override val longitude: Double = centralLng
             override val altitude: Double? = null
         }
     }
 
-    private fun adjustedHexSize(
+    /**
+     * Calculate adjusted hex side length based on latitude and zoom
+     */
+    private fun adjustedHexSideLength(
         lat: Double,
         zoom: Double,
     ): Double {
         val scale = 1.0 / (2.0.pow(zoom))
-        val latScale = cos(lat * PI / 180).coerceAtLeast(0.01)
-        return baseHexSize * scale / latScale
+        val latScale = cos(lat * PI / 180).coerceAtLeast(0.01) // Prevent division by zero
+        return baseHexSideLength * scale / latScale
     }
 
+    /**
+     * Calculate hex center in XY coordinates from hex coordinate and side length
+     * FIXED: Now correctly uses side length instead of radius
+     */
     private fun hexCenterXY(
         coord: HexCoord,
-        hexSize: Double,
+        hexSideLength: Double,
     ): Offset {
-        val x = hexSize * (3.0 / 2.0 * coord.q)
-        val y = hexSize * (sqrt(3.0) * (coord.r + coord.q / 2.0))
+        // For flat-top hexagons with side length s:
+        // - Distance between adjacent hex centers in q direction = s * 3/2
+        // - Distance between adjacent hex centers in r direction = s * √3
+        val x = hexSideLength * (3.0 / 2.0 * coord.q)
+        val y = hexSideLength * (sqrt(3.0) * (coord.r + coord.q / 2.0))
         return Offset(x.toFloat(), y.toFloat())
     }
 
+    /**
+     * Convert pixel coordinates to hex coordinate
+     */
     private fun pixelToHex(
         offset: Offset,
-        hexSize: Double,
+        hexSideLength: Double,
     ): HexCoord {
-        val q = (2.0 / 3.0 * offset.x / hexSize)
-        val r = (-1.0 / 3.0 * offset.x + sqrt(3.0) / 3.0 * offset.y) / hexSize
+        val q = (2.0 / 3.0 * offset.x / hexSideLength)
+        val r = (-1.0 / 3.0 * offset.x + sqrt(3.0) / 3.0 * offset.y) / hexSideLength
         return cubeRound(q, r)
     }
 
+    /**
+     * Round fractional cube coordinates to the nearest hex coordinate
+     */
     private fun cubeRound(
         q: Double,
         r: Double,
     ): HexCoord {
-        val x = q
-        val y = r
-        val z = -x - y
+        val s = -q - r
 
-        var rx = x.roundToInt()
-        var ry = y.roundToInt()
-        var rz = z.roundToInt()
+        var rq = q.roundToInt()
+        var rr = r.roundToInt()
+        var rs = s.roundToInt()
 
-        val dx = abs(rx - x)
-        val dy = abs(ry - y)
-        val dz = abs(rz - z)
+        val qDiff = abs(rq - q)
+        val rDiff = abs(rr - r)
+        val sDiff = abs(rs - s)
 
-        if (dx > dy && dx > dz) {
-            rx = -ry - rz
-        } else if (dy > dz) {
-            ry = -rx - rz
-        } else {
-            rz = -rx - ry
+        when {
+            qDiff > rDiff && qDiff > sDiff -> rq = -rr - rs
+            rDiff > sDiff -> rr = -rq - rs
+            else -> rs = -rq - rr
         }
 
-        return HexCoord(rx, ry)
+        return HexCoord(rq, rr)
+    }
+
+    /**
+     * Calculate distance between two hex coordinates
+     */
+    fun hexDistance(a: HexCoord, b: HexCoord): Int {
+        return (abs(a.q - b.q) + abs(a.q + a.r - b.q - b.r) + abs(a.r - b.r)) / 2
+    }
+
+    /**
+     * Get all hex coordinates within a certain distance
+     */
+    fun hexRange(center: HexCoord, radius: Int): List<HexCoord> {
+        val results = mutableListOf<HexCoord>()
+        for (dq in -radius..radius) {
+            val minR = maxOf(-radius, -dq - radius)
+            val maxR = minOf(radius, -dq + radius)
+            for (dr in minR..maxR) {
+                results.add(HexCoord(center.q + dq, center.r + dr, center.depth))
+            }
+        }
+        return results
     }
 }
 
