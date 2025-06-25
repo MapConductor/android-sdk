@@ -21,6 +21,7 @@ import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MarkerModifyParams
 import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
@@ -28,13 +29,25 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
+import kotlin.math.min
+import android.os.SystemClock
+import android.view.animation.BounceInterpolator
+import android.view.animation.Interpolator
+import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.here.sdk.core.GeoCoordinates
 
 interface IHereMapViewController : MapViewController {
     fun moveCamera(
@@ -114,8 +127,12 @@ class HereMapViewController(
                     marker.image = icon.toMapImage()
                 }
             },
-            onAnimation = { param ->
-
+            onAnimation = {
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> this.markerDropAnimation(it)
+                    MarkerAnimation.Bounce -> this.markerBounceAnimation(it)
+                    else -> { /* Do nothing here */ }
+                }
             },
         )
 
@@ -145,6 +162,68 @@ class HereMapViewController(
 
     init {
         setupListeners()
+    }
+
+    private fun markerDropAnimation(params: MarkerModifyParams<MapMarker>) {
+        val markerGeo = params.marker.coordinates
+        val interpolator = LinearInterpolator()
+        val duration = Settings.Default.markerDropAnimateDuration
+
+        val screenPoint = holder.mapView.geoToViewCoordinates(markerGeo) ?: return
+        val startPoint = Point2D(screenPoint.x, 0.0)
+
+        markerAnimateStartListener?.invoke(params.state)
+
+        flow {
+            val startTime = SystemClock.uptimeMillis()
+            while (true) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = min(1f, elapsed.toFloat() / duration)
+                emit(interpolator.getInterpolation(t))
+                if (t >= 1f) break
+                delay(16)
+            }
+        }.onEach { t ->
+            val startGeo = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
+            val lat = t * markerGeo.latitude + (1 - t) * startGeo.latitude
+            val lon = t * markerGeo.longitude + (1 - t) * startGeo.longitude
+            params.marker.coordinates = GeoCoordinates(lat, lon)
+        }.onCompletion {
+            params.marker.coordinates = markerGeo
+            params.state.animation = null
+            markerAnimateEndListener?.invoke(params.state)
+        }.launchIn(coroutine)
+    }
+
+    private fun markerBounceAnimation(params: MarkerModifyParams<MapMarker>) {
+        val markerGeo = params.marker.coordinates
+        val duration = Settings.Default.markerBounceAnimateDuration
+        val interpolator: Interpolator = BounceInterpolator()
+
+        val screenPoint = holder.mapView.geoToViewCoordinates(markerGeo) ?: return
+        val startPoint = Point2D(screenPoint.x, screenPoint.y - 200)
+
+        markerAnimateStartListener?.invoke(params.state)
+
+        flow {
+            val startTime = SystemClock.uptimeMillis()
+            while (true) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
+                emit(t)
+                if (t >= 1f) break
+                delay(16)
+            }
+        }.onEach { t ->
+            val startGeo = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
+            val lat = t * markerGeo.latitude + (1 - t) * startGeo.latitude
+            val lon = markerGeo.longitude
+            params.marker.coordinates = GeoCoordinates(lat, lon)
+        }.onCompletion {
+            params.marker.coordinates = markerGeo
+            params.state.animation = null
+            markerAnimateEndListener?.invoke(params.state)
+        }.launchIn(coroutine)
     }
 
     private fun setupListeners() {

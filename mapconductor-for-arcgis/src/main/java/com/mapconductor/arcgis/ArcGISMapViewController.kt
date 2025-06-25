@@ -239,7 +239,7 @@ class ArcGISMapViewController(
         val duration = Settings.Default.markerBounceAnimateDuration
         val interpolator: Interpolator = BounceInterpolator()
         val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
-        val startPoint = Offset(0f , -200f)
+        val startPoint = Offset(0f , 0f)
 
         markerAnimateStartListener?.let { it(params.state) }
 
@@ -252,15 +252,10 @@ class ArcGISMapViewController(
                 delay(16L)
             }
         }.onEach { t ->
-//            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val startLatLng = this.fromScreenOffset(startPoint)
-            Log.d("debug", "------>$startLatLng")
-            if (startLatLng == null) return@onEach
-
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
             val lng = markerLatLng.longitude
             val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
             params.marker.geometry = Point(lng, lat, SpatialReference.wgs84())
-            Log.d("debug", "------>ArcGIS[$lat]")
         }.onCompletion {
             params.marker.geometry = markerLatLng.toPoint()
             params.state.animation = null
