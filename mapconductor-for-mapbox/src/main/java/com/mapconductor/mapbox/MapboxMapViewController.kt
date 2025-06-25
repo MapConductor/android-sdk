@@ -1,41 +1,58 @@
 package com.mapconductor.mapbox
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Dp
 import com.google.gson.JsonObject
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
+import com.mapbox.maps.extension.style.expressions.dsl.generated.zoom
+import com.mapbox.maps.extension.style.expressions.generated.Expression
+import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.generated.LineLayer
+import com.mapbox.maps.extension.style.layers.generated.SymbolLayer
+import com.mapbox.maps.extension.style.layers.generated.lineLayer
+import com.mapbox.maps.extension.style.layers.generated.symbolLayer
+import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
+import com.mapbox.maps.extension.style.layers.properties.generated.IconTranslateAnchor
+import com.mapbox.maps.extension.style.layers.properties.generated.LineCap
+import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
+import com.mapbox.maps.extension.style.sources.addSource
+import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
+import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
-import com.mapbox.maps.plugin.annotation.Annotation
-import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
-import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationDragListener
-import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationLongClickListener
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
-import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
-import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.settings.Settings
+import kotlin.Result
+import kotlin.coroutines.suspendCoroutine
 import android.animation.Animator
-import android.graphics.Bitmap
+import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 
 // interface IMapboxMapInitOptions {
 //    val mapOptions: MapOptions?
@@ -75,17 +92,66 @@ internal class MapboxMapViewController(
 ) : BaseMapViewController<CameraState>(),
     IMapboxMapViewController,
     CameraChangedCallback,
-    OnPointAnnotationClickListener,
-    OnMapClickListener,
-    OnPointAnnotationDragListener,
-    OnPointAnnotationLongClickListener {
-    private val pointAnnotationManager: PointAnnotationManager
-
+    OnMapClickListener {
+    private val symbolLayer: SymbolLayer
+    private val lineLayer: LineLayer
+    private val lineSourceId = "lines-source"
+    private val lineLayerId = "lines-layer"
+    private val lineSource: GeoJsonSource = geoJsonSource(lineSourceId) {
+        geometry(LineString.fromLngLats(emptyList()))
+    }
+    private val markerSourceId = "markers-source"
+    private val markerLayerId = "markers-layer"
+    private val markerSource: GeoJsonSource = geoJsonSource(markerSourceId) {
+        featureCollection(FeatureCollection.fromFeatures(emptyList()))
+    }
     private var selectedMarker: MarkerState? = null
+    private val loadedIconHash: MutableMap<String, Int> = mutableMapOf()
+    private lateinit var defaultIcon: BitmapIcon
+    private object Prop {
+        const val MARKER_ID = "id"
+        const val ICON_ID = "icon_id"
+        const val DEFAULT_MARKER_ID = "default"
+        const val OFFSET_X = "offset_x"
+        const val OFFSET_Y = "offset_y"
+    }
 
     init {
-        val annotationApi = holder.mapView.annotations
-        pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        lineLayer = lineLayer(lineLayerId, lineSourceId) {
+            lineColor(Color.RED)
+            lineWidth(4.0)
+            lineJoin(LineJoin.ROUND)
+            lineCap(LineCap.ROUND)
+        }
+
+        symbolLayer = symbolLayer(markerLayerId, markerSourceId) {
+            iconSize(1.0)
+            val iconId = Expression.get(Prop.ICON_ID)
+            iconImage(iconId)
+            iconAllowOverlap(true)
+            iconIgnorePlacement(true)
+            iconId.literalValue?.let {
+                iconAnchor(IconAnchor.CENTER)
+                iconTranslate(
+                    listOf(
+                        Expression.get(Prop.OFFSET_X).literalValue as? Double ?: 0.0,
+                        Expression.get(Prop.OFFSET_Y).literalValue as? Double ?: 0.0
+                    )
+                )
+                iconTranslateAnchor(IconTranslateAnchor.MAP)
+            }
+        }
+
+        holder.map.getStyle { style ->
+            defaultIcon = markerOverlayManager.markerManager.createBitmapIcon(MarkerIcon.Default())
+            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            style.addSource(markerSource)
+            style.addLayer(symbolLayer)
+
+            style.addSource(lineSource)
+            style.addLayer(lineLayer)
+        }
+
         setupListeners()
     }
 
@@ -93,76 +159,87 @@ internal class MapboxMapViewController(
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
-        pointAnnotationManager.addClickListener(this@MapboxMapViewController)
-        pointAnnotationManager.dragListeners.remove(this)
-        pointAnnotationManager.dragListeners.add(this)
-        pointAnnotationManager.longClickListeners.remove(this)
-        pointAnnotationManager.longClickListeners.add(this)
     }
 
+    // Web Mercator投影法に適したbaseHexSideLengthを使用
+    private val hexCell = HexGeocell(
+        projection = WebMercator,
+        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
+    )
+
     override val markerOverlayManager =
-        MarkerOverlayManagerImpl<PointAnnotation>(
-            coroutine = coroutine,
-            markerManager = MarkerManager(HexGeocell(WebMercator)),
+        MarkerOverlayManagerImpl<Feature>(
+            markerManager = MarkerManager(hexCell),
             onRemove = { removes ->
-                synchronized(pointAnnotationManager) {
-                    val annotations: List<PointAnnotation> = removes.map { params -> params.marker }
-                    pointAnnotationManager.delete(annotations)
+                val style = suspendCoroutine { it->
+                    holder.map.getStyle { style ->
+                        it.resumeWith(Result.success(style))
+                    }
+                }
+                removes.forEach { removeEntity ->
+                    removeEntity.state.icon?.let {
+                        val iconKey = it.hashCode().toString()
+                        val cnt = loadedIconHash.getOrDefault(iconKey, 1) - 1
+                        if (cnt == 0) {
+                            loadedIconHash.remove(iconKey)
+                            style.removeStyleImage(iconKey)
+                        } else {
+                            loadedIconHash.put(iconKey, cnt)
+                        }
+                    }
                 }
             },
+
             onAdd = { newMarkers ->
-                synchronized(pointAnnotationManager) {
-                    val options =
-                        newMarkers.map { params ->
-                            return@map params.icon
-                                .toPointAnnotationOptions()
-                                .withPoint(
-                                    GeoPoint.from(params.state.position).toPoint(),
-                                ).withData(
-                                    JsonObject().apply {
-                                        addProperty("id", params.state.id)
-                                    },
-                                ) // .withDraggable(true)
-                        }
 
-                    return@MarkerOverlayManagerImpl pointAnnotationManager.create(options)
+                val style = suspendCoroutine { it->
+                    holder.map.getStyle { style ->
+                        it.resumeWith(Result.success(style))
+                    }
                 }
-            },
-            onChange = { changes ->
-                // Mapboxはマーカーの画像が変更された場合、作り直す必要がある
-                synchronized(pointAnnotationManager) {
-                    // 古いマーカーを削除
-                    val oldMarkers = changes.map { params -> params.marker }
-                    pointAnnotationManager.delete(oldMarkers)
-
-                    val newMarkerOptions =
-                        changes.map { params ->
-                            params.icon
-                                .toPointAnnotationOptions()
-                                .withPoint(
-                                    GeoPoint.from(params.state.position).toPoint(),
-                                ).withData(
-                                    JsonObject().apply {
-                                        addProperty("id", params.state.id)
-                                    },
-                                )
+                newMarkers.forEach { params ->
+                    params.first.icon?.let {
+                        val iconKey = it.hashCode().toString()
+                        if (!loadedIconHash.contains(iconKey)) {
+                            style.addImage(iconKey, params.second.bitmap)
                         }
-                    // 新しいマーカーのインスタンスを返す
-                    pointAnnotationManager.create(newMarkerOptions)
+                    }
                 }
-            },
-            onIconChange = { marker, icon ->
-                synchronized(pointAnnotationManager) {
-                    val option = icon.toPointAnnotationOptions()
-                    marker.iconImageBitmap = icon.bitmap.copy(Bitmap.Config.ARGB_8888, true)
-                    marker.iconSize = option.iconSize
-                    marker.iconImage = option.iconImage
-                    marker.iconAnchor = option.iconAnchor
-                    marker.iconOffset = option.iconOffset
-                    pointAnnotationManager.update(marker)
+
+                val features = newMarkers.map { params ->
+                    Feature.fromGeometry(
+                        Point.fromLngLat(params.first.position.longitude, params.first.position.latitude),
+                        JsonObject().apply {
+                            addProperty(Prop.MARKER_ID, params.first.id)
+                            if (params.first.icon != null) {
+                                params.first.icon?.let {
+                                    val iconKey = it.hashCode().toString()
+                                    loadedIconHash.put(iconKey, loadedIconHash.getOrDefault(iconKey, 0) + 1)
+                                    addProperty(Prop.ICON_ID, iconKey)
+                                    val offsetX = (it.anchor.x - 0.5) * it.size.width
+                                    val offsetY = (it.anchor.y - 0.5) * it.size.height
+                                    addProperty(Prop.OFFSET_X, offsetX)
+                                    addProperty(Prop.OFFSET_Y, offsetY)
+                                }
+                            } else {
+                                addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                                addProperty(Prop.OFFSET_X, 0.0)
+                                addProperty(Prop.OFFSET_Y, defaultIcon.size.height.toDouble())
+                            }
+                        }
+                    )
                 }
+                coroutine.launch { updateMarkerLayer(features) }
+                features
             },
+            onChange = { TODO() },
         )
+
+    private fun updateMarkerLayer(features: List<Feature>) {
+        markerSource.featureCollection(
+            FeatureCollection.fromFeatures(features)
+        )
+    }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
@@ -192,8 +269,14 @@ internal class MapboxMapViewController(
 
     override fun run(cameraChanged: CameraChanged) {
         cameraMoveListener?.let {
-            coroutine.let {
-                it(cameraChanged.cameraState)
+            coroutine.launch {
+                it(CameraState(
+                    cameraChanged.cameraState.center,
+                    cameraChanged.cameraState.padding,
+                    cameraChanged.cameraState.zoom + 1,
+                    cameraChanged.cameraState.bearing,
+                    cameraChanged.cameraState.pitch
+                ))
             }
         }
     }
@@ -248,85 +331,137 @@ internal class MapboxMapViewController(
         }
     }
 
-    override fun onAnnotationClick(annotation: PointAnnotation): Boolean {
-        val tag = annotation.getData() ?: return false
-        val key = tag.asJsonObject.get("id")?.asString ?: return false
-        val state = markerOverlayManager.getMarkerState(key) ?: return false
-        markerClickListener?.let {
-            coroutine.launch {
-                it(state)
-            }
-        }
-        return true
-    }
 
     override fun onMapClick(point: Point): Boolean {
+        val geoPoint = point.toGeoPoint()
+        val state = this.findNearestMarker(
+            position = geoPoint,
+            tolerance = Settings.Default.tapTolerance,
+        )
+        if (state != null) {
+            markerClickListener?.let {
+                coroutine.launch {
+                    it(state)
+                }
+            }
+            return true
+        }
+
         mapClickListener?.let {
-            coroutine.let {
-                it(point.toGeoPoint())
+            coroutine.launch {
+                it(geoPoint)
             }
         }
         return true
     }
 
-    private fun annotationToMarkerState(annotation: Annotation<*>): MarkerState? {
-        val tag = annotation.getData() ?: return null
-        val id = tag.asJsonObject.get("id")?.asString ?: return null
-        return when {
-            annotation is PointAnnotation -> markerOverlayManager.getMarkerState(id)
-            else -> {
-                // Do nothing here
-                null
-            }
+    private fun findNearestMarker(
+        position: IGeoPoint,
+        tolerance: Dp,
+    ): MarkerState? {
+        val zoom = holder.map.cameraState.zoom
+        val acceptDPI = tolerance.value.toFloat() * 2 * holder.mapView.context.resources.displayMetrics.density
+
+        // 現在のzoomレベルに適したHexGeocellを使用
+        val currentHexCell = createHexGeocell(zoom)
+
+        clearPolyline()
+        markerOverlayManager.markerManager.findNearestCell(position)?.let { cell ->
+            val points = currentHexCell.hexToPolygonLatLng(
+                coord = cell.coord,
+                latHint = position.latitude,  // 修正済み: 正しい緯度を使用
+                zoom = zoom,
+            )
+            drawPolyline(points)
         }
+
+        return findMarkerFromPoint(
+            markerOverlayManager = markerOverlayManager,
+            position = position,
+            zoom = zoom,
+            tolerance = acceptDPI.toDouble(),
+        )
     }
 
-    override fun onAnnotationDrag(annotation: Annotation<*>) {
-        (annotation as PointAnnotation).also { point ->
-            this.annotationToMarkerState(annotation)?.also { state ->
-                state.position = point.geometry.toGeoPoint()
-                markerDragListener?.also {
-                    coroutine.launch { it.invoke(state) }
-                }
-            }
+    // zoom レベルに応じて適切なbaseHexSideLengthを選択
+    private fun createHexGeocell(zoom: Double): HexGeocell {
+        val baseHexSideLength = when {
+            zoom <= 8 -> 500000    // 500km - 低ズーム用
+            zoom <= 14 -> 100000   // 100km - 中ズーム用
+            else -> 20000          // 20km - 高ズーム用
         }
+        return HexGeocell(WebMercator, baseHexSideLength)
     }
 
-    override fun onAnnotationDragFinished(annotation: Annotation<*>) {
-        (annotation as PointAnnotation).also { point ->
-            this.annotationToMarkerState(annotation)?.also { state ->
-                state.position = point.geometry.toGeoPoint()
+    private fun clearPolyline() {
+        lineSource.geometry(LineString.fromLngLats(emptyList()))
+    }
 
-                // Restore the recomposition for the position property
-                setDraggingState(state, false)
-                point.isDraggable = false
-
-                markerDragEndListener?.also {
-                    coroutine.launch { it.invoke(state) }
-                }
-            }
+    private fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        val points = geoPoints.map {
+            GeoPoint.from(it).toPoint()
         }
+        lineSource.geometry(LineString.fromLngLats(points))
     }
 
-    override fun onAnnotationDragStarted(annotation: Annotation<*>) {
-        (annotation as PointAnnotation).also { point ->
-            this.annotationToMarkerState(annotation)?.also { state ->
-                // Suppress the recomposition for the position property
-                setDraggingState(state, true)
+//    private fun annotationToMarkerState(annotation: Annotation<*>): MarkerState? {
+//        val tag = annotation.getData() ?: return null
+//        val id = tag.asJsonObject.get("id")?.asString ?: return null
+//        return when {
+//            annotation is PointAnnotation -> markerOverlayManager.getMarkerState(id)
+//            else -> {
+//                // Do nothing here
+//                null
+//            }
+//        }
+//    }
 
-                state.position = point.geometry.toGeoPoint()
-                markerDragStartListener?.also {
-                    coroutine.launch { it.invoke(state) }
-                }
-            }
-        }
-    }
-
-    override fun onAnnotationLongClick(annotation: PointAnnotation): Boolean {
-        selectedMarker = this.annotationToMarkerState(annotation)
-        if (selectedMarker == null) return false
-
-        annotation.isDraggable = true
-        return true
-    }
+//    override fun onAnnotationDrag(annotation: Annotation<*>) {
+//        (annotation as PointAnnotation).also { point ->
+//            this.annotationToMarkerState(annotation)?.also { state ->
+//                state.position = point.geometry.toGeoPoint()
+//                markerDragListener?.also {
+//                    coroutine.launch { it.invoke(state) }
+//                }
+//            }
+//        }
+//    }
+//
+//    override fun onAnnotationDragFinished(annotation: Annotation<*>) {
+//        (annotation as PointAnnotation).also { point ->
+//            this.annotationToMarkerState(annotation)?.also { state ->
+//                state.position = point.geometry.toGeoPoint()
+//
+//                // Restore the recomposition for the position property
+//                setDraggingState(state, false)
+//                point.isDraggable = false
+//
+//                markerDragEndListener?.also {
+//                    coroutine.launch { it.invoke(state) }
+//                }
+//            }
+//        }
+//    }
+//
+//    override fun onAnnotationDragStarted(annotation: Annotation<*>) {
+//        (annotation as PointAnnotation).also { point ->
+//            this.annotationToMarkerState(annotation)?.also { state ->
+//                // Suppress the recomposition for the position property
+//                setDraggingState(state, true)
+//
+//                state.position = point.geometry.toGeoPoint()
+//                markerDragStartListener?.also {
+//                    coroutine.launch { it.invoke(state) }
+//                }
+//            }
+//        }
+//    }
+//
+//    override fun onAnnotationLongClick(annotation: PointAnnotation): Boolean {
+//        selectedMarker = this.annotationToMarkerState(annotation)
+//        if (selectedMarker == null) return false
+//
+//        annotation.isDraggable = true
+//        return true
+//    }
 }

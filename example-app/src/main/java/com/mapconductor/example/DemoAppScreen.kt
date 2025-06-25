@@ -111,7 +111,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(1) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -134,7 +134,6 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         remember {
             appViewModel.markerList.map {
                 it.copy(
-                    icon = icon,
                     draggable = true,
                 )
             }
