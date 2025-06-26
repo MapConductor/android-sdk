@@ -139,7 +139,7 @@ class GoogleMapViewController(
         val markerLatLng = params.marker.position.toGeoPoint()
         val interpolator = LinearInterpolator()
         val markerPoint = this.toScreenOffset(markerLatLng) ?: return
-        val startPoint  = Offset(markerPoint.x , 0f)
+        val startPoint = Offset(markerPoint.x, 0f)
         val duration = Settings.Default.markerDropAnimateDuration
 
         markerAnimateStartListener?.let { it(params.state) }
@@ -154,14 +154,13 @@ class GoogleMapViewController(
                 delay(16)
             }
         }.onEach { t ->
-            val startLatLng  = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = t  * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
             val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
             params.marker.position = LatLng(lat, lng)
         }.onCompletion {
             params.marker.position = markerLatLng.toLatLng()
             params.state.animation = null
-
             markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
@@ -184,7 +183,6 @@ class GoogleMapViewController(
                 delay(16L)
             }
         }.onEach { t ->
-            Log.d("debug", "------>GoogleMaps")
             val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
             val lng = markerLatLng.longitude
             val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude

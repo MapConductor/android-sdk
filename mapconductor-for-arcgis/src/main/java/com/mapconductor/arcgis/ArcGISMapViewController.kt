@@ -207,7 +207,7 @@ class ArcGISMapViewController(
         val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
         val interpolator = LinearInterpolator()
         val markerPoint = this.toScreenOffset(markerLatLng) ?: return
-        val startPoint  = Offset(markerPoint.x , 0f)
+        val startPoint = Offset(markerPoint.x, 0f)
         val duration = Settings.Default.markerDropAnimateDuration
 
         markerAnimateStartListener?.let { it(params.state) }
@@ -222,14 +222,13 @@ class ArcGISMapViewController(
                 delay(16)
             }
         }.onEach { t ->
-            val startLatLng  = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = t  * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
             val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
             params.marker.geometry = Point(lng, lat, SpatialReference.wgs84())
         }.onCompletion {
             params.marker.geometry = markerLatLng.toPoint()
             params.state.animation = null
-
             markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
@@ -263,6 +262,7 @@ class ArcGISMapViewController(
             markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
+
 
     private fun onViewpointChange() {
         this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
