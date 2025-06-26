@@ -165,18 +165,17 @@ class HereMapViewController(
     }
 
     private fun markerDropAnimation(params: MarkerModifyParams<MapMarker>) {
-        val markerGeo = params.marker.coordinates
+        val markerLatLng = params.marker.coordinates
         val interpolator = LinearInterpolator()
+        val markerPoint = holder.mapView.geoToViewCoordinates(markerLatLng) ?: return
+        val startPoint = Point2D(markerPoint.x, 0.0)
         val duration = Settings.Default.markerDropAnimateDuration
-
-        val screenPoint = holder.mapView.geoToViewCoordinates(markerGeo) ?: return
-        val startPoint = Point2D(screenPoint.x, 0.0)
 
         markerAnimateStartListener?.invoke(params.state)
 
-        flow {
+        flow{
             val startTime = SystemClock.uptimeMillis()
-            while (true) {
+            while (true){
                 val elapsed = SystemClock.uptimeMillis() - startTime
                 val t = min(1f, elapsed.toFloat() / duration)
                 emit(interpolator.getInterpolation(t))
@@ -184,45 +183,45 @@ class HereMapViewController(
                 delay(16)
             }
         }.onEach { t ->
-            val startGeo = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
-            val lat = t * markerGeo.latitude + (1 - t) * startGeo.latitude
-            val lon = t * markerGeo.longitude + (1 - t) * startGeo.longitude
-            params.marker.coordinates = GeoCoordinates(lat, lon)
+            val startLatLng = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
+            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.coordinates = GeoCoordinates(lat, lng)
         }.onCompletion {
-            params.marker.coordinates = markerGeo
+            params.marker.coordinates = markerLatLng
             params.state.animation = null
-            markerAnimateEndListener?.invoke(params.state)
+            markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
 
     private fun markerBounceAnimation(params: MarkerModifyParams<MapMarker>) {
-        val markerGeo = params.marker.coordinates
+        val startTime = SystemClock.uptimeMillis()
         val duration = Settings.Default.markerBounceAnimateDuration
         val interpolator: Interpolator = BounceInterpolator()
+        val markerLatLng = params.marker.coordinates
+        val markerPoint = holder.mapView.geoToViewCoordinates(markerLatLng) ?: return
+        val startPoint = Point2D(0.0, -200.0)
 
-        val screenPoint = holder.mapView.geoToViewCoordinates(markerGeo) ?: return
-        val startPoint = Point2D(screenPoint.x, screenPoint.y - 200)
-
-        markerAnimateStartListener?.invoke(params.state)
+        markerAnimateStartListener?.let { it(params.state) }
 
         flow {
-            val startTime = SystemClock.uptimeMillis()
             while (true) {
                 val elapsed = SystemClock.uptimeMillis() - startTime
                 val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
                 emit(t)
                 if (t >= 1f) break
-                delay(16)
+                delay(16L)
             }
         }.onEach { t ->
-            val startGeo = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
-            val lat = t * markerGeo.latitude + (1 - t) * startGeo.latitude
-            val lon = markerGeo.longitude
-            params.marker.coordinates = GeoCoordinates(lat, lon)
+            val startLatLng = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
+            val lng = markerLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.coordinates = GeoCoordinates(lat, lng)
         }.onCompletion {
-            params.marker.coordinates = markerGeo
+            params.marker.coordinates = markerLatLng
             params.state.animation = null
-            markerAnimateEndListener?.invoke(params.state)
+
+            markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
 
