@@ -263,7 +263,6 @@ class ArcGISMapViewController(
         }.launchIn(coroutine)
     }
 
-
     private fun onViewpointChange() {
         this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
     }
