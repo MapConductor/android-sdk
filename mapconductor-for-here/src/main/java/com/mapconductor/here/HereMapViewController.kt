@@ -54,6 +54,10 @@ interface IHereMapViewController : MapViewController {
 class HereMapViewController(
     override val holder: MapViewHolder<MapView, HereMap>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    override val hexCell: HexGeocell = HexGeocell(
+        projection = WebMercator,
+        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
+    )
 ) : BaseMapViewController<MapCamera.State>(),
     IHereMapViewController,
     MapCameraListener,
@@ -63,7 +67,7 @@ class HereMapViewController(
     private var selectedMarker: MarkerEntity<MapMarker>? = null
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<MapMarker>(
-            markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
+            markerManager = MarkerManager(hexCell),
             onRemove = { removes ->
                 coroutine.launch {
                     val markers: List<MapMarker> = removes.map { params -> params.marker }
@@ -289,5 +293,13 @@ class HereMapViewController(
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),
         )
+    }
+
+    override fun clearPolyline() {
+        TODO("Not yet implemented")
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        TODO("Not yet implemented")
     }
 }

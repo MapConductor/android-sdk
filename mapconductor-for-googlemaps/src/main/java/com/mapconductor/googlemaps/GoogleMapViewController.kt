@@ -15,6 +15,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -24,8 +26,10 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import android.graphics.Color
 import android.graphics.Point
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +52,12 @@ interface IGoogleMapViewController : MapViewController {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    override val hexCell: HexGeocell = HexGeocell(
+        projection = WebMercator,
+        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
+    )
 ) : BaseMapViewController<CameraPosition>(),
+
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -59,7 +68,7 @@ class GoogleMapViewController(
     OnMarkerDragListener {
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Marker>(
-            markerManager = MarkerManager(HexGeocell(WebMercator)),
+            markerManager = MarkerManager(hexCell),
             onRemove = { removes ->
                 coroutine.launch {
                     removes.forEach { params -> params.marker.remove() }
@@ -250,4 +259,20 @@ class GoogleMapViewController(
             markerDragStartListener?.invoke(state)
         }
     }
+
+    override fun clearPolyline() {
+        TODO("Not yet implemented")
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        val options = PolylineOptions().also {
+            it.color(Color.RED)
+            it.width(2f)
+        }
+        geoPoints.forEach {
+            options.add(GeoPoint.from(it).toLatLng())
+        }
+        val polyline = holder.map.addPolyline(options)
+    }
+
 }

@@ -15,12 +15,14 @@ import android.os.Parcelable
 
 // ------- Core Types ----------
 class MarkerState(
-    val id: String = UUID.randomUUID().toString(),
+//    val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
+    id: String? = null,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
     draggable: Boolean = false,
 ) {
+    val id = id ?: this.hashCode().toString()
     var icon by mutableStateOf<MarkerIcon?>(icon)
     var draggable by mutableStateOf(draggable)
 
@@ -62,8 +64,7 @@ class MarkerState(
     }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + (extra?.hashCode() ?: 0)
+        var result = extra?.hashCode() ?: 0
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)

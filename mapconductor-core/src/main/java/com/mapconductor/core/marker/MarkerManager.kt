@@ -68,10 +68,8 @@ class MarkerManager<ActualMarker>(
         tileSize: Int = 256,
     ): Double = cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
 
-    fun findNearestCell(position: IGeoPoint): HexCell? = cellRegistry.findNearest(position)
-
     fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
-        val cell =  findNearestCell(position) ?: return null
+        val cell = cellRegistry.findNearest(position) ?: return null
         val entryIDs = cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
             entryIDs.sortedBy { entryId ->
                 entities[entryId]?.let { entity ->
