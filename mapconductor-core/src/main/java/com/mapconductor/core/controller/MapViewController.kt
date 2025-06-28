@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.onEach
 
 import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.Dispatchers
+import com.mapconductor.core.marker.MarkerEntity
 
 interface MapViewController {
     val holder: MapViewHolder<*, *>
@@ -40,44 +41,12 @@ interface MapViewController {
     suspend fun fromScreenOffset(offset: Offset): GeoPoint?
 }
 
-interface CommonMarker {
-    /**
-     * マーカーの現在の緯度経度を取得する
-     * 例：GoogleMaps → marker.position
-     *     ArcGIS → (marker.geometry as Point).x/y
-     */
-    fun getGeoCoordinates(): MapCoordinates
-
-    /**
-     * マーカーの位置を緯度・経度で更新する
-     * 例：GoogleMaps → marker.position = LatLng(...)
-     *     ArcGIS → marker.geometry = Point(...)
-     */
-    fun setGeoCoordinates(lat: Double, lng: Double)
-}
-
-interface CoordinateConverter {
-    /**
-     * 地理座標から画面座標へ変換（MapViewなどの Projection を使う）
-     * 例：GoogleMaps → Projection.toScreenLocation(LatLng)
-     *     ArcGIS → mapView.locationToScreen(Point)
-     */
-    fun toScreenOffset(geo: MapCoordinates): Offset?
-
-    /**
-     * 画面座標から地理座標へ変換
-     * 例：GoogleMaps → Projection.fromScreenLocation(Point)
-     *     ArcGIS → mapView.screenToLocation(Point)
-     */
-    fun fromScreenOffset(offset: Offset): MapCoordinates?
-}
-
 data class MapCoordinates(
     val latitude: Double,   /* 緯度 */
     val longitude: Double   /* 軽度 */
 )
 
-abstract class BaseMapViewController<ActualCamera> : MapViewController {
+abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController {
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
     var mapLongClickListener: OnMapEventHandler? = null
@@ -93,6 +62,8 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
         val tileSize = 256
         return earthCircumference / (tileSize * 2.0.pow(zoom))
     }
+
+    protected abstract fun setMarkerPosition(markerEntity: MarkerEntity<ActualMarker>, position: GeoPoint)
 
     protected fun findMarkerFromPoint(
         markerOverlayManager: MarkerOverlayManagerImpl<*>,
@@ -123,18 +94,17 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
     }
 
     fun animateMarkerDrop(
-        marker: CommonMarker,                                                   /* ラップしたMarkerオブジェクト*/
-        converter: CoordinateConverter,                                         /* 緯度経度/画面座標変化IF */
+        markerEntity: MarkerEntity<ActualMarker>,                               /* ラップしたMarkerオブジェクト*/
         duration: Long = Settings.Default.markerBounceAnimateDuration.toLong(), /* アニメションする時間(ms) */
     ) {
         // アニメーションの最終的な目標地点(地理座標)
-        val target = marker.getGeoCoordinates()
+        val target = markerEntity.state.position
 
         // 線形補間
         val interpolator = LinearInterpolator()
 
         // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
-        val startPoint = converter.toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
+        val startPoint = toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
 
         // ここからアニメ本体
         flow {
@@ -148,7 +118,7 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
             }
         }.onEach { t ->
             // 開始時の画面座標から緯度経度に戻す(垂直方向アニメーション起点)
-            val startLatLng = converter.fromScreenOffset(startPoint) ?: return@onEach
+            val startLatLng = fromScreenOffset(startPoint) ?: return@onEach
 
             // 緯度・経度を線形補間
             val lat = t * target.latitude + (1 - t) * startLatLng.latitude
@@ -156,10 +126,11 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
             val current = MapCoordinates(lat, lng)
 
             // 現在の座標をマーカーに適用
-            marker.setGeoCoordinates(lat, lng)
+            val newPosition = GeoPoint.fromLatLong(lat, lng)
+            setMarkerPosition(markerEntity, newPosition)
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
-            marker.setGeoCoordinates(target.latitude, target.longitude)
+            markerEntity.state.position = target
         }.launchIn(coroutine)
     }
 }

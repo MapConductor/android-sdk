@@ -23,6 +23,7 @@ import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
@@ -48,6 +49,7 @@ import android.view.animation.Interpolator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import android.util.Log
+import com.mapconductor.core.marker.MarkerEntity
 
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
@@ -65,7 +67,7 @@ interface IGoogleMapViewController : MapViewController {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : BaseMapViewController<CameraPosition>(),
+) : BaseMapViewController<CameraPosition, Marker>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -340,5 +342,9 @@ class GoogleMapViewController(
 
             markerDragStartListener?.invoke(state)
         }
+    }
+
+    override fun setMarkerPosition(markerEntity: MarkerEntity<Marker>, position: GeoPoint)  {
+        markerEntity.marker.position = position.toLatLng()
     }
 }
