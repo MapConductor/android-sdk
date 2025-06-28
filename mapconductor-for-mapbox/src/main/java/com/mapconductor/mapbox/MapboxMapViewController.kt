@@ -34,19 +34,25 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.geocell.HexCell
+import com.mapconductor.core.geocell.HexCoord
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
 import kotlin.Result
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.pow
+import kotlin.math.roundToInt
 import android.animation.Animator
 import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
@@ -73,6 +79,8 @@ import kotlinx.coroutines.launch
 //    override val antialiasingSampleCount: Int? = null,
 // ) : IMapboxMapInitOptions
 
+
+
 interface IMapboxMapViewController : MapViewController {
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -89,6 +97,11 @@ interface IMapboxMapViewController : MapViewController {
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    // Web Mercator投影法に適したbaseHexSideLengthを使用
+    override val hexCell: HexGeocell = HexGeocell(
+        projection = WebMercator,
+        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
+    )
 ) : BaseMapViewController<CameraState>(),
     IMapboxMapViewController,
     CameraChangedCallback,
@@ -160,12 +173,6 @@ internal class MapboxMapViewController(
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
     }
-
-    // Web Mercator投影法に適したbaseHexSideLengthを使用
-    private val hexCell = HexGeocell(
-        projection = WebMercator,
-        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
-    )
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Feature>(
@@ -355,25 +362,21 @@ internal class MapboxMapViewController(
         return true
     }
 
+
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
     ): MarkerState? {
         val zoom = holder.map.cameraState.zoom
-        val acceptDPI = tolerance.value.toFloat() * 2 * holder.mapView.context.resources.displayMetrics.density
-
-        // 現在のzoomレベルに適したHexGeocellを使用
-        val currentHexCell = createHexGeocell(zoom)
+        val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
         clearPolyline()
-        markerOverlayManager.markerManager.findNearestCell(position)?.let { cell ->
-            val points = currentHexCell.hexToPolygonLatLng(
-                coord = cell.coord,
-                latHint = position.latitude,  // 修正済み: 正しい緯度を使用
-                zoom = zoom,
-            )
-            drawPolyline(points)
-        }
+
+        // 検索範囲の詳細分析
+        val searchAnalysis = analyzeSearchRange(position, zoom, acceptDPI.toDouble())
+
+        // 可視化レイヤーを選択
+        drawSearchOutline(searchAnalysis)
 
         return findMarkerFromPoint(
             markerOverlayManager = markerOverlayManager,
@@ -383,26 +386,17 @@ internal class MapboxMapViewController(
         )
     }
 
-    // zoom レベルに応じて適切なbaseHexSideLengthを選択
-    private fun createHexGeocell(zoom: Double): HexGeocell {
-        val baseHexSideLength = when {
-            zoom <= 8 -> 500000    // 500km - 低ズーム用
-            zoom <= 14 -> 100000   // 100km - 中ズーム用
-            else -> 20000          // 20km - 高ズーム用
-        }
-        return HexGeocell(WebMercator, baseHexSideLength)
-    }
-
-    private fun clearPolyline() {
+    override fun clearPolyline() {
         lineSource.geometry(LineString.fromLngLats(emptyList()))
     }
 
-    private fun drawPolyline(geoPoints: List<IGeoPoint>) {
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
         val points = geoPoints.map {
             GeoPoint.from(it).toPoint()
         }
         lineSource.geometry(LineString.fromLngLats(points))
     }
+
 
 //    private fun annotationToMarkerState(annotation: Annotation<*>): MarkerState? {
 //        val tag = annotation.getData() ?: return null

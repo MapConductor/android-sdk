@@ -55,6 +55,11 @@ class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope =
         CoroutineScope(Dispatchers.Default),
+
+    override val hexCell: HexGeocell = HexGeocell(
+        projection = WebMercator,
+        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
+    )
 ) : BaseMapViewController<Camera>(),
     IArcGISMapViewController {
     val markerLayer: GraphicsOverlay =
@@ -66,7 +71,7 @@ class ArcGISMapViewController(
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Graphic>(
-            markerManager = MarkerManager<Graphic>(HexGeocell(WebMercator)),
+            markerManager = MarkerManager<Graphic>(hexCell),
             onRemove = { removes ->
                 coroutine.launch {
                     val elements = removes.map { params -> params.marker }
@@ -360,5 +365,13 @@ class ArcGISMapViewController(
                 )
             listener?.onComplete(result.isSuccess)
         }
+    }
+
+    override fun clearPolyline() {
+        TODO("Not yet implemented")
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        TODO("Not yet implemented")
     }
 }
