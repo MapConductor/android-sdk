@@ -47,6 +47,7 @@ import kotlinx.coroutines.withContext
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.SpatialReference
 import android.util.Log
+import com.mapconductor.core.marker.MarkerEntity
 
 interface IArcGISMapViewController : MapViewController {
     fun moveCamera(
@@ -70,7 +71,7 @@ class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope =
         CoroutineScope(Dispatchers.Default),
-) : BaseMapViewController<Camera>(),
+) : BaseMapViewController<Camera, Graphic>(),
     IArcGISMapViewController {
     val markerLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
@@ -454,5 +455,9 @@ class ArcGISMapViewController(
                 )
             listener?.onComplete(result.isSuccess)
         }
+    }
+
+    override fun setMarkerPosition(markerEntity: MarkerEntity<Graphic>, position: GeoPoint) {
+        markerEntity.marker.geometry = position.toPoint()
     }
 }
