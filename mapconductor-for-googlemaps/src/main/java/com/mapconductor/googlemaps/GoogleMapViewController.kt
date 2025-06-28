@@ -18,7 +18,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManager
+import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
@@ -26,10 +26,10 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import android.graphics.Point
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.graphics.Point
 
 interface IGoogleMapViewController : MapViewController {
     fun moveCamera(
@@ -56,8 +56,9 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    private val markerOverlayManager =
-        MarkerOverlayManager<Marker>(
+    override val markerOverlayManager =
+        MarkerOverlayManagerImpl<Marker>(
+            coroutine = coroutine,
             markerManager = MarkerManager(HexGeocell(WebMercator)),
             onRemove = { removes ->
                 removes.forEach { params -> params.marker.remove() }
@@ -75,7 +76,7 @@ class GoogleMapViewController(
                                 params.icon.anchor.y
                                     .toFloat(),
                             ).icon(bitmapDescriptor)
-                            .draggable(true)
+                            .draggable(params.state.draggable)
                     val marker =
                         holder.map.addMarker(options)?.also {
                             it.tag = params.state.id
@@ -84,11 +85,18 @@ class GoogleMapViewController(
                 }
             },
             onChange = { changes ->
-                changes.forEach { params ->
+                changes.map { params ->
                     val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
                     params.marker.position = GeoPoint.from(params.state.position).toLatLng()
                     params.marker.setIcon(bitmapDescriptor)
+
+                    // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                    params.marker
                 }
+            },
+            onIconChange = { marker, icon ->
+                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
+                marker.setIcon(bitmapDescriptor)
             },
         )
 
@@ -166,6 +174,8 @@ class GoogleMapViewController(
                 ),
             ).toGeoPoint()
 
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+
     override fun onCameraMove() {
         cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
@@ -214,6 +224,10 @@ class GoogleMapViewController(
 
     override fun onMarkerDrag(marker: Marker) {
         this.getMarkerStateFrom(marker)?.also { state ->
+
+            // Suppress the recomposition for the position property
+            setDraggingState(state, true)
+
             state.position = marker.position.toGeoPoint()
             markerDragListener?.invoke(state)
         }
@@ -229,6 +243,10 @@ class GoogleMapViewController(
     override fun onMarkerDragStart(marker: Marker) {
         this.getMarkerStateFrom(marker)?.also { state ->
             state.position = marker.position.toGeoPoint()
+
+            // Restore the recomposition for the position property
+            setDraggingState(state, false)
+
             markerDragStartListener?.invoke(state)
         }
     }

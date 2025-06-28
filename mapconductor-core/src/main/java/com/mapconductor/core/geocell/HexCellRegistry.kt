@@ -1,13 +1,14 @@
 package com.mapconductor.core.geocell
 
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.marker.MarkerState
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 // HexCellRegistry（KDTree + markDirty制御）
 
-class HexCellRegistry<T : IdentifiedPoint>(
+class HexCellRegistry<T : MarkerState>(
     private val geocell: HexGeocell,
     private val zoom: Double,
 ) {
