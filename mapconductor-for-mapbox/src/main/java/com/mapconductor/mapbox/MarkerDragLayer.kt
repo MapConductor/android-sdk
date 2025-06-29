@@ -13,9 +13,10 @@ class MarkerDragLayer(
     val layerId: String,
 ) {
     val layer = SymbolLayer(layerId, sourceId)
-    val source: GeoJsonSource = geoJsonSource(sourceId) {
-        featureCollection(FeatureCollection.fromFeatures(emptyList()))
-    }
+    val source: GeoJsonSource =
+        geoJsonSource(sourceId) {
+            featureCollection(FeatureCollection.fromFeatures(emptyList()))
+        }
 
     var selected: MarkerEntity<Feature>? = null
 
@@ -26,17 +27,19 @@ class MarkerDragLayer(
     }
 
     fun draw() {
-        val features = selected?.let {
-            val feature = Feature.fromGeometry(
-                it.state.position.toPoint(),
-                it.marker.properties()
-            )
-            it.marker = feature
-            listOf<Feature>(feature)
-        } ?: emptyList<Feature>()
+        val features =
+            selected?.let {
+                val feature =
+                    Feature.fromGeometry(
+                        it.state.position.toPoint(),
+                        it.marker.properties(),
+                    )
+                it.marker = feature
+                listOf<Feature>(feature)
+            } ?: emptyList<Feature>()
 
         source.featureCollection(
-            FeatureCollection.fromFeatures(features)
+            FeatureCollection.fromFeatures(features),
         )
     }
 }

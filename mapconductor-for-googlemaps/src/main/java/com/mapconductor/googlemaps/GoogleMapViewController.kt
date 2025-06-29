@@ -50,12 +50,12 @@ interface IGoogleMapViewController : MapViewController<Marker> {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    override val hexCell: HexGeocell = HexGeocell(
-        projection = WebMercator,
-        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
-    )
+    override val hexCell: HexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        ),
 ) : BaseMapViewController<CameraPosition, Marker>(),
-
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -77,16 +77,20 @@ class GoogleMapViewController(
                     newMarkers.map { params ->
                         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
 
-                        val options = MarkerOptions()
-                            .position(GeoPoint.from(params.first.position).toLatLng())
-                            .anchor(
-                                params.second.anchor.x.toFloat(),
-                                params.second.anchor.y.toFloat(),
-                            ).icon(bitmapDescriptor)
-                            .draggable(params.first.draggable)
-                        val marker = holder.map.addMarker(options)?.also {
-                            it.tag = params.first.id
-                        }
+                        val options =
+                            MarkerOptions()
+                                .position(GeoPoint.from(params.first.position).toLatLng())
+                                .anchor(
+                                    params.second.anchor.x
+                                        .toFloat(),
+                                    params.second.anchor.y
+                                        .toFloat(),
+                                ).icon(bitmapDescriptor)
+                                .draggable(params.first.draggable)
+                        val marker =
+                            holder.map.addMarker(options)?.also {
+                                it.tag = params.first.id
+                            }
                         return@map marker
                     }
                 }
@@ -98,7 +102,9 @@ class GoogleMapViewController(
                         params.entity.marker.setIcon(bitmapDescriptor)
                     }
                     if (params.entity.state.position != params.prevEntity.state.position) {
-                        params.entity.marker.position = params.entity.state.position.toLatLng()
+                        params.entity.marker.position =
+                            params.entity.state.position
+                                .toLatLng()
                     }
 
                     // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
@@ -263,14 +269,14 @@ class GoogleMapViewController(
     }
 
     override fun drawPolyline(geoPoints: List<IGeoPoint>) {
-        val options = PolylineOptions().also {
-            it.color(Color.RED)
-            it.width(2f)
-        }
+        val options =
+            PolylineOptions().also {
+                it.color(Color.RED)
+                it.width(2f)
+            }
         geoPoints.forEach {
             options.add(GeoPoint.from(it).toLatLng())
         }
         val polyline = holder.map.addPolyline(options)
     }
-
 }

@@ -6,12 +6,12 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Projection
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.math.atan2
 
 data class HexCoord(
     val q: Int,
@@ -24,9 +24,10 @@ data class HexCoord(
     val s: Int get() = -q - r
 
     // Get neighboring coordinates
-    fun neighbors(): List<HexCoord> = Direction6.values().map {
-        HexCoord(q + it.dq, r + it.dr, depth)
-    }
+    fun neighbors(): List<HexCoord> =
+        Direction6.values().map {
+            HexCoord(q + it.dq, r + it.dr, depth)
+        }
 }
 
 enum class Direction6(
@@ -71,7 +72,6 @@ class HexGeocell(
     // - 10000-100000m for low zoom levels (5-10)
     val baseHexSideLength: Int = 1000,
 ) {
-
     /**
      * Convert lat/lng to hexagonal coordinate
      */
@@ -114,8 +114,10 @@ class HexGeocell(
     /**
      * Generate unique cell ID including zoom level to prevent collisions
      */
-    fun hexToCellId(coord: HexCoord, zoom: Double): String =
-        "H${coord.q}_${coord.r}_Z${zoom.toInt()}"
+    fun hexToCellId(
+        coord: HexCoord,
+        zoom: Double,
+    ): String = "H${coord.q}_${coord.r}_Z${zoom.toInt()}"
 
     /**
      * Get hexagon polygon vertices in lat/lng coordinates
@@ -277,14 +279,18 @@ class HexGeocell(
     /**
      * Calculate distance between two hex coordinates
      */
-    fun hexDistance(a: HexCoord, b: HexCoord): Int {
-        return (abs(a.q - b.q) + abs(a.q + a.r - b.q - b.r) + abs(a.r - b.r)) / 2
-    }
+    fun hexDistance(
+        a: HexCoord,
+        b: HexCoord,
+    ): Int = (abs(a.q - b.q) + abs(a.q + a.r - b.q - b.r) + abs(a.r - b.r)) / 2
 
     /**
      * Get all hex coordinates within a certain distance
      */
-    fun hexRange(center: HexCoord, radius: Int): List<HexCoord> {
+    fun hexRange(
+        center: HexCoord,
+        radius: Int,
+    ): List<HexCoord> {
         val results = mutableListOf<HexCoord>()
         for (dq in -radius..radius) {
             val minR = maxOf(-radius, -dq - radius)
