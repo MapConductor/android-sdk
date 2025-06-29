@@ -1,5 +1,17 @@
 package com.mapconductor.core.marker
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import androidx.core.graphics.withScale
+import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.geocell.HexCell
+import com.mapconductor.core.geocell.HexCellRegistry
+import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.spherical.haversineDistance
+import java.util.concurrent.ConcurrentHashMap
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.BlurMaskFilter
@@ -14,23 +26,10 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.LruCache
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
-import androidx.core.graphics.withScale
-import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.geocell.HexCell
-import com.mapconductor.core.geocell.HexCellRegistry
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.spherical.haversineDistance
-import java.util.concurrent.ConcurrentHashMap
 
 class MarkerManager<ActualMarker>(
     geocell: HexGeocell,
 ) {
-
     val bitmapCache: LruCache<Int, BitmapIcon> by lazy {
         // Get max memory size by bytes
         val maxMemory = Runtime.getRuntime().maxMemory()
@@ -46,18 +45,20 @@ class MarkerManager<ActualMarker>(
     }
 
     private val entities: ConcurrentHashMap<String, MarkerEntity<ActualMarker>> = ConcurrentHashMap()
-    private val cellRegistry = HexCellRegistry<ActualMarker>(
-        geocell = geocell,
-        // Maximum zoom level
-        zoom = 20.0,
-    )
+    private val cellRegistry =
+        HexCellRegistry<ActualMarker>(
+            geocell = geocell,
+            // Maximum zoom level
+            zoom = 20.0,
+        )
 
     fun getEntity(id: String): MarkerEntity<ActualMarker>? = entities.get(id)
 
     fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
-        val removed = entities.remove(id)?.also {
-            cellRegistry.removePoint(it)
-        }
+        val removed =
+            entities.remove(id)?.also {
+                cellRegistry.removePoint(it)
+            }
         return removed
     }
 
@@ -70,13 +71,14 @@ class MarkerManager<ActualMarker>(
 
     fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
         val cell = cellRegistry.findNearest(position) ?: return null
-        val entryIDs = cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
-            entryIDs.sortedBy { entryId ->
-                entities[entryId]?.let { entity ->
-                    haversineDistance(position, entity.state.position)
+        val entryIDs =
+            cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
+                entryIDs.sortedBy { entryId ->
+                    entities[entryId]?.let { entity ->
+                        haversineDistance(position, entity.state.position)
+                    }
                 }
-            }
-        } ?: return null
+            } ?: return null
 
         val entryId = entryIDs[0]
         return entities[entryId]
@@ -403,4 +405,3 @@ class MarkerManager<ActualMarker>(
         }
     }
 }
-

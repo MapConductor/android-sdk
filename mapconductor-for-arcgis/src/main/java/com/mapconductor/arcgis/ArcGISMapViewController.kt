@@ -56,16 +56,17 @@ class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope =
         CoroutineScope(Dispatchers.Default),
-
-    override val hexCell: HexGeocell = HexGeocell(
-        projection = WebMercator,
-        baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
-    )
+    override val hexCell: HexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        ),
 ) : BaseMapViewController<Camera, Graphic>(),
     IArcGISMapViewController {
-    val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
-        sceneProperties.surfacePlacement = SurfacePlacement.Relative
-    }
+    val markerLayer: GraphicsOverlay =
+        GraphicsOverlay().apply {
+            sceneProperties.surfacePlacement = SurfacePlacement.Relative
+        }
 
     private var selectedMarker: SelectedMarker? = null
 
@@ -80,30 +81,33 @@ class ArcGISMapViewController(
             },
             onAdd = { newMarkers ->
                 withContext(coroutine.coroutineContext) {
-                    newMarkers.map { params ->
-                        val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
-                        val density = ResourceProvider.density
-                        val width = (params.second.size.width / density)
-                        val height = (params.second.size.height / density)
-                        val anchorX = (params.second.anchor.x - 0.5) * width
-                        val anchorY = (params.second.anchor.y - 0.5) * height
+                    newMarkers
+                        .map { params ->
+                            val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
+                            val density = ResourceProvider.density
+                            val width = (params.second.size.width / density)
+                            val height = (params.second.size.height / density)
+                            val anchorX = (params.second.anchor.x - 0.5) * width
+                            val anchorY = (params.second.anchor.y - 0.5) * height
 
-                        val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                            it.width = width.toFloat()
-                            it.height = height.toFloat()
-                            it.offsetX = anchorX.toFloat()
-                            it.offsetY = anchorY.toFloat()
+                            val pictureSymbolFuture =
+                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                    it.width = width.toFloat()
+                                    it.height = height.toFloat()
+                                    it.offsetX = anchorX.toFloat()
+                                    it.offsetY = anchorY.toFloat()
+                                }
+
+                            val marker =
+                                Graphic(
+                                    geometry = params.first.position.toPoint(),
+                                    symbol = pictureSymbolFuture,
+                                )
+                            marker.attributes.set("id", params.first.id)
+                            return@map marker
+                        }.also {
+                            markerLayer.graphics.addAll(it)
                         }
-
-                        val marker = Graphic(
-                                geometry = params.first.position.toPoint(),
-                                symbol = pictureSymbolFuture,
-                            )
-                        marker.attributes.set("id", params.first.id)
-                        return@map marker
-                    }.also {
-                        markerLayer.graphics.addAll(it)
-                    }
                 }
             },
             onChange = { changes ->
@@ -117,17 +121,20 @@ class ArcGISMapViewController(
                             val anchorX = (params.bitmapIcon.anchor.x - 0.5) * width
                             val anchorY = (params.bitmapIcon.anchor.y - 0.5) * height
 
-                            val pictureSymbolFuture = PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                                it.width = width.toFloat()
-                                it.height = height.toFloat()
-                                it.offsetX = anchorX.toFloat()
-                                it.offsetY = anchorY.toFloat()
-                            }
+                            val pictureSymbolFuture =
+                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                    it.width = width.toFloat()
+                                    it.height = height.toFloat()
+                                    it.offsetX = anchorX.toFloat()
+                                    it.offsetY = anchorY.toFloat()
+                                }
                             params.entity.marker.symbol = pictureSymbolFuture
                         }
 
                         if (params.entity.state.position != params.prevEntity.state.position) {
-                            params.entity.marker.geometry = params.entity.state.position.toPoint()
+                            params.entity.marker.geometry =
+                                params.entity.state.position
+                                    .toPoint()
                         }
 
                         // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
@@ -216,12 +223,15 @@ class ArcGISMapViewController(
         val screenPoint = event.screenCoordinate
         val point = holder.map.screenToLocation(screenPoint).getOrNull() ?: return
         val position = point.toGeoPoint()
-        val identifyResult = holder.map.identifyGraphicsOverlay(
-            graphicsOverlay = markerLayer,
-            screenCoordinate = screenPoint,
-            tolerance = Settings.Default.tapTolerance.value.toDouble(),
-            returnPopupsOnly = false,
-        )
+        val identifyResult =
+            holder.map.identifyGraphicsOverlay(
+                graphicsOverlay = markerLayer,
+                screenCoordinate = screenPoint,
+                tolerance =
+                    Settings.Default.tapTolerance.value
+                        .toDouble(),
+                returnPopupsOnly = false,
+            )
         val graphics = identifyResult.getOrNull()?.graphics
         val graphic = graphics?.firstOrNull()
         if (graphic == null) {
@@ -311,23 +321,24 @@ class ArcGISMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result = holder.map.locationToScreen(
-            point = GeoPoint.from(position).toPoint(),
-        )
+        val result =
+            holder.map.locationToScreen(
+                point = GeoPoint.from(position).toPoint(),
+            )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }
     }
 
     override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
-
-        val result = holder.map.screenToLocation(
-            screenCoordinate =
-                ScreenCoordinate(
-                    x = offset.x.toDouble(),
-                    y = offset.y.toDouble(),
-                ),
-        )
+        val result =
+            holder.map.screenToLocation(
+                screenCoordinate =
+                    ScreenCoordinate(
+                        x = offset.x.toDouble(),
+                        y = offset.y.toDouble(),
+                    ),
+            )
         return result.getOrNull()?.toGeoPoint()
     }
 
@@ -351,10 +362,11 @@ class ArcGISMapViewController(
         val dstCameraPosition = dstPosition.toCamera()
 
         coroutine.launch {
-            val result = holder.map.setViewpointCameraAnimated(
-                camera = dstCameraPosition,
-                duration = duration.toFloat() / 1000.0f,
-            )
+            val result =
+                holder.map.setViewpointCameraAnimated(
+                    camera = dstCameraPosition,
+                    duration = duration.toFloat() / 1000.0f,
+                )
             listener?.onComplete(result.isSuccess)
         }
     }

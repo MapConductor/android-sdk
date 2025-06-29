@@ -31,9 +31,10 @@ class KDTree(
         if (items.isEmpty()) return null
 
         val axis = depth % 2
-        val sorted = items.sortedBy {
-            if (axis == 0) it.centerXY.x else it.centerXY.y
-        }
+        val sorted =
+            items.sortedBy {
+                if (axis == 0) it.centerXY.x else it.centerXY.y
+            }
         val mid = sorted.size / 2
 
         return Node(
@@ -47,9 +48,7 @@ class KDTree(
     /**
      * Find the nearest hex cell to a query point
      */
-    fun nearest(query: Offset): HexCell? {
-        return root?.let { nearest(it, query, null, Double.MAX_VALUE) }
-    }
+    fun nearest(query: Offset): HexCell? = root?.let { nearest(it, query, null, Double.MAX_VALUE) }
 
     /**
      * Recursive nearest neighbor search
@@ -76,11 +75,12 @@ class KDTree(
         }
 
         // Determine which subtree to search first
-        val (nearChild, farChild) = if (queryVal < nodeVal) {
-            node.left to node.right
-        } else {
-            node.right to node.left
-        }
+        val (nearChild, farChild) =
+            if (queryVal < nodeVal) {
+                node.left to node.right
+            } else {
+                node.right to node.left
+            }
 
         // Search near subtree
         nearChild?.let { near ->
@@ -121,15 +121,17 @@ class KDTree(
 
         if (root == null) return emptyList()
 
-        val queue = PriorityQueue<Pair<Double, HexCell>>(
-            compareByDescending { it.first }
-        )
+        val queue =
+            PriorityQueue<Pair<Double, HexCell>>(
+                compareByDescending { it.first },
+            )
 
         nearestK(root, query, k, queue)
 
-        return queue.map { (distSq, cell) ->
-            HexCellWithDistance(cell, sqrt(distSq))
-        }.sortedBy { it.distanceMeters }
+        return queue
+            .map { (distSq, cell) ->
+                HexCellWithDistance(cell, sqrt(distSq))
+            }.sortedBy { it.distanceMeters }
     }
 
     /**
@@ -154,11 +156,12 @@ class KDTree(
         val queryVal = if (axis == 0) query.x else query.y
         val nodeVal = if (axis == 0) node.cell.centerXY.x else node.cell.centerXY.y
 
-        val (nearChild, farChild) = if (queryVal < nodeVal) {
-            node.left to node.right
-        } else {
-            node.right to node.left
-        }
+        val (nearChild, farChild) =
+            if (queryVal < nodeVal) {
+                node.left to node.right
+            } else {
+                node.right to node.left
+            }
 
         // Search near subtree
         nearChild?.let { nearestK(it, query, k, queue) }
@@ -208,11 +211,12 @@ class KDTree(
         val queryVal = if (axis == 0) query.x else query.y
         val nodeVal = if (axis == 0) node.cell.centerXY.x else node.cell.centerXY.y
 
-        val (nearChild, farChild) = if (queryVal < nodeVal) {
-            node.left to node.right
-        } else {
-            node.right to node.left
-        }
+        val (nearChild, farChild) =
+            if (queryVal < nodeVal) {
+                node.left to node.right
+            } else {
+                node.right to node.left
+            }
 
         // Search near subtree
         nearChild?.let { withinRadius(it, query, radiusSq, result) }
@@ -229,7 +233,10 @@ class KDTree(
     /**
      * Calculate squared Euclidean distance between two points
      */
-    private fun squaredDistance(a: Offset, b: Offset): Float {
+    private fun squaredDistance(
+        a: Offset,
+        b: Offset,
+    ): Float {
         val dx = a.x - b.x
         val dy = a.y - b.y
         return dx * dx + dy * dy
@@ -238,28 +245,26 @@ class KDTree(
     /**
      * Calculate Euclidean distance between two points
      */
-    private fun distance(a: Offset, b: Offset): Float {
-        return sqrt(squaredDistance(a, b))
-    }
+    private fun distance(
+        a: Offset,
+        b: Offset,
+    ): Float = sqrt(squaredDistance(a, b))
 
     /**
      * Get statistics about the tree structure
      */
-    fun getStats(): KDTreeStats {
-        return KDTreeStats(
+    fun getStats(): KDTreeStats =
+        KDTreeStats(
             nodeCount = countNodes(root),
             maxDepth = maxDepth(root),
-            isEmpty = root == null
+            isEmpty = root == null,
         )
-    }
 
-    private fun countNodes(node: Node?): Int {
-        return if (node == null) 0 else 1 + countNodes(node.left) + countNodes(node.right)
-    }
+    private fun countNodes(node: Node?): Int =
+        if (node == null) 0 else 1 + countNodes(node.left) + countNodes(node.right)
 
-    private fun maxDepth(node: Node?): Int {
-        return if (node == null) 0 else 1 + maxOf(maxDepth(node.left), maxDepth(node.right))
-    }
+    private fun maxDepth(node: Node?): Int =
+        if (node == null) 0 else 1 + maxOf(maxDepth(node.left), maxDepth(node.right))
 }
 
 /**
@@ -268,5 +273,5 @@ class KDTree(
 data class KDTreeStats(
     val nodeCount: Int,
     val maxDepth: Int,
-    val isEmpty: Boolean
+    val isEmpty: Boolean,
 )
