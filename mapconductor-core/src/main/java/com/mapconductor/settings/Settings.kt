@@ -7,6 +7,6 @@ sealed class Settings(
     val tapTolerance: Dp,
 ) {
     object Default : Settings(
-        tapTolerance = 14.dp,
+        tapTolerance = 7.dp,
     )
 }
