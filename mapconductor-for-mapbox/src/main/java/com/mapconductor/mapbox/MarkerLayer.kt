@@ -13,14 +13,15 @@ class MarkerLayer(
 ) {
     val layer = SymbolLayer(layerId, sourceId)
 
-    val source: GeoJsonSource = geoJsonSource(sourceId) {
-        featureCollection(FeatureCollection.fromFeatures(emptyList()))
-    }
+    val source: GeoJsonSource =
+        geoJsonSource(sourceId) {
+            featureCollection(FeatureCollection.fromFeatures(emptyList()))
+        }
 
     fun draw(entities: List<MarkerEntity<Feature>>) {
         val features = entities.map { it.marker }
         source.featureCollection(
-            FeatureCollection.fromFeatures(features)
+            FeatureCollection.fromFeatures(features),
         )
     }
 }

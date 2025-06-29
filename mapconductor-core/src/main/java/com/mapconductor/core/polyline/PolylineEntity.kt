@@ -5,6 +5,7 @@ interface PolylineEntity<ActualPolyline> {
     val state: PolylineState
     val stateHashCode: Int
 }
+
 data class PolylineEntityImpl<ActualPolyline>(
     override val polyline: ActualPolyline,
     override val state: PolylineState,

@@ -32,7 +32,6 @@ interface MapViewController<ActualMarker> {
     fun toScreenOffset(position: IGeoPoint): Offset?
 
     suspend fun fromScreenOffset(offset: Offset): GeoPoint?
-
 }
 
 data class SearchRangeAnalysis(
@@ -46,7 +45,7 @@ data class SearchRangeAnalysis(
     val searchRadiusHexUnits: Int,
     val searchCells: List<HexCoord>,
     val outlineCells: List<HexCoord>,
-    val markersInRange: List<MarkerState>
+    val markersInRange: List<MarkerState>,
 )
 
 abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
@@ -98,12 +97,12 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
     protected fun analyzeSearchRange(
         position: IGeoPoint,
         zoom: Double,
-        tolerancePixels: Double
+        tolerancePixels: Double,
     ): SearchRangeAnalysis {
-
-        val toleranceMeters = markerOverlayManager.markerManager.metersPerPixel(
-            position, zoom, tolerancePixels
-        )
+        val toleranceMeters =
+            markerOverlayManager.markerManager.metersPerPixel(
+                position, zoom, tolerancePixels,
+            )
 
         val clickedCell = hexCell.latLngToHexCell(position, zoom)
 
@@ -132,9 +131,10 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
             searchRadiusHexUnits = searchRadiusHexUnits,
             searchCells = searchCells,
             outlineCells = outlineCells,
-            markersInRange = markersInRange
+            markersInRange = markersInRange,
         )
     }
+
     /**
      * 検索範囲内のマーカーを特定
      */
@@ -142,7 +142,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         clickPosition: IGeoPoint,
         searchCells: List<HexCoord>,
         toleranceMeters: Double,
-        zoom: Double
+        zoom: Double,
     ): List<MarkerState> {
         val cellSet = searchCells.toSet()
         val markersInRange = mutableListOf<MarkerState>()
@@ -174,13 +174,14 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
             }
         }
     }
+
     /**
      * 円形の近似ポイントを生成
      */
     protected fun createCirclePoints(
         center: IGeoPoint,
         radiusMeters: Double,
-        numPoints: Int = 32
+        numPoints: Int = 32,
     ): List<IGeoPoint> {
         val points = mutableListOf<IGeoPoint>()
         val earthRadius = 6371000.0 // 地球半径（メートル）
@@ -188,13 +189,17 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         for (i in 0 until numPoints) {
             val angle = 2.0 * kotlin.math.PI * i / numPoints
             val deltaLat = radiusMeters * kotlin.math.cos(angle) / earthRadius * 180.0 / kotlin.math.PI
-            val deltaLng = radiusMeters * kotlin.math.sin(angle) / earthRadius * 180.0 / kotlin.math.PI / kotlin.math.cos(center.latitude * kotlin.math.PI / 180.0)
+            val deltaLng =
+                radiusMeters * kotlin.math.sin(angle) / earthRadius * 180.0 / kotlin.math.PI /
+                    kotlin.math.cos(center.latitude * kotlin.math.PI / 180.0)
 
-            points.add(object : IGeoPoint {
-                override val latitude = center.latitude + deltaLat
-                override val longitude = center.longitude + deltaLng
-                override val altitude = center.altitude
-            })
+            points.add(
+                object : IGeoPoint {
+                    override val latitude = center.latitude + deltaLat
+                    override val longitude = center.longitude + deltaLng
+                    override val altitude = center.altitude
+                },
+            )
         }
 
         // 円を閉じる
@@ -207,11 +212,12 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
 
     protected fun drawDistanceCircles(analysis: SearchRangeAnalysis) {
         // 距離サークルの近似（正n角形として）
-        val circlePoints = createCirclePoints(
-            center = analysis.clickPosition,
-            radiusMeters = analysis.toleranceMeters,
-            numPoints = 32
-        )
+        val circlePoints =
+            createCirclePoints(
+                center = analysis.clickPosition,
+                radiusMeters = analysis.toleranceMeters,
+                numPoints = 32,
+            )
         drawPolyline(circlePoints)
     }
 
@@ -219,23 +225,26 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
      * 各種可視化モード
      */
     protected fun drawClickedCell(analysis: SearchRangeAnalysis) {
-        val points = hexCell.hexToPolygonLatLng(
-            coord = analysis.clickedCell.coord,
-            latHint = analysis.clickPosition.latitude,
-            zoom = analysis.zoom
-        )
+        val points =
+            hexCell.hexToPolygonLatLng(
+                coord = analysis.clickedCell.coord,
+                latHint = analysis.clickPosition.latitude,
+                zoom = analysis.zoom,
+            )
         drawPolyline(points)
     }
 
     protected fun drawFullSearchRange(analysis: SearchRangeAnalysis) {
         val allPoints = mutableListOf<IGeoPoint>()
 
-        analysis.searchCells.take(50).forEach { coord -> // パフォーマンス制限
-            val cellPoints = hexCell.hexToPolygonLatLng(
-                coord,
-                analysis.clickPosition.latitude,
-                analysis.zoom
-            )
+        analysis.searchCells.take(50).forEach { coord ->
+            // パフォーマンス制限
+            val cellPoints =
+                hexCell.hexToPolygonLatLng(
+                    coord,
+                    analysis.clickPosition.latitude,
+                    analysis.zoom,
+                )
             allPoints.addAll(cellPoints)
             allPoints.add(cellPoints[0]) // 閉じる
         }
@@ -249,11 +258,12 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         val outlinePoints = mutableListOf<IGeoPoint>()
 
         analysis.outlineCells.forEach { coord ->
-            val cellPoints = hexCell.hexToPolygonLatLng(
-                coord,
-                analysis.clickPosition.latitude,
-                analysis.zoom
-            )
+            val cellPoints =
+                hexCell.hexToPolygonLatLng(
+                    coord,
+                    analysis.clickPosition.latitude,
+                    analysis.zoom,
+                )
             outlinePoints.addAll(cellPoints)
         }
 

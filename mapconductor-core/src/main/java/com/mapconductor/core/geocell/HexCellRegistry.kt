@@ -44,29 +44,30 @@ class HexCellRegistry<ActualMarker>(
      * Register or update a point in the registry
      * @return The hex cell containing the point
      */
-    fun setPoint(entity: MarkerEntity<ActualMarker>): HexCell = lock.write {
-        val entityId = entity.state.id
+    fun setPoint(entity: MarkerEntity<ActualMarker>): HexCell =
+        lock.write {
+            val entityId = entity.state.id
 
-        // Remove from old cell if exists
-        allEntries[entityId]?.let { oldCellId ->
-            removeFromCell(oldCellId, entityId)
+            // Remove from old cell if exists
+            allEntries[entityId]?.let { oldCellId ->
+                removeFromCell(oldCellId, entityId)
+            }
+
+            // Add to new cell
+            val cell = getCell(entity)
+            val cellId = cell.id
+
+            allCells[cellId] = cell
+            allEntries[entityId] = cellId
+
+            // Add entity to cell's entry list
+            entryIDsByCell.compute(cellId) { _, existingSet ->
+                (existingSet ?: mutableSetOf()).apply { add(entityId) }
+            }
+
+            markDirty()
+            return cell
         }
-
-        // Add to new cell
-        val cell = getCell(entity)
-        val cellId = cell.id
-
-        allCells[cellId] = cell
-        allEntries[entityId] = cellId
-
-        // Add entity to cell's entry list
-        entryIDsByCell.compute(cellId) { _, existingSet ->
-            (existingSet ?: mutableSetOf()).apply { add(entityId) }
-        }
-
-        markDirty()
-        return cell
-    }
 
     /**
      * Check if a hex cell exists in the registry
@@ -77,24 +78,28 @@ class HexCellRegistry<ActualMarker>(
      * Remove a point from the registry
      * @return true if the point was removed, false if it wasn't found
      */
-    fun removePoint(entity: MarkerEntity<ActualMarker>): Boolean = lock.write {
-        val entityId = entity.state.id
-        val cellId = allEntries[entityId] ?: return false
+    fun removePoint(entity: MarkerEntity<ActualMarker>): Boolean =
+        lock.write {
+            val entityId = entity.state.id
+            val cellId = allEntries[entityId] ?: return false
 
-        val removed = removeFromCell(cellId, entityId)
-        if (removed) {
-            allEntries.remove(entityId)
-            markDirty()
+            val removed = removeFromCell(cellId, entityId)
+            if (removed) {
+                allEntries.remove(entityId)
+                markDirty()
+            }
+
+            return removed
         }
-
-        return removed
-    }
 
     /**
      * Remove an entity from a specific cell
      * @return true if removed, false if not found
      */
-    private fun removeFromCell(cellId: String, entityId: String): Boolean {
+    private fun removeFromCell(
+        cellId: String,
+        entityId: String,
+    ): Boolean {
         val entryIds = entryIDsByCell[cellId] ?: return false
         val removed = entryIds.remove(entityId)
 
@@ -110,13 +115,14 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Clear all points and rebuild the spatial index
      */
-    fun clear() = lock.write {
-        allCells.clear()
-        entryIDsByCell.clear()
-        allEntries.clear()
-        kdTree = null
-        needsRebuild = false
-    }
+    fun clear() =
+        lock.write {
+            allCells.clear()
+            entryIDsByCell.clear()
+            allEntries.clear()
+            kdTree = null
+            needsRebuild = false
+        }
 
     /**
      * Mark the spatial index as needing rebuild
@@ -130,11 +136,12 @@ class HexCellRegistry<ActualMarker>(
      */
     private fun rebuildIfNeeded() {
         if (needsRebuild) {
-            kdTree = if (allCells.isNotEmpty()) {
-                KDTree(allCells.values.toList())
-            } else {
-                null
-            }
+            kdTree =
+                if (allCells.isNotEmpty()) {
+                    KDTree(allCells.values.toList())
+                } else {
+                    null
+                }
             needsRebuild = false
         }
     }
@@ -142,18 +149,20 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Find the nearest hex cell to a point
      */
-    fun findNearest(point: IGeoPoint): HexCell? = lock.read {
-        rebuildIfNeeded()
-        return kdTree?.nearest(geocell.projection.project(point))
-    }
+    fun findNearest(point: IGeoPoint): HexCell? =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.nearest(geocell.projection.project(point))
+        }
 
     /**
      * Find the nearest hex cell with distance
      */
-    fun findNearestWithDistance(point: IGeoPoint): HexCellWithDistance? = lock.read {
-        rebuildIfNeeded()
-        return kdTree?.nearestWithDistance(geocell.projection.project(point))
-    }
+    fun findNearestWithDistance(point: IGeoPoint): HexCellWithDistance? =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.nearestWithDistance(geocell.projection.project(point))
+        }
 
     /**
      * Find k nearest hex cells with distances
@@ -161,10 +170,11 @@ class HexCellRegistry<ActualMarker>(
     fun findNearestKWithDistance(
         point: IGeoPoint,
         k: Int,
-    ): List<HexCellWithDistance> = lock.read {
-        rebuildIfNeeded()
-        return kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
-    }
+    ): List<HexCellWithDistance> =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
+        }
 
     /**
      * Find all hex cells within a radius with distances
@@ -172,10 +182,11 @@ class HexCellRegistry<ActualMarker>(
     fun findWithinRadiusWithDistance(
         point: IGeoPoint,
         radius: Double,
-    ): List<HexCellWithDistance> = lock.read {
-        rebuildIfNeeded()
-        return kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
-    }
+    ): List<HexCellWithDistance> =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
+        }
 
     /**
      * Get all hex cells
@@ -206,22 +217,24 @@ class HexCellRegistry<ActualMarker>(
         val deltaLng = 360.0 * pixels / (tileSize * 2.0.pow(zoom))
 
         // Handle potential longitude overflow
-        val newLng = (position.longitude + deltaLng).let { lng ->
-            when {
-                lng > 180.0 -> lng - 360.0
-                lng < -180.0 -> lng + 360.0
-                else -> lng
+        val newLng =
+            (position.longitude + deltaLng).let { lng ->
+                when {
+                    lng > 180.0 -> lng - 360.0
+                    lng < -180.0 -> lng + 360.0
+                    else -> lng
+                }
             }
-        }
 
         val p1 = geocell.projection.project(position)
-        val p2 = geocell.projection.project(
-            object : IGeoPoint {
-                override val latitude = position.latitude
-                override val longitude = newLng
-                override val altitude = position.altitude
-            }
-        )
+        val p2 =
+            geocell.projection.project(
+                object : IGeoPoint {
+                    override val latitude = position.latitude
+                    override val longitude = newLng
+                    override val altitude = position.altitude
+                },
+            )
 
         val dx = p2.x - p1.x
         val dy = p2.y - p1.y
@@ -257,14 +270,13 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Get statistics about the registry
      */
-    fun getStats(): RegistryStats {
-        return RegistryStats(
+    fun getStats(): RegistryStats =
+        RegistryStats(
             totalCells = allCells.size,
             totalEntries = allEntries.size,
             kdTreeBuilt = kdTree != null,
-            needsRebuild = needsRebuild
+            needsRebuild = needsRebuild,
         )
-    }
 }
 
 /**
@@ -274,5 +286,5 @@ data class RegistryStats(
     val totalCells: Int,
     val totalEntries: Int,
     val kdTreeBuilt: Boolean,
-    val needsRebuild: Boolean
+    val needsRebuild: Boolean,
 )

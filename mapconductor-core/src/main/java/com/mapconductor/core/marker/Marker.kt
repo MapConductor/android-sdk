@@ -21,18 +21,22 @@ class MarkerState(
     icon: MarkerIcon? = null,
     draggable: Boolean = false,
 ) {
-    val id = (id ?: markerId(listOf(
-        position.hashCode(),
-        extra?.hashCode() ?: 0,
-        icon?.hashCode() ?: 0,
-        draggable.hashCode()
-    ))).toString()
+    val id =
+        (
+            id ?: markerId(
+                listOf(
+                    position.hashCode(),
+                    extra?.hashCode() ?: 0,
+                    icon?.hashCode() ?: 0,
+                    draggable.hashCode(),
+                ),
+            )
+        ).toString()
 
-    private fun markerId(hashCodes: List<Int>): Int {
-        return hashCodes.reduce { result, hashCode ->
+    private fun markerId(hashCodes: List<Int>): Int =
+        hashCodes.reduce { result, hashCode ->
             31 * result + hashCode
         }
-    }
 
     var icon by mutableStateOf<MarkerIcon?>(icon)
     var draggable by mutableStateOf(draggable)

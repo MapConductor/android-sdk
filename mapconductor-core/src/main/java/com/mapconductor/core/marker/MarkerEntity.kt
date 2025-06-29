@@ -8,7 +8,7 @@ interface MarkerEntity<ActualMarker> {
 
 class MarkerEntityImpl<ActualMarker>(
     override var marker: ActualMarker,
-    override val state: MarkerState
+    override val state: MarkerState,
 ) : MarkerEntity<ActualMarker> {
     override val stateHashCode: Int = state.hashCode()
 }
