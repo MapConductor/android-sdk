@@ -1,7 +1,6 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.icons.Default
-import com.mapconductor.core.marker.MarkerIcon
 import kotlinx.coroutines.sync.Semaphore
 
 interface MarkerOverlayManager<ActualMarker> {
@@ -19,14 +18,12 @@ interface UpdateParams<ActualMarker> {
     val bitmapIcon: BitmapIcon
     val prevEntity: MarkerEntity<ActualMarker>
 }
-class MarkerOverlayManagerImpl<
-    // Actual marker instance type
-    ActualMarker : Any,
->(
+class MarkerOverlayManagerImpl<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
     val onRemove: suspend (List<MarkerEntity<ActualMarker>>) -> Unit,
     val onAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<ActualMarker?>,
     val onChange: suspend (List<UpdateParams<ActualMarker>>) -> List<ActualMarker?>,
+    val onPostProcess: (suspend () -> Unit)? = null,
 ) : MarkerOverlayManager<ActualMarker> {
     val semaphore = Semaphore(1)
 
@@ -49,9 +46,9 @@ class MarkerOverlayManagerImpl<
         if (removed.isNotEmpty()) {
             removed.map { removedState ->
                 val id = removedState.id
-                markerManager.removeEntity(id)
+                markerManager.removeEntity(id)!!
             }.also {
-                onRemove(it as List<MarkerEntity<ActualMarker>>)
+                onRemove(it)
             }
         }
 
@@ -68,7 +65,7 @@ class MarkerOverlayManagerImpl<
                 val actualMarkers: List<ActualMarker?> = onAdd(it)
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
-                        val entity = MarkerEntityImpl(
+                        val entity = MarkerEntityImpl<ActualMarker>(
                             marker = actualMarker,
                             state = addedList[index]
                         )
@@ -101,17 +98,17 @@ class MarkerOverlayManagerImpl<
                             override val bitmapIcon: BitmapIcon = markerIcon
                             override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
                         }
-                        Pair(entity, markerIcon)
+//                        Pair(entity, markerIcon)
                     }
                 }
-                .filter { it -> it != null } as List<UpdateParams<ActualMarker>>
+                .filter { it -> it != null }
 
-            val actualMarkers: List<ActualMarker?> = onChange(updates)
+            val actualMarkers: List<ActualMarker?> = onChange(updates as List<UpdateParams<ActualMarker>>)
 
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
                     val params = updates[index]
-                    val entity = MarkerEntityImpl(
+                    val entity = MarkerEntityImpl<ActualMarker>(
                         state = params.entity.state,
                         marker = actualMarker,
                     )
@@ -119,6 +116,7 @@ class MarkerOverlayManagerImpl<
                 }
             }
         }
+        onPostProcess?.invoke()
 
         semaphore.release()
     }
@@ -148,7 +146,10 @@ class MarkerOverlayManagerImpl<
         val markers = onChange(listOf(markerParams))
 
         markers[0]?.let {
-            val entity = MarkerEntityImpl(it, state)
+            val entity = MarkerEntityImpl<ActualMarker>(
+                marker = it,
+                state = state,
+            )
             markerManager.registerEntity(entity)
         }
 

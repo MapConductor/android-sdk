@@ -34,7 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-interface IGoogleMapViewController : MapViewController {
+interface IGoogleMapViewController : MapViewController<Marker> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -54,7 +54,7 @@ class GoogleMapViewController(
         projection = WebMercator,
         baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
     )
-) : BaseMapViewController<CameraPosition>(),
+) : BaseMapViewController<CameraPosition, Marker>(),
 
     IGoogleMapViewController,
     OnCameraMoveStartedListener,

@@ -1,13 +1,13 @@
 package com.mapconductor.core.marker
 
 interface MarkerEntity<ActualMarker> {
-    val marker: ActualMarker
+    var marker: ActualMarker
     val state: MarkerState
     val stateHashCode: Int
 }
 
-data class MarkerEntityImpl<ActualMarker>(
-    override val marker: ActualMarker,
+class MarkerEntityImpl<ActualMarker>(
+    override var marker: ActualMarker,
     override val state: MarkerState
 ) : MarkerEntity<ActualMarker> {
     override val stateHashCode: Int = state.hashCode()
