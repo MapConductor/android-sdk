@@ -23,7 +23,6 @@ import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
@@ -46,9 +45,6 @@ import kotlinx.coroutines.withContext
 
 import android.view.animation.BounceInterpolator
 import android.view.animation.Interpolator
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import android.util.Log
 import com.mapconductor.core.marker.MarkerEntity
 
 interface IGoogleMapViewController : MapViewController {
@@ -126,8 +122,8 @@ class GoogleMapViewController(
             },
             onAnimation = {
                 when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.markerDropAnimation(it)
-                    MarkerAnimation.Bounce -> this.markerBounceAnimation(it)
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
                     else -> { /* Do nothing here */ }
                 }
             },
@@ -136,7 +132,7 @@ class GoogleMapViewController(
     init {
         setupListeners()
     }
-
+/*
     private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
         val markerLatLng = params.marker.position.toGeoPoint()
         val interpolator = LinearInterpolator()
@@ -196,7 +192,7 @@ class GoogleMapViewController(
             markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
-
+*/
     private fun setupListeners() {
         holder.map.setOnCameraMoveStartedListener(this)
         holder.map.setOnCameraMoveCanceledListener(this)
