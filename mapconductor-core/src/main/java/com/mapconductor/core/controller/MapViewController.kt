@@ -114,7 +114,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
                 val t = min(1f, elapsed.toFloat() / duration)
                 emit(interpolator.getInterpolation(t))
                 if (t >= 1f) break
-                delay(16)
+                delay(16L)
             }
         }.onEach { t ->
             // 開始時の画面座標から緯度経度に戻す(垂直方向アニメーション起点)
@@ -123,7 +123,44 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
             // 緯度・経度を線形補間
             val lat = t * target.latitude + (1 - t) * startLatLng.latitude
             val lng = t * target.longitude + (1 - t) * startLatLng.longitude
-            val current = MapCoordinates(lat, lng)
+//            val current = MapCoordinates(lat, lng)
+
+            // 現在の座標をマーカーに適用
+            val newPosition = GeoPoint.fromLatLong(lat, lng)
+            setMarkerPosition(markerEntity, newPosition)
+        }.onCompletion {
+            // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
+            markerEntity.state.position = target
+        }.launchIn(coroutine)
+    }
+
+    protected fun animateMarkerBounce(
+        markerEntity: MarkerEntity<ActualMarker>,
+        duration: Long = Settings.Default.markerBounceAnimateDuration.toLong(), /* アニメションする時間(ms) */
+    ){
+        val startTime = SystemClock.uptimeMillis()
+
+        // アニメーションの最終的な目標地点(地理座標)
+        val target = markerEntity.state.position
+
+        // 線形補間
+        val interpolator = LinearInterpolator()
+
+        // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
+        val startPoint = toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
+
+        flow {
+            while (true) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
+                emit(t)
+                if (t >= 1f) break
+                delay(16L)
+            }
+        }.onEach { t ->
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = target.longitude
+            val lat = t * target.latitude + (1 - t) * startLatLng.latitude
 
             // 現在の座標をマーカーに適用
             val newPosition = GeoPoint.fromLatLong(lat, lng)
