@@ -3,8 +3,8 @@ package com.mapconductor.mapbox
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import com.google.gson.JsonObject
+import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
@@ -16,7 +16,6 @@ import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.LineLayer
 import com.mapbox.maps.extension.style.layers.generated.SymbolLayer
 import com.mapbox.maps.extension.style.layers.generated.lineLayer
-import com.mapbox.maps.extension.style.layers.generated.symbolLayer
 import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.IconTranslateAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.LineCap
@@ -27,8 +26,13 @@ import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
+import com.mapbox.maps.plugin.gestures.OnMapLongClickListener
+import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
+import com.mapbox.maps.plugin.gestures.addOnMapLongClickListener
+import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
+import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -38,6 +42,7 @@ import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
@@ -73,7 +78,7 @@ import kotlinx.coroutines.launch
 
 
 
-interface IMapboxMapViewController : MapViewController {
+interface IMapboxMapViewController : MapViewController<Feature> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -94,23 +99,27 @@ internal class MapboxMapViewController(
         projection = WebMercator,
         baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
     )
-) : BaseMapViewController<CameraState>(),
+) : BaseMapViewController<CameraState, Feature>(),
     IMapboxMapViewController,
     CameraChangedCallback,
-    OnMapClickListener {
-    private val symbolLayer: SymbolLayer
+    OnMapClickListener,
+    OnMapLongClickListener,
+    OnMoveListener {
     private val lineLayer: LineLayer
     private val lineSourceId = "lines-source"
     private val lineLayerId = "lines-layer"
     private val lineSource: GeoJsonSource = geoJsonSource(lineSourceId) {
         geometry(LineString.fromLngLats(emptyList()))
     }
-    private val markerSourceId = "markers-source"
-    private val markerLayerId = "markers-layer"
-    private val markerSource: GeoJsonSource = geoJsonSource(markerSourceId) {
-        featureCollection(FeatureCollection.fromFeatures(emptyList()))
-    }
-    private var selectedMarker: MarkerState? = null
+    private val markerLayer = MarkerLayer(
+        sourceId = "markers-source",
+        layerId = "markers-layer",
+    )
+    private val dragLayer = MarkerDragLayer(
+        sourceId = "marker-drag-source",
+        layerId = "marker-drag-layer",
+    )
+
     private val loadedIconHash: MutableMap<String, Int> = mutableMapOf()
     private lateinit var defaultIcon: BitmapIcon
     private object Prop {
@@ -129,7 +138,26 @@ internal class MapboxMapViewController(
             lineCap(LineCap.ROUND)
         }
 
-        symbolLayer = symbolLayer(markerLayerId, markerSourceId) {
+        setupSymbolLayer(markerLayer.layer)
+        setupSymbolLayer(dragLayer.layer)
+
+        holder.map.getStyle { style ->
+            defaultIcon = markerOverlayManager.markerManager.createBitmapIcon(MarkerIcon.Default())
+            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            style.addSource(markerLayer.source)
+            style.addLayer(markerLayer.layer)
+            style.addSource(dragLayer.source)
+            style.addLayer(dragLayer.layer)
+
+//            style.addSource(lineSource)
+//            style.addLayer(lineLayer)
+        }
+
+        setupListeners()
+    }
+
+    private fun setupSymbolLayer(layer: SymbolLayer) {
+        layer.apply {
             iconSize(1.0)
             val iconId = Expression.get(Prop.ICON_ID)
             iconImage(iconId)
@@ -145,25 +173,18 @@ internal class MapboxMapViewController(
                 )
                 iconTranslateAnchor(IconTranslateAnchor.MAP)
             }
+
         }
-
-        holder.map.getStyle { style ->
-            defaultIcon = markerOverlayManager.markerManager.createBitmapIcon(MarkerIcon.Default())
-            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
-            style.addSource(markerSource)
-            style.addLayer(symbolLayer)
-
-            style.addSource(lineSource)
-            style.addLayer(lineLayer)
-        }
-
-        setupListeners()
     }
 
     private fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
+        holder.map.removeOnMapClickListener(this)
+        holder.map.addOnMapLongClickListener(this)
+        holder.map.removeOnMoveListener(this)
+        holder.map.addOnMoveListener(this)
     }
 
     override val markerOverlayManager =
@@ -205,9 +226,9 @@ internal class MapboxMapViewController(
                     }
                 }
 
-                val features = newMarkers.map { params ->
+                newMarkers.map { params ->
                     Feature.fromGeometry(
-                        Point.fromLngLat(params.first.position.longitude, params.first.position.latitude),
+                        params.first.position.toPoint(),
                         JsonObject().apply {
                             addProperty(Prop.MARKER_ID, params.first.id)
                             if (params.first.icon != null) {
@@ -228,16 +249,69 @@ internal class MapboxMapViewController(
                         }
                     )
                 }
-                coroutine.launch { updateMarkerLayer(features) }
-                features
             },
-            onChange = { TODO() },
+            onChange = { changes ->
+                val style = suspendCoroutine { it->
+                    holder.map.getStyle { style ->
+                        it.resumeWith(Result.success(style))
+                    }
+                }
+                changes.map { params ->
+                    val prevProperties = params.prevEntity.marker.properties()
+                    val properties = JsonObject().apply {
+                        addProperty(Prop.MARKER_ID, params.entity.state.id)
+
+                        if (params.entity.state.icon != params.prevEntity.state.icon) {
+                            // Decrement reference counter for the previous icon
+                            val iconKey = params.prevEntity.state.icon.hashCode().toString()
+                            val cnt = loadedIconHash.getOrDefault(iconKey, 1) - 1
+                            if (cnt == 0) {
+                                loadedIconHash.remove(iconKey)
+                                style.removeStyleImage(iconKey)
+                            } else {
+                                loadedIconHash.put(iconKey, cnt)
+                            }
+
+                            // Decrement reference counter for new icon
+                            if (params.entity.state.icon != null) {
+                                params.entity.state.icon?.let {
+                                    val iconKey = it.hashCode().toString()
+                                    loadedIconHash.put(iconKey, loadedIconHash.getOrDefault(iconKey, 0) + 1)
+                                    addProperty(Prop.ICON_ID, iconKey)
+                                    val offsetX = (it.anchor.x - 0.5) * it.size.width
+                                    val offsetY = (it.anchor.y - 0.5) * it.size.height
+                                    addProperty(Prop.OFFSET_X, offsetX)
+                                    addProperty(Prop.OFFSET_Y, offsetY)
+                                }
+                            } else {
+                                addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                                addProperty(Prop.OFFSET_X, 0.0)
+                                addProperty(Prop.OFFSET_Y, defaultIcon.size.height.toDouble())
+                            }
+                        } else {
+                            addProperty(Prop.ICON_ID,
+                                prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID)
+                            addProperty(Prop.OFFSET_X, 0.0)
+                            addProperty(Prop.OFFSET_Y,
+                                prevProperties?.get(Prop.OFFSET_Y)?.asDouble ?: defaultIcon.size.height.toDouble())
+                        }
+                    }
+                    Feature.fromGeometry(
+                        params.entity.state.position.toPoint(),
+                        properties
+                    )
+                }
+            },
+            onPostProcess = {
+                drawMarkerLayer()
+            }
         )
 
-    private fun updateMarkerLayer(features: List<Feature>) {
-        markerSource.featureCollection(
-            FeatureCollection.fromFeatures(features)
-        )
+    private fun drawMarkerLayer() {
+        val entities = markerOverlayManager.markerManager.allEntities()
+        coroutine.launch {
+            markerLayer.draw(entities)
+        }
     }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
@@ -247,37 +321,33 @@ internal class MapboxMapViewController(
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val pixel =
-            holder.map.pixelForCoordinate(
-                coordinate = GeoPoint.from(position).toPoint(),
-            )
+        val pixel = holder.map.pixelForCoordinate(
+            coordinate = GeoPoint.from(position).toPoint(),
+        )
         return Offset(
             x = pixel.x.toFloat(),
             y = pixel.y.toFloat(),
         )
     }
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
-        holder.map
-            .coordinateForPixel(
-                ScreenCoordinate(
-                    offset.x.toDouble(),
-                    offset.y.toDouble(),
-                ),
-            ).toGeoPoint()
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? =
+        holder.map.coordinateForPixel(coordinate).toGeoPoint()
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? = fromScreenOffset(
+        ScreenCoordinate(
+            offset.x.toDouble(),
+            offset.y.toDouble(),
+        ),
+    )
 
     override fun run(cameraChanged: CameraChanged) {
-        cameraMoveListener?.let {
-            coroutine.launch {
-                it(CameraState(
-                    cameraChanged.cameraState.center,
-                    cameraChanged.cameraState.padding,
-                    cameraChanged.cameraState.zoom + 1,
-                    cameraChanged.cameraState.bearing,
-                    cameraChanged.cameraState.pitch
-                ))
-            }
-        }
+        cameraMoveListener?.invoke(CameraState(
+            cameraChanged.cameraState.center,
+            cameraChanged.cameraState.padding,
+            cameraChanged.cameraState.zoom + 1,
+            cameraChanged.cameraState.bearing,
+            cameraChanged.cameraState.pitch
+        ))
     }
 
     override fun moveCamera(
@@ -296,30 +366,28 @@ internal class MapboxMapViewController(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val targetCamera = dstPosition.toCameraOptions()
-        val animationOptions =
-            MapAnimationOptions
+        val animationOptions = MapAnimationOptions
                 .Builder()
                 .duration(durationMs)
                 .build()
 
-        val animatorListener =
-            object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {
-                    // Do nothing here
-                }
-
-                override fun onAnimationEnd(animation: Animator) {
-                    listener?.onComplete(true)
-                }
-
-                override fun onAnimationCancel(animation: Animator) {
-                    listener?.onComplete(false)
-                }
-
-                override fun onAnimationRepeat(animation: Animator) {
-                    // Do nothing here
-                }
+        val animatorListener = object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {
+                // Do nothing here
             }
+
+            override fun onAnimationEnd(animation: Animator) {
+                listener?.onComplete(true)
+            }
+
+            override fun onAnimationCancel(animation: Animator) {
+                listener?.onComplete(false)
+            }
+
+            override fun onAnimationRepeat(animation: Animator) {
+                // Do nothing here
+            }
+        }
 
         coroutine.launch {
             holder.map.flyTo(
@@ -330,35 +398,25 @@ internal class MapboxMapViewController(
         }
     }
 
-
     override fun onMapClick(point: Point): Boolean {
         val geoPoint = point.toGeoPoint()
-        val state = this.findNearestMarker(
+        val entity = this.findNearestMarker(
             position = geoPoint,
             tolerance = Settings.Default.tapTolerance,
         )
-        if (state != null) {
-            markerClickListener?.let {
-                coroutine.launch {
-                    it(state)
-                }
-            }
+        if (entity != null) {
+            markerClickListener?.invoke(entity.state)
             return true
         }
 
-        mapClickListener?.let {
-            coroutine.launch {
-                it(geoPoint)
-            }
-        }
+        mapClickListener?.invoke(geoPoint)
         return true
     }
-
 
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
-    ): MarkerState? {
+    ): MarkerEntity<Feature>? {
         val zoom = holder.map.cameraState.zoom
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
@@ -371,7 +429,6 @@ internal class MapboxMapViewController(
 //        drawSearchOutline(searchAnalysis)
 
         return findMarkerFromPoint(
-            markerOverlayManager = markerOverlayManager,
             position = position,
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),
@@ -389,65 +446,67 @@ internal class MapboxMapViewController(
         lineSource.geometry(LineString.fromLngLats(points))
     }
 
+    override fun onMapLongClick(point: Point): Boolean {
+        val geoPoint = point.toGeoPoint()
+        val entity = this.findNearestMarker(
+            position = geoPoint,
+            tolerance = Settings.Default.tapTolerance,
+        )
+        if (entity != null) {
+            setDraggingState(entity.state, true)  // Suppress the recomposition for the position property
+            markerOverlayManager.markerManager.removeEntity(entity.state.id)
+            dragLayer.selected = entity
+            dragLayer.updatePosition(geoPoint)
+            drawMarkerLayer()
 
-//    private fun annotationToMarkerState(annotation: Annotation<*>): MarkerState? {
-//        val tag = annotation.getData() ?: return null
-//        val id = tag.asJsonObject.get("id")?.asString ?: return null
-//        return when {
-//            annotation is PointAnnotation -> markerOverlayManager.getMarkerState(id)
-//            else -> {
-//                // Do nothing here
-//                null
-//            }
-//        }
-//    }
+            markerDragStartListener?.invoke(entity.state)
+            return true
+        }
 
-//    override fun onAnnotationDrag(annotation: Annotation<*>) {
-//        (annotation as PointAnnotation).also { point ->
-//            this.annotationToMarkerState(annotation)?.also { state ->
-//                state.position = point.geometry.toGeoPoint()
-//                markerDragListener?.also {
-//                    coroutine.launch { it.invoke(state) }
-//                }
-//            }
-//        }
-//    }
-//
-//    override fun onAnnotationDragFinished(annotation: Annotation<*>) {
-//        (annotation as PointAnnotation).also { point ->
-//            this.annotationToMarkerState(annotation)?.also { state ->
-//                state.position = point.geometry.toGeoPoint()
-//
-//                // Restore the recomposition for the position property
-//                setDraggingState(state, false)
-//                point.isDraggable = false
-//
-//                markerDragEndListener?.also {
-//                    coroutine.launch { it.invoke(state) }
-//                }
-//            }
-//        }
-//    }
-//
-//    override fun onAnnotationDragStarted(annotation: Annotation<*>) {
-//        (annotation as PointAnnotation).also { point ->
-//            this.annotationToMarkerState(annotation)?.also { state ->
-//                // Suppress the recomposition for the position property
-//                setDraggingState(state, true)
-//
-//                state.position = point.geometry.toGeoPoint()
-//                markerDragStartListener?.also {
-//                    coroutine.launch { it.invoke(state) }
-//                }
-//            }
-//        }
-//    }
-//
-//    override fun onAnnotationLongClick(annotation: PointAnnotation): Boolean {
-//        selectedMarker = this.annotationToMarkerState(annotation)
-//        if (selectedMarker == null) return false
-//
-//        annotation.isDraggable = true
-//        return true
-//    }
+        mapClickListener?.invoke(geoPoint)
+        return true
+    }
+
+    override fun onMove(detector: MoveGestureDetector): Boolean {
+        dragLayer.selected?.let { entity ->
+            val screenCoordinate = ScreenCoordinate(
+                detector.focalPoint.x.toDouble(),
+                detector.focalPoint.y.toDouble()
+            )
+            fromScreenOffset(screenCoordinate)?.let {
+                entity.state.position = it
+                dragLayer.updatePosition(it)
+                coroutine.launch {
+                    dragLayer.draw()
+                }
+            }
+
+            markerDragListener?.invoke(entity.state)
+            return true
+        }
+        return false
+    }
+
+    override fun onMoveBegin(detector: MoveGestureDetector) {
+        // Do nothing here
+    }
+
+    override fun onMoveEnd(detector: MoveGestureDetector) {
+        dragLayer.selected?.let { entity ->
+            val screenCoordinate = ScreenCoordinate(
+                detector.focalPoint.x.toDouble(),
+                detector.focalPoint.y.toDouble()
+            )
+            val point = holder.map.coordinateForPixel(screenCoordinate)
+            dragLayer.updatePosition(point.toGeoPoint())
+            dragLayer.selected = null
+            coroutine.launch {
+                dragLayer.draw()
+            }
+            setDraggingState(entity.state, false)  // Restore the recomposition for the position property
+            markerOverlayManager.markerManager.registerEntity(entity)
+            drawMarkerLayer()
+            markerDragEndListener?.invoke(entity.state)
+        }
+    }
 }

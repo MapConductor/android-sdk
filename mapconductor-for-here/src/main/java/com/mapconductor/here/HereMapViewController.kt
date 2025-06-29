@@ -17,11 +17,9 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
@@ -29,7 +27,8 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerEntityImpl
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
@@ -38,7 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-interface IHereMapViewController : MapViewController {
+interface IHereMapViewController : MapViewController<MapMarker> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -58,7 +57,7 @@ class HereMapViewController(
         projection = WebMercator,
         baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
     )
-) : BaseMapViewController<MapCamera.State>(),
+) : BaseMapViewController<MapCamera.State, MapMarker>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
@@ -117,10 +116,9 @@ class HereMapViewController(
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result =
-            holder.mapView.geoToViewCoordinates(
-                GeoPoint.from(position).toGeoCoordinates(),
-            ) ?: return null
+        val result = holder.mapView.geoToViewCoordinates(
+            GeoPoint.from(position).toGeoCoordinates(),
+        ) ?: return null
 
         return Offset(
             x = result.x.toFloat(),
@@ -129,10 +127,9 @@ class HereMapViewController(
     }
 
     override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
-        holder.mapView
-            .viewToGeoCoordinates(
-                Point2D(offset.x.toDouble(), offset.y.toDouble()),
-            )?.toGeoPoint()
+        holder.mapView.viewToGeoCoordinates(
+            Point2D(offset.x.toDouble(), offset.y.toDouble()),
+        )?.toGeoPoint()
 
     init {
         setupListeners()
@@ -167,14 +164,13 @@ class HereMapViewController(
 //      bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
 //      bowFactor = 0: 常に同じズーム（直線的）
         val bowFactor = 1.0
-        val animation =
-            MapCameraAnimationFactory.flyTo(
-                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
-                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
-                bowFactor,
-                Duration.ofMillis(durationMs),
-            )
+        val animation = MapCameraAnimationFactory.flyTo(
+            GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
+            GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
+            MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
+            bowFactor,
+            Duration.ofMillis(durationMs),
+        )
         coroutine.launch {
             camera.startAnimation(animation) { animState ->
                 when (animState) {
@@ -188,26 +184,18 @@ class HereMapViewController(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        cameraMoveListener?.let {
-            coroutine.launch {
-                it(cameraState)
-            }
-        }
+        cameraMoveListener?.invoke(cameraState)
     }
 
     override fun onTap(point: Point2D) {
         val position = this.getGeoPointFromPoint(point) ?: return
 
-        val state = this.findNearestMarker(
+        val entity = this.findNearestMarker(
             position = position,
             tolerance = Settings.Default.tapTolerance,
         )
-        if (state != null) {
-            markerClickListener?.let {
-                coroutine.launch {
-                    it(state)
-                }
-            }
+        if (entity != null) {
+            markerClickListener?.invoke(entity.state)
             return
         }
 
@@ -225,26 +213,18 @@ class HereMapViewController(
 
         when (gesture.value) {
             GestureState.BEGIN.value -> {
-                val state =
-                    this.findNearestMarker(
-                        position = position,
-                        tolerance = Settings.Default.tapTolerance,
-                    ) ?: return
+                val entity = this.findNearestMarker(
+                    position = position,
+                    tolerance = Settings.Default.tapTolerance,
+                ) ?: return
 
-                val entity = this.markerOverlayManager.markerManager.getEntity(state.id) ?: return
-
-                state.position = position
-                selectedMarker = MarkerEntityImpl(
-                    state = state,
-                    marker = entity.marker,
-                )
+                entity.state.position = position
+                selectedMarker = entity
 
                 // Suppress the recomposition for the position property
-                setDraggingState(state, true)
+                setDraggingState(entity.state, true)
 
-                markerDragStartListener?.let {
-                    coroutine.launch { it.invoke(state) }
-                }
+                markerDragStartListener?.invoke(entity.state)
             }
 
             GestureState.UPDATE.value -> {
@@ -253,9 +233,7 @@ class HereMapViewController(
                         selected.marker.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
-                    markerDragListener?.let {
-                        coroutine.launch { it.invoke(selected.state) }
-                    }
+                    markerDragListener?.invoke(selected.state)
                 }
             }
 
@@ -266,9 +244,7 @@ class HereMapViewController(
                     // Restore the recomposition for the position property
                     setDraggingState(selected.state, false)
 
-                    markerDragEndListener?.let {
-                        coroutine.launch { it.invoke(selected.state) }
-                    }
+                    markerDragEndListener?.invoke(selected.state)
                     selectedMarker = null
                 }
             }
@@ -283,12 +259,11 @@ class HereMapViewController(
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
-    ): MarkerState? {
+    ): MarkerEntity<MapMarker>? {
         val zoom = holder.mapView.camera.state.zoomLevel
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
         return findMarkerFromPoint(
-            markerOverlayManager = markerOverlayManager,
             position = position,
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),

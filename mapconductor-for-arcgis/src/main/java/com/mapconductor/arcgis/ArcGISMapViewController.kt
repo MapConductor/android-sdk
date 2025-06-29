@@ -14,16 +14,17 @@ import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
@@ -33,7 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-interface IArcGISMapViewController : MapViewController {
+interface IArcGISMapViewController : MapViewController<Graphic> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -60,12 +61,11 @@ class ArcGISMapViewController(
         projection = WebMercator,
         baseHexSideLength = 100000  // 100km - 中ズームレベルに適した値
     )
-) : BaseMapViewController<Camera>(),
+) : BaseMapViewController<Camera, Graphic>(),
     IArcGISMapViewController {
-    val markerLayer: GraphicsOverlay =
-        GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.Relative
-        }
+    val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
+        sceneProperties.surfacePlacement = SurfacePlacement.Relative
+    }
 
     private var selectedMarker: SelectedMarker? = null
 
@@ -216,21 +216,16 @@ class ArcGISMapViewController(
         val screenPoint = event.screenCoordinate
         val point = holder.map.screenToLocation(screenPoint).getOrNull() ?: return
         val position = point.toGeoPoint()
-        val identifyResult =
-            holder.map.identifyGraphicsOverlay(
-                graphicsOverlay = markerLayer,
-                screenCoordinate = screenPoint,
-                tolerance =
-                    Settings.Default.tapTolerance.value
-                        .toDouble(),
-                returnPopupsOnly = false,
-            )
+        val identifyResult = holder.map.identifyGraphicsOverlay(
+            graphicsOverlay = markerLayer,
+            screenCoordinate = screenPoint,
+            tolerance = Settings.Default.tapTolerance.value.toDouble(),
+            returnPopupsOnly = false,
+        )
         val graphics = identifyResult.getOrNull()?.graphics
         val graphic = graphics?.firstOrNull()
         if (graphic == null) {
-            mapLongClickListener?.also {
-                it.invoke(position)
-            }
+            mapLongClickListener?.invoke(position)
             return
         }
         val markerId = (graphic.attributes.get("id") as? String) ?: return
@@ -297,13 +292,12 @@ class ArcGISMapViewController(
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
-    ): MarkerState? {
+    ): MarkerEntity<Graphic>? {
         val camera = holder.map.getCurrentViewpointCamera()
         val zoom = camera.toMapCameraPosition().zoom
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
         return findMarkerFromPoint(
-            markerOverlayManager = markerOverlayManager,
             position = position,
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),
@@ -317,10 +311,9 @@ class ArcGISMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result =
-            holder.map.locationToScreen(
-                point = GeoPoint.from(position).toPoint(),
-            )
+        val result = holder.map.locationToScreen(
+            point = GeoPoint.from(position).toPoint(),
+        )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }
@@ -329,12 +322,12 @@ class ArcGISMapViewController(
     override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
 
         val result = holder.map.screenToLocation(
-                screenCoordinate =
-                    ScreenCoordinate(
-                        x = offset.x.toDouble(),
-                        y = offset.y.toDouble(),
-                    ),
-            )
+            screenCoordinate =
+                ScreenCoordinate(
+                    x = offset.x.toDouble(),
+                    y = offset.y.toDouble(),
+                ),
+        )
         return result.getOrNull()?.toGeoPoint()
     }
 
@@ -358,11 +351,10 @@ class ArcGISMapViewController(
         val dstCameraPosition = dstPosition.toCamera()
 
         coroutine.launch {
-            val result =
-                holder.map.setViewpointCameraAnimated(
-                    camera = dstCameraPosition,
-                    duration = duration.toFloat() / 1000.0f,
-                )
+            val result = holder.map.setViewpointCameraAnimated(
+                camera = dstCameraPosition,
+                duration = duration.toFloat() / 1000.0f,
+            )
             listener?.onComplete(result.isSuccess)
         }
     }

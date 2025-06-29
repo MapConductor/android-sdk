@@ -17,10 +17,10 @@ import com.mapconductor.core.spherical.haversineDistance
 import kotlin.math.pow
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController {
+interface MapViewController<ActualMarker> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
-    val markerOverlayManager: MarkerOverlayManagerImpl<*>
+    val markerOverlayManager: MarkerOverlayManagerImpl<ActualMarker>
     val hexCell: HexGeocell
 
     suspend fun addMarkers(data: List<MarkerState>)
@@ -49,7 +49,7 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>
 )
 
-abstract class BaseMapViewController<ActualCamera> : MapViewController {
+abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
     var mapLongClickListener: OnMapEventHandler? = null
@@ -65,11 +65,10 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
     }
 
     protected fun findMarkerFromPoint(
-        markerOverlayManager: MarkerOverlayManagerImpl<*>,
         position: IGeoPoint,
         zoom: Double,
         tolerance: Double,
-    ): MarkerState? {
+    ): MarkerEntity<ActualMarker>? {
         val meterInMapPixel = zoomToMetersPerPixel(zoom)
         val radius = tolerance * meterInMapPixel
         val entity = markerOverlayManager.markerManager.findNearest(position) ?: return null
@@ -77,7 +76,7 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
 //        return entity.state
         val distance = haversineDistance(position, entity.state.position)
         return if (distance <= radius) {
-            entity.state
+            entity
         } else {
             null
         }
@@ -87,6 +86,8 @@ abstract class BaseMapViewController<ActualCamera> : MapViewController {
         markerState: MarkerState,
         dragging: Boolean,
     ) {
+        // Since this "isDragging" property is internal accessor,
+        // childViewControllers must call this method instead of "isDragging = true/false".
         markerState.isDragging = dragging
     }
 
