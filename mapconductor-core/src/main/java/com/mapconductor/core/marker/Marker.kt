@@ -9,7 +9,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.features.GeoPoint
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 import android.graphics.Bitmap
 import android.os.Parcelable
 
@@ -22,7 +21,19 @@ class MarkerState(
     icon: MarkerIcon? = null,
     draggable: Boolean = false,
 ) {
-    val id = id ?: this.hashCode().toString()
+    val id = (id ?: markerId(listOf(
+        position.hashCode(),
+        extra?.hashCode() ?: 0,
+        icon?.hashCode() ?: 0,
+        draggable.hashCode()
+    ))).toString()
+
+    private fun markerId(hashCodes: List<Int>): Int {
+        return hashCodes.reduce { result, hashCode ->
+            31 * result + hashCode
+        }
+    }
+
     var icon by mutableStateOf<MarkerIcon?>(icon)
     var draggable by mutableStateOf(draggable)
 
