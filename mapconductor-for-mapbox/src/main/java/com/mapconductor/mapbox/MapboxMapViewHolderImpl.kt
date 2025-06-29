@@ -32,18 +32,6 @@ class MapboxMapViewHolderImpl private constructor(
         }
     }
 
-    //    override fun attachTo(container: ViewGroup) {
-//        if (mapView.parent === container) return
-//        this.detach()
-//        container.addView(mapView)
-//    }
-//
-//    override fun detach() {
-//        if (mapView.parent == null) return
-//        (mapView.parent as ViewGroup).removeView(mapView)
-//    }
-//
-//    override fun destroy() = Unit
     override fun onDestroy() = Unit
 
     override fun onLowMemory() = Unit

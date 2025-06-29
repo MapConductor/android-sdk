@@ -17,25 +17,27 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
+import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-interface IHereMapViewController : MapViewController {
+interface IHereMapViewController : MapViewController<MapMarker> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -51,41 +53,44 @@ interface IHereMapViewController : MapViewController {
 class HereMapViewController(
     override val holder: MapViewHolder<MapView, HereMap>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-) : BaseMapViewController<MapCamera.State>(),
+    override val hexCell: HexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        ),
+) : BaseMapViewController<MapCamera.State, MapMarker>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
     LongPressListener {
-    private data class SelectedMarker(
-        val state: MarkerState,
-        val overlay: MapMarker,
-    )
-
-    private var selectedMarker: SelectedMarker? = null
+    private var selectedMarker: MarkerEntity<MapMarker>? = null
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<MapMarker>(
-            coroutine = coroutine,
-            markerManager = MarkerManager(HexGeocell(WebMercator, 1)),
+            markerManager = MarkerManager(hexCell),
             onRemove = { removes ->
-                val markers: List<MapMarker> = removes.map { params -> params.marker }
-                holder.mapView.mapScene.removeMapMarkers(markers)
+                coroutine.launch {
+                    val markers: List<MapMarker> = removes.map { params -> params.marker }
+                    holder.mapView.mapScene.removeMapMarkers(markers)
+                }
             },
             onAdd = { newMarkers ->
                 val markers =
-                    newMarkers.map { params ->
-                        val marker =
-                            MapMarker(
-                                GeoPoint.from(params.state.position).toGeoCoordinates(),
-                                params.icon.toMapImage(),
-                                params.icon.toAnchor2D(),
-                            ).apply {
-                                drawOrder = calculateZIndex(params.state.position).toInt()
-                                metadata =
-                                    Metadata().apply {
-                                        setString("id", params.state.id)
-                                    }
-                            }
-                        return@map marker
+                    withContext(coroutine.coroutineContext) {
+                        newMarkers.map { params ->
+                            val marker =
+                                MapMarker(
+                                    GeoPoint.from(params.first.position).toGeoCoordinates(),
+                                    params.second.toMapImage(),
+                                    params.second.toAnchor2D(),
+                                ).apply {
+                                    drawOrder = calculateZIndex(params.first.position).toInt()
+                                    metadata =
+                                        Metadata().apply {
+                                            setString("id", params.first.id)
+                                        }
+                                }
+                            return@map marker
+                        }
                     }
 
                 holder.mapView.mapScene.addMapMarkers(markers)
@@ -93,17 +98,19 @@ class HereMapViewController(
             },
             onChange = { changes ->
                 changes.map { params ->
-                    // TODO: アイコンに変更があったかどうかを比較
-                    params.marker.image = params.icon.toMapImage()
-                    params.marker.coordinates = GeoPoint.from(params.state.position).toGeoCoordinates()
-                    params.marker.anchor = params.icon.toAnchor2D()
+                    if (params.entity.state.position != params.prevEntity.state.position) {
+                        params.entity.marker.coordinates =
+                            params.entity.state.position
+                                .toGeoCoordinates()
+                    }
+                    if (params.entity.state.icon != params.prevEntity.state.icon) {
+                        params.entity.marker.image = params.bitmapIcon.toMapImage()
+                        params.entity.marker.anchor = params.bitmapIcon.toAnchor2D()
+                    }
 
                     // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.marker
+                    params.entity.marker
                 }
-            },
-            onIconChange = { marker, icon ->
-                marker.image = icon.toMapImage()
             },
         )
 
@@ -185,27 +192,19 @@ class HereMapViewController(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        cameraMoveListener?.let {
-            coroutine.launch {
-                it(cameraState)
-            }
-        }
+        cameraMoveListener?.invoke(cameraState)
     }
 
     override fun onTap(point: Point2D) {
         val position = this.getGeoPointFromPoint(point) ?: return
 
-        val state =
+        val entity =
             this.findNearestMarker(
                 position = position,
                 tolerance = Settings.Default.tapTolerance,
             )
-        if (state != null) {
-            markerClickListener?.let {
-                coroutine.launch {
-                    it(state)
-                }
-            }
+        if (entity != null) {
+            markerClickListener?.invoke(entity.state)
             return
         }
 
@@ -223,51 +222,39 @@ class HereMapViewController(
 
         when (gesture.value) {
             GestureState.BEGIN.value -> {
-                val state =
+                val entity =
                     this.findNearestMarker(
                         position = position,
                         tolerance = Settings.Default.tapTolerance,
                     ) ?: return
 
-                val overlay = this.markerOverlayManager.markerManager.getMarker(state.id) ?: return
-
-                state.position = position
-                selectedMarker =
-                    SelectedMarker(
-                        state = state,
-                        overlay = overlay,
-                    )
+                entity.state.position = position
+                selectedMarker = entity
 
                 // Suppress the recomposition for the position property
-                setDraggingState(state, true)
+                setDraggingState(entity.state, true)
 
-                markerDragStartListener?.let {
-                    coroutine.launch { it.invoke(state) }
-                }
+                markerDragStartListener?.invoke(entity.state)
             }
 
             GestureState.UPDATE.value -> {
                 selectedMarker?.also { selected ->
                     holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
-                        selected.overlay.coordinates = coordinates
+                        selected.marker.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
-                    markerDragListener?.let {
-                        coroutine.launch { it.invoke(selected.state) }
-                    }
+                    markerDragListener?.invoke(selected.state)
                 }
             }
 
             GestureState.END.value, GestureState.CANCEL.value -> {
                 selectedMarker?.also { selected ->
-                    markerOverlayManager.markerManager.updateState(selected.state)
+                    markerOverlayManager.markerManager.updateEntity(selected)
 
                     // Restore the recomposition for the position property
                     setDraggingState(selected.state, false)
 
-                    markerDragEndListener?.let {
-                        coroutine.launch { it.invoke(selected.state) }
-                    }
+                    markerDragEndListener?.invoke(selected.state)
                     selectedMarker = null
                 }
             }
@@ -282,15 +269,22 @@ class HereMapViewController(
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
-    ): MarkerState? {
+    ): MarkerEntity<MapMarker>? {
         val zoom = holder.mapView.camera.state.zoomLevel
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
         return findMarkerFromPoint(
-            markerOverlayManager = markerOverlayManager,
             position = position,
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),
         )
+    }
+
+    override fun clearPolyline() {
+        TODO("Not yet implemented")
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        TODO("Not yet implemented")
     }
 }
