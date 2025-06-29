@@ -46,7 +46,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.SpatialReference
-import android.util.Log
 import com.mapconductor.core.marker.MarkerEntity
 
 interface IArcGISMapViewController : MapViewController {
@@ -177,8 +176,8 @@ class ArcGISMapViewController(
             },
             onAnimation = {
                 when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.markerDropAnimation(it)
-                    MarkerAnimation.Bounce -> this.markerBounceAnimation(it)
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
                     else -> { /* Do nothing here */ }
                 }
             },
@@ -203,7 +202,7 @@ class ArcGISMapViewController(
             holder.map.onPan.collect { onMapPan(it) }
         }
     }
-
+/*
     private fun markerDropAnimation(params: MarkerModifyParams<Graphic>) {
         val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
         val interpolator = LinearInterpolator()
@@ -263,7 +262,7 @@ class ArcGISMapViewController(
             markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
-
+*/
     private fun onViewpointChange() {
         this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
     }

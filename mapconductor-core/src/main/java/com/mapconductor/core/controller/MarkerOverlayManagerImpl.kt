@@ -3,6 +3,8 @@ package com.mapconductor.core.controller
 import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityImpl
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.sync.Semaphore
@@ -51,7 +53,7 @@ class MarkerOverlayManagerImpl<
     val onRemove: suspend (List<MarkerRemoveParams<ActualMarker>>) -> Unit,
     val onAdd: suspend (List<MarkerAddParams>) -> List<ActualMarker?>,
     val onChange: suspend (List<MarkerUpdateParams<ActualMarker>>) -> List<ActualMarker?>,
-    val onAnimation: suspend (params: MarkerModifyParams<ActualMarker>) -> Unit,
+    val onAnimation: suspend (params: MarkerEntity<ActualMarker>) -> Unit,
     val onIconChange: suspend (marker: ActualMarker, icon: BitmapIcon) -> Unit,
 ) : MarkerOverlayManager {
     val semaphore = Semaphore(1)
@@ -109,18 +111,16 @@ class MarkerOverlayManagerImpl<
                 .mapNotNull { (state, actualMarker) ->
                     actualMarker?.let {
                         markerManager.registerState(state, actualMarker)
-                        object : MarkerModifyParams<ActualMarker> {
-                            override val state: MarkerState = state
-                            override val marker: ActualMarker = actualMarker
-                        }
+                        MarkerEntityImpl(
+                            state = state,
+                            marker = it,
+                        )
                     }
                 }
 
-            results.forEach { param ->
+            results.forEach {
                 // Execute the animation property
-                param.state.animation?.let {
-                    onAnimation(param)
-                }
+                onAnimation(it)
             }
         }
 
@@ -160,18 +160,16 @@ class MarkerOverlayManagerImpl<
                     .mapNotNull { (state, actualMarker) ->
                         actualMarker?.let {
                             markerManager.registerState(state, actualMarker)
-                            object : MarkerModifyParams<ActualMarker> {
-                                override val state: MarkerState = state
-                                override val marker: ActualMarker = actualMarker
-                            }
+                            MarkerEntityImpl(
+                                state = state,
+                                marker = it
+                            )
                         }
                     }
 
-                results.forEach { param ->
+                results.forEach {
                     // Execute the animation property
-                    param.state.animation?.let {
-                        onAnimation(param)
-                    }
+                    onAnimation(it)
                 }
             }
         }
@@ -215,11 +213,11 @@ class MarkerOverlayManagerImpl<
 
             // Execute the animation property
             state.animation?.let {
-                val params = object : MarkerModifyParams<ActualMarker> {
-                    override val state: MarkerState = state
-                    override val marker: ActualMarker = actualMarker
-                }
-                onAnimation(params)
+                val markerEntity = MarkerEntityImpl(
+                    state = state,
+                    marker = actualMarker,
+                )
+                onAnimation(markerEntity)
             }
         }
 

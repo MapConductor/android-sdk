@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.here.sdk.core.GeoCoordinates
+import com.mapconductor.core.marker.MarkerEntity
 
 interface IHereMapViewController : MapViewController {
     fun moveCamera(
@@ -65,7 +66,7 @@ interface IHereMapViewController : MapViewController {
 class HereMapViewController(
     override val holder: MapViewHolder<MapView, HereMap>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-) : BaseMapViewController<MapCamera.State>(),
+) : BaseMapViewController<MapCamera.State, MapMarker>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
@@ -129,8 +130,8 @@ class HereMapViewController(
             },
             onAnimation = {
                 when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.markerDropAnimation(it)
-                    MarkerAnimation.Bounce -> this.markerBounceAnimation(it)
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
                     else -> { /* Do nothing here */ }
                 }
             },
@@ -163,7 +164,7 @@ class HereMapViewController(
     init {
         setupListeners()
     }
-
+/*
     private fun markerDropAnimation(params: MarkerModifyParams<MapMarker>) {
         val markerLatLng = params.marker.coordinates
         val interpolator = LinearInterpolator()
@@ -224,7 +225,7 @@ class HereMapViewController(
             markerAnimateEndListener?.let { it(params.state) }
         }.launchIn(coroutine)
     }
-
+*/
     private fun setupListeners() {
         holder.mapView.camera.removeListener(this)
         holder.mapView.camera.addListener(this)
@@ -382,5 +383,9 @@ class HereMapViewController(
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),
         )
+    }
+
+    override fun setMarkerPosition(markerEntity: MarkerEntity<MapMarker>, position: GeoPoint) {
+        markerEntity.marker.coordinates = position.toGeoCoordinates()
     }
 }
