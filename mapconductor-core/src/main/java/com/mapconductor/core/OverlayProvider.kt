@@ -71,7 +71,7 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewController,
+        controller: MapViewController<*>,
     ) {
         controller.addMarkers(data)
     }
@@ -85,7 +85,7 @@ val LocalMarkerCollector =
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController,
+    controller: MapViewController<*>,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")

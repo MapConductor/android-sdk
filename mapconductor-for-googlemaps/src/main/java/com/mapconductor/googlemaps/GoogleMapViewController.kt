@@ -15,23 +15,26 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.mapconductor.core.MarkerManager
+import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import android.graphics.Color
 import android.graphics.Point
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-interface IGoogleMapViewController : MapViewController {
+interface IGoogleMapViewController : MapViewController<Marker> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -47,7 +50,12 @@ interface IGoogleMapViewController : MapViewController {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : BaseMapViewController<CameraPosition>(),
+    override val hexCell: HexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        ),
+) : BaseMapViewController<CameraPosition, Marker>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -58,45 +66,50 @@ class GoogleMapViewController(
     OnMarkerDragListener {
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Marker>(
-            coroutine = coroutine,
-            markerManager = MarkerManager(HexGeocell(WebMercator)),
+            markerManager = MarkerManager(hexCell),
             onRemove = { removes ->
-                removes.forEach { params -> params.marker.remove() }
+                coroutine.launch {
+                    removes.forEach { params -> params.marker.remove() }
+                }
             },
             onAdd = { newMarkers ->
-                newMarkers.map { params ->
-                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
+                withContext(coroutine.coroutineContext) {
+                    newMarkers.map { params ->
+                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
 
-                    val options =
-                        MarkerOptions()
-                            .position(GeoPoint.from(params.state.position).toLatLng())
-                            .anchor(
-                                params.icon.anchor.x
-                                    .toFloat(),
-                                params.icon.anchor.y
-                                    .toFloat(),
-                            ).icon(bitmapDescriptor)
-                            .draggable(params.state.draggable)
-                    val marker =
-                        holder.map.addMarker(options)?.also {
-                            it.tag = params.state.id
-                        }
-                    return@map marker
+                        val options =
+                            MarkerOptions()
+                                .position(GeoPoint.from(params.first.position).toLatLng())
+                                .anchor(
+                                    params.second.anchor.x
+                                        .toFloat(),
+                                    params.second.anchor.y
+                                        .toFloat(),
+                                ).icon(bitmapDescriptor)
+                                .draggable(params.first.draggable)
+                        val marker =
+                            holder.map.addMarker(options)?.also {
+                                it.tag = params.first.id
+                            }
+                        return@map marker
+                    }
                 }
             },
             onChange = { changes ->
                 changes.map { params ->
-                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
-                    params.marker.position = GeoPoint.from(params.state.position).toLatLng()
-                    params.marker.setIcon(bitmapDescriptor)
+                    if (params.entity.state.icon != params.prevEntity.state.icon) {
+                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
+                        params.entity.marker.setIcon(bitmapDescriptor)
+                    }
+                    if (params.entity.state.position != params.prevEntity.state.position) {
+                        params.entity.marker.position =
+                            params.entity.state.position
+                                .toLatLng()
+                    }
 
                     // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.marker
+                    params.entity.marker
                 }
-            },
-            onIconChange = { marker, icon ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
-                marker.setIcon(bitmapDescriptor)
             },
         )
 
@@ -249,5 +262,21 @@ class GoogleMapViewController(
 
             markerDragStartListener?.invoke(state)
         }
+    }
+
+    override fun clearPolyline() {
+        holder.map.clear()
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        val options =
+            PolylineOptions().also {
+                it.color(Color.RED)
+                it.width(2f)
+            }
+        geoPoints.forEach {
+            options.add(GeoPoint.from(it).toLatLng())
+        }
+        val polyline = holder.map.addPolyline(options)
     }
 }
