@@ -11,7 +11,6 @@ import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
-import com.mapbox.maps.extension.style.expressions.dsl.generated.zoom
 import com.mapbox.maps.extension.style.expressions.generated.Expression
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.LineLayer
@@ -34,25 +33,18 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.geocell.HexCell
-import com.mapconductor.core.geocell.HexCoord
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
-import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
-import kotlin.Result
 import kotlin.coroutines.suspendCoroutine
-import kotlin.math.pow
-import kotlin.math.roundToInt
 import android.animation.Animator
 import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
@@ -370,13 +362,13 @@ internal class MapboxMapViewController(
         val zoom = holder.map.cameraState.zoom
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
-        clearPolyline()
-
-        // 検索範囲の詳細分析
-        val searchAnalysis = analyzeSearchRange(position, zoom, acceptDPI.toDouble())
-
-        // 可視化レイヤーを選択
-        drawSearchOutline(searchAnalysis)
+//        clearPolyline()
+//
+//        // 検索範囲の詳細分析
+//        val searchAnalysis = analyzeSearchRange(position, zoom, acceptDPI.toDouble())
+//
+//        // 可視化レイヤーを選択
+//        drawSearchOutline(searchAnalysis)
 
         return findMarkerFromPoint(
             markerOverlayManager = markerOverlayManager,
