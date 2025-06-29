@@ -326,6 +326,11 @@ internal class MapboxMapViewController(
             markerLayer.draw(entities)
         }
     }
+    private fun drawDragLayer() {
+        coroutine.launch {
+            dragLayer.draw()
+        }
+    }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
@@ -480,6 +485,7 @@ internal class MapboxMapViewController(
             dragLayer.selected = entity
             dragLayer.updatePosition(geoPoint)
             drawMarkerLayer()
+            drawDragLayer()
 
             markerDragStartListener?.invoke(entity.state)
             return true
@@ -499,9 +505,7 @@ internal class MapboxMapViewController(
             fromScreenOffset(screenCoordinate)?.let {
                 entity.state.position = it
                 dragLayer.updatePosition(it)
-                coroutine.launch {
-                    dragLayer.draw()
-                }
+                drawDragLayer()
             }
 
             markerDragListener?.invoke(entity.state)
@@ -524,9 +528,7 @@ internal class MapboxMapViewController(
             val point = holder.map.coordinateForPixel(screenCoordinate)
             dragLayer.updatePosition(point.toGeoPoint())
             dragLayer.selected = null
-            coroutine.launch {
-                dragLayer.draw()
-            }
+            drawDragLayer()
             setDraggingState(entity.state, false) // Restore the recomposition for the position property
             markerOverlayManager.markerManager.registerEntity(entity)
             drawMarkerLayer()
