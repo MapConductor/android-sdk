@@ -1,8 +1,9 @@
-package com.mapconductor.core.icons
+package com.mapconductor.icons
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.marker.MarkerIcon
 import android.graphics.Color
+import android.graphics.Path
 import android.graphics.drawable.Drawable
 
 fun MarkerIcon.Companion.ImageInCircle(
@@ -17,8 +18,8 @@ fun MarkerIcon.Companion.ImageInCircle(
 
     // 円形Pathの作成
     val circlePath =
-        android.graphics.Path().apply {
-            addCircle(circleCenter.x, circleCenter.y, circleRadius, android.graphics.Path.Direction.CW)
+        Path().apply {
+            addCircle(circleCenter.x, circleCenter.y, circleRadius, Path.Direction.CW)
         }
 
     return MarkerIcon(
