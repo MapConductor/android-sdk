@@ -114,7 +114,9 @@ class ArcGISMapViewController(
             onChange = { changes ->
                 withContext(coroutine.coroutineContext) {
                     changes.map { params ->
-                        if (params.entity.state.icon != params.prevEntity.state.icon) {
+                        val prevFinger = params.prevEntity.fingerPrint
+                        val currFinger = params.entity.fingerPrint
+                        if (currFinger.icon != prevFinger.icon) {
                             val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
                             val density = ResourceProvider.density
                             val width = (params.bitmapIcon.size.width / density)
@@ -172,67 +174,7 @@ class ArcGISMapViewController(
             holder.map.onPan.collect { onMapPan(it) }
         }
     }
-/*
-    private fun markerDropAnimation(params: MarkerModifyParams<Graphic>) {
-        val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
-        val interpolator = LinearInterpolator()
-        val markerPoint = this.toScreenOffset(markerLatLng) ?: return
-        val startPoint = Offset(markerPoint.x, 0f)
-        val duration = Settings.Default.markerDropAnimateDuration
 
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow{
-            val startTime = SystemClock.uptimeMillis()
-            while (true){
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = min(1f, elapsed.toFloat() / duration)
-                emit(interpolator.getInterpolation(t))
-                if (t >= 1f) break
-                delay(16)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.geometry = Point(lng, lat, SpatialReference.wgs84())
-        }.onCompletion {
-            params.marker.geometry = markerLatLng.toPoint()
-            params.state.animation = null
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-
-    private fun markerBounceAnimation(params: MarkerModifyParams<Graphic>) {
-        val startTime = SystemClock.uptimeMillis()
-        val duration = Settings.Default.markerBounceAnimateDuration
-        val interpolator: Interpolator = BounceInterpolator()
-        val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
-        val startPoint = Offset(0f , 0f)
-
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow {
-            while (true) {
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
-                emit(t)
-                if (t >= 1f) break
-                delay(16L)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = markerLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.geometry = Point(lng, lat, SpatialReference.wgs84())
-        }.onCompletion {
-            params.marker.geometry = markerLatLng.toPoint()
-            params.state.animation = null
-
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-*/
     private fun onViewpointChange() {
         this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
     }
