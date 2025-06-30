@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.Dp
 import com.google.gson.JsonObject
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
@@ -20,11 +21,9 @@ import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.IconTranslateAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.LineCap
 import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
-import com.mapbox.maps.extension.style.sources.addGeoJSONSourceFeatures
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
-import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
@@ -34,6 +33,7 @@ import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.gestures.addOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
+import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -44,6 +44,7 @@ import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
@@ -57,7 +58,6 @@ import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 // interface IMapboxMapInitOptions {
 //    val mapOptions: MapOptions?
@@ -186,8 +186,10 @@ internal class MapboxMapViewController(
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
-        holder.map.removeOnMapClickListener(this)
+
+        holder.map.removeOnMapLongClickListener(this)
         holder.map.addOnMapLongClickListener(this)
+
         holder.map.removeOnMoveListener(this)
         holder.map.addOnMoveListener(this)
     }
@@ -321,9 +323,13 @@ internal class MapboxMapViewController(
             onPostProcess = {
                 drawMarkerLayer()
             },
-            onAnimate= { param ->
-                TODO("Not implemented yet ")
-            },
+            onAnimate = {
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
+                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                }
+            }
         )
 
     private fun drawMarkerLayer() {
@@ -470,13 +476,24 @@ internal class MapboxMapViewController(
         markerEntity: MarkerEntity<Feature>,
         position: GeoPoint
     ) {
-        var feature = Feature.fromGeometry(
+        val entities = markerOverlayManager.markerManager.allEntities()
+        val feature = Feature.fromGeometry(
             position.toPoint(),
             markerEntity.marker.properties(),
         )
+        markerEntity.marker = feature
+        val features =
+            entities.map {
+                if (it.state.id == markerEntity.state.id) {
+                    feature
+                } else {
+                    it.marker
+                }
+            }
         coroutine.launch {
-            markerLayer.source.removeGeoJSONSourceFeatures(listOf(markerEntity.state.id))
-            markerLayer.source.addGeoJSONSourceFeatures(listOf(feature))
+            markerLayer.source.featureCollection(
+                FeatureCollection.fromFeatures(features)
+            )
         }
     }
 

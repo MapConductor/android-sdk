@@ -9,7 +9,7 @@ sealed class Settings(
     val markerBounceAnimateDuration: Int,
 ) {
     object Default : Settings(
-        tapTolerance = 7.dp,
+        tapTolerance = 14.dp,
         markerDropAnimateDuration = 100,
         markerBounceAnimateDuration = 2000,
     )
