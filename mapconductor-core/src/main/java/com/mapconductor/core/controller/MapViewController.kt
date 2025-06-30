@@ -18,9 +18,9 @@ import com.mapconductor.settings.Settings
 import kotlin.math.min
 import kotlin.math.pow
 import android.os.SystemClock
+import android.view.animation.BounceInterpolator
 import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
@@ -104,9 +104,9 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         markerState.isDragging = dragging
     }
 
-    fun animateMarkerDrop(
+    protected fun animateMarkerDrop(
         markerEntity: MarkerEntity<ActualMarker>,                               /* ラップしたMarkerオブジェクト*/
-        duration: Int = Settings.Default.markerBounceAnimateDuration, /* アニメションする時間(ms) */
+        duration: Int = Settings.Default.markerDropAnimateDuration, /* アニメションする時間(ms) */
     ) {
         // アニメーションの最終的な目標地点(地理座標)
         val target = markerEntity.state.position
@@ -117,7 +117,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
         val startPoint = toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
 
-        val mainScope = CoroutineScope(Dispatchers.Main)
+        markerAnimateStartListener?.invoke(markerEntity.state)
 
         // ここからアニメ本体
         flow {
@@ -143,6 +143,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
+            markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
 
@@ -156,11 +157,12 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         val target = markerEntity.state.position
 
         // 線形補間
-        val interpolator = LinearInterpolator()
+        val interpolator = BounceInterpolator()
 
         // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
         val startPoint = toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
 
+        markerAnimateStartListener?.invoke(markerEntity.state)
         flow {
             var t = 0f
             while (t < 1f) {
@@ -180,6 +182,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
+            markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
 

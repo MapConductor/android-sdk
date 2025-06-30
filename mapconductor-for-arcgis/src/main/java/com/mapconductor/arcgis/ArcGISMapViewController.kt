@@ -148,7 +148,7 @@ class ArcGISMapViewController(
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.animateMarkerDrop(it)
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw Exception("Unimplemented animation is specified: ${it.state.animation}")
+                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
                 }
             }
         )

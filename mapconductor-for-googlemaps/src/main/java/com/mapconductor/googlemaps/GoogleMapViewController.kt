@@ -24,28 +24,17 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.projection.WebMercator
-import com.mapconductor.settings.Settings
-import kotlin.math.min
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.projection.WebMercator
 import android.graphics.Color
 import android.graphics.Point
-import android.os.SystemClock
-import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.view.animation.BounceInterpolator
-import android.view.animation.Interpolator
-import com.mapconductor.core.marker.MarkerEntity
 
 interface IGoogleMapViewController : MapViewController<Marker> {
     fun moveCamera(
@@ -127,8 +116,12 @@ class GoogleMapViewController(
                 // Do nothing here
             },
             onAnimate = {
-
-            },
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
+                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                }
+            }
         )
 
     init {

@@ -25,7 +25,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
     val onAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<ActualMarker?>,
     val onChange: suspend (List<UpdateParams<ActualMarker>>) -> List<ActualMarker?>,
     val onPostProcess: (suspend () -> Unit)? = null,
-    val onAnimate: suspend (params: MarkerEntity<ActualMarker>) -> Unit,
+    val onAnimate: suspend (entity: MarkerEntity<ActualMarker>) -> Unit,
 ) : MarkerOverlayManager<ActualMarker> {
     val semaphore = Semaphore(1)
 
@@ -172,6 +172,11 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                     state = state,
                 )
             markerManager.registerEntity(entity)
+
+            // Execute the animation property
+            state.animation?.let {
+                onAnimate(entity)
+            }
         }
 
         semaphore.release()
