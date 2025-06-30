@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
@@ -51,6 +53,10 @@ fun MapArea(
             markers.forEach { markerState ->
                 key(markerState.id) {
                     Marker(markerState)
+                    Circle(
+                        center = markerState.position,
+                        radius = 1000,
+                    )
                 }
             }
 
