@@ -23,6 +23,8 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
@@ -76,7 +78,6 @@ class GoogleMapViewController(
                 withContext(coroutine.coroutineContext) {
                     newMarkers.map { params ->
                         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
-
                         val options =
                             MarkerOptions()
                                 .position(GeoPoint.from(params.first.position).toLatLng())
@@ -111,12 +112,82 @@ class GoogleMapViewController(
                     params.entity.marker
                 }
             },
+            onPostProcess = {
+                // Do nothing here
+            },
+            onAnimate = {
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
+                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                }
+            }
         )
 
     init {
         setupListeners()
     }
+/*
+    private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
+        val markerLatLng = params.marker.position.toGeoPoint()
+        val interpolator = LinearInterpolator()
+        val markerPoint = this.toScreenOffset(markerLatLng) ?: return
+        val startPoint = Offset(markerPoint.x, 0f)
+        val duration = Settings.Default.markerDropAnimateDuration
 
+        markerAnimateStartListener?.let { it(params.state) }
+
+        flow{
+            val startTime = SystemClock.uptimeMillis()
+            while (true){
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = min(1f, elapsed.toFloat() / duration)
+                emit(interpolator.getInterpolation(t))
+                if (t >= 1f) break
+                delay(16)
+            }
+        }.onEach { t ->
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.position = LatLng(lat, lng)
+        }.onCompletion {
+            params.marker.position = markerLatLng.toLatLng()
+            params.state.animation = null
+            markerAnimateEndListener?.let { it(params.state) }
+        }.launchIn(coroutine)
+    }
+
+    private fun markerBounceAnimation(params: MarkerModifyParams<Marker>) {
+        val startTime = SystemClock.uptimeMillis()
+        val duration = Settings.Default.markerBounceAnimateDuration
+        val interpolator: Interpolator = BounceInterpolator()
+        val markerLatLng = params.marker.position.toGeoPoint()
+        val startPoint = Offset(0f , -200f)
+
+        markerAnimateStartListener?.let { it(params.state) }
+
+        flow {
+            while (true) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
+                emit(t)
+                if (t >= 1f) break
+                delay(16L)
+            }
+        }.onEach { t ->
+            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = markerLatLng.longitude
+            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
+            params.marker.position = LatLng(lat, lng)
+        }.onCompletion {
+            params.marker.position = markerLatLng.toLatLng()
+            params.state.animation = null
+
+            markerAnimateEndListener?.let { it(params.state) }
+        }.launchIn(coroutine)
+    }
+*/
     private fun setupListeners() {
         holder.map.setOnCameraMoveStartedListener(this)
         holder.map.setOnCameraMoveCanceledListener(this)
@@ -262,6 +333,10 @@ class GoogleMapViewController(
 
             markerDragStartListener?.invoke(state)
         }
+    }
+
+    override fun setMarkerPosition(markerEntity: MarkerEntity<Marker>, position: GeoPoint) {
+        markerEntity.marker.position = position.toLatLng()
     }
 
     override fun clearPolyline() {

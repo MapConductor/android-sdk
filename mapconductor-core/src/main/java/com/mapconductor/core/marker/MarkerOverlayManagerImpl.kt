@@ -25,12 +25,14 @@ class MarkerOverlayManagerImpl<ActualMarker>(
     val onAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<ActualMarker?>,
     val onChange: suspend (List<UpdateParams<ActualMarker>>) -> List<ActualMarker?>,
     val onPostProcess: (suspend () -> Unit)? = null,
+    val onAnimate: suspend (entity: MarkerEntity<ActualMarker>) -> Unit,
 ) : MarkerOverlayManager<ActualMarker> {
     val semaphore = Semaphore(1)
 
     override suspend fun addMarkers(markerList: List<MarkerState>) {
         semaphore.acquire()
 
+        val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
         val current = markerList.toSet()
         val previousEntities = markerManager.allEntities()
         val previous = previousEntities.map { it.state }.toSet()
@@ -76,6 +78,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                                     state = addedList[index],
                                 )
                             markerManager.registerEntity(entity)
+                            modifiedEntities.add(entity)
                         }
                     }
                 }
@@ -102,12 +105,12 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                                     marker = prevEntity.marker,
                                 )
                             markerManager.registerEntity(entity)
+                            modifiedEntities.add(entity)
                             object : UpdateParams<ActualMarker> {
                                 override val entity: MarkerEntity<ActualMarker> = entity
                                 override val bitmapIcon: BitmapIcon = markerIcon
                                 override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
                             }
-//                        Pair(entity, markerIcon)
                         }
                     }.filter { it -> it != null }
 
@@ -123,6 +126,11 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                         )
                     markerManager.registerEntity(entity)
                 }
+            }
+        }
+        modifiedEntities.forEach { entity ->
+            entity.state.animation?.let {
+                onAnimate(entity)
             }
         }
         onPostProcess?.invoke()
@@ -164,6 +172,11 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                     state = state,
                 )
             markerManager.registerEntity(entity)
+
+            // Execute the animation property
+            state.animation?.let {
+                onAnimate(entity)
+            }
         }
 
         semaphore.release()

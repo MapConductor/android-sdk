@@ -24,6 +24,8 @@ fun MapViewContainer(
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
@@ -36,6 +38,8 @@ fun MapViewContainer(
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
                 onMarkerDragEnd = onMarkerDragEnd,
+                onMarkerAnimateStart = onMarkerAnimateStart,
+                onMarkerAnimateEnd = onMarkerAnimateEnd,
                 content = content,
             )
 
@@ -48,6 +52,8 @@ fun MapViewContainer(
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
                 onMarkerDragEnd = onMarkerDragEnd,
+                onMarkerAnimateStart = onMarkerAnimateStart,
+                onMarkerAnimateEnd = onMarkerAnimateEnd,
                 content = content,
             )
 
@@ -60,6 +66,8 @@ fun MapViewContainer(
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
                 onMarkerDragEnd = onMarkerDragEnd,
+                onMarkerAnimateStart = onMarkerAnimateStart,
+                onMarkerAnimateEnd = onMarkerAnimateEnd,
                 content = content,
             )
 
@@ -72,6 +80,8 @@ fun MapViewContainer(
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
                 onMarkerDragEnd = onMarkerDragEnd,
+                onMarkerAnimateStart = onMarkerAnimateStart,
+                onMarkerAnimateEnd = onMarkerAnimateEnd,
                 content = content,
             )
 
