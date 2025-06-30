@@ -329,7 +329,7 @@ internal class MapboxMapViewController(
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
                     else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     private fun drawMarkerLayer() {
@@ -338,6 +338,7 @@ internal class MapboxMapViewController(
             markerLayer.draw(entities)
         }
     }
+
     private fun drawDragLayer() {
         coroutine.launch {
             dragLayer.draw()
@@ -474,13 +475,14 @@ internal class MapboxMapViewController(
 
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<Feature>,
-        position: GeoPoint
+        position: GeoPoint,
     ) {
         val entities = markerOverlayManager.markerManager.allEntities()
-        val feature = Feature.fromGeometry(
-            position.toPoint(),
-            markerEntity.marker.properties(),
-        )
+        val feature =
+            Feature.fromGeometry(
+                position.toPoint(),
+                markerEntity.marker.properties(),
+            )
         markerEntity.marker = feature
         val features =
             entities.map {
@@ -492,7 +494,7 @@ internal class MapboxMapViewController(
             }
         coroutine.launch {
             markerLayer.source.featureCollection(
-                FeatureCollection.fromFeatures(features)
+                FeatureCollection.fromFeatures(features),
             )
         }
     }

@@ -1,6 +1,5 @@
 package com.mapconductor.here
 
-
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import com.here.sdk.animation.AnimationState
@@ -125,7 +124,7 @@ class HereMapViewController(
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
                     else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
@@ -155,6 +154,7 @@ class HereMapViewController(
     init {
         setupListeners()
     }
+
 /*
     private fun markerDropAnimation(params: MarkerModifyParams<MapMarker>) {
         val markerLatLng = params.marker.coordinates
@@ -355,9 +355,13 @@ class HereMapViewController(
         )
     }
 
-    override fun setMarkerPosition(markerEntity: MarkerEntity<MapMarker>, position: GeoPoint) {
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<MapMarker>,
+        position: GeoPoint,
+    ) {
         markerEntity.marker.coordinates = position.toGeoCoordinates()
     }
+
     override fun clearPolyline() {
         TODO("Not yet implemented")
     }

@@ -121,12 +121,13 @@ class GoogleMapViewController(
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
                     else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     init {
         setupListeners()
     }
+
 /*
     private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
         val markerLatLng = params.marker.position.toGeoPoint()
@@ -335,7 +336,10 @@ class GoogleMapViewController(
         }
     }
 
-    override fun setMarkerPosition(markerEntity: MarkerEntity<Marker>, position: GeoPoint) {
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<Marker>,
+        position: GeoPoint,
+    ) {
         markerEntity.marker.position = position.toLatLng()
     }
 
