@@ -15,7 +15,7 @@ ktlint {
 }
 
 android {
-    namespace = "com.mapconductor.arcgis"
+    namespace = "com.mapconductor.icons"
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
@@ -53,24 +53,12 @@ android {
 
 dependencies {
 
-//    implementation(libs.play.services.maps)
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.ui.tooling.preview)
-    compileOnly(libs.androidx.core.ktx)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
-    // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
-
-    // ArcGIS SDK
-    compileOnly(libs.arcgis.maps.kotlin)
-    compileOnly(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-    compileOnly(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-    compileOnly(libs.arcgis.maps.kotlin.toolkit.authentication)
-
+    implementation(libs.androidx.core.ktx)
+    compileOnly(libs.androidx.foundation)
+    compileOnly(platform(libs.androidx.compose.bom))
     compileOnly(project(":mapconductor-core"))
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+//    implementation(libs.androidx.appcompat)
+//    testImplementation(libs.junit)
+//    androidTestImplementation(libs.androidx.junit)
+//    androidTestImplementation(libs.androidx.espresso.core)
 }

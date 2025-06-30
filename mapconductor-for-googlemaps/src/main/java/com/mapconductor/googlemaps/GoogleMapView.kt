@@ -26,6 +26,8 @@ fun GoogleMapsView(
     onMarkerDragStart: OnMarkerEventHandler? = {},
     onMarkerDrag: OnMarkerEventHandler? = {},
     onMarkerDragEnd: OnMarkerEventHandler? = {},
+    onMarkerAnimateStart: OnMarkerEventHandler? = {},
+    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -78,6 +80,8 @@ fun GoogleMapsView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
+            controller.markerAnimateStartListener = onMarkerAnimateStart
+            controller.markerAnimateEndListener = onMarkerAnimateEnd
 
             holderRef.value = controller.holder
             controllerRef.value = controller

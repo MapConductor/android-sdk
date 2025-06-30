@@ -31,8 +31,8 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.icons.Default
-import com.mapconductor.core.icons.ImageInCircle
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
@@ -128,7 +128,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 //    val icon = MarkerIcon.SquareMarker()
 //    val icon = MarkerIcon.Triangle()
     val image = AppCompatResources.getDrawable(context, R.drawable.def)
-    val icon = MarkerIcon.ImageInCircle(image = image!!)
+//    val icon = MarkerIcon.ImageInCircle(image = image!!)
 
     val markerList =
         remember {
@@ -180,6 +180,8 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                             MarkerIcon.Default(
                                 fillColor = Color.Blue.toArgb(),
                             )
+
+                        state.animation = MarkerAnimation.Bounce
 //                        val intent = appViewModel.createIntentForDirection(state)
 //                        context.startActivity(intent)
                     },
