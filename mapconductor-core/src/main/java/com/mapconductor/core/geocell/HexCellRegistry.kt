@@ -1,155 +1,238 @@
 package com.mapconductor.core.geocell
 
 import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerEntity
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-// HexCellRegistry（KDTree + markDirty制御）
-
-class HexCellRegistry<T : MarkerState>(
+/**
+ * HexCellRegistry - Thread-safe hexagonal cell management with KDTree spatial indexing
+ *
+ * @param T The actual marker type
+ * @param geocell The hexagonal geocell system
+ * @param zoom The zoom level for this registry
+ */
+class HexCellRegistry<ActualMarker>(
     private val geocell: HexGeocell,
     private val zoom: Double,
 ) {
     private var kdTree: KDTree? = null
     private val allCells = ConcurrentHashMap<String, HexCell>()
-    private val entryIDsByCell = ConcurrentHashMap<String, List<String>>()
-    private val allEntries = ConcurrentHashMap<String, String>()
+    private val entryIDsByCell = ConcurrentHashMap<String, MutableSet<String>>()
+    private val allEntries = ConcurrentHashMap<String, String>() // entityId -> cellId
     private var needsRebuild = false
 
-    //    fun registerPoints(points: List<T>) {
-//        allCells.clear()
-//        points.forEach {
-//            val coord = geocell.latLngToHex(it.point, zoom)
-//            val centerLatLng = geocell.hexToLatLngCenter(coord, it.point.latitude, zoom)
-//            val centerXY = geocell.projection.project(centerLatLng)
-//            val id = geocell.hexToCellId(coord)
-//            val cell = HexCell(coord, centerLatLng, centerXY, id)
-//            allCells[it.id] = cell
-//        }
-//        kdTree = KDTree(allCells.values.toList())
-//        needsRebuild = false
-//    }
-    fun getCell(entry: T): HexCell {
-        val coord = geocell.latLngToHexCoord(entry.position, zoom)
-        val centerLatLng = geocell.hexToLatLngCenter(coord, entry.position.latitude, zoom)
+    // Thread safety for complex operations
+    private val lock = ReentrantReadWriteLock()
+
+    /**
+     * Get the hex cell for a given entity without registering it
+     */
+    fun getCell(entity: MarkerEntity<ActualMarker>): HexCell {
+        val coord = geocell.latLngToHexCoord(entity.state.position, zoom)
+        val centerLatLng = geocell.hexToLatLngCenter(coord, entity.state.position.latitude, zoom)
         val centerXY = geocell.projection.project(centerLatLng)
-        val cellId = geocell.hexToCellId(coord)
+        val cellId = geocell.hexToCellId(coord, zoom) // Include zoom in ID
         return HexCell(coord, centerLatLng, centerXY, cellId)
     }
 
-    fun setPoint(entry: T): HexCell {
-        allEntries[entry.id]?.let { cellId ->
-            entryIDsByCell[cellId]?.let { entryIDs ->
-                val removed = entryIDs.filter { it != entry.id }
-                if (removed.isEmpty()) {
-                    allCells.remove(cellId)
-                    entryIDsByCell.remove(cellId)
-                } else {
-                    entryIDsByCell[cellId] = removed
-                }
+    /**
+     * Register or update a point in the registry
+     * @return The hex cell containing the point
+     */
+    fun setPoint(entity: MarkerEntity<ActualMarker>): HexCell =
+        lock.write {
+            val entityId = entity.state.id
+
+            // Remove from old cell if exists
+            allEntries[entityId]?.let { oldCellId ->
+                removeFromCell(oldCellId, entityId)
             }
+
+            // Add to new cell
+            val cell = getCell(entity)
+            val cellId = cell.id
+
+            allCells[cellId] = cell
+            allEntries[entityId] = cellId
+
+            // Add entity to cell's entry list
+            entryIDsByCell.compute(cellId) { _, existingSet ->
+                (existingSet ?: mutableSetOf()).apply { add(entityId) }
+            }
+
+            markDirty()
+            return cell
         }
 
-        val cell = getCell(entry)
-        val cellId = cell.id
-
-        allCells[cellId] = cell
-        allEntries[entry.id] = cell.id
-        entryIDsByCell[cellId] = (entryIDsByCell[cellId] ?: emptyList<String>()) + entry.id
-        markDirty()
-        return cell
-    }
-
+    /**
+     * Check if a hex cell exists in the registry
+     */
     fun contains(hexId: String): Boolean = allCells.containsKey(hexId)
 
-    fun removePoint(entry: T): Boolean {
-        val cell = getCell(entry)
-        val cellId = cell.id
-        val entryIDs = entryIDsByCell[cellId] ?: return false
-        markDirty()
-        if (entryIDs.isEmpty()) {
+    /**
+     * Remove a point from the registry
+     * @return true if the point was removed, false if it wasn't found
+     */
+    fun removePoint(entity: MarkerEntity<ActualMarker>): Boolean =
+        lock.write {
+            val entityId = entity.state.id
+            val cellId = allEntries[entityId] ?: return false
+
+            val removed = removeFromCell(cellId, entityId)
+            if (removed) {
+                allEntries.remove(entityId)
+                markDirty()
+            }
+
+            return removed
+        }
+
+    /**
+     * Remove an entity from a specific cell
+     * @return true if removed, false if not found
+     */
+    private fun removeFromCell(
+        cellId: String,
+        entityId: String,
+    ): Boolean {
+        val entryIds = entryIDsByCell[cellId] ?: return false
+        val removed = entryIds.remove(entityId)
+
+        if (removed && entryIds.isEmpty()) {
+            // Remove empty cell
             allCells.remove(cellId)
             entryIDsByCell.remove(cellId)
-            return true
         }
-        val removed = entryIDs.filter { it != entry.id }
-        if (removed.isEmpty()) {
-            allCells.remove(cellId)
-            entryIDsByCell.remove(cellId)
-            return true
-        }
-        entryIDsByCell[cellId] = removed
-        return true
+
+        return removed
     }
 
-    fun clear() {
-        allCells.clear()
-        needsRebuild = false
-        kdTree = null
-    }
+    /**
+     * Clear all points and rebuild the spatial index
+     */
+    fun clear() =
+        lock.write {
+            allCells.clear()
+            entryIDsByCell.clear()
+            allEntries.clear()
+            kdTree = null
+            needsRebuild = false
+        }
 
-    fun markDirty() {
+    /**
+     * Mark the spatial index as needing rebuild
+     */
+    private fun markDirty() {
         needsRebuild = true
     }
 
+    /**
+     * Rebuild the spatial index if needed
+     */
     private fun rebuildIfNeeded() {
         if (needsRebuild) {
-            kdTree = KDTree(allCells.values.toList())
+            kdTree =
+                if (allCells.isNotEmpty()) {
+                    KDTree(allCells.values.toList())
+                } else {
+                    null
+                }
             needsRebuild = false
         }
     }
 
-    fun findNearest(point: IGeoPoint): HexCell? {
-        rebuildIfNeeded()
-        return kdTree?.nearest(geocell.projection.project(point))
-    }
+    /**
+     * Find the nearest hex cell to a point
+     */
+    fun findNearest(point: IGeoPoint): HexCell? =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.nearest(geocell.projection.project(point))
+        }
 
-    fun findNearestWithDistance(point: IGeoPoint): HexCellWithDistance? {
-        rebuildIfNeeded()
-        return kdTree?.nearestWithDistance(geocell.projection.project(point))
-    }
+    /**
+     * Find the nearest hex cell with distance
+     */
+    fun findNearestWithDistance(point: IGeoPoint): HexCellWithDistance? =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.nearestWithDistance(geocell.projection.project(point))
+        }
 
+    /**
+     * Find k nearest hex cells with distances
+     */
     fun findNearestKWithDistance(
         point: IGeoPoint,
         k: Int,
-    ): List<HexCellWithDistance> {
-        rebuildIfNeeded()
-        return kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
-    }
+    ): List<HexCellWithDistance> =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
+        }
 
+    /**
+     * Find all hex cells within a radius with distances
+     */
     fun findWithinRadiusWithDistance(
         point: IGeoPoint,
         radius: Double,
-    ): List<HexCellWithDistance> {
-        rebuildIfNeeded()
-        return kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
-    }
+    ): List<HexCellWithDistance> =
+        lock.read {
+            rebuildIfNeeded()
+            return kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
+        }
 
+    /**
+     * Get all hex cells
+     */
     fun all(): List<HexCell> = allCells.values.toList()
 
-    fun getEntryIDsByHexCell(hexCell: HexCell): List<String>? = entryIDsByCell[hexCell.id]
+    /**
+     * Get entity IDs for a specific hex cell
+     */
+    fun getEntryIDsByHexCell(hexCell: HexCell): Set<String>? =
+        entryIDsByCell[hexCell.id]?.toSet() // Return immutable copy
 
+    /**
+     * Calculate meters per pixel at a given position and zoom level
+     *
+     * Note: This assumes the projection returns coordinates in meters.
+     * Verify that your projection implementation meets this requirement.
+     */
     fun metersPerPixel(
         position: IGeoPoint,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
     ): Double {
-        // val scale = 1.0 / (2.0.pow(zoom)) // ピクセルの地図上のスケール
-        val deltaLng = 360.0 * pixels / (tileSize * 2.0.pow(zoom)) // 経度方向にずらす
+        require(pixels > 0) { "Pixels must be positive" }
+        require(tileSize > 0) { "Tile size must be positive" }
+
+        val deltaLng = 360.0 * pixels / (tileSize * 2.0.pow(zoom))
+
+        // Handle potential longitude overflow
+        val newLng =
+            (position.longitude + deltaLng).let { lng ->
+                when {
+                    lng > 180.0 -> lng - 360.0
+                    lng < -180.0 -> lng + 360.0
+                    else -> lng
+                }
+            }
 
         val p1 = geocell.projection.project(position)
         val p2 =
             geocell.projection.project(
                 object : IGeoPoint {
-                    override val latitude
-                        get() = position.latitude
-                    override val longitude: Double
-                        get() = position.longitude + deltaLng
-                    override val altitude: Double?
-                        get() = position.altitude
+                    override val latitude = position.latitude
+                    override val longitude = newLng
+                    override val altitude = position.altitude
                 },
             )
 
@@ -158,6 +241,9 @@ class HexCellRegistry<T : MarkerState>(
         return sqrt(dx * dx + dy * dy).toDouble()
     }
 
+    /**
+     * Find hex cells within a pixel radius
+     */
     fun findWithinPixelRadius(
         position: IGeoPoint,
         zoom: Double,
@@ -168,5 +254,37 @@ class HexCellRegistry<T : MarkerState>(
         return findWithinRadiusWithDistance(position, meters)
     }
 
-    fun findByIdPrefix(prefix: String): List<HexCell> = all().filter { it.id.startsWith(prefix) }
+    /**
+     * Find hex cells by ID prefix (optimized for common prefixes)
+     */
+    fun findByIdPrefix(prefix: String): List<HexCell> {
+        require(prefix.isNotEmpty()) { "Prefix cannot be empty" }
+
+        return allCells.entries
+            .asSequence()
+            .filter { it.key.startsWith(prefix) }
+            .map { it.value }
+            .toList()
+    }
+
+    /**
+     * Get statistics about the registry
+     */
+    fun getStats(): RegistryStats =
+        RegistryStats(
+            totalCells = allCells.size,
+            totalEntries = allEntries.size,
+            kdTreeBuilt = kdTree != null,
+            needsRebuild = needsRebuild,
+        )
 }
+
+/**
+ * Statistics about the registry state
+ */
+data class RegistryStats(
+    val totalCells: Int,
+    val totalEntries: Int,
+    val kdTreeBuilt: Boolean,
+    val needsRebuild: Boolean,
+)

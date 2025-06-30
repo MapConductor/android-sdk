@@ -1,10 +1,5 @@
 package com.mapconductor.arcgis
 
-import android.os.SystemClock
-import android.view.MotionEvent
-import android.view.animation.BounceInterpolator
-import android.view.animation.Interpolator
-import android.view.animation.LinearInterpolator
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toDrawable
@@ -19,36 +14,28 @@ import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
-import com.mapconductor.core.MarkerManager
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerModifyParams
-import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
-import kotlin.math.min
+import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.arcgismaps.geometry.Point
-import com.arcgismaps.geometry.SpatialReference
-import com.mapconductor.core.marker.MarkerEntity
 
-interface IArcGISMapViewController : MapViewController {
+interface IArcGISMapViewController : MapViewController<Graphic> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -70,6 +57,11 @@ class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope =
         CoroutineScope(Dispatchers.Default),
+    override val hexCell: HexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        ),
 ) : BaseMapViewController<Camera, Graphic>(),
     IArcGISMapViewController {
     val markerLayer: GraphicsOverlay =
@@ -81,106 +73,84 @@ class ArcGISMapViewController(
 
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Graphic>(
-            markerManager = MarkerManager(HexGeocell(WebMercator)),
+            markerManager = MarkerManager<Graphic>(hexCell),
             onRemove = { removes ->
-                withContext(coroutine.coroutineContext) {
-                    val elements: List<Graphic> =
-                        removes.map { params ->
-                            params.marker
-                        }
+                coroutine.launch {
+                    val elements = removes.map { params -> params.marker }
                     markerLayer.graphics.removeAll(elements)
                 }
             },
             onAdd = { newMarkers ->
-                val markers = withContext(coroutine.coroutineContext) {
-                    newMarkers.map { params ->
-                        val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
-                        val density = ResourceProvider.density
-                        val width = (params.icon.size.width / density)
-                        val height = (params.icon.size.height / density)
-                        val anchorX = (params.icon.anchor.x - 0.5) * width
-                        val anchorY = (params.icon.anchor.y - 0.5) * height
+                withContext(coroutine.coroutineContext) {
+                    newMarkers
+                        .map { params ->
+                            val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
+                            val density = ResourceProvider.density
+                            val width = (params.second.size.width / density)
+                            val height = (params.second.size.height / density)
+                            val anchorX = (params.second.anchor.x - 0.5) * width
+                            val anchorY = (params.second.anchor.y - 0.5) * height
 
-                        val pictureSymbolFuture =
-                            PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                                it.width = width.toFloat()
-                                it.height = height.toFloat()
-                                it.offsetX = anchorX.toFloat()
-                                it.offsetY = anchorY.toFloat()
-                            }
+                            val pictureSymbolFuture =
+                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                    it.width = width.toFloat()
+                                    it.height = height.toFloat()
+                                    it.offsetX = anchorX.toFloat()
+                                    it.offsetY = anchorY.toFloat()
+                                }
 
-                        val marker =
-                            Graphic(
-                                geometry =
-                                    params.state.position
-                                        .toPoint(),
-                                symbol = pictureSymbolFuture,
-                            )
-                        marker.attributes.set("id", params.state.id)
-                        return@map marker
-                    }
+                            val marker =
+                                Graphic(
+                                    geometry = params.first.position.toPoint(),
+                                    symbol = pictureSymbolFuture,
+                                )
+                            marker.attributes.set("id", params.first.id)
+                            return@map marker
+                        }.also {
+                            markerLayer.graphics.addAll(it)
+                        }
                 }
-
-                coroutine.launch {
-                    markerLayer.graphics.addAll(markers)
-                }
-
-                return@MarkerOverlayManagerImpl markers
             },
             onChange = { changes ->
                 withContext(coroutine.coroutineContext) {
                     changes.map { params ->
-                        val bitmapDrawable = params.icon.bitmap.toDrawable(holder.mapView.context.resources)
-                        val density = ResourceProvider.density
-                        val width = (params.icon.size.width / density)
-                        val height = (params.icon.size.height / density)
-                        val anchorX = (params.icon.anchor.x - 0.5) * width
-                        val anchorY = (params.icon.anchor.y - 0.5) * height
+                        if (params.entity.state.icon != params.prevEntity.state.icon) {
+                            val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
+                            val density = ResourceProvider.density
+                            val width = (params.bitmapIcon.size.width / density)
+                            val height = (params.bitmapIcon.size.height / density)
+                            val anchorX = (params.bitmapIcon.anchor.x - 0.5) * width
+                            val anchorY = (params.bitmapIcon.anchor.y - 0.5) * height
 
-                        val pictureSymbolFuture =
-                            PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                                it.width = width.toFloat()
-                                it.height = height.toFloat()
-                                it.offsetX = anchorX.toFloat()
-                                it.offsetY = anchorY.toFloat()
-                            }
+                            val pictureSymbolFuture =
+                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                    it.width = width.toFloat()
+                                    it.height = height.toFloat()
+                                    it.offsetX = anchorX.toFloat()
+                                    it.offsetY = anchorY.toFloat()
+                                }
+                            params.entity.marker.symbol = pictureSymbolFuture
+                        }
 
-                        params.marker.geometry =
-                            params.state.position
-                                .toPoint()
-                        params.marker.symbol = pictureSymbolFuture
+                        if (params.entity.state.position != params.prevEntity.state.position) {
+                            params.entity.marker.geometry =
+                                params.entity.state.position
+                                    .toPoint()
+                        }
 
                         // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                        params.marker
+                        params.entity.marker
                     }
                 }
             },
-            onIconChange = { marker, icon ->
-                withContext(coroutine.coroutineContext) {
-                    val bitmapDrawable = icon.bitmap.toDrawable(holder.mapView.context.resources)
-                    val density = ResourceProvider.density
-                    val width = (icon.size.width / density)
-                    val height = (icon.size.height / density)
-                    val anchorX = (icon.anchor.x - 0.5) * width
-                    val anchorY = (icon.anchor.y - 0.5) * height
 
-                    val pictureSymbolFuture =
-                        PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                            it.width = width.toFloat()
-                            it.height = height.toFloat()
-                            it.offsetX = anchorX.toFloat()
-                            it.offsetY = anchorY.toFloat()
-                        }
-                    marker.symbol = pictureSymbolFuture
-                }
-            },
-            onAnimation = {
+            onAnimate = {
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.animateMarkerDrop(it)
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> { /* Do nothing here */ }
+                    else -> throw Exception("Unimplemented animation is specified: ${it.state.animation}")
                 }
-            },
+            }
         )
 
     init {
@@ -317,9 +287,7 @@ class ArcGISMapViewController(
         val graphics = identifyResult.getOrNull()?.graphics
         val graphic = graphics?.firstOrNull()
         if (graphic == null) {
-            mapLongClickListener?.also {
-                it.invoke(position)
-            }
+            mapLongClickListener?.invoke(position)
             return
         }
         val markerId = (graphic.attributes.get("id") as? String) ?: return
@@ -386,13 +354,12 @@ class ArcGISMapViewController(
     private fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Dp,
-    ): MarkerState? {
+    ): MarkerEntity<Graphic>? {
         val camera = holder.map.getCurrentViewpointCamera()
         val zoom = camera.toMapCameraPosition().zoom
         val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
 
         return findMarkerFromPoint(
-            markerOverlayManager = markerOverlayManager,
             position = position,
             zoom = zoom,
             tolerance = acceptDPI.toDouble(),
@@ -458,5 +425,13 @@ class ArcGISMapViewController(
 
     override fun setMarkerPosition(markerEntity: MarkerEntity<Graphic>, position: GeoPoint) {
         markerEntity.marker.geometry = position.toPoint()
+    }
+
+    override fun clearPolyline() {
+        TODO("Not yet implemented")
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        TODO("Not yet implemented")
     }
 }

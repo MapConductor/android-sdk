@@ -43,7 +43,6 @@ import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.rememberHereMapViewState
-import com.mapconductor.icons.ImageInCircle
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 
@@ -112,7 +111,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(1) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -129,11 +128,15 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 //    val icon = MarkerIcon.SquareMarker()
 //    val icon = MarkerIcon.Triangle()
     val image = AppCompatResources.getDrawable(context, R.drawable.def)
-    val icon = MarkerIcon.ImageInCircle(image = image!!)
+//    val icon = MarkerIcon.ImageInCircle(image = image!!)
 
     val markerList =
         remember {
-            appViewModel.markerList
+            appViewModel.markerList.map {
+                it.copy(
+                    draggable = true,
+                )
+            }
         }
     val mapViewState = appViewModel.mapViewState.collectAsState().value
     val camera = mapViewState?.mapCameraPosition?.collectAsState()?.value

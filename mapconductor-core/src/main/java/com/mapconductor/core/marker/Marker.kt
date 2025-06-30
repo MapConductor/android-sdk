@@ -10,7 +10,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.features.GeoPoint
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 import android.graphics.Bitmap
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -18,13 +17,31 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-    val id: String = UUID.randomUUID().toString(),
+//    val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
+    id: String? = null,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
     animation: MarkerAnimation? = null,
     draggable: Boolean = false,
 ) {
+    val id =
+        (
+            id ?: markerId(
+                listOf(
+                    position.hashCode(),
+                    extra?.hashCode() ?: 0,
+                    icon?.hashCode() ?: 0,
+                    draggable.hashCode(),
+                ),
+            )
+        ).toString()
+
+    private fun markerId(hashCodes: List<Int>): Int =
+        hashCodes.reduce { result, hashCode ->
+            31 * result + hashCode
+        }
+
     var icon by mutableStateOf<MarkerIcon?>(icon)
     var draggable by mutableStateOf(draggable)
 
@@ -68,8 +85,7 @@ class MarkerState(
     }
 
     override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + (extra?.hashCode() ?: 0)
+        var result = extra?.hashCode() ?: 0
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
