@@ -15,11 +15,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.mapconductor.core.MarkerManager
+import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.controller.MarkerModifyParams
-import com.mapconductor.core.controller.MarkerOverlayManagerImpl
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
@@ -30,6 +28,9 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
 import kotlin.math.min
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import android.graphics.Color
 import android.graphics.Point
 import android.os.SystemClock
 import android.view.animation.LinearInterpolator
@@ -42,12 +43,11 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 import android.view.animation.BounceInterpolator
 import android.view.animation.Interpolator
 import com.mapconductor.core.marker.MarkerEntity
 
-interface IGoogleMapViewController : MapViewController {
+interface IGoogleMapViewController : MapViewController<Marker> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -63,6 +63,11 @@ interface IGoogleMapViewController : MapViewController {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    override val hexCell: HexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        ),
 ) : BaseMapViewController<CameraPosition, Marker>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
@@ -74,58 +79,55 @@ class GoogleMapViewController(
     OnMarkerDragListener {
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Marker>(
-            markerManager = MarkerManager(HexGeocell(WebMercator)),
+            markerManager = MarkerManager(hexCell),
             onRemove = { removes ->
-                withContext(coroutine.coroutineContext) {
+                coroutine.launch {
                     removes.forEach { params -> params.marker.remove() }
                 }
             },
             onAdd = { newMarkers ->
-                newMarkers.map { params ->
-                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
-
-                    val options =
-                        MarkerOptions()
-                            .position(GeoPoint.from(params.state.position).toLatLng())
-                            .anchor(
-                                params.icon.anchor.x
-                                    .toFloat(),
-                                params.icon.anchor.y
-                                    .toFloat(),
-                            ).icon(bitmapDescriptor)
-                            .draggable(params.state.draggable)
-                    val marker = withContext(coroutine.coroutineContext) {
-                        holder.map.addMarker(options)?.also {
-                            it.tag = params.state.id
-                        }
+                withContext(coroutine.coroutineContext) {
+                    newMarkers.map { params ->
+                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
+                        val options =
+                            MarkerOptions()
+                                .position(GeoPoint.from(params.first.position).toLatLng())
+                                .anchor(
+                                    params.second.anchor.x
+                                        .toFloat(),
+                                    params.second.anchor.y
+                                        .toFloat(),
+                                ).icon(bitmapDescriptor)
+                                .draggable(params.first.draggable)
+                        val marker =
+                            holder.map.addMarker(options)?.also {
+                                it.tag = params.first.id
+                            }
+                        return@map marker
                     }
-                    return@map marker
                 }
             },
             onChange = { changes ->
-                withContext(coroutine.coroutineContext) {
-                    changes.map { params ->
-                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.icon.bitmap)
-                            params.marker.position = GeoPoint.from(params.state.position).toLatLng()
-                            params.marker.setIcon(bitmapDescriptor)
-
-                        // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                        params.marker
+                changes.map { params ->
+                    if (params.entity.state.icon != params.prevEntity.state.icon) {
+                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
+                        params.entity.marker.setIcon(bitmapDescriptor)
                     }
+                    if (params.entity.state.position != params.prevEntity.state.position) {
+                        params.entity.marker.position =
+                            params.entity.state.position
+                                .toLatLng()
+                    }
+
+                    // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
+                    params.entity.marker
                 }
             },
-            onIconChange = { marker, icon ->
-                withContext(coroutine.coroutineContext) {
-                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(icon.bitmap)
-                    marker.setIcon(bitmapDescriptor)
-                }
+            onPostProcess = {
+                // Do nothing here
             },
-            onAnimation = {
-                when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
-                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> { /* Do nothing here */ }
-                }
+            onAnimate = {
+
             },
         )
 
@@ -340,7 +342,23 @@ class GoogleMapViewController(
         }
     }
 
-    override fun setMarkerPosition(markerEntity: MarkerEntity<Marker>, position: GeoPoint)  {
+    override fun setMarkerPosition(markerEntity: MarkerEntity<Marker>, position: GeoPoint) {
         markerEntity.marker.position = position.toLatLng()
+    }
+
+    override fun clearPolyline() {
+        holder.map.clear()
+    }
+
+    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
+        val options =
+            PolylineOptions().also {
+                it.color(Color.RED)
+                it.width(2f)
+            }
+        geoPoints.forEach {
+            options.add(GeoPoint.from(it).toLatLng())
+        }
+        val polyline = holder.map.addPolyline(options)
     }
 }
