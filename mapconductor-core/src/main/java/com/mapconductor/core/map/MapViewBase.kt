@@ -27,10 +27,14 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.icons.Default
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
+import com.mapconductor.core.marker.MarkerIcon
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
@@ -84,8 +88,10 @@ fun <
             }
             val markers = scope.markerFlow.collectAsState()
             markers.value.forEach { markerState ->
-                LaunchedEffect(markerState.icon, markerState.draggable, markerState.internalPosition) {
-                    controller.updateMarker(markerState)
+                LaunchedEffect(markerState.id) {
+                    markerState.asFlow().debounce(100).collectLatest {
+                        controller.updateMarker(markerState)
+                    }
                 }
             }
         }
@@ -156,7 +162,7 @@ fun <
             bubbles.forEach { entry ->
                 val marker = entry.state.marker ?: return@forEach
                 val position = marker.position
-                val icon = marker.icon ?: return@forEach
+                val icon = marker.icon ?: MarkerIcon.Default()
                 val iconScale = icon.scale ?: 2f
                 val positionOffset = controller.toScreenOffset(position) ?: return@forEach
 

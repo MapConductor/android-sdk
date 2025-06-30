@@ -98,6 +98,7 @@ dependencies {
 
     // Map Conductor
     implementation(project(":mapconductor-core"))
+    implementation(project(":mapconductor-icons"))
     implementation(project(":mapconductor-for-googlemaps"))
     implementation(project(":mapconductor-for-here"))
     implementation(project(":mapconductor-for-mapbox"))

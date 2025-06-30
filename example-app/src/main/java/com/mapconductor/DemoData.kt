@@ -1,12 +1,12 @@
 package com.mapconductor
 
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.icons.HeartInCircle
-import com.mapconductor.core.icons.SquareMarker
-import com.mapconductor.core.icons.StarInCircle
-import com.mapconductor.core.icons.Triangle
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.icons.HeartInCircle
+import com.mapconductor.icons.SquareMarker
+import com.mapconductor.icons.StarInCircle
+import com.mapconductor.icons.Triangle
 import android.graphics.Color
 import android.os.Bundle
 
