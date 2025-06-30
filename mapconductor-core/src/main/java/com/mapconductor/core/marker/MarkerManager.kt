@@ -1,21 +1,17 @@
-package com.mapconductor.core
+package com.mapconductor.core.marker
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.graphics.withScale
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.icons.Default
-import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerIcon
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.BlurMaskFilter
@@ -48,34 +44,22 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    private val markers: ConcurrentHashMap<String, ActualMarker> = ConcurrentHashMap()
-    private val entries: ConcurrentMap<String, MarkerState> = ConcurrentHashMap()
-    private val hashCodes: ConcurrentMap<String, Int> = ConcurrentHashMap()
+    private val entities: ConcurrentHashMap<String, MarkerEntity<ActualMarker>> = ConcurrentHashMap()
     private val cellRegistry =
-        HexCellRegistry<MarkerState>(
+        HexCellRegistry<ActualMarker>(
             geocell = geocell,
             // Maximum zoom level
             zoom = 20.0,
         )
 
-    fun containsKey(id: String): Boolean = markers.containsKey(id)
+    fun getEntity(id: String): MarkerEntity<ActualMarker>? = entities.get(id)
 
-    fun equalsValue(entry: MarkerState): Boolean = entries.get(entry.id)?.equals(entry) == true
-
-    fun getValueSet(): Set<MarkerState> = entries.values.toSet()
-
-    fun getMarker(id: String): ActualMarker? = markers.get(id)
-
-    fun getState(id: String): MarkerState? = entries.get(id)
-
-    fun getStateHashCode(id: String): Int? = hashCodes.get(id)
-
-    fun removeStateAndMarker(id: String) {
-        markers.remove(id)
-        hashCodes.remove(id)
-        entries.remove(id)?.let {
-            cellRegistry.removePoint(it)
-        }
+    fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
+        val removed =
+            entities.remove(id)?.also {
+                cellRegistry.removePoint(it)
+            }
+        return removed
     }
 
     fun metersPerPixel(
@@ -85,44 +69,37 @@ class MarkerManager<ActualMarker>(
         tileSize: Int = 256,
     ): Double = cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
 
-    fun findNearest(position: IGeoPoint): MarkerState? {
+    fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
         val cell = cellRegistry.findNearest(position) ?: return null
         val entryIDs =
             cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
                 entryIDs.sortedBy { entryId ->
-                    entries[entryId]?.let { state ->
-                        haversineDistance(position, state.position)
+                    entities[entryId]?.let { entity ->
+                        haversineDistance(position, entity.state.position)
                     }
                 }
             } ?: return null
 
         val entryId = entryIDs[0]
-        return entries[entryId]
+        return entities[entryId]
     }
 
     fun findByIdPrefix(prefix: String): List<HexCell> = cellRegistry.findByIdPrefix(prefix)
 
-    fun registerState(
-        state: MarkerState,
-        marker: ActualMarker,
-    ) {
-        markers[state.id] = marker
-        entries[state.id] = state
-        hashCodes[state.id] = state.hashCode()
-        cellRegistry.setPoint(state)
+    fun registerEntity(entity: MarkerEntity<ActualMarker>) {
+        entities[entity.state.id] = entity
+        cellRegistry.setPoint(entity)
     }
 
-    fun updateState(entry: MarkerState) {
-        entries[entry.id] = entry
-        hashCodes[entry.id] = entry.hashCode()
-        cellRegistry.setPoint(entry)
+    fun updateEntity(entity: MarkerEntity<ActualMarker>) {
+        entities[entity.state.id] = entity
+        cellRegistry.setPoint(entity)
     }
 
-    fun allKeys(): List<String> = markers.keys.toList()
+    fun allEntities(): List<MarkerEntity<ActualMarker>> = entities.values.toList()
 
     fun clear() {
-        markers.clear()
-        entries.clear()
+        entities.clear()
         cellRegistry.clear()
     }
 
@@ -131,7 +108,7 @@ class MarkerManager<ActualMarker>(
         val cache = bitmapCache.get(key)
         if (cache != null) return cache
 
-        val iconBitmap = createIconBitmap(icon = icon)
+        val iconBitmap = createBitmapIcon(icon = icon)
         bitmapCache.put(key, iconBitmap)
         return iconBitmap
     }
@@ -168,7 +145,7 @@ class MarkerManager<ActualMarker>(
         return canvasBitmap
     }
 
-    fun createIconBitmap(icon: MarkerIcon = MarkerIcon.Default()): BitmapIcon {
+    fun createBitmapIcon(icon: MarkerIcon): BitmapIcon {
         val svgOriginalWidth = 24f // SVGの元のviewBox幅
         val svgOriginalHeight = 24f // SVGの元のviewBox高さ
         val width = svgOriginalWidth * (icon.scale ?: 2f) * ResourceProvider.density
@@ -218,7 +195,8 @@ class MarkerManager<ActualMarker>(
                             fillColor = icon.outsideColor ?: Color.RED,
                         )
                     val iconBitmapTileMode = Shader.TileMode.CLAMP
-                    val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
+                    val bitmapShader =
+                        BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
 
                     // BitmapShaderのローカルマトリックスを設定して、
                     // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
@@ -265,7 +243,8 @@ class MarkerManager<ActualMarker>(
                             fillColor = icon.insideColor ?: Color.RED,
                         )
                     val iconBitmapTileMode = Shader.TileMode.CLAMP
-                    val bitmapShader = BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
+                    val bitmapShader =
+                        BitmapShader(iconBitmap, iconBitmapTileMode, iconBitmapTileMode)
 
                     // BitmapShaderのローカルマトリックスを設定して、
                     // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
@@ -312,7 +291,8 @@ class MarkerManager<ActualMarker>(
                                 ),
                         )
                     val iconBitmapTileMode = Shader.TileMode.CLAMP
-                    val bitmapShader = BitmapShader(iconBitmap2, iconBitmapTileMode, iconBitmapTileMode)
+                    val bitmapShader =
+                        BitmapShader(iconBitmap2, iconBitmapTileMode, iconBitmapTileMode)
 
                     // BitmapShaderのローカルマトリックスを設定して、
                     // ビットマップがパスの32x32論理領域を適切にカバーするようにスケーリングする
@@ -345,7 +325,8 @@ class MarkerManager<ActualMarker>(
                 // scaleXとscaleYが異なる場合を考慮し、平均または主要な軸のスケールを使う。ここではscaleYを例に。
                 val pixelBlurRadius = 2
                 if (pixelBlurRadius > 0f) { // 半径0だとエラーになるため
-                    this.maskFilter = BlurMaskFilter(pixelBlurRadius.toFloat(), BlurMaskFilter.Blur.OUTER)
+                    this.maskFilter =
+                        BlurMaskFilter(pixelBlurRadius.toFloat(), BlurMaskFilter.Blur.OUTER)
                 } else {
                     // 半径が非常に小さい場合は、単純な色描画にフォールバック（または何もしない）
                     // ここでは何もしない例（maskFilterがnullのまま）
