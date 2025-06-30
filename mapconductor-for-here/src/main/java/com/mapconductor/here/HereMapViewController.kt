@@ -1,5 +1,6 @@
 package com.mapconductor.here
 
+
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import com.here.sdk.animation.AnimationState
@@ -20,37 +21,23 @@ import com.here.time.Duration
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-
-
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
-
 import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
-import kotlin.math.min
-import android.os.SystemClock
-import android.view.animation.BounceInterpolator
-import android.view.animation.Interpolator
-import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.here.sdk.core.GeoCoordinates
-import com.mapconductor.core.marker.MarkerEntity
 
 interface IHereMapViewController : MapViewController<MapMarker> {
     fun moveCamera(
@@ -132,7 +119,13 @@ class HereMapViewController(
             onPostProcess = {
                 // Do nothing here
             },
-            onAnimate = TODO(),
+            onAnimate = {
+                when (it.state.animation) {
+                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
+                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
+                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                }
+            }
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
