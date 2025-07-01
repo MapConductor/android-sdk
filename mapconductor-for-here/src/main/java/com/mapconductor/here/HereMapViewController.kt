@@ -1,6 +1,5 @@
 package com.mapconductor.here
 
-
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import com.here.sdk.animation.AnimationState
@@ -157,68 +156,7 @@ class HereMapViewController(
     init {
         setupListeners()
     }
-/*
-    private fun markerDropAnimation(params: MarkerModifyParams<MapMarker>) {
-        val markerLatLng = params.marker.coordinates
-        val interpolator = LinearInterpolator()
-        val markerPoint = holder.mapView.geoToViewCoordinates(markerLatLng) ?: return
-        val startPoint = Point2D(markerPoint.x, 0.0)
-        val duration = Settings.Default.markerDropAnimateDuration
 
-        markerAnimateStartListener?.invoke(params.state)
-
-        flow{
-            val startTime = SystemClock.uptimeMillis()
-            while (true){
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = min(1f, elapsed.toFloat() / duration)
-                emit(interpolator.getInterpolation(t))
-                if (t >= 1f) break
-                delay(16)
-            }
-        }.onEach { t ->
-            val startLatLng = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
-            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.coordinates = GeoCoordinates(lat, lng)
-        }.onCompletion {
-            params.marker.coordinates = markerLatLng
-            params.state.animation = null
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-
-    private fun markerBounceAnimation(params: MarkerModifyParams<MapMarker>) {
-        val startTime = SystemClock.uptimeMillis()
-        val duration = Settings.Default.markerBounceAnimateDuration
-        val interpolator: Interpolator = BounceInterpolator()
-        val markerLatLng = params.marker.coordinates
-        val markerPoint = holder.mapView.geoToViewCoordinates(markerLatLng) ?: return
-        val startPoint = Point2D(0.0, -200.0)
-
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow {
-            while (true) {
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
-                emit(t)
-                if (t >= 1f) break
-                delay(16L)
-            }
-        }.onEach { t ->
-            val startLatLng = holder.mapView.viewToGeoCoordinates(startPoint) ?: return@onEach
-            val lng = markerLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.coordinates = GeoCoordinates(lat, lng)
-        }.onCompletion {
-            params.marker.coordinates = markerLatLng
-            params.state.animation = null
-
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-*/
     private fun setupListeners() {
         holder.mapView.camera.removeListener(this)
         holder.mapView.camera.addListener(this)
