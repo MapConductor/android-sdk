@@ -1,6 +1,7 @@
 package com.mapconductor.core.controller
 
 import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
@@ -36,6 +37,10 @@ interface MapViewController<ActualMarker> {
     suspend fun addMarkers(data: List<MarkerState>)
 
     suspend fun updateMarker(state: MarkerState)
+
+    suspend fun addCircles(data: List<CircleState>)
+
+    suspend fun updateCircle(state: CircleState)
 
     suspend fun clearOverlays()
 
