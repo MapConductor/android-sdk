@@ -96,7 +96,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                         val prevEntity = markerManager.getEntity(state.id) ?: return@map null
 
                         // プロパティが変わっていなければ、マーカーを再描画しない
-                        return@map if (prevEntity.stateHashCode == state.hashCode()) {
+                        return@map if (prevEntity.fingerPrint == state.fingerPrint()) {
                             null
                         } else {
                             val entity =
@@ -140,17 +140,18 @@ class MarkerOverlayManagerImpl<ActualMarker>(
 
     override suspend fun updateMarker(state: MarkerState) {
         val prevEntity = markerManager.getEntity(state.id) ?: return
-        if (state.hashCode() == prevEntity.stateHashCode) {
+        val currentFinger = state.fingerPrint()
+        val prevFinger = prevEntity.fingerPrint
+        if (currentFinger == prevFinger) {
             return
         }
 
         semaphore.acquire()
         val marker = prevEntity.marker
         val defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Companion.Default())
-        val markerIcon =
-            state.icon?.let {
-                markerManager.getBitmapIcon(it)
-            } ?: defaultIcon
+        val markerIcon = state.icon?.let {
+            markerManager.getBitmapIcon(it)
+        } ?: defaultIcon
 
         val entity =
             MarkerEntityImpl(
@@ -174,8 +175,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
             markerManager.registerEntity(entity)
 
             // Execute the animation property
-            state.animation?.let {
-                onAnimate(entity)
+            if (prevFinger.animation != currentFinger.animation) {
+                state.animation?.let {
+                    onAnimate(entity)
+                }
             }
         }
 

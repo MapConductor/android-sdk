@@ -114,7 +114,9 @@ class ArcGISMapViewController(
             onChange = { changes ->
                 withContext(coroutine.coroutineContext) {
                     changes.map { params ->
-                        if (params.entity.state.icon != params.prevEntity.state.icon) {
+                        val prevFinger = params.prevEntity.fingerPrint
+                        val currFinger = params.entity.fingerPrint
+                        if (currFinger.icon != prevFinger.icon) {
                             val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
                             val density = ResourceProvider.density
                             val width = (params.bitmapIcon.size.width / density)
