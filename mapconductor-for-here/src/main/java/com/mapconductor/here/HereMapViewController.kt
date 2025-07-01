@@ -101,14 +101,16 @@ class HereMapViewController(
             },
             onChange = { changes ->
                 changes.map { params ->
+                    val prevFinger = params.prevEntity.fingerPrint
+                    val currFinger = params.entity.fingerPrint
+                    if (currFinger.icon != prevFinger.icon) {
+                        params.entity.marker.image = params.bitmapIcon.toMapImage()
+                        params.entity.marker.anchor = params.bitmapIcon.toAnchor2D()
+                    }
                     if (params.entity.state.position != params.prevEntity.state.position) {
                         params.entity.marker.coordinates =
                             params.entity.state.position
                                 .toGeoCoordinates()
-                    }
-                    if (params.entity.state.icon != params.prevEntity.state.icon) {
-                        params.entity.marker.image = params.bitmapIcon.toMapImage()
-                        params.entity.marker.anchor = params.bitmapIcon.toAnchor2D()
                     }
 
                     // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

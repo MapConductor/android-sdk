@@ -98,14 +98,14 @@ class GoogleMapViewController(
             },
             onChange = { changes ->
                 changes.map { params ->
-                    if (params.entity.state.icon != params.prevEntity.state.icon) {
+                    val prevFinger = params.prevEntity.fingerPrint
+                    val currentFinger = params.entity.fingerPrint
+                    if (prevFinger.icon != currentFinger.icon) {
                         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
                         params.entity.marker.setIcon(bitmapDescriptor)
                     }
                     if (params.entity.state.position != params.prevEntity.state.position) {
-                        params.entity.marker.position =
-                            params.entity.state.position
-                                .toLatLng()
+                        params.entity.marker.position = params.entity.state.position.toLatLng()
                     }
 
                     // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

@@ -124,7 +124,7 @@ internal class MapboxMapViewController(
             layerId = "marker-drag-layer",
         )
 
-    private val loadedIconHash: MutableMap<String, Int> = mutableMapOf()
+    private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
     private lateinit var defaultIcon: BitmapIcon
 
     private object Prop {
@@ -207,12 +207,12 @@ internal class MapboxMapViewController(
                 removes.forEach { removeEntity ->
                     removeEntity.state.icon?.let {
                         val iconKey = it.hashCode().toString()
-                        val cnt = loadedIconHash.getOrDefault(iconKey, 1) - 1
+                        val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
                         if (cnt == 0) {
-                            loadedIconHash.remove(iconKey)
+                            iconRefCounter.remove(iconKey)
                             style.removeStyleImage(iconKey)
                         } else {
-                            loadedIconHash.put(iconKey, cnt)
+                            iconRefCounter.put(iconKey, cnt)
                         }
                     }
                 }
@@ -228,7 +228,7 @@ internal class MapboxMapViewController(
                 newMarkers.forEach { params ->
                     params.first.icon?.let {
                         val iconKey = it.hashCode().toString()
-                        if (!loadedIconHash.contains(iconKey)) {
+                        if (!iconRefCounter.contains(iconKey)) {
                             style.addImage(iconKey, params.second.bitmap)
                         }
                     }
@@ -242,7 +242,7 @@ internal class MapboxMapViewController(
                             if (params.first.icon != null) {
                                 params.first.icon?.let {
                                     val iconKey = it.hashCode().toString()
-                                    loadedIconHash.put(iconKey, loadedIconHash.getOrDefault(iconKey, 0) + 1)
+                                    iconRefCounter.put(iconKey, iconRefCounter.getOrDefault(iconKey, 0) + 1)
                                     addProperty(Prop.ICON_ID, iconKey)
                                     val offsetX = (it.anchor.x - 0.5) * it.size.width
                                     val offsetY = (it.anchor.y - 0.5) * it.size.height
@@ -266,30 +266,37 @@ internal class MapboxMapViewController(
                         }
                     }
                 changes.map { params ->
+                    val prevFinger = params.prevEntity.fingerPrint
+                    val currFinger = params.entity.fingerPrint
+
                     val prevProperties = params.prevEntity.marker.properties()
                     val properties =
                         JsonObject().apply {
                             addProperty(Prop.MARKER_ID, params.entity.state.id)
 
-                            if (params.entity.state.icon != params.prevEntity.state.icon) {
+                            if (currFinger.icon != prevFinger.icon) {
                                 // Decrement reference counter for the previous icon
-                                val iconKey =
-                                    params.prevEntity.state.icon
-                                        .hashCode()
-                                        .toString()
-                                val cnt = loadedIconHash.getOrDefault(iconKey, 1) - 1
-                                if (cnt == 0) {
-                                    loadedIconHash.remove(iconKey)
-                                    style.removeStyleImage(iconKey)
-                                } else {
-                                    loadedIconHash.put(iconKey, cnt)
+                                prevFinger.icon?.let {
+                                    val iconKey = prevFinger.icon.toString()
+                                    val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
+                                    if (cnt == 0) {
+                                        iconRefCounter.remove(iconKey)
+                                        style.removeStyleImage(iconKey)
+                                    } else {
+                                        iconRefCounter.put(iconKey, cnt)
+                                    }
                                 }
 
-                                // Decrement reference counter for new icon
-                                if (params.entity.state.icon != null) {
+                                // Increment reference counter for new icon
+                                if (currFinger.icon != null) {
                                     params.entity.state.icon?.let {
-                                        val iconKey = it.hashCode().toString()
-                                        loadedIconHash.put(iconKey, loadedIconHash.getOrDefault(iconKey, 0) + 1)
+                                        val iconKey = currFinger.icon!!.toString()
+                                        if (!iconRefCounter.containsKey(iconKey)) {
+                                            style.addImage(iconKey, params.bitmapIcon.bitmap)
+                                            iconRefCounter.put(iconKey, 1)
+                                        } else {
+                                            iconRefCounter.put(iconKey, iconRefCounter.get(iconKey)!! + 1)
+                                        }
                                         addProperty(Prop.ICON_ID, iconKey)
                                         val offsetX = (it.anchor.x - 0.5) * it.size.width
                                         val offsetY = (it.anchor.y - 0.5) * it.size.height

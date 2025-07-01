@@ -2,12 +2,15 @@ package com.mapconductor.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerState
+import kotlinx.coroutines.flow.MutableSharedFlow
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,10 +63,12 @@ open class MapViewScope {
     val markerFlow = MutableStateFlow<List<MarkerState>>(emptyList())
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
     val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
+    val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
         registry.register(MarkerOverlay(markerFlow))
+        registry.register(CircleOverlay(circleFlow))
         return registry
     }
 }
@@ -76,6 +81,17 @@ class MarkerOverlay(
         controller: MapViewController<*>,
     ) {
         controller.addMarkers(data)
+    }
+}
+
+class CircleOverlay(
+    override val flow: StateFlow<List<CircleState>>,
+) : MapOverlay<CircleState> {
+    override suspend fun render(
+        data: List<CircleState>,
+        controller: MapViewController<*>,
+    ) {
+        controller.addCircles(data)
     }
 }
 
@@ -98,6 +114,11 @@ class PolylineOverlay(
 val LocalPolylineCollector =
     compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
         error("Polyline must be under the <MapView />")
+    }
+
+val LocalCircleCollector =
+    compositionLocalOf<MutableStateFlow<List<CircleState>>> {
+        error("Circle must be under the <MapView />")
     }
 
 @Composable

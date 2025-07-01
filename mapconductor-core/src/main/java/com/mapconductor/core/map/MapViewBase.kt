@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
+import com.mapconductor.core.LocalCircleCollector
 import com.mapconductor.core.LocalMarkerCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
@@ -81,6 +82,7 @@ fun <
             CompositionLocalProvider(
                 LocalMarkerCollector provides scope.markerFlow,
                 LocalInfoBubbleCollector provides scope.bubbleFlow,
+                LocalCircleCollector provides scope.circleFlow,
             ) {
                 with(scope) {
                     content?.invoke(this)
@@ -91,6 +93,14 @@ fun <
                 LaunchedEffect(markerState.id) {
                     markerState.asFlow().debounce(100).collectLatest {
                         controller.updateMarker(markerState)
+                    }
+                }
+            }
+            val circles = scope.circleFlow.collectAsState()
+            circles.value.forEach { circleState ->
+                LaunchedEffect(circleState.id) {
+                    circleState.asFlow().debounce(100).collectLatest {
+                        controller.updateCircle(circleState)
                     }
                 }
             }

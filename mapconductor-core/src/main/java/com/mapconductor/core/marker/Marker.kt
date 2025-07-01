@@ -92,17 +92,24 @@ class MarkerState(
         return result
     }
 
-    fun toPayload(): MarkerUpdatePayload = MarkerUpdatePayload(this.id, icon, draggable, internalPosition, animation)
+    fun fingerPrint(): MarkerFingerPrint {
+        return MarkerFingerPrint(
+            this.id.hashCode(),
+            icon.hashCode(),
+            draggable.hashCode(),
+            internalPosition.hashCode(),
+            animation.hashCode()
+        )
+    }
 
-    fun asFlow(): Flow<MarkerUpdatePayload> = snapshotFlow { toPayload() }.distinctUntilChanged()
+    fun asFlow(): Flow<MarkerFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
 }
-
-data class MarkerUpdatePayload(
-    val id: String,
-    val icon: MarkerIcon?,
-    val draggable: Boolean,
-    val position: GeoPoint,
-    val animation: MarkerAnimation?,
+data class MarkerFingerPrint(
+    val id: Int,
+    val icon: Int?,
+    val draggable: Int,
+    val position: Int,
+    val animation: Int?
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 
