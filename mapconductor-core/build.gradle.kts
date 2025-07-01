@@ -52,6 +52,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.room.runtime.android)
     compileOnly(libs.androidx.core.ktx)
     compileOnly(libs.androidx.foundation)
 
