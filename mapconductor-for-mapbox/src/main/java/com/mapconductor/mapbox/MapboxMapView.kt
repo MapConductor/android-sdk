@@ -66,16 +66,15 @@ fun MapboxMapView(
 
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
 
-            val onCameraMove =
-                (state as? MapboxMapViewState)?.let {
-                    it::OnCameraChange
-                }
             val controller =
                 MapboxMapViewController(
                     holder = holder,
                 )
+            (state as? MapboxMapViewState)?.let { mapViewState ->
+                mapViewState.controller = controller
+                controller.cameraMoveListener = mapViewState::OnCameraChange
+            }
             controller.mapClickListener = onMapClick
-            controller.cameraMoveListener = onCameraMove
             controller.markerClickListener = onMarkerClick
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
