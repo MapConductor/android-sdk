@@ -97,11 +97,11 @@ class AppViewModelImpl :
                 MapCameraPosition(
                     position =
                         GeoPoint(
-                            latitude = 40.689184289566214,
-                            longitude = -74.04454331830473,
+                            latitude = 21.647441446388,
+                            longitude = -158.062544988096,
                         ),
-                    tilt = 70.0,
-                    zoom = 18.0,
+//                    tilt = 70.0,
+                    zoom = 11.0,
                 ),
             durationMs = 3000,
             listener = listener,
