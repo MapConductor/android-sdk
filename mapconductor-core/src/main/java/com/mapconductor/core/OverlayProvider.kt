@@ -8,6 +8,7 @@ import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -58,6 +59,7 @@ import kotlinx.coroutines.flow.StateFlow
 open class MapViewScope {
     val markerFlow = MutableStateFlow<List<MarkerState>>(emptyList())
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
+    val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
@@ -80,6 +82,22 @@ class MarkerOverlay(
 val LocalMarkerCollector =
     compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
         error("Marker must be under the <MapView />")
+    }
+
+class PolylineOverlay(
+    override val flow: StateFlow<List<PolylineState>>,
+) : MapOverlay<PolylineState> {
+    override suspend fun render(
+        data: List<PolylineState>,
+        controller: MapViewController<*>,
+    ) {
+        controller.addPolylines(data)
+    }
+}
+
+val LocalPolylineCollector =
+    compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
+        error("Polyline must be under the <MapView />")
     }
 
 @Composable

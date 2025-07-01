@@ -13,6 +13,7 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
 import kotlin.math.min
@@ -27,15 +28,20 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 
-interface MapViewController<ActualMarker> {
+interface MapViewController<ActualMarker, ActualPolyline> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManagerImpl<ActualMarker>
+    val polylineOverlayManager: PolylineOverlayManagerImpl<ActualMarker>
     val hexCell: HexGeocell
 
     suspend fun addMarkers(data: List<MarkerState>)
 
     suspend fun updateMarker(state: MarkerState)
+
+    suspend fun addPolylines(data: List<PolylineState>)
+
+    suspend fun updatePolyline(state: PolylineState)
 
     suspend fun clearOverlays()
 
