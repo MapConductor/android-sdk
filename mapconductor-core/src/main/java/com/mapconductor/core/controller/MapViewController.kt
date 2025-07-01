@@ -90,8 +90,6 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         val meterInMapPixel = zoomToMetersPerPixel(zoom)
         val radius = tolerance * meterInMapPixel
         val entity = markerOverlayManager.markerManager.findNearest(position) ?: return null
-
-//        return entity.state
         val distance = haversineDistance(position, entity.state.position)
         return if (distance <= radius) {
             entity
@@ -148,6 +146,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
+            markerEntity.state.animation = null
             markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
@@ -187,6 +186,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
+            markerEntity.state.animation = null
             markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
