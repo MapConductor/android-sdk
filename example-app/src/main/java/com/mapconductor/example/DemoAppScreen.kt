@@ -111,7 +111,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(1) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -159,9 +159,9 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                             )
                             Button(
                                 modifier = Modifier.weight(0.1f),
-                                onClick = appViewModel::flyTo,
+                                onClick = appViewModel::cameraReset,
                             ) {
-                                Text("Fly to!")
+                                Text("Camera reset")
                             }
                         }
                     },
