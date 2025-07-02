@@ -52,10 +52,10 @@ class AppViewModelImpl :
         MapCameraPosition(
             position =
                 GeoPoint.fromLatLong(
-                    latitude = 55.74439651573066,
-                    longitude = 37.60543944013441,
+                    latitude = 21.382314,
+                    longitude = -157.933097,
                 ),
-            zoom = 18.0,
+            zoom = 10.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
