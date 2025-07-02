@@ -10,6 +10,7 @@ import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.extension.style.expressions.generated.Expression
@@ -327,9 +328,9 @@ internal class MapboxMapViewController(
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.animateMarkerDrop(it)
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     private fun drawMarkerLayer() {
@@ -338,6 +339,7 @@ internal class MapboxMapViewController(
             markerLayer.draw(entities)
         }
     }
+
     private fun drawDragLayer() {
         coroutine.launch {
             dragLayer.draw()
@@ -388,8 +390,17 @@ internal class MapboxMapViewController(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
+        val cameraOptions =
+            CameraOptions
+                .Builder()
+                .center(dstPosition.position.toPoint())
+                .zoom(dstPosition.zoom - 1)
+                .pitch(dstPosition.tilt)
+                .bearing(dstPosition.bearing)
+                .build()
+
         coroutine.launch {
-            holder.map.setCamera(dstPosition.toCameraOptions())
+            holder.map.setCamera(cameraOptions)
         }
         listener?.onComplete(true)
     }
@@ -399,7 +410,15 @@ internal class MapboxMapViewController(
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val targetCamera = dstPosition.toCameraOptions()
+        val targetCamera =
+            CameraOptions
+                .Builder()
+                .center(dstPosition.position.toPoint())
+                .zoom(dstPosition.zoom - 1)
+                .pitch(dstPosition.tilt)
+                .bearing(dstPosition.bearing)
+                .build()
+
         val animationOptions =
             MapAnimationOptions
                 .Builder()
@@ -455,7 +474,7 @@ internal class MapboxMapViewController(
         tolerance: Dp,
     ): MarkerEntity<Feature>? {
         val zoom = holder.map.cameraState.zoom
-        val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
+        val acceptDPI = tolerance.value * holder.mapView.context.resources.displayMetrics.density
 
 //        clearPolyline()
 //
@@ -474,13 +493,14 @@ internal class MapboxMapViewController(
 
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<Feature>,
-        position: GeoPoint
+        position: GeoPoint,
     ) {
         val entities = markerOverlayManager.markerManager.allEntities()
-        val feature = Feature.fromGeometry(
-            position.toPoint(),
-            markerEntity.marker.properties(),
-        )
+        val feature =
+            Feature.fromGeometry(
+                position.toPoint(),
+                markerEntity.marker.properties(),
+            )
         markerEntity.marker = feature
         val features =
             entities.map {
@@ -492,7 +512,7 @@ internal class MapboxMapViewController(
             }
         coroutine.launch {
             markerLayer.source.featureCollection(
-                FeatureCollection.fromFeatures(features)
+                FeatureCollection.fromFeatures(features),
             )
         }
     }

@@ -143,14 +143,13 @@ class ArcGISMapViewController(
                     }
                 }
             },
-
             onAnimate = {
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.animateMarkerDrop(it)
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     init {
@@ -172,6 +171,7 @@ class ArcGISMapViewController(
             holder.map.onPan.collect { onMapPan(it) }
         }
     }
+
 /*
     private fun markerDropAnimation(params: MarkerModifyParams<Graphic>) {
         val markerLatLng = (params.marker.geometry as? Point)?.toGeoPoint() ?: return
@@ -423,7 +423,10 @@ class ArcGISMapViewController(
         }
     }
 
-    override fun setMarkerPosition(markerEntity: MarkerEntity<Graphic>, position: GeoPoint) {
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<Graphic>,
+        position: GeoPoint,
+    ) {
         markerEntity.marker.geometry = position.toPoint()
     }
 
