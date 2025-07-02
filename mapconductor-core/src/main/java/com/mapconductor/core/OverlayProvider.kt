@@ -112,7 +112,7 @@ class PolylineOverlay(
 }
 
 val LocalPolylineCollector =
-    compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
+    compositionLocalOf<MutableStateFlow<List<PolylineState>>> {
         error("Polyline must be under the <MapView />")
     }
 

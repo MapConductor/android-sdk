@@ -24,6 +24,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.LocalCircleCollector
 import com.mapconductor.core.LocalMarkerCollector
+import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
@@ -83,6 +84,7 @@ fun <
                 LocalMarkerCollector provides scope.markerFlow,
                 LocalInfoBubbleCollector provides scope.bubbleFlow,
                 LocalCircleCollector provides scope.circleFlow,
+                LocalPolylineCollector provides scope.polylineFlow,
             ) {
                 with(scope) {
                     content?.invoke(this)

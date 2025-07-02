@@ -14,6 +14,7 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
@@ -33,7 +34,7 @@ interface MapViewController<ActualMarker, ActualPolyline> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManagerImpl<ActualMarker>
-    val polylineOverlayManager: PolylineOverlayManagerImpl<ActualMarker>
+    val polylineOverlayManager: PolylineOverlayManagerImpl<ActualPolyline>
     val hexCell: HexGeocell
 
     suspend fun addMarkers(data: List<MarkerState>)
@@ -69,7 +70,8 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualPolyline> :
+    MapViewController<ActualMarker, ActualPolyline> {
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
     var mapLongClickListener: OnMapEventHandler? = null

@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.marker.MarkerState
 import android.graphics.Color
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -45,7 +44,7 @@ class PolylineState(
         }
 
     override fun equals(other: Any?): Boolean {
-        val otherState = (other as? MarkerState) ?: return false
+        val otherState = (other as? PolylineState) ?: return false
         return hashCode() == otherState.hashCode()
     }
 
