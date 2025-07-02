@@ -54,6 +54,7 @@ fun ArcGISMapView(
                     id = state.id,
                     options = options,
                 )
+            state.controller = controller
             controller.holder.mapView.onCreate(owner)
             controller.holder.mapView.onResume(owner)
             controller.cameraMoveListener = state::OnCameraChange

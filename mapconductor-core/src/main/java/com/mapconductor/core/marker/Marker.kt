@@ -92,18 +92,17 @@ class MarkerState(
         return result
     }
 
-    fun toPayload(): MarkerUpdatePayload {
-        return MarkerUpdatePayload(this.id, icon, draggable, internalPosition, animation)
-    }
+    fun toPayload(): MarkerUpdatePayload = MarkerUpdatePayload(this.id, icon, draggable, internalPosition, animation)
 
     fun asFlow(): Flow<MarkerUpdatePayload> = snapshotFlow { toPayload() }.distinctUntilChanged()
 }
+
 data class MarkerUpdatePayload(
     val id: String,
     val icon: MarkerIcon?,
     val draggable: Boolean,
     val position: GeoPoint,
-    val animation: MarkerAnimation?
+    val animation: MarkerAnimation?,
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 
