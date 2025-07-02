@@ -62,12 +62,11 @@ fun HereMapView(
                     options = mapInitOptions,
                 )
 
-            val onCameraMove =
-                (state as? HereMapViewState)?.let {
-                    it::OnCameraChange
-                }
+            (state as? HereMapViewState)?.let { mapViewState ->
+                mapViewState.controller = controller
+                controller.cameraMoveListener = mapViewState::OnCameraChange
+            }
             controller.mapClickListener = onMapClick
-            controller.cameraMoveListener = onCameraMove
             controller.markerClickListener = onMarkerClick
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
