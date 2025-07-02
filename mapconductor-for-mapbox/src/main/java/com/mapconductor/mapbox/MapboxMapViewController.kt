@@ -133,6 +133,8 @@ internal class MapboxMapViewController(
         const val DEFAULT_MARKER_ID = "default"
         const val OFFSET_X = "offset_x"
         const val OFFSET_Y = "offset_y"
+        const val DEFAULT_MARKER_OFFSET_X = 0.5
+        const val DEFAULT_MARKER_OFFSET_Y = 1.0
     }
 
     init {
@@ -251,8 +253,8 @@ internal class MapboxMapViewController(
                                 }
                             } else {
                                 addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
-                                addProperty(Prop.OFFSET_X, 0.0)
-                                addProperty(Prop.OFFSET_Y, defaultIcon.size.height.toDouble())
+                                addProperty(Prop.OFFSET_X, Prop.DEFAULT_MARKER_OFFSET_X - 0.5)
+                                addProperty(Prop.OFFSET_Y, Prop.DEFAULT_MARKER_OFFSET_Y - 0.5)
                             }
                         },
                     )
@@ -305,18 +307,18 @@ internal class MapboxMapViewController(
                                     }
                                 } else {
                                     addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
-                                    addProperty(Prop.OFFSET_X, 0.0)
-                                    addProperty(Prop.OFFSET_Y, defaultIcon.size.height.toDouble())
+                                    addProperty(Prop.OFFSET_X, Prop.DEFAULT_MARKER_OFFSET_X - 0.5)
+                                    addProperty(Prop.OFFSET_Y, Prop.DEFAULT_MARKER_OFFSET_Y - 0.5)
                                 }
                             } else {
                                 addProperty(
                                     Prop.ICON_ID,
                                     prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID,
                                 )
-                                addProperty(Prop.OFFSET_X, 0.0)
+                                addProperty(Prop.OFFSET_X, Prop.DEFAULT_MARKER_OFFSET_X - 0.5)
                                 addProperty(
                                     Prop.OFFSET_Y,
-                                    prevProperties?.get(Prop.OFFSET_Y)?.asDouble ?: defaultIcon.size.height.toDouble(),
+                                    Prop.DEFAULT_MARKER_OFFSET_Y - 0.5,
                                 )
                             }
                         }
