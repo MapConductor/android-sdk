@@ -145,14 +145,13 @@ class ArcGISMapViewController(
                     }
                 }
             },
-
             onAnimate = {
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.animateMarkerDrop(it)
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     init {
@@ -365,7 +364,10 @@ class ArcGISMapViewController(
         }
     }
 
-    override fun setMarkerPosition(markerEntity: MarkerEntity<Graphic>, position: GeoPoint) {
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<Graphic>,
+        position: GeoPoint,
+    ) {
         markerEntity.marker.geometry = position.toPoint()
     }
 

@@ -57,8 +57,8 @@ dependencies {
     compileOnly(libs.androidx.foundation)
     compileOnly(platform(libs.androidx.compose.bom))
     compileOnly(project(":mapconductor-core"))
-//    implementation(libs.androidx.appcompat)
-//    testImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.junit)
-//    androidTestImplementation(libs.androidx.espresso.core)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

@@ -124,9 +124,9 @@ class HereMapViewController(
                 when (it.state.animation) {
                     MarkerAnimation.Drop -> this.animateMarkerDrop(it)
                     MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("Unimplemented animation is specified: ${it.state.animation}")
+                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
                 }
-            }
+            },
         )
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
@@ -295,9 +295,13 @@ class HereMapViewController(
         )
     }
 
-    override fun setMarkerPosition(markerEntity: MarkerEntity<MapMarker>, position: GeoPoint) {
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<MapMarker>,
+        position: GeoPoint,
+    ) {
         markerEntity.marker.coordinates = position.toGeoCoordinates()
     }
+
     override fun clearPolyline() {
         TODO("Not yet implemented")
     }

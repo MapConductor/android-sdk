@@ -28,7 +28,7 @@ interface AppViewModel {
 
     fun changeState(state: MapViewState<*>)
 
-    fun flyTo(listener: MapViewState.MoveCameraCallback? = null)
+    fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
 
     fun onMarkerClick(clicked: MarkerState)
 
@@ -91,18 +91,9 @@ class AppViewModelImpl :
         return mapIntent
     }
 
-    override fun flyTo(listener: MapViewState.MoveCameraCallback?) {
+    override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {
         this@AppViewModelImpl.mapViewState.value?.moveCameraTo(
-            cameraPosition =
-                MapCameraPosition(
-                    position =
-                        GeoPoint(
-                            latitude = 21.647441446388,
-                            longitude = -158.062544988096,
-                        ),
-//                    tilt = 70.0,
-                    zoom = 11.0,
-                ),
+            cameraPosition = initCameraPosition,
             durationMs = 3000,
             listener = listener,
         )

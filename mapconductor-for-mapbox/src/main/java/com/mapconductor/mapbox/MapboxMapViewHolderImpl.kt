@@ -1,5 +1,6 @@
 package com.mapconductor.mapbox
 
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxLifecycleObserver
@@ -25,7 +26,24 @@ class MapboxMapViewHolderImpl private constructor(
             context: Context,
             mapInitOptions: MapInitOptions,
         ): MapViewHolder<MapView, MapboxMap> {
-            val mapView = MapView(context, mapInitOptions)
+            val cameraOptions =
+                CameraOptions
+                    .Builder()
+                    .center(mapInitOptions.cameraOptions!!.center)
+                    .bearing(mapInitOptions.cameraOptions!!.bearing)
+                    .zoom(mapInitOptions.cameraOptions!!.zoom!! - 1.0)
+                    .pitch(mapInitOptions.cameraOptions!!.pitch)
+                    .build()
+
+            val internalOptions =
+                MapInitOptions(
+                    context = context,
+                    textureView = true,
+                    styleUri = mapInitOptions.styleUri,
+                    cameraOptions = cameraOptions,
+                )
+
+            val mapView = MapView(context, internalOptions)
             val holder = MapboxMapViewHolderImpl(mapView)
             holder.map = mapView.mapboxMap
             return holder

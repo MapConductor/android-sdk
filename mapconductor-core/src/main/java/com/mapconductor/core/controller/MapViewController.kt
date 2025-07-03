@@ -75,7 +75,10 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         return earthCircumference / (tileSize * 2.0.pow(zoom))
     }
 
-    protected abstract fun setMarkerPosition(markerEntity: MarkerEntity<ActualMarker>, position: GeoPoint)
+    protected abstract fun setMarkerPosition(
+        markerEntity: MarkerEntity<ActualMarker>,
+        position: GeoPoint,
+    )
 
     protected fun findMarkerFromPoint(
         position: IGeoPoint,
@@ -103,8 +106,8 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
     }
 
     protected fun animateMarkerDrop(
-        markerEntity: MarkerEntity<ActualMarker>,                               /* ラップしたMarkerオブジェクト*/
-        duration: Int = Settings.Default.markerDropAnimateDuration, /* アニメションする時間(ms) */
+        markerEntity: MarkerEntity<ActualMarker>, // ラップしたMarkerオブジェクト
+        duration: Int = Settings.Default.markerDropAnimateDuration, // アニメションする時間(ms)
     ) {
         // アニメーションの最終的な目標地点(地理座標)
         val target = markerEntity.state.position
@@ -141,14 +144,13 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
-            markerEntity.state.animation = null
             markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
 
     protected fun animateMarkerBounce(
         markerEntity: MarkerEntity<ActualMarker>,
-        duration: Int = Settings.Default.markerBounceAnimateDuration, /* アニメションする時間(ms) */
+        duration: Int = Settings.Default.markerBounceAnimateDuration, // アニメションする時間(ms)
     ) {
         val startTime = SystemClock.uptimeMillis()
 
@@ -181,7 +183,6 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
-            markerEntity.state.animation = null
             markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }

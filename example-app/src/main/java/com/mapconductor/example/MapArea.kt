@@ -46,7 +46,7 @@ fun MapArea(
             onMarkerClick = onMarkerClickHandler,
             onMarkerDrag = onMarkerDragHandler,
             onMarkerAnimateStart = { isMarkerAnimating = true },
-            onMarkerAnimateEnd = { isMarkerAnimating = false }
+            onMarkerAnimateEnd = { isMarkerAnimating = false },
         ) {
             markers.forEach { markerState ->
                 key(markerState.id) {
