@@ -1,5 +1,6 @@
 package com.mapconductor.googlemaps
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
@@ -7,15 +8,20 @@ import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveCanceledListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
+import com.google.android.gms.maps.GoogleMap.OnCircleClickListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -31,6 +37,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import android.graphics.Color
 import android.graphics.Point
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,7 +72,9 @@ class GoogleMapViewController(
     OnCameraIdleListener,
     OnMarkerClickListener,
     OnMapClickListener,
-    OnMarkerDragListener {
+    OnMarkerDragListener,
+    OnCircleClickListener {
+    val circleStates: HashMap<String, CircleState> = HashMap()
     override val markerOverlayManager =
         MarkerOverlayManagerImpl<Marker>(
             markerManager = MarkerManager(hexCell),
@@ -127,67 +136,7 @@ class GoogleMapViewController(
     init {
         setupListeners()
     }
-/*
-    private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
-        val markerLatLng = params.marker.position.toGeoPoint()
-        val interpolator = LinearInterpolator()
-        val markerPoint = this.toScreenOffset(markerLatLng) ?: return
-        val startPoint = Offset(markerPoint.x, 0f)
-        val duration = Settings.Default.markerDropAnimateDuration
 
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow{
-            val startTime = SystemClock.uptimeMillis()
-            while (true){
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = min(1f, elapsed.toFloat() / duration)
-                emit(interpolator.getInterpolation(t))
-                if (t >= 1f) break
-                delay(16)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.position = LatLng(lat, lng)
-        }.onCompletion {
-            params.marker.position = markerLatLng.toLatLng()
-            params.state.animation = null
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-
-    private fun markerBounceAnimation(params: MarkerModifyParams<Marker>) {
-        val startTime = SystemClock.uptimeMillis()
-        val duration = Settings.Default.markerBounceAnimateDuration
-        val interpolator: Interpolator = BounceInterpolator()
-        val markerLatLng = params.marker.position.toGeoPoint()
-        val startPoint = Offset(0f , -200f)
-
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow {
-            while (true) {
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
-                emit(t)
-                if (t >= 1f) break
-                delay(16L)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = markerLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.position = LatLng(lat, lng)
-        }.onCompletion {
-            params.marker.position = markerLatLng.toLatLng()
-            params.state.animation = null
-
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-*/
     private fun setupListeners() {
         holder.map.setOnCameraMoveStartedListener(this)
         holder.map.setOnCameraMoveCanceledListener(this)
@@ -196,6 +145,7 @@ class GoogleMapViewController(
         holder.map.setOnMarkerClickListener(this)
         holder.map.setOnMapClickListener(this)
         holder.map.setOnMarkerDragListener(this)
+        holder.map.setOnCircleClickListener(this)
     }
 
     override fun moveCamera(
@@ -235,6 +185,26 @@ class GoogleMapViewController(
     }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+
+    override suspend fun addCircles(data: List<CircleState>) {
+        data.map { state ->
+            val strokeWidth = ResourceProvider.toDp(state.strokeWidth.toDouble())
+            circleStates.set(state.id, state)
+            val options = CircleOptions()
+                .center(GeoPoint.from(state.center).toLatLng())
+                .radius(state.radius.toDouble())
+                .strokeWidth(strokeWidth.toFloat())
+                .strokeColor(state.strokeColor)
+                .fillColor(state.fillColor)
+                .clickable(true)
+            return@map holder.map.addCircle(options).also {
+                it.tag = state.id
+            }
+        }
+    }
+
+    override suspend fun updateCircle(state: CircleState) {
+    }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
@@ -353,5 +323,11 @@ class GoogleMapViewController(
             options.add(GeoPoint.from(it).toLatLng())
         }
         val polyline = holder.map.addPolyline(options)
+    }
+
+    override fun onCircleClick(circle: Circle) {
+        circleStates[circle.tag]?.let {
+            Log.d("debug", "call onCircleClick()${GeoPoint.from(it.center).toUrlValue()}")
+        }
     }
 }

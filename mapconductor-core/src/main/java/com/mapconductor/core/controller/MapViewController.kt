@@ -1,5 +1,6 @@
 package com.mapconductor.core.controller
 
+import androidx.annotation.Nullable
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint

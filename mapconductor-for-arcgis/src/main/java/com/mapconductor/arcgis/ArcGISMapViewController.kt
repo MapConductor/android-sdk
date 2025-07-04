@@ -15,6 +15,7 @@ import com.arcgismaps.mapping.view.SurfacePlacement
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -371,6 +372,14 @@ class ArcGISMapViewController(
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+
+    override suspend fun addCircles(data: List<CircleState>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateCircle(state: CircleState) {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
