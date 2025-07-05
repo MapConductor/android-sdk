@@ -18,6 +18,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
@@ -58,19 +59,19 @@ class ArcGISMapViewController(
         sceneProperties.surfacePlacement = SurfacePlacement.Relative
     },
     private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
+) : BaseMapViewController<Camera, Graphic>(),
+    IArcGISMapViewController {
+
     override val markerRenderer: MarkerRenderer<Graphic> = ArcGISMarkerRenderer(
         markerLayer = markerLayer,
         holder = holder,
         coroutine = coroutine,
-    ),
-) : BaseMapViewController<Camera, Graphic>(),
-    IArcGISMapViewController {
-
+    )
 
     private var selectedMarker: SelectedMarker? = null
 
-    override val markerOverlayManager by lazy {
-        return@lazy overlayManagerFactory.create(
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Graphic> {
+        return overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,

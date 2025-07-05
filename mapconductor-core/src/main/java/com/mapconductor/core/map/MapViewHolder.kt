@@ -11,4 +11,6 @@ interface MapViewHolder<out TMapView, out TMap> {
     fun toScreenOffset(position: IGeoPoint): Offset?
 
     suspend fun fromScreenOffset(offset: Offset): GeoPoint?
+
+    fun fromScreenOffsetSync(offset: Offset): GeoPoint? = null
 }

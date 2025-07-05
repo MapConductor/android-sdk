@@ -24,6 +24,7 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
@@ -57,10 +58,6 @@ class HereMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
-    override val markerRenderer: MarkerRenderer<MapMarker> = HereMapMarkerRenderer(
-        holder = holder,
-        coroutine = coroutine,
-    ),
 ) : BaseMapViewController<MapCamera.State, MapMarker>(),
     IHereMapViewController,
     MapCameraListener,
@@ -68,8 +65,13 @@ class HereMapViewController(
     LongPressListener {
     private var selectedMarker: MarkerEntity<MapMarker>? = null
 
-    override val markerOverlayManager by lazy {
-        return@lazy overlayManagerFactory.create(
+    override val markerRenderer: MarkerRenderer<MapMarker> = HereMapMarkerRenderer(
+        holder = holder,
+        coroutine = coroutine,
+    )
+
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<MapMarker> {
+        return overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,

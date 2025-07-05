@@ -55,6 +55,18 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewControl
 
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
+    override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
+        createMarkerOverlayManager().also { overlayManager ->
+            markerRenderer.init(overlayManager)
+            onMarkerOverlayManagerInitialized(overlayManager)
+        }
+    }
+    protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
+        // Stub
+    }
+
+    protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
+
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
     var mapLongClickListener: OnMapEventHandler? = null

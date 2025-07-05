@@ -36,6 +36,9 @@ class MapboxMapViewHolderImpl private constructor(
         )
     }
 
+    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
+        map.coordinateForPixel(ScreenCoordinate(offset.x.toDouble(), offset.y.toDouble())).toGeoPoint()
+
     fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? =
         map.coordinateForPixel(coordinate).toGeoPoint()
 

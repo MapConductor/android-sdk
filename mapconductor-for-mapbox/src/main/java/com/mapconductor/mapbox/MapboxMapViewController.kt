@@ -1,5 +1,6 @@
 package com.mapconductor.mapbox
 
+import androidx.compose.ui.geometry.Offset
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
@@ -105,21 +106,30 @@ internal class MapboxMapViewController(
             sourceId = "marker-drag-source",
             layerId = "marker-drag-layer",
         ),
-
-    override val markerRenderer: MapboxMarkerRenderer = MapboxMarkerRenderer(
-        holder = holder,
-        coroutine = coroutine,
-        markerLayer = markerLayer,
-        dragLayer = dragLayer,
-    ),
 ) : BaseMapViewController<CameraState, Feature>(),
     IMapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
-    private var isMarkerExpressionApplied = false // ★★★ このフラグを追加 ★★★
 
+    override val markerRenderer: MapboxMarkerRenderer = MapboxMarkerRenderer(
+        holder = holder,
+        coroutine = coroutine,
+        markerLayer = markerLayer,
+        dragLayer = dragLayer,
+    )
+
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Feature> {
+        return overlayManagerFactory.create(
+            hexGeocell = hexGeocell,
+            onIconAdd = markerRenderer::addIcons,
+            onIconRemove = markerRenderer::removeIcons,
+            onIconChange = markerRenderer::changeIcons,
+            onPostProcess = markerRenderer::drawMarkerLayer,
+            onAnimate = markerRenderer::animate,
+        )
+    }
     private val lineLayer: LineLayer
     private val lineSourceId = "lines-source"
     private val lineLayerId = "lines-layer"
@@ -128,15 +138,16 @@ internal class MapboxMapViewController(
             geometry(LineString.fromLngLats(emptyList()))
         }
 
-    override val markerOverlayManager: MarkerOverlayManager<Feature> by lazy {
-        return@lazy overlayManagerFactory.create(
-            hexGeocell = hexGeocell,
-            onIconAdd = markerRenderer::addIcons,
-            onIconRemove = markerRenderer::removeIcons,
-            onIconChange = markerRenderer::changeIcons,
-            onPostProcess = markerRenderer::drawMarkerLayer,
-            onAnimate = markerRenderer::animate,
-        )
+    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<Feature>) {
+        holder.map.getStyle { style ->
+            style.addSource(markerLayer.source)
+            style.addLayer(markerLayer.layer)
+            style.addSource(dragLayer.source)
+            style.addLayer(dragLayer.layer)
+
+            style.addSource(lineSource)
+            style.addLayer(lineLayer)
+        }
     }
 
     init {
@@ -150,17 +161,6 @@ internal class MapboxMapViewController(
 
         setupSymbolLayer(markerLayer.layer)
         setupSymbolLayer(dragLayer.layer)
-        holder.map.getStyle { style ->
-            markerRenderer.init(markerOverlayManager)
-            style.addSource(markerLayer.source)
-            style.addLayer(markerLayer.layer)
-            style.addSource(dragLayer.source)
-            style.addLayer(dragLayer.layer)
-
-            style.addSource(lineSource)
-            style.addLayer(lineLayer)
-        }
-
 
         setupListeners()
     }
@@ -327,19 +327,16 @@ internal class MapboxMapViewController(
         lineSource.geometry(LineString.fromLngLats(points))
     }
 
-    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? =
-        holder.map.coordinateForPixel(coordinate).toGeoPoint()
-
     override fun onMove(detector: MoveGestureDetector): Boolean {
         dragLayer.selected?.let { entity ->
 
             val screenCoordinate =
-                ScreenCoordinate(
-                    detector.focalPoint.x.toDouble(),
-                    detector.focalPoint.y.toDouble(),
+                Offset(
+                    detector.focalPoint.x,
+                    detector.focalPoint.y,
                 )
 
-            fromScreenOffset(screenCoordinate)?.let {
+            holder.fromScreenOffsetSync(screenCoordinate)?.let {
                 entity.state.position = it
                 dragLayer.updatePosition(it)
                 markerRenderer.drawDragLayer()

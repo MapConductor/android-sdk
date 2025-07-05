@@ -20,6 +20,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
@@ -53,10 +54,6 @@ class GoogleMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
-    override val markerRenderer: MarkerRenderer<Marker> = GoogleMapMarkerRender(
-        holder = holder,
-        coroutine = coroutine,
-    ),
 ) : BaseMapViewController<CameraPosition, Marker>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
@@ -66,8 +63,13 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    override val markerOverlayManager by lazy {
-        return@lazy overlayManagerFactory.create(
+    override val markerRenderer: MarkerRenderer<Marker> = GoogleMapMarkerRender(
+        holder = holder,
+        coroutine = coroutine,
+    )
+
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> {
+        return overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
