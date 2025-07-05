@@ -34,6 +34,7 @@ class MarkerDragLayer(
                     Feature.fromGeometry(
                         it.state.position.toPoint(),
                         it.marker.properties(),
+                        it.state.id,
                     )
                 it.marker = feature
                 listOf<Feature>(feature)
