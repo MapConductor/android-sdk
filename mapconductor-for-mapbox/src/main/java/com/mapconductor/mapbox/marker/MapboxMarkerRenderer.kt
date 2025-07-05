@@ -18,8 +18,6 @@ import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.UpdateParams
 import com.mapconductor.mapbox.MapboxMapViewHolder
-import com.mapconductor.mapbox.MarkerDragLayer
-import com.mapconductor.mapbox.MarkerLayer
 import com.mapconductor.mapbox.toPoint
 import kotlin.coroutines.suspendCoroutine
 import android.graphics.Bitmap

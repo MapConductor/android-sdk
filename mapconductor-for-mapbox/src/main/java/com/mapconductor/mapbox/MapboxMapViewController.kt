@@ -46,6 +46,8 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
+import com.mapconductor.mapbox.marker.MarkerDragLayer
+import com.mapconductor.mapbox.marker.MarkerLayer
 import com.mapconductor.settings.Settings
 import android.animation.Animator
 import android.graphics.Color
