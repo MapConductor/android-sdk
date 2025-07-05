@@ -230,15 +230,7 @@ internal class MapboxMapViewController(
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val targetCamera =
-            CameraOptions
-                .Builder()
-                .center(dstPosition.position.toPoint())
-                .zoom(dstPosition.zoom - 1)
-                .pitch(dstPosition.tilt)
-                .bearing(dstPosition.bearing)
-                .build()
-
+        val targetCamera = dstPosition.toCameraOptions()
         val animationOptions =
             MapAnimationOptions
                 .Builder()

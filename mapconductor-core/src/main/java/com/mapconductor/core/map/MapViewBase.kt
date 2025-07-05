@@ -33,12 +33,14 @@ import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.MarkerIcon
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
 
+@OptIn(FlowPreview::class)
 @Composable
 fun <
     SpecificState : MapViewState<*>,
