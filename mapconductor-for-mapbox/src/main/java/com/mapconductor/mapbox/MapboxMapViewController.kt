@@ -3,7 +3,6 @@ package com.mapconductor.mapbox
 import androidx.compose.ui.geometry.Offset
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
@@ -43,12 +42,6 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRendererFactory
-import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
