@@ -71,8 +71,8 @@ fun HereMapView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
-            controller.markerAnimateStartListener = onMarkerAnimateStart
-            controller.markerAnimateEndListener = onMarkerAnimateEnd
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 
             (state as? HereMapViewState)?.controller = controller
 

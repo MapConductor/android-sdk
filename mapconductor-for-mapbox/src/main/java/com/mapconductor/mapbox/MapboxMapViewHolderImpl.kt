@@ -1,11 +1,15 @@
 package com.mapconductor.mapbox
 
+import androidx.compose.ui.geometry.Offset
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxLifecycleObserver
 import com.mapbox.maps.MapboxMap
+import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.plugin.lifecycle.lifecycle
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 
@@ -20,6 +24,30 @@ class MapboxMapViewHolderImpl private constructor(
     init {
         this.mapView.lifecycle.registerLifecycleObserver(this.mapView, this)
     }
+
+    override fun toScreenOffset(position: IGeoPoint): Offset? {
+        val pixel =
+            map.pixelForCoordinate(
+                coordinate = GeoPoint.from(position).toPoint(),
+            )
+        return Offset(
+            x = pixel.x.toFloat(),
+            y = pixel.y.toFloat(),
+        )
+    }
+
+    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
+        map.coordinateForPixel(ScreenCoordinate(offset.x.toDouble(), offset.y.toDouble())).toGeoPoint()
+
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? = map.coordinateForPixel(coordinate).toGeoPoint()
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        fromScreenOffset(
+            ScreenCoordinate(
+                offset.x.toDouble(),
+                offset.y.toDouble(),
+            ),
+        )
 
     companion object {
         fun create(

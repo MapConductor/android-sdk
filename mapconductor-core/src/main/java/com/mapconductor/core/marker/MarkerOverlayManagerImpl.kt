@@ -4,6 +4,8 @@ import com.mapconductor.core.icons.Default
 import kotlinx.coroutines.sync.Semaphore
 
 interface MarkerOverlayManager<ActualMarker> {
+    val markerManager: MarkerManager<ActualMarker>
+
     suspend fun addMarkers(markerList: List<MarkerState>)
 
     suspend fun updateMarker(marker: MarkerState)
@@ -20,7 +22,7 @@ interface UpdateParams<ActualMarker> {
 }
 
 class MarkerOverlayManagerImpl<ActualMarker>(
-    val markerManager: MarkerManager<ActualMarker>,
+    override val markerManager: MarkerManager<ActualMarker>,
     val onRemove: suspend (List<MarkerEntity<ActualMarker>>) -> Unit,
     val onAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<ActualMarker?>,
     val onChange: suspend (List<UpdateParams<ActualMarker>>) -> List<ActualMarker?>,
@@ -96,7 +98,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                         val prevEntity = markerManager.getEntity(state.id) ?: return@map null
 
                         // プロパティが変わっていなければ、マーカーを再描画しない
-                        return@map if (prevEntity.stateHashCode == state.hashCode()) {
+                        return@map if (prevEntity.fingerPrint == state.fingerPrint()) {
                             null
                         } else {
                             val entity =
@@ -140,7 +142,9 @@ class MarkerOverlayManagerImpl<ActualMarker>(
 
     override suspend fun updateMarker(state: MarkerState) {
         val prevEntity = markerManager.getEntity(state.id) ?: return
-        if (state.hashCode() == prevEntity.stateHashCode) {
+        val currentFinger = state.fingerPrint()
+        val prevFinger = prevEntity.fingerPrint
+        if (currentFinger == prevFinger) {
             return
         }
 
@@ -174,8 +178,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
             markerManager.registerEntity(entity)
 
             // Execute the animation property
-            state.animation?.let {
-                onAnimate(entity)
+            if (prevFinger.animation != currentFinger.animation) {
+                state.animation?.let {
+                    onAnimate(entity)
+                }
             }
         }
 
