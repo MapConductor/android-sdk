@@ -160,9 +160,9 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                             )
                             Button(
                                 modifier = Modifier.weight(0.1f),
-                                onClick = appViewModel::flyTo,
+                                onClick = appViewModel::cameraReset,
                             ) {
-                                Text("Fly to!")
+                                Text("Camera reset")
                             }
                         }
                     },

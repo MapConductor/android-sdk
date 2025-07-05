@@ -34,12 +34,14 @@ import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.MarkerIcon
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
 
+@OptIn(FlowPreview::class)
 @Composable
 fun <
     SpecificState : MapViewState<*>,
@@ -174,7 +176,7 @@ fun <
                 val position = marker.position
                 val icon = marker.icon ?: MarkerIcon.Default()
                 val iconScale = icon.scale ?: 2f
-                val positionOffset = controller.toScreenOffset(position) ?: return@forEach
+                val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
 
                 InfoWindowCompose(
                     positionOffset = positionOffset,
