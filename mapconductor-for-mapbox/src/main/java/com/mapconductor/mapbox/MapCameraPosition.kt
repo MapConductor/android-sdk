@@ -11,7 +11,7 @@ fun MapCameraPosition.toCameraOptions(): CameraOptions =
     CameraOptions
         .Builder()
         .center(GeoPoint.from(position).toPoint())
-        .zoom(zoom - 1)
+        .zoom(zoom)
         .pitch(tilt)
         .bearing(bearing)
         // TODO:
@@ -22,7 +22,7 @@ fun MapCameraPosition.toCameraState(): CameraState =
     CameraState(
         GeoPoint.from(position).toPoint(),
         EdgeInsets(0.0, 0.0, 0.0, 0.0),
-        zoom - 1,
+        zoom,
         bearing,
         tilt,
     )

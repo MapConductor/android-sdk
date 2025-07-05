@@ -73,18 +73,17 @@ fun GoogleMapsView(
                     id = state.id,
                     options = mapInitOptions,
                 )
-            val onCameraMove =
-                (state as? GoogleMapViewState)?.let {
-                    it::OnCameraChange
-                }
-            controller.cameraMoveListener = onCameraMove
+            (state as? GoogleMapViewState)?.let { mapViewState ->
+                mapViewState.controller = controller
+                controller.cameraMoveListener = mapViewState::OnCameraChange
+            }
             controller.mapClickListener = onMapClick
             controller.markerClickListener = onMarkerClick
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
-            controller.markerAnimateStartListener = onMarkerAnimateStart
-            controller.markerAnimateEndListener = onMarkerAnimateEnd
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
             controller.circleClickListener = onCircleClick
 
             holderRef.value = controller.holder
