@@ -3,6 +3,7 @@ package com.mapconductor.core.controller
 import androidx.annotation.Nullable
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
@@ -74,6 +75,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
     var markerDragEndListener: OnMarkerEventHandler? = null
     var markerAnimateStartListener: OnMarkerEventHandler? = null
     var markerAnimateEndListener: OnMarkerEventHandler? = null
+    var circleClickListener: OnCircleEventHandler? = null
 
     protected fun zoomToMetersPerPixel(zoom: Double): Double {
         val earthCircumference = 40075016.686

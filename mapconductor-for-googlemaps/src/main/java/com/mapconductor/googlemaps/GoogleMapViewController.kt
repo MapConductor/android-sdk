@@ -327,7 +327,7 @@ class GoogleMapViewController(
 
     override fun onCircleClick(circle: Circle) {
         circleStates[circle.tag]?.let {
-            Log.d("debug", "call onCircleClick()${GeoPoint.from(it.center).toUrlValue()}")
+            circleClickListener?.invoke(it)
         }
     }
 }
