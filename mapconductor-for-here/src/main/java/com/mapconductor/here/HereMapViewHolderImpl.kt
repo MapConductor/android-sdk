@@ -28,10 +28,11 @@ internal class HereMapViewHolderImpl private constructor(
         )
     }
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint?  =
-        mapView.viewToGeoCoordinates(
-            Point2D(offset.x.toDouble(), offset.y.toDouble()),
-        )?.toGeoPoint()
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+        mapView
+            .viewToGeoCoordinates(
+                Point2D(offset.x.toDouble(), offset.y.toDouble()),
+            )?.toGeoPoint()
 
     companion object {
         fun create(context: Context): MapViewHolder<MapView, HereMap> {

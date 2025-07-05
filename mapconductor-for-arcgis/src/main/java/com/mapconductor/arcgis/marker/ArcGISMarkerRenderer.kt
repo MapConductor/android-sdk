@@ -29,9 +29,9 @@ class DefaultArcGISMarkerRender : MarkerRendererFactory<Graphic> {
         onIconRemove: suspend (List<MarkerEntity<Graphic>>) -> Unit,
         onIconChange: suspend (List<UpdateParams<Graphic>>) -> List<Graphic>,
         onAnimate: suspend (MarkerEntity<Graphic>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
-    ): MarkerOverlayManager<Graphic> {
-        return MarkerOverlayManagerImpl(
+        onPostProcess: (suspend () -> Unit)?,
+    ): MarkerOverlayManager<Graphic> =
+        MarkerOverlayManagerImpl(
             markerManager = MarkerManager(hexGeocell),
             onAdd = onIconAdd,
             onChange = onIconChange,
@@ -39,7 +39,6 @@ class DefaultArcGISMarkerRender : MarkerRendererFactory<Graphic> {
             onPostProcess = onPostProcess,
             onAnimate = onAnimate,
         )
-    }
 }
 
 class ArcGISMarkerRenderer(
@@ -93,8 +92,8 @@ class ArcGISMarkerRenderer(
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<Graphic>>): List<Graphic> {
-        return withContext(coroutine.coroutineContext) {
+    override suspend fun changeIcons(changes: List<UpdateParams<Graphic>>): List<Graphic> =
+        withContext(coroutine.coroutineContext) {
             changes.map { params ->
                 val prevFinger = params.prevEntity.fingerPrint
                 val currFinger = params.entity.fingerPrint
@@ -126,6 +125,4 @@ class ArcGISMarkerRenderer(
                 params.entity.marker
             }
         }
-    }
-
 }

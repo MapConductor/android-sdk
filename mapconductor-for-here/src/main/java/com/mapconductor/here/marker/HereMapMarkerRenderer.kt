@@ -30,8 +30,8 @@ class DefaultHereMapMarkerRenderer : MarkerRendererFactory<MapMarker> {
         onIconChange: suspend (List<UpdateParams<MapMarker>>) -> List<MapMarker>,
         onAnimate: suspend (MarkerEntity<MapMarker>) -> Unit,
         onPostProcess: (suspend () -> Unit)?,
-    ): MarkerOverlayManager<MapMarker> {
-        return MarkerOverlayManagerImpl(
+    ): MarkerOverlayManager<MapMarker> =
+        MarkerOverlayManagerImpl(
             markerManager = MarkerManager(hexGeocell),
             onAdd = onIconAdd,
             onChange = onIconChange,
@@ -39,14 +39,12 @@ class DefaultHereMapMarkerRenderer : MarkerRendererFactory<MapMarker> {
             onPostProcess = onPostProcess,
             onAnimate = onAnimate,
         )
-    }
 }
 
-class HereMapMarkerRenderer (
+class HereMapMarkerRenderer(
     override val holder: HereMapViewHolder,
     override val coroutine: CoroutineScope,
-): AbstractMarkerRenderer<MapMarker>() {
-
+) : AbstractMarkerRenderer<MapMarker>() {
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<MapMarker>,
         position: GeoPoint,
@@ -87,8 +85,8 @@ class HereMapMarkerRenderer (
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<MapMarker>>): List<MapMarker> {
-        return changes.map { params ->
+    override suspend fun changeIcons(changes: List<UpdateParams<MapMarker>>): List<MapMarker> =
+        changes.map { params ->
             val prevFinger = params.prevEntity.fingerPrint
             val currFinger = params.entity.fingerPrint
             if (currFinger.icon != prevFinger.icon) {
@@ -104,6 +102,4 @@ class HereMapMarkerRenderer (
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
             params.entity.marker
         }
-    }
-
 }

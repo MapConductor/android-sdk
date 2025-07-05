@@ -27,9 +27,9 @@ class DefaultGoogleMapMarkerRenderer : MarkerRendererFactory<Marker> {
         onIconRemove: suspend (List<MarkerEntity<Marker>>) -> Unit,
         onIconChange: suspend (List<UpdateParams<Marker>>) -> List<Marker>,
         onAnimate: suspend (MarkerEntity<Marker>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
-    ): MarkerOverlayManager<Marker> {
-        return MarkerOverlayManagerImpl(
+        onPostProcess: (suspend () -> Unit)?,
+    ): MarkerOverlayManager<Marker> =
+        MarkerOverlayManagerImpl(
             markerManager = MarkerManager(hexGeocell),
             onRemove = onIconRemove,
             onAdd = onIconAdd,
@@ -37,13 +37,12 @@ class DefaultGoogleMapMarkerRenderer : MarkerRendererFactory<Marker> {
             onPostProcess = onPostProcess,
             onAnimate = onAnimate,
         )
-    }
 }
-class GoogleMapMarkerRender (
+
+class GoogleMapMarkerRender(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope,
-): AbstractMarkerRenderer<Marker>() {
-
+) : AbstractMarkerRenderer<Marker>() {
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<Marker>,
         position: GeoPoint,
@@ -80,8 +79,8 @@ class GoogleMapMarkerRender (
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<Marker>>): List<Marker> {
-        return withContext(coroutine.coroutineContext) {
+    override suspend fun changeIcons(changes: List<UpdateParams<Marker>>): List<Marker> =
+        withContext(coroutine.coroutineContext) {
             changes.map { params ->
                 val prevFinger = params.prevEntity.fingerPrint
                 val currentFinger = params.entity.fingerPrint
@@ -90,12 +89,13 @@ class GoogleMapMarkerRender (
                     params.entity.marker.setIcon(bitmapDescriptor)
                 }
                 if (params.entity.state.position != params.prevEntity.state.position) {
-                    params.entity.marker.position = params.entity.state.position.toLatLng()
+                    params.entity.marker.position =
+                        params.entity.state.position
+                            .toLatLng()
                 }
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 params.entity.marker
             }
         }
-    }
 }

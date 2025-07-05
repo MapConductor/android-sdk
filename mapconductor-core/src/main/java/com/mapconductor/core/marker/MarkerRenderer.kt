@@ -32,21 +32,35 @@ interface MarkerRendererFactory<ActualMarker> {
 
 interface MarkerRenderer<ActualMarker> {
     fun init(markerOverlayManager: MarkerOverlayManager<ActualMarker>)
-    suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<ActualMarker?>
-    suspend fun removeIcons(removeEntities: List<MarkerEntity<ActualMarker>>)
-    suspend fun changeIcons(changes: List<UpdateParams<ActualMarker>>): List<ActualMarker>
-    fun animate(entity: MarkerEntity<ActualMarker>)
-    fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?)
-    fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
-    fun setDraggingState(markerState: MarkerState, dragging: Boolean)
 
-    fun findNearestMarker(position: IGeoPoint, tolerance: Double, zoom: Double): MarkerEntity<ActualMarker>?
+    suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<ActualMarker?>
+
+    suspend fun removeIcons(removeEntities: List<MarkerEntity<ActualMarker>>)
+
+    suspend fun changeIcons(changes: List<UpdateParams<ActualMarker>>): List<ActualMarker>
+
+    fun animate(entity: MarkerEntity<ActualMarker>)
+
+    fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?)
+
+    fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
+
+    fun setDraggingState(
+        markerState: MarkerState,
+        dragging: Boolean,
+    )
+
+    fun findNearestMarker(
+        position: IGeoPoint,
+        tolerance: Double,
+        zoom: Double,
+    ): MarkerEntity<ActualMarker>?
 }
 
-abstract class AbstractMarkerRenderer<ActualMarker>: MarkerRenderer<ActualMarker> {
+abstract class AbstractMarkerRenderer<ActualMarker> : MarkerRenderer<ActualMarker> {
     protected lateinit var defaultIcon: BitmapIcon
-    protected var _onMarkerAnimationStart: ((state: MarkerState) -> Unit)? = null
-    protected var _onMarkerAnimationEnd: ((state: MarkerState) -> Unit)? = null
+    protected var markerAnimationStartHandler: ((state: MarkerState) -> Unit)? = null
+    protected var markerAnimationEndHandler: ((state: MarkerState) -> Unit)? = null
 
     protected lateinit var markerOverlayManager: MarkerOverlayManager<ActualMarker>
 
@@ -54,13 +68,12 @@ abstract class AbstractMarkerRenderer<ActualMarker>: MarkerRenderer<ActualMarker
     abstract val coroutine: CoroutineScope
 
     override fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?) {
-        this._onMarkerAnimationStart = listener
+        this.markerAnimationStartHandler = listener
     }
 
     override fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?) {
-        this._onMarkerAnimationEnd = listener
+        this.markerAnimationEndHandler = listener
     }
-
 
     override fun findNearestMarker(
         position: IGeoPoint,
@@ -145,7 +158,7 @@ abstract class AbstractMarkerRenderer<ActualMarker>: MarkerRenderer<ActualMarker
         // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
         val startPoint = holder.toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
 
-        _onMarkerAnimationStart?.invoke(markerEntity.state)
+        markerAnimationStartHandler?.invoke(markerEntity.state)
 
         // ここからアニメ本体
         flow {
@@ -172,7 +185,7 @@ abstract class AbstractMarkerRenderer<ActualMarker>: MarkerRenderer<ActualMarker
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
             markerEntity.state.animation = null
-            _onMarkerAnimationEnd?.invoke(markerEntity.state)
+            markerAnimationEndHandler?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
 
@@ -191,7 +204,7 @@ abstract class AbstractMarkerRenderer<ActualMarker>: MarkerRenderer<ActualMarker
         // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
         val startPoint = holder.toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
 
-        _onMarkerAnimationStart?.invoke(markerEntity.state)
+        markerAnimationStartHandler?.invoke(markerEntity.state)
         flow {
             var t = 0f
             while (t < 1f) {
@@ -212,7 +225,7 @@ abstract class AbstractMarkerRenderer<ActualMarker>: MarkerRenderer<ActualMarker
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
             markerEntity.state.animation = null
-            _onMarkerAnimationEnd?.invoke(markerEntity.state)
+            markerAnimationEndHandler?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
 }

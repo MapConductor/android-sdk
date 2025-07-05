@@ -16,6 +16,7 @@ internal class GoogleMapViewHolderImpl private constructor(
     override val mapView: MapView,
 ) : MapViewHolder<MapView, GoogleMap> {
     override lateinit var map: GoogleMap
+
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val point =
             map.projection.toScreenLocation(

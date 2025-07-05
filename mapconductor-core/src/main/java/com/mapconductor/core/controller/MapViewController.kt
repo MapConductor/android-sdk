@@ -33,7 +33,9 @@ interface MapViewController<ActualMarker> {
     suspend fun updateMarker(state: MarkerState)
 
     suspend fun clearOverlays()
+
     fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?)
+
     fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
 }
 
@@ -51,8 +53,7 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewController<ActualMarker> {
-
+abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -61,6 +62,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewControl
             onMarkerOverlayManagerInitialized(overlayManager)
         }
     }
+
     protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
         // Stub
     }
@@ -77,18 +79,19 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewControl
 
     abstract fun setupListeners()
 
-    override fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?) = markerRenderer.setOnMarkerAnimationStart(listener)
+    override fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?) =
+        markerRenderer
+            .setOnMarkerAnimationStart(listener)
 
-    override fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?) = markerRenderer.setOnMarkerAnimationEnd(listener)
-
+    override fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?) =
+        markerRenderer
+            .setOnMarkerAnimationEnd(listener)
 
     protected abstract fun clearPolyline()
 
     protected abstract fun drawPolyline(geoPoints: List<IGeoPoint>)
 
-    protected fun adjustIconForAnchor(
-        icon: BitmapIcon,
-    ): BitmapIcon {
+    protected fun adjustIconForAnchor(icon: BitmapIcon): BitmapIcon {
         val offsetX = 0.5 - icon.anchor.x.toDouble()
         val offsetY = 0.5 - icon.anchor.y.toDouble()
         val dx = offsetX * icon.size.width
@@ -98,9 +101,10 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewControl
 
         val bitmap = createBitmap(width.toInt(), height.toInt())
 
-        val paint = Paint().apply {
-            isAntiAlias = true
-        }
+        val paint =
+            Paint().apply {
+                isAntiAlias = true
+            }
 
 //        val rect = Rect(
 //            dx.toInt(),
@@ -114,7 +118,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewControl
         return BitmapIcon(
             bitmap = bitmap,
             anchor = Offset((width * 0.5).toFloat(), height.toFloat()),
-            size = Size(width.toFloat(), height.toFloat())
+            size = Size(width.toFloat(), height.toFloat()),
         )
     }
 

@@ -65,20 +65,20 @@ class HereMapViewController(
     LongPressListener {
     private var selectedMarker: MarkerEntity<MapMarker>? = null
 
-    override val markerRenderer: MarkerRenderer<MapMarker> = HereMapMarkerRenderer(
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val markerRenderer: MarkerRenderer<MapMarker> =
+        HereMapMarkerRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
-    override fun createMarkerOverlayManager(): MarkerOverlayManager<MapMarker> {
-        return overlayManagerFactory.create(
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<MapMarker> =
+        overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
             onAnimate = markerRenderer::animate,
         )
-    }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
@@ -147,7 +147,9 @@ class HereMapViewController(
     override fun onTap(point: Point2D) {
         val position = this.getGeoPointFromPoint(point) ?: return
         val zoom = holder.mapView.camera.state.zoomLevel
-        val tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density
+        val tolerance =
+            Settings.Default.tapTolerance.value
+                .toDouble() * ResourceProvider.density
 
         val entity =
             markerRenderer.findNearestMarker(
@@ -174,9 +176,10 @@ class HereMapViewController(
 
         when (gesture.value) {
             GestureState.BEGIN.value -> {
-
                 val zoom = holder.mapView.camera.state.zoomLevel
-                val tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density
+                val tolerance =
+                    Settings.Default.tapTolerance.value
+                        .toDouble() * ResourceProvider.density
 
                 val entity =
                     markerRenderer.findNearestMarker(

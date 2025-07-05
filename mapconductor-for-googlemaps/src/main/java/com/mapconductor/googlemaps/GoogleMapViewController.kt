@@ -63,20 +63,20 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    override val markerRenderer: MarkerRenderer<Marker> = GoogleMapMarkerRender(
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val markerRenderer: MarkerRenderer<Marker> =
+        GoogleMapMarkerRender(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
-    override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> {
-        return overlayManagerFactory.create(
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> =
+        overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
             onAnimate = markerRenderer::animate,
         )
-    }
 
     init {
         setupListeners()
@@ -132,7 +132,6 @@ class GoogleMapViewController(
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
-
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 

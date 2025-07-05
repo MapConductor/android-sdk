@@ -55,7 +55,6 @@ fun MapboxMapView(
 
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
 
-
             val controller =
                 MapboxMapViewController(
                     holder = holder,

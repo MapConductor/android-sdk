@@ -151,9 +151,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
         semaphore.acquire()
         val marker = prevEntity.marker
         val defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Companion.Default())
-        val markerIcon = state.icon?.let {
-            markerManager.getBitmapIcon(it)
-        } ?: defaultIcon
+        val markerIcon =
+            state.icon?.let {
+                markerManager.getBitmapIcon(it)
+            } ?: defaultIcon
 
         val entity =
             MarkerEntityImpl(

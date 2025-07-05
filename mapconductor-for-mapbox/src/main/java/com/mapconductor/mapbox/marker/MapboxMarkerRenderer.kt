@@ -34,9 +34,9 @@ class DefaultMapboxMarkerRenderer : MarkerRendererFactory<Feature> {
         onIconRemove: suspend (List<MarkerEntity<Feature>>) -> Unit,
         onIconChange: suspend (List<UpdateParams<Feature>>) -> List<Feature>,
         onAnimate: suspend (MarkerEntity<Feature>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
-    ): MarkerOverlayManager<Feature> {
-        return MarkerOverlayManagerImpl(
+        onPostProcess: (suspend () -> Unit)?,
+    ): MarkerOverlayManager<Feature> =
+        MarkerOverlayManagerImpl(
             markerManager = MarkerManager(hexGeocell),
             onRemove = onIconRemove,
             onAdd = onIconAdd,
@@ -44,7 +44,6 @@ class DefaultMapboxMarkerRenderer : MarkerRendererFactory<Feature> {
             onPostProcess = onPostProcess,
             onAnimate = onAnimate,
         )
-    }
 }
 
 class MapboxMarkerRenderer(
@@ -52,7 +51,7 @@ class MapboxMarkerRenderer(
     override val coroutine: CoroutineScope,
     private val markerLayer: MarkerLayer,
     private val dragLayer: MarkerDragLayer,
-): AbstractMarkerRenderer<Feature>() {
+) : AbstractMarkerRenderer<Feature>() {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
 
     object Prop {
@@ -107,12 +106,14 @@ class MapboxMarkerRenderer(
             )
         }
     }
+
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Feature> {
-        val style = suspendCoroutine { continuation ->
-            holder.map.getStyle { style ->
-                continuation.resumeWith(Result.success(style))
+        val style =
+            suspendCoroutine { continuation ->
+                holder.map.getStyle { style ->
+                    continuation.resumeWith(Result.success(style))
+                }
             }
-        }
 
         newMarkers.forEach { (_, icon) ->
             val iconKey = icon.hashCode().toString()
@@ -135,17 +136,18 @@ class MapboxMarkerRenderer(
                     } else {
                         addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                     }
-                }
+                },
             )
         }
     }
 
     override suspend fun removeIcons(removeEntities: List<MarkerEntity<Feature>>) {
-        val style = suspendCoroutine { continuation ->
-            holder.map.getStyle { style ->
-                continuation.resumeWith(Result.success(style))
+        val style =
+            suspendCoroutine { continuation ->
+                holder.map.getStyle { style ->
+                    continuation.resumeWith(Result.success(style))
+                }
             }
-        }
 
         removeEntities.forEach { entity ->
             entity.state.icon?.let { icon ->
@@ -162,52 +164,60 @@ class MapboxMarkerRenderer(
     }
 
     override suspend fun changeIcons(changes: List<UpdateParams<Feature>>): List<Feature> {
-        val style = suspendCoroutine { continuation ->
-            holder.map.getStyle { style ->
-                continuation.resumeWith(Result.success(style))
+        val style =
+            suspendCoroutine { continuation ->
+                holder.map.getStyle { style ->
+                    continuation.resumeWith(Result.success(style))
+                }
             }
-        }
 
         return changes.map { params ->
             val prevFinger = params.prevEntity.fingerPrint
             val currFinger = params.entity.fingerPrint
             val prevProperties = params.prevEntity.marker.properties()
 
-            val properties = JsonObject().apply {
-                addProperty(Prop.MARKER_ID, params.entity.state.id)
+            val properties =
+                JsonObject().apply {
+                    addProperty(Prop.MARKER_ID, params.entity.state.id)
 
-                if (currFinger.icon == prevFinger.icon) {
-                    addProperty(Prop.ICON_ID,
-                        prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID)
-                } else {
-                    val iconKey = prevFinger.icon.toString()
-                    val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
-                    if (cnt == 0) {
-                        iconRefCounter.remove(iconKey)
-                        style.removeStyleImage(iconKey)
+                    if (currFinger.icon == prevFinger.icon) {
+                        addProperty(
+                            Prop.ICON_ID,
+                            prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID,
+                        )
                     } else {
-                        iconRefCounter[iconKey] = cnt
-                    }
+                        val iconKey = prevFinger.icon.toString()
+                        val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
+                        if (cnt == 0) {
+                            iconRefCounter.remove(iconKey)
+                            style.removeStyleImage(iconKey)
+                        } else {
+                            iconRefCounter[iconKey] = cnt
+                        }
 
-                    if (currFinger.icon == null) {
-                        addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
-                    } else {
-                        params.entity.state.icon?.let { icon ->
-                            val iconKey = icon.hashCode().toString()
-                            if (iconRefCounter.contains(iconKey)) {
-                                iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
-                            } else {
-                                val adjusted = adjustIconForAnchor(params.bitmapIcon)
-                                style.addImage(iconKey, adjusted.bitmap)
-                                iconRefCounter[iconKey] = 1
+                        if (currFinger.icon == null) {
+                            addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                        } else {
+                            params.entity.state.icon?.let { icon ->
+                                val iconKey = icon.hashCode().toString()
+                                if (iconRefCounter.contains(iconKey)) {
+                                    iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
+                                } else {
+                                    val adjusted = adjustIconForAnchor(params.bitmapIcon)
+                                    style.addImage(iconKey, adjusted.bitmap)
+                                    iconRefCounter[iconKey] = 1
+                                }
+                                addProperty(Prop.ICON_ID, iconKey)
                             }
-                            addProperty(Prop.ICON_ID, iconKey)
                         }
                     }
                 }
-            }
 
-            Feature.fromGeometry(params.entity.state.position.toPoint(), properties)
+            Feature.fromGeometry(
+                params.entity.state.position
+                    .toPoint(),
+                properties,
+            )
         }
     }
 
@@ -230,7 +240,9 @@ class MapboxMarkerRenderer(
         return BitmapIcon(
             bitmap = bitmap,
             anchor = Offset((width * 0.5).toFloat(), height.toFloat()),
-            size = androidx.compose.ui.geometry.Size(width.toFloat(), height.toFloat())
+            size =
+                androidx.compose.ui.geometry
+                    .Size(width.toFloat(), height.toFloat()),
         )
     }
 }

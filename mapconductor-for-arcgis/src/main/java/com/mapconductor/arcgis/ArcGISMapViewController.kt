@@ -55,30 +55,30 @@ class ArcGISMapViewController(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
-    private val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
-        sceneProperties.surfacePlacement = SurfacePlacement.Relative
-    },
+    private val markerLayer: GraphicsOverlay =
+        GraphicsOverlay().apply {
+            sceneProperties.surfacePlacement = SurfacePlacement.Relative
+        },
     private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
 ) : BaseMapViewController<Camera, Graphic>(),
     IArcGISMapViewController {
-
-    override val markerRenderer: MarkerRenderer<Graphic> = ArcGISMarkerRenderer(
-        markerLayer = markerLayer,
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val markerRenderer: MarkerRenderer<Graphic> =
+        ArcGISMarkerRenderer(
+            markerLayer = markerLayer,
+            holder = holder,
+            coroutine = coroutine,
+        )
 
     private var selectedMarker: SelectedMarker? = null
 
-    override fun createMarkerOverlayManager(): MarkerOverlayManager<Graphic> {
-        return overlayManagerFactory.create(
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Graphic> =
+        overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
             onAnimate = markerRenderer::animate,
         )
-    }
 
     init {
         markerRenderer.init(markerOverlayManager)
@@ -184,13 +184,20 @@ class ArcGISMapViewController(
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
         val screenPoint = event.screenCoordinate
-        val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
+        val touchPosition =
+            holder.map
+                .screenToLocation(screenPoint)
+                .getOrNull()
+                ?.toGeoPoint() ?: return
 
-        val entity = markerRenderer.findNearestMarker(
-            position = touchPosition,
-            tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density,
-            zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
-        )
+        val entity =
+            markerRenderer.findNearestMarker(
+                position = touchPosition,
+                tolerance =
+                    Settings.Default.tapTolerance.value
+                        .toDouble() * ResourceProvider.density,
+                zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
+            )
         if (entity != null) {
             markerClickListener?.invoke(entity.state)
             return
@@ -249,7 +256,6 @@ class ArcGISMapViewController(
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
-
     override fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
@@ -278,7 +284,6 @@ class ArcGISMapViewController(
             listener?.onComplete(result.isSuccess)
         }
     }
-
 
     override fun clearPolyline() {
         TODO("Not yet implemented")

@@ -95,7 +95,6 @@ internal class MapboxMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<Feature> = DefaultMapboxMarkerRenderer(),
-
     private val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -112,16 +111,16 @@ internal class MapboxMapViewController(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
+    override val markerRenderer: MapboxMarkerRenderer =
+        MapboxMarkerRenderer(
+            holder = holder,
+            coroutine = coroutine,
+            markerLayer = markerLayer,
+            dragLayer = dragLayer,
+        )
 
-    override val markerRenderer: MapboxMarkerRenderer = MapboxMarkerRenderer(
-        holder = holder,
-        coroutine = coroutine,
-        markerLayer = markerLayer,
-        dragLayer = dragLayer,
-    )
-
-    override fun createMarkerOverlayManager(): MarkerOverlayManager<Feature> {
-        return overlayManagerFactory.create(
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Feature> =
+        overlayManagerFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
@@ -129,7 +128,7 @@ internal class MapboxMapViewController(
             onPostProcess = markerRenderer::drawMarkerLayer,
             onAnimate = markerRenderer::animate,
         )
-    }
+
     private val lineLayer: LineLayer
     private val lineSourceId = "lines-source"
     private val lineLayerId = "lines-layer"
@@ -186,7 +185,6 @@ internal class MapboxMapViewController(
         holder.map.removeOnMoveListener(this)
         holder.map.addOnMoveListener(this)
     }
-
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
@@ -278,7 +276,9 @@ internal class MapboxMapViewController(
         val entity =
             this.markerRenderer.findNearestMarker(
                 position = geoPoint,
-                tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density,
+                tolerance =
+                    Settings.Default.tapTolerance.value
+                        .toDouble() * ResourceProvider.density,
                 zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {
@@ -302,7 +302,9 @@ internal class MapboxMapViewController(
         val entity =
             this.markerRenderer.findNearestMarker(
                 position = geoPoint,
-                tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density,
+                tolerance =
+                    Settings.Default.tapTolerance.value
+                        .toDouble() * ResourceProvider.density,
                 zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {
@@ -313,7 +315,6 @@ internal class MapboxMapViewController(
         mapClickListener?.invoke(geoPoint)
         return true
     }
-
 
     override fun clearPolyline() {
         lineSource.geometry(LineString.fromLngLats(emptyList()))
