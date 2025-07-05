@@ -2,8 +2,6 @@ package com.mapconductor.arcgis
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
-import androidx.core.graphics.drawable.toDrawable
-import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
@@ -14,7 +12,8 @@ import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
-import com.mapconductor.core.ResourceProvider
+import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
+import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -24,8 +23,8 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer
+import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
@@ -33,7 +32,6 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface IArcGISMapViewController : MapViewController<Graphic> {
     fun moveCamera(
@@ -55,104 +53,42 @@ internal data class SelectedMarker(
 
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
-    override val coroutine: CoroutineScope =
-        CoroutineScope(Dispatchers.Default),
-    override val hexCell: HexGeocell =
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    override val hexGeocell: HexGeocell =
         HexGeocell(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
+    private val markerLayer: GraphicsOverlay = GraphicsOverlay().apply {
+        sceneProperties.surfacePlacement = SurfacePlacement.Relative
+    },
+    private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
+    private val markerRenderer: MarkerRenderer<Graphic> = ArcGISMarkerRenderer(
+        markerLayer = markerLayer,
+        holder = holder,
+        coroutine = coroutine,
+    ),
 ) : BaseMapViewController<Camera, Graphic>(),
     IArcGISMapViewController {
-    val markerLayer: GraphicsOverlay =
-        GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.Relative
-        }
+
 
     private var selectedMarker: SelectedMarker? = null
 
-    override val markerOverlayManager =
-        MarkerOverlayManagerImpl<Graphic>(
-            markerManager = MarkerManager<Graphic>(hexCell),
-            onRemove = { removes ->
-                coroutine.launch {
-                    val elements = removes.map { params -> params.marker }
-                    markerLayer.graphics.removeAll(elements)
+    override val markerOverlayManager by lazy {
+        return@lazy overlayManagerFactory.create(
+            hexGeocell = hexGeocell,
+            onIconAdd = markerRenderer::addIcons,
+            onIconRemove = markerRenderer::removeIcons,
+            onIconChange = markerRenderer::changeIcons,
+            onAnimate = { entity ->
+                when (entity.state.animation) {
+                    MarkerAnimation.Drop -> animateMarkerDrop(entity)
+                    MarkerAnimation.Bounce -> animateMarkerBounce(entity)
+                    else -> throw IllegalArgumentException("No animation is available: ${entity.state.animation}")
                 }
-            },
-            onAdd = { newMarkers ->
-                withContext(coroutine.coroutineContext) {
-                    newMarkers
-                        .map { params ->
-                            val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
-                            val density = ResourceProvider.density
-                            val width = (params.second.size.width / density)
-                            val height = (params.second.size.height / density)
-                            val anchorX = (params.second.anchor.x - 0.5) * width
-                            val anchorY = (params.second.anchor.y - 0.5) * height
-
-                            val pictureSymbolFuture =
-                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                                    it.width = width.toFloat()
-                                    it.height = height.toFloat()
-                                    it.offsetX = anchorX.toFloat()
-                                    it.offsetY = anchorY.toFloat()
-                                }
-
-                            val marker =
-                                Graphic(
-                                    geometry = params.first.position.toPoint(),
-                                    symbol = pictureSymbolFuture,
-                                )
-                            marker.attributes.set("id", params.first.id)
-                            return@map marker
-                        }.also {
-                            markerLayer.graphics.addAll(it)
-                        }
-                }
-            },
-            onChange = { changes ->
-                withContext(coroutine.coroutineContext) {
-                    changes.map { params ->
-                        val prevFinger = params.prevEntity.fingerPrint
-                        val currFinger = params.entity.fingerPrint
-                        if (currFinger.icon != prevFinger.icon) {
-                            val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
-                            val density = ResourceProvider.density
-                            val width = (params.bitmapIcon.size.width / density)
-                            val height = (params.bitmapIcon.size.height / density)
-                            val anchorX = (params.bitmapIcon.anchor.x - 0.5) * width
-                            val anchorY = (params.bitmapIcon.anchor.y - 0.5) * height
-
-                            val pictureSymbolFuture =
-                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
-                                    it.width = width.toFloat()
-                                    it.height = height.toFloat()
-                                    it.offsetX = anchorX.toFloat()
-                                    it.offsetY = anchorY.toFloat()
-                                }
-                            params.entity.marker.symbol = pictureSymbolFuture
-                        }
-
-                        if (params.entity.state.position != params.prevEntity.state.position) {
-                            params.entity.marker.geometry =
-                                params.entity.state.position
-                                    .toPoint()
-                        }
-
-                        // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                        params.entity.marker
-                    }
-                }
-            },
-            onAnimate = {
-                when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
-                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
-                }
-            },
+            }
         )
+    }
 
     init {
         holder.map.graphicsOverlays.clear()
@@ -253,6 +189,24 @@ class ArcGISMapViewController(
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
         val screenPoint = event.screenCoordinate
+        val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
+
+        val entity = this.findNearestMarker(
+            position = touchPosition,
+            tolerance = Settings.Default.tapTolerance,
+        )
+        if (entity != null) {
+            markerClickListener?.invoke(entity.state)
+            return
+        }
+
+        holder.map.screenToLocation(screenPoint).getOrNull()?.also {
+            mapClickListener?.invoke(it.toGeoPoint())
+        }
+    }
+    /*
+    private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
+        val screenPoint = event.screenCoordinate
 //        val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
 //
 //        val MarkerState = this.findNearestMarker(
@@ -291,6 +245,7 @@ class ArcGISMapViewController(
             mapClickListener?.invoke(it.toGeoPoint())
         }
     }
+     */
 
     private fun findNearestMarker(
         position: IGeoPoint,

@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
-import com.here.sdk.core.Metadata
 import com.here.sdk.core.Point2D
 import com.here.sdk.gestures.GestureState
 import com.here.sdk.gestures.LongPressListener
@@ -17,7 +16,6 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -28,15 +26,16 @@ import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer
+import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.here.marker.DefaultHereMapMarkerRenderer
+import com.mapconductor.here.marker.HereMapMarkerRenderer
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface IHereMapViewController : MapViewController<MapMarker> {
     fun moveCamera(
@@ -54,80 +53,38 @@ interface IHereMapViewController : MapViewController<MapMarker> {
 class HereMapViewController(
     override val holder: MapViewHolder<MapView, HereMap>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    override val hexCell: HexGeocell =
+    override val hexGeocell: HexGeocell =
         HexGeocell(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
+    private val overlayManagerFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
+    private val markerRenderer: MarkerRenderer<MapMarker> = HereMapMarkerRenderer(
+        holder = holder,
+        coroutine = coroutine,
+    ),
 ) : BaseMapViewController<MapCamera.State, MapMarker>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
     LongPressListener {
     private var selectedMarker: MarkerEntity<MapMarker>? = null
-    override val markerOverlayManager =
-        MarkerOverlayManagerImpl<MapMarker>(
-            markerManager = MarkerManager(hexCell),
-            onRemove = { removes ->
-                coroutine.launch {
-                    val markers: List<MapMarker> = removes.map { params -> params.marker }
-                    holder.mapView.mapScene.removeMapMarkers(markers)
-                }
-            },
-            onAdd = { newMarkers ->
-                val markers =
-                    withContext(coroutine.coroutineContext) {
-                        newMarkers.map { params ->
-                            val marker =
-                                MapMarker(
-                                    GeoPoint.from(params.first.position).toGeoCoordinates(),
-                                    params.second.toMapImage(),
-                                    params.second.toAnchor2D(),
-                                ).apply {
-                                    drawOrder = calculateZIndex(params.first.position).toInt()
-                                    metadata =
-                                        Metadata().apply {
-                                            setString("id", params.first.id)
-                                        }
-                                }
-                            return@map marker
-                        }
-                    }
 
-                coroutine.launch {
-                    holder.mapView.mapScene.addMapMarkers(markers)
+    override val markerOverlayManager by lazy {
+        return@lazy overlayManagerFactory.create(
+            hexGeocell = hexGeocell,
+            onIconAdd = markerRenderer::addIcons,
+            onIconRemove = markerRenderer::removeIcons,
+            onIconChange = markerRenderer::changeIcons,
+            onAnimate = { entity ->
+                when (entity.state.animation) {
+                    MarkerAnimation.Drop -> animateMarkerDrop(entity)
+                    MarkerAnimation.Bounce -> animateMarkerBounce(entity)
+                    else -> throw IllegalArgumentException("No animation is available: ${entity.state.animation}")
                 }
-                return@MarkerOverlayManagerImpl markers
-            },
-            onChange = { changes ->
-                changes.map { params ->
-                    val prevFinger = params.prevEntity.fingerPrint
-                    val currFinger = params.entity.fingerPrint
-                    if (currFinger.icon != prevFinger.icon) {
-                        params.entity.marker.image = params.bitmapIcon.toMapImage()
-                        params.entity.marker.anchor = params.bitmapIcon.toAnchor2D()
-                    }
-                    if (params.entity.state.position != params.prevEntity.state.position) {
-                        params.entity.marker.coordinates =
-                            params.entity.state.position
-                                .toGeoCoordinates()
-                    }
-
-                    // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.entity.marker
-                }
-            },
-            onPostProcess = {
-                // Do nothing here
-            },
-            onAnimate = {
-                when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
-                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
-                }
-            },
+            }
         )
+    }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 

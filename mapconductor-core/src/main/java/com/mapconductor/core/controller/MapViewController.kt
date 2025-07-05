@@ -1,6 +1,8 @@
 package com.mapconductor.core.controller
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.core.graphics.createBitmap
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
@@ -9,14 +11,18 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.os.SystemClock
 import android.view.animation.BounceInterpolator
 import android.view.animation.LinearInterpolator
@@ -30,8 +36,8 @@ import kotlinx.coroutines.flow.onEach
 interface MapViewController<ActualMarker> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
-    val markerOverlayManager: MarkerOverlayManagerImpl<ActualMarker>
-    val hexCell: HexGeocell
+    val markerOverlayManager: MarkerOverlayManager<ActualMarker>
+    val hexGeocell: HexGeocell
 
     suspend fun addMarkers(data: List<MarkerState>)
 
@@ -144,6 +150,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
+            markerEntity.state.animation = null
             markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
@@ -183,6 +190,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             markerEntity.state.position = target
+            markerEntity.state.animation = null
             markerAnimateEndListener?.invoke(markerEntity.state)
         }.launchIn(coroutine)
     }
@@ -190,6 +198,38 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
     protected abstract fun clearPolyline()
 
     protected abstract fun drawPolyline(geoPoints: List<IGeoPoint>)
+
+    protected fun adjustIconForAnchor(
+        icon: BitmapIcon,
+    ): BitmapIcon {
+        val offsetX = 0.5 - icon.anchor.x.toDouble()
+        val offsetY = 0.5 - icon.anchor.y.toDouble()
+        val dx = offsetX * icon.size.width
+        val dy = offsetY * icon.size.height
+        val width = icon.size.width + abs(dx)
+        val height = icon.size.height + abs(dy)
+
+        val bitmap = createBitmap(width.toInt(), height.toInt())
+
+        val paint = Paint().apply {
+            isAntiAlias = true
+        }
+
+//        val rect = Rect(
+//            dx.toInt(),
+//            dy.toInt(),
+//            (dx + icon.size.width.toDouble()).toInt(),
+//            (dy + icon.size.height.toDouble()).toInt(),
+//        )
+        Canvas(bitmap).apply {
+            drawBitmap(icon.bitmap, abs(dx).toFloat(), abs(dy).toFloat(), paint)
+        }
+        return BitmapIcon(
+            bitmap = bitmap,
+            anchor = Offset((width * 0.5).toFloat(), height.toFloat()),
+            size = Size(width.toFloat(), height.toFloat())
+        )
+    }
 
     protected fun analyzeSearchRange(
         position: IGeoPoint,
@@ -201,17 +241,17 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
                 position, zoom, tolerancePixels,
             )
 
-        val clickedCell = hexCell.latLngToHexCell(position, zoom)
+        val clickedCell = hexGeocell.latLngToHexCell(position, zoom)
 
         // Hex metrics
         val scale = 1.0 / (2.0.pow(zoom))
         val latScale = kotlin.math.cos(position.latitude * kotlin.math.PI / 180).coerceAtLeast(0.01)
-        val hexSideLength = hexCell.baseHexSideLength * scale / latScale
+        val hexSideLength = hexGeocell.baseHexSideLength * scale / latScale
         val hexDistance = hexSideLength * kotlin.math.sqrt(3.0)
         val searchRadiusHexUnits = kotlin.math.ceil(toleranceMeters / hexDistance).toInt()
 
         // Search cells
-        val searchCells = hexCell.hexRange(clickedCell.coord, searchRadiusHexUnits)
+        val searchCells = hexGeocell.hexRange(clickedCell.coord, searchRadiusHexUnits)
         val outlineCells = findOutlineCells(searchCells)
 
         // Find markers in range
@@ -245,7 +285,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         val markersInRange = mutableListOf<MarkerState>()
 
         markerOverlayManager.markerManager.allEntities().forEach { markerEntity ->
-            val markerCell = hexCell.latLngToHexCell(markerEntity.state.position, zoom)
+            val markerCell = hexGeocell.latLngToHexCell(markerEntity.state.position, zoom)
 
             if (markerCell.coord in cellSet) {
                 val distance = haversineDistance(clickPosition, markerEntity.state.position)
@@ -323,7 +363,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
      */
     protected fun drawClickedCell(analysis: SearchRangeAnalysis) {
         val points =
-            hexCell.hexToPolygonLatLng(
+            hexGeocell.hexToPolygonLatLng(
                 coord = analysis.clickedCell.coord,
                 latHint = analysis.clickPosition.latitude,
                 zoom = analysis.zoom,
@@ -337,7 +377,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         analysis.searchCells.take(50).forEach { coord ->
             // パフォーマンス制限
             val cellPoints =
-                hexCell.hexToPolygonLatLng(
+                hexGeocell.hexToPolygonLatLng(
                     coord,
                     analysis.clickPosition.latitude,
                     analysis.zoom,
@@ -356,7 +396,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
 
         analysis.outlineCells.forEach { coord ->
             val cellPoints =
-                hexCell.hexToPolygonLatLng(
+                hexGeocell.hexToPolygonLatLng(
                     coord,
                     analysis.clickPosition.latitude,
                     analysis.zoom,

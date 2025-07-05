@@ -10,11 +10,9 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -25,16 +23,17 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer
+import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerRender
 import android.graphics.Color
 import android.graphics.Point
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface IGoogleMapViewController : MapViewController<Marker> {
     fun moveCamera(
@@ -52,11 +51,16 @@ interface IGoogleMapViewController : MapViewController<Marker> {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    override val hexCell: HexGeocell =
+    override val hexGeocell: HexGeocell =
         HexGeocell(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
+    private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
+    private val markerRenderer: MarkerRenderer<Marker> = GoogleMapMarkerRender(
+        holder = holder,
+        coroutine = coroutine,
+    ),
 ) : BaseMapViewController<CameraPosition, Marker>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
@@ -66,63 +70,21 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    override val markerOverlayManager =
-        MarkerOverlayManagerImpl<Marker>(
-            markerManager = MarkerManager(hexCell),
-            onRemove = { removes ->
-                coroutine.launch {
-                    removes.forEach { params -> params.marker.remove() }
+    override val markerOverlayManager by lazy {
+        return@lazy overlayManagerFactory.create(
+            hexGeocell = hexGeocell,
+            onIconAdd = markerRenderer::addIcons,
+            onIconRemove = markerRenderer::removeIcons,
+            onIconChange = markerRenderer::changeIcons,
+            onAnimate = { entity ->
+                when (entity.state.animation) {
+                    MarkerAnimation.Drop -> animateMarkerDrop(entity)
+                    MarkerAnimation.Bounce -> animateMarkerBounce(entity)
+                    else -> throw IllegalArgumentException("No animation is available: ${entity.state.animation}")
                 }
-            },
-            onAdd = { newMarkers ->
-                withContext(coroutine.coroutineContext) {
-                    newMarkers.map { params ->
-                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
-                        val options =
-                            MarkerOptions()
-                                .position(GeoPoint.from(params.first.position).toLatLng())
-                                .anchor(
-                                    params.second.anchor.x
-                                        .toFloat(),
-                                    params.second.anchor.y
-                                        .toFloat(),
-                                ).icon(bitmapDescriptor)
-                                .draggable(params.first.draggable)
-                        val marker =
-                            holder.map.addMarker(options)?.also {
-                                it.tag = params.first.id
-                            }
-                        return@map marker
-                    }
-                }
-            },
-            onChange = { changes ->
-                changes.map { params ->
-                    val prevFinger = params.prevEntity.fingerPrint
-                    val currentFinger = params.entity.fingerPrint
-                    if (prevFinger.icon != currentFinger.icon) {
-                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
-                        params.entity.marker.setIcon(bitmapDescriptor)
-                    }
-                    if (params.entity.state.position != params.prevEntity.state.position) {
-                        params.entity.marker.position = params.entity.state.position.toLatLng()
-                    }
-
-                    // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.entity.marker
-                }
-            },
-            onPostProcess = {
-                // Do nothing here
-            },
-            onAnimate = {
-                when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
-                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
-                }
-            },
+            }
         )
+    }
 
     init {
         setupListeners()

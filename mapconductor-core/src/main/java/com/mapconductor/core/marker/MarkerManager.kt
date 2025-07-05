@@ -385,6 +385,7 @@ class MarkerManager<ActualMarker>(
         )
     }
 
+
     private fun toBitmap(
         drawable: Drawable,
         width: Int,
