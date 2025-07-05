@@ -1,11 +1,15 @@
 package com.mapconductor.arcgis
 
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.LifecycleOwner
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.mapping.ArcGISScene
 import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.SceneView
+import com.arcgismaps.mapping.view.ScreenCoordinate
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 import android.content.pm.PackageManager
@@ -44,6 +48,28 @@ class ArcGISMapViewHolderImpl private constructor(
     override val mapView: WrapSceneView,
 ) : MapViewHolder<WrapSceneView, SceneView> {
     override lateinit var map: SceneView
+
+    override fun toScreenOffset(position: IGeoPoint): Offset? {
+        val result =
+            map.locationToScreen(
+                point = GeoPoint.from(position).toPoint(),
+            )
+        return result?.let {
+            Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
+        }
+    }
+
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
+        val result =
+            map.screenToLocation(
+                screenCoordinate =
+                    ScreenCoordinate(
+                        x = offset.x.toDouble(),
+                        y = offset.y.toDouble(),
+                    ),
+            )
+        return result.getOrNull()?.toGeoPoint()
+    }
 
     companion object {
         fun create(

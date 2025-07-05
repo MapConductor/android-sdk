@@ -1,6 +1,5 @@
 package com.mapconductor.googlemaps
 
-import androidx.compose.ui.geometry.Offset
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -10,11 +9,9 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -23,18 +20,17 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerOverlayManager
+import com.mapconductor.core.marker.MarkerRenderer
+import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerRender
 import android.graphics.Color
-import android.graphics.Point
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface IGoogleMapViewController : MapViewController<Marker> {
     fun moveCamera(
@@ -52,11 +48,12 @@ interface IGoogleMapViewController : MapViewController<Marker> {
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    override val hexCell: HexGeocell =
+    override val hexGeocell: HexGeocell =
         HexGeocell(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
+    private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
 ) : BaseMapViewController<CameraPosition, Marker>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
@@ -66,130 +63,27 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    override val markerOverlayManager =
-        MarkerOverlayManagerImpl<Marker>(
-            markerManager = MarkerManager(hexCell),
-            onRemove = { removes ->
-                coroutine.launch {
-                    removes.forEach { params -> params.marker.remove() }
-                }
-            },
-            onAdd = { newMarkers ->
-                withContext(coroutine.coroutineContext) {
-                    newMarkers.map { params ->
-                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
-                        val options =
-                            MarkerOptions()
-                                .position(GeoPoint.from(params.first.position).toLatLng())
-                                .anchor(
-                                    params.second.anchor.x
-                                        .toFloat(),
-                                    params.second.anchor.y
-                                        .toFloat(),
-                                ).icon(bitmapDescriptor)
-                                .draggable(params.first.draggable)
-                        val marker =
-                            holder.map.addMarker(options)?.also {
-                                it.tag = params.first.id
-                            }
-                        return@map marker
-                    }
-                }
-            },
-            onChange = { changes ->
-                changes.map { params ->
-                    if (params.entity.state.icon != params.prevEntity.state.icon) {
-                        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
-                        params.entity.marker.setIcon(bitmapDescriptor)
-                    }
-                    if (params.entity.state.position != params.prevEntity.state.position) {
-                        params.entity.marker.position =
-                            params.entity.state.position
-                                .toLatLng()
-                    }
+    override val markerRenderer: MarkerRenderer<Marker> =
+        GoogleMapMarkerRender(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
-                    // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.entity.marker
-                }
-            },
-            onPostProcess = {
-                // Do nothing here
-            },
-            onAnimate = {
-                when (it.state.animation) {
-                    MarkerAnimation.Drop -> this.animateMarkerDrop(it)
-                    MarkerAnimation.Bounce -> this.animateMarkerBounce(it)
-                    else -> throw IllegalArgumentException("No animation is available: ${it.state.animation}")
-                }
-            },
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> =
+        overlayManagerFactory.create(
+            hexGeocell = hexGeocell,
+            onIconAdd = markerRenderer::addIcons,
+            onIconRemove = markerRenderer::removeIcons,
+            onIconChange = markerRenderer::changeIcons,
+            onAnimate = markerRenderer::animate,
         )
 
     init {
         setupListeners()
+        markerRenderer.init(markerOverlayManager)
     }
 
-/*
-    private fun markerDropAnimation(params: MarkerModifyParams<Marker>) {
-        val markerLatLng = params.marker.position.toGeoPoint()
-        val interpolator = LinearInterpolator()
-        val markerPoint = this.toScreenOffset(markerLatLng) ?: return
-        val startPoint = Offset(markerPoint.x, 0f)
-        val duration = Settings.Default.markerDropAnimateDuration
-
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow{
-            val startTime = SystemClock.uptimeMillis()
-            while (true){
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = min(1f, elapsed.toFloat() / duration)
-                emit(interpolator.getInterpolation(t))
-                if (t >= 1f) break
-                delay(16)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = t * markerLatLng.longitude + (1 - t) * startLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.position = LatLng(lat, lng)
-        }.onCompletion {
-            params.marker.position = markerLatLng.toLatLng()
-            params.state.animation = null
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-
-    private fun markerBounceAnimation(params: MarkerModifyParams<Marker>) {
-        val startTime = SystemClock.uptimeMillis()
-        val duration = Settings.Default.markerBounceAnimateDuration
-        val interpolator: Interpolator = BounceInterpolator()
-        val markerLatLng = params.marker.position.toGeoPoint()
-        val startPoint = Offset(0f , -200f)
-
-        markerAnimateStartListener?.let { it(params.state) }
-
-        flow {
-            while (true) {
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                val t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
-                emit(t)
-                if (t >= 1f) break
-                delay(16L)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = markerLatLng.longitude
-            val lat = t * markerLatLng.latitude + (1 - t) * startLatLng.latitude
-            params.marker.position = LatLng(lat, lng)
-        }.onCompletion {
-            params.marker.position = markerLatLng.toLatLng()
-            params.state.animation = null
-
-            markerAnimateEndListener?.let { it(params.state) }
-        }.launchIn(coroutine)
-    }
-*/
-    private fun setupListeners() {
+    override fun setupListeners() {
         holder.map.setOnCameraMoveStartedListener(this)
         holder.map.setOnCameraMoveCanceledListener(this)
         holder.map.setOnCameraMoveListener(this)
@@ -238,26 +132,6 @@ class GoogleMapViewController(
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
-
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val point =
-            holder.map.projection.toScreenLocation(
-                GeoPoint.from(position).toLatLng(),
-            )
-        return Offset(
-            x = point.x.toFloat(),
-            y = point.y.toFloat(),
-        )
-    }
-
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
-        holder.map.projection
-            .fromScreenLocation(
-                Point(
-                    offset.x.toInt(),
-                    offset.y.toInt(),
-                ),
-            ).toGeoPoint()
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
@@ -311,7 +185,7 @@ class GoogleMapViewController(
         this.getMarkerStateFrom(marker)?.also { state ->
 
             // Suppress the recomposition for the position property
-            setDraggingState(state, true)
+            markerRenderer.setDraggingState(state, true)
 
             state.position = marker.position.toGeoPoint()
             markerDragListener?.invoke(state)
@@ -330,17 +204,10 @@ class GoogleMapViewController(
             state.position = marker.position.toGeoPoint()
 
             // Restore the recomposition for the position property
-            setDraggingState(state, false)
+            markerRenderer.setDraggingState(state, false)
 
             markerDragStartListener?.invoke(state)
         }
-    }
-
-    override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Marker>,
-        position: GeoPoint,
-    ) {
-        markerEntity.marker.position = position.toLatLng()
     }
 
     override fun clearPolyline() {
