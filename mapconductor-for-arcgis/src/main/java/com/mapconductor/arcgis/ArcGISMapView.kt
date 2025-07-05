@@ -54,6 +54,7 @@ fun ArcGISMapView(
                     id = state.id,
                     options = options,
                 )
+            state.controller = controller
             controller.holder.mapView.onCreate(owner)
             controller.holder.mapView.onResume(owner)
             controller.cameraMoveListener = state::OnCameraChange
@@ -62,8 +63,8 @@ fun ArcGISMapView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
-            controller.markerAnimateStartListener = onMarkerAnimateStart
-            controller.markerAnimateEndListener = onMarkerAnimateEnd
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 
             state.controller = controller
 

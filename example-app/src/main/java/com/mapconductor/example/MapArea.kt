@@ -57,6 +57,7 @@ fun MapArea(
             markers.forEach { markerState ->
                 key(markerState.id) {
                     Marker(markerState)
+                    // TODO: circleStateに置換する。このコードはデバッグ用
                     Circle(
                         center = markerState.position,
                         radius = 1000,
