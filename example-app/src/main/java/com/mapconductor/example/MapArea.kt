@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
@@ -33,6 +35,7 @@ fun MapArea(
     onMapClickHandler: OnMapEventHandler = {},
     onMarkerClickHandler: OnMarkerEventHandler = {},
     onMarkerDragHandler: OnMarkerEventHandler = {},
+    onCircleClickHandler: OnCircleEventHandler = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
@@ -48,7 +51,8 @@ fun MapArea(
             onMarkerClick = onMarkerClickHandler,
             onMarkerDrag = onMarkerDragHandler,
             onMarkerAnimateStart = { isMarkerAnimating = true },
-            onMarkerAnimateEnd = { isMarkerAnimating = false }
+            onMarkerAnimateEnd = { isMarkerAnimating = false },
+            onCircleClick = onCircleClickHandler,
         ) {
             markers.forEach { markerState ->
                 key(markerState.id) {

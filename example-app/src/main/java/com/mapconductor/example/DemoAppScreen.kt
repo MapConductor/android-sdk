@@ -189,6 +189,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     infoBubbleState = appViewModel.infoBubbleState,
                     onMapClickHandler = appViewModel::onMapClick,
                     onMarkerClickHandler = appViewModel::onMarkerClick,
+                    onCircleClickHandler = appViewModel::onCircleClick,
                     selectedMarker = appViewModel.selectedMarker,
                 )
                 DebugPanel(
