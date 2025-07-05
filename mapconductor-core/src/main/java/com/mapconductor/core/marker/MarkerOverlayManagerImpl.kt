@@ -114,9 +114,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                                 override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
                             }
                         }
-                    }.filter { it -> it != null }
+                    }
+                    .filterNotNull()
 
-            val actualMarkers: List<ActualMarker?> = onChange(updates as List<UpdateParams<ActualMarker>>)
+            val actualMarkers: List<ActualMarker?> = onChange(updates)
 
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
@@ -151,9 +152,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
         semaphore.acquire()
         val marker = prevEntity.marker
         val defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Companion.Default())
-        val markerIcon = state.icon?.let {
-            markerManager.getBitmapIcon(it)
-        } ?: defaultIcon
+        val markerIcon =
+            state.icon?.let {
+                markerManager.getBitmapIcon(it)
+            } ?: defaultIcon
 
         val entity =
             MarkerEntityImpl(

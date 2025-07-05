@@ -124,17 +124,18 @@ class MapboxMarkerRenderer(
         return newMarkers.map { (state, _) ->
             val featureId = state.id
             val position = state.position.toPoint()
-            val properties = JsonObject().apply {
-                if (state.icon != null) {
-                    state.icon?.let { icon ->
-                        val iconKey = icon.hashCode().toString()
-                        iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
-                        addProperty(Prop.ICON_ID, iconKey)
+            val properties =
+                JsonObject().apply {
+                    if (state.icon != null) {
+                        state.icon?.let { icon ->
+                            val iconKey = icon.hashCode().toString()
+                            iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
+                            addProperty(Prop.ICON_ID, iconKey)
+                        }
+                    } else {
+                        addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                     }
-                } else {
-                    addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                 }
-            }
             Feature.fromGeometry(position, properties, featureId)
         }
     }
@@ -209,7 +210,9 @@ class MapboxMarkerRenderer(
                     }
                 }
 
-            val position = params.entity.state.position.toPoint()
+            val position =
+                params.entity.state.position
+                    .toPoint()
             val featureId = params.entity.state.id
             Feature.fromGeometry(position, properties, featureId)
         }
