@@ -1,28 +1,23 @@
 package com.mapconductor.arcgis
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Dp
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.LongPressEvent
 import com.arcgismaps.mapping.view.PanChangeEvent
-import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
@@ -63,7 +58,7 @@ class ArcGISMapViewController(
         sceneProperties.surfacePlacement = SurfacePlacement.Relative
     },
     private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
-    private val markerRenderer: MarkerRenderer<Graphic> = ArcGISMarkerRenderer(
+    override val markerRenderer: MarkerRenderer<Graphic> = ArcGISMarkerRenderer(
         markerLayer = markerLayer,
         holder = holder,
         coroutine = coroutine,
@@ -80,19 +75,18 @@ class ArcGISMapViewController(
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
-            onAnimate = { entity ->
-                when (entity.state.animation) {
-                    MarkerAnimation.Drop -> animateMarkerDrop(entity)
-                    MarkerAnimation.Bounce -> animateMarkerBounce(entity)
-                    else -> throw IllegalArgumentException("No animation is available: ${entity.state.animation}")
-                }
-            }
+            onAnimate = markerRenderer::animate,
         )
     }
 
     init {
+        markerRenderer.init(markerOverlayManager)
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(markerLayer)
+        setupListeners()
+    }
+
+    override fun setupListeners() {
         coroutine.launch {
             holder.map.onSingleTapConfirmed.collect { onMapTap(it) }
         }
@@ -134,7 +128,7 @@ class ArcGISMapViewController(
             it.state.position = position
 
             // Restore the recomposition for the position property
-            setDraggingState(it.state, false)
+            markerRenderer.setDraggingState(it.state, false)
 
             markerDragEndListener?.invoke(it.state)
             with(holder.map) {
@@ -182,7 +176,7 @@ class ArcGISMapViewController(
         }
 
         // Suppress the recomposition for the position property
-        setDraggingState(state, true)
+        markerRenderer.setDraggingState(state, true)
 
         markerDragStartListener?.invoke(state)
     }
@@ -191,9 +185,10 @@ class ArcGISMapViewController(
         val screenPoint = event.screenCoordinate
         val touchPosition = holder.map.screenToLocation(screenPoint).getOrNull()?.toGeoPoint() ?: return
 
-        val entity = this.findNearestMarker(
+        val entity = markerRenderer.findNearestMarker(
             position = touchPosition,
-            tolerance = Settings.Default.tapTolerance,
+            tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density,
+            zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
         )
         if (entity != null) {
             markerClickListener?.invoke(entity.state)
@@ -247,48 +242,12 @@ class ArcGISMapViewController(
     }
      */
 
-    private fun findNearestMarker(
-        position: IGeoPoint,
-        tolerance: Dp,
-    ): MarkerEntity<Graphic>? {
-        val camera = holder.map.getCurrentViewpointCamera()
-        val zoom = camera.toMapCameraPosition().zoom
-        val acceptDPI = tolerance.value.toFloat() * holder.mapView.context.resources.displayMetrics.density
-
-        return findMarkerFromPoint(
-            position = position,
-            zoom = zoom,
-            tolerance = acceptDPI.toDouble(),
-        )
-    }
-
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val result =
-            holder.map.locationToScreen(
-                point = GeoPoint.from(position).toPoint(),
-            )
-        return result?.let {
-            Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
-        }
-    }
-
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
-        val result =
-            holder.map.screenToLocation(
-                screenCoordinate =
-                    ScreenCoordinate(
-                        x = offset.x.toDouble(),
-                        y = offset.y.toDouble(),
-                    ),
-            )
-        return result.getOrNull()?.toGeoPoint()
-    }
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -319,12 +278,6 @@ class ArcGISMapViewController(
         }
     }
 
-    override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Graphic>,
-        position: GeoPoint,
-    ) {
-        markerEntity.marker.geometry = position.toPoint()
-    }
 
     override fun clearPolyline() {
         TODO("Not yet implemented")

@@ -1,10 +1,7 @@
 package com.mapconductor.mapbox
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Dp
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
@@ -34,6 +31,7 @@ import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -41,10 +39,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayManager
-import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.WebMercator
@@ -99,7 +94,24 @@ internal class MapboxMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<Feature> = DefaultMapboxMarkerRenderer(),
-    private val markerRenderer: MarkerRenderer<Feature> = MapboxMarkerRenderer(holder),
+
+    private val markerLayer: MarkerLayer =
+        MarkerLayer(
+            sourceId = "markers-source",
+            layerId = "markers-layer",
+        ),
+    private val dragLayer: MarkerDragLayer =
+        MarkerDragLayer(
+            sourceId = "marker-drag-source",
+            layerId = "marker-drag-layer",
+        ),
+
+    override val markerRenderer: MapboxMarkerRenderer = MapboxMarkerRenderer(
+        holder = holder,
+        coroutine = coroutine,
+        markerLayer = markerLayer,
+        dragLayer = dragLayer,
+    ),
 ) : BaseMapViewController<CameraState, Feature>(),
     IMapboxMapViewController,
     CameraChangedCallback,
@@ -115,16 +127,6 @@ internal class MapboxMapViewController(
         geoJsonSource(lineSourceId) {
             geometry(LineString.fromLngLats(emptyList()))
         }
-    private val markerLayer =
-        MarkerLayer(
-            sourceId = "markers-source",
-            layerId = "markers-layer",
-        )
-    private val dragLayer =
-        MarkerDragLayer(
-            sourceId = "marker-drag-source",
-            layerId = "marker-drag-layer",
-        )
 
     override val markerOverlayManager: MarkerOverlayManager<Feature> by lazy {
         return@lazy overlayManagerFactory.create(
@@ -132,14 +134,8 @@ internal class MapboxMapViewController(
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
-            onPostProcess = this::drawMarkerLayer,
-            onAnimate = { entity ->
-                when (entity.state.animation) {
-                    MarkerAnimation.Drop -> animateMarkerDrop(entity)
-                    MarkerAnimation.Bounce -> animateMarkerBounce(entity)
-                    else -> throw IllegalArgumentException("No animation is available: ${entity.state.animation}")
-                }
-            }
+            onPostProcess = markerRenderer::drawMarkerLayer,
+            onAnimate = markerRenderer::animate,
         )
     }
 
@@ -155,7 +151,7 @@ internal class MapboxMapViewController(
         setupSymbolLayer(markerLayer.layer)
         setupSymbolLayer(dragLayer.layer)
         holder.map.getStyle { style ->
-            markerRenderer.init(markerOverlayManager.markerManager)
+            markerRenderer.init(markerOverlayManager)
             style.addSource(markerLayer.source)
             style.addLayer(markerLayer.layer)
             style.addSource(dragLayer.source)
@@ -179,7 +175,7 @@ internal class MapboxMapViewController(
         }
     }
 
-    private fun setupListeners() {
+    override fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
@@ -191,46 +187,12 @@ internal class MapboxMapViewController(
         holder.map.addOnMoveListener(this)
     }
 
-    private fun drawMarkerLayer() {
-        val entities = markerOverlayManager.markerManager.allEntities()
-        coroutine.launch {
-            markerLayer.draw(entities)
-        }
-    }
-
-    private fun drawDragLayer() {
-        coroutine.launch {
-            dragLayer.draw()
-        }
-    }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
-
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val pixel =
-            holder.map.pixelForCoordinate(
-                coordinate = GeoPoint.from(position).toPoint(),
-            )
-        return Offset(
-            x = pixel.x.toFloat(),
-            y = pixel.y.toFloat(),
-        )
-    }
-
-    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? =
-        holder.map.coordinateForPixel(coordinate).toGeoPoint()
-
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
-        fromScreenOffset(
-            ScreenCoordinate(
-                offset.x.toDouble(),
-                offset.y.toDouble(),
-            ),
-        )
 
     override fun run(cameraChanged: CameraChanged) {
         cameraMoveListener?.invoke(
@@ -311,12 +273,37 @@ internal class MapboxMapViewController(
         }
     }
 
+    override fun onMapLongClick(point: Point): Boolean {
+        val geoPoint = point.toGeoPoint()
+        val entity =
+            this.markerRenderer.findNearestMarker(
+                position = geoPoint,
+                tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density,
+                zoom = holder.map.cameraState.zoom,
+            )
+        if (entity != null) {
+            markerRenderer.setDraggingState(entity.state, true) // Suppress the recomposition for the position property
+            markerOverlayManager.markerManager.removeEntity(entity.state.id)
+            dragLayer.selected = entity
+            dragLayer.updatePosition(geoPoint)
+            markerRenderer.drawMarkerLayer()
+            markerRenderer.drawDragLayer()
+
+            markerDragStartListener?.invoke(entity.state)
+            return true
+        }
+
+        mapLongClickListener?.invoke(geoPoint)
+        return true
+    }
+
     override fun onMapClick(point: Point): Boolean {
         val geoPoint = point.toGeoPoint()
         val entity =
-            this.findNearestMarker(
+            this.markerRenderer.findNearestMarker(
                 position = geoPoint,
-                tolerance = Settings.Default.tapTolerance,
+                tolerance = Settings.Default.tapTolerance.value.toDouble() * ResourceProvider.density,
+                zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {
             markerClickListener?.invoke(entity.state)
@@ -327,53 +314,6 @@ internal class MapboxMapViewController(
         return true
     }
 
-    private fun findNearestMarker(
-        position: IGeoPoint,
-        tolerance: Dp,
-    ): MarkerEntity<Feature>? {
-        val zoom = holder.map.cameraState.zoom
-        val acceptDPI = tolerance.value * holder.mapView.context.resources.displayMetrics.density
-
-//        clearPolyline()
-//
-//        // 検索範囲の詳細分析
-//        val searchAnalysis = analyzeSearchRange(position, zoom, acceptDPI.toDouble())
-//
-//        // 可視化レイヤーを選択
-//        drawSearchOutline(searchAnalysis)
-
-        return findMarkerFromPoint(
-            position = position,
-            zoom = zoom,
-            tolerance = acceptDPI.toDouble(),
-        )
-    }
-
-    override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Feature>,
-        position: GeoPoint,
-    ) {
-        val entities = markerOverlayManager.markerManager.allEntities()
-        val feature =
-            Feature.fromGeometry(
-                position.toPoint(),
-                markerEntity.marker.properties(),
-            )
-        markerEntity.marker = feature
-        val features =
-            entities.map {
-                if (it.state.id == markerEntity.state.id) {
-                    feature
-                } else {
-                    it.marker
-                }
-            }
-        coroutine.launch {
-            markerLayer.source.featureCollection(
-                FeatureCollection.fromFeatures(features),
-            )
-        }
-    }
 
     override fun clearPolyline() {
         lineSource.geometry(LineString.fromLngLats(emptyList()))
@@ -387,40 +327,22 @@ internal class MapboxMapViewController(
         lineSource.geometry(LineString.fromLngLats(points))
     }
 
-    override fun onMapLongClick(point: Point): Boolean {
-        val geoPoint = point.toGeoPoint()
-        val entity =
-            this.findNearestMarker(
-                position = geoPoint,
-                tolerance = Settings.Default.tapTolerance,
-            )
-        if (entity != null) {
-            setDraggingState(entity.state, true) // Suppress the recomposition for the position property
-            markerOverlayManager.markerManager.removeEntity(entity.state.id)
-            dragLayer.selected = entity
-            dragLayer.updatePosition(geoPoint)
-            drawMarkerLayer()
-            drawDragLayer()
-
-            markerDragStartListener?.invoke(entity.state)
-            return true
-        }
-
-        mapClickListener?.invoke(geoPoint)
-        return true
-    }
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? =
+        holder.map.coordinateForPixel(coordinate).toGeoPoint()
 
     override fun onMove(detector: MoveGestureDetector): Boolean {
         dragLayer.selected?.let { entity ->
+
             val screenCoordinate =
                 ScreenCoordinate(
                     detector.focalPoint.x.toDouble(),
                     detector.focalPoint.y.toDouble(),
                 )
+
             fromScreenOffset(screenCoordinate)?.let {
                 entity.state.position = it
                 dragLayer.updatePosition(it)
-                drawDragLayer()
+                markerRenderer.drawDragLayer()
             }
 
             markerDragListener?.invoke(entity.state)
@@ -443,10 +365,10 @@ internal class MapboxMapViewController(
             val point = holder.map.coordinateForPixel(screenCoordinate)
             dragLayer.updatePosition(point.toGeoPoint())
             dragLayer.selected = null
-            drawDragLayer()
-            setDraggingState(entity.state, false) // Restore the recomposition for the position property
+            markerRenderer.drawDragLayer()
+            markerRenderer.setDraggingState(entity.state, false) // Restore the recomposition for the position property
             markerOverlayManager.markerManager.registerEntity(entity)
-            drawMarkerLayer()
+            markerRenderer.drawMarkerLayer()
             markerDragEndListener?.invoke(entity.state)
         }
     }

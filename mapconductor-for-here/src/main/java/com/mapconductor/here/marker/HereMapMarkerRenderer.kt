@@ -5,11 +5,9 @@ import com.here.sdk.mapview.MapMarker
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.AbstractMarkerRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
@@ -45,13 +43,15 @@ class DefaultHereMapMarkerRenderer : MarkerRendererFactory<MapMarker> {
 }
 
 class HereMapMarkerRenderer (
-    private val holder: HereMapViewHolder,
-    private val coroutine: CoroutineScope,
+    override val holder: HereMapViewHolder,
+    override val coroutine: CoroutineScope,
 ): AbstractMarkerRenderer<MapMarker>() {
-    private lateinit var defaultIcon: BitmapIcon
 
-    override fun init(markerManager: MarkerManager<MapMarker>) {
-        defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Default())
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<MapMarker>,
+        position: GeoPoint,
+    ) {
+        markerEntity.marker.coordinates = position.toGeoCoordinates()
     }
 
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<MapMarker?> {

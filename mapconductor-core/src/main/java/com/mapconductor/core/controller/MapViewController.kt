@@ -3,7 +3,6 @@ package com.mapconductor.core.controller
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.core.graphics.createBitmap
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
@@ -12,26 +11,16 @@ import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayManager
+import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.spherical.haversineDistance
-import com.mapconductor.settings.Settings
 import kotlin.math.abs
-import kotlin.math.min
 import kotlin.math.pow
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.os.SystemClock
-import android.view.animation.BounceInterpolator
-import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
 
 interface MapViewController<ActualMarker> {
     val holder: MapViewHolder<*, *>
@@ -44,10 +33,8 @@ interface MapViewController<ActualMarker> {
     suspend fun updateMarker(state: MarkerState)
 
     suspend fun clearOverlays()
-
-    fun toScreenOffset(position: IGeoPoint): Offset?
-
-    suspend fun fromScreenOffset(offset: Offset): GeoPoint?
+    fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?)
+    fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
 }
 
 data class SearchRangeAnalysis(
@@ -64,7 +51,10 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker>: MapViewController<ActualMarker> {
+
+    abstract val markerRenderer: MarkerRenderer<ActualMarker>
+
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
     var mapLongClickListener: OnMapEventHandler? = null
@@ -72,128 +62,13 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
     var markerDragStartListener: OnMarkerEventHandler? = null
     var markerDragListener: OnMarkerEventHandler? = null
     var markerDragEndListener: OnMarkerEventHandler? = null
-    var markerAnimateStartListener: OnMarkerEventHandler? = null
-    var markerAnimateEndListener: OnMarkerEventHandler? = null
 
-    protected fun zoomToMetersPerPixel(zoom: Double): Double {
-        val earthCircumference = 40075016.686
-        val tileSize = 256
-        return earthCircumference / (tileSize * 2.0.pow(zoom))
-    }
+    abstract fun setupListeners()
 
-    protected abstract fun setMarkerPosition(
-        markerEntity: MarkerEntity<ActualMarker>,
-        position: GeoPoint,
-    )
+    override fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?) = markerRenderer.setOnMarkerAnimationStart(listener)
 
-    protected fun findMarkerFromPoint(
-        position: IGeoPoint,
-        zoom: Double,
-        tolerance: Double,
-    ): MarkerEntity<ActualMarker>? {
-        val meterInMapPixel = zoomToMetersPerPixel(zoom)
-        val radius = tolerance * meterInMapPixel
-        val entity = markerOverlayManager.markerManager.findNearest(position) ?: return null
-        val distance = haversineDistance(position, entity.state.position)
-        return if (distance <= radius) {
-            entity
-        } else {
-            null
-        }
-    }
+    override fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?) = markerRenderer.setOnMarkerAnimationEnd(listener)
 
-    protected fun setDraggingState(
-        markerState: MarkerState,
-        dragging: Boolean,
-    ) {
-        // Since this "isDragging" property is internal accessor,
-        // childViewControllers must call this method instead of "isDragging = true/false".
-        markerState.isDragging = dragging
-    }
-
-    protected fun animateMarkerDrop(
-        markerEntity: MarkerEntity<ActualMarker>, // ラップしたMarkerオブジェクト
-        duration: Int = Settings.Default.markerDropAnimateDuration, // アニメションする時間(ms)
-    ) {
-        // アニメーションの最終的な目標地点(地理座標)
-        val target = markerEntity.state.position
-
-        // 線形補間
-        val interpolator = LinearInterpolator()
-
-        // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
-        val startPoint = toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
-
-        markerAnimateStartListener?.invoke(markerEntity.state)
-
-        // ここからアニメ本体
-        flow {
-            val startTime = SystemClock.uptimeMillis()
-            var t = 0f
-            while (t < 1f) {
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                t = min(1f, elapsed.toFloat() / duration)
-                emit(interpolator.getInterpolation(t))
-                delay(16L)
-            }
-        }.onEach { t: Float ->
-            // 開始時の画面座標から緯度経度に戻す(垂直方向アニメーション起点)
-            val startLatLng = fromScreenOffset(startPoint)!!
-
-            // 緯度・経度を線形補間
-            val lat = t * target.latitude + (1f - t) * startLatLng.latitude
-            val lng = t * target.longitude + (1f - t) * startLatLng.longitude
-
-            // 現在の座標をマーカーに適用
-            val newPosition = GeoPoint.fromLatLong(lat, lng)
-            setMarkerPosition(markerEntity, newPosition)
-        }.onCompletion {
-            // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
-            markerEntity.state.position = target
-            markerEntity.state.animation = null
-            markerAnimateEndListener?.invoke(markerEntity.state)
-        }.launchIn(coroutine)
-    }
-
-    protected fun animateMarkerBounce(
-        markerEntity: MarkerEntity<ActualMarker>,
-        duration: Int = Settings.Default.markerBounceAnimateDuration, // アニメションする時間(ms)
-    ) {
-        val startTime = SystemClock.uptimeMillis()
-
-        // アニメーションの最終的な目標地点(地理座標)
-        val target = markerEntity.state.position
-
-        // 線形補間
-        val interpolator = BounceInterpolator()
-
-        // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
-        val startPoint = toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
-
-        markerAnimateStartListener?.invoke(markerEntity.state)
-        flow {
-            var t = 0f
-            while (t < 1f) {
-                val elapsed = SystemClock.uptimeMillis() - startTime
-                t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
-                emit(t)
-                delay(16L)
-            }
-        }.onEach { t ->
-            val startLatLng = this.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = target.longitude
-            val lat = t * target.latitude + (1f - t) * startLatLng.latitude
-
-            // 現在の座標をマーカーに適用
-            val newPosition = GeoPoint.fromLatLong(lat, lng)
-            setMarkerPosition(markerEntity, newPosition)
-        }.onCompletion {
-            // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
-            markerEntity.state.position = target
-            markerEntity.state.animation = null
-            markerAnimateEndListener?.invoke(markerEntity.state)
-        }.launchIn(coroutine)
-    }
 
     protected abstract fun clearPolyline()
 

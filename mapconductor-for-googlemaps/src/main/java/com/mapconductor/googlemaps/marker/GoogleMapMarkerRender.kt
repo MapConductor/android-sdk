@@ -5,11 +5,9 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.AbstractMarkerRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
@@ -42,13 +40,15 @@ class DefaultGoogleMapMarkerRenderer : MarkerRendererFactory<Marker> {
     }
 }
 class GoogleMapMarkerRender (
-    private val holder: GoogleMapViewHolder,
-    private val coroutine: CoroutineScope,
+    override val holder: GoogleMapViewHolder,
+    override val coroutine: CoroutineScope,
 ): AbstractMarkerRenderer<Marker>() {
-    private lateinit var defaultIcon: BitmapIcon
 
-    override fun init(markerManager: MarkerManager<Marker>) {
-        defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Default())
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<Marker>,
+        position: GeoPoint,
+    ) {
+        markerEntity.marker.position = position.toLatLng()
     }
 
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Marker?> {

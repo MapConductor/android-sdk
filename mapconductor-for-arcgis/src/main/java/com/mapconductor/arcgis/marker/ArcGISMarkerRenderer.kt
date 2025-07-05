@@ -7,12 +7,11 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.AbstractMarkerRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
@@ -45,13 +44,14 @@ class DefaultArcGISMarkerRender : MarkerRendererFactory<Graphic> {
 
 class ArcGISMarkerRenderer(
     private val markerLayer: GraphicsOverlay,
-    private val holder: ArcGISMapViewHolder,
-    private val coroutine: CoroutineScope,
+    override val holder: ArcGISMapViewHolder,
+    override val coroutine: CoroutineScope,
 ) : AbstractMarkerRenderer<Graphic>() {
-    private lateinit var defaultIcon: BitmapIcon
-
-    override fun init(markerManager: MarkerManager<Graphic>) {
-        defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Default())
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<Graphic>,
+        position: GeoPoint,
+    ) {
+        markerEntity.marker.geometry = position.toPoint()
     }
 
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Graphic?> {

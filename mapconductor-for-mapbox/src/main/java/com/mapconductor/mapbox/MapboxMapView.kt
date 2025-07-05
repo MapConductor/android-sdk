@@ -69,8 +69,8 @@ fun MapboxMapView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
-            controller.markerAnimateStartListener = onMarkerAnimateStart
-            controller.markerAnimateEndListener = onMarkerAnimateEnd
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 
             holderRef.value = holder
             controllerRef.value = controller

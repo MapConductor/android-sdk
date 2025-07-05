@@ -1,6 +1,5 @@
 package com.mapconductor.googlemaps
 
-import androidx.compose.ui.geometry.Offset
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -21,8 +20,6 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
@@ -30,7 +27,6 @@ import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRender
 import android.graphics.Color
-import android.graphics.Point
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,7 +53,7 @@ class GoogleMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
-    private val markerRenderer: MarkerRenderer<Marker> = GoogleMapMarkerRender(
+    override val markerRenderer: MarkerRenderer<Marker> = GoogleMapMarkerRender(
         holder = holder,
         coroutine = coroutine,
     ),
@@ -76,21 +72,16 @@ class GoogleMapViewController(
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
-            onAnimate = { entity ->
-                when (entity.state.animation) {
-                    MarkerAnimation.Drop -> animateMarkerDrop(entity)
-                    MarkerAnimation.Bounce -> animateMarkerBounce(entity)
-                    else -> throw IllegalArgumentException("No animation is available: ${entity.state.animation}")
-                }
-            }
+            onAnimate = markerRenderer::animate,
         )
     }
 
     init {
         setupListeners()
+        markerRenderer.init(markerOverlayManager)
     }
 
-    private fun setupListeners() {
+    override fun setupListeners() {
         holder.map.setOnCameraMoveStartedListener(this)
         holder.map.setOnCameraMoveCanceledListener(this)
         holder.map.setOnCameraMoveListener(this)
@@ -140,25 +131,6 @@ class GoogleMapViewController(
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
-        val point =
-            holder.map.projection.toScreenLocation(
-                GeoPoint.from(position).toLatLng(),
-            )
-        return Offset(
-            x = point.x.toFloat(),
-            y = point.y.toFloat(),
-        )
-    }
-
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
-        holder.map.projection
-            .fromScreenLocation(
-                Point(
-                    offset.x.toInt(),
-                    offset.y.toInt(),
-                ),
-            ).toGeoPoint()
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
@@ -212,7 +184,7 @@ class GoogleMapViewController(
         this.getMarkerStateFrom(marker)?.also { state ->
 
             // Suppress the recomposition for the position property
-            setDraggingState(state, true)
+            markerRenderer.setDraggingState(state, true)
 
             state.position = marker.position.toGeoPoint()
             markerDragListener?.invoke(state)
@@ -231,17 +203,10 @@ class GoogleMapViewController(
             state.position = marker.position.toGeoPoint()
 
             // Restore the recomposition for the position property
-            setDraggingState(state, false)
+            markerRenderer.setDraggingState(state, false)
 
             markerDragStartListener?.invoke(state)
         }
-    }
-
-    override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Marker>,
-        position: GeoPoint,
-    ) {
-        markerEntity.marker.position = position.toLatLng()
     }
 
     override fun clearPolyline() {

@@ -3,6 +3,8 @@ package com.mapconductor.mapbox.marker
 import androidx.compose.ui.geometry.Offset
 import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.AbstractMarkerRenderer
@@ -16,10 +18,14 @@ import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.UpdateParams
 import com.mapconductor.mapbox.MapboxMapViewHolder
+import com.mapconductor.mapbox.MarkerDragLayer
+import com.mapconductor.mapbox.MarkerLayer
 import com.mapconductor.mapbox.toPoint
 import kotlin.coroutines.suspendCoroutine
 import android.graphics.Bitmap
 import android.graphics.Bitmap.createBitmap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class DefaultMapboxMarkerRenderer : MarkerRendererFactory<Feature> {
     override fun create(
@@ -42,10 +48,12 @@ class DefaultMapboxMarkerRenderer : MarkerRendererFactory<Feature> {
 }
 
 class MapboxMarkerRenderer(
-    private val holder: MapboxMapViewHolder,
+    override val holder: MapboxMapViewHolder,
+    override val coroutine: CoroutineScope,
+    private val markerLayer: MarkerLayer,
+    private val dragLayer: MarkerDragLayer,
 ): AbstractMarkerRenderer<Feature>() {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
-    private lateinit var defaultIcon: BitmapIcon
 
     object Prop {
         const val MARKER_ID = "id"
@@ -53,13 +61,52 @@ class MapboxMarkerRenderer(
         const val DEFAULT_MARKER_ID = "default"
     }
 
-    override fun init(markerManager: MarkerManager<Feature>) {
+    override fun init(markerOverlayManager: MarkerOverlayManager<Feature>) {
+        super.init(markerOverlayManager)
         holder.map.getStyle { style ->
-            defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Default())
+            defaultIcon = markerOverlayManager.markerManager.createBitmapIcon(MarkerIcon.Default())
             style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
         }
     }
 
+    fun drawMarkerLayer() {
+        val entities = markerOverlayManager.markerManager.allEntities()
+        coroutine.launch {
+            markerLayer.draw(entities)
+        }
+    }
+
+    fun drawDragLayer() {
+        coroutine.launch {
+            dragLayer.draw()
+        }
+    }
+
+    override fun setMarkerPosition(
+        markerEntity: MarkerEntity<Feature>,
+        position: GeoPoint,
+    ) {
+        val entities = markerOverlayManager.markerManager.allEntities()
+        val feature =
+            Feature.fromGeometry(
+                position.toPoint(),
+                markerEntity.marker.properties(),
+            )
+        markerEntity.marker = feature
+        val features =
+            entities.map {
+                if (it.state.id == markerEntity.state.id) {
+                    feature
+                } else {
+                    it.marker
+                }
+            }
+        coroutine.launch {
+            markerLayer.source.featureCollection(
+                FeatureCollection.fromFeatures(features),
+            )
+        }
+    }
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Feature> {
         val style = suspendCoroutine { continuation ->
             holder.map.getStyle { style ->
