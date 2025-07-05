@@ -114,9 +114,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                                 override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
                             }
                         }
-                    }.filter { it -> it != null }
+                    }
+                    .filterNotNull()
 
-            val actualMarkers: List<ActualMarker?> = onChange(updates as List<UpdateParams<ActualMarker>>)
+            val actualMarkers: List<ActualMarker?> = onChange(updates)
 
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
