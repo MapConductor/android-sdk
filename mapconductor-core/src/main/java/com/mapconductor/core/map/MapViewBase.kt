@@ -164,7 +164,7 @@ fun <
                 val position = marker.position
                 val icon = marker.icon ?: MarkerIcon.Default()
                 val iconScale = icon.scale ?: 2f
-                val positionOffset = controller.toScreenOffset(position) ?: return@forEach
+                val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
 
                 InfoWindowCompose(
                     positionOffset = positionOffset,

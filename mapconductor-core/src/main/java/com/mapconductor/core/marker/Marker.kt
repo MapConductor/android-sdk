@@ -92,24 +92,24 @@ class MarkerState(
         return result
     }
 
-    fun fingerPrint(): MarkerFingerPrint {
-        return MarkerFingerPrint(
+    fun fingerPrint(): MarkerFingerPrint =
+        MarkerFingerPrint(
             this.id.hashCode(),
             icon.hashCode(),
             draggable.hashCode(),
             internalPosition.hashCode(),
-            animation.hashCode()
+            animation.hashCode(),
         )
-    }
 
     fun asFlow(): Flow<MarkerFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
 }
+
 data class MarkerFingerPrint(
     val id: Int,
     val icon: Int?,
     val draggable: Int,
     val position: Int,
-    val animation: Int?
+    val animation: Int?,
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 

@@ -5,9 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
-import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapInitOptions
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -44,16 +42,7 @@ fun MapboxMapView(
         registry = registry,
         onInitialize = {
             val cameraOptions =
-                state.mapCameraPosition.value?.let { it ->
-                    CameraOptions
-                        .Builder()
-                        .apply {
-                            center(GeoPoint.from(it.position).toPoint())
-                            zoom(it.zoom)
-                            pitch(it.tilt)
-                            bearing(it.bearing)
-                        }.build()
-                }
+                state.mapCameraPosition.value?.toCameraOptions()
 
             val styleUri = state.mapDesignType.getValue()
             val mapInitOptions =
@@ -79,8 +68,8 @@ fun MapboxMapView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
-            controller.markerAnimateStartListener = onMarkerAnimateStart
-            controller.markerAnimateEndListener = onMarkerAnimateEnd
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 
             holderRef.value = holder
             controllerRef.value = controller
