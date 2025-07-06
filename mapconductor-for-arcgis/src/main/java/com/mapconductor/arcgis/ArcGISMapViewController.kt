@@ -12,6 +12,7 @@ import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -30,7 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IArcGISMapViewController : MapViewController<Graphic> {
+interface IArcGISMapViewController : MapViewController<Graphic, Graphic> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -61,7 +62,8 @@ class ArcGISMapViewController(
             sceneProperties.surfacePlacement = SurfacePlacement.Relative
         },
     private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
-) : BaseMapViewController<Camera, Graphic>(),
+    override val circleManager: CircleManager<Graphic> = CircleManager()
+) : BaseMapViewController<Camera, Graphic, Graphic>(),
     IArcGISMapViewController {
     override val markerRenderer: MarkerRenderer<Graphic> =
         ArcGISMarkerRenderer(

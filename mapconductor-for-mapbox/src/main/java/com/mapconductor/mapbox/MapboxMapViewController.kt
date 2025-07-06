@@ -33,6 +33,7 @@ import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -56,7 +57,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IMapboxMapViewController : MapViewController<Feature> {
+interface IMapboxMapViewController : MapViewController<Feature, Feature> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -89,7 +90,8 @@ internal class MapboxMapViewController(
             sourceId = "marker-drag-source",
             layerId = "marker-drag-layer",
         ),
-) : BaseMapViewController<CameraState, Feature>(),
+    override val circleManager: CircleManager<Feature> = CircleManager(),
+) : BaseMapViewController<CameraState, Feature, Feature>(),
     IMapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,

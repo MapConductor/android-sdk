@@ -5,6 +5,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import androidx.compose.ui.geometry.Size
 import androidx.core.graphics.createBitmap
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
@@ -24,11 +25,12 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController<ActualMarker> {
+interface MapViewController<ActualMarker, ActualCircle> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManager<ActualMarker>
     val hexGeocell: HexGeocell
+    val circleManager: CircleManager<ActualCircle>
 
     suspend fun addMarkers(data: List<MarkerState>)
 
@@ -59,7 +61,7 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle> : MapViewController<ActualMarker, ActualCircle> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
