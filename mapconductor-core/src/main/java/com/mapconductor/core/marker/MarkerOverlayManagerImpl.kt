@@ -4,6 +4,8 @@ import com.mapconductor.core.icons.Default
 import kotlinx.coroutines.sync.Semaphore
 
 interface MarkerOverlayManager<ActualMarker> {
+    val markerManager: MarkerManager<ActualMarker>
+
     suspend fun addMarkers(markerList: List<MarkerState>)
 
     suspend fun updateMarker(marker: MarkerState)
@@ -20,7 +22,7 @@ interface UpdateParams<ActualMarker> {
 }
 
 class MarkerOverlayManagerImpl<ActualMarker>(
-    val markerManager: MarkerManager<ActualMarker>,
+    override val markerManager: MarkerManager<ActualMarker>,
     val onRemove: suspend (List<MarkerEntity<ActualMarker>>) -> Unit,
     val onAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<ActualMarker?>,
     val onChange: suspend (List<UpdateParams<ActualMarker>>) -> List<ActualMarker?>,
@@ -112,9 +114,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                                 override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
                             }
                         }
-                    }.filter { it -> it != null }
+                    }
+                    .filterNotNull()
 
-            val actualMarkers: List<ActualMarker?> = onChange(updates as List<UpdateParams<ActualMarker>>)
+            val actualMarkers: List<ActualMarker?> = onChange(updates)
 
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {

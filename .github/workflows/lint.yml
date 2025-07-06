@@ -11,7 +11,7 @@ name: Lint Check on Push
 # ただし「Draft → Ready」に切り替えた瞬間のみ ready_for_review で実行されます
 on:
   pull_request:
-    types: [synchronize, requested_review, ready_for_review]
+    types: [opened, reopened, synchronize, requested_review, ready_for_review]
     branches:
       - main
 
