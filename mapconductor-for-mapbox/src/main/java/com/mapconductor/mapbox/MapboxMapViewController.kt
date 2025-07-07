@@ -33,6 +33,7 @@ import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
@@ -56,6 +57,7 @@ import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.mapconductor.mapbox.circle.CircleLayerWrapper
 
 interface IMapboxMapViewController : MapViewController<Feature, Feature> {
     fun moveCamera(
@@ -89,6 +91,11 @@ internal class MapboxMapViewController(
         MarkerDragLayer(
             sourceId = "marker-drag-source",
             layerId = "marker-drag-layer",
+        ),
+    private val circleLayerWrapper: CircleLayerWrapper =
+        CircleLayerWrapper(
+            sourceId = "circle-source",
+            layerId = "circle-layer",
         ),
     override val circleManager: CircleManager<Feature> = CircleManager(),
 ) : BaseMapViewController<CameraState, Feature, Feature>(),
@@ -132,6 +139,9 @@ internal class MapboxMapViewController(
 
             style.addSource(lineSource)
             style.addLayer(lineLayer)
+
+            style.addSource(circleLayerWrapper.source)
+            style.addLayer(circleLayerWrapper.layer)
         }
     }
 
@@ -178,11 +188,19 @@ internal class MapboxMapViewController(
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
     override suspend fun addCircles(data: List<CircleState>) {
-        TODO("Not yet implemented")
+        val entites = data.map {
+            val feature = Feature.fromGeometry(GeoPoint.from(it.center).toPoint())
+
+            CircleEntityImpl<Feature>(
+                circle = feature,
+                state = it
+            )
+        }
+        circleLayerWrapper.draw(entites)
     }
 
     override suspend fun updateCircle(state: CircleState) {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun run(cameraChanged: CameraChanged) {

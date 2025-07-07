@@ -87,7 +87,7 @@ interface MapOverlay<DataType> {
 
     suspend fun render(
         data: List<DataType>,
-        controller: MapViewController<*>,
+        controller: MapViewController<*, *>,
     )
 }
 
