@@ -26,15 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import com.arcgismaps.data.DrawingTool
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.toFixed
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.IconItem
@@ -133,7 +130,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 
     val markerList =
         remember {
-            appViewModel.markerList.map {
+            appViewModel.markerList.subList(0,1).map {
                 it.copy(
                     draggable = true,
                 )
@@ -178,8 +175,8 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     markers = markerList,
                     onDirectionButtonClick = { state ->
                         state.icon =
-                            MarkerIcon.Default(
-                                fillColor = Color.Blue.toArgb(),
+                            DefaultIcon(
+                                fillColor = Color.Blue,
                             )
 
                         state.animation = MarkerAnimation.Bounce

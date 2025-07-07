@@ -1,6 +1,5 @@
 package com.mapconductor.core.marker
 
-import com.mapconductor.core.icons.Default
 import kotlinx.coroutines.sync.Semaphore
 
 interface MarkerOverlayManager<ActualMarker> {
@@ -46,7 +45,8 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                 return@filter !prevEntity.state.equals(state)
             }
 
-        val defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Companion.Default())
+        val defaultIcon = DefaultIcon()
+        val defaultIconBitmapIcon = defaultIcon.toBitmapIcon()
 
         // Remove markers
         if (removed.isNotEmpty()) {
@@ -65,10 +65,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
 
             addedList
                 .map { state ->
-                    val markerIcon =
-                        state.icon?.let {
-                            markerManager.getBitmapIcon(it)
-                        } ?: defaultIcon
+                    val markerIcon = state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
                     Pair(state, markerIcon)
                 }.also {
                     val actualMarkers: List<ActualMarker?> = onAdd(it)
@@ -91,10 +88,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
             val updates =
                 updated
                     .map { state ->
-                        val markerIcon =
-                            state.icon?.let {
-                                markerManager.getBitmapIcon(it)
-                            } ?: defaultIcon
+                        val markerIcon = state.icon ?: defaultIcon
                         val prevEntity = markerManager.getEntity(state.id) ?: return@map null
 
                         // プロパティが変わっていなければ、マーカーを再描画しない
@@ -110,7 +104,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                             modifiedEntities.add(entity)
                             object : UpdateParams<ActualMarker> {
                                 override val entity: MarkerEntity<ActualMarker> = entity
-                                override val bitmapIcon: BitmapIcon = markerIcon
+                                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
                                 override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
                             }
                         }
@@ -151,10 +145,8 @@ class MarkerOverlayManagerImpl<ActualMarker>(
 
         semaphore.acquire()
         val marker = prevEntity.marker
-        val defaultIcon = markerManager.createBitmapIcon(MarkerIcon.Companion.Default())
-        val markerIcon = state.icon?.let {
-            markerManager.getBitmapIcon(it)
-        } ?: defaultIcon
+        val defaultIcon = DefaultIcon()
+        val markerIcon = state.icon ?: defaultIcon
 
         val entity =
             MarkerEntityImpl(
@@ -164,7 +156,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
         val markerParams =
             object : UpdateParams<ActualMarker> {
                 override val entity: MarkerEntity<ActualMarker> = entity
-                override val bitmapIcon: BitmapIcon = markerIcon
+                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
                 override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
             }
         val markers = onChange(listOf(markerParams))

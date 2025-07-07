@@ -28,10 +28,9 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.DefaultIcon
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview
@@ -174,8 +173,8 @@ fun <
             bubbles.forEach { entry ->
                 val marker = entry.state.marker ?: return@forEach
                 val position = marker.position
-                val icon = marker.icon ?: MarkerIcon.Default()
-                val iconScale = icon.scale ?: 2f
+                val icon = marker.icon ?: DefaultIcon()
+                val iconScale = icon.scale
                 val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
 
                 InfoWindowCompose(
@@ -184,8 +183,8 @@ fun <
                     content = entry.content,
                     iconSize =
                         Size(
-                            icon.size.width * iconScale,
-                            icon.size.height * iconScale,
+                            icon.iconSize * iconScale,
+                            icon.iconSize * iconScale,
                         ),
                     iconOffset = icon.anchor,
                     infoAnchorOffset = icon.infoAnchor,

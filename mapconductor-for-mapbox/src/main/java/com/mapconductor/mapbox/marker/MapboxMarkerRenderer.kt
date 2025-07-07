@@ -6,11 +6,10 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.AbstractMarkerRenderer
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
@@ -60,7 +59,7 @@ class MapboxMarkerRenderer(
     override fun init(markerOverlayManager: MarkerOverlayManager<Feature>) {
         super.init(markerOverlayManager)
         holder.map.getStyle { style ->
-            defaultIcon = markerOverlayManager.markerManager.createBitmapIcon(MarkerIcon.Default())
+            defaultIcon = DefaultIcon().toBitmapIcon()
             style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
         }
     }

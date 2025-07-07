@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-//    val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     id: String? = null,
     var extra: Parcelable? = null,
