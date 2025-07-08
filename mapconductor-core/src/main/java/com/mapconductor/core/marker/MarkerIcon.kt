@@ -158,7 +158,7 @@ class DefaultIcon(
         BitmapIconCache.get(id)?.let {
             return it
         }
-        val originalSize = Size(23.5f, 23.5f)
+        val originalSize = Size(23.5f, 25.6f)
         val svgOriginalSize = max(originalSize.width, originalSize.height)
 
         val canvasSize = ResourceProvider.dpToPx(iconSize.value * scale)
@@ -273,7 +273,7 @@ class DefaultIcon(
             this.isAntiAlias = true
             // BlurMaskFilterの半径はピクセル単位。論理半径をピクセルに変換。
             // scaleXとscaleYが異なる場合を考慮し、平均または主要な軸のスケールを使う。ここではscaleYを例に。
-            val pixelBlurRadius = 0.5
+            val pixelBlurRadius = 0.1
             this.maskFilter = BlurMaskFilter(pixelBlurRadius.toFloat(), BlurMaskFilter.Blur.OUTER)
         }
         canvas.withScale(scaleFactor, scaleFactor) {
@@ -326,7 +326,6 @@ class DefaultIcon(
                 drawText(labelText, xForText, yForText + textHeight - metrics.descent, textPaint)
 
                 // for Debugging
-                /*
                 drawRect(xForText, yForText, xForText + textWidth, yForText + textHeight, Paint().apply {
                     this.color = Color.Blue.toArgb()
                     this.style = Paint.Style.STROKE
@@ -338,7 +337,6 @@ class DefaultIcon(
                     this.style = Paint.Style.STROKE
                     strokeWidth = oneDp
                 })
-                 */
             }
         }
 

@@ -54,6 +54,7 @@ class MapboxMarkerRenderer(
     object Prop {
         const val ICON_ID = "icon_id"
         const val DEFAULT_MARKER_ID = "default"
+        const val SCALE = "scale"
     }
 
     override fun init(markerOverlayManager: MarkerOverlayManager<Feature>) {
@@ -114,8 +115,8 @@ class MapboxMarkerRenderer(
         newMarkers.forEach { (state, bitmapIcon) ->
             val iconKey = state.icon.hashCode().toString()
             if (!iconRefCounter.contains(iconKey)) {
-                val adjusted = adjustIconForAnchor(bitmapIcon)
-                style.addImage(iconKey, adjusted.bitmap)
+//                val adjusted = adjustIconForAnchor(bitmapIcon)
+                style.addImage(iconKey, bitmapIcon.bitmap)
                 iconRefCounter[iconKey] = 0
             }
         }
@@ -134,6 +135,7 @@ class MapboxMarkerRenderer(
                     } else {
                         addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                     }
+                    addProperty(Prop.SCALE, 1.0f)// state.icon?.scale ?: 1.0)
                 }
             Feature.fromGeometry(position, properties, featureId)
         }
@@ -176,6 +178,7 @@ class MapboxMarkerRenderer(
 
             val properties =
                 JsonObject().apply {
+                    addProperty(Prop.SCALE, params.entity.state.icon?.scale ?: 1.0f)
                     if (currFinger.icon == prevFinger.icon) {
                         addProperty(
                             Prop.ICON_ID,
@@ -199,8 +202,8 @@ class MapboxMarkerRenderer(
                                 if (iconRefCounter.contains(iconKey)) {
                                     iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
                                 } else {
-                                    val adjusted = adjustIconForAnchor(params.bitmapIcon)
-                                    style.addImage(iconKey, adjusted.bitmap)
+                                    //val adjusted = adjustIconForAnchor(params.bitmapIcon)
+                                    style.addImage(iconKey, params.bitmapIcon.bitmap)
                                     iconRefCounter[iconKey] = 1
                                 }
                                 addProperty(Prop.ICON_ID, iconKey)

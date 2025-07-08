@@ -12,12 +12,9 @@ import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
-import com.mapbox.maps.extension.style.expressions.generated.Expression
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.LineLayer
-import com.mapbox.maps.extension.style.layers.generated.SymbolLayer
 import com.mapbox.maps.extension.style.layers.generated.lineLayer
-import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.LineCap
 import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
 import com.mapbox.maps.extension.style.sources.addSource
@@ -158,20 +155,7 @@ internal class MapboxMapViewController(
                 lineCap(LineCap.ROUND)
             }
 
-        setupSymbolLayer(markerLayer.layer)
-        setupSymbolLayer(dragLayer.layer)
-
         setupListeners()
-    }
-
-    private fun setupSymbolLayer(layer: SymbolLayer) {
-        layer.apply {
-            iconSize(1.0)
-            iconImage(Expression.get(MapboxMarkerRenderer.Prop.ICON_ID))
-            iconAllowOverlap(true)
-            iconIgnorePlacement(true)
-            iconAnchor(IconAnchor.BOTTOM)
-        }
     }
 
     override fun setupListeners() {

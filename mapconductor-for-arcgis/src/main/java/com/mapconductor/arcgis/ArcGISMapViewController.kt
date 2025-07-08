@@ -216,11 +216,9 @@ class ArcGISMapViewController(
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun updateCircle(state: CircleState) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()

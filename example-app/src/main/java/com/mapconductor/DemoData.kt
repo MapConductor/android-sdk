@@ -36,7 +36,7 @@ val StarbucksHI_list =
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     strokeWidth = 1.dp,
-                    scale = 1.5f,
+//                    scale = 1.5f,
                 )
 //                MarkerIcon.Companion.SquareMarker(
 //                    fillColor = Color.BLUE,
