@@ -2,6 +2,7 @@ package com.mapconductor.mapbox.circle
 
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
+import com.mapbox.maps.extension.style.expressions.generated.Expression
 import com.mapbox.maps.extension.style.layers.generated.CircleLayer
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
@@ -11,7 +12,9 @@ class CircleLayerWrapper(
     val sourceId: String,
     val layerId: String,
 ) {
-    val layer = CircleLayer(layerId, sourceId)
+    val layer = CircleLayer(layerId, sourceId).apply {
+        circleRadius(Expression.get("radius"))
+    }
 
     val source: GeoJsonSource =
         geoJsonSource(sourceId) {

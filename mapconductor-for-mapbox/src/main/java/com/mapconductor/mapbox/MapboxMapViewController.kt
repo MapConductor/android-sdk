@@ -1,6 +1,7 @@
 package com.mapconductor.mapbox
 
 import androidx.compose.ui.geometry.Offset
+import com.google.gson.JsonObject
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
@@ -189,7 +190,12 @@ internal class MapboxMapViewController(
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
     override suspend fun addCircles(data: List<CircleState>) {
         val entites = data.map {
-            val feature = Feature.fromGeometry(GeoPoint.from(it.center).toPoint())
+            val feature = Feature.fromGeometry(
+                GeoPoint.from(it.center).toPoint(),
+                JsonObject().apply {
+                    addProperty("radius", it.radius)
+                }
+            )
 
             CircleEntityImpl<Feature>(
                 circle = feature,
