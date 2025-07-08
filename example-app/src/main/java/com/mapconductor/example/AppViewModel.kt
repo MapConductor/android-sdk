@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.mapconductor.StarbucksHI_list
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapCameraPosition
@@ -14,6 +15,7 @@ import com.mapconductor.example.toast.ToastMessage
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,11 +30,13 @@ interface AppViewModel {
 
     fun changeState(state: MapViewState<*>)
 
-    fun flyTo(listener: MapViewState.MoveCameraCallback? = null)
+    fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
 
     fun onMarkerClick(clicked: MarkerState)
 
     fun onMapClick(clicked: GeoPoint)
+
+    fun onCircleClick(clicked: CircleState)
 
     fun showToast(text: String)
 
@@ -91,18 +95,9 @@ class AppViewModelImpl :
         return mapIntent
     }
 
-    override fun flyTo(listener: MapViewState.MoveCameraCallback?) {
+    override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {
         this@AppViewModelImpl.mapViewState.value?.moveCameraTo(
-            cameraPosition =
-                MapCameraPosition(
-                    position =
-                        GeoPoint(
-                            latitude = 40.689184289566214,
-                            longitude = -74.04454331830473,
-                        ),
-                    tilt = 70.0,
-                    zoom = 18.0,
-                ),
+            cameraPosition = initCameraPosition,
             durationMs = 3000,
             listener = listener,
         )
@@ -131,6 +126,10 @@ class AppViewModelImpl :
     override fun onMapClick(clicked: GeoPoint) {
         this._selectedMarker.value = null
         this.infoBubbleState.close()
+    }
+
+    override fun onCircleClick(clicked: CircleState) {
+        Log.d("debug", "onCircleClick: ")
     }
 
     override fun onCleared() {

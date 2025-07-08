@@ -28,24 +28,25 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.DefaultIcon
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
 
+@OptIn(FlowPreview::class)
 @Composable
 fun <
     SpecificState : MapViewState<*>,
     // Replace Any with a base MapViewController if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewController<*>,
+    SpecificController : MapViewController<*, *>,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
@@ -172,9 +173,9 @@ fun <
             bubbles.forEach { entry ->
                 val marker = entry.state.marker ?: return@forEach
                 val position = marker.position
-                val icon = marker.icon ?: MarkerIcon.Default()
-                val iconScale = icon.scale ?: 2f
-                val positionOffset = controller.toScreenOffset(position) ?: return@forEach
+                val icon = marker.icon ?: DefaultIcon()
+                val iconScale = icon.scale
+                val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
 
                 InfoWindowCompose(
                     positionOffset = positionOffset,
@@ -182,8 +183,8 @@ fun <
                     content = entry.content,
                     iconSize =
                         Size(
-                            icon.size.width * iconScale,
-                            icon.size.height * iconScale,
+                            icon.iconSize.value * iconScale,
+                            icon.iconSize.value * iconScale,
                         ),
                     iconOffset = icon.anchor,
                     infoAnchorOffset = icon.infoAnchor,

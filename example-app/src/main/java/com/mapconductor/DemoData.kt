@@ -1,13 +1,10 @@
 package com.mapconductor
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.icons.HeartInCircle
-import com.mapconductor.icons.SquareMarker
-import com.mapconductor.icons.StarInCircle
-import com.mapconductor.icons.Triangle
-import android.graphics.Color
 import android.os.Bundle
 
 /**
@@ -32,11 +29,20 @@ val StarbucksHI_list =
                     putBoolean("only_reserved", false)
                 },
             icon =
-                MarkerIcon.Companion.SquareMarker(
-                    fillColor = Color.BLUE,
-                    strokeWidth = 1f,
-                    scale = 2f,
-                ),
+                DefaultIcon(
+                    label = "店",
+                    labelTextColor = Color.Black,
+                    labelTextSize = 13.dp,
+                    fillColor = Color.Red,
+                    strokeColor = Color.White,
+                    strokeWidth = 1.dp,
+//                    scale = 1.5f,
+                )
+//                MarkerIcon.Companion.SquareMarker(
+//                    fillColor = Color.BLUE,
+//                    strokeWidth = 1f,
+//                    scale = 2f,
+//                ),
         ),
         MarkerState(
             position =
@@ -52,12 +58,12 @@ val StarbucksHI_list =
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
                 },
-            icon =
-                MarkerIcon.Companion.HeartInCircle(
-                    fillColor = 0xFFD71D3B.toInt(),
-                    strokeColor = Color.WHITE,
-                    strokeWidth = 2f,
-                ),
+//            icon =
+//                MarkerIcon.Companion.HeartInCircle(
+//                    fillColor = 0xFFD71D3B.toInt(),
+//                    strokeColor = Color.WHITE,
+//                    strokeWidth = 2f,
+//                ),
         ),
         MarkerState(
             position =
@@ -73,12 +79,12 @@ val StarbucksHI_list =
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
                 },
-            icon =
-                MarkerIcon.Companion.StarInCircle(
-                    fillColor = 0xFFFFD800.toInt(),
-                    strokeColor = Color.WHITE,
-                    strokeWidth = 2f,
-                ),
+//            icon =
+//                MarkerIcon.Companion.StarInCircle(
+//                    fillColor = 0xFFFFD800.toInt(),
+//                    strokeColor = Color.WHITE,
+//                    strokeWidth = 2f,
+//                ),
         ),
         MarkerState(
             position =
@@ -94,13 +100,13 @@ val StarbucksHI_list =
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
                 },
-            icon =
-                MarkerIcon.Companion.Triangle(
-                    outsideColor = 0xFF008000.toInt(),
-                    strokeWidth = 2f,
-                    triangleHeight = 24f,
-                    triangleWidth = 24f,
-                ),
+//            icon =
+//                MarkerIcon.Companion.Triangle(
+//                    outsideColor = 0xFF008000.toInt(),
+//                    strokeWidth = 2f,
+//                    triangleHeight = 24f,
+//                    triangleWidth = 24f,
+//                ),
         ),
         MarkerState(
             position =
