@@ -4,18 +4,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.mapconductor.core.features.IGeoPoint
-import android.graphics.Color
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class CircleState(
     center: IGeoPoint,
-    radius: Int,
-    strokeColor: Int = Color.RED,
-    strokeWidth: Int = 2,
-    fillColor: Int = Color.argb(127, 255, 255, 255),
+    radius: Double,
+    strokeColor: Color = Color.Red,
+    strokeWidth: Dp = 1.dp,
+    fillColor: Color = Color(
+        red = 255,
+        green = 255,
+        blue = 255,
+        alpha = 127,
+    ),
     id: String? = null,
     extra: Parcelable? = null,
 ) {
@@ -31,11 +38,11 @@ class CircleState(
                 id ?: circleId(
                     listOf(
                         center.hashCode(),
-                        radius,
+                        radius.hashCode(),
                         extra?.hashCode() ?: 0,
-                        strokeColor,
-                        strokeWidth,
-                        fillColor,
+                        strokeColor.hashCode(),
+                        strokeWidth.hashCode(),
+                        fillColor.hashCode(),
                     ),
                 )
                 ).toString()
@@ -49,10 +56,10 @@ class CircleState(
         return CircleFingerPrint(
             id = this.id.hashCode(),
             center = center.hashCode(),
-            radius = radius,
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            fillColor = fillColor,
+            radius = radius.hashCode(),
+            strokeColor = strokeColor.hashCode(),
+            strokeWidth = strokeWidth.hashCode(),
+            fillColor = fillColor.hashCode(),
             extra = extra?.hashCode() ?: 0,
         )
     }

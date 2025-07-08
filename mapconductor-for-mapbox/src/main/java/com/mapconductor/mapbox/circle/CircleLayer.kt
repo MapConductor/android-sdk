@@ -14,6 +14,11 @@ class CircleLayerWrapper(
 ) {
     val layer = CircleLayer(layerId, sourceId).apply {
         circleRadius(Expression.get("radius"))
+        circleColor(Expression.get("fillColor"))
+        circleOpacity(Expression.get("fillAlpha"))
+        circleStrokeOpacity(Expression.get("strokeAlpha"))
+        circleStrokeColor(Expression.get("strokeColor"))
+        circleStrokeWidth(Expression.get("strokeWidth"))
     }
 
     val source: GeoJsonSource =
