@@ -34,6 +34,7 @@ import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleEntity
 import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
@@ -59,6 +60,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.mapconductor.mapbox.circle.CircleLayerWrapper
+import kotlinx.coroutines.sync.Semaphore
 
 interface IMapboxMapViewController : MapViewController<Feature, Feature> {
     fun moveCamera(
@@ -105,6 +107,7 @@ internal class MapboxMapViewController(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
+    val semaphore = Semaphore(1)
     override val markerRenderer: MapboxMarkerRenderer =
         MapboxMarkerRenderer(
             holder = holder,
@@ -189,7 +192,8 @@ internal class MapboxMapViewController(
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
     override suspend fun addCircles(data: List<CircleState>) {
-        val entites = data.map {
+        semaphore.acquire()
+        data.forEach {
             val feature = Feature.fromGeometry(
                 GeoPoint.from(it.center).toPoint(),
                 JsonObject().apply {
@@ -197,16 +201,48 @@ internal class MapboxMapViewController(
                 }
             )
 
-            CircleEntityImpl<Feature>(
+            val entity = CircleEntityImpl<Feature>(
                 circle = feature,
                 state = it
             )
+            circleManager.registerEntity(entity)
         }
-        circleLayerWrapper.draw(entites)
+
+        coroutine.launch {
+            val entities = circleManager.allEntities()
+            circleLayerWrapper.draw(entities)
+        }
+
+        semaphore.release()
     }
 
     override suspend fun updateCircle(state: CircleState) {
-//        TODO("Not yet implemented")
+        val prevEntity = circleManager.getEntity(state.id) ?: return
+        val currentFinger = state.fingerPrint()
+        val prevFinger = prevEntity.fingerPrint
+        if(currentFinger == prevFinger) {
+            return
+        }
+
+        semaphore.acquire()
+        val feature = Feature.fromGeometry(
+            GeoPoint.from(state.center).toPoint(),
+            JsonObject().apply {
+                addProperty("radius", state.radius)
+            }
+        )
+
+        val entity = CircleEntityImpl(
+            circle = feature,
+            state = state,
+        )
+
+        circleManager.updateEntity(entity)
+
+        val entities = circleManager.allEntities()
+
+        circleLayerWrapper.draw(entities)
+        semaphore.release()
     }
 
     override fun run(cameraChanged: CameraChanged) {
