@@ -12,10 +12,12 @@ import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
 import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
+import com.here.sdk.mapview.MapPolygon
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -37,7 +39,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IHereMapViewController : MapViewController<MapMarker> {
+interface IHereMapViewController : MapViewController<MapMarker, MapPolygon> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -59,7 +61,8 @@ class HereMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
-) : BaseMapViewController<MapCamera.State, MapMarker>(),
+    override val circleManager: CircleManager<MapPolygon> = CircleManager(),
+) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
