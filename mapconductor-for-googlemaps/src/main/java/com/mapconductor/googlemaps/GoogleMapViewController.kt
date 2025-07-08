@@ -1,5 +1,6 @@
 package com.mapconductor.googlemaps
 
+import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -143,14 +144,14 @@ class GoogleMapViewController(
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->
-            val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.toDouble())
+            val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.value)
             circleStates.set(state.id, state)
             val options = CircleOptions()
                 .center(GeoPoint.from(state.center).toLatLng())
-                .radius(state.radius.toDouble())
+                .radius(state.radius)
                 .strokeWidth(strokeWidth.toFloat())
-                .strokeColor(state.strokeColor)
-                .fillColor(state.fillColor)
+                .strokeColor(state.strokeColor.toArgb())
+                .fillColor(state.fillColor.toArgb())
                 .clickable(true)
             return@map holder.map.addCircle(options).also {
                 it.tag = state.id

@@ -12,10 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.mapconductor.core.circle.Circle
-import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
@@ -60,7 +59,10 @@ fun MapArea(
                     // TODO: circleStateに置換する。このコードはデバッグ用
                     Circle(
                         center = markerState.position,
-                        radius = 1000,
+                        radius = 1000.0,
+                        fillColor = Color(0x88FF3366),
+                        strokeColor = Color.White,
+                        strokeWidth = 1.dp,
                     )
                 }
             }
