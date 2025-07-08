@@ -15,9 +15,9 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -87,11 +87,9 @@ class HereMapViewController(
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun addCircles(data: List<CircleState>) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun updateCircle(state: CircleState) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
