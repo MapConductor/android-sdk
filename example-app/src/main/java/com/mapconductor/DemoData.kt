@@ -30,13 +30,13 @@ val StarbucksHI_list =
                 },
             icon =
                 DefaultIcon(
-//                    label = "あ",
-//                    labelTextColor = Color.BLACK,
-//                    labelTextSizeLogical = 10f,
+                    label = "店",
+                    labelTextColor = Color.Black,
+                    labelTextSize = 13.dp,
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     strokeWidth = 1.dp,
-                    scale = 1f
+                    scale = 1.5f,
                 )
 //                MarkerIcon.Companion.SquareMarker(
 //                    fillColor = Color.BLUE,

@@ -31,6 +31,7 @@ object ResourceProvider {
         _initialized.value = true
     }
 
-    fun toDp(value: Double): Double = value * density
+    fun dpToPx(value: Float): Double = value * density
+    fun dpToPx(value: Double): Double = value * density
 
 }

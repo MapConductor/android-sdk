@@ -183,8 +183,8 @@ fun <
                     content = entry.content,
                     iconSize =
                         Size(
-                            icon.iconSize * iconScale,
-                            icon.iconSize * iconScale,
+                            icon.iconSize.value * iconScale,
+                            icon.iconSize.value * iconScale,
                         ),
                     iconOffset = icon.anchor,
                     infoAnchorOffset = icon.infoAnchor,

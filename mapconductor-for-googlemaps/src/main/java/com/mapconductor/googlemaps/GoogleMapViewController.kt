@@ -141,7 +141,7 @@ class GoogleMapViewController(
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->
-            val strokeWidth = ResourceProvider.toDp(state.strokeWidth.toDouble())
+            val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.toDouble())
             circleStates.set(state.id, state)
             val options = CircleOptions()
                 .center(GeoPoint.from(state.center).toLatLng())

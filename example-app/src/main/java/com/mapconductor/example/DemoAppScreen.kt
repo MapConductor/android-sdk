@@ -174,10 +174,11 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                     mapViewState = mapViewState,
                     markers = markerList,
                     onDirectionButtonClick = { state ->
-                        state.icon =
-                            DefaultIcon(
+                        state.icon?.let {
+                            state.icon = (it as? DefaultIcon)?.copy(
                                 fillColor = Color.Blue,
-                            )
+                            ) ?: it
+                        }
 
                         state.animation = MarkerAnimation.Bounce
 //                        val intent = appViewModel.createIntentForDirection(state)
