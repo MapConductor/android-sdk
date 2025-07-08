@@ -17,6 +17,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -37,7 +38,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController : MapViewController<Marker> {
+interface IGoogleMapViewController : MapViewController<Marker, Circle> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -59,7 +60,8 @@ class GoogleMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
-) : BaseMapViewController<CameraPosition, Marker>(),
+    override val circleManager: CircleManager<Circle> = CircleManager(),
+) : BaseMapViewController<CameraPosition, Marker, Circle>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -157,6 +159,10 @@ class GoogleMapViewController(
     }
 
     override suspend fun updateCircle(state: CircleState) {
+    val options = CircleOptions()
+
+
+
     }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()

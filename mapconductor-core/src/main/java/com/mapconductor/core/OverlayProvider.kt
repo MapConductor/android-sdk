@@ -76,7 +76,7 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewController<*>,
+        controller: MapViewController<*, *>,
     ) {
         controller.addMarkers(data)
     }
@@ -87,7 +87,7 @@ class CircleOverlay(
 ) : MapOverlay<CircleState> {
     override suspend fun render(
         data: List<CircleState>,
-        controller: MapViewController<*>,
+        controller: MapViewController<*, *>,
     ) {
         controller.addCircles(data)
     }
@@ -106,7 +106,7 @@ val LocalCircleCollector =
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController<*>,
+    controller: MapViewController<*, *>,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")
