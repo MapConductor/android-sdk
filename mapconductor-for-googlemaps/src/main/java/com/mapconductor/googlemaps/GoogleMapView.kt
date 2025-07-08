@@ -9,8 +9,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.android.gms.maps.GoogleMap.OnCircleClickListener
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
@@ -28,6 +30,7 @@ fun GoogleMapsView(
     onMarkerDragEnd: OnMarkerEventHandler? = {},
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
+    onCircleClick: OnCircleEventHandler? = {},
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -70,18 +73,18 @@ fun GoogleMapsView(
                     id = state.id,
                     options = mapInitOptions,
                 )
-            val onCameraMove =
-                (state as? GoogleMapViewState)?.let {
-                    it::OnCameraChange
-                }
-            controller.cameraMoveListener = onCameraMove
+            (state as? GoogleMapViewState)?.let { mapViewState ->
+                mapViewState.controller = controller
+                controller.cameraMoveListener = mapViewState::OnCameraChange
+            }
             controller.mapClickListener = onMapClick
             controller.markerClickListener = onMarkerClick
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
-            controller.markerAnimateStartListener = onMarkerAnimateStart
-            controller.markerAnimateEndListener = onMarkerAnimateEnd
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
+            controller.circleClickListener = onCircleClick
 
             holderRef.value = controller.holder
             controllerRef.value = controller

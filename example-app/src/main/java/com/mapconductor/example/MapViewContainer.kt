@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.MapViewScope
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -26,6 +27,7 @@ fun MapViewContainer(
     onMarkerDragEnd: OnMarkerEventHandler? = null,
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
@@ -40,6 +42,7 @@ fun MapViewContainer(
                 onMarkerDragEnd = onMarkerDragEnd,
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
+                onCircleClick = onCircleClick,
                 content = content,
             )
 

@@ -7,10 +7,12 @@ sealed class Settings(
     val tapTolerance: Dp,
     val markerDropAnimateDuration: Int,
     val markerBounceAnimateDuration: Int,
+    val iconSize: Dp,
 ) {
     object Default : Settings(
         tapTolerance = 14.dp,
         markerDropAnimateDuration = 100,
         markerBounceAnimateDuration = 2000,
+        iconSize = 34.dp,
     )
 }
