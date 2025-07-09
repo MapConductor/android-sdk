@@ -1,5 +1,6 @@
 package com.mapconductor.core
 
+import androidx.compose.ui.unit.Dp
 import android.content.Context
 import android.content.res.Resources
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,5 +34,5 @@ object ResourceProvider {
 
     fun dpToPx(value: Float): Double = value * density
     fun dpToPx(value: Double): Double = value * density
-
+    fun dpToPx(value: Dp): Double = value.value * density
 }

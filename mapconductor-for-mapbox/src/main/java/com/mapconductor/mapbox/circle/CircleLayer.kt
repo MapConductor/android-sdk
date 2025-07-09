@@ -12,13 +12,22 @@ class CircleLayerWrapper(
     val sourceId: String,
     val layerId: String,
 ) {
+    object Prop {
+        const val RADIUS = "radius"
+        const val FILL_ALPHA = "fillAlpha"
+        const val FILL_COLOR = "fillColor"
+        const val STROKE_ALPHA = "strokeAlpha"
+        const val STROKE_COLOR = "strokeColor"
+        const val STROKE_WIDTH = "strokeWidth"
+    }
+
     val layer = CircleLayer(layerId, sourceId).apply {
-        circleRadius(Expression.get("radius"))
-        circleColor(Expression.get("fillColor"))
-        circleOpacity(Expression.get("fillAlpha"))
-        circleStrokeOpacity(Expression.get("strokeAlpha"))
-        circleStrokeColor(Expression.get("strokeColor"))
-        circleStrokeWidth(Expression.get("strokeWidth"))
+        circleRadius(Expression.get(Prop.RADIUS))
+        circleColor(Expression.get(Prop.FILL_COLOR))
+        circleOpacity(Expression.get(Prop.FILL_ALPHA))
+        circleStrokeOpacity(Expression.get(Prop.STROKE_ALPHA))
+        circleStrokeColor(Expression.get(Prop.STROKE_COLOR))
+        circleStrokeWidth(Expression.get(Prop.STROKE_WIDTH))
     }
 
     val source: GeoJsonSource =
