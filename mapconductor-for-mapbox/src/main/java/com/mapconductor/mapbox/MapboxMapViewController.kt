@@ -270,7 +270,7 @@ internal class MapboxMapViewController(
     suspend fun redrawCircles() {
         semaphore.acquire()
         val entities = circleManager.allEntities()
-        val updatedEntities = entities.forEach { entity ->
+        val updatedEntities = entities.map { entity ->
             val feature = Feature.fromGeometry(
                 GeoPoint.from(entity.state.center).toPoint(),
                 JsonObject().apply {
@@ -299,9 +299,10 @@ internal class MapboxMapViewController(
             )
 
             circleManager.updateEntity(updatedEntity)
+            updatedEntity
         }
 
-        circleLayerWrapper.draw(entities)
+        circleLayerWrapper.draw(updatedEntities)
         semaphore.release()
     }
 
