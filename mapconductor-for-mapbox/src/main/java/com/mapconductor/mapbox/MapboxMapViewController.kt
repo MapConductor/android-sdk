@@ -190,12 +190,16 @@ internal class MapboxMapViewController(
                     latitude = state.center.latitude,
                     zoom = holder.map.cameraState.zoom,
                 ))
-                val fillColor = toStr(state.fillColor)
                 addProperty(CircleLayerWrapper.Prop.FILL_ALPHA, state.fillColor.alpha)
-                addProperty(CircleLayerWrapper.Prop.FILL_COLOR, fillColor)
-                val strokeColor = toStr(state.strokeColor)
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_RED, state.fillColor.red * 255)
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_GREEN, state.fillColor.green * 255)
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_BLUE, state.fillColor.blue * 255)
+
                 addProperty(CircleLayerWrapper.Prop.STROKE_ALPHA, state.strokeColor.alpha)
-                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR, strokeColor)
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_RED, state.strokeColor.red * 255)
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_GREEN, state.strokeColor.green * 255)
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_BLUE, state.strokeColor.blue * 255)
+
                 addProperty(CircleLayerWrapper.Prop.STROKE_WIDTH, dpToPx(state.strokeWidth))
             }
         )
