@@ -175,9 +175,9 @@ internal class MapboxMapViewController(
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
-    private fun toRgb(color: Color): Int {
-        val rgbInt = color.toArgb() and (0xFF shl 24)
-        return rgbInt
+    private fun toStr(color: Color): String {
+        val rgb = color.toArgb() and 0x00FFFFFF
+        return String.format("#%06X", rgb)
     }
 
     private fun createCircleFeature(state: CircleState): Feature {
@@ -190,10 +190,10 @@ internal class MapboxMapViewController(
                     latitude = state.center.latitude,
                     zoom = holder.map.cameraState.zoom,
                 ))
-                val fillColor = toRgb(state.fillColor)
+                val fillColor = toStr(state.fillColor)
                 addProperty(CircleLayerWrapper.Prop.FILL_ALPHA, state.fillColor.alpha)
                 addProperty(CircleLayerWrapper.Prop.FILL_COLOR, fillColor)
-                val strokeColor = toRgb(state.strokeColor)
+                val strokeColor = toStr(state.strokeColor)
                 addProperty(CircleLayerWrapper.Prop.STROKE_ALPHA, state.strokeColor.alpha)
                 addProperty(CircleLayerWrapper.Prop.STROKE_COLOR, strokeColor)
                 addProperty(CircleLayerWrapper.Prop.STROKE_WIDTH, dpToPx(state.strokeWidth))
