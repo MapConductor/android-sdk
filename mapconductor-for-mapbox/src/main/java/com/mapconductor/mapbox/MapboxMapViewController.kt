@@ -104,6 +104,7 @@ internal class MapboxMapViewController(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
+
     val semaphore = Semaphore(1)
     override val markerRenderer: MapboxMarkerRenderer =
         MapboxMarkerRenderer(
@@ -282,8 +283,15 @@ internal class MapboxMapViewController(
                     val fillAlphaInt = (entity.state.fillColor.toArgb() shr 24) and 0xFF
                     val fillAlphaFloat = fillAlphaInt / 255f
                     addProperty("fillAlpha", fillAlphaFloat)
-                    val fillRgbInt = entity.state.fillColor.toArgb() and (0xFF shl 24)
-                    addProperty("fillColor", fillRgbInt)
+
+                    addProperty("fillColor", toColorString(entity.state.fillColor))
+//                        ColorUtils.rgbaExpressionToColorString(
+//                            ColorUtils.colorIntToRgbaExpression(entity.state.fillColor.toArgb())
+//                        )
+//                    )
+                    addProperty("fillColorRed", entity.state.fillColor.red * 255)
+                    addProperty("fillColorGreen", entity.state.fillColor.green * 255)
+                    addProperty("fillColorBlue", entity.state.fillColor.blue * 255)
 
                     val strokeAlphaInt = (entity.state.strokeColor.toArgb() shr 24) and 0xFF
                     val strokeAlphaFloat = strokeAlphaInt / 255f
@@ -304,6 +312,17 @@ internal class MapboxMapViewController(
 
         circleLayerWrapper.draw(updatedEntities)
         semaphore.release()
+    }
+    private fun toColorString(color: androidx.compose.ui.graphics.Color) : String {
+        val red = color.red * 255
+        val green = color.green * 255
+        val blue = color.blue * 255
+        val alpha = color.alpha
+        return "rgba($red, $green, $blue, $alpha)"
+
+//        return ColorUtils.rgbaExpressionToColorString(
+//            ColorUtils.colorIntToRgbaExpression(color.toArgb())
+//        )!!
     }
 
     override fun run(cameraChanged: CameraChanged) {
