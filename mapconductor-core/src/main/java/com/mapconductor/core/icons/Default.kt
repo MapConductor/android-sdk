@@ -115,7 +115,7 @@ fun MarkerIcon.Companion.Default(
         insideColor = strokeColor,
         outsideWidth = strokeWidth,
         scale = scale,
-        label = label?.substring(0, 0)?.toString() ?: "",
+        label = label?.take(1) ?: "",
         labelTextColor = labelTextColor,
         labelTextSizeLogical = labelTextSizeLogical,
         fillDrawable = fillDrawable,
