@@ -188,8 +188,8 @@ internal class MapboxMapViewController(
                         latitude = state.center.latitude,
                         zoom = holder.map.cameraState.zoom,
                     ))
-                addProperty(CircleLayerWrapper.Prop.FILL_COLOR, state.fillColor.toArgb())
-                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR, state.strokeColor.toArgb())
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                 addProperty(CircleLayerWrapper.Prop.STROKE_WIDTH, dpToPx(state.strokeWidth))
             }
         )

@@ -24,7 +24,7 @@ class CircleLayerWrapper(
         circleColor(
             get { literal(Prop.FILL_COLOR) }
         )
-        circleStrokeOpacity(
+        circleStrokeColor(
             get { literal(Prop.STROKE_COLOR) }
         )
         circleStrokeWidth(
