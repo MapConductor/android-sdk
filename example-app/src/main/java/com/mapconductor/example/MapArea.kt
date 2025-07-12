@@ -53,6 +53,7 @@ fun MapArea(
             onMarkerAnimateEnd = { isMarkerAnimating = false },
             onCircleClick = onCircleClickHandler,
         ) {
+
             markers.forEach { markerState ->
                 key(markerState.id) {
                     Marker(markerState)

@@ -175,38 +175,27 @@ internal class MapboxMapViewController(
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
-    private fun toStr(color: Color): String {
-        val rgb = color.toArgb() and 0x00FFFFFF
-        return String.format("#%06X", rgb)
-    }
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     private fun createCircleFeature(state: CircleState): Feature {
         val feature = Feature.fromGeometry(
             GeoPoint.from(state.center).toPoint(),
             JsonObject().apply {
                 addProperty(
-                    CircleLayerWrapper.Prop.RADIUS, meterToPixel(
-                    meter = state.radius,
-                    latitude = state.center.latitude,
-                    zoom = holder.map.cameraState.zoom,
-                ))
-                addProperty(CircleLayerWrapper.Prop.FILL_ALPHA, state.fillColor.alpha)
-                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_RED, state.fillColor.red * 255)
-                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_GREEN, state.fillColor.green * 255)
-                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_BLUE, state.fillColor.blue * 255)
-
-                addProperty(CircleLayerWrapper.Prop.STROKE_ALPHA, state.strokeColor.alpha)
-                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_RED, state.strokeColor.red * 255)
-                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_GREEN, state.strokeColor.green * 255)
-                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_BLUE, state.strokeColor.blue * 255)
-
+                    CircleLayerWrapper.Prop.RADIUS,
+                    meterToPixel(
+                        meter = state.radius,
+                        latitude = state.center.latitude,
+                        zoom = holder.map.cameraState.zoom,
+                    ))
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR, state.fillColor.toArgb())
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR, state.strokeColor.toArgb())
                 addProperty(CircleLayerWrapper.Prop.STROKE_WIDTH, dpToPx(state.strokeWidth))
             }
         )
         return feature
     }
 
-    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
     override suspend fun addCircles(data: List<CircleState>) {
         semaphore.acquire()
         data.forEach { state ->
@@ -356,7 +345,7 @@ internal class MapboxMapViewController(
                 position = geoPoint,
                 tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density,
+                        .toDouble() * ResourceProvider.getDensity(),
                 zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {
@@ -382,7 +371,7 @@ internal class MapboxMapViewController(
                 position = geoPoint,
                 tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density,
+                        .toDouble() * ResourceProvider.getDensity(),
                 zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {
