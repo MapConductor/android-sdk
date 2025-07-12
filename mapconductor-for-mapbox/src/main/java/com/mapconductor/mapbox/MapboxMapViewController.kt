@@ -1,6 +1,7 @@
 package com.mapconductor.mapbox
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.google.gson.JsonObject
 import com.mapbox.android.gestures.MoveGestureDetector
@@ -32,6 +33,7 @@ import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.ResourceProvider.dpToPx
 import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
@@ -53,7 +55,6 @@ import com.mapconductor.mapbox.marker.MarkerDragLayer
 import com.mapconductor.mapbox.marker.MarkerLayer
 import com.mapconductor.settings.Settings
 import android.animation.Animator
-import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -149,7 +150,7 @@ internal class MapboxMapViewController(
     init {
         lineLayer =
             lineLayer(lineLayerId, lineSourceId) {
-                lineColor(Color.RED)
+                lineColor(Color.Red.toArgb())
                 lineWidth(4.0)
                 lineJoin(LineJoin.ROUND)
                 lineCap(LineCap.ROUND)
@@ -174,33 +175,43 @@ internal class MapboxMapViewController(
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
+    private fun toStr(color: Color): String {
+        val rgb = color.toArgb() and 0x00FFFFFF
+        return String.format("#%06X", rgb)
+    }
+
+    private fun createCircleFeature(state: CircleState): Feature {
+        val feature = Feature.fromGeometry(
+            GeoPoint.from(state.center).toPoint(),
+            JsonObject().apply {
+                addProperty(
+                    CircleLayerWrapper.Prop.RADIUS, meterToPixel(
+                    meter = state.radius,
+                    latitude = state.center.latitude,
+                    zoom = holder.map.cameraState.zoom,
+                ))
+                addProperty(CircleLayerWrapper.Prop.FILL_ALPHA, state.fillColor.alpha)
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_RED, state.fillColor.red * 255)
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_GREEN, state.fillColor.green * 255)
+                addProperty(CircleLayerWrapper.Prop.FILL_COLOR_BLUE, state.fillColor.blue * 255)
+
+                addProperty(CircleLayerWrapper.Prop.STROKE_ALPHA, state.strokeColor.alpha)
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_RED, state.strokeColor.red * 255)
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_GREEN, state.strokeColor.green * 255)
+                addProperty(CircleLayerWrapper.Prop.STROKE_COLOR_BLUE, state.strokeColor.blue * 255)
+
+                addProperty(CircleLayerWrapper.Prop.STROKE_WIDTH, dpToPx(state.strokeWidth))
+            }
+        )
+        return feature
+    }
+
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
     override suspend fun addCircles(data: List<CircleState>) {
         semaphore.acquire()
         data.forEach { state ->
-            val feature = Feature.fromGeometry(
-                GeoPoint.from(state.center).toPoint(),
-                JsonObject().apply {
-                    addProperty("radius", meterToPixel(
-                        meter = state.radius,
-                        latitude = state.center.latitude,
-                        zoom = holder.map.cameraState.zoom,
-                    ))
-                    val fillAlphaInt = (state.fillColor.toArgb() shr 24) and 0xFF
-                    val fillAlphaFloat = fillAlphaInt / 255f
-                    addProperty("fillAlpha", fillAlphaFloat)
-                    val fillRgbInt = state.fillColor.toArgb() and (0xFF shl 24)
-                    addProperty("fillColor", fillRgbInt)
-
-                    val strokeAlphaInt = (state.strokeColor.toArgb() shr 24) and 0xFF
-                    val strokeAlphaFloat = strokeAlphaInt / 255f
-                    addProperty("strokeAlpha", strokeAlphaFloat)
-                    val strokeRgbInt = state.strokeColor.toArgb() and (0xFF shl 24)
-                    addProperty("strokeColor", strokeRgbInt)
-                }
-            )
-
-            val entity = CircleEntityImpl<Feature>(
+            val feature = createCircleFeature(state)
+            val entity = CircleEntityImpl(
                 circle = feature,
                 state = state,
             )
@@ -232,28 +243,7 @@ internal class MapboxMapViewController(
         }
 
         semaphore.acquire()
-        val feature = Feature.fromGeometry(
-            GeoPoint.from(state.center).toPoint(),
-            JsonObject().apply {
-                addProperty("radius", meterToPixel(
-                    meter = state.radius,
-                    latitude = state.center.latitude,
-                    zoom = holder.map.cameraState.zoom,
-                ))
-                val fillAlphaInt = (state.fillColor.toArgb() shr 24) and 0xFF
-                val fillAlphaFloat = fillAlphaInt / 255f
-                addProperty("fillAlpha", fillAlphaFloat)
-                val fillRgbInt = state.fillColor.toArgb() and (0xFF shl 24)
-                addProperty("fillColor", fillRgbInt)
-
-                val strokeAlphaInt = (state.strokeColor.toArgb() shr 24) and 0xFF
-                val strokeAlphaFloat = strokeAlphaInt / 255f
-                addProperty("strokeAlpha", strokeAlphaFloat)
-                val strokeRgbInt = state.strokeColor.toArgb() and (0xFF shl 24)
-                addProperty("strokeColor", strokeRgbInt)
-            }
-        )
-
+        val feature = createCircleFeature(state)
         val entity = CircleEntityImpl(
             circle = feature,
             state = state,
@@ -270,38 +260,18 @@ internal class MapboxMapViewController(
     suspend fun redrawCircles() {
         semaphore.acquire()
         val entities = circleManager.allEntities()
-        val updatedEntities = entities.forEach { entity ->
-            val feature = Feature.fromGeometry(
-                GeoPoint.from(entity.state.center).toPoint(),
-                JsonObject().apply {
-                    addProperty("radius", meterToPixel(
-                        meter = entity.state.radius,
-                        latitude = entity.state.center.latitude,
-                        zoom = holder.map.cameraState.zoom,
-                    ))
-                    val fillAlphaInt = (entity.state.fillColor.toArgb() shr 24) and 0xFF
-                    val fillAlphaFloat = fillAlphaInt / 255f
-                    addProperty("fillAlpha", fillAlphaFloat)
-                    val fillRgbInt = entity.state.fillColor.toArgb() and (0xFF shl 24)
-                    addProperty("fillColor", fillRgbInt)
-
-                    val strokeAlphaInt = (entity.state.strokeColor.toArgb() shr 24) and 0xFF
-                    val strokeAlphaFloat = strokeAlphaInt / 255f
-                    addProperty("strokeAlpha", strokeAlphaFloat)
-                    val strokeRgbInt = entity.state.strokeColor.toArgb() and (0xFF shl 24)
-                    addProperty("strokeColor", strokeRgbInt)
-                }
-            )
-
-            val updatedEntity = CircleEntityImpl<Feature>(
+        val updatedEntities = entities.map { entity ->
+            val feature = createCircleFeature(entity.state)
+            val updatedEntity = CircleEntityImpl(
                 circle = feature,
                 state = entity.state,
             )
 
             circleManager.updateEntity(updatedEntity)
+            updatedEntity
         }
 
-        circleLayerWrapper.draw(entities)
+        circleLayerWrapper.draw(updatedEntities)
         semaphore.release()
     }
 
