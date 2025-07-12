@@ -1,6 +1,13 @@
 # セットアップ
 
+1. git clone
+   ```
+   git clone https://github.com/MapConductor/android-sdk.git
+   ```
+2. secrets.properties の作成
+
 - https://github.com/MapConductor/map-sdk-credentials/ から`secrets.properties` をプロジェクトルートに追加保存する
+- example-app/src/main/res/values/mapbox_access_token.xml に
 
 # KtLint
 
