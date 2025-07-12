@@ -1,5 +1,6 @@
 package com.mapconductor.core.marker
 
+import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 
 interface MarkerOverlayManager<ActualMarker> {
@@ -35,6 +36,7 @@ class MarkerOverlayManagerImpl<ActualMarker>(
 
         val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
         val current = markerList.toSet()
+        val currentSize = current.size
         val previousEntities = markerManager.allEntities()
         val previous = previousEntities.map { it.state }.toSet()
         val added = current - previous
@@ -42,8 +44,10 @@ class MarkerOverlayManagerImpl<ActualMarker>(
         val updated =
             current.filter { state ->
                 val prevEntity = markerManager.getEntity(state.id) ?: return@filter false
+                // Log.d("Debug", "==>${prevEntity.state.equals(state)}")
                 return@filter !prevEntity.state.equals(state)
             }
+        // Log.d("Debug", "--->currentSize=$currentSize, added=${added.size}, updated=${updated.size}, removed=${removed.size}")
 
         val defaultIcon = DefaultIcon()
         val defaultIconBitmapIcon = defaultIcon.toBitmapIcon()
