@@ -41,6 +41,8 @@ fun MapboxMapView(
         scope = scope,
         registry = registry,
         onInitialize = {
+            MapboxInitSDK(context)
+
             val cameraOptions =
                 state.mapCameraPosition.value?.toCameraOptions()
 

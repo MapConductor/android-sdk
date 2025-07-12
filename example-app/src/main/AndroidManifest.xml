@@ -26,6 +26,10 @@
             android:value="${ARCGIS_API_KEY}" />
 
         <meta-data
+            android:name="MAPBOX_ACCESS_TOKEN"
+            android:value="${MAPBOX_ACCESS_TOKEN}" />
+
+        <meta-data
             android:name="HERE_ACCESS_KEY_ID"
             android:value="${HERE_ACCESS_KEY_ID}" />
         <meta-data
