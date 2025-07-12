@@ -1,5 +1,8 @@
 package com.mapconductor.arcgis
 
+import com.arcgismaps.Color
+import com.arcgismaps.geometry.GeodeticCurveType
+import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
@@ -16,6 +19,7 @@ import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
@@ -30,6 +34,12 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.arcgismaps.geometry.LinearUnit
+import com.arcgismaps.geometry.LinearUnitId
+import com.arcgismaps.mapping.symbology.SimpleFillSymbol
+import com.arcgismaps.mapping.symbology.SimpleFillSymbolStyle
+import com.arcgismaps.mapping.symbology.SimpleLineSymbol
+import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 
 interface IArcGISMapViewController : MapViewController<Graphic, Graphic> {
     fun moveCamera(
@@ -61,6 +71,10 @@ class ArcGISMapViewController(
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.Relative
         },
+    private val circleLayer: GraphicsOverlay =
+        GraphicsOverlay().apply {
+            sceneProperties.surfacePlacement = SurfacePlacement.Relative
+        },
     private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
     override val circleManager: CircleManager<Graphic> = CircleManager()
 ) : BaseMapViewController<Camera, Graphic, Graphic>(),
@@ -86,8 +100,28 @@ class ArcGISMapViewController(
     init {
         markerRenderer.init(markerOverlayManager)
         holder.map.graphicsOverlays.clear()
+        holder.map.graphicsOverlays.add(circleLayer)
         holder.map.graphicsOverlays.add(markerLayer)
         setupListeners()
+    }
+
+    private fun createCircle(state: CircleState) {
+        val center = GeoPoint.from(state.center).toPoint()
+        val circle = GeometryEngine.bufferGeodeticOrNull(
+            center,
+            500.0,
+            LinearUnit(LinearUnitId.Meters),
+            Double.NaN,
+            GeodeticCurveType.Geodesic
+        )
+        val symbol = SimpleFillSymbol(
+            SimpleFillSymbolStyle.Solid,
+            Color(0x88FF0000.toInt()), // fill
+            SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color(0xFFFF0000.toInt()), 2f)
+        )
+        val graphic = Graphic(circle, symbol)
+
+        circleLayer.graphics.add(graphic)
     }
 
     override fun setupListeners() {
@@ -216,6 +250,9 @@ class ArcGISMapViewController(
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
+        data.forEach { state ->
+            createCircle(state)
+        }
     }
 
     override suspend fun updateCircle(state: CircleState) {
