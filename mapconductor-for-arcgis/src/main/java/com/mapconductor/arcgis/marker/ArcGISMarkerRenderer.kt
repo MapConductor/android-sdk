@@ -59,8 +59,8 @@ class ArcGISMarkerRenderer(
                 .map { params ->
                     val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.density
-                    val width = (params.second.size.width / density)
-                    val height = (params.second.size.height / density)
+                    val width = (params.second.size.width / density) * (params.first.icon?.scale ?: 1.0f)
+                    val height = (params.second.size.height / density) * (params.first.icon?.scale ?: 1.0f)
                     val anchorX = (params.second.anchor.x - 0.5) * width
                     val anchorY = (params.second.anchor.y - 0.5) * height
 
