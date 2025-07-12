@@ -58,7 +58,7 @@ class ArcGISMarkerRenderer(
             newMarkers
                 .map { params ->
                     val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
-                    val density = ResourceProvider.density
+                    val density = ResourceProvider.getDensity()
                     val width = (params.second.size.width / density) * (params.first.icon?.scale ?: 1.0f)
                     val height = (params.second.size.height / density) * (params.first.icon?.scale ?: 1.0f)
                     val anchorX = (params.second.anchor.x - 0.5) * width
@@ -99,7 +99,7 @@ class ArcGISMarkerRenderer(
                 val currFinger = params.entity.fingerPrint
                 if (currFinger.icon != prevFinger.icon) {
                     val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
-                    val density = ResourceProvider.density
+                    val density = ResourceProvider.getDensity()
                     val width = (params.bitmapIcon.size.width / density)
                     val height = (params.bitmapIcon.size.height / density)
                     val anchorX = (params.bitmapIcon.anchor.x - 0.5) * width

@@ -233,8 +233,8 @@ class MapboxMarkerRenderer(
 
     private fun createIconOffset(icon: BitmapIcon): JsonArray {
         return JsonArray().apply {
-            add(-(icon.size.width * icon.anchor.x) / ResourceProvider.density)
-            add(-(icon.size.height * icon.anchor.y) / ResourceProvider.density)
+            add(-(icon.size.width * icon.anchor.x) / ResourceProvider.getDensity())
+            add(-(icon.size.height * icon.anchor.y) / ResourceProvider.getDensity())
         }
     }
     private fun createIconOffset(icon: MarkerIcon): JsonArray {

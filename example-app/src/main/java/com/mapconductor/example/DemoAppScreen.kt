@@ -130,7 +130,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 
     val markerList =
         remember {
-            appViewModel.markerList.subList(0,1).map {
+            appViewModel.markerList.subList(0,2).map {
                 it.copy(
                     draggable = true,
                 )
@@ -222,5 +222,17 @@ fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
         Text("Zoom: ${camera?.zoom?.toFixed(2)}", color = Color.Black)
         Text("bearing: ${camera?.bearing?.toInt()}", color = Color.Black)
         Text("tilt: ${camera?.tilt?.toInt()}", color = Color.Black)
+
+
+//        Canvas(
+//            modifier = Modifier.size(34.dp)
+//                .padding(100.dp)
+//        ) {
+//            drawRect(
+//                color = Color.Red,
+//                size = Size(34.dp.toPx(), 34.dp.toPx()),
+//                style = DrawStyle.Stroke,
+//            )
+//        }
     }
 }

@@ -152,7 +152,7 @@ class FlagIcon(
             return it
         }
 
-        val oneDp = ResourceProvider.dpToPx(1f).toFloat()
+        val oneDp = ResourceProvider.dpToPx(1.dp).toFloat()
         val canvasSize = ResourceProvider.dpToPx(iconSize.value * scale)
 
         val bitmap = createBitmap(canvasSize.toInt(), canvasSize.toInt())
@@ -167,7 +167,7 @@ class FlagIcon(
         val strokePaint = Paint().also {
             it.color = strokeColor.toArgb()
             it.style = Paint.Style.STROKE
-            it.strokeWidth = ResourceProvider.dpToPx(strokeWidth.value).toFloat()
+            it.strokeWidth = ResourceProvider.dpToPx(strokeWidth).toFloat()
         }
 
         drawFlagOnCanvas(canvas, flagPaint, strokePaint, canvasSize.toFloat(), canvasSize.toFloat())
