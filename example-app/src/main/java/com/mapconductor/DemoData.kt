@@ -2,9 +2,11 @@ package com.mapconductor
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.icons.FlagIcon
 import android.os.Bundle
 
 /**
@@ -32,17 +34,12 @@ val StarbucksHI_list =
                 DefaultIcon(
                     label = "店",
                     labelTextColor = Color.Black,
-                    labelTextSize = 13.dp,
+                    labelTextSize = 13.sp,
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     strokeWidth = 1.dp,
-//                    scale = 1.5f,
+                    scale = 1.5f
                 )
-//                MarkerIcon.Companion.SquareMarker(
-//                    fillColor = Color.BLUE,
-//                    strokeWidth = 1f,
-//                    scale = 2f,
-//                ),
         ),
         MarkerState(
             position =
@@ -58,12 +55,12 @@ val StarbucksHI_list =
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
                 },
-//            icon =
-//                MarkerIcon.Companion.HeartInCircle(
-//                    fillColor = 0xFFD71D3B.toInt(),
-//                    strokeColor = Color.WHITE,
-//                    strokeWidth = 2f,
-//                ),
+            icon = FlagIcon(
+                fillColor = Color.Red,
+                strokeColor = Color.White,
+                strokeWidth = 0.5.dp,
+                scale = 2.0f,
+            )
         ),
         MarkerState(
             position =

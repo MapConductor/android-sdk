@@ -406,7 +406,7 @@ internal class MapboxMapViewController(
                 position = geoPoint,
                 tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density,
+                        .toDouble() * ResourceProvider.getDensity(),
                 zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {
@@ -432,7 +432,7 @@ internal class MapboxMapViewController(
                 position = geoPoint,
                 tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density,
+                        .toDouble() * ResourceProvider.getDensity(),
                 zoom = holder.map.cameraState.zoom,
             )
         if (entity != null) {

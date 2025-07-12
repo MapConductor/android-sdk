@@ -159,7 +159,7 @@ class HereMapViewController(
         val zoom = holder.mapView.camera.state.zoomLevel
         val tolerance =
             Settings.Default.tapTolerance.value
-                .toDouble() * ResourceProvider.density
+                .toDouble() * ResourceProvider.getDensity()
 
         val entity =
             markerRenderer.findNearestMarker(
@@ -189,7 +189,7 @@ class HereMapViewController(
                 val zoom = holder.mapView.camera.state.zoomLevel
                 val tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density
+                        .toDouble() * ResourceProvider.getDensity()
 
                 val entity =
                     markerRenderer.findNearestMarker(
