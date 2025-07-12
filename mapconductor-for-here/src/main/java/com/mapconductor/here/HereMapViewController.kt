@@ -38,6 +38,7 @@ import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 
 interface IHereMapViewController : MapViewController<MapMarker, MapPolygon> {
     fun moveCamera(
