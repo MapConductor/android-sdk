@@ -198,7 +198,7 @@ class ArcGISMapViewController(
                 position = touchPosition,
                 tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density,
+                        .toDouble() * ResourceProvider.getDensity(),
                 zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
             )
         if (entity != null) {

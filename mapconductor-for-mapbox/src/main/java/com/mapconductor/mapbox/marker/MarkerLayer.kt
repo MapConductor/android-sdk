@@ -2,9 +2,11 @@ package com.mapconductor.mapbox.marker
 
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
+import com.mapbox.maps.extension.style.expressions.dsl.generated.switchCase
 import com.mapbox.maps.extension.style.expressions.generated.Expression
-import com.mapbox.maps.extension.style.layers.generated.SymbolLayer
+import com.mapbox.maps.extension.style.layers.generated.symbolLayer
 import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
+import com.mapbox.maps.extension.style.layers.properties.generated.IconTranslateAnchor
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapconductor.core.marker.MarkerEntity
@@ -13,12 +15,18 @@ open class MarkerLayer(
     open val sourceId: String,
     open val layerId: String,
 ) {
-    val layer = SymbolLayer(layerId, sourceId).apply {
+    val layer = symbolLayer(layerId, sourceId) {
         iconSize(Expression.get(MapboxMarkerRenderer.Prop.SCALE))
         iconImage(Expression.get(MapboxMarkerRenderer.Prop.ICON_ID))
         iconAllowOverlap(true)
         iconIgnorePlacement(true)
-        iconAnchor(IconAnchor.BOTTOM)
+        iconAnchor(IconAnchor.TOP_LEFT)
+        iconTranslateAnchor(IconTranslateAnchor.MAP)
+        iconOffset(switchCase {
+            has(MapboxMarkerRenderer.Prop.ICON_ANCHOR)
+            get(MapboxMarkerRenderer.Prop.ICON_ANCHOR)
+            literal(listOf(0.0, 0.0))  // center-middle
+        })
     }
 
 

@@ -58,7 +58,7 @@ interface MarkerRenderer<ActualMarker> {
 }
 
 abstract class AbstractMarkerRenderer<ActualMarker> : MarkerRenderer<ActualMarker> {
-    protected lateinit var defaultIcon: BitmapIcon
+    protected val defaultIcon: BitmapIcon
     protected var markerAnimationStartHandler: ((state: MarkerState) -> Unit)? = null
     protected var markerAnimationEndHandler: ((state: MarkerState) -> Unit)? = null
 
@@ -75,6 +75,9 @@ abstract class AbstractMarkerRenderer<ActualMarker> : MarkerRenderer<ActualMarke
         this.markerAnimationEndHandler = listener
     }
 
+    init {
+        defaultIcon = DefaultIcon().toBitmapIcon()
+    }
     override fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Double,
