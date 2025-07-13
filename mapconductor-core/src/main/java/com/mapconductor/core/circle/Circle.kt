@@ -25,6 +25,7 @@ class CircleState(
     ),
     id: String? = null,
     extra: Parcelable? = null,
+    pairMarker: String? = null,
 ) {
     var center by mutableStateOf(center)
     var radius by mutableStateOf(radius)
@@ -32,6 +33,7 @@ class CircleState(
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
     var extra by mutableStateOf(extra)
+    var pairMarker by mutableStateOf(pairMarker)
 
     val id =
         (
@@ -61,6 +63,7 @@ class CircleState(
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),
             extra = extra?.hashCode() ?: 0,
+            pairMarker = pairMarker?.hashCode() ?: 0,
         )
     }
 
@@ -75,6 +78,7 @@ data class CircleFingerPrint(
     val strokeWidth: Int,
     val fillColor: Int,
     val extra: Int,
+    val pairMarker: Int,
 )
 
 typealias OnCircleEventHandler = (CircleState) -> Unit

@@ -2,6 +2,8 @@ package com.mapconductor.example
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.mapconductor.StarbucksHI_list
@@ -26,6 +28,7 @@ interface AppViewModel {
     val selectedMarker: MarkerState?
     val infoBubbleState: InfoBubbleState
     val markerList: List<MarkerState>
+    val circleList: StateFlow<List<CircleState>>
     val messages: StateFlow<List<ToastMessage>>
 
     fun changeState(state: MapViewState<*>)
@@ -43,6 +46,10 @@ interface AppViewModel {
     fun removeToast(toastMessage: ToastMessage)
 
     fun createIntentForDirection(markerState: MarkerState): Intent
+
+    fun updateCircleColor(pairMarkerId: String, fillColor: Color, strokeColor: Color)
+
+    fun updateCircleList(newList: List<CircleState>)
 }
 
 class AppViewModelImpl :
@@ -66,6 +73,20 @@ class AppViewModelImpl :
         )
 
     override val markerList = StarbucksHI_list.slice(IntRange(0, 10))
+
+    private val _circleList = MutableStateFlow(
+        markerList.map { markerState ->
+            CircleState(
+                center = markerState.position,
+                radius = 1000.0,
+                fillColor = Color(0x88FF3366),
+                strokeColor = Color.White,
+                strokeWidth = 1.dp,
+                pairMarker = markerState.id,
+            )
+        }
+    )
+    override val circleList: StateFlow<List<CircleState>> = _circleList.asStateFlow()
 
     private val _infoBubbleState: MutableState<InfoBubbleState> = mutableStateOf(InfoBubbleState())
     override val infoBubbleState: InfoBubbleState
@@ -93,6 +114,14 @@ class AppViewModelImpl :
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         mapIntent.setPackage("com.google.android.apps.maps")
         return mapIntent
+    }
+
+    override fun updateCircleColor(pairMarkerId: String, fillColor: Color, strokeColor: Color) {
+        TODO("Not yet implemented")
+    }
+
+    override fun updateCircleList(newList: List<CircleState>) {
+        _circleList.value = newList
     }
 
     override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {

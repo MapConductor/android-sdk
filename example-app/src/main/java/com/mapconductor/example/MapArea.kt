@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
@@ -30,6 +31,7 @@ fun MapArea(
     infoBubbleState: InfoBubbleState,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
+    circles: List<CircleState> = emptyList<CircleState>(),
     onDirectionButtonClick: OnMarkerEventHandler = {},
     onMapClickHandler: OnMapEventHandler = {},
     onMarkerClickHandler: OnMarkerEventHandler = {},
@@ -54,17 +56,24 @@ fun MapArea(
             onCircleClick = onCircleClickHandler,
         ) {
 
+            circles.forEach { circleState ->
+                key(circleState.id) {
+                    Circle(circleState)
+                    // TODO: circleStateに置換する。このコードはデバッグ用
+                }
+            }
+
             markers.forEach { markerState ->
                 key(markerState.id) {
                     Marker(markerState)
-                    // TODO: circleStateに置換する。このコードはデバッグ用
-                    Circle(
-                        center = markerState.position,
-                        radius = 1000.0,
-                        fillColor = Color(0x88FF3366),
-                        strokeColor = Color.White,
-                        strokeWidth = 1.dp,
-                    )
+//                    // TODO: circleStateに置換する。このコードはデバッグ用
+//                    Circle(
+//                        center = markerState.position,
+//                        radius = 1000.0,
+//                        fillColor = Color(0x88FF3366),
+//                        strokeColor = Color.White,
+//                        strokeWidth = 1.dp,
+//                    )
                 }
             }
 
