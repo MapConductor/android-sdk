@@ -13,7 +13,7 @@ import com.mapconductor.core.features.IGeoPoint
 fun MapViewScope.Circle(state: CircleState) {
     val rememberState = remember { state }
     SideEffect {
-        circleFlow.value += rememberState
+        circleFlow.value = circleFlow.value + rememberState
     }
 }
 
