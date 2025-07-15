@@ -136,6 +136,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                 )
             }
         }
+    val circleList = appViewModel.circleList
     val mapViewState = appViewModel.mapViewState.collectAsState().value
     val camera = mapViewState?.mapCameraPosition?.collectAsState()?.value
 
@@ -173,13 +174,19 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
                 MapArea(
                     mapViewState = mapViewState,
                     markers = markerList,
+                    circles = circleList,
                     onDirectionButtonClick = { state ->
+                        val circleState = appViewModel.getCircleById("circle_${state.id}")
+                        circleState?.let {
+                            circleState.fillColor = Color.Blue.copy(alpha = 0.5f)
+                            circleState.strokeColor = Color.Black
+                        }
+
                         state.icon?.let {
                             state.icon = (it as? DefaultIcon)?.copy(
                                 fillColor = Color.Blue,
                             ) ?: it
                         }
-
                         state.animation = MarkerAnimation.Bounce
 //                        val intent = appViewModel.createIntentForDirection(state)
 //                        context.startActivity(intent)

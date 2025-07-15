@@ -2,6 +2,8 @@ package com.mapconductor.example
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.mapconductor.StarbucksHI_list
@@ -26,6 +28,7 @@ interface AppViewModel {
     val selectedMarker: MarkerState?
     val infoBubbleState: InfoBubbleState
     val markerList: List<MarkerState>
+    val circleList: List<CircleState>
     val messages: StateFlow<List<ToastMessage>>
 
     fun changeState(state: MapViewState<*>)
@@ -43,6 +46,8 @@ interface AppViewModel {
     fun removeToast(toastMessage: ToastMessage)
 
     fun createIntentForDirection(markerState: MarkerState): Intent
+
+    fun getCircleById(circleId: String): CircleState?
 }
 
 class AppViewModelImpl :
@@ -66,6 +71,26 @@ class AppViewModelImpl :
         )
 
     override val markerList = StarbucksHI_list.slice(IntRange(0, 10))
+
+    private val circleMap: MutableMap<String, CircleState> = mutableMapOf()
+    override val circleList = markerList.map { marker ->
+        val circleState = CircleState(
+            id = "circle_${marker.id}",
+            center = marker.position,
+            radius = 1000.0,
+            fillColor = Color.Red.copy(alpha = 0.5f),
+            strokeColor = Color.White,
+            strokeWidth = 1.dp,
+        )
+
+        circleMap.set(circleState.id, circleState)
+        circleState
+    }
+
+    override fun getCircleById(circleId: String): CircleState? {
+        val circleState = circleMap.get(circleId)
+        return circleState
+    }
 
     private val _infoBubbleState: MutableState<InfoBubbleState> = mutableStateOf(InfoBubbleState())
     override val infoBubbleState: InfoBubbleState

@@ -18,6 +18,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
@@ -72,7 +74,7 @@ class GoogleMapViewController(
     OnMapClickListener,
     OnMarkerDragListener,
     OnCircleClickListener {
-    val circleStates: HashMap<String, CircleState> = HashMap()
+    val circleEntities: HashMap<String, CircleEntity<Circle>> = HashMap()
 
     override val markerRenderer: MarkerRenderer<Marker> =
         GoogleMapMarkerRender(
@@ -145,7 +147,6 @@ class GoogleMapViewController(
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->
             val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.value)
-            circleStates.set(state.id, state)
             val options = CircleOptions()
                 .center(GeoPoint.from(state.center).toLatLng())
                 .radius(state.radius)
@@ -153,17 +154,30 @@ class GoogleMapViewController(
                 .strokeColor(state.strokeColor.toArgb())
                 .fillColor(state.fillColor.toArgb())
                 .clickable(true)
-            return@map holder.map.addCircle(options).also {
+            val circle = holder.map.addCircle(options).also {
                 it.tag = state.id
             }
+            val entity = CircleEntityImpl(
+                circle = circle,
+                state = state,
+            )
+            circleEntities.set(state.id, entity)
+
+            return@map circle
         }
     }
 
     override suspend fun updateCircle(state: CircleState) {
-    val options = CircleOptions()
-
-
-
+        val entity = circleEntities.get(state.id)
+        val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.value)
+        entity?.circle?.let { circle ->
+            circle.center = GeoPoint.from(state.center).toLatLng()
+            circle.radius = state.radius
+            circle.strokeWidth = strokeWidth.toFloat()
+            circle.strokeColor = state.strokeColor.toArgb()
+            circle.fillColor = state.fillColor.toArgb()
+            circle.isClickable = true
+        }
     }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
@@ -262,8 +276,8 @@ class GoogleMapViewController(
     }
 
     override fun onCircleClick(circle: Circle) {
-        circleStates[circle.tag]?.let {
-            circleClickListener?.invoke(it)
+        circleEntities[circle.tag]?.let {
+            circleClickListener?.invoke(it.state)
         }
     }
 }
