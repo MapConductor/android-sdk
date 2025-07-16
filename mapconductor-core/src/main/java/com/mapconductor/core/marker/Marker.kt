@@ -8,6 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import java.io.ByteArrayOutputStream
 import android.graphics.Bitmap
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-//    val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     id: String? = null,
     var extra: Parcelable? = null,
@@ -89,12 +89,14 @@ class MarkerState(
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
+        result = 31 * result + (ResourceProvider.spToPx(1.0).hashCode() ?: 0)
         return result
     }
 
     fun fingerPrint(): MarkerFingerPrint =
         MarkerFingerPrint(
             this.id.hashCode(),
+            ResourceProvider.spToPx(1.0).hashCode(),
             icon.hashCode(),
             draggable.hashCode(),
             internalPosition.hashCode(),
@@ -106,6 +108,7 @@ class MarkerState(
 
 data class MarkerFingerPrint(
     val id: Int,
+    val displayMetrics: Int,
     val icon: Int?,
     val draggable: Int,
     val position: Int,
