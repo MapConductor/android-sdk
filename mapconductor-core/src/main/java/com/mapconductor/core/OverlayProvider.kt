@@ -78,7 +78,7 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewController<*, *>,
+        controller: MapViewController<*, *, *>,
     ) {
         controller.addMarkers(data)
     }
@@ -89,7 +89,7 @@ class CircleOverlay(
 ) : MapOverlay<CircleState> {
     override suspend fun render(
         data: List<CircleState>,
-        controller: MapViewController<*, *>,
+        controller: MapViewController<*, *, *>,
     ) {
         controller.addCircles(data)
     }
@@ -105,7 +105,7 @@ class PolylineOverlay(
 ) : MapOverlay<PolylineState> {
     override suspend fun render(
         data: List<PolylineState>,
-        controller: MapViewController<*>,
+        controller: MapViewController<*, *, *>,
     ) {
         controller.addPolylines(data)
     }
@@ -124,7 +124,7 @@ val LocalCircleCollector =
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController<*, *>,
+    controller: MapViewController<*, *, *>,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")
