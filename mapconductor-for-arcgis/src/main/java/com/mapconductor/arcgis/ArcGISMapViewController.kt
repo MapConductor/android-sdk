@@ -40,8 +40,10 @@ import com.arcgismaps.mapping.symbology.SimpleFillSymbol
 import com.arcgismaps.mapping.symbology.SimpleFillSymbolStyle
 import com.arcgismaps.mapping.symbology.SimpleLineSymbol
 import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
+import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineState
 
-interface IArcGISMapViewController : MapViewController<Graphic, Graphic> {
+interface IArcGISMapViewController : MapViewController<Graphic, Graphic, Graphic> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -75,9 +77,10 @@ class ArcGISMapViewController(
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.Relative
         },
-    private val overlayManagerFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
-    override val circleManager: CircleManager<Graphic> = CircleManager()
-) : BaseMapViewController<Camera, Graphic, Graphic>(),
+    private val markerRendererFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
+    override val circleManager: CircleManager<Graphic> = CircleManager(),
+    override val polylineOverlayManager: PolylineOverlayManagerImpl<Graphic>
+) : BaseMapViewController<Camera, Graphic, Graphic, Graphic>(),
     IArcGISMapViewController {
     override val markerRenderer: MarkerRenderer<Graphic> =
         ArcGISMarkerRenderer(
@@ -89,7 +92,7 @@ class ArcGISMapViewController(
     private var selectedMarker: SelectedMarker? = null
 
     override fun createMarkerOverlayManager(): MarkerOverlayManager<Graphic> =
-        overlayManagerFactory.create(
+        markerRendererFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
@@ -248,6 +251,13 @@ class ArcGISMapViewController(
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+    override suspend fun addPolylines(data: List<PolylineState>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updatePolyline(state: PolylineState) {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.forEach { state ->

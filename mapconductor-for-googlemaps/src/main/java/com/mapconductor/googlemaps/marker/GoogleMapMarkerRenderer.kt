@@ -39,7 +39,7 @@ class DefaultGoogleMapMarkerRenderer : MarkerRendererFactory<Marker> {
         )
 }
 
-class GoogleMapMarkerRender(
+class GoogleMapMarkerRenderer(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractMarkerRenderer<Marker>() {

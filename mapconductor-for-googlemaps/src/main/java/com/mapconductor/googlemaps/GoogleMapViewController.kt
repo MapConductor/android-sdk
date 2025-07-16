@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleManager
@@ -31,15 +32,18 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineOverlayManager
+import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
-import com.mapconductor.googlemaps.marker.GoogleMapMarkerRender
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController : MapViewController<Marker, Circle> {
+interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -60,9 +64,11 @@ class GoogleMapViewController(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
-    private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
+    private val markerRendererFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
+    private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     override val circleManager: CircleManager<Circle> = CircleManager(),
-) : BaseMapViewController<CameraPosition, Marker, Circle>(),
+    override val polylineOverlayManager: PolylineOverlayManagerImpl<Polyline>,
+) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline,>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -75,18 +81,21 @@ class GoogleMapViewController(
     val circleStates: HashMap<String, CircleState> = HashMap()
 
     override val markerRenderer: MarkerRenderer<Marker> =
-        GoogleMapMarkerRender(
+        GoogleMapMarkerRenderer(
             holder = holder,
             coroutine = coroutine,
         )
     override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> =
-        overlayManagerFactory.create(
+        markerRendererFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
             onAnimate = markerRenderer::animate,
         )
+
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<Polyline> {
+    }
 
     init {
         setupListeners()
@@ -169,6 +178,13 @@ class GoogleMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+    override suspend fun addPolylines(data: List<PolylineState>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updatePolyline(state: PolylineState) {
+        TODO("Not yet implemented")
+    }
 
     override fun onCameraMove() {
         cameraMoveListener?.let {

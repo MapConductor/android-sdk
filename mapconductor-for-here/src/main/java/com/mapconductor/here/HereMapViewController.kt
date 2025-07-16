@@ -31,6 +31,9 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineOverlayManager
+import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.here.marker.DefaultHereMapMarkerRenderer
 import com.mapconductor.here.marker.HereMapMarkerRenderer
@@ -38,9 +41,8 @@ import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
 
-interface IHereMapViewController : MapViewController<MapMarker, MapPolygon> {
+interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolygon> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -61,9 +63,10 @@ class HereMapViewController(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
-    private val overlayManagerFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
+    private val markerRendererFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
     override val circleManager: CircleManager<MapPolygon> = CircleManager(),
-) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon>(),
+    override val polylineOverlayManager: PolylineOverlayManagerImpl<MapPolygon>,
+) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon, MapPolygon>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
@@ -77,13 +80,17 @@ class HereMapViewController(
         )
 
     override fun createMarkerOverlayManager(): MarkerOverlayManager<MapMarker> =
-        overlayManagerFactory.create(
+        markerRendererFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
             onIconChange = markerRenderer::changeIcons,
             onAnimate = markerRenderer::animate,
         )
+
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolygon> {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
@@ -96,6 +103,13 @@ class HereMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+    override suspend fun addPolylines(data: List<PolylineState>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updatePolyline(state: PolylineState) {
+        TODO("Not yet implemented")
+    }
 
     init {
         setupListeners()

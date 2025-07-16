@@ -14,6 +14,7 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.haversineDistance
@@ -61,7 +62,7 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline> : MapViewController<ActualMarker, ActualPolyline> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline> : MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -71,11 +72,17 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
         }
     }
 
+    override val polylineOverlayManager: PolylineOverlayManagerImpl<ActualPolyline> by lazy {
+        createPolylineOverlayManager()
+    }
+
     protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
         // Stub
     }
 
     protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
+
+    protected abstract fun createPolylineOverlayManager(): PolylineOverlayManager<ActualPolyline>
 
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null

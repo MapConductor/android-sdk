@@ -47,6 +47,9 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineOverlayManager
+import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.circle.CircleLayerWrapper
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
@@ -60,7 +63,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 
-interface IMapboxMapViewController : MapViewController<Feature, Feature> {
+interface IMapboxMapViewController : MapViewController<Feature, Feature, Feature> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -82,7 +85,7 @@ internal class MapboxMapViewController(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
-    private val overlayManagerFactory: MarkerRendererFactory<Feature> = DefaultMapboxMarkerRenderer(),
+    private val markerRendererFactory: MarkerRendererFactory<Feature> = DefaultMapboxMarkerRenderer(),
     private val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -99,7 +102,8 @@ internal class MapboxMapViewController(
             layerId = "circle-layer",
         ),
     override val circleManager: CircleManager<Feature> = CircleManager(),
-) : BaseMapViewController<CameraState, Feature, Feature>(),
+    override val polylineOverlayManager: PolylineOverlayManagerImpl<Feature>,
+) : BaseMapViewController<CameraState, Feature, Feature, Feature>(),
     IMapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,
@@ -115,7 +119,7 @@ internal class MapboxMapViewController(
         )
 
     override fun createMarkerOverlayManager(): MarkerOverlayManager<Feature> =
-        overlayManagerFactory.create(
+        markerRendererFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
@@ -123,6 +127,10 @@ internal class MapboxMapViewController(
             onPostProcess = markerRenderer::drawMarkerLayer,
             onAnimate = markerRenderer::animate,
         )
+
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<Feature> {
+        TODO("Not yet implemented")
+    }
 
     private val lineLayer: LineLayer
     private val lineSourceId = "lines-source"
@@ -176,6 +184,13 @@ internal class MapboxMapViewController(
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+    override suspend fun addPolylines(data: List<PolylineState>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updatePolyline(state: PolylineState) {
+        TODO("Not yet implemented")
+    }
 
     private fun createCircleFeature(state: CircleState): Feature {
         val feature = Feature.fromGeometry(
