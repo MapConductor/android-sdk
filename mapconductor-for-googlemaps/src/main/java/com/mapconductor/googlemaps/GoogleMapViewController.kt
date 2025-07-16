@@ -34,10 +34,14 @@ import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.polyline.DefaultGoogleMapPolylineRenderer
+import com.mapconductor.googlemaps.polyline.GoogleMapPolylineRenderer
 import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,8 +71,7 @@ class GoogleMapViewController(
     private val markerRendererFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     override val circleManager: CircleManager<Circle> = CircleManager(),
-    override val polylineOverlayManager: PolylineOverlayManagerImpl<Polyline>,
-) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline,>(),
+) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -94,8 +97,17 @@ class GoogleMapViewController(
             onAnimate = markerRenderer::animate,
         )
 
-    override fun createPolylineOverlayManager(): PolylineOverlayManager<Polyline> {
-    }
+    override val polylineRenderer: PolylineRenderer<Polyline> =
+        GoogleMapPolylineRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<Polyline> =
+        polylineRendererFactory.create(
+            onAdd = polylineRenderer::addLines,
+            onChange = polylineRenderer::changeLine,
+            onRemove = polylineRenderer::removeLines,
+        )
 
     init {
         setupListeners()
@@ -149,7 +161,13 @@ class GoogleMapViewController(
         }
     }
 
+    override suspend fun clearOverlays() {
+        markerOverlayManager.clearOverlays()
+        polylineOverlayManager.clearOverlays()
+    }
+
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->
@@ -167,24 +185,11 @@ class GoogleMapViewController(
             }
         }
     }
+    override suspend fun updateCircle(state: CircleState) {}
 
-    override suspend fun updateCircle(state: CircleState) {
-    val options = CircleOptions()
+    override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
-
-
-    }
-
-    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
-
-    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
-    override suspend fun addPolylines(data: List<PolylineState>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updatePolyline(state: PolylineState) {
-        TODO("Not yet implemented")
-    }
 
     override fun onCameraMove() {
         cameraMoveListener?.let {

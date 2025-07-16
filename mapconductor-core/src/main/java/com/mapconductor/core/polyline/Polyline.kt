@@ -1,9 +1,12 @@
 package com.mapconductor.core.polyline
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.IGeoPoint
 import android.graphics.Color
@@ -14,8 +17,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class PolylineState(
     points: List<IGeoPoint>,
     id: String? = null,
-    color: Int = Color.BLACK,
-    width: Int = 2,
+    strokeColor: Int = Color.BLACK,
+    strokeWidth: Dp = 2.dp,
     geodesic: Boolean = false,
     extra: Parcelable? = null,
 ) {
@@ -24,15 +27,15 @@ class PolylineState(
             id ?: polylineId(
                 listOf(
                     listHashCode(points),
-                    color,
-                    width,
+                    strokeColor,
+                    strokeWidth.hashCode(),
                     geodesic.hashCode(),
                     extra?.hashCode() ?: 0,
                 ),
             )
         ).toString()
-    var color by mutableStateOf(color)
-    var width by mutableStateOf(width)
+    var strokeColor by mutableIntStateOf(strokeColor)
+    var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
     var points by StateFlowDelegate<List<IGeoPoint>>(points)
 
@@ -50,9 +53,10 @@ class PolylineState(
 
     override fun hashCode(): Int {
         var result = extra?.hashCode() ?: 0
-        result = 31 * result + color.hashCode()
-        result = 31 * result + width.hashCode()
+        result = 31 * result + strokeColor.hashCode()
+        result = 31 * result + strokeWidth.hashCode()
         result = 31 * result + geodesic.hashCode()
+        result = 31 * result + points.hashCode()
         return result
     }
 
@@ -67,8 +71,8 @@ class PolylineState(
     fun fingerPrint(): PolylineFingerPrint =
         PolylineFingerPrint(
             id = this.id.hashCode(),
-            color = color,
-            width = width,
+            color = strokeColor,
+            width = strokeWidth.hashCode(),
             geodesic = geodesic.toString().hashCode(),
             points = listHashCode(points),
             extra = extra?.hashCode() ?: 0,

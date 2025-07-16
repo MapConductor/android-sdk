@@ -1,19 +1,13 @@
 package com.mapconductor.core.polyline
 
+import com.mapconductor.core.polyline.PolylineRenderer.UpdateParams
 import kotlinx.coroutines.sync.Semaphore
 
 interface PolylineOverlayManager<ActualPolyline> {
     suspend fun addPolylines(polylines: List<PolylineState>)
-
     suspend fun updatePolyline(polyline: PolylineState)
     suspend fun clearOverlays()
-
     fun getPolylineState(id: String): PolylineState?
-}
-
-interface UpdateParams<ActualPolyline> {
-    val entity: PolylineEntity<ActualPolyline>
-    val prevEntity: PolylineEntity<ActualPolyline>
 }
 
 class PolylineOverlayManagerImpl<ActualPolyline>(

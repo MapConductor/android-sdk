@@ -40,7 +40,12 @@ import com.arcgismaps.mapping.symbology.SimpleFillSymbol
 import com.arcgismaps.mapping.symbology.SimpleFillSymbolStyle
 import com.arcgismaps.mapping.symbology.SimpleLineSymbol
 import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
+import com.mapconductor.arcgis.polyline.ArcGISPolylineRenderer
+import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
+import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 
 interface IArcGISMapViewController : MapViewController<Graphic, Graphic, Graphic> {
@@ -78,8 +83,8 @@ class ArcGISMapViewController(
             sceneProperties.surfacePlacement = SurfacePlacement.Relative
         },
     private val markerRendererFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
+    private val polylineRendererFactory: PolylineRendererFactory<Graphic> = DefaultArcGISPolylineRenderer(),
     override val circleManager: CircleManager<Graphic> = CircleManager(),
-    override val polylineOverlayManager: PolylineOverlayManagerImpl<Graphic>
 ) : BaseMapViewController<Camera, Graphic, Graphic, Graphic>(),
     IArcGISMapViewController {
     override val markerRenderer: MarkerRenderer<Graphic> =
@@ -100,6 +105,18 @@ class ArcGISMapViewController(
             onAnimate = markerRenderer::animate,
         )
 
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<Graphic> =
+        polylineRendererFactory.create(
+            onAdd = polylineRenderer::addLines,
+            onChange = polylineRenderer::changeLine,
+            onRemove = polylineRenderer::removeLines,
+        )
+
+    override val polylineRenderer: PolylineRenderer<Graphic> =
+        ArcGISPolylineRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
     init {
         markerRenderer.init(markerOverlayManager)
         holder.map.graphicsOverlays.clear()
@@ -248,16 +265,16 @@ class ArcGISMapViewController(
         }
     }
 
+    override suspend fun clearOverlays() {
+        markerOverlayManager.clearOverlays()
+        polylineOverlayManager.clearOverlays()
+    }
+
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
-
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
-    override suspend fun addPolylines(data: List<PolylineState>) {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun updatePolyline(state: PolylineState) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.forEach { state ->
@@ -267,8 +284,6 @@ class ArcGISMapViewController(
 
     override suspend fun updateCircle(state: CircleState) {
     }
-
-    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,

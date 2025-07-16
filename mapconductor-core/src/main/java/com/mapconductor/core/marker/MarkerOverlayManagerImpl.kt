@@ -1,5 +1,6 @@
 package com.mapconductor.core.marker
 
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 
@@ -15,11 +16,6 @@ interface MarkerOverlayManager<ActualMarker> {
     fun getMarkerState(id: String): MarkerState?
 }
 
-interface UpdateParams<ActualMarker> {
-    val entity: MarkerEntity<ActualMarker>
-    val bitmapIcon: BitmapIcon
-    val prevEntity: MarkerEntity<ActualMarker>
-}
 
 class MarkerOverlayManagerImpl<ActualMarker>(
     override val markerManager: MarkerManager<ActualMarker>,

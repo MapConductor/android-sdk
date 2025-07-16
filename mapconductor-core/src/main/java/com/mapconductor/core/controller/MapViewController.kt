@@ -16,6 +16,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.haversineDistance
 import kotlin.math.pow
@@ -27,7 +28,7 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
     val markerOverlayManager: MarkerOverlayManager<ActualMarker>
     val hexGeocell: HexGeocell
     val circleManager: CircleManager<ActualCircle>
-    val polylineOverlayManager: PolylineOverlayManagerImpl<ActualPolyline>
+    val polylineOverlayManager: PolylineOverlayManager<ActualPolyline>
 
     suspend fun addMarkers(data: List<MarkerState>)
 
@@ -62,7 +63,9 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline> : MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline> :
+    MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
+
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -72,11 +75,19 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
         }
     }
 
-    override val polylineOverlayManager: PolylineOverlayManagerImpl<ActualPolyline> by lazy {
-        createPolylineOverlayManager()
+    abstract val polylineRenderer: PolylineRenderer<ActualPolyline>
+
+    override val polylineOverlayManager: PolylineOverlayManager<ActualPolyline> by lazy {
+        createPolylineOverlayManager().also { overlayManager ->
+            polylineRenderer.init(overlayManager)
+            onPolylineOverlayManagerInitialized(overlayManager)
+        }
     }
 
     protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
+        // Stub
+    }
+    protected open fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ActualPolyline>) {
         // Stub
     }
 
