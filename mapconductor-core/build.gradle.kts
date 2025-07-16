@@ -56,6 +56,7 @@ dependencies {
     compileOnly(libs.androidx.foundation)
 
     compileOnly(libs.androidx.ui)
+    compileOnly(libs.androidx.ui.graphics)
     compileOnly(libs.androidx.ui.tooling.preview)
     compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）

@@ -1,5 +1,6 @@
 package com.mapconductor.googlemaps
 
+import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -37,7 +39,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController : MapViewController<Marker> {
+interface IGoogleMapViewController : MapViewController<Marker, Circle> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -59,7 +61,8 @@ class GoogleMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val overlayManagerFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
-) : BaseMapViewController<CameraPosition, Marker>(),
+    override val circleManager: CircleManager<Circle> = CircleManager(),
+) : BaseMapViewController<CameraPosition, Marker, Circle>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -141,14 +144,14 @@ class GoogleMapViewController(
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->
-            val strokeWidth = ResourceProvider.toDp(state.strokeWidth.toDouble())
+            val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.value)
             circleStates.set(state.id, state)
             val options = CircleOptions()
                 .center(GeoPoint.from(state.center).toLatLng())
-                .radius(state.radius.toDouble())
+                .radius(state.radius)
                 .strokeWidth(strokeWidth.toFloat())
-                .strokeColor(state.strokeColor)
-                .fillColor(state.fillColor)
+                .strokeColor(state.strokeColor.toArgb())
+                .fillColor(state.fillColor.toArgb())
                 .clickable(true)
             return@map holder.map.addCircle(options).also {
                 it.tag = state.id
@@ -157,6 +160,10 @@ class GoogleMapViewController(
     }
 
     override suspend fun updateCircle(state: CircleState) {
+    val options = CircleOptions()
+
+
+
     }
 
     override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()

@@ -58,11 +58,10 @@ class GoogleMapMarkerRender(
                     MarkerOptions()
                         .position(GeoPoint.from(params.first.position).toLatLng())
                         .anchor(
-                            params.second.anchor.x
-                                .toFloat(),
-                            params.second.anchor.y
-                                .toFloat(),
-                        ).icon(bitmapDescriptor)
+                            params.second.anchor.x,
+                            params.second.anchor.y,
+                        )
+                        .icon(bitmapDescriptor)
                         .draggable(params.first.draggable)
                 val marker =
                     holder.map.addMarker(options)?.also {

@@ -1,10 +1,8 @@
 package com.mapconductor.core.controller
 
-import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
-import androidx.compose.ui.geometry.Size
-import androidx.core.graphics.createBitmap
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
@@ -12,7 +10,6 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerState
@@ -20,17 +17,15 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.haversineDistance
-import kotlin.math.abs
 import kotlin.math.pow
-import android.graphics.Canvas
-import android.graphics.Paint
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController<ActualMarker, ActualPolyline> {
+interface MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManager<ActualMarker>
     val hexGeocell: HexGeocell
+    val circleManager: CircleManager<ActualCircle>
     val polylineOverlayManager: PolylineOverlayManagerImpl<ActualPolyline>
 
     suspend fun addMarkers(data: List<MarkerState>)
@@ -66,7 +61,7 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualPolyline> : MapViewController<ActualMarker, ActualPolyline> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline> : MapViewController<ActualMarker, ActualPolyline> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -104,37 +99,6 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualPolyline>
     protected abstract fun clearPolyline()
 
     protected abstract fun drawPolyline(geoPoints: List<IGeoPoint>)
-
-    protected fun adjustIconForAnchor(icon: BitmapIcon): BitmapIcon {
-        val offsetX = 0.5 - icon.anchor.x.toDouble()
-        val offsetY = 0.5 - icon.anchor.y.toDouble()
-        val dx = offsetX * icon.size.width
-        val dy = offsetY * icon.size.height
-        val width = icon.size.width + abs(dx)
-        val height = icon.size.height + abs(dy)
-
-        val bitmap = createBitmap(width.toInt(), height.toInt())
-
-        val paint =
-            Paint().apply {
-                isAntiAlias = true
-            }
-
-//        val rect = Rect(
-//            dx.toInt(),
-//            dy.toInt(),
-//            (dx + icon.size.width.toDouble()).toInt(),
-//            (dy + icon.size.height.toDouble()).toInt(),
-//        )
-        Canvas(bitmap).apply {
-            drawBitmap(icon.bitmap, abs(dx).toFloat(), abs(dy).toFloat(), paint)
-        }
-        return BitmapIcon(
-            bitmap = bitmap,
-            anchor = Offset((width * 0.5).toFloat(), height.toFloat()),
-            size = Size(width.toFloat(), height.toFloat()),
-        )
-    }
 
     protected fun analyzeSearchRange(
         position: IGeoPoint,
