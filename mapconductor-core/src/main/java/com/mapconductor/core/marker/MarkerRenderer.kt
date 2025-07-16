@@ -5,6 +5,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.settings.Settings
 import kotlin.math.min
@@ -31,6 +32,13 @@ interface MarkerRendererFactory<ActualMarker> {
 }
 
 interface MarkerRenderer<ActualMarker> {
+
+    interface UpdateParams<ActualMarker> {
+        val entity: MarkerEntity<ActualMarker>
+        val bitmapIcon: BitmapIcon
+        val prevEntity: MarkerEntity<ActualMarker>
+    }
+
     fun init(markerOverlayManager: MarkerOverlayManager<ActualMarker>)
 
     suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<ActualMarker?>

@@ -13,6 +13,7 @@ import com.here.sdk.mapview.MapCameraListener
 import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
+import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.ResourceProvider
@@ -33,16 +34,20 @@ import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.here.marker.DefaultHereMapMarkerRenderer
 import com.mapconductor.here.marker.HereMapMarkerRenderer
+import com.mapconductor.here.polyline.DefaultHereMapPolylineRenderer
+import com.mapconductor.here.polyline.HereMapPolylineRenderer
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolygon> {
+interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -64,9 +69,9 @@ class HereMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val markerRendererFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
+    private val polylineRendererFactory: PolylineRendererFactory<MapPolyline> = DefaultHereMapPolylineRenderer(),
     override val circleManager: CircleManager<MapPolygon> = CircleManager(),
-    override val polylineOverlayManager: PolylineOverlayManagerImpl<MapPolygon>,
-) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon, MapPolygon>(),
+) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon, MapPolyline>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
@@ -88,28 +93,32 @@ class HereMapViewController(
             onAnimate = markerRenderer::animate,
         )
 
-    override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolygon> {
-        TODO("Not yet implemented")
-    }
+    override val polylineRenderer: PolylineRenderer<MapPolyline> =
+        HereMapPolylineRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =
+        polylineRendererFactory.create(
+            onAdd = polylineRenderer::addLines,
+            onChange = polylineRenderer::changeLine,
+            onRemove = polylineRenderer::removeLines,
+        )
 
+    override suspend fun clearOverlays() {
+        markerOverlayManager.clearOverlays()
+        polylineOverlayManager.clearOverlays()
+    }
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
     }
-
     override suspend fun updateCircle(state: CircleState) {
     }
 
-    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
-
-    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
-    override suspend fun addPolylines(data: List<PolylineState>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updatePolyline(state: PolylineState) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     init {
         setupListeners()

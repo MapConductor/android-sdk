@@ -107,6 +107,14 @@ fun <
                     }
                 }
             }
+            val polylines = scope.polylineFlow.collectAsState()
+            polylines.value.forEach { polylineState ->
+                LaunchedEffect(polylineState.id) {
+                    polylineState.asFlow().debounce(100).collectLatest {
+                        controller.updatePolyline(polylineState)
+                    }
+                }
+            }
         }
     }
 

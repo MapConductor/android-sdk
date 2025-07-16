@@ -15,9 +15,9 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.UpdateParams
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

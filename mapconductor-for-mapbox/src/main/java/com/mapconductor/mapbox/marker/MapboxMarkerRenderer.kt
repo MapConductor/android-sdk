@@ -14,9 +14,9 @@ import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.UpdateParams
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
 import kotlin.coroutines.suspendCoroutine

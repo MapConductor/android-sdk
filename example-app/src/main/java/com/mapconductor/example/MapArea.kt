@@ -22,6 +22,7 @@ import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.Polyline
 
 @Composable
 fun MapArea(
@@ -53,6 +54,9 @@ fun MapArea(
             onMarkerAnimateEnd = { isMarkerAnimating = false },
             onCircleClick = onCircleClickHandler,
         ) {
+            Polyline(
+                points = markers.map { it.position }
+            )
 
             markers.forEach { markerState ->
                 key(markerState.id) {

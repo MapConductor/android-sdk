@@ -49,6 +49,8 @@ import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.circle.CircleLayerWrapper
@@ -56,12 +58,16 @@ import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MarkerDragLayer
 import com.mapconductor.mapbox.marker.MarkerLayer
+import com.mapconductor.mapbox.polyline.MapboxPolylineRenderer
 import com.mapconductor.settings.Settings
+import kotlin.math.cos
+import kotlin.math.pow
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
+import com.mapconductor.mapbox.polyline.DefaultMapboxPolylineRenderer
 
 interface IMapboxMapViewController : MapViewController<Feature, Feature, Feature> {
     fun moveCamera(
@@ -86,6 +92,7 @@ internal class MapboxMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val markerRendererFactory: MarkerRendererFactory<Feature> = DefaultMapboxMarkerRenderer(),
+    private val polylineRendererFactory: PolylineRendererFactory<Feature> = DefaultMapboxPolylineRenderer(),
     private val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -102,7 +109,6 @@ internal class MapboxMapViewController(
             layerId = "circle-layer",
         ),
     override val circleManager: CircleManager<Feature> = CircleManager(),
-    override val polylineOverlayManager: PolylineOverlayManagerImpl<Feature>,
 ) : BaseMapViewController<CameraState, Feature, Feature, Feature>(),
     IMapboxMapViewController,
     CameraChangedCallback,
@@ -128,9 +134,12 @@ internal class MapboxMapViewController(
             onAnimate = markerRenderer::animate,
         )
 
-    override fun createPolylineOverlayManager(): PolylineOverlayManager<Feature> {
-        TODO("Not yet implemented")
-    }
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<Feature> =
+        polylineRendererFactory.create(
+            onAdd = polylineRenderer::addLines,
+            onChange = polylineRenderer::changeLine,
+            onRemove = polylineRenderer::removeLines,
+        )
 
     private val lineLayer: LineLayer
     private val lineSourceId = "lines-source"
@@ -154,6 +163,12 @@ internal class MapboxMapViewController(
             style.addLayer(dragLayer.layer)
         }
     }
+
+    override val polylineRenderer: PolylineRenderer<Feature> =
+        MapboxPolylineRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
     init {
         lineLayer =
@@ -179,11 +194,14 @@ internal class MapboxMapViewController(
         holder.map.addOnMoveListener(this)
     }
 
+    override suspend fun clearOverlays() {
+        markerOverlayManager.clearOverlays()
+        polylineOverlayManager.clearOverlays()
+    }
+
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
-
-    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
-
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+
     override suspend fun addPolylines(data: List<PolylineState>) {
         TODO("Not yet implemented")
     }
@@ -234,7 +252,7 @@ internal class MapboxMapViewController(
     fun meterToPixel(meter: Double, latitude: Double, zoom: Double): Double {
         val earthCircumference = 2 * Math.PI * 6378137
         val tileSize = 512.0 // Mapbox v10+はデフォルト512
-        val metersPerPixel = Math.cos(Math.toRadians(latitude)) * earthCircumference / (tileSize * Math.pow(2.0, zoom))
+        val metersPerPixel = cos(Math.toRadians(latitude)) * earthCircumference / (tileSize * 2.0.pow(zoom))
         return meter / metersPerPixel
     }
 

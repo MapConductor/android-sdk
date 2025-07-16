@@ -69,6 +69,7 @@ open class MapViewScope {
         val registry = MapOverlayRegistry()
         registry.register(MarkerOverlay(markerFlow))
         registry.register(CircleOverlay(circleFlow))
+        registry.register(PolylineOverlay(polylineFlow))
         return registry
     }
 }
