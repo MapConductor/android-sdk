@@ -26,7 +26,7 @@ interface PolylineRenderer<ActualPolyline> {
 
     suspend fun removeLines(removeEntities: List<PolylineEntity<ActualPolyline>>)
 
-    suspend fun changeLine(changes: List<UpdateParams<ActualPolyline>>) : List<ActualPolyline>
+    suspend fun changeLine(change: List<UpdateParams<ActualPolyline>>) : List<ActualPolyline>
 }
 
 abstract class AbstractPolylineRenderer<ActualPolyline> : PolylineRenderer<ActualPolyline> {

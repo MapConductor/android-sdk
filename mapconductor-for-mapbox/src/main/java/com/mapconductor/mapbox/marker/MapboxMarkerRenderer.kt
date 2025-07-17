@@ -136,7 +136,7 @@ class MapboxMarkerRenderer(
                         addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                         add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                     }
-                    addProperty(Prop.SCALE, 1.0f)// state.icon?.scale ?: 1.0)
+                    addProperty(Prop.SCALE, state.icon?.scale ?: 1.0)
                 }
             Feature.fromGeometry(position, properties, featureId)
         }

@@ -76,11 +76,15 @@ class ArcGISMapViewController(
         ),
     private val markerLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.Relative
+            sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
         },
     private val circleLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.Relative
+            sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
+        },
+    private val polylineLayer: GraphicsOverlay =
+        GraphicsOverlay().apply {
+            sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
         },
     private val markerRendererFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
     private val polylineRendererFactory: PolylineRendererFactory<Graphic> = DefaultArcGISPolylineRenderer(),
@@ -114,6 +118,7 @@ class ArcGISMapViewController(
 
     override val polylineRenderer: PolylineRenderer<Graphic> =
         ArcGISPolylineRenderer(
+            polylineLayer = polylineLayer,
             holder = holder,
             coroutine = coroutine,
         )
@@ -121,6 +126,7 @@ class ArcGISMapViewController(
         markerRenderer.init(markerOverlayManager)
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(circleLayer)
+        holder.map.graphicsOverlays.add(polylineLayer)
         holder.map.graphicsOverlays.add(markerLayer)
         setupListeners()
     }

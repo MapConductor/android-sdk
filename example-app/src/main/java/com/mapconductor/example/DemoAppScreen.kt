@@ -109,7 +109,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(2) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
