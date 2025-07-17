@@ -59,9 +59,9 @@ class ArcGISMarkerRenderer(
                 .map { params ->
                     val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.getDensity()
-                    val width = (params.second.size.width / density) * (params.first.icon?.scale ?: 1.0f)
-                    val height = (params.second.size.height / density) * (params.first.icon?.scale ?: 1.0f)
-                    val anchorX = (params.second.anchor.x - 0.5) * width
+                    val width = ((params.second.size.width * (params.first.icon?.scale ?: 1.0f)) / density)
+                    val height = ((params.second.size.height * (params.first.icon?.scale ?: 1.0f)) / density)
+                    val anchorX = (0.5 - params.second.anchor.x) * width
                     val anchorY = (params.second.anchor.y - 0.5) * height
 
                     val pictureSymbolFuture =
@@ -76,8 +76,9 @@ class ArcGISMarkerRenderer(
                         Graphic(
                             geometry = params.first.position.toPoint(),
                             symbol = pictureSymbolFuture,
-                        )
-                    marker.attributes.set("id", params.first.id)
+                        ).also {
+                            it.attributes.set("id", params.first.id)
+                        }
                     return@map marker
                 }.also {
                     markerLayer.graphics.addAll(it)
