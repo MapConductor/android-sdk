@@ -62,6 +62,7 @@ class HereMapMarkerRenderer(
                             params.second.toMapImage(),
                             params.second.toAnchor2D(),
                         ).apply {
+
                             drawOrder = calculateZIndex(params.first.position).toInt()
                             metadata =
                                 Metadata().apply {

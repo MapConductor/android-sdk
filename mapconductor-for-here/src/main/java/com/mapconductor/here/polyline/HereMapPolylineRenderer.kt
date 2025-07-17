@@ -67,7 +67,7 @@ class HereMapPolylineRenderer(
                 val geoPolyline = createGeoPolyline(params.entity.state)
                 params.entity.polyline.geometry = geoPolyline
             }
-            if (finger.color != prevFinger.color || finger.width != prevFinger.color) {
+            if (finger.strokeColor != prevFinger.strokeColor || finger.strokeWidth != prevFinger.strokeColor) {
                 val representation = createRepresentation(params.entity.state)
                 params.entity.polyline.setRepresentation(representation)
             }

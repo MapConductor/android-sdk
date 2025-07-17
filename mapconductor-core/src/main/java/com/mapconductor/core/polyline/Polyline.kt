@@ -52,8 +52,8 @@ class PolylineState(
 
     override fun hashCode(): Int {
         var result = extra?.hashCode() ?: 0
-        result = 31 * result + strokeColor.hashCode()
-        result = 31 * result + strokeWidth.hashCode()
+        result = 31 * result + this@PolylineState.strokeColor.hashCode()
+        result = 31 * result + this@PolylineState.strokeWidth.hashCode()
         result = 31 * result + geodesic.hashCode()
         result = 31 * result + points.hashCode()
         return result
@@ -70,8 +70,8 @@ class PolylineState(
     fun fingerPrint(): PolylineFingerPrint =
         PolylineFingerPrint(
             id = this.id.hashCode(),
-            color = strokeColor.hashCode(),
-            width = strokeWidth.hashCode(),
+            strokeColor = this@PolylineState.strokeColor.hashCode(),
+            strokeWidth = this@PolylineState.strokeWidth.hashCode(),
             geodesic = geodesic.toString().hashCode(),
             points = listHashCode(points),
             extra = extra?.hashCode() ?: 0,
@@ -82,8 +82,8 @@ class PolylineState(
 
 data class PolylineFingerPrint(
     val id: Int,
-    val color: Int,
-    val width: Int,
+    val strokeColor: Int,
+    val strokeWidth: Int,
     val geodesic: Int,
     val points: Int,
     val extra: Int,

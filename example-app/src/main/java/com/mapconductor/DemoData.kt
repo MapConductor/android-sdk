@@ -38,7 +38,6 @@ val StarbucksHI_list =
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     strokeWidth = 1.dp,
-                    scale = 1.5f
                 )
         ),
         MarkerState(
@@ -59,7 +58,6 @@ val StarbucksHI_list =
                 fillColor = Color.Red,
                 strokeColor = Color.White,
                 strokeWidth = 0.5.dp,
-                scale = 2.0f,
             )
         ),
         MarkerState(
