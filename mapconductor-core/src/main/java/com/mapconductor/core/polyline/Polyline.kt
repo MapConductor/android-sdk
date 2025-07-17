@@ -1,15 +1,14 @@
 package com.mapconductor.core.polyline
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.IGeoPoint
-import android.graphics.Color
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -17,7 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class PolylineState(
     points: List<IGeoPoint>,
     id: String? = null,
-    strokeColor: Int = Color.BLACK,
+    strokeColor: Color = Color.Black,
     strokeWidth: Dp = 2.dp,
     geodesic: Boolean = false,
     extra: Parcelable? = null,
@@ -27,14 +26,14 @@ class PolylineState(
             id ?: polylineId(
                 listOf(
                     listHashCode(points),
-                    strokeColor,
+                    strokeColor.hashCode(),
                     strokeWidth.hashCode(),
                     geodesic.hashCode(),
                     extra?.hashCode() ?: 0,
                 ),
             )
         ).toString()
-    var strokeColor by mutableIntStateOf(strokeColor)
+    var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
     var points by StateFlowDelegate<List<IGeoPoint>>(points)
@@ -71,7 +70,7 @@ class PolylineState(
     fun fingerPrint(): PolylineFingerPrint =
         PolylineFingerPrint(
             id = this.id.hashCode(),
-            color = strokeColor,
+            color = strokeColor.hashCode(),
             width = strokeWidth.hashCode(),
             geodesic = geodesic.toString().hashCode(),
             points = listHashCode(points),

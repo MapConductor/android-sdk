@@ -43,7 +43,7 @@ class GoogleMapPolylineRenderer(
                 val points = state.points.map { GeoPoint.from(it).toLatLng() }
                 val options = PolylineOptions()
                     .addAll(points)
-                    .color(state.strokeColor)
+                    .color(state.strokeColor.toArgb())
                     .width(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                     .clickable(true)
                 holder.map.addPolyline(options).also {
@@ -70,7 +70,7 @@ class GoogleMapPolylineRenderer(
                     polyline.points = points
                 }
                 polyline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
-                polyline.color = params.entity.state.strokeColor
+                polyline.color = params.entity.state.strokeColor.toArgb()
                 return@map polyline
             }
         }

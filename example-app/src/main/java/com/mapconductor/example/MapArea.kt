@@ -55,7 +55,9 @@ fun MapArea(
             onCircleClick = onCircleClickHandler,
         ) {
             Polyline(
-                points = markers.map { it.position }
+                points = markers.map { it.position },
+                strokeColor = Color(0x88FF3366),
+                strokeWidth = 5.dp,
             )
 
             markers.forEach { markerState ->

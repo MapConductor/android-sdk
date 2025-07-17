@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.here.sdk.core.Point2D
 import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapRenderMode
+import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.features.GeoPoint
@@ -13,8 +14,8 @@ import android.content.Context
 
 internal class HereMapViewHolderImpl private constructor(
     override val mapView: MapView,
-) : MapViewHolder<MapView, HereMap> {
-    override lateinit var map: HereMap
+) : MapViewHolder<MapView, MapScene> {
+    override lateinit var map: MapScene
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val result =
@@ -35,7 +36,7 @@ internal class HereMapViewHolderImpl private constructor(
             )?.toGeoPoint()
 
     companion object {
-        fun create(context: Context): MapViewHolder<MapView, HereMap> {
+        fun create(context: Context): MapViewHolder<MapView, MapScene> {
             // TEXTUREモードにしないとデバイスが回転したときに再描画を適切に行わない
             val viewOptions =
                 MapViewOptions().also {
@@ -49,7 +50,7 @@ internal class HereMapViewHolderImpl private constructor(
                 }
 
             val holder = HereMapViewHolderImpl(mapView)
-            holder.map = mapView.hereMap
+            holder.map = mapView.mapScene
             return holder
         }
     }

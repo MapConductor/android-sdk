@@ -14,6 +14,7 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
 import com.here.sdk.mapview.MapPolyline
+import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.ResourceProvider
@@ -61,7 +62,7 @@ interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapP
 }
 
 class HereMapViewController(
-    override val holder: MapViewHolder<MapView, HereMap>,
+    override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     override val hexGeocell: HexGeocell =
         HexGeocell(
