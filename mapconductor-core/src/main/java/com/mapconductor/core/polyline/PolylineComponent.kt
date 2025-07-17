@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 
@@ -24,7 +23,7 @@ fun MapViewScope.Polyline(state: PolylineState) {
 fun MapViewScope.Polyline(
     points: List<IGeoPoint>,
     id: String? = null,
-    strokeColor: Int = android.graphics.Color.BLACK,
+    strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
     extra: Parcelable? = null,

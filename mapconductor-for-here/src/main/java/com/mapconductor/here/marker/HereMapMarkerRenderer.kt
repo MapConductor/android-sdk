@@ -81,7 +81,7 @@ class HereMapMarkerRenderer(
     override suspend fun removeIcons(removeEntities: List<MarkerEntity<MapMarker>>) {
         coroutine.launch {
             val markers: List<MapMarker> = removeEntities.map { params -> params.marker }
-            holder.mapView.mapScene.removeMapMarkers(markers)
+            holder.map.removeMapMarkers(markers)
         }
     }
 
