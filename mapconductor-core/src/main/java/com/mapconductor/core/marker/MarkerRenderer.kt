@@ -32,7 +32,6 @@ interface MarkerRendererFactory<ActualMarker> {
 }
 
 interface MarkerRenderer<ActualMarker> {
-
     interface UpdateParams<ActualMarker> {
         val entity: MarkerEntity<ActualMarker>
         val bitmapIcon: BitmapIcon
@@ -86,6 +85,7 @@ abstract class AbstractMarkerRenderer<ActualMarker> : MarkerRenderer<ActualMarke
     init {
         defaultIcon = DefaultIcon().toBitmapIcon()
     }
+
     override fun findNearestMarker(
         position: IGeoPoint,
         tolerance: Double,

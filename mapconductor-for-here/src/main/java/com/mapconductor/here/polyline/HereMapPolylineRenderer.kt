@@ -26,7 +26,7 @@ class DefaultHereMapPolylineRenderer : PolylineRendererFactory<MapPolyline> {
         onAdd: suspend (List<PolylineState>) -> List<MapPolyline?>,
         onChange: suspend (List<UpdateParams<MapPolyline>>) -> List<MapPolyline?>,
         onRemove: suspend (List<PolylineEntity<MapPolyline>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
+        onPostProcess: (suspend () -> Unit)?,
     ): PolylineOverlayManager<MapPolyline> =
         PolylineOverlayManagerImpl(
             onRemove = onRemove,
@@ -38,14 +38,15 @@ class DefaultHereMapPolylineRenderer : PolylineRendererFactory<MapPolyline> {
 
 class HereMapPolylineRenderer(
     override val holder: HereMapViewHolder,
-    override val coroutine: CoroutineScope
+    override val coroutine: CoroutineScope,
 ) : AbstractPolylineRenderer<MapPolyline>() {
     override suspend fun addLines(newLines: List<PolylineState>): List<MapPolyline?> {
-        val polylines = newLines.map { state ->
-            val geoPolyline = createGeoPolyline(state)
-            val representation = createRepresentation(state)
-            MapPolyline(geoPolyline, representation)
-        }
+        val polylines =
+            newLines.map { state ->
+                val geoPolyline = createGeoPolyline(state)
+                val representation = createRepresentation(state)
+                MapPolyline(geoPolyline, representation)
+            }
         coroutine.launch {
             holder.map.addMapPolylines(polylines)
         }
@@ -81,11 +82,11 @@ class HereMapPolylineRenderer(
     }
 
     private fun createRepresentation(state: PolylineState): MapPolyline.Representation {
-
-        val lineWidth = MapMeasureDependentRenderSize(
-            RenderSize.Unit.PIXELS,
-            ResourceProvider.dpToPx(state.strokeWidth.value.toDouble()),
-        )
+        val lineWidth =
+            MapMeasureDependentRenderSize(
+                RenderSize.Unit.PIXELS,
+                ResourceProvider.dpToPx(state.strokeWidth.value.toDouble()),
+            )
         val lineColor = Color.valueOf(state.strokeColor.toArgb())
         val lineCap = LineCap.SQUARE
         return MapPolyline.SolidRepresentation(lineWidth, lineColor, lineCap)

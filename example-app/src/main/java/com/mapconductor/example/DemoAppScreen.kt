@@ -109,7 +109,7 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
         )
     val context = LocalContext.current
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(3) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(selectedIndex) {
         appViewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -125,12 +125,12 @@ fun DemoAppScreen(appViewModel: AppViewModel) {
 //    val icon = MarkerIcon.HeartInCircle()
 //    val icon = MarkerIcon.SquareMarker()
 //    val icon = MarkerIcon.Triangle()
-    val image = AppCompatResources.getDrawable(context, R.drawable.def)
+    AppCompatResources.getDrawable(context, R.drawable.def)
 //    val icon = MarkerIcon.ImageInCircle(image = image!!)
 
     val markerList =
         remember {
-            appViewModel.markerList.subList(0,2).map {
+            appViewModel.markerList.subList(0, 5).map {
                 it.copy(
                     draggable = true,
                 )
@@ -222,7 +222,6 @@ fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
         Text("Zoom: ${camera?.zoom?.toFixed(2)}", color = Color.Black)
         Text("bearing: ${camera?.bearing?.toInt()}", color = Color.Black)
         Text("tilt: ${camera?.tilt?.toInt()}", color = Color.Black)
-
 
 //        Canvas(
 //            modifier = Modifier.size(34.dp)

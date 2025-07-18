@@ -3,6 +3,12 @@ package com.mapconductor.arcgis
 import com.arcgismaps.Color
 import com.arcgismaps.geometry.GeodeticCurveType
 import com.arcgismaps.geometry.GeometryEngine
+import com.arcgismaps.geometry.LinearUnit
+import com.arcgismaps.geometry.LinearUnitId
+import com.arcgismaps.mapping.symbology.SimpleFillSymbol
+import com.arcgismaps.mapping.symbology.SimpleFillSymbolStyle
+import com.arcgismaps.mapping.symbology.SimpleLineSymbol
+import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
@@ -14,13 +20,14 @@ import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
+import com.mapconductor.arcgis.polyline.ArcGISPolylineRenderer
+import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -28,27 +35,18 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.PolylineOverlayManager
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineRendererFactory
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.settings.Settings
 import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.arcgismaps.geometry.LinearUnit
-import com.arcgismaps.geometry.LinearUnitId
-import com.arcgismaps.mapping.symbology.SimpleFillSymbol
-import com.arcgismaps.mapping.symbology.SimpleFillSymbolStyle
-import com.arcgismaps.mapping.symbology.SimpleLineSymbol
-import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
-import com.mapconductor.arcgis.polyline.ArcGISPolylineRenderer
-import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
-import com.mapconductor.core.polyline.PolylineOverlayManager
-import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
-import com.mapconductor.core.polyline.PolylineRenderer
-import com.mapconductor.core.polyline.PolylineRendererFactory
-import com.mapconductor.core.polyline.PolylineState
 
-interface IArcGISMapViewController : MapViewController<Graphic, Graphic, Graphic> {
+interface IArcGISMapViewController : MapViewController<ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -86,12 +84,13 @@ class ArcGISMapViewController(
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
         },
-    private val markerRendererFactory: MarkerRendererFactory<Graphic> = DefaultArcGISMarkerRender(),
-    private val polylineRendererFactory: PolylineRendererFactory<Graphic> = DefaultArcGISPolylineRenderer(),
-    override val circleManager: CircleManager<Graphic> = CircleManager(),
-) : BaseMapViewController<Camera, Graphic, Graphic, Graphic>(),
+    private val markerRendererFactory: MarkerRendererFactory<ArcGISActualMarker> = DefaultArcGISMarkerRender(),
+    private val polylineRendererFactory: PolylineRendererFactory<ArcGISActualPolyline> =
+        DefaultArcGISPolylineRenderer(),
+    override val circleManager: CircleManager<ArcGISActualCircle> = CircleManager(),
+) : BaseMapViewController<Camera, ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline>(),
     IArcGISMapViewController {
-    override val markerRenderer: MarkerRenderer<Graphic> =
+    override val markerRenderer: MarkerRenderer<ArcGISActualMarker> =
         ArcGISMarkerRenderer(
             markerLayer = markerLayer,
             holder = holder,
@@ -100,7 +99,7 @@ class ArcGISMapViewController(
 
     private var selectedMarker: SelectedMarker? = null
 
-    override fun createMarkerOverlayManager(): MarkerOverlayManager<Graphic> =
+    override fun createMarkerOverlayManager(): MarkerOverlayManager<ArcGISActualMarker> =
         markerRendererFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
@@ -109,19 +108,20 @@ class ArcGISMapViewController(
             onAnimate = markerRenderer::animate,
         )
 
-    override fun createPolylineOverlayManager(): PolylineOverlayManager<Graphic> =
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<ArcGISActualPolyline> =
         polylineRendererFactory.create(
             onAdd = polylineRenderer::addLines,
             onChange = polylineRenderer::changeLine,
             onRemove = polylineRenderer::removeLines,
         )
 
-    override val polylineRenderer: PolylineRenderer<Graphic> =
+    override val polylineRenderer: PolylineRenderer<ArcGISActualPolyline> =
         ArcGISPolylineRenderer(
             polylineLayer = polylineLayer,
             holder = holder,
             coroutine = coroutine,
         )
+
     init {
         markerRenderer.init(markerOverlayManager)
         holder.map.graphicsOverlays.clear()
@@ -133,18 +133,20 @@ class ArcGISMapViewController(
 
     private fun createCircle(state: CircleState) {
         val center = GeoPoint.from(state.center).toPoint()
-        val circle = GeometryEngine.bufferGeodeticOrNull(
-            center,
-            500.0,
-            LinearUnit(LinearUnitId.Meters),
-            Double.NaN,
-            GeodeticCurveType.Geodesic
-        )
-        val symbol = SimpleFillSymbol(
-            SimpleFillSymbolStyle.Solid,
-            Color(0x88FF0000.toInt()), // fill
-            SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color(0xFFFF0000.toInt()), 2f)
-        )
+        val circle =
+            GeometryEngine.bufferGeodeticOrNull(
+                center,
+                500.0,
+                LinearUnit(LinearUnitId.Meters),
+                Double.NaN,
+                GeodeticCurveType.Geodesic,
+            )
+        val symbol =
+            SimpleFillSymbol(
+                SimpleFillSymbolStyle.Solid,
+                Color(0x88FF0000.toInt()), // fill
+                SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color(0xFFFF0000.toInt()), 2f),
+            )
         val graphic = Graphic(circle, symbol)
 
         circleLayer.graphics.add(graphic)
@@ -277,9 +279,11 @@ class ArcGISMapViewController(
     }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
@@ -318,13 +322,5 @@ class ArcGISMapViewController(
                 )
             listener?.onComplete(result.isSuccess)
         }
-    }
-
-    override fun clearPolyline() {
-        TODO("Not yet implemented")
-    }
-
-    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
-        TODO("Not yet implemented")
     }
 }

@@ -5,9 +5,14 @@ import kotlinx.coroutines.sync.Semaphore
 
 interface PolylineOverlayManager<ActualPolyline> {
     suspend fun addPolylines(polylines: List<PolylineState>)
+
     suspend fun updatePolyline(polyline: PolylineState)
+
     suspend fun clearOverlays()
+
     fun getPolylineState(id: String): PolylineState?
+
+    fun getAllEntities(): List<PolylineEntity<ActualPolyline>>
 }
 
 class PolylineOverlayManagerImpl<ActualPolyline>(
@@ -15,7 +20,7 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
     val onChange: suspend (List<UpdateParams<ActualPolyline>>) -> List<ActualPolyline?>,
     val onRemove: suspend (List<PolylineEntity<ActualPolyline>>) -> Unit,
     val onPostProcess: (suspend () -> Unit)? = null,
-): PolylineOverlayManager<ActualPolyline> {
+) : PolylineOverlayManager<ActualPolyline> {
     val polylineEntities = mutableMapOf<String, PolylineEntity<ActualPolyline>>()
 
     val semaphore = Semaphore(1)
@@ -29,13 +34,16 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
         polylines.forEach {
             if (previous.contains(it.id)) {
                 val prevEntity = polylineEntities.get(it.id)!!
-                updated.add(object : UpdateParams<ActualPolyline> {
-                    override val entity: PolylineEntity<ActualPolyline> = PolylineEntityImpl(
-                        state = it,
-                        polyline = prevEntity.polyline,
-                    )
-                    override val prevEntity: PolylineEntity<ActualPolyline> = prevEntity
-                })
+                updated.add(
+                    object : UpdateParams<ActualPolyline> {
+                        override val entity: PolylineEntity<ActualPolyline> =
+                            PolylineEntityImpl(
+                                state = it,
+                                polyline = prevEntity.polyline,
+                            )
+                        override val prevEntity: PolylineEntity<ActualPolyline> = prevEntity
+                    },
+                )
                 previous.remove(it.id)
                 return@forEach
             }
@@ -53,10 +61,11 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
             actualPolylines.forEachIndexed { index, actualPolyline ->
                 actualPolyline?.let {
                     val state = added[index]
-                    val entity = PolylineEntityImpl<ActualPolyline>(
-                        polyline = it,
-                        state = state,
-                    )
+                    val entity =
+                        PolylineEntityImpl<ActualPolyline>(
+                            polyline = it,
+                            state = state,
+                        )
                     polylineEntities[state.id] = entity
                 }
             }
@@ -67,10 +76,11 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
             actualPolylines.forEachIndexed { index, actualPolyline ->
                 actualPolyline?.let {
                     val state = updated[index].entity.state
-                    val entity = PolylineEntityImpl<ActualPolyline>(
-                        polyline = it,
-                        state = state,
-                    )
+                    val entity =
+                        PolylineEntityImpl<ActualPolyline>(
+                            polyline = it,
+                            state = state,
+                        )
                     polylineEntities[state.id] = entity
                 }
             }
@@ -98,4 +108,6 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
     }
 
     override fun getPolylineState(id: String): PolylineState? = polylineEntities.get(id)?.state
+
+    override fun getAllEntities(): List<PolylineEntity<ActualPolyline>> = polylineEntities.values.toList()
 }

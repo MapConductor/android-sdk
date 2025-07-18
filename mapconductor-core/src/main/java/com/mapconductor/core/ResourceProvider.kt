@@ -24,69 +24,58 @@ object ResourceProvider {
     private val _initialized: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val initialized = _initialized.asStateFlow()
 
-
     private lateinit var appContext: Context
 
-    fun getDisplayMetrics() : DisplayMetrics {
-        return Resources.getSystem().displayMetrics
-    }
-    fun getSystemConfiguration(): Configuration {
-        return Resources.getSystem().configuration
-    }
+    fun getDisplayMetrics(): DisplayMetrics = Resources.getSystem().displayMetrics
+
+    fun getSystemConfiguration(): Configuration = Resources.getSystem().configuration
 
     fun init(context: Context) {
         appContext = context.applicationContext
         _initialized.value = true
     }
 
-    fun getDensity(): Float {
-        return getDisplayMetrics().density
-    }
+    fun getDensity(): Float = getDisplayMetrics().density
 
-    fun dpToPx(dp: Float): Double {
-        return dpToPx(dp.toDouble())
-    }
-    fun dpToPx(dp: Dp): Double {
-        return dpToPx(dp.value.toDouble())
-    }
+    fun dpToPx(dp: Float): Double = dpToPx(dp.toDouble())
 
-    fun dpToPx(dp: Double): Double {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            getDisplayMetrics()
-        ).toDouble()
-    }
+    fun dpToPx(dp: Dp): Double = dpToPx(dp.value.toDouble())
+
+    fun dpToPx(dp: Double): Double =
+        TypedValue
+            .applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp.toFloat(),
+                getDisplayMetrics(),
+            ).toDouble()
 
     fun pxToSp(px: Double): Double {
         val displayMetrics = getDisplayMetrics()
-        val scaledDensity = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            // Android 14以降の推奨方法
-            displayMetrics.density * getSystemConfiguration().fontScale
-        } else {
-            // 従来の方法（API 33以下）
-            @Suppress("DEPRECATION")
-            displayMetrics.scaledDensity
-        }
+        val scaledDensity =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                // Android 14以降の推奨方法
+                displayMetrics.density * getSystemConfiguration().fontScale
+            } else {
+                // 従来の方法（API 33以下）
+                @Suppress("DEPRECATION")
+                displayMetrics.scaledDensity
+            }
         return px / scaledDensity
     }
 
-    fun spToPx(sp: Float): Double {
-        return spToPx(sp.toDouble())
-    }
-    fun spToPx(sp: TextUnit): Double {
-        return spToPx(sp.value.toDouble())
-    }
-    fun spToPx(sp: Double): Double {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP,
-            sp.toFloat(),
-            getDisplayMetrics()
-        ).toDouble()
-    }
-    fun getFontScale(): Float {
-        return getSystemConfiguration().fontScale
-    }
+    fun spToPx(sp: Float): Double = spToPx(sp.toDouble())
+
+    fun spToPx(sp: TextUnit): Double = spToPx(sp.value.toDouble())
+
+    fun spToPx(sp: Double): Double =
+        TypedValue
+            .applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                sp.toFloat(),
+                getDisplayMetrics(),
+            ).toDouble()
+
+    fun getFontScale(): Float = getSystemConfiguration().fontScale
 
     /**
      * 効果的なスケール密度を現代的な方法で計算

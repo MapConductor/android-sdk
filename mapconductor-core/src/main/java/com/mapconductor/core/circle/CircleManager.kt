@@ -2,7 +2,7 @@ package com.mapconductor.core.circle
 
 import java.util.concurrent.ConcurrentHashMap
 
-class CircleManager<ActualCircle> () {
+class CircleManager<ActualCircle> {
     private val entities: ConcurrentHashMap<String, CircleEntity<ActualCircle>> = ConcurrentHashMap()
 
     fun getEntity(id: String): CircleEntity<ActualCircle>? = entities.get(id)
