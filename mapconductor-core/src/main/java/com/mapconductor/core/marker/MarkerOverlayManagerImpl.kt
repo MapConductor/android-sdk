@@ -1,6 +1,10 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
+import com.mapconductor.core.polyline.PolylineEntity
+import com.mapconductor.core.polyline.PolylineEntityImpl
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.sync.Semaphore
 
 interface MarkerOverlayManager<ActualMarker> {
@@ -28,33 +32,45 @@ class MarkerOverlayManagerImpl<ActualMarker>(
     override suspend fun addMarkers(markerList: List<MarkerState>) {
         semaphore.acquire()
 
-        val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
-        val current = markerList.toSet()
-        current.size
-        val previousEntities = markerManager.allEntities()
-        val previous = previousEntities.map { it.state }.toSet()
-        val added = current - previous
-        val removed = previous - current
-        val updated =
-            current.filter { state ->
-                val prevEntity = markerManager.getEntity(state.id) ?: return@filter false
-                // Log.d("Debug", "==>${prevEntity.state.equals(state)}")
-                return@filter !prevEntity.state.equals(state)
-            }
-        // Log.d("Debug", "--->currentSize=$currentSize, added=${added.size}, updated=${updated.size}, removed=${removed.size}")
-
         val defaultIcon = DefaultIcon()
         val defaultIconBitmapIcon = defaultIcon.toBitmapIcon()
+        val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
+        val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
+        val added = mutableListOf<MarkerState>()
+        val updated = mutableListOf<UpdateParams<ActualMarker>>()
+        val removed = mutableListOf<MarkerEntity<ActualMarker>>()
+        markerList.forEach { state ->
+            if (previous.contains(state.id)) {
+                val prevEntity = markerManager.getEntity(state.id)!!
+                val markerIcon = state.icon ?: defaultIcon
+                updated.add(
+                    object : UpdateParams<ActualMarker> {
+                        override val entity: MarkerEntity<ActualMarker> =
+                            MarkerEntityImpl(
+                                state = state,
+                                marker = prevEntity.marker,
+                            )
+                        override val bitmapIcon: BitmapIcon
+                            get() { return markerIcon.toBitmapIcon() }
+                        override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
+                    },
+                )
+                previous.remove(state.id)
+                return@forEach
+            }
+            added.add(state)
+            previous.remove(state.id)
+        }
+        previous.forEach { remainId ->
+            markerManager.removeEntity(remainId)?.let { removedEntity ->
+                removed.add(removedEntity)
+            }
+        }
+
 
         // Remove markers
         if (removed.isNotEmpty()) {
-            removed
-                .map { removedState ->
-                    val id = removedState.id
-                    markerManager.removeEntity(id)!!
-                }.also {
-                    onRemove(it)
-                }
+            onRemove(removed)
         }
 
         // Add new markers
@@ -83,36 +99,11 @@ class MarkerOverlayManagerImpl<ActualMarker>(
 
         // Update changed markers
         if (updated.isNotEmpty()) {
-            val updates =
-                updated
-                    .map { state ->
-                        val markerIcon = state.icon ?: defaultIcon
-                        val prevEntity = markerManager.getEntity(state.id) ?: return@map null
-
-                        // プロパティが変わっていなければ、マーカーを再描画しない
-                        return@map if (prevEntity.fingerPrint == state.fingerPrint()) {
-                            null
-                        } else {
-                            val entity =
-                                MarkerEntityImpl(
-                                    state = state,
-                                    marker = prevEntity.marker,
-                                )
-                            markerManager.registerEntity(entity)
-                            modifiedEntities.add(entity)
-                            object : UpdateParams<ActualMarker> {
-                                override val entity: MarkerEntity<ActualMarker> = entity
-                                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
-                                override val prevEntity: MarkerEntity<ActualMarker> = prevEntity
-                            }
-                        }
-                    }.filterNotNull()
-
-            val actualMarkers: List<ActualMarker?> = onChange(updates)
+            val actualMarkers: List<ActualMarker?> = onChange(updated)
 
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
-                    val params = updates[index]
+                    val params = updated[index]
                     val entity =
                         MarkerEntityImpl<ActualMarker>(
                             state = params.entity.state,
