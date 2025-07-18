@@ -60,8 +60,7 @@ class GoogleMapMarkerRenderer(
                         .anchor(
                             params.second.anchor.x,
                             params.second.anchor.y,
-                        )
-                        .icon(bitmapDescriptor)
+                        ).icon(bitmapDescriptor)
                         .draggable(params.first.draggable)
                 val marker =
                     holder.map.addMarker(options)?.also {

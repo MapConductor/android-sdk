@@ -38,7 +38,7 @@ val StarbucksHI_list =
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     strokeWidth = 1.dp,
-                )
+                ),
         ),
         MarkerState(
             position =
@@ -54,11 +54,12 @@ val StarbucksHI_list =
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
                 },
-            icon = FlagIcon(
-                fillColor = Color.Red,
-                strokeColor = Color.White,
-                strokeWidth = 0.5.dp,
-            )
+            icon =
+                FlagIcon(
+                    fillColor = Color.Red,
+                    strokeColor = Color.White,
+                    strokeWidth = 0.5.dp,
+                ),
         ),
         MarkerState(
             position =

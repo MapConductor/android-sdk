@@ -17,14 +17,12 @@ import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -33,7 +31,6 @@ import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineOverlayManager
-import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
@@ -42,7 +39,6 @@ import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.polyline.DefaultGoogleMapPolylineRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineRenderer
-import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,6 +84,7 @@ class GoogleMapViewController(
             holder = holder,
             coroutine = coroutine,
         )
+
     override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> =
         markerRendererFactory.create(
             hexGeocell = hexGeocell,
@@ -102,6 +99,7 @@ class GoogleMapViewController(
             holder = holder,
             coroutine = coroutine,
         )
+
     override fun createPolylineOverlayManager(): PolylineOverlayManager<Polyline> =
         polylineRendererFactory.create(
             onAdd = polylineRenderer::addLines,
@@ -167,29 +165,32 @@ class GoogleMapViewController(
     }
 
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->
             val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.value)
             circleStates.set(state.id, state)
-            val options = CircleOptions()
-                .center(GeoPoint.from(state.center).toLatLng())
-                .radius(state.radius)
-                .strokeWidth(strokeWidth.toFloat())
-                .strokeColor(state.strokeColor.toArgb())
-                .fillColor(state.fillColor.toArgb())
-                .clickable(true)
+            val options =
+                CircleOptions()
+                    .center(GeoPoint.from(state.center).toLatLng())
+                    .radius(state.radius)
+                    .strokeWidth(strokeWidth.toFloat())
+                    .strokeColor(state.strokeColor.toArgb())
+                    .fillColor(state.fillColor.toArgb())
+                    .clickable(true)
             return@map holder.map.addCircle(options).also {
                 it.tag = state.id
             }
         }
     }
+
     override suspend fun updateCircle(state: CircleState) {}
 
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
-    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
+    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     override fun onCameraMove() {
         cameraMoveListener?.let {
@@ -264,22 +265,6 @@ class GoogleMapViewController(
 
             markerDragStartListener?.invoke(state)
         }
-    }
-
-    override fun clearPolyline() {
-        holder.map.clear()
-    }
-
-    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
-        val options =
-            PolylineOptions().also {
-                it.color(Color.RED)
-                it.width(2f)
-            }
-        geoPoints.forEach {
-            options.add(GeoPoint.from(it).toLatLng())
-        }
-        val polyline = holder.map.addPolyline(options)
     }
 
     override fun onCircleClick(circle: Circle) {

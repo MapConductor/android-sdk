@@ -26,7 +26,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Log
 
-interface MarkerIcon  {
+interface MarkerIcon {
     val scale: Float
     val anchor: Offset
     val iconSize: Dp
@@ -46,9 +46,11 @@ abstract class AbstractMarkerIcon : MarkerIcon {
 abstract class AndroidDrawableIcon(
     val drawable: Drawable,
 ) : AbstractMarkerIcon() {
-
-    protected fun toBitmap(drawable: Drawable, width: Int, height: Int): Bitmap {
-
+    protected fun toBitmap(
+        drawable: Drawable,
+        width: Int,
+        height: Int,
+    ): Bitmap {
         return when (drawable) {
             is BitmapDrawable -> {
                 drawable.bitmap.scale(width, height)
@@ -65,9 +67,8 @@ abstract class AndroidDrawableIcon(
 }
 
 class DefaultIcon(
-    private val properties: IconProperties = IconProperties()
+    private val properties: IconProperties = IconProperties(),
 ) : MarkerIcon {
-
     data class IconProperties(
         val fillColor: Color = Color.Red,
         val strokeColor: Color = Color.White,
@@ -101,22 +102,24 @@ class DefaultIcon(
         maxFontScale: Float = 1.5f,
         minIconSize: Dp = 24.dp,
         maxIconSize: Dp = 80.dp,
-    ) : this(IconProperties(
-        fillColor,
-        strokeColor,
-        strokeWidth,
-        scale,
-        label,
-        labelTextColor,
-        labelTextSize,
-        labelTypeFace,
-        labelStrokeColor,
-        iconSize,
-        adaptiveScaling,
-        maxFontScale,
-        minIconSize,
-        maxIconSize,
-    ))
+    ) : this(
+        IconProperties(
+            fillColor,
+            strokeColor,
+            strokeWidth,
+            scale,
+            label,
+            labelTextColor,
+            labelTextSize,
+            labelTypeFace,
+            labelStrokeColor,
+            iconSize,
+            adaptiveScaling,
+            maxFontScale,
+            minIconSize,
+            maxIconSize,
+        ),
+    )
 
     // プロパティの委譲
     val fillColor: Color by properties::fillColor
@@ -140,11 +143,11 @@ class DefaultIcon(
      * 適応的スケーリング情報
      */
     data class AdaptiveScaleInfo(
-        val displayScale: Float,     // ディスプレイ密度スケール（1.0が標準）
-        val fontScale: Float,        // フォントスケール（1.0が標準）
+        val displayScale: Float, // ディスプレイ密度スケール（1.0が標準）
+        val fontScale: Float, // フォントスケール（1.0が標準）
         val effectiveFontScale: Float, // 実際に適用するフォントスケール（上限制限あり）
-        val finalIconScale: Float,   // 最終的なアイコンスケール
-        val finalIconSize: Dp,       // 最終的なアイコンサイズ
+        val finalIconScale: Float, // 最終的なアイコンスケール
+        val finalIconSize: Dp, // 最終的なアイコンサイズ
         val finalTextSize: TextUnit, // 最終的なテキストサイズ
     )
 
@@ -164,8 +167,8 @@ class DefaultIcon(
         maxFontScale: Float = this.maxFontScale,
         minIconSize: Dp = this.minIconSize,
         maxIconSize: Dp = this.maxIconSize,
-    ): DefaultIcon {
-        return DefaultIcon(
+    ): DefaultIcon =
+        DefaultIcon(
             properties.copy(
                 fillColor = fillColor,
                 strokeColor = strokeColor,
@@ -181,10 +184,8 @@ class DefaultIcon(
                 maxFontScale = maxFontScale,
                 minIconSize = minIconSize,
                 maxIconSize = maxIconSize,
-            )
+            ),
         )
-    }
-
 
     /**
      * 現在のシステム設定から適応的スケーリング情報を計算
@@ -213,10 +214,11 @@ class DefaultIcon(
 
         // 6. 最終的なテキストサイズ（重要：effectiveFontScaleとfinalIconScaleの両方を考慮）
         val textScaleMultiplier = effectiveFontScale * (finalIconSize.value / iconSize.value)
-        val finalTextSize = when (labelTextSize.type) {
-            TextUnitType.Sp -> (labelTextSize.value * textScaleMultiplier).sp
-            else -> (labelTextSize.value * textScaleMultiplier).sp
-        }
+        val finalTextSize =
+            when (labelTextSize.type) {
+                TextUnitType.Sp -> (labelTextSize.value * textScaleMultiplier).sp
+                else -> (labelTextSize.value * textScaleMultiplier).sp
+            }
 
         return AdaptiveScaleInfo(
             displayScale = displayScale,
@@ -224,36 +226,37 @@ class DefaultIcon(
             effectiveFontScale = effectiveFontScale,
             finalIconScale = finalIconSize.value / iconSize.value,
             finalIconSize = finalIconSize,
-            finalTextSize = finalTextSize
+            finalTextSize = finalTextSize,
         )
     }
 
-    fun copy(scale: Float, iconSize: Dp): DefaultIcon {
-        return copy(scale = scale, iconSize = iconSize)
-    }
+    fun copy(
+        scale: Float,
+        iconSize: Dp,
+    ): DefaultIcon = copy(scale = scale, iconSize = iconSize)
 
     // equals, hashCode, toStringも委譲
-    override fun equals(other: Any?): Boolean {
-        return other is DefaultIcon && properties == other.properties
-    }
+    override fun equals(other: Any?): Boolean = other is DefaultIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
+
     override fun toString(): String = "DefaultIcon($properties)"
 
     override fun toBitmapIcon(): BitmapIcon {
-        val scaleInfo = if (adaptiveScaling) {
-            calculateAdaptiveScale()
-        } else {
-            // 適応的スケーリング無効の場合は基本設定を使用
-            AdaptiveScaleInfo(
-                displayScale = 1f,
-                fontScale = 1f,
-                effectiveFontScale = 1f,
-                finalIconScale = scale,
-                finalIconSize = iconSize,
-                finalTextSize = labelTextSize
-            )
-        }
+        val scaleInfo =
+            if (adaptiveScaling) {
+                calculateAdaptiveScale()
+            } else {
+                // 適応的スケーリング無効の場合は基本設定を使用
+                AdaptiveScaleInfo(
+                    displayScale = 1f,
+                    fontScale = 1f,
+                    effectiveFontScale = 1f,
+                    finalIconScale = scale,
+                    finalIconSize = iconSize,
+                    finalTextSize = labelTextSize,
+                )
+            }
 
         val id = "adaptive_icon_${hashCode()}_${scaleInfo.hashCode()}".hashCode()
         BitmapIconCache.get(id)?.let {
@@ -271,11 +274,12 @@ class DefaultIcon(
         // ラベルの描画（適応的フォントサイズ適用）
         drawLabel(canvas, canvasSize.toFloat(), scaleInfo)
 
-        val result = BitmapIcon(
-            bitmap = bitmap,
-            anchor = anchor,
-            size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
-        )
+        val result =
+            BitmapIcon(
+                bitmap = bitmap,
+                anchor = anchor,
+                size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
+            )
         BitmapIconCache.put(id, result)
         return result
     }
@@ -283,7 +287,11 @@ class DefaultIcon(
     /**
      * マーカー本体の描画
      */
-    private fun drawMarker(canvas: Canvas, canvasSize: Float, iconScale: Float) {
+    private fun drawMarker(
+        canvas: Canvas,
+        canvasSize: Float,
+        iconScale: Float,
+    ) {
         val originalSize = Size(23.5f, 25.6f)
         val markerScale = minOf(canvasSize / originalSize.width, canvasSize / originalSize.height)
         val scaledWidth = originalSize.width * markerScale
@@ -291,83 +299,86 @@ class DefaultIcon(
         val offsetX = (canvasSize - scaledWidth) / 2f
         val offsetY = canvasSize - scaledHeight
 
-        val strokePath = Path().apply {
-            // マーカーパスの生成（省略 - 既存のコードと同じ）
-            moveTo(12f * markerScale + offsetX, 0f * markerScale + offsetY)
+        val strokePath =
+            Path().apply {
+                // マーカーパスの生成（省略 - 既存のコードと同じ）
+                moveTo(12f * markerScale + offsetX, 0f * markerScale + offsetY)
 
-            rCubicTo(
-                -4.4183f * markerScale,
-                2.3685e-15f * markerScale,
-                -8f * markerScale,
-                3.5817f * markerScale,
-                -8f * markerScale,
-                8f * markerScale,
-            )
+                rCubicTo(
+                    -4.4183f * markerScale,
+                    2.3685e-15f * markerScale,
+                    -8f * markerScale,
+                    3.5817f * markerScale,
+                    -8f * markerScale,
+                    8f * markerScale,
+                )
 
-            rCubicTo(
-                0f * markerScale,
-                1.421f * markerScale,
-                0.3816f * markerScale,
-                2.75f * markerScale,
-                1.0312f * markerScale,
-                3.906f * markerScale,
-            )
+                rCubicTo(
+                    0f * markerScale,
+                    1.421f * markerScale,
+                    0.3816f * markerScale,
+                    2.75f * markerScale,
+                    1.0312f * markerScale,
+                    3.906f * markerScale,
+                )
 
-            rCubicTo(
-                0.1079f * markerScale,
-                0.192f * markerScale,
-                0.221f * markerScale,
-                0.381f * markerScale,
-                0.3438f * markerScale,
-                0.563f * markerScale,
-            )
+                rCubicTo(
+                    0.1079f * markerScale,
+                    0.192f * markerScale,
+                    0.221f * markerScale,
+                    0.381f * markerScale,
+                    0.3438f * markerScale,
+                    0.563f * markerScale,
+                )
 
-            rLineTo(6.625f * markerScale, 11.531f * markerScale)
-            rLineTo(6.625f * markerScale, -11.531f * markerScale)
+                rLineTo(6.625f * markerScale, 11.531f * markerScale)
+                rLineTo(6.625f * markerScale, -11.531f * markerScale)
 
-            rCubicTo(
-                0.102f * markerScale,
-                -0.151f * markerScale,
-                0.19f * markerScale,
-                -0.311f * markerScale,
-                0.281f * markerScale,
-                -0.469f * markerScale,
-            )
+                rCubicTo(
+                    0.102f * markerScale,
+                    -0.151f * markerScale,
+                    0.19f * markerScale,
+                    -0.311f * markerScale,
+                    0.281f * markerScale,
+                    -0.469f * markerScale,
+                )
 
-            rLineTo(0.063f * markerScale, -0.094f * markerScale)
+                rLineTo(0.063f * markerScale, -0.094f * markerScale)
 
-            rCubicTo(
-                0.649f * markerScale,
-                -1.156f * markerScale,
-                1.031f * markerScale,
-                -2.485f * markerScale,
-                1.031f * markerScale,
-                -3.906f * markerScale,
-            )
+                rCubicTo(
+                    0.649f * markerScale,
+                    -1.156f * markerScale,
+                    1.031f * markerScale,
+                    -2.485f * markerScale,
+                    1.031f * markerScale,
+                    -3.906f * markerScale,
+                )
 
-            rCubicTo(
-                0f * markerScale,
-                -4.4183f * markerScale,
-                -3.582f * markerScale,
-                -8f * markerScale,
-                -8f * markerScale,
-                -8f * markerScale,
-            )
+                rCubicTo(
+                    0f * markerScale,
+                    -4.4183f * markerScale,
+                    -3.582f * markerScale,
+                    -8f * markerScale,
+                    -8f * markerScale,
+                    -8f * markerScale,
+                )
 
-            close()
-        }
+                close()
+            }
 
-        val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = fillColor.toArgb()
-        }
+        val fillPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.FILL
+                color = fillColor.toArgb()
+            }
 
-        val strokePaint = Paint().apply {
-            color = strokeColor.toArgb()
-            style = Paint.Style.STROKE
-            strokeWidth = ResourceProvider.dpToPx(this@DefaultIcon.strokeWidth.value * iconScale).toFloat()
-            isAntiAlias = true
-        }
+        val strokePaint =
+            Paint().apply {
+                color = strokeColor.toArgb()
+                style = Paint.Style.STROKE
+                strokeWidth = ResourceProvider.dpToPx(this@DefaultIcon.strokeWidth.value * iconScale).toFloat()
+                isAntiAlias = true
+            }
 
         canvas.drawPath(strokePath, fillPaint)
         canvas.drawPath(strokePath, strokePaint)
@@ -376,33 +387,38 @@ class DefaultIcon(
     /**
      * ラベルテキストの描画（適応的サイズ）
      */
-    private fun drawLabel(canvas: Canvas, canvasSize: Float, scaleInfo: AdaptiveScaleInfo) {
+    private fun drawLabel(
+        canvas: Canvas,
+        canvasSize: Float,
+        scaleInfo: AdaptiveScaleInfo,
+    ) {
         label?.let { labelText ->
             // 基本テキストサイズを計算（スケーリング適用）
             // 重要：scale=1fで呼び出す（スケールは既にfinalTextSizeに含まれている）
             val baseTextSize = convertTextUnitToPx(scaleInfo.finalTextSize, 1f)
 
-            val textPaint = Paint().apply {
-                color = labelTextColor?.toArgb() ?: Color.Black.toArgb()
-                textSize = baseTextSize
-                textAlign = Paint.Align.CENTER
-                typeface = labelTypeFace
-                isAntiAlias = true
-                isSubpixelText = true
-            }
+            val textPaint =
+                Paint().apply {
+                    color = labelTextColor?.toArgb() ?: Color.Black.toArgb()
+                    textSize = baseTextSize
+                    textAlign = Paint.Align.CENTER
+                    typeface = labelTypeFace
+                    isAntiAlias = true
+                    isSubpixelText = true
+                }
 
             // デバッグログ
-            Log.d("debug","=== Label Debug Info ===")
-            Log.d("debug","Canvas size: $canvasSize")
-            Log.d("debug","Original text size: ${labelTextSize.value}")
-            Log.d("debug","Final text size: ${scaleInfo.finalTextSize.value}")
-            Log.d("debug","Base text size px: $baseTextSize")
-            Log.d("debug","Font scale: ${scaleInfo.fontScale}")
-            Log.d("debug","Icon scale: ${scaleInfo.finalIconScale}")
+            Log.d("debug", "=== Label Debug Info ===")
+            Log.d("debug", "Canvas size: $canvasSize")
+            Log.d("debug", "Original text size: ${labelTextSize.value}")
+            Log.d("debug", "Final text size: ${scaleInfo.finalTextSize.value}")
+            Log.d("debug", "Base text size px: $baseTextSize")
+            Log.d("debug", "Font scale: ${scaleInfo.fontScale}")
+            Log.d("debug", "Icon scale: ${scaleInfo.finalIconScale}")
 
             // ResourceProvider の変換確認
             val testSpToPx = ResourceProvider.spToPx(scaleInfo.finalTextSize.value.toDouble())
-            Log.d("debug","Direct spToPx test: ${scaleInfo.finalTextSize.value} sp → $testSpToPx px")
+            Log.d("debug", "Direct spToPx test: ${scaleInfo.finalTextSize.value} sp → $testSpToPx px")
 
             // テキストサイズの動的調整（アイコン内に収まるように）
             val maxTextWidth = canvasSize * 0.8f // アイコン幅の60%以内
@@ -413,9 +429,9 @@ class DefaultIcon(
             adjustTextSize(textPaint, labelText, maxTextWidth, maxTextHeight)
             val afterAdjustSize = textPaint.textSize
 
-            Log.d("debug","Text size before adjust: $beforeAdjustSize")
-            Log.d("debug","Text size after adjust: $afterAdjustSize")
-            Log.d("debug","Max text width: $maxTextWidth, Max text height: $maxTextHeight")
+            Log.d("debug", "Text size before adjust: $beforeAdjustSize")
+            Log.d("debug", "Text size after adjust: $afterAdjustSize")
+            Log.d("debug", "Max text width: $maxTextWidth, Max text height: $maxTextHeight")
 
             // マーカーの円形部分の中心に配置
             val markerCenterX = canvasSize / 2f
@@ -425,22 +441,24 @@ class DefaultIcon(
             val textHeight = metrics.descent - metrics.ascent
             val baselineOffset = textHeight / 2f - metrics.descent
 
-            Log.d("debug","Actual text width: ${textPaint.measureText(labelText)}")
-            Log.d("debug","Actual text height: $textHeight")
+            Log.d("debug", "Actual text width: ${textPaint.measureText(labelText)}")
+            Log.d("debug", "Actual text height: $textHeight")
 
             // アウトライン描画（アイコンスケールを考慮したストローク幅）
-            val outlineStrokeWidth = max(
-                ResourceProvider.dpToPx(1f * scaleInfo.finalIconScale).toFloat(),
-                2f // 最小2px
-            )
+            val outlineStrokeWidth =
+                max(
+                    ResourceProvider.dpToPx(1f * scaleInfo.finalIconScale).toFloat(),
+                    2f, // 最小2px
+                )
 
-            val outlinePaint = Paint(textPaint).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = outlineStrokeWidth
-                color = labelStrokeColor.toArgb()
-                strokeJoin = Paint.Join.ROUND
-                strokeCap = Paint.Cap.ROUND
-            }
+            val outlinePaint =
+                Paint(textPaint).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = outlineStrokeWidth
+                    color = labelStrokeColor.toArgb()
+                    strokeJoin = Paint.Join.ROUND
+                    strokeCap = Paint.Cap.ROUND
+                }
 
             canvas.drawText(labelText, markerCenterX, markerCenterY + baselineOffset, outlinePaint)
             canvas.drawText(labelText, markerCenterX, markerCenterY + baselineOffset, textPaint)
@@ -450,14 +468,19 @@ class DefaultIcon(
     /**
      * テキストサイズを制限内に収まるように調整
      */
-    private fun adjustTextSize(paint: Paint, text: String, maxWidth: Float, maxHeight: Float) {
+    private fun adjustTextSize(
+        paint: Paint,
+        text: String,
+        maxWidth: Float,
+        maxHeight: Float,
+    ) {
         var currentSize = paint.textSize
         val minSize = ResourceProvider.dpToPx(6f).toFloat() // 最小6dp
 
-        Log.d("debug","=== adjustTextSize Debug ===")
-        Log.d("debug","Initial text size: $currentSize")
-        Log.d("debug","Max width: $maxWidth, Max height: $maxHeight")
-        Log.d("debug","Min size: $minSize")
+        Log.d("debug", "=== adjustTextSize Debug ===")
+        Log.d("debug", "Initial text size: $currentSize")
+        Log.d("debug", "Max width: $maxWidth, Max height: $maxHeight")
+        Log.d("debug", "Min size: $minSize")
 
         var iteration = 0
         while (currentSize > minSize && iteration < 20) { // 無限ループ防止
@@ -466,10 +489,10 @@ class DefaultIcon(
             val metrics = paint.fontMetrics
             val textHeight = metrics.descent - metrics.ascent
 
-            Log.d("debug","Iteration $iteration: size=$currentSize, width=$textWidth, height=$textHeight")
+            Log.d("debug", "Iteration $iteration: size=$currentSize, width=$textWidth, height=$textHeight")
 
             if (textWidth <= maxWidth && textHeight <= maxHeight) {
-                Log.d("debug","Text fits! Final size: $currentSize")
+                Log.d("debug", "Text fits! Final size: $currentSize")
                 break
             }
 
@@ -479,47 +502,53 @@ class DefaultIcon(
 
         // 最終サイズを設定
         paint.textSize = max(currentSize, minSize)
-        Log.d("debug","Final text size set to: ${paint.textSize}")
+        Log.d("debug", "Final text size set to: ${paint.textSize}")
     }
 
     /**
      * TextUnitをピクセルサイズに変換
      */
-    private fun convertTextUnitToPx(textUnit: TextUnit, scale: Float): Float {
-        Log.d("debug","=== convertTextUnitToPx Debug ===")
-        Log.d("debug","Input textUnit: ${textUnit.value} ${textUnit.type}")
-        Log.d("debug","Input scale: $scale")
+    private fun convertTextUnitToPx(
+        textUnit: TextUnit,
+        scale: Float,
+    ): Float {
+        Log.d("debug", "=== convertTextUnitToPx Debug ===")
+        Log.d("debug", "Input textUnit: ${textUnit.value} ${textUnit.type}")
+        Log.d("debug", "Input scale: $scale")
 
-        val result = when (textUnit.type) {
-            TextUnitType.Sp -> {
-                val spValue = textUnit.value * scale
-                val pxValue = ResourceProvider.spToPx(spValue.toDouble()).toFloat()
-                Log.d("debug","SP conversion: ${textUnit.value} * $scale = $spValue sp → $pxValue px")
-                pxValue
+        val result =
+            when (textUnit.type) {
+                TextUnitType.Sp -> {
+                    val spValue = textUnit.value * scale
+                    val pxValue = ResourceProvider.spToPx(spValue.toDouble()).toFloat()
+                    Log.d("debug", "SP conversion: ${textUnit.value} * $scale = $spValue sp → $pxValue px")
+                    pxValue
+                }
+                TextUnitType.Em -> {
+                    val baseFontSize = 16f
+                    val emValue = baseFontSize * textUnit.value * scale
+                    val pxValue = ResourceProvider.spToPx(emValue.toDouble()).toFloat()
+                    Log
+                        .d("debug", "EM conversion: $baseFontSize * ${textUnit.value} * $scale = $emValue sp → $pxValue px")
+                    pxValue
+                }
+                else -> {
+                    val dpValue = textUnit.value * scale
+                    val pxValue = ResourceProvider.dpToPx(dpValue.toDouble()).toFloat()
+                    Log.d("debug", "DP conversion: ${textUnit.value} * $scale = $dpValue dp → $pxValue px")
+                    pxValue
+                }
             }
-            TextUnitType.Em -> {
-                val baseFontSize = 16f
-                val emValue = baseFontSize * textUnit.value * scale
-                val pxValue = ResourceProvider.spToPx(emValue.toDouble()).toFloat()
-                Log.d("debug","EM conversion: $baseFontSize * ${textUnit.value} * $scale = $emValue sp → $pxValue px")
-                pxValue
-            }
-            else -> {
-                val dpValue = textUnit.value * scale
-                val pxValue = ResourceProvider.dpToPx(dpValue.toDouble()).toFloat()
-                Log.d("debug","DP conversion: ${textUnit.value} * $scale = $dpValue dp → $pxValue px")
-                pxValue
-            }
-        }
 
-        Log.d("debug","Final converted px: $result")
+        Log.d("debug", "Final converted px: $result")
         return result
     }
 
     // デバッグ用：現在のスケーリング情報を取得
-    fun getScalingInfo(): AdaptiveScaleInfo {
-        return if (adaptiveScaling) calculateAdaptiveScale() else
+    fun getScalingInfo(): AdaptiveScaleInfo =
+        if (adaptiveScaling) {
+            calculateAdaptiveScale()
+        } else {
             AdaptiveScaleInfo(1f, 1f, 1f, scale, iconSize, labelTextSize)
-    }
+        }
 }
-

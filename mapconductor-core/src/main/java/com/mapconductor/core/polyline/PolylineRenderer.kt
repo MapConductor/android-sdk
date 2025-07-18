@@ -4,7 +4,6 @@ import com.mapconductor.core.map.MapViewHolder
 import kotlinx.coroutines.CoroutineScope
 
 interface PolylineRendererFactory<ActualPolyline> {
-
     fun create(
         onAdd: suspend (List<PolylineState>) -> List<ActualPolyline?>,
         onChange: suspend (List<PolylineRenderer.UpdateParams<ActualPolyline>>) -> List<ActualPolyline?>,
@@ -14,7 +13,6 @@ interface PolylineRendererFactory<ActualPolyline> {
 }
 
 interface PolylineRenderer<ActualPolyline> {
-
     interface UpdateParams<ActualPolyline> {
         val entity: PolylineEntity<ActualPolyline>
         val prevEntity: PolylineEntity<ActualPolyline>
@@ -22,15 +20,14 @@ interface PolylineRenderer<ActualPolyline> {
 
     fun init(polylineOverlayManager: PolylineOverlayManager<ActualPolyline>)
 
-    suspend fun addLines(newLines: List<PolylineState>) : List<ActualPolyline?>
+    suspend fun addLines(newLines: List<PolylineState>): List<ActualPolyline?>
 
     suspend fun removeLines(removeEntities: List<PolylineEntity<ActualPolyline>>)
 
-    suspend fun changeLine(change: List<UpdateParams<ActualPolyline>>) : List<ActualPolyline>
+    suspend fun changeLine(changes: List<UpdateParams<ActualPolyline>>): List<ActualPolyline>
 }
 
 abstract class AbstractPolylineRenderer<ActualPolyline> : PolylineRenderer<ActualPolyline> {
-
     protected lateinit var polylineOverlayManager: PolylineOverlayManager<ActualPolyline>
     abstract val holder: MapViewHolder<*, *>
     abstract val coroutine: CoroutineScope

@@ -2,7 +2,6 @@ package com.mapconductor.here
 
 import androidx.compose.ui.geometry.Offset
 import com.here.sdk.core.Point2D
-import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView

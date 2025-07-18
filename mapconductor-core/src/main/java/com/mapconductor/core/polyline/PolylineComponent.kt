@@ -10,7 +10,6 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 
-
 @Composable
 fun MapViewScope.Polyline(state: PolylineState) {
     val rememberState = remember { state }

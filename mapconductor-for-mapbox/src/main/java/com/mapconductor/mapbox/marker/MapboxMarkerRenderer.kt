@@ -17,6 +17,7 @@ import com.mapconductor.core.marker.MarkerOverlayManagerImpl
 import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
 import kotlin.coroutines.suspendCoroutine
@@ -47,7 +48,7 @@ class MapboxMarkerRenderer(
     override val coroutine: CoroutineScope,
     private val markerLayer: MarkerLayer,
     private val dragLayer: MarkerDragLayer,
-) : AbstractMarkerRenderer<Feature>() {
+) : AbstractMarkerRenderer<MapboxActualMarker>() {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
 
     object Prop {
@@ -64,7 +65,7 @@ class MapboxMarkerRenderer(
         }
     }
 
-    fun drawMarkerLayer() {
+    fun redraw() {
         val entities = markerOverlayManager.markerManager.allEntities()
         coroutine.launch {
             markerLayer.draw(entities)
@@ -143,20 +144,13 @@ class MapboxMarkerRenderer(
     }
 
     override suspend fun removeIcons(removeEntities: List<MarkerEntity<Feature>>) {
-        val style =
-            suspendCoroutine { continuation ->
-                holder.map.getStyle { style ->
-                    continuation.resumeWith(Result.success(style))
-                }
-            }
-
         removeEntities.forEach { entity ->
             entity.state.icon?.let { icon ->
                 val iconKey = icon.hashCode().toString()
                 val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
                 if (cnt == 0) {
                     iconRefCounter.remove(iconKey)
-                    style.removeStyleImage(iconKey)
+                    holder.map.style?.removeStyleImage(iconKey)
                 } else {
                     iconRefCounter[iconKey] = cnt
                 }
@@ -164,29 +158,27 @@ class MapboxMarkerRenderer(
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<Feature>>): List<Feature> {
-        val style =
-            suspendCoroutine { continuation ->
-                holder.map.getStyle { style ->
-                    continuation.resumeWith(Result.success(style))
-                }
-            }
-
-        return changes.map { params ->
+    override suspend fun changeIcons(changes: List<UpdateParams<Feature>>): List<Feature> =
+        changes.map { params ->
             val prevFinger = params.prevEntity.fingerPrint
             val currFinger = params.entity.fingerPrint
             val prevProperties = params.prevEntity.marker.properties()
 
             val properties =
                 JsonObject().apply {
-                    addProperty(Prop.SCALE, params.entity.state.icon?.scale ?: 1.0f)
+                    addProperty(
+                        Prop.SCALE,
+                        params.entity.state.icon
+                            ?.scale ?: 1.0f,
+                    )
                     if (currFinger.icon == prevFinger.icon) {
                         addProperty(
                             Prop.ICON_ID,
                             prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID,
                         )
 
-                        add(Prop.ICON_ANCHOR,
+                        add(
+                            Prop.ICON_ANCHOR,
                             prevProperties?.get(Prop.ICON_ANCHOR) ?: getDefaultIconOffsetProperty(),
                         )
                     } else {
@@ -194,7 +186,7 @@ class MapboxMarkerRenderer(
                         val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
                         if (cnt == 0) {
                             iconRefCounter.remove(iconKey)
-                            style.removeStyleImage(iconKey)
+                            holder.map.style?.removeStyleImage(iconKey)
                         } else {
                             iconRefCounter[iconKey] = cnt
                         }
@@ -209,7 +201,7 @@ class MapboxMarkerRenderer(
                                 if (iconRefCounter.contains(iconKey)) {
                                     iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
                                 } else {
-                                    style.addImage(iconKey, params.bitmapIcon.bitmap)
+                                    holder.map.style?.addImage(iconKey, params.bitmapIcon.bitmap)
                                     iconRefCounter[iconKey] = 1
                                 }
                                 addProperty(Prop.ICON_ID, iconKey)
@@ -225,19 +217,14 @@ class MapboxMarkerRenderer(
             val featureId = params.entity.state.id
             Feature.fromGeometry(position, properties, featureId)
         }
-    }
 
-    private fun getDefaultIconOffsetProperty(): JsonArray {
-        return createIconOffset(defaultIcon)
-    }
+    private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultIcon)
 
-    private fun createIconOffset(icon: BitmapIcon): JsonArray {
-        return JsonArray().apply {
+    private fun createIconOffset(icon: BitmapIcon): JsonArray =
+        JsonArray().apply {
             add(-(icon.size.width * icon.anchor.x) / ResourceProvider.getDensity())
             add(-(icon.size.height * icon.anchor.y) / ResourceProvider.getDensity())
         }
-    }
-    private fun createIconOffset(icon: MarkerIcon): JsonArray {
-        return createIconOffset(icon.toBitmapIcon())
-    }
+
+    private fun createIconOffset(icon: MarkerIcon): JsonArray = createIconOffset(icon.toBitmapIcon())
 }

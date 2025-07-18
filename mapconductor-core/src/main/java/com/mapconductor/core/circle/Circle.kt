@@ -17,12 +17,13 @@ class CircleState(
     radius: Double,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
-    fillColor: Color = Color(
-        red = 255,
-        green = 255,
-        blue = 255,
-        alpha = 127,
-    ),
+    fillColor: Color =
+        Color(
+            red = 255,
+            green = 255,
+            blue = 255,
+            alpha = 127,
+        ),
     id: String? = null,
     extra: Parcelable? = null,
 ) {
@@ -35,25 +36,25 @@ class CircleState(
 
     val id =
         (
-                id ?: circleId(
-                    listOf(
-                        center.hashCode(),
-                        radius.hashCode(),
-                        extra?.hashCode() ?: 0,
-                        strokeColor.hashCode(),
-                        strokeWidth.hashCode(),
-                        fillColor.hashCode(),
-                    ),
-                )
-                ).toString()
+            id ?: circleId(
+                listOf(
+                    center.hashCode(),
+                    radius.hashCode(),
+                    extra?.hashCode() ?: 0,
+                    strokeColor.hashCode(),
+                    strokeWidth.hashCode(),
+                    fillColor.hashCode(),
+                ),
+            )
+        ).toString()
 
     private fun circleId(hashCodes: List<Int>): Int =
         hashCodes.reduce { result, hashCode ->
             31 * result + hashCode
         }
 
-    fun fingerPrint(): CircleFingerPrint {
-        return CircleFingerPrint(
+    fun fingerPrint(): CircleFingerPrint =
+        CircleFingerPrint(
             id = this.id.hashCode(),
             center = center.hashCode(),
             radius = radius.hashCode(),
@@ -62,7 +63,6 @@ class CircleState(
             fillColor = fillColor.hashCode(),
             extra = extra?.hashCode() ?: 0,
         )
-    }
 
     fun asFlow(): Flow<CircleFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
 }

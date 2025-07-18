@@ -18,7 +18,6 @@ import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer.UpdateParams
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
-import kotlin.collections.set
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,7 +27,7 @@ class DefaultArcGISPolylineRenderer : PolylineRendererFactory<Graphic> {
         onAdd: suspend (List<PolylineState>) -> List<Graphic?>,
         onChange: suspend (List<UpdateParams<Graphic>>) -> List<Graphic?>,
         onRemove: suspend (List<PolylineEntity<Graphic>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
+        onPostProcess: (suspend () -> Unit)?,
     ): PolylineOverlayManager<Graphic> =
         PolylineOverlayManagerImpl(
             onRemove = onRemove,
@@ -37,10 +36,11 @@ class DefaultArcGISPolylineRenderer : PolylineRendererFactory<Graphic> {
             onPostProcess = onPostProcess,
         )
 }
+
 class ArcGISPolylineRenderer(
     val polylineLayer: GraphicsOverlay,
     override val holder: ArcGISMapViewHolder,
-    override val coroutine: CoroutineScope
+    override val coroutine: CoroutineScope,
 ) : AbstractPolylineRenderer<Graphic>() {
     override suspend fun addLines(newLines: List<PolylineState>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
@@ -48,15 +48,17 @@ class ArcGISPolylineRenderer(
 
                 val geometry = createGeometry(state)
 
-                val lineSymbol = SimpleLineSymbol().apply {
-                    style = SimpleLineSymbolStyle.Solid
-                    color = createStrokeColor(state)
-                    width = state.strokeWidth.value.toFloat() // 線の太さ
-                }
+                val lineSymbol =
+                    SimpleLineSymbol().apply {
+                        style = SimpleLineSymbolStyle.Solid
+                        color = createStrokeColor(state)
+                        width = state.strokeWidth.value.toFloat() // 線の太さ
+                    }
 
-                val graphic = Graphic(geometry, lineSymbol).also {
-                    it.attributes.set("id", state.id)
-                }
+                val graphic =
+                    Graphic(geometry, lineSymbol).also {
+                        it.attributes.set("id", state.id)
+                    }
 
                 polylineLayer.graphics.add(graphic)
 
@@ -74,8 +76,7 @@ class ArcGISPolylineRenderer(
 
     override suspend fun changeLine(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
-            return@withContext changes.map {
-                params ->
+            return@withContext changes.map { params ->
                 val finger = params.entity.state.fingerPrint()
                 val prevFinger = params.prevEntity.state.fingerPrint()
                 if (finger.points != prevFinger.points) {
@@ -95,20 +96,21 @@ class ArcGISPolylineRenderer(
         }
     }
 
-    private fun createStrokeColor(state: PolylineState): Color {
-        return Color.fromRgba(
+    private fun createStrokeColor(state: PolylineState): Color =
+        Color.fromRgba(
             r = (state.strokeColor.red * 255).toInt(),
             g = (state.strokeColor.green * 255).toInt(),
             b = (state.strokeColor.blue * 255).toInt(),
             a = (state.strokeColor.alpha * 255).toInt(),
         )
-    }
+
     private fun createGeometry(state: PolylineState): Geometry {
-        val polylineBuilder = PolylineBuilder().also { builder ->
-            state.points.forEach {
-                builder.addPoint(GeoPoint.from(it).toPoint())
+        val polylineBuilder =
+            PolylineBuilder().also { builder ->
+                state.points.forEach {
+                    builder.addPoint(GeoPoint.from(it).toPoint())
+                }
             }
-        }
         return polylineBuilder.toGeometry()
     }
 }

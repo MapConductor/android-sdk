@@ -21,13 +21,17 @@ object BitmapIconCache {
         }
     }
 
-    fun put(id: Int, bitmapIcon: BitmapIcon) {
+    fun put(
+        id: Int,
+        bitmapIcon: BitmapIcon,
+    ) {
         val refCount = counts.getOrDefault(id, 0)
         counts.put(id, refCount + 1)
         if (refCount == 0) {
             bitmapCache.put(id, bitmapIcon)
         }
     }
+
     fun refCountUp(id: Int) {
         if (!counts.contains(id)) return
         val refCount = counts.getOrDefault(id, 0)

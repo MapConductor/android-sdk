@@ -6,7 +6,6 @@ import com.here.sdk.core.Point2D
 import com.here.sdk.gestures.GestureState
 import com.here.sdk.gestures.LongPressListener
 import com.here.sdk.gestures.TapListener
-import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
@@ -23,7 +22,6 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
@@ -34,7 +32,6 @@ import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineOverlayManager
-import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
@@ -99,6 +96,7 @@ class HereMapViewController(
             holder = holder,
             coroutine = coroutine,
         )
+
     override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =
         polylineRendererFactory.create(
             onAdd = polylineRenderer::addLines,
@@ -110,15 +108,19 @@ class HereMapViewController(
         markerOverlayManager.clearOverlays()
         polylineOverlayManager.clearOverlays()
     }
+
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
     override suspend fun addCircles(data: List<CircleState>) {
     }
+
     override suspend fun updateCircle(state: CircleState) {
     }
 
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     init {
@@ -260,12 +262,4 @@ class HereMapViewController(
         holder.mapView
             .viewToGeoCoordinates(point)
             ?.toGeoPoint()
-
-    override fun clearPolyline() {
-        TODO("Not yet implemented")
-    }
-
-    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
-        TODO("Not yet implemented")
-    }
 }

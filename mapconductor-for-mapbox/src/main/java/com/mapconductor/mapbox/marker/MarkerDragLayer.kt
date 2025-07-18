@@ -10,7 +10,6 @@ class MarkerDragLayer(
     sourceId: String,
     layerId: String,
 ) : MarkerLayer(sourceId, layerId) {
-
     var selected: MarkerEntity<Feature>? = null
 
     fun updatePosition(geoPoint: GeoPoint) {

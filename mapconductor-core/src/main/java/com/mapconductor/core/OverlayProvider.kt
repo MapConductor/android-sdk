@@ -2,7 +2,6 @@ package com.mapconductor.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewController
@@ -10,7 +9,6 @@ import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerState
-import kotlinx.coroutines.flow.MutableSharedFlow
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
