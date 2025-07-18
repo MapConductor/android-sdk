@@ -14,7 +14,7 @@ sealed class Settings(
         tapTolerance = 14.dp,
         markerDropAnimateDuration = 100,
         markerBounceAnimateDuration = 2000,
-        iconSize = 48.dp,
+        iconSize = 36.dp,
         iconStroke = 0.5.dp,
     )
 }

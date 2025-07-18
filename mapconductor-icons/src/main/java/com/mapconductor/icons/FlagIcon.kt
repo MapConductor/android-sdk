@@ -171,14 +171,14 @@ class FlagIcon(
         }
 
         drawFlagOnCanvas(canvas, flagPaint, strokePaint, canvasSize.toFloat(), canvasSize.toFloat())
-        canvas.apply {
-
-            drawRect(0f, 0f, canvasSize.toFloat() - oneDp, canvasSize.toFloat() - oneDp, Paint().apply {
-                this.color = Color.Magenta.toArgb()
-                this.style = Paint.Style.STROKE
-                strokeWidth = oneDp
-            })
-        }
+//        canvas.apply {
+//
+//            drawRect(0f, 0f, canvasSize.toFloat() - oneDp, canvasSize.toFloat() - oneDp, Paint().apply {
+//                this.color = Color.Magenta.toArgb()
+//                this.style = Paint.Style.STROKE
+//                strokeWidth = oneDp
+//            })
+//        }
 
         val result = BitmapIcon(
             bitmap = bitmap,

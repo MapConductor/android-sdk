@@ -407,32 +407,6 @@ class DefaultIcon(
                     isSubpixelText = true
                 }
 
-            // デバッグログ
-            Log.d("debug", "=== Label Debug Info ===")
-            Log.d("debug", "Canvas size: $canvasSize")
-            Log.d("debug", "Original text size: ${labelTextSize.value}")
-            Log.d("debug", "Final text size: ${scaleInfo.finalTextSize.value}")
-            Log.d("debug", "Base text size px: $baseTextSize")
-            Log.d("debug", "Font scale: ${scaleInfo.fontScale}")
-            Log.d("debug", "Icon scale: ${scaleInfo.finalIconScale}")
-
-            // ResourceProvider の変換確認
-            val testSpToPx = ResourceProvider.spToPx(scaleInfo.finalTextSize.value.toDouble())
-            Log.d("debug", "Direct spToPx test: ${scaleInfo.finalTextSize.value} sp → $testSpToPx px")
-
-            // テキストサイズの動的調整（アイコン内に収まるように）
-            val maxTextWidth = canvasSize * 0.8f // アイコン幅の60%以内
-            val maxTextHeight = canvasSize * 0.50f // アイコン高さの25%以内
-
-            // 調整前のサイズを記録
-            val beforeAdjustSize = textPaint.textSize
-            adjustTextSize(textPaint, labelText, maxTextWidth, maxTextHeight)
-            val afterAdjustSize = textPaint.textSize
-
-            Log.d("debug", "Text size before adjust: $beforeAdjustSize")
-            Log.d("debug", "Text size after adjust: $afterAdjustSize")
-            Log.d("debug", "Max text width: $maxTextWidth, Max text height: $maxTextHeight")
-
             // マーカーの円形部分の中心に配置
             val markerCenterX = canvasSize / 2f
             val markerCenterY = canvasSize * 0.35f // 円形部分の中心
@@ -440,9 +414,6 @@ class DefaultIcon(
             val metrics = textPaint.fontMetrics
             val textHeight = metrics.descent - metrics.ascent
             val baselineOffset = textHeight / 2f - metrics.descent
-
-            Log.d("debug", "Actual text width: ${textPaint.measureText(labelText)}")
-            Log.d("debug", "Actual text height: $textHeight")
 
             // アウトライン描画（アイコンスケールを考慮したストローク幅）
             val outlineStrokeWidth =
@@ -466,89 +437,32 @@ class DefaultIcon(
     }
 
     /**
-     * テキストサイズを制限内に収まるように調整
-     */
-    private fun adjustTextSize(
-        paint: Paint,
-        text: String,
-        maxWidth: Float,
-        maxHeight: Float,
-    ) {
-        var currentSize = paint.textSize
-        val minSize = ResourceProvider.dpToPx(6f).toFloat() // 最小6dp
-
-        Log.d("debug", "=== adjustTextSize Debug ===")
-        Log.d("debug", "Initial text size: $currentSize")
-        Log.d("debug", "Max width: $maxWidth, Max height: $maxHeight")
-        Log.d("debug", "Min size: $minSize")
-
-        var iteration = 0
-        while (currentSize > minSize && iteration < 20) { // 無限ループ防止
-            paint.textSize = currentSize
-            val textWidth = paint.measureText(text)
-            val metrics = paint.fontMetrics
-            val textHeight = metrics.descent - metrics.ascent
-
-            Log.d("debug", "Iteration $iteration: size=$currentSize, width=$textWidth, height=$textHeight")
-
-            if (textWidth <= maxWidth && textHeight <= maxHeight) {
-                Log.d("debug", "Text fits! Final size: $currentSize")
-                break
-            }
-
-            currentSize *= 0.85f // 15%ずつ縮小（より積極的に）
-            iteration++
-        }
-
-        // 最終サイズを設定
-        paint.textSize = max(currentSize, minSize)
-        Log.d("debug", "Final text size set to: ${paint.textSize}")
-    }
-
-    /**
      * TextUnitをピクセルサイズに変換
      */
     private fun convertTextUnitToPx(
         textUnit: TextUnit,
         scale: Float,
     ): Float {
-        Log.d("debug", "=== convertTextUnitToPx Debug ===")
-        Log.d("debug", "Input textUnit: ${textUnit.value} ${textUnit.type}")
-        Log.d("debug", "Input scale: $scale")
-
         val result =
             when (textUnit.type) {
                 TextUnitType.Sp -> {
                     val spValue = textUnit.value * scale
                     val pxValue = ResourceProvider.spToPx(spValue.toDouble()).toFloat()
-                    Log.d("debug", "SP conversion: ${textUnit.value} * $scale = $spValue sp → $pxValue px")
                     pxValue
                 }
                 TextUnitType.Em -> {
                     val baseFontSize = 16f
                     val emValue = baseFontSize * textUnit.value * scale
                     val pxValue = ResourceProvider.spToPx(emValue.toDouble()).toFloat()
-                    Log
-                        .d("debug", "EM conversion: $baseFontSize * ${textUnit.value} * $scale = $emValue sp → $pxValue px")
                     pxValue
                 }
                 else -> {
                     val dpValue = textUnit.value * scale
                     val pxValue = ResourceProvider.dpToPx(dpValue.toDouble()).toFloat()
-                    Log.d("debug", "DP conversion: ${textUnit.value} * $scale = $dpValue dp → $pxValue px")
                     pxValue
                 }
             }
 
-        Log.d("debug", "Final converted px: $result")
         return result
     }
-
-    // デバッグ用：現在のスケーリング情報を取得
-    fun getScalingInfo(): AdaptiveScaleInfo =
-        if (adaptiveScaling) {
-            calculateAdaptiveScale()
-        } else {
-            AdaptiveScaleInfo(1f, 1f, 1f, scale, iconSize, labelTextSize)
-        }
 }
