@@ -23,6 +23,7 @@ import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
 import com.mapconductor.arcgis.polyline.ArcGISPolylineRenderer
 import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
@@ -266,6 +267,15 @@ class ArcGISMapViewController(
         if (entity != null) {
             markerClickListener?.invoke(entity.state)
             return
+        }
+
+        val circleEntity = circleManager.find(touchPosition)
+        circleEntity?.let {
+            val event = CircleClickEvent(
+                state = circleEntity.state,
+                position = touchPosition,
+            )
+            circleClickListener?.invoke(event)
         }
 
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {

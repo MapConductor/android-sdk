@@ -71,6 +71,7 @@ fun MapViewContainer(
                 onMarkerDragEnd = onMarkerDragEnd,
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
+                onCircleClick = onCircleClick,
                 content = content,
             )
 

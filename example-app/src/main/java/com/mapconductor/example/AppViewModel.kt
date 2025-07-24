@@ -2,10 +2,11 @@ package com.mapconductor.example
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.mapconductor.StarbucksHI_list
-import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapCameraPosition
@@ -15,7 +16,6 @@ import com.mapconductor.example.toast.ToastMessage
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +36,7 @@ interface AppViewModel {
 
     fun onMapClick(clicked: GeoPoint)
 
-    fun onCircleClick(clicked: CircleState)
+    fun onCircleClick(event: CircleClickEvent)
 
     fun showToast(text: String)
 
@@ -128,8 +128,8 @@ class AppViewModelImpl :
         this.infoBubbleState.close()
     }
 
-    override fun onCircleClick(clicked: CircleState) {
-        Log.d("debug", "onCircleClick: ")
+    override fun onCircleClick(event: CircleClickEvent) {
+        event.state.fillColor = Color.Blue.copy(alpha = 0.5f)
     }
 
     override fun onCleared() {

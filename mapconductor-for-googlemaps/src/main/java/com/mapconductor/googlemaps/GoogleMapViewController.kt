@@ -7,7 +7,6 @@ import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveCanceledListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
-import com.google.android.gms.maps.GoogleMap.OnCircleClickListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
@@ -18,6 +17,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleClickEvent
+import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
@@ -75,8 +76,7 @@ class GoogleMapViewController(
     OnCameraIdleListener,
     OnMarkerClickListener,
     OnMapClickListener,
-    OnMarkerDragListener,
-    OnCircleClickListener {
+    OnMarkerDragListener {
     val circleStates: HashMap<String, CircleState> = HashMap()
 
     override val markerRenderer: MarkerRenderer<Marker> =
@@ -120,7 +120,6 @@ class GoogleMapViewController(
         holder.map.setOnMarkerClickListener(this)
         holder.map.setOnMapClickListener(this)
         holder.map.setOnMarkerDragListener(this)
-        holder.map.setOnCircleClickListener(this)
     }
 
     override fun moveCamera(
@@ -176,17 +175,50 @@ class GoogleMapViewController(
                 CircleOptions()
                     .center(GeoPoint.from(state.center).toLatLng())
                     .radius(state.radius)
-                    .strokeWidth(strokeWidth.toFloat())
+                    .strokeWidth(ResourceProvider.dpToPx(strokeWidth).toFloat())
                     .strokeColor(state.strokeColor.toArgb())
                     .fillColor(state.fillColor.toArgb())
-                    .clickable(true)
-            return@map holder.map.addCircle(options).also {
+                    .clickable(false)
+            val circle = holder.map.addCircle(options).also {
                 it.tag = state.id
             }
+            val entity =
+                CircleEntityImpl(
+                    circle = circle,
+                    state = state,
+                )
+            circleManager.registerEntity(entity)
+            circle
         }
     }
 
-    override suspend fun updateCircle(state: CircleState) {}
+    override suspend fun updateCircle(state: CircleState) {
+        val prevEntity = circleManager.getEntity(state.id) ?: return
+        val prevFinger = prevEntity.fingerPrint
+        val currFinger = state.fingerPrint()
+
+        prevEntity.circle.also {
+            if (prevFinger.center != currFinger.center) {
+                it.center = GeoPoint.from(state.center).toLatLng()
+            }
+            it.radius = state.radius
+            if (prevFinger.strokeColor != currFinger.strokeColor) {
+                it.strokeColor = state.strokeColor.toArgb()
+            }
+            if (prevFinger.strokeWidth != currFinger.strokeWidth) {
+                it.strokeWidth = ResourceProvider.dpToPx(state.strokeWidth).toFloat()
+            }
+            if (prevFinger.fillColor != currFinger.fillColor) {
+                it.fillColor = state.fillColor.toArgb()
+            }
+        }
+
+        val updatedEntity = CircleEntityImpl<Circle>(
+            state = state,
+            circle =  prevEntity.circle,
+        )
+        circleManager.updateEntity(updatedEntity)
+    }
 
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
@@ -228,6 +260,17 @@ class GoogleMapViewController(
     }
 
     override fun onMapClick(position: LatLng) {
+        val touchPosition = position.toGeoPoint()
+
+        circleManager.find(touchPosition)?.let { entity ->
+            val event = CircleClickEvent(
+                state = entity.state,
+                position = touchPosition,
+            )
+            circleClickListener?.invoke(event)
+            return
+        }
+
         mapClickListener?.let {
             coroutine.launch { it(position.toGeoPoint()) }
         }
@@ -264,12 +307,6 @@ class GoogleMapViewController(
             markerRenderer.setDraggingState(state, false)
 
             markerDragStartListener?.invoke(state)
-        }
-    }
-
-    override fun onCircleClick(circle: Circle) {
-        circleStates[circle.tag]?.let {
-            circleClickListener?.invoke(it)
         }
     }
 }
