@@ -47,10 +47,10 @@ class MapboxPolylineRenderer(
                 Feature.fromGeometry(
                     LineString.fromLngLats(points),
                     JsonObject().apply {
-                        addProperty("id", "polyline-${state.id}")
                         addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                         addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
                     },
+                    "polyline-${state.id}",
                 )
             }
         return polylines
@@ -69,10 +69,10 @@ class MapboxPolylineRenderer(
                 Feature.fromGeometry(
                     LineString.fromLngLats(points),
                     JsonObject().apply {
-                        addProperty("id", "polyline-${state.id}")
                         addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                         addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
                     },
+                    "polyline-${state.id}",
                 )
             }
         layer.source.updateGeoJSONSourceFeatures(features)
