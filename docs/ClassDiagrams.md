@@ -83,8 +83,8 @@ classDiagram
     class IGeoPoint
     class GeoPoint
     class ExampleInstrumentedTest
-    class ContentProvider()
-    ContentProvider() <|-- InitProvider
+    class ContentProvider
+    ContentProvider <|-- InitProvider
     MarkerIcon <|-- AbstractMarkerIcon
 ```
 
@@ -108,8 +108,8 @@ classDiagram
     class ExampleInstrumentedTest
     class MapViewController
     MapViewController <|-- IGoogleMapViewController
-    class MapViewScope()
-    MapViewScope() <|-- GoogleMapViewScope
+    class MapViewScope
+    MapViewScope <|-- GoogleMapViewScope
     class MapViewState
     MapViewState <|-- IGoogleMapViewState
     class BaseMapViewSaver
@@ -147,8 +147,8 @@ classDiagram
     class ExampleInstrumentedTest
     class MapViewController
     MapViewController <|-- IMapboxMapViewController
-    class MapViewScope()
-    MapViewScope() <|-- MapboxMapViewScope
+    class MapViewScope
+    MapViewScope <|-- MapboxMapViewScope
     class MapViewState
     MapViewState <|-- IMapboxMapViewState
     class BaseMapViewSaver
@@ -180,8 +180,8 @@ classDiagram
     class DefaultHereMapPolylineRenderer
     class HereMapPolylineRenderer
     class ExampleInstrumentedTest
-    class MapViewScope()
-    MapViewScope() <|-- HereMapViewScope
+    class MapViewScope
+    MapViewScope <|-- HereMapViewScope
     class MapViewController
     MapViewController <|-- IHereMapViewController
     class MapViewState
@@ -227,8 +227,8 @@ classDiagram
     MapViewController <|-- IArcGISMapViewController
     class FrameLayout
     FrameLayout <|-- WrapSceneView
-    class MapViewScope()
-    MapViewScope() <|-- ArcGISMapViewScope
+    class MapViewScope
+    MapViewScope <|-- ArcGISMapViewScope
     class MarkerRendererFactory
     MarkerRendererFactory <|-- DefaultArcGISMarkerRender
     class PolylineRendererFactory
@@ -257,6 +257,6 @@ classDiagram
     class ToastMessage
     class IconItem
     class ExampleInstrumentedTest
-    class ComponentActivity()
-    ComponentActivity() <|-- MainActivity
+    class ComponentActivity
+    ComponentActivity <|-- MainActivity
 ```
