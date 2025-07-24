@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import androidx.compose.ui.graphics.toArgb
 import com.arcgismaps.Color
 import com.arcgismaps.geometry.GeodeticCurveType
 import com.arcgismaps.geometry.GeometryEngine
@@ -24,6 +25,7 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineRenderer
 import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
+import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
@@ -75,7 +77,7 @@ class ArcGISMapViewController(
         ),
     private val markerLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
+            sceneProperties.surfacePlacement = SurfacePlacement.Relative
         },
     private val circleLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
@@ -83,7 +85,7 @@ class ArcGISMapViewController(
         },
     private val polylineLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
+            sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
         },
     private val markerRendererFactory: MarkerRendererFactory<ArcGISActualMarker> = DefaultArcGISMarkerRender(),
     private val polylineRendererFactory: PolylineRendererFactory<ArcGISActualPolyline> =
@@ -132,25 +134,29 @@ class ArcGISMapViewController(
         setupListeners()
     }
 
-    private fun createCircle(state: CircleState) {
-        val center = GeoPoint.from(state.center).toPoint()
-        val circle =
-            GeometryEngine.bufferGeodeticOrNull(
-                center,
-                500.0,
-                LinearUnit(LinearUnitId.Meters),
-                Double.NaN,
-                GeodeticCurveType.Geodesic,
-            )
-        val symbol =
-            SimpleFillSymbol(
-                SimpleFillSymbolStyle.Solid,
-                Color(0x88FF0000.toInt()), // fill
-                SimpleLineSymbol(SimpleLineSymbolStyle.Solid, Color(0xFFFF0000.toInt()), 2f),
-            )
-        val graphic = Graphic(circle, symbol)
+    private fun createCircle(state: CircleState): ArcGISActualCircle {
+        val spec = holder.mapView.sceneView.scene?.spatialReference
+        val center = GeoPoint.from(state.center).toPoint(spec)
 
-        circleLayer.graphics.add(graphic)
+        val circle = GeometryEngine.bufferGeodeticOrNull(
+            geometry = center,
+            distance = state.radiusMeters,
+            distanceUnit = LinearUnit(LinearUnitId.Meters),
+            maxDeviation = Double.NaN,
+            curveType = GeodeticCurveType.Geodesic,
+        )
+        val stroke = SimpleLineSymbol(
+            style = SimpleLineSymbolStyle.Solid,
+            color = Color(state.strokeColor.toArgb()),
+            width = state.strokeWidth.value,
+        )
+        val fillSymbol =
+            SimpleFillSymbol(
+                style = SimpleFillSymbolStyle.Solid,
+                color = Color(state.fillColor.toArgb()),
+                outline = stroke,
+            )
+        return Graphic(circle, fillSymbol)
     }
 
     override fun setupListeners() {
@@ -298,11 +304,31 @@ class ArcGISMapViewController(
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.forEach { state ->
-            createCircle(state)
+            val circle = createCircle(state)
+            circleLayer.graphics.add(circle)
+            val entity = CircleEntityImpl<ArcGISActualCircle>(
+                state = state,
+                circle = circle,
+            )
+            circleManager.registerEntity(entity)
+            circle
         }
     }
 
     override suspend fun updateCircle(state: CircleState) {
+        val prevEntity = circleManager.getEntity(state.id) ?: return
+        val prevFinger = prevEntity.fingerPrint
+        val currFinger = state.fingerPrint()
+        if (prevFinger == currFinger) return
+
+        circleLayer.graphics.remove(prevEntity.circle)
+        val circle = createCircle(state)
+        circleLayer.graphics.add(circle)
+        val updatedEntity = CircleEntityImpl<ArcGISActualCircle>(
+            state = state,
+            circle = circle,
+        )
+        circleManager.updateEntity(updatedEntity)
     }
 
     override fun moveCamera(

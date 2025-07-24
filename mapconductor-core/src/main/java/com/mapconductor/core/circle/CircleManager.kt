@@ -34,7 +34,7 @@ class CircleManager<ActualCircle> {
         val filtered = allEntities().filter { entity ->
             val centerPos = entity.state.center
             val distance = haversineDistance(centerPos, position)
-            return@filter (distance <= entity.state.radius)
+            return@filter (distance <= entity.state.radiusMeters)
         }
 
         if (filtered.isEmpty()) {
