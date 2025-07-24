@@ -202,6 +202,7 @@ internal class MapboxMapViewController(
                     addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                     addProperty(MapboxCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
                 },
+                "circle-${state.id}",
             )
         return feature
     }
