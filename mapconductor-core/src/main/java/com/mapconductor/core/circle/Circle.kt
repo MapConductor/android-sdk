@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,7 @@ class CircleState(
             alpha = 127,
         ),
     id: String? = null,
+    zIndex: Int? = null,
     extra: Parcelable? = null,
 ) {
     var center by mutableStateOf(center)
@@ -33,6 +35,7 @@ class CircleState(
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
     var extra by mutableStateOf(extra)
+    var zIndex by mutableStateOf<Int?>(zIndex)
 
     val id =
         (
@@ -44,6 +47,7 @@ class CircleState(
                     strokeColor.hashCode(),
                     strokeWidth.hashCode(),
                     fillColor.hashCode(),
+                    zIndex.hashCode(),
                 ),
             )
         ).toString()
@@ -61,6 +65,7 @@ class CircleState(
             strokeColor = strokeColor.hashCode(),
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),
+            zIndex = zIndex.hashCode(),
             extra = extra?.hashCode() ?: 0,
         )
 
@@ -74,7 +79,13 @@ data class CircleFingerPrint(
     val strokeColor: Int,
     val strokeWidth: Int,
     val fillColor: Int,
+    val zIndex: Int,
     val extra: Int,
 )
 
-typealias OnCircleEventHandler = (CircleState) -> Unit
+data class CircleClickEvent(
+    val state: CircleState,
+    val position: GeoPoint,
+)
+
+typealias OnCircleEventHandler = (CircleClickEvent) -> Unit
