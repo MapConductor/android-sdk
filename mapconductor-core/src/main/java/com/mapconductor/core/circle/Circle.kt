@@ -30,7 +30,7 @@ class CircleState(
     extra: Parcelable? = null,
 ) {
     var center by mutableStateOf(center)
-    var radius by mutableStateOf(radius)
+    var radiusMeters by mutableStateOf(radius)
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
@@ -61,7 +61,7 @@ class CircleState(
         CircleFingerPrint(
             id = this.id.hashCode(),
             center = center.hashCode(),
-            radius = radius.hashCode(),
+            radius = radiusMeters.hashCode(),
             strokeColor = strokeColor.hashCode(),
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),

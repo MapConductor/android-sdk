@@ -193,7 +193,7 @@ internal class MapboxMapViewController(
                     addProperty(
                         MapboxCircleLayer.Prop.RADIUS,
                         meterToPixel(
-                            meter = state.radius,
+                            meter = state.radiusMeters,
                             latitude = state.center.latitude,
                             zoom = holder.map.cameraState.zoom,
                             tileSize = ResourceProvider.getOptimalTileSize().toDouble(),

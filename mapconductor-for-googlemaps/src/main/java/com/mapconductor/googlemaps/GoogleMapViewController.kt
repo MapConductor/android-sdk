@@ -174,7 +174,7 @@ class GoogleMapViewController(
             val options =
                 CircleOptions()
                     .center(GeoPoint.from(state.center).toLatLng())
-                    .radius(state.radius)
+                    .radius(state.radiusMeters)
                     .strokeWidth(ResourceProvider.dpToPx(strokeWidth).toFloat())
                     .strokeColor(state.strokeColor.toArgb())
                     .fillColor(state.fillColor.toArgb())
@@ -201,7 +201,7 @@ class GoogleMapViewController(
             if (prevFinger.center != currFinger.center) {
                 it.center = GeoPoint.from(state.center).toLatLng()
             }
-            it.radius = state.radius
+            it.radius = state.radiusMeters
             if (prevFinger.strokeColor != currFinger.strokeColor) {
                 it.strokeColor = state.strokeColor.toArgb()
             }
