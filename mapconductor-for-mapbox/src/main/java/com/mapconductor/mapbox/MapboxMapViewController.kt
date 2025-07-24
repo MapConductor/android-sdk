@@ -24,6 +24,7 @@ import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
@@ -36,6 +37,7 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.meterToPixel
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
@@ -49,8 +51,6 @@ import com.mapconductor.mapbox.polyline.DefaultMapboxPolylineRenderer
 import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineRenderer
 import com.mapconductor.settings.Settings
-import kotlin.math.cos
-import kotlin.math.pow
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -196,6 +196,7 @@ internal class MapboxMapViewController(
                             meter = state.radius,
                             latitude = state.center.latitude,
                             zoom = holder.map.cameraState.zoom,
+                            tileSize = ResourceProvider.getOptimalTileSize().toDouble(),
                         ),
                     )
                     addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
@@ -228,16 +229,7 @@ internal class MapboxMapViewController(
         semaphore.release()
     }
 
-    fun meterToPixel(
-        meter: Double,
-        latitude: Double,
-        zoom: Double,
-    ): Double {
-        val earthCircumference = 2 * Math.PI * 6378137
-        val tileSize = 512.0 // Mapbox v10+はデフォルト512
-        val metersPerPixel = cos(Math.toRadians(latitude)) * earthCircumference / (tileSize * 2.0.pow(zoom))
-        return meter / metersPerPixel
-    }
+
 
     override suspend fun updateCircle(state: CircleState) {
         val prevEntity = circleManager.getEntity(state.id) ?: return
@@ -382,19 +374,28 @@ internal class MapboxMapViewController(
     }
 
     override fun onMapClick(point: Point): Boolean {
-        val geoPoint = point.toGeoPoint()
-        val entity =
-            this.markerRenderer.findNearestMarker(
-                position = geoPoint,
-                tolerance = ResourceProvider.dpToPx(Settings.Default.tapTolerance),
-                zoom = holder.map.cameraState.zoom,
-            )
-        if (entity != null) {
-            markerClickListener?.invoke(entity.state)
+        val touchPosition = point.toGeoPoint()
+
+        this.markerRenderer.findNearestMarker(
+            position = touchPosition,
+            tolerance = ResourceProvider.dpToPx(Settings.Default.tapTolerance),
+            zoom = holder.map.cameraState.zoom,
+        )?.let {
+            markerClickListener?.invoke(it.state)
             return true
         }
 
-        mapClickListener?.invoke(geoPoint)
+        val circleEntity = this.circleManager.find(touchPosition)
+        circleEntity?.let {
+            val event = CircleClickEvent(
+                state = circleEntity.state,
+                position = touchPosition,
+            )
+            circleClickListener?.invoke(event)
+            return true
+        }
+
+        mapClickListener?.invoke(touchPosition)
         return true
     }
 
