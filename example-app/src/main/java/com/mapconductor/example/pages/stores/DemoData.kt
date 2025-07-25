@@ -1,4 +1,4 @@
-package com.mapconductor
+package com.mapconductor.example.pages.stores
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
