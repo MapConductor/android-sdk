@@ -10,6 +10,7 @@ import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.polygon.PolygonState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -62,12 +63,14 @@ open class MapViewScope {
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
     val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
     val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
+    val polygonFlow = MutableStateFlow<List<PolygonState>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
         registry.register(MarkerOverlay(markerFlow))
         registry.register(CircleOverlay(circleFlow))
         registry.register(PolylineOverlay(polylineFlow))
+        // registry.register(PolygonOverlay(polygonFlow)) // TODO: Implement addPolygons in MapViewController
         return registry
     }
 }
@@ -119,6 +122,23 @@ val LocalCircleCollector =
     compositionLocalOf<MutableStateFlow<List<CircleState>>> {
         error("Circle must be under the <MapView />")
     }
+
+// TODO: Implement addPolygons in MapViewController first
+// class PolygonOverlay(
+//     override val flow: StateFlow<List<PolygonState>>,
+// ) : MapOverlay<PolygonState> {
+//     override suspend fun render(
+//         data: List<PolygonState>,
+//         controller: MapViewController<*, *, *>,
+//     ) {
+//         controller.addPolygons(data)
+//     }
+// }
+//
+// val LocalPolygonCollector =
+//     compositionLocalOf<MutableStateFlow<List<PolygonState>>> {
+//         error("Polygon must be under the <MapView />")
+//     }
 
 @Composable
 fun CollectAndRenderOverlays(
