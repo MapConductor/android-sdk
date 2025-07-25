@@ -1,9 +1,6 @@
-package com.mapconductor.example
+package com.mapconductor.example.pages.stores
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -13,19 +10,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.circle.Circle
-import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polyline.Polyline
+import com.mapconductor.example.MapViewContainer
+import com.mapconductor.example.demo.StoreCard
+import android.os.Bundle
 
 @Composable
-fun MapArea(
+fun StoreMapComponent(
     mapViewState: MapViewState<*>?,
     selectedMarker: MarkerState?,
     infoBubbleState: InfoBubbleState,
@@ -35,13 +33,26 @@ fun MapArea(
     onMapClickHandler: OnMapEventHandler = {},
     onMarkerClickHandler: OnMarkerEventHandler = {},
     onMarkerDragHandler: OnMarkerEventHandler = {},
-    onCircleClickHandler: OnCircleEventHandler = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
     }
     var isMarkerAnimating by remember { mutableStateOf(false) }
+    val colors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan)
+
+    val markerList = remember {
+        markers.mapIndexed { index, state ->
+            val randomColor = colors[index % colors.size]
+            state.copy(
+                icon = DefaultIcon(
+                    fillColor = randomColor,
+                    strokeColor = Color.White,
+                    strokeWidth = 2.dp,
+                ),
+            )
+        }
+    }
 
     mapViewState?.let { mapViewState ->
         MapViewContainer(
@@ -52,25 +63,10 @@ fun MapArea(
             onMarkerDrag = onMarkerDragHandler,
             onMarkerAnimateStart = { isMarkerAnimating = true },
             onMarkerAnimateEnd = { isMarkerAnimating = false },
-            onCircleClick = onCircleClickHandler,
         ) {
-            Polyline(
-                points = markers.map { it.position },
-                strokeColor = Color(0x88FF3366),
-                strokeWidth = 5.dp,
-            )
-
-            markers.forEach { markerState ->
+            markerList.forEach { markerState ->
                 key(markerState.id) {
                     Marker(markerState)
-                    // TODO: circleStateに置換する。このコードはデバッグ用
-                    Circle(
-                        center = markerState.position,
-                        radius = 1000.0,
-                        fillColor = Color(0x88FF3366),
-                        strokeColor = Color.White,
-                        strokeWidth = 1.dp,
-                    )
                 }
             }
 
@@ -80,28 +76,12 @@ fun MapArea(
                         bubbleColor = bubbleColor,
                         state = infoBubbleState,
                     ) {
-                        Column {
-                            Text(
-                                text =
-                                    infoBubbleState.marker?.position?.toUrlValue()
-                                        ?: "null",
-                            )
-                            Button(
-                                onClick = {
-                                    onDirectionButtonClick(it)
-                                },
-                            ) {
-                                Text(
-                                    text = "Change Icon Color",
-                                )
-                            }
-                        }
-//                        StoreCard(
-//                            info = it.extra as Bundle,
-//                            onClick = {
-//                                onDirectionButtonClick(it)
-//                            },
-//                        )
+                        StoreCard(
+                            info = it.extra as Bundle,
+                            onClick = {
+                                onDirectionButtonClick(it)
+                            },
+                        )
                     }
                 }
             }
