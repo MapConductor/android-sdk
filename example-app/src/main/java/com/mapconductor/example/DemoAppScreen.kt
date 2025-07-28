@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
@@ -23,6 +24,8 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.toFixed
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.MapExamplePage
+import com.mapconductor.example.pages.circle.CircleMapPage
+import com.mapconductor.example.pages.circle.CirclePageViewModelImpl
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.pages.stores.StoreMapPageViewModel
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -34,6 +37,7 @@ import com.mapconductor.example.ui.theme.AppTheme
 fun DemoAppScreen(
     appViewModel: AppViewModel,
     storeMapPageViewModel: StoreMapPageViewModel,
+    circlePageViewModel: CirclePageViewModelImpl = CirclePageViewModelImpl(),
 ) {
     val navigationViewModel: NavigationViewModel = viewModel()
     val currentPage by navigationViewModel.currentPage
@@ -45,6 +49,12 @@ fun DemoAppScreen(
             title = "Map Demo",
             icon = Icons.Default.Home,
             route = "map"
+        ),
+        SidebarItem(
+            id = "circle",
+            title = "Circle Demo",
+            icon = Icons.Default.CheckCircle,
+            route = "circle"
         ),
         SidebarItem(
             id = "examples",
@@ -68,6 +78,12 @@ fun DemoAppScreen(
                     "map" -> {
                         StoreMapPage(
                             viewModel = storeMapPageViewModel,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "circle" -> {
+                        CircleMapPage(
+                            viewModel = circlePageViewModel,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

@@ -15,6 +15,7 @@ import com.mapconductor.example.toast.ToastMessage
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +42,7 @@ interface StoreMapPageViewModel {
 
     fun removeToast(toastMessage: ToastMessage)
 
-    fun createIntentForDirection(markerState: MarkerState): Intent
+    fun onDirectionButtonClick(markerState: MarkerState): Intent
 }
 
 class StoreMapPageViewModelImpl :
@@ -83,7 +84,8 @@ class StoreMapPageViewModelImpl :
         this.infoBubbleState.close()
     }
 
-    override fun createIntentForDirection(markerState: MarkerState): Intent {
+    override fun onDirectionButtonClick(markerState: MarkerState): Intent {
+        Log.d("StoreMap", "--->onDirectionButtonClick(${markerState.id})")
         val query =
             (markerState.extra as? Bundle)?.let {
                 Uri.encode(it.getString("address", ""))

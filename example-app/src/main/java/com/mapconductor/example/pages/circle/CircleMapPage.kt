@@ -1,7 +1,8 @@
-package com.mapconductor.example.pages.stores
+package com.mapconductor.example.pages.circle
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -10,11 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,13 +28,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.marker.DefaultIcon
-import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.IconItem
@@ -44,8 +45,8 @@ import com.mapconductor.mapbox.rememberMapboxMapViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StoreMapPage(
-    viewModel: StoreMapPageViewModel,
+fun CircleMapPage(
+    viewModel: CirclePageViewModel,
     onToggleSidebar: () -> Unit = {},
 ) {
     // ---------- Map States ---------------
@@ -109,24 +110,16 @@ fun StoreMapPage(
 
     Scaffold { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
-            StoreMapComponent(
+            CircleMapComponent(
                 mapViewState = mapViewState,
-                markers = viewModel.markerList,
-                onDirectionButtonClick = viewModel::onDirectionButtonClick,
-//                onDirectionButtonClick = { state ->
-//                    state.icon?.let {
-//                        state.icon = (it as? DefaultIcon)?.copy(
-//                            fillColor = Color.Blue,
-//                        ) ?: it
-//                    }
-//                    state.animation = MarkerAnimation.Bounce
-//                },
-                infoBubbleState = viewModel.infoBubbleState,
+                viewModel = viewModel,
                 onMapClickHandler = viewModel::onMapClick,
                 onMarkerClickHandler = viewModel::onMarkerClick,
-                selectedMarker = viewModel.selectedMarker,
+                onCircleClickHandler = viewModel::onCircleClick,
+                onMarkerDrag = viewModel::onMarkerDrag,
             )
 
+            // Top controls
             Card(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -134,7 +127,6 @@ fun StoreMapPage(
                         top = paddingValues.calculateTopPadding(),
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
-                        bottom = paddingValues.calculateBottomPadding(),
                     ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
