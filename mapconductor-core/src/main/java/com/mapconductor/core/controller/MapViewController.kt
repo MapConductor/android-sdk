@@ -1,6 +1,5 @@
 package com.mapconductor.core.controller
 
-import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleState
@@ -50,6 +49,7 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
 
     fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
 }
+typealias MapViewControllerAlias = MapViewController<*, *, *, *>
 
 data class SearchRangeAnalysis(
     val clickPosition: IGeoPoint,

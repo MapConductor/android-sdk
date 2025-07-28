@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
@@ -80,7 +80,7 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addMarkers(data)
     }
@@ -91,7 +91,7 @@ class CircleOverlay(
 ) : MapOverlay<CircleState> {
     override suspend fun render(
         data: List<CircleState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addCircles(data)
     }
@@ -107,7 +107,7 @@ class PolylineOverlay(
 ) : MapOverlay<PolylineState> {
     override suspend fun render(
         data: List<PolylineState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addPolylines(data)
     }
@@ -143,7 +143,7 @@ val LocalCircleCollector =
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController<*, *, *>,
+    controller: MapViewControllerAlias,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")
