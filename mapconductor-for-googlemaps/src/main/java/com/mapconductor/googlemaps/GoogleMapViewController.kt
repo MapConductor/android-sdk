@@ -15,11 +15,15 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleOverlayManager
+import com.mapconductor.core.circle.CircleRenderer
+import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -31,13 +35,20 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polygon.PolygonOverlayManager
+import com.mapconductor.core.polygon.PolygonRenderer
+import com.mapconductor.core.polygon.PolygonRendererFactory
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.googlemaps.circle.DefaultGoogleMapCircleRenderer
+import com.mapconductor.googlemaps.circle.GoogleMapCircleRenderer
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.polygon.DefaultGoogleMapPolygonRenderer
+import com.mapconductor.googlemaps.polygon.GoogleMapPolygonRenderer
 import com.mapconductor.googlemaps.polyline.DefaultGoogleMapPolylineRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineRenderer
 import kotlinx.coroutines.CoroutineScope
@@ -67,8 +78,9 @@ class GoogleMapViewController(
         ),
     private val markerRendererFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
-    override val circleManager: CircleManager<Circle> = CircleManager(),
-) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline>(),
+    private val polygonRendererFactory: PolygonRendererFactory<Polygon> = DefaultGoogleMapPolygonRenderer(),
+    private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
+) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline, Polygon>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -105,6 +117,31 @@ class GoogleMapViewController(
             onAdd = polylineRenderer::addLines,
             onChange = polylineRenderer::changeLine,
             onRemove = polylineRenderer::removeLines,
+        )
+
+    override val polygonRenderer: PolygonRenderer<Polygon> =
+        GoogleMapPolygonRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override fun createPolygonOverlayManager(): PolygonOverlayManager<Polygon> =
+        polygonRendererFactory.create(
+            onAdd = polygonRenderer::addPolygons,
+            onChange = polygonRenderer::changePolygon,
+            onRemove = polygonRenderer::removePolygons,
+        )
+    override val circleRenderer: CircleRenderer<Circle> =
+        GoogleMapCircleRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override fun createCircleOverlayManager(): CircleOverlayManager<Circle> =
+        circleRendererFactory.create(
+            onAdd = circleRenderer::addCircles,
+            onChange = circleRenderer::changeCircle,
+            onRemove = circleRenderer::removeCircles,
         )
 
     init {
@@ -166,6 +203,8 @@ class GoogleMapViewController(
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+
+    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager
 
     override suspend fun addCircles(data: List<CircleState>) {
         data.map { state ->

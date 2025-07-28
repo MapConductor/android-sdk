@@ -9,6 +9,7 @@ sealed class Settings(
     val markerBounceAnimateDuration: Int,
     val iconSize: Dp,
     val iconStroke: Dp,
+    val composeEventDebounce: Long,
 ) {
     object Default : Settings(
         tapTolerance = 14.dp,
@@ -16,5 +17,6 @@ sealed class Settings(
         markerBounceAnimateDuration = 2000,
         iconSize = 48.dp,
         iconStroke = 0.5.dp,
+        composeEventDebounce = 5,
     )
 }

@@ -1,6 +1,8 @@
 package com.mapconductor.core.controller
 
 import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleOverlayManager
+import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.IGeoPoint
@@ -14,18 +16,21 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.PolygonOverlayManager
+import com.mapconductor.core.polygon.PolygonRenderer
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
+interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManager<ActualMarker>
     val hexGeocell: HexGeocell
-    val circleManager: CircleManager<ActualCircle>
     val polylineOverlayManager: PolylineOverlayManager<ActualPolyline>
+    val circleOverlayManager: CircleOverlayManager<ActualCircle>
+    val polygonOverlayManager: PolygonOverlayManager<ActualPolygon>
 
     suspend fun addMarkers(data: List<MarkerState>)
 
@@ -60,8 +65,8 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline> :
-    MapViewController<ActualMarker, ActualCircle, ActualPolyline> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
+    MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -80,6 +85,24 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
         }
     }
 
+    abstract val polygonRenderer: PolygonRenderer<ActualPolygon>
+
+    override val polygonOverlayManager: PolygonOverlayManager<ActualPolygon> by lazy {
+        createPolygonOverlayManager().also { overlayManager ->
+            polygonRenderer.init(overlayManager)
+            onPolygonOverlayManagerInitialized(overlayManager)
+        }
+    }
+
+    abstract val circleRenderer: CircleRenderer<ActualCircle>
+
+    override val circleOverlayManager: CircleOverlayManager<ActualCircle> by lazy {
+        createCircleOverlayManager().also { overlayManager ->
+            circleRenderer.init(overlayManager)
+            onCircleOverlayManagerInitialized(overlayManager)
+        }
+    }
+
     protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
         // Stub
     }
@@ -88,9 +111,21 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
         // Stub
     }
 
+    protected open fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ActualPolygon>) {
+        // Stub
+    }
+
+    protected open fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ActualCircle>) {
+        // Stub
+    }
+
     protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
 
     protected abstract fun createPolylineOverlayManager(): PolylineOverlayManager<ActualPolyline>
+
+    protected abstract fun createPolygonOverlayManager(): PolygonOverlayManager<ActualPolygon>
+
+    protected abstract fun createCircleOverlayManager(): CircleOverlayManager<ActualCircle>
 
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
