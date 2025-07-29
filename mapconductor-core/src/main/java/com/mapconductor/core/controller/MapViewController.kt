@@ -103,21 +103,13 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
         }
     }
 
-    protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
-        // Stub
-    }
+    protected abstract fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>)
 
-    protected open fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ActualPolyline>) {
-        // Stub
-    }
+    protected abstract fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ActualPolyline>)
 
-    protected open fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ActualPolygon>) {
-        // Stub
-    }
+    protected abstract fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ActualPolygon>)
 
-    protected open fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ActualCircle>) {
-        // Stub
-    }
+    protected abstract fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ActualCircle>)
 
     protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
 
