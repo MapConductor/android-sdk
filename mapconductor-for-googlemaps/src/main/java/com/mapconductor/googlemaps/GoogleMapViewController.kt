@@ -55,7 +55,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline> {
+interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline, Polygon> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -137,6 +137,22 @@ class GoogleMapViewController(
             coroutine = coroutine,
         )
 
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<Circle>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<Polygon>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<Polyline>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<Marker>) {
+        TODO("Not yet implemented")
+    }
+
     override fun createCircleOverlayManager(): CircleOverlayManager<Circle> =
         circleRendererFactory.create(
             onAdd = circleRenderer::addCircles,
@@ -204,60 +220,9 @@ class GoogleMapViewController(
 
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
 
-    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager
+    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
-    override suspend fun addCircles(data: List<CircleState>) {
-        data.map { state ->
-            val strokeWidth = ResourceProvider.dpToPx(state.strokeWidth.value)
-            circleStates.set(state.id, state)
-            val options =
-                CircleOptions()
-                    .center(GeoPoint.from(state.center).toLatLng())
-                    .radius(state.radiusMeters)
-                    .strokeWidth(ResourceProvider.dpToPx(strokeWidth).toFloat())
-                    .strokeColor(state.strokeColor.toArgb())
-                    .fillColor(state.fillColor.toArgb())
-                    .clickable(false)
-            val circle = holder.map.addCircle(options).also {
-                it.tag = state.id
-            }
-            val entity =
-                CircleEntityImpl(
-                    circle = circle,
-                    state = state,
-                )
-            circleManager.registerEntity(entity)
-            circle
-        }
-    }
-
-    override suspend fun updateCircle(state: CircleState) {
-        val prevEntity = circleManager.getEntity(state.id) ?: return
-        val prevFinger = prevEntity.fingerPrint
-        val currFinger = state.fingerPrint()
-
-        prevEntity.circle.also {
-            if (prevFinger.center != currFinger.center) {
-                it.center = GeoPoint.from(state.center).toLatLng()
-            }
-            it.radius = state.radiusMeters
-            if (prevFinger.strokeColor != currFinger.strokeColor) {
-                it.strokeColor = state.strokeColor.toArgb()
-            }
-            if (prevFinger.strokeWidth != currFinger.strokeWidth) {
-                it.strokeWidth = ResourceProvider.dpToPx(state.strokeWidth).toFloat()
-            }
-            if (prevFinger.fillColor != currFinger.fillColor) {
-                it.fillColor = state.fillColor.toArgb()
-            }
-        }
-
-        val updatedEntity = CircleEntityImpl<Circle>(
-            state = state,
-            circle =  prevEntity.circle,
-        )
-        circleManager.updateEntity(updatedEntity)
-    }
+    override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 

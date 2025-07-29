@@ -59,7 +59,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IArcGISMapViewController : MapViewController<ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline> {
+interface IArcGISMapViewController : MapViewController<
+    ArcGISActualMarker,
+    ArcGISActualCircle,
+    ArcGISActualPolyline,
+    ArcGISActualPolygon,
+> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -162,7 +167,7 @@ class ArcGISMapViewController(
             coroutine = coroutine,
         )
 
-    override fun createCircleOverlayManager(): CircleOverlayManager<ArcGISActualCircle> {
+    override fun createCircleOverlayManager(): CircleOverlayManager<ArcGISActualCircle> =
         circleRendererFactory.create(
             onAdd = circleRenderer::addCircles,
             onChange = circleRenderer::changeCircle,
@@ -175,6 +180,22 @@ class ArcGISMapViewController(
             holder = holder,
             coroutine = coroutine,
         )
+
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ArcGISActualPolygon>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ArcGISActualPolyline>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ArcGISActualMarker>) {
+        TODO("Not yet implemented")
+    }
 
     init {
         markerRenderer.init(markerOverlayManager)
