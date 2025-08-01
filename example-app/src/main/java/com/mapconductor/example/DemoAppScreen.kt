@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +31,6 @@ import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
 import com.mapconductor.example.ui.theme.AppTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DemoAppScreen(
     appViewModel: AppViewModel,
@@ -99,22 +97,6 @@ fun DemoAppScreen(
                     }
                 }
             }
-
-            // Floating menu button (only show when sidebar is closed)
-//            if (!isSidebarExpanded) {
-//                FloatingActionButton(
-//                    onClick = navigationViewModel::toggleSidebar,
-//                    modifier = Modifier
-//                        .align(Alignment.TopStart)
-//                        .padding(16.dp)
-//                        .size(56.dp)
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Default.Menu,
-//                        contentDescription = "Open menu"
-//                    )
-//                }
-//            }
 
             // Overlay sidebar
             Sidebar(

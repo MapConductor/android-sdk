@@ -27,6 +27,8 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleOverlayManager
+import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
@@ -38,15 +40,20 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.meterToPixel
+import com.mapconductor.core.polygon.PolygonOverlayManager
+import com.mapconductor.core.polygon.PolygonRenderer
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
+import com.mapconductor.mapbox.circle.MapboxCircleRenderer
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MarkerDragLayer
 import com.mapconductor.mapbox.marker.MarkerLayer
+import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
+import com.mapconductor.mapbox.polygon.MapboxPolygonRenderer
 import com.mapconductor.mapbox.polyline.DefaultMapboxPolylineRenderer
 import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineRenderer
@@ -57,7 +64,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 
-interface IMapboxMapViewController : MapViewController<MapboxActualMarker, MapboxActualCircle, MapboxActualPolyline> {
+interface IMapboxMapViewController : MapViewController<
+    MapboxActualMarker,
+    MapboxActualCircle,
+    MapboxActualPolyline,
+    MapboxActualPolygon,
+> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -102,14 +114,24 @@ internal class MapboxMapViewController(
             sourceId = "polyline-source",
             layerId = "polyline-layer",
         ),
-    override val circleManager: CircleManager<MapboxActualCircle> = CircleManager(),
-) : BaseMapViewController<CameraState, MapboxActualMarker, MapboxActualCircle, MapboxActualPolyline>(),
+    private val polygonLayer: MapboxPolygonLayer =
+        MapboxPolygonLayer(
+            sourceId = "polygon-source",
+            layerId = "polygon-layer",
+        ),
+) : BaseMapViewController<
+    CameraState,
+    MapboxActualMarker,
+    MapboxActualCircle,
+    MapboxActualPolyline,
+    MapboxActualPolygon
+>(),
     IMapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
-    val semaphore = Semaphore(1)
+
     override val markerRenderer: MapboxMarkerRenderer =
         MapboxMarkerRenderer(
             holder = holder,
@@ -136,6 +158,15 @@ internal class MapboxMapViewController(
             onPostProcess = polylineRenderer::redraw,
         )
 
+    override fun createPolygonOverlayManager(): PolygonOverlayManager<MapboxActualPolygon> {
+        TODO("Not yet implemented")
+    }
+
+    override fun createCircleOverlayManager(): CircleOverlayManager<MapboxActualCircle> =
+        circleRendererFactory.create(
+
+        )
+
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<MapboxActualMarker>) {
         holder.map.getStyle { style ->
             style.addSource(circleLayer.source)
@@ -155,6 +186,31 @@ internal class MapboxMapViewController(
             coroutine = coroutine,
             layer = polylineLayer,
         )
+
+    override val polygonRenderer: PolygonRenderer<MapboxActualPolygon> =
+        MapboxPolygonRenderer(
+            holder = holder,
+            coroutine = coroutine,
+            layer = polygonLayer,
+        )
+    override val circleRenderer: CircleRenderer<MapboxActualCircle> =
+        MapboxCircleRenderer(
+            holder = holder,
+            coroutine = coroutine,
+            layer = circleLayer,
+        )
+
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<MapboxActualCircle>) {
+
+    }
+
+    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<MapboxActualPolygon>) {
+
+    }
+
+    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<MapboxActualPolyline>) {
+
+    }
 
     init {
         setupListeners()
@@ -208,77 +264,11 @@ internal class MapboxMapViewController(
         return feature
     }
 
-    override suspend fun addCircles(data: List<CircleState>) {
-        semaphore.acquire()
-        data.forEach { state ->
-            val feature = createCircleFeature(state)
-            val entity =
-                CircleEntityImpl(
-                    circle = feature,
-                    state = state,
-                )
+    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
-            circleManager.registerEntity(entity)
-        }
-
-        coroutine.launch {
-            val entities = circleManager.allEntities()
-            circleLayer.draw(entities)
-        }
-
-        semaphore.release()
-    }
-
-
-
-    override suspend fun updateCircle(state: CircleState) {
-        val prevEntity = circleManager.getEntity(state.id) ?: return
-        val currentFinger = state.fingerPrint()
-        val prevFinger = prevEntity.fingerPrint
-        if (currentFinger == prevFinger) {
-            return
-        }
-
-        semaphore.acquire()
-        val feature = createCircleFeature(state)
-        val entity =
-            CircleEntityImpl(
-                circle = feature,
-                state = state,
-            )
-
-        circleManager.updateEntity(entity)
-
-        val entities = circleManager.allEntities()
-
-        circleLayer.draw(entities)
-        semaphore.release()
-    }
-
-    suspend fun redrawCircles() {
-        semaphore.acquire()
-        val entities = circleManager.allEntities()
-        val updatedEntities =
-            entities.map { entity ->
-                val feature = createCircleFeature(entity.state)
-                val updatedEntity =
-                    CircleEntityImpl(
-                        circle = feature,
-                        state = entity.state,
-                    )
-
-                circleManager.updateEntity(updatedEntity)
-                updatedEntity
-            }
-
-        circleLayer.draw(updatedEntities)
-        semaphore.release()
-    }
+    override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
     override fun run(cameraChanged: CameraChanged) {
-        coroutine.launch {
-            redrawCircles()
-        }
         cameraMoveListener?.invoke(
             CameraState(
                 cameraChanged.cameraState.center,
@@ -385,7 +375,7 @@ internal class MapboxMapViewController(
             return true
         }
 
-        val circleEntity = this.circleManager.find(touchPosition)
+        val circleEntity = this.circleOverlayManager.find(touchPosition)
         circleEntity?.let {
             val event = CircleClickEvent(
                 state = circleEntity.state,

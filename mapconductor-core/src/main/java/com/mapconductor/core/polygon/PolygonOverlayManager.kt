@@ -2,6 +2,7 @@ package com.mapconductor.core.polygon
 
 import com.mapconductor.core.polygon.PolygonRenderer.UpdateParams
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 interface PolygonOverlayManager<ActualPolygon> {
     suspend fun addPolygons(polygons: List<PolygonState>)
@@ -26,85 +27,82 @@ class PolygonOverlayManagerImpl<ActualPolygon>(
     val semaphore = Semaphore(1)
 
     override suspend fun addPolygons(polygons: List<PolygonState>) {
-        semaphore.acquire()
-        val previous = polygonEntities.keys.toMutableSet()
-        val added = mutableListOf<PolygonState>()
-        val updated = mutableListOf<UpdateParams<ActualPolygon>>()
-        val removed = mutableListOf<PolygonEntity<ActualPolygon>>()
-        polygons.forEach {
-            if (previous.contains(it.id)) {
-                val prevEntity = polygonEntities.get(it.id)!!
-                updated.add(
-                    object : UpdateParams<ActualPolygon> {
-                        override val entity: PolygonEntity<ActualPolygon> =
-                            PolygonEntityImpl(
-                                state = it,
-                                polygon = prevEntity.polygon,
-                            )
-                        override val prevEntity: PolygonEntity<ActualPolygon> = prevEntity
-                    },
-                )
+        semaphore.withPermit {
+            val previous = polygonEntities.keys.toMutableSet()
+            val added = mutableListOf<PolygonState>()
+            val updated = mutableListOf<UpdateParams<ActualPolygon>>()
+            val removed = mutableListOf<PolygonEntity<ActualPolygon>>()
+            polygons.forEach {
+                if (previous.contains(it.id)) {
+                    val prevEntity = polygonEntities.get(it.id)!!
+                    updated.add(
+                        object : UpdateParams<ActualPolygon> {
+                            override val entity: PolygonEntity<ActualPolygon> =
+                                PolygonEntityImpl(
+                                    state = it,
+                                    polygon = prevEntity.polygon,
+                                )
+                            override val prevEntity: PolygonEntity<ActualPolygon> = prevEntity
+                        },
+                    )
+                    previous.remove(it.id)
+                    return@forEach
+                }
+                added.add(it)
                 previous.remove(it.id)
-                return@forEach
             }
-            added.add(it)
-            previous.remove(it.id)
-        }
-        previous.forEach { remainId ->
-            polygonEntities.remove(remainId)?.let { removedEntity ->
-                removed.add(removedEntity)
-            }
-        }
-
-        if (added.isNotEmpty()) {
-            val actualPolygons = onAdd(added)
-            actualPolygons.forEachIndexed { index, actualPolygon ->
-                actualPolygon?.let {
-                    val state = added[index]
-                    val entity =
-                        PolygonEntityImpl<ActualPolygon>(
-                            polygon = it,
-                            state = state,
-                        )
-                    polygonEntities[state.id] = entity
+            previous.forEach { remainId ->
+                polygonEntities.remove(remainId)?.let { removedEntity ->
+                    removed.add(removedEntity)
                 }
             }
-        }
 
-        if (updated.isNotEmpty()) {
-            val actualPolygons: List<ActualPolygon?> = onChange(updated)
-            actualPolygons.forEachIndexed { index, actualPolygon ->
-                actualPolygon?.let {
-                    val state = updated[index].entity.state
-                    val entity =
-                        PolygonEntityImpl<ActualPolygon>(
-                            polygon = it,
-                            state = state,
-                        )
-                    polygonEntities[state.id] = entity
+            if (added.isNotEmpty()) {
+                val actualPolygons = onAdd(added)
+                actualPolygons.forEachIndexed { index, actualPolygon ->
+                    actualPolygon?.let {
+                        val state = added[index]
+                        val entity =
+                            PolygonEntityImpl<ActualPolygon>(
+                                polygon = it,
+                                state = state,
+                            )
+                        polygonEntities[state.id] = entity
+                    }
                 }
             }
-        }
 
-        if (removed.isNotEmpty()) {
-            onRemove(removed)
-        }
-        onPostProcess?.invoke()
+            if (updated.isNotEmpty()) {
+                val actualPolygons: List<ActualPolygon?> = onChange(updated)
+                actualPolygons.forEachIndexed { index, actualPolygon ->
+                    actualPolygon?.let {
+                        val state = updated[index].entity.state
+                        val entity =
+                            PolygonEntityImpl<ActualPolygon>(
+                                polygon = it,
+                                state = state,
+                            )
+                        polygonEntities[state.id] = entity
+                    }
+                }
+            }
 
-        semaphore.release()
+            if (removed.isNotEmpty()) {
+                onRemove(removed)
+            }
+            onPostProcess?.invoke()
+        }
     }
 
     override suspend fun updatePolygon(polygon: PolygonState) {
-        semaphore.acquire()
-        semaphore.release()
     }
 
     override suspend fun clearOverlays() {
-        semaphore.acquire()
-        val entities = polygonEntities.values.toList()
-        onRemove(entities)
-        polygonEntities.clear()
-        semaphore.release()
+        semaphore.withPermit {
+            val entities = polygonEntities.values.toList()
+            onRemove(entities)
+            polygonEntities.clear()
+        }
     }
 
     override fun getPolygonState(id: String): PolygonState? = polygonEntities.get(id)?.state

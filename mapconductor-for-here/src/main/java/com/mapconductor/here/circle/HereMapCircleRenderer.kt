@@ -41,7 +41,7 @@ class HereMapCircleRenderer(
     override val holder: HereMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractCircleRenderer<MapPolygon>() {
-    
+
     companion object {
         // Number of points to approximate a circle - more points = smoother circle
         private const val CIRCLE_POINT_COUNT = 64
@@ -74,29 +74,29 @@ class HereMapCircleRenderer(
         return changes.map { params ->
             val finger = params.entity.state.fingerPrint()
             val prevFinger = params.prevEntity.state.fingerPrint()
-            
+
             // Update geometry if center or radius changed
-            if (finger.center != prevFinger.center || finger.radius != prevFinger.radius) {
+            if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
                 val geoPolygon = createCirclePolygon(params.entity.state)
                 params.entity.circle.geometry = geoPolygon
             }
-            
+
             // Update stroke color
             if (finger.strokeColor != prevFinger.strokeColor) {
                 params.entity.circle.outlineColor = Color.valueOf(params.entity.state.strokeColor.toArgb())
             }
-            
+
             // Update stroke width
             if (finger.strokeWidth != prevFinger.strokeWidth) {
                 val lineWidth = ResourceProvider.dpToPx(params.entity.state.strokeWidth.value.toDouble())
                 params.entity.circle.outlineWidth = lineWidth
             }
-            
+
             // Update fill color
             if (finger.fillColor != prevFinger.fillColor) {
                 params.entity.circle.fillColor = Color.valueOf(params.entity.state.fillColor.toArgb())
             }
-            
+
             return@map params.entity.circle
         }
     }
@@ -107,21 +107,21 @@ class HereMapCircleRenderer(
     private fun createCirclePolygon(state: CircleState): GeoPolygon {
         val center = GeoPoint.from(state.center).toGeoCoordinates()
         val radiusMeters = state.radiusMeters
-        
+
         val points = mutableListOf<GeoCoordinates>()
-        
+
         // Generate points around the circle
         for (i in 0 until CIRCLE_POINT_COUNT) {
             val angle = 2.0 * PI * i / CIRCLE_POINT_COUNT
             val point = calculateCirclePoint(center, radiusMeters, angle)
             points.add(point)
         }
-        
+
         // Close the polygon by adding the first point at the end
         if (points.isNotEmpty()) {
             points.add(points.first())
         }
-        
+
         return GeoPolygon(points)
     }
 
@@ -138,10 +138,10 @@ class HereMapCircleRenderer(
         // Longitude conversion varies by latitude, use cosine correction
         val latDegrees = radiusMeters / 111320.0
         val lonDegrees = radiusMeters / (111320.0 * cos(Math.toRadians(center.latitude)))
-        
+
         val deltaLat = latDegrees * cos(angleRadians)
         val deltaLon = lonDegrees * sin(angleRadians)
-        
+
         return GeoCoordinates(
             center.latitude + deltaLat,
             center.longitude + deltaLon

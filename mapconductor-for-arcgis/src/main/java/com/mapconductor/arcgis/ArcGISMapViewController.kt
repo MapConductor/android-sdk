@@ -30,7 +30,6 @@ import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleEntityImpl
-import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleRendererFactory
@@ -182,19 +181,19 @@ class ArcGISMapViewController(
         )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ArcGISActualPolygon>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ArcGISActualPolyline>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ArcGISActualMarker>) {
-        TODO("Not yet implemented")
+
     }
 
     init {
@@ -334,7 +333,7 @@ class ArcGISMapViewController(
                 .getOrNull()
                 ?.toGeoPoint() ?: return
 
-        val entity =
+        val markerEntity =
             markerRenderer.findNearestMarker(
                 position = touchPosition,
                 tolerance =
@@ -342,12 +341,12 @@ class ArcGISMapViewController(
                         .toDouble() * ResourceProvider.getDensity(),
                 zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
             )
-        if (entity != null) {
-            markerClickListener?.invoke(entity.state)
+        if (markerEntity != null) {
+            markerClickListener?.invoke(markerEntity.state)
             return
         }
 
-        val circleEntity = circleManager.find(touchPosition)
+        val circleEntity = circleOverlayManager.find(touchPosition)
         circleEntity?.let {
             val event = CircleClickEvent(
                 state = circleEntity.state,
@@ -374,34 +373,9 @@ class ArcGISMapViewController(
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
-    override suspend fun addCircles(data: List<CircleState>) {
-        data.forEach { state ->
-            val circle = createCircle(state)
-            circleLayer.graphics.add(circle)
-            val entity = CircleEntityImpl<ArcGISActualCircle>(
-                state = state,
-                circle = circle,
-            )
-            circleManager.registerEntity(entity)
-            circle
-        }
-    }
+    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
-    override suspend fun updateCircle(state: CircleState) {
-        val prevEntity = circleManager.getEntity(state.id) ?: return
-        val prevFinger = prevEntity.fingerPrint
-        val currFinger = state.fingerPrint()
-        if (prevFinger == currFinger) return
-
-        circleLayer.graphics.remove(prevEntity.circle)
-        val circle = createCircle(state)
-        circleLayer.graphics.add(circle)
-        val updatedEntity = CircleEntityImpl<ArcGISActualCircle>(
-            state = state,
-            circle = circle,
-        )
-        circleManager.updateEntity(updatedEntity)
-    }
+    override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,

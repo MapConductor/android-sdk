@@ -124,19 +124,19 @@ class HereMapViewController(
     )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereMapActualCircle>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<HereMapActualPolygon>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<HereMapActualPolyline>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<HereMapActualMarker>) {
-        TODO("Not yet implemented")
+
     }
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =

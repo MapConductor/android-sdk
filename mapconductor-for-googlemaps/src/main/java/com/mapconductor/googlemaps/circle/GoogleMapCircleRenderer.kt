@@ -14,6 +14,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,16 +64,18 @@ class GoogleMapCircleRenderer(
     }
 
     override suspend fun changeCircle(changes: List<UpdateParams<Circle>>): List<Circle> {
+        Log.d("debug", "--->changeCircle")
         return withContext(coroutine.coroutineContext) {
             return@withContext changes.map { params ->
                 val circle = params.entity.circle
-                val finger = params.entity.state.fingerPrint()
-                val prevFinger = params.prevEntity.state.fingerPrint()
+                val finger = params.entity.fingerPrint
+                val prevFinger = params.prevEntity.fingerPrint
+                Log.d("debug", " ---> ${finger.hashCode()} = ${prevFinger.hashCode()}")
 
                 if (finger.center != prevFinger.center) {
                     circle.center = GeoPoint.from(params.entity.state.center).toLatLng()
                 }
-                if (finger.radius != prevFinger.radius) {
+                if (finger.radiusMeters != prevFinger.radiusMeters) {
                     circle.radius = params.entity.state.radiusMeters
                 }
                 if (finger.strokeColor != prevFinger.strokeColor) {

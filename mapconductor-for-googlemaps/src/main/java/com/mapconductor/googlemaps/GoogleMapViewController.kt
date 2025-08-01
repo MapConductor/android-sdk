@@ -1,6 +1,5 @@
 package com.mapconductor.googlemaps
 
-import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -12,22 +11,17 @@ import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleEntityImpl
-import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -89,7 +83,6 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-    val circleStates: HashMap<String, CircleState> = HashMap()
 
     override val markerRenderer: MarkerRenderer<Marker> =
         GoogleMapMarkerRenderer(
@@ -131,28 +124,28 @@ class GoogleMapViewController(
             onChange = polygonRenderer::changePolygon,
             onRemove = polygonRenderer::removePolygons,
         )
+
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<Circle>) {
+
+    }
+
+    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<Polygon>) {
+
+    }
+
+    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<Polyline>) {
+
+    }
+
+    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<Marker>) {
+
+    }
+
     override val circleRenderer: CircleRenderer<Circle> =
         GoogleMapCircleRenderer(
             holder = holder,
             coroutine = coroutine,
         )
-
-    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<Circle>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<Polygon>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<Polyline>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<Marker>) {
-        TODO("Not yet implemented")
-    }
-
     override fun createCircleOverlayManager(): CircleOverlayManager<Circle> =
         circleRendererFactory.create(
             onAdd = circleRenderer::addCircles,
@@ -266,7 +259,7 @@ class GoogleMapViewController(
     override fun onMapClick(position: LatLng) {
         val touchPosition = position.toGeoPoint()
 
-        circleManager.find(touchPosition)?.let { entity ->
+        circleOverlayManager.find(touchPosition)?.let { entity ->
             val event = CircleClickEvent(
                 state = entity.state,
                 position = touchPosition,

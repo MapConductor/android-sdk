@@ -30,7 +30,7 @@ fun MapViewScope.Circle(
     val state =
         CircleState(
             center = center,
-            radius = radius,
+            radiusMeters = radius,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             fillColor = fillColor,
