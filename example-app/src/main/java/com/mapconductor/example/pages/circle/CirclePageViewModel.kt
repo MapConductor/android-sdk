@@ -14,6 +14,8 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.spherical.calculatePositionAtDistance
+import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +24,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import android.util.Log
 
 interface CirclePageViewModel {
     val initCameraPosition: MapCameraPosition
@@ -92,14 +95,14 @@ class CirclePageViewModelImpl : ViewModel(), CirclePageViewModel {
         get() = _edgeMarker.value
 
     override val radiusMeters by derivedStateOf {
-        calculateDistance(circleCenter, _edgeMarker.value.position)
+        haversineDistance(circleCenter, _edgeMarker.value.position)
     }
 
     private val _circleState: MutableState<CircleState> = mutableStateOf(
         CircleState(
             id = "circle",
             center = circleCenter,
-            radius = 1000.0, // Initial radius
+            radiusMeters = 1000.0, // Initial radius
             strokeColor = Color.Blue,
             strokeWidth = 2.dp,
             fillColor = Color.Blue.copy(alpha = 0.2f)
@@ -138,8 +141,10 @@ class CirclePageViewModelImpl : ViewModel(), CirclePageViewModel {
 
     override fun onMarkerDrag(dragged: MarkerState) {
 
+        _edgeMarker.value.position = dragged.position
+
         // Update circle radius
-        _circleState.value.radiusMeters = calculateDistance(circleCenter, _edgeMarker.value.position)
+        _circleState.value.radiusMeters = radiusMeters //haversineDistance(circleCenter, _edgeMarker.value.position)
 
 //        showToast("Radius updated: ${radiusMeters.toInt()}m")
     }
@@ -154,52 +159,5 @@ class CirclePageViewModelImpl : ViewModel(), CirclePageViewModel {
 
     override fun onCleared() {
         super.onCleared()
-    }
-
-    // Calculate distance between two GeoPoints using Haversine formula
-    private fun calculateDistance(point1: GeoPoint, point2: GeoPoint): Double {
-        val earthRadiusKm = 6371.0
-
-        val lat1Rad = Math.toRadians(point1.latitude)
-        val lat2Rad = Math.toRadians(point2.latitude)
-        val deltaLatRad = Math.toRadians(point2.latitude - point1.latitude)
-        val deltaLngRad = Math.toRadians(point2.longitude - point1.longitude)
-
-        val a = sin(deltaLatRad / 2) * sin(deltaLatRad / 2) +
-                cos(lat1Rad) * cos(lat2Rad) *
-                sin(deltaLngRad / 2) * sin(deltaLngRad / 2)
-
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-        return earthRadiusKm * c * 1000 // Convert to meters
-    }
-
-    // Calculate a position at a specific distance and bearing from a center point
-    private fun calculatePositionAtDistance(
-        center: GeoPoint,
-        distanceMeters: Double,
-        bearingDegrees: Double
-    ): GeoPoint {
-        val earthRadiusKm = 6371.0
-        val distanceKm = distanceMeters / 1000.0
-        val bearingRad = Math.toRadians(bearingDegrees)
-
-        val lat1Rad = Math.toRadians(center.latitude)
-        val lng1Rad = Math.toRadians(center.longitude)
-
-        val lat2Rad = Math.asin(
-            sin(lat1Rad) * cos(distanceKm / earthRadiusKm) +
-            cos(lat1Rad) * sin(distanceKm / earthRadiusKm) * cos(bearingRad)
-        )
-
-        val lng2Rad = lng1Rad + atan2(
-            sin(bearingRad) * sin(distanceKm / earthRadiusKm) * cos(lat1Rad),
-            cos(distanceKm / earthRadiusKm) - sin(lat1Rad) * sin(lat2Rad)
-        )
-
-        return GeoPoint.fromLatLong(
-            latitude = Math.toDegrees(lat2Rad),
-            longitude = Math.toDegrees(lng2Rad)
-        )
     }
 }

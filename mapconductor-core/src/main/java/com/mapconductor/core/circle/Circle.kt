@@ -7,15 +7,18 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.marker.MarkerState
 import android.os.Parcelable
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class CircleState(
     center: IGeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
     fillColor: Color =
@@ -30,7 +33,7 @@ class CircleState(
     extra: Parcelable? = null,
 ) {
     var center by mutableStateOf(center)
-    var radiusMeters by mutableStateOf(radius)
+    var radiusMeters by mutableStateOf(radiusMeters)
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
@@ -42,7 +45,7 @@ class CircleState(
             id ?: circleId(
                 listOf(
                     center.hashCode(),
-                    radius.hashCode(),
+                    radiusMeters.hashCode(),
                     extra?.hashCode() ?: 0,
                     strokeColor.hashCode(),
                     strokeWidth.hashCode(),
@@ -61,7 +64,7 @@ class CircleState(
         CircleFingerPrint(
             id = this.id.hashCode(),
             center = center.hashCode(),
-            radius = radiusMeters.hashCode(),
+            radiusMeters = radiusMeters.hashCode(),
             strokeColor = strokeColor.hashCode(),
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),
@@ -70,12 +73,54 @@ class CircleState(
         )
 
     fun asFlow(): Flow<CircleFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
+
+    fun copy(
+        center: IGeoPoint = this.center,
+        radiusMeters: Double = this.radiusMeters,
+        strokeColor: Color = this.strokeColor,
+        strokeWidth: Dp = this.strokeWidth,
+        fillColor: Color =
+            Color(
+                red = 255,
+                green = 255,
+                blue = 255,
+                alpha = 127,
+            ),
+        id: String? = this.id,
+        zIndex: Int? = this.zIndex,
+        extra: Parcelable? = this.extra,
+    ): CircleState = CircleState(
+        center = center,
+        radiusMeters = radiusMeters,
+        strokeColor = strokeColor,
+        strokeWidth = strokeWidth,
+        fillColor = fillColor,
+        id = id,
+        zIndex = zIndex,
+        extra = extra,
+    )
+
+    override fun equals(other: Any?): Boolean {
+        val otherState = (other as? MarkerState) ?: return false
+        return hashCode() == otherState.hashCode()
+    }
+
+    override fun hashCode(): Int {
+        var result = extra?.hashCode() ?: 0
+        result = 31 * result + center.hashCode()
+        result = 31 * result + radiusMeters.hashCode()
+        result = 31 * result + strokeColor.hashCode()
+        result = 31 * result + strokeWidth.hashCode()
+        result = 31 * result + fillColor.hashCode()
+        result = 31 * result + zIndex.hashCode()
+        return result
+    }
 }
 
 data class CircleFingerPrint(
     val id: Int,
     val center: Int,
-    val radius: Int,
+    val radiusMeters: Int,
     val strokeColor: Int,
     val strokeWidth: Int,
     val fillColor: Int,

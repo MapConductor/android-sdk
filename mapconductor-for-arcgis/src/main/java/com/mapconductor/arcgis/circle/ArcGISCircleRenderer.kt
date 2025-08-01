@@ -1,6 +1,7 @@
 package com.mapconductor.arcgis.circle
 
 import com.arcgismaps.Color
+import com.arcgismaps.geometry.GeodeticCurveType
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.LinearUnit
 import com.arcgismaps.geometry.LinearUnitId
@@ -49,25 +50,23 @@ class ArcGISCircleRenderer(
         return withContext(coroutine.coroutineContext) {
             return@withContext newCircles.map { state ->
                 val centerPoint = GeoPoint.from(state.center).toPoint()
-                val circle = GeometryEngine.bufferOrNull(
-                    centerPoint,
-                    state.radiusMeters,
-                    LinearUnit(LinearUnitId.Meters)
+                val circle = GeometryEngine.bufferGeodeticOrNull(
+                    geometry = centerPoint,
+                    distance = state.radiusMeters,
+                    distanceUnit = LinearUnit(LinearUnitId.Meters),
+                    maxDeviation = Double.NaN,
+                    curveType = GeodeticCurveType.NormalSection,
                 )
-
                 circle?.let { geometry ->
-                    val outline =
-                        SimpleLineSymbol().apply {
-                            style = SimpleLineSymbolStyle.Solid
-                            color = createStrokeColor(state)
-                            width = ResourceProvider.dpToPx(state.strokeWidth).toFloat()
-                        }
-
                     val fillSymbol =
                         SimpleFillSymbol().apply {
                             style = SimpleFillSymbolStyle.Solid
                             color = createFillColor(state)
-                            outline = outline
+                            outline = SimpleLineSymbol().apply {
+                                style = SimpleLineSymbolStyle.Solid
+                                color = createStrokeColor(state)
+                                width = ResourceProvider.dpToPx(state.strokeWidth).toFloat()
+                            }
                         }
 
                     val graphic =
@@ -92,16 +91,19 @@ class ArcGISCircleRenderer(
     override suspend fun changeCircle(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
             return@withContext changes.map { params ->
-                val finger = params.entity.state.fingerPrint
-                val prevFinger = params.prevEntity.state.fingerPrint
+                val finger = params.entity.state.fingerPrint()
+                val prevFinger = params.prevEntity.state.fingerPrint()
                 val graphic = params.entity.circle
 
-                if (finger.center != prevFinger.center || finger.radius != prevFinger.radius) {
+                if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
                     val centerPoint = GeoPoint.from(params.entity.state.center).toPoint()
-                    val newGeometry = GeometryEngine.bufferOrNull(
-                        centerPoint,
-                        params.entity.state.radiusMeters,
-                        LinearUnit(LinearUnitId.Meters)
+
+                    val newGeometry = GeometryEngine.bufferGeodeticOrNull(
+                        geometry = centerPoint,
+                        distance = params.entity.state.radiusMeters,
+                        distanceUnit = LinearUnit(LinearUnitId.Meters),
+                        maxDeviation = Double.NaN,
+                        curveType = GeodeticCurveType.NormalSection,
                     )
                     newGeometry?.let {
                         graphic.geometry = it

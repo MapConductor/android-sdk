@@ -34,6 +34,7 @@ import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.settings.Settings
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview
@@ -96,7 +97,7 @@ fun <
             val markers = scope.markerFlow.collectAsState()
             markers.value.forEach { markerState ->
                 LaunchedEffect(markerState.id) {
-                    markerState.asFlow().debounce(5).collectLatest {
+                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                         controller.updateMarker(markerState)
                     }
                 }
