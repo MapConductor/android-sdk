@@ -15,7 +15,6 @@ class MapboxCircleLayer(
     val layerId: String,
 ) {
     object Prop {
-        const val ACTUAL_METERS_PER_PIXEL = "actualMetersPerPixel"
         const val RADIUS = "radius"
         const val LATITUDE_CORRECTION = "latitudeCorrection"
         const val FILL_COLOR = "fillColor"
