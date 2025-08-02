@@ -72,8 +72,8 @@ class HereMapCircleRenderer(
 
     override suspend fun changeCircle(changes: List<UpdateParams<MapPolygon>>): List<MapPolygon> {
         return changes.map { params ->
-            val finger = params.entity.state.fingerPrint()
-            val prevFinger = params.prevEntity.state.fingerPrint()
+            val finger = params.entity.fingerPrint
+            val prevFinger = params.prevEntity.fingerPrint
 
             // Update geometry if center or radius changed
             if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
