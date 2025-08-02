@@ -10,7 +10,7 @@ class ZoomAltitudeConverter(
     private val zoom0Altitude: Double = DEFAULT_ZOOM0_ALTITUDE,
 ) {
     companion object {
-            const val DEFAULT_ZOOM0_ALTITUDE = 152_343_750.0  // バイナリテストで確定
+        const val DEFAULT_ZOOM0_ALTITUDE = 152_343_750.0 // バイナリテストで確定
         private const val ZOOM_FACTOR = 2.0
         private const val MIN_ZOOM_LEVEL = 0.0
         private const val MAX_ZOOM_LEVEL = 22.0

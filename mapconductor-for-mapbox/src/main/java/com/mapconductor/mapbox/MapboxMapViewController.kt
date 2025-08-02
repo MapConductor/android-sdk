@@ -29,7 +29,6 @@ import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -130,7 +129,6 @@ internal class MapboxMapViewController(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
-
     companion object {
         private const val ZOOM_ADJUST_VALUE = 1.0
     }
@@ -285,13 +283,14 @@ internal class MapboxMapViewController(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val targetCamera = dstPosition.toCameraOptions()
-        val adjustCamera = CameraOptions
-            .Builder()
-            .center(targetCamera.center)
-            .zoom(targetCamera.zoom!! + ZOOM_ADJUST_VALUE)
-            .pitch(targetCamera.pitch)
-            .bearing(targetCamera.pitch)
-            .build()
+        val adjustCamera =
+            CameraOptions
+                .Builder()
+                .center(targetCamera.center)
+                .zoom(targetCamera.zoom!! + ZOOM_ADJUST_VALUE)
+                .pitch(targetCamera.pitch)
+                .bearing(targetCamera.pitch)
+                .build()
 
         val animationOptions =
             MapAnimationOptions

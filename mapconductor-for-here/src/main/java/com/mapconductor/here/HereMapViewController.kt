@@ -90,7 +90,6 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
-
     companion object {
         private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }

@@ -13,7 +13,6 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleRenderer
 import com.mapconductor.core.circle.CircleEntity
 import com.mapconductor.core.circle.CircleOverlayManager
