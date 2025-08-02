@@ -49,20 +49,24 @@ class ArcGISCircleRenderer(
     override suspend fun addCircles(newCircles: List<CircleState>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext newCircles.map { state ->
-                val spec = holder.mapView.sceneView.scene?.spatialReference
+                val spec =
+                    holder.mapView.sceneView.scene
+                        ?.spatialReference
                 val centerPoint = GeoPoint.from(state.center).toPoint(spec)
-                val circleGeometry = GeometryEngine.bufferGeodeticOrNull(
-                    geometry = centerPoint,
-                    distance = state.radiusMeters,
-                    distanceUnit = LinearUnit(LinearUnitId.Meters),
-                    maxDeviation = Double.NaN,
-                    curveType = GeodeticCurveType.NormalSection,
-                )
-                val stroke = SimpleLineSymbol(
-                    style = SimpleLineSymbolStyle.Solid,
-                    color = state.strokeColor.toArcGISColor(),
-                    width = ResourceProvider.dpToPx(state.strokeWidth).toFloat(),
-                )
+                val circleGeometry =
+                    GeometryEngine.bufferGeodeticOrNull(
+                        geometry = centerPoint,
+                        distance = state.radiusMeters,
+                        distanceUnit = LinearUnit(LinearUnitId.Meters),
+                        maxDeviation = Double.NaN,
+                        curveType = GeodeticCurveType.NormalSection,
+                    )
+                val stroke =
+                    SimpleLineSymbol(
+                        style = SimpleLineSymbolStyle.Solid,
+                        color = state.strokeColor.toArcGISColor(),
+                        width = ResourceProvider.dpToPx(state.strokeWidth).toFloat(),
+                    )
                 val fillSymbol =
                     SimpleFillSymbol(
                         style = SimpleFillSymbolStyle.Solid,
@@ -86,7 +90,9 @@ class ArcGISCircleRenderer(
 
     override suspend fun changeCircle(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
-            val spec = holder.mapView.sceneView.scene?.spatialReference
+            val spec =
+                holder.mapView.sceneView.scene
+                    ?.spatialReference
             return@withContext changes.map { params ->
                 val finger = params.entity.fingerPrint
                 val prevFinger = params.prevEntity.fingerPrint
@@ -95,13 +101,14 @@ class ArcGISCircleRenderer(
                 if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
                     val centerPoint = GeoPoint.from(params.entity.state.center).toPoint(spec)
 
-                    val newGeometry = GeometryEngine.bufferGeodeticOrNull(
-                        geometry = centerPoint,
-                        distance = params.entity.state.radiusMeters,
-                        distanceUnit = LinearUnit(LinearUnitId.Meters),
-                        maxDeviation = Double.NaN,
-                        curveType = GeodeticCurveType.NormalSection,
-                    )
+                    val newGeometry =
+                        GeometryEngine.bufferGeodeticOrNull(
+                            geometry = centerPoint,
+                            distance = params.entity.state.radiusMeters,
+                            distanceUnit = LinearUnit(LinearUnitId.Meters),
+                            maxDeviation = Double.NaN,
+                            curveType = GeodeticCurveType.NormalSection,
+                        )
                     newGeometry?.let {
                         graphic.geometry = it
                     }
@@ -109,11 +116,15 @@ class ArcGISCircleRenderer(
 
                 (graphic.symbol as SimpleFillSymbol).let { symbol ->
                     if (finger.fillColor != prevFinger.fillColor) {
-                        symbol.color = params.entity.state.fillColor.toArcGISColor()
+                        symbol.color =
+                            params.entity.state.fillColor
+                                .toArcGISColor()
                     }
                     symbol.outline?.let { outline ->
                         if (finger.strokeColor != prevFinger.strokeColor) {
-                            outline.color = params.entity.state.strokeColor.toArcGISColor()
+                            outline.color =
+                                params.entity.state.strokeColor
+                                    .toArcGISColor()
                         }
                         if (finger.strokeWidth != prevFinger.strokeWidth) {
                             outline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()

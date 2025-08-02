@@ -95,11 +95,15 @@ class ArcGISPolygonRenderer(
 
                 (params.entity.polygon.symbol as SimpleFillSymbol).let { symbol ->
                     if (finger.fillColor != prevFinger.fillColor) {
-                        symbol.color = params.entity.state.fillColor.toArcGISColor()
+                        symbol.color =
+                            params.entity.state.fillColor
+                                .toArcGISColor()
                     }
                     symbol.outline?.let { outline ->
                         if (finger.strokeColor != prevFinger.strokeColor) {
-                            outline.color = params.entity.state.strokeColor.toArcGISColor()
+                            outline.color =
+                                params.entity.state.strokeColor
+                                    .toArcGISColor()
                         }
                         if (finger.strokeWidth != prevFinger.strokeWidth) {
                             outline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()

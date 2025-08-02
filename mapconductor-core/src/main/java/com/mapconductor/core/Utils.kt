@@ -10,6 +10,7 @@ fun calculateZIndex(geoPointBase: IGeoPoint): Int {
     // 同じ緯度内では西が上（前）に来る
     return (-geoPointBase.latitude * 1_000_000 - geoPointBase.longitude).roundToInt()
 }
+
 fun meterToPixel(
     meter: Double,
     latitude: Double,

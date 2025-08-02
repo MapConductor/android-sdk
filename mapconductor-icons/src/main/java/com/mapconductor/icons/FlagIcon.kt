@@ -19,7 +19,6 @@ import android.graphics.Path
 class FlagIcon(
     private val properties: IconProperties = IconProperties(),
 ) : MarkerIcon {
-
     data class IconProperties(
         val fillColor: Color = Color.Red,
         val strokeColor: Color = Color.White,
@@ -35,7 +34,7 @@ class FlagIcon(
         scale: Float = 1f,
         iconSize: Dp = Settings.Default.iconSize,
     ) : this(
-        IconProperties(fillColor, strokeColor, strokeWidth, scale, iconSize)
+        IconProperties(fillColor, strokeColor, strokeWidth, scale, iconSize),
     )
 
     // プロパティの委譲
@@ -47,7 +46,6 @@ class FlagIcon(
     override val anchor: Offset = Offset(0.176f, 0.91f)
     override val infoAnchor: Offset = Offset(0.5f, 0f)
 
-
     // data classのcopyを活用した独自copyメソッド
     fun copy(
         fillColor: Color = this.fillColor,
@@ -55,28 +53,27 @@ class FlagIcon(
         strokeWidth: Dp = this.strokeWidth,
         scale: Float = this.scale,
         iconSize: Dp = this.iconSize,
-    ): FlagIcon {
-        return FlagIcon(
+    ): FlagIcon =
+        FlagIcon(
             properties.copy(
                 fillColor = fillColor,
                 strokeColor = strokeColor,
                 strokeWidth = strokeWidth,
                 scale = scale,
                 iconSize = iconSize,
-            )
+            ),
         )
-    }
 
-    fun copy(scale: Float, iconSize: Dp): FlagIcon {
-        return copy(scale = scale, iconSize = iconSize)
-    }
+    fun copy(
+        scale: Float,
+        iconSize: Dp,
+    ): FlagIcon = copy(scale = scale, iconSize = iconSize)
 
     // equals, hashCode, toStringも委譲
-    override fun equals(other: Any?): Boolean {
-        return other is FlagIcon && properties == other.properties
-    }
+    override fun equals(other: Any?): Boolean = other is FlagIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
+
     override fun toString(): String = "DefaultIcon($properties)"
 
     fun drawFlagOnCanvas(
@@ -84,7 +81,7 @@ class FlagIcon(
         fillPaint: Paint,
         strokePaint: Paint,
         width: Float,
-        height: Float
+        height: Float,
     ) {
         // SVGの実際の描画領域を計算
         val svgLeft = 5.161f
@@ -158,17 +155,19 @@ class FlagIcon(
         val bitmap = createBitmap(canvasSize.toInt(), canvasSize.toInt())
         val canvas = Canvas(bitmap)
 
-        val flagPaint = Paint().apply {
-            color = fillColor.toArgb()
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+        val flagPaint =
+            Paint().apply {
+                color = fillColor.toArgb()
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
 
-        val strokePaint = Paint().also {
-            it.color = strokeColor.toArgb()
-            it.style = Paint.Style.STROKE
-            it.strokeWidth = ResourceProvider.dpToPx(strokeWidth).toFloat()
-        }
+        val strokePaint =
+            Paint().also {
+                it.color = strokeColor.toArgb()
+                it.style = Paint.Style.STROKE
+                it.strokeWidth = ResourceProvider.dpToPx(strokeWidth).toFloat()
+            }
 
         drawFlagOnCanvas(canvas, flagPaint, strokePaint, canvasSize.toFloat(), canvasSize.toFloat())
 //        canvas.apply {
@@ -180,11 +179,12 @@ class FlagIcon(
 //            })
 //        }
 
-        val result = BitmapIcon(
-            bitmap = bitmap,
-            anchor = anchor,
-            size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
-        )
+        val result =
+            BitmapIcon(
+                bitmap = bitmap,
+                anchor = anchor,
+                size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
+            )
         BitmapIconCache.put(id, result)
         return result
     }

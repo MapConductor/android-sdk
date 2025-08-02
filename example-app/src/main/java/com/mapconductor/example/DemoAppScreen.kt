@@ -41,32 +41,33 @@ fun DemoAppScreen(
     val currentPage by navigationViewModel.currentPage
     val isSidebarExpanded by navigationViewModel.isSidebarExpanded
 
-    val sidebarItems = listOf(
-        SidebarItem(
-            id = "map",
-            title = "Map Demo",
-            icon = Icons.Default.Home,
-            route = "map"
-        ),
-        SidebarItem(
-            id = "circle",
-            title = "Circle Demo",
-            icon = Icons.Default.CheckCircle,
-            route = "circle"
-        ),
-        SidebarItem(
-            id = "examples",
-            title = "Map Examples",
-            icon = Icons.Default.LocationOn,
-            route = "examples"
-        ),
-        SidebarItem(
-            id = "settings",
-            title = "Settings",
-            icon = Icons.Default.Settings,
-            route = "settings"
+    val sidebarItems =
+        listOf(
+            SidebarItem(
+                id = "map",
+                title = "Map Demo",
+                icon = Icons.Default.Home,
+                route = "map",
+            ),
+            SidebarItem(
+                id = "circle",
+                title = "Circle Demo",
+                icon = Icons.Default.CheckCircle,
+                route = "circle",
+            ),
+            SidebarItem(
+                id = "examples",
+                title = "Map Examples",
+                icon = Icons.Default.LocationOn,
+                route = "examples",
+            ),
+            SidebarItem(
+                id = "settings",
+                title = "Settings",
+                icon = Icons.Default.Settings,
+                route = "settings",
+            ),
         )
-    )
 
     AppTheme {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -90,7 +91,7 @@ fun DemoAppScreen(
                         // Placeholder for settings page
                         Box(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text("Settings page coming soon...")
                         }
@@ -106,7 +107,7 @@ fun DemoAppScreen(
                     navigationViewModel.navigateTo(item.id)
                 },
                 isExpanded = isSidebarExpanded,
-                onToggleSidebar = navigationViewModel::toggleSidebar
+                onToggleSidebar = navigationViewModel::toggleSidebar,
             )
         }
     }

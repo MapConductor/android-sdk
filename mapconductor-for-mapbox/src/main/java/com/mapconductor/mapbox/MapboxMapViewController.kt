@@ -59,12 +59,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IMapboxMapViewController : MapViewController<
-    MapboxActualMarker,
-    MapboxActualCircle,
-    MapboxActualPolyline,
-    MapboxActualPolygon,
-> {
+interface IMapboxMapViewController :
+    MapViewController<
+        MapboxActualMarker,
+        MapboxActualCircle,
+        MapboxActualPolyline,
+        MapboxActualPolygon,
+    > {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -117,18 +118,17 @@ internal class MapboxMapViewController(
     private val circleRendererFactory: CircleRendererFactory<MapboxActualCircle> =
         DefaultMapboxCircleRenderer(),
 ) : BaseMapViewController<
-    CameraState,
-    MapboxActualMarker,
-    MapboxActualCircle,
-    MapboxActualPolyline,
-    MapboxActualPolygon
->(),
+        CameraState,
+        MapboxActualMarker,
+        MapboxActualCircle,
+        MapboxActualPolyline,
+        MapboxActualPolygon,
+    >(),
     IMapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
-
     override val markerRenderer: MapboxMarkerRenderer =
         MapboxMarkerRenderer(
             holder = holder,
@@ -201,15 +201,12 @@ internal class MapboxMapViewController(
         )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<MapboxActualCircle>) {
-
     }
 
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<MapboxActualPolygon>) {
-
     }
 
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<MapboxActualPolyline>) {
-
     }
 
     init {
@@ -343,21 +340,23 @@ internal class MapboxMapViewController(
     override fun onMapClick(point: Point): Boolean {
         val touchPosition = point.toGeoPoint()
 
-        this.markerRenderer.findNearestMarker(
-            position = touchPosition,
-            tolerance = ResourceProvider.dpToPx(Settings.Default.tapTolerance),
-            zoom = holder.map.cameraState.zoom,
-        )?.let {
-            markerClickListener?.invoke(it.state)
-            return true
-        }
+        this.markerRenderer
+            .findNearestMarker(
+                position = touchPosition,
+                tolerance = ResourceProvider.dpToPx(Settings.Default.tapTolerance),
+                zoom = holder.map.cameraState.zoom,
+            )?.let {
+                markerClickListener?.invoke(it.state)
+                return true
+            }
 
         val circleEntity = this.circleOverlayManager.find(touchPosition)
         circleEntity?.let {
-            val event = CircleClickEvent(
-                state = circleEntity.state,
-                position = touchPosition,
-            )
+            val event =
+                CircleClickEvent(
+                    state = circleEntity.state,
+                    position = touchPosition,
+                )
             circleClickListener?.invoke(event)
             return true
         }

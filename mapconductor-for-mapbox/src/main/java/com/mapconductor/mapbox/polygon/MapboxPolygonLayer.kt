@@ -3,7 +3,6 @@ package com.mapconductor.mapbox.polygon
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.get
 import com.mapbox.maps.extension.style.layers.generated.fillLayer
-import com.mapbox.maps.extension.style.layers.generated.lineLayer
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.mapbox.MapboxActualPolygon
@@ -31,7 +30,6 @@ class MapboxPolygonLayer(
                     literal(Prop.STROKE_COLOR)
                 },
             )
-
         }
 
     fun draw(entities: List<PolygonEntity<MapboxActualPolygon>>) {

@@ -1,10 +1,7 @@
 package com.mapconductor.core.circle
 
-import androidx.collection.LruCache
-import androidx.core.util.lruCache
 import com.mapconductor.core.circle.CircleRenderer.UpdateParams
 import com.mapconductor.core.features.IGeoPoint
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -19,7 +16,7 @@ interface CircleOverlayManager<ActualCircle> {
 
     fun getAllEntities(): List<CircleEntity<ActualCircle>>
 
-    fun find(position: IGeoPoint) : CircleEntity<ActualCircle>?
+    fun find(position: IGeoPoint): CircleEntity<ActualCircle>?
 }
 
 class CircleOverlayManagerImpl<ActualCircle>(
@@ -109,16 +106,17 @@ class CircleOverlayManagerImpl<ActualCircle>(
         semaphore.withPermit {
             circleManager.getEntity(circle.id)?.let { prevEntity ->
 
-                val updates = listOf(
-                    object : UpdateParams<ActualCircle> {
-                        override val entity: CircleEntity<ActualCircle> =
-                            CircleEntityImpl(
-                                state = circle,
-                                circle = prevEntity.circle,
-                            )
-                        override val prevEntity: CircleEntity<ActualCircle> = prevEntity
-                    },
-                )
+                val updates =
+                    listOf(
+                        object : UpdateParams<ActualCircle> {
+                            override val entity: CircleEntity<ActualCircle> =
+                                CircleEntityImpl(
+                                    state = circle,
+                                    circle = prevEntity.circle,
+                                )
+                            override val prevEntity: CircleEntity<ActualCircle> = prevEntity
+                        },
+                    )
 
                 val actualCircles: List<ActualCircle?> = onChange(updates)
                 actualCircles.forEachIndexed { index, actualCircle ->

@@ -83,7 +83,6 @@ class GoogleMapViewController(
     OnMarkerClickListener,
     OnMapClickListener,
     OnMarkerDragListener {
-
     override val markerRenderer: MarkerRenderer<Marker> =
         GoogleMapMarkerRenderer(
             holder = holder,
@@ -126,19 +125,15 @@ class GoogleMapViewController(
         )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<Circle>) {
-
     }
 
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<Polygon>) {
-
     }
 
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<Polyline>) {
-
     }
 
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<Marker>) {
-
     }
 
     override val circleRenderer: CircleRenderer<Circle> =
@@ -146,6 +141,7 @@ class GoogleMapViewController(
             holder = holder,
             coroutine = coroutine,
         )
+
     override fun createCircleOverlayManager(): CircleOverlayManager<Circle> =
         circleRendererFactory.create(
             onAdd = circleRenderer::addCircles,
@@ -260,10 +256,11 @@ class GoogleMapViewController(
         val touchPosition = position.toGeoPoint()
 
         circleOverlayManager.find(touchPosition)?.let { entity ->
-            val event = CircleClickEvent(
-                state = entity.state,
-                position = touchPosition,
-            )
+            val event =
+                CircleClickEvent(
+                    state = entity.state,
+                    position = touchPosition,
+                )
             circleClickListener?.invoke(event)
             return
         }

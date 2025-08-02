@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -32,9 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.MapViewScope
 
 @Composable
 fun MessageCard(
@@ -47,40 +43,48 @@ fun MessageCard(
     var isCardExpanded by rememberSaveable { mutableStateOf(isCardOpen) }
 
     Card(
-        modifier = modifier
-            .animateContentSize(animationSpec = tween(300)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        modifier =
+            modifier
+                .animateContentSize(animationSpec = tween(300)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 title?.let { text ->
                     Text(
                         text = text,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
                 Icon(
-                    imageVector = if (isCardExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector =
+                        if (isCardExpanded) {
+                            Icons.Default.KeyboardArrowUp
+                        } else {
+                            Icons.Default.KeyboardArrowDown
+                        },
                     contentDescription = if (isCardExpanded) "Collapse" else "Expand",
-                    modifier = Modifier
-                        .clickable { isCardExpanded = !isCardExpanded }
-                        .size(24.dp)
+                    modifier =
+                        Modifier
+                            .clickable { isCardExpanded = !isCardExpanded }
+                            .size(24.dp),
                 )
             }
 
             if (isCardExpanded) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Column(
-                    modifier = Modifier
-                        .heightIn(max = maxHeight)
-                        .verticalScroll(rememberScrollState())
+                    modifier =
+                        Modifier
+                            .heightIn(max = maxHeight)
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     content()
                 }

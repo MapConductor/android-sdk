@@ -9,8 +9,8 @@ import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

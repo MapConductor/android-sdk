@@ -1,22 +1,16 @@
 package com.mapconductor.example.pages.circle
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,12 +23,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.ArcGISDesign
@@ -57,56 +49,62 @@ fun CircleMapPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     // ---------- Map States ---------------
-    val googleMapState = rememberGoogleMapViewState(
-        mapDesign = GoogleMapDesign.Normal,
-        cameraPosition = viewModel.initCameraPosition,
-    )
-    val mapboxMapState = rememberMapboxMapViewState(
-        mapDesign = MapboxMapDesign.Standard,
-        cameraPosition = viewModel.initCameraPosition,
-    )
-    val hereMapState = rememberHereMapViewState(
-        mapDesign = HereMapDesign.NormalDay,
-        cameraPosition = viewModel.initCameraPosition,
-    )
-    val elevationSources = listOf(
-        "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
-    )
-    val arcGISMapState = rememberArcGISMapViewState(
-        mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
-        cameraPosition = viewModel.initCameraPosition,
-    )
+    val googleMapState =
+        rememberGoogleMapViewState(
+            mapDesign = GoogleMapDesign.Normal,
+            cameraPosition = viewModel.initCameraPosition,
+        )
+    val mapboxMapState =
+        rememberMapboxMapViewState(
+            mapDesign = MapboxMapDesign.Standard,
+            cameraPosition = viewModel.initCameraPosition,
+        )
+    val hereMapState =
+        rememberHereMapViewState(
+            mapDesign = HereMapDesign.NormalDay,
+            cameraPosition = viewModel.initCameraPosition,
+        )
+    val elevationSources =
+        listOf(
+            "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
+        )
+    val arcGISMapState =
+        rememberArcGISMapViewState(
+            mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
+            cameraPosition = viewModel.initCameraPosition,
+        )
 
-    val menuItems = listOf(
-        IconItem(
-            key = "googlemap",
-            label = "Google Map",
-            lightIconResId = R.drawable.google_maps_logo,
-            darkIconResId = R.drawable.google_maps_logo,
-            value = googleMapState,
-        ),
-        IconItem(
-            key = "mapbox",
-            label = "Mapbox",
-            lightIconResId = R.drawable.mapbox_logo_black,
-            darkIconResId = R.drawable.mapbox_logo_white,
-            value = mapboxMapState,
-        ),
-        IconItem(
-            key = "heremap",
-            label = "Here",
-            lightIconResId = R.drawable.here_logo_black,
-            darkIconResId = R.drawable.here_logo_white,
-            value = hereMapState,
-        ),
-        IconItem(
-            key = "arcgis",
-            label = "ArcGIS",
-            lightIconResId = R.drawable.arcgis_logo_black,
-            darkIconResId = R.drawable.arcgis_logo_white,
-            value = arcGISMapState,
-        ),
-    )
+    val menuItems =
+        listOf(
+            IconItem(
+                key = "googlemap",
+                label = "Google Map",
+                lightIconResId = R.drawable.google_maps_logo,
+                darkIconResId = R.drawable.google_maps_logo,
+                value = googleMapState,
+            ),
+            IconItem(
+                key = "mapbox",
+                label = "Mapbox",
+                lightIconResId = R.drawable.mapbox_logo_black,
+                darkIconResId = R.drawable.mapbox_logo_white,
+                value = mapboxMapState,
+            ),
+            IconItem(
+                key = "heremap",
+                label = "Here",
+                lightIconResId = R.drawable.here_logo_black,
+                darkIconResId = R.drawable.here_logo_white,
+                value = hereMapState,
+            ),
+            IconItem(
+                key = "arcgis",
+                label = "ArcGIS",
+                lightIconResId = R.drawable.arcgis_logo_black,
+                darkIconResId = R.drawable.arcgis_logo_white,
+                value = arcGISMapState,
+            ),
+        )
 
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(selectedIndex) {
@@ -117,14 +115,16 @@ fun CircleMapPage(
 
     Scaffold(
         bottomBar = {
-
-        }
+        },
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(
-            start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-            end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-            bottom = paddingValues.calculateBottomPadding(),
-        )) {
+        Box(
+            modifier =
+                Modifier.fillMaxSize().padding(
+                    start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                    end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                    bottom = paddingValues.calculateBottomPadding(),
+                ),
+        ) {
             CircleMapComponent(
                 mapViewState = mapViewState,
                 viewModel = viewModel,
@@ -136,25 +136,27 @@ fun CircleMapPage(
 
             // Top controls
             Card(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(
-                        top = paddingValues.calculateTopPadding(),
-                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
-                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
-                    ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(
+                            top = paddingValues.calculateTopPadding(),
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
+                        ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Open menu",
-                        modifier = Modifier
-                            .clickable(onClick = onToggleSidebar)
-                            .size(32.dp)
-                            .padding(end = 10.dp)
+                        modifier =
+                            Modifier
+                                .clickable(onClick = onToggleSidebar)
+                                .size(32.dp)
+                                .padding(end = 10.dp),
                     )
                     IconSelectMenu(
                         modifier = Modifier.weight(0.7f),
@@ -169,25 +171,26 @@ fun CircleMapPage(
 
             // Message Card
             MessageCard(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(
-                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
-                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
-                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-                    ),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(
+                            bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
+                        ),
                 title = "Messages",
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Welcome to the Circle Map! Tap on the map to place circles.",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "• Tap to add circles\n• Drag markers to move circles\n• Click circles to modify them",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 

@@ -85,7 +85,9 @@ class ArcGISPolylineRenderer(
 
                 (params.entity.polyline.symbol as SimpleLineSymbol).let { symbol ->
                     if (finger.strokeColor != prevFinger.strokeColor) {
-                        symbol.color = params.entity.state.strokeColor.toArcGISColor()
+                        symbol.color =
+                            params.entity.state.strokeColor
+                                .toArcGISColor()
                     }
                     if (finger.strokeWidth != prevFinger.strokeWidth) {
                         symbol.width = ResourceProvider.dpToPx(params.prevEntity.state.strokeWidth).toFloat()

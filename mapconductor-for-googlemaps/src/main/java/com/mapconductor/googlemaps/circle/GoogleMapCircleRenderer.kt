@@ -79,13 +79,17 @@ class GoogleMapCircleRenderer(
                     circle.radius = params.entity.state.radiusMeters
                 }
                 if (finger.strokeColor != prevFinger.strokeColor) {
-                    circle.strokeColor = params.entity.state.strokeColor.toArgb()
+                    circle.strokeColor =
+                        params.entity.state.strokeColor
+                            .toArgb()
                 }
                 if (finger.strokeWidth != prevFinger.strokeWidth) {
                     circle.strokeWidth = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
                 }
                 if (finger.fillColor != prevFinger.fillColor) {
-                    circle.fillColor = params.entity.state.fillColor.toArgb()
+                    circle.fillColor =
+                        params.entity.state.fillColor
+                            .toArgb()
                 }
                 return@map circle
             }

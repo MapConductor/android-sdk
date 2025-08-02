@@ -205,9 +205,9 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
 //        return markersInRange
 //    }
 
-    /**
-     * 検索範囲の外郭セルを特定
-     */
+//    /**
+//     * 検索範囲の外郭セルを特定
+//     */
 //    protected fun findOutlineCells(searchCells: List<HexCoord>): List<HexCoord> {
 //        val cellSet = searchCells.toSet()
 //
@@ -219,9 +219,9 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
 //        }
 //    }
 
-    /**
-     * 円形の近似ポイントを生成
-     */
+//    /**
+//     * 円形の近似ポイントを生成
+//     */
 //    protected fun createCirclePoints(
 //        center: IGeoPoint,
 //        radiusMeters: Double,

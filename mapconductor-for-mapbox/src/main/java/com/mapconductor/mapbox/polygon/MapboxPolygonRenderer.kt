@@ -45,11 +45,12 @@ class MapboxPolygonRenderer(
             newPolygons.map { state ->
                 val points = state.points.map { GeoPoint.from(it).toPoint() }
                 // Close the polygon by adding the first point at the end if not already closed
-                val closedPoints = if (points.first() != points.last()) {
-                    points + points.first()
-                } else {
-                    points
-                }
+                val closedPoints =
+                    if (points.first() != points.last()) {
+                        points + points.first()
+                    } else {
+                        points
+                    }
                 Feature.fromGeometry(
                     Polygon.fromLngLats(listOf(closedPoints)),
                     JsonObject().apply {
@@ -74,11 +75,12 @@ class MapboxPolygonRenderer(
                 val state = params.entity.state
                 val points = state.points.map { GeoPoint.from(it).toPoint() }
                 // Close the polygon by adding the first point at the end if not already closed
-                val closedPoints = if (points.first() != points.last()) {
-                    points + points.first()
-                } else {
-                    points
-                }
+                val closedPoints =
+                    if (points.first() != points.last()) {
+                        points + points.first()
+                    } else {
+                        points
+                    }
                 Feature.fromGeometry(
                     Polygon.fromLngLats(listOf(closedPoints)),
                     JsonObject().apply {

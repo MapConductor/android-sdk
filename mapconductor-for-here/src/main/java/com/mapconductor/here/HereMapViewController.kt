@@ -33,22 +33,20 @@ import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonOverlayManager
-import com.mapconductor.core.polygon.PolygonRenderer
 import com.mapconductor.core.polygon.PolygonRendererFactory
-import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.here.circle.DefaultHereMapCircleRenderer
+import com.mapconductor.here.circle.HereMapCircleRenderer
 import com.mapconductor.here.marker.DefaultHereMapMarkerRenderer
 import com.mapconductor.here.marker.HereMapMarkerRenderer
 import com.mapconductor.here.polygon.DefaultHereMapPolygonRenderer
 import com.mapconductor.here.polygon.HereMapPolygonRenderer
 import com.mapconductor.here.polyline.DefaultHereMapPolylineRenderer
 import com.mapconductor.here.polyline.HereMapPolylineRenderer
-import com.mapconductor.here.circle.DefaultHereMapCircleRenderer
-import com.mapconductor.here.circle.HereMapCircleRenderer
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,16 +74,17 @@ class HereMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val markerRendererFactory: MarkerRendererFactory<HereMapActualMarker> = DefaultHereMapMarkerRenderer(),
-    private val polylineRendererFactory: PolylineRendererFactory<HereMapActualPolyline> = DefaultHereMapPolylineRenderer(),
+    private val polylineRendererFactory: PolylineRendererFactory<HereMapActualPolyline> =
+        DefaultHereMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<HereMapActualPolygon> = DefaultHereMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<HereMapActualCircle> = DefaultHereMapCircleRenderer(),
 ) : BaseMapViewController<
-    MapCamera.State,
-    HereMapActualMarker,
-    HereMapActualCircle,
-    HereMapActualPolyline,
-    HereMapActualPolygon,
->(),
+        MapCamera.State,
+        HereMapActualMarker,
+        HereMapActualCircle,
+        HereMapActualPolyline,
+        HereMapActualPolygon,
+    >(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
@@ -113,30 +112,28 @@ class HereMapViewController(
             coroutine = coroutine,
         )
 
-    override val polygonRenderer = HereMapPolygonRenderer(
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val polygonRenderer =
+        HereMapPolygonRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
-    override val circleRenderer = HereMapCircleRenderer(
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val circleRenderer =
+        HereMapCircleRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereMapActualCircle>) {
-
     }
 
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<HereMapActualPolygon>) {
-
     }
 
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<HereMapActualPolyline>) {
-
     }
 
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<HereMapActualMarker>) {
-
     }
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =

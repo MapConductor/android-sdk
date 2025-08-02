@@ -1,10 +1,6 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
-import com.mapconductor.core.polyline.PolylineEntity
-import com.mapconductor.core.polyline.PolylineEntityImpl
-import com.mapconductor.core.polyline.PolylineRenderer
-import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -69,7 +65,6 @@ class MarkerOverlayManagerImpl<ActualMarker>(
                 }
             }
 
-
             // Remove markers
             if (removed.isNotEmpty()) {
                 onRemove(removed)
@@ -133,7 +128,6 @@ class MarkerOverlayManagerImpl<ActualMarker>(
         }
 
         semaphore.withPermit {
-
             val marker = prevEntity.marker
             val defaultIcon = DefaultIcon()
             val markerIcon = state.icon ?: defaultIcon

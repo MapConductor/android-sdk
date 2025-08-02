@@ -44,9 +44,10 @@ import android.os.Bundle
 fun MapExamplePage(viewModel: AppViewModel) {
     var markerCount by remember { mutableIntStateOf(5) }
 
-    val exampleMarkers = remember(markerCount) {
-        generateExampleMarkers(markerCount)
-    }
+    val exampleMarkers =
+        remember(markerCount) {
+            generateExampleMarkers(markerCount)
+        }
 
     val mapViewState = viewModel.mapViewState.collectAsState().value
 
@@ -79,18 +80,19 @@ fun MapExamplePage(viewModel: AppViewModel) {
 
             // Control panel
             Card(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(paddingValues),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(paddingValues),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     Text(
                         text = "Map Controls",
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -98,7 +100,7 @@ fun MapExamplePage(viewModel: AppViewModel) {
                     Text(
                         text = "Markers: $markerCount",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -106,7 +108,7 @@ fun MapExamplePage(viewModel: AppViewModel) {
                     Row {
                         OutlinedButton(
                             onClick = { if (markerCount > 0) markerCount-- },
-                            modifier = Modifier.width(60.dp)
+                            modifier = Modifier.width(60.dp),
                         ) {
                             Text("-")
                         }
@@ -115,7 +117,7 @@ fun MapExamplePage(viewModel: AppViewModel) {
 
                         Button(
                             onClick = { markerCount++ },
-                            modifier = Modifier.width(60.dp)
+                            modifier = Modifier.width(60.dp),
                         ) {
                             Text("+")
                         }
@@ -128,7 +130,7 @@ fun MapExamplePage(viewModel: AppViewModel) {
                             viewModel.cameraReset()
                             viewModel.showToast("Camera reset to initial position")
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Icon(Icons.Default.LocationOn, contentDescription = null)
                         Spacer(modifier = Modifier.width(4.dp))
@@ -143,9 +145,10 @@ fun MapExamplePage(viewModel: AppViewModel) {
                     markerCount += 5
                     viewModel.showToast("Added 5 random markers")
                 },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add markers")
             }
@@ -155,9 +158,10 @@ fun MapExamplePage(viewModel: AppViewModel) {
                     markerCount = 0
                     viewModel.showToast("Cleared all markers")
                 },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 88.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 88.dp),
             ) {
                 Icon(Icons.Default.Clear, contentDescription = "Clear markers")
             }
@@ -183,15 +187,17 @@ private fun generateExampleMarkers(count: Int): List<MarkerState> {
         MarkerState(
             id = "example_marker_$index",
             position = GeoPoint.fromLatLong(randomLat, randomLng),
-            icon = DefaultIcon(
-                fillColor = randomColor,
-                strokeColor = Color.White
-            ),
-            extra = Bundle().apply {
-                putString("title", "Example Marker ${index + 1}")
-                putString("snippet", "This is an example marker with random position")
-            },
-            draggable = true
+            icon =
+                DefaultIcon(
+                    fillColor = randomColor,
+                    strokeColor = Color.White,
+                ),
+            extra =
+                Bundle().apply {
+                    putString("title", "Example Marker ${index + 1}")
+                    putString("snippet", "This is an example marker with random position")
+                },
+            draggable = true,
         )
     }
 }

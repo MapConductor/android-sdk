@@ -21,6 +21,7 @@ class MapboxCircleLayer(
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
     }
+
     companion object {
         private const val EARTH_CIRCUMFERENCE = 2 * Math.PI * 6378137.0
         private const val TILE_SIZE = 512.0
@@ -29,8 +30,8 @@ class MapboxCircleLayer(
     /**
      * ズームレベルに基づく半径の式を作成
      */
-    private fun createZoomBasedRadiusExpressionWithProperty(): Expression {
-        return interpolate {
+    private fun createZoomBasedRadiusExpressionWithProperty(): Expression =
+        interpolate {
             exponential(2.0) // ズームレベルは指数的に変化
             zoom()
 
@@ -65,7 +66,6 @@ class MapboxCircleLayer(
                 }
             }
         }
-    }
 
     val layer =
         circleLayer(layerId, sourceId) {
