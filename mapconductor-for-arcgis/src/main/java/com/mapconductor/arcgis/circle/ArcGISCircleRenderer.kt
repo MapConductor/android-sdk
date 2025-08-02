@@ -1,6 +1,5 @@
 package com.mapconductor.arcgis.circle
 
-import com.arcgismaps.Color
 import com.arcgismaps.geometry.GeodeticCurveType
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.LinearUnit
@@ -12,6 +11,7 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleRenderer
@@ -49,34 +49,30 @@ class ArcGISCircleRenderer(
     override suspend fun addCircles(newCircles: List<CircleState>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext newCircles.map { state ->
-                val centerPoint = GeoPoint.from(state.center).toPoint()
-                val circle = GeometryEngine.bufferGeodeticOrNull(
+                val spec = holder.mapView.sceneView.scene?.spatialReference
+                val centerPoint = GeoPoint.from(state.center).toPoint(spec)
+                val circleGeometry = GeometryEngine.bufferGeodeticOrNull(
                     geometry = centerPoint,
                     distance = state.radiusMeters,
                     distanceUnit = LinearUnit(LinearUnitId.Meters),
                     maxDeviation = Double.NaN,
                     curveType = GeodeticCurveType.NormalSection,
                 )
-                circle?.let { geometry ->
-                    val fillSymbol =
-                        SimpleFillSymbol().apply {
-                            style = SimpleFillSymbolStyle.Solid
-                            color = createFillColor(state)
-                            outline = SimpleLineSymbol().apply {
-                                style = SimpleLineSymbolStyle.Solid
-                                color = createStrokeColor(state)
-                                width = ResourceProvider.dpToPx(state.strokeWidth).toFloat()
-                            }
-                        }
+                val stroke = SimpleLineSymbol(
+                    style = SimpleLineSymbolStyle.Solid,
+                    color = state.strokeColor.toArcGISColor(),
+                    width = ResourceProvider.dpToPx(state.strokeWidth).toFloat(),
+                )
+                val fillSymbol =
+                    SimpleFillSymbol(
+                        style = SimpleFillSymbolStyle.Solid,
+                        color = state.fillColor.toArcGISColor(),
+                        outline = stroke,
+                    )
+                val circle = Graphic(circleGeometry, fillSymbol)
 
-                    val graphic =
-                        Graphic(geometry, fillSymbol).also {
-                            it.attributes.set("id", state.id)
-                        }
-
-                    circleLayer.graphics.add(graphic)
-                    graphic
-                }
+                circleLayer.graphics.add(circle)
+                circle
             }
         }
     }
@@ -90,13 +86,14 @@ class ArcGISCircleRenderer(
 
     override suspend fun changeCircle(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
+            val spec = holder.mapView.sceneView.scene?.spatialReference
             return@withContext changes.map { params ->
-                val finger = params.entity.state.fingerPrint()
-                val prevFinger = params.prevEntity.state.fingerPrint()
+                val finger = params.entity.fingerPrint
+                val prevFinger = params.prevEntity.fingerPrint
                 val graphic = params.entity.circle
 
                 if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
-                    val centerPoint = GeoPoint.from(params.entity.state.center).toPoint()
+                    val centerPoint = GeoPoint.from(params.entity.state.center).toPoint(spec)
 
                     val newGeometry = GeometryEngine.bufferGeodeticOrNull(
                         geometry = centerPoint,
@@ -112,11 +109,11 @@ class ArcGISCircleRenderer(
 
                 (graphic.symbol as SimpleFillSymbol).let { symbol ->
                     if (finger.fillColor != prevFinger.fillColor) {
-                        symbol.color = createFillColor(params.entity.state)
+                        symbol.color = params.entity.state.fillColor.toArcGISColor()
                     }
                     symbol.outline?.let { outline ->
                         if (finger.strokeColor != prevFinger.strokeColor) {
-                            outline.color = createStrokeColor(params.entity.state)
+                            outline.color = params.entity.state.strokeColor.toArcGISColor()
                         }
                         if (finger.strokeWidth != prevFinger.strokeWidth) {
                             outline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
@@ -127,20 +124,4 @@ class ArcGISCircleRenderer(
             }
         }
     }
-
-    private fun createStrokeColor(state: CircleState): Color =
-        Color.fromRgba(
-            r = (state.strokeColor.red * 255).toInt(),
-            g = (state.strokeColor.green * 255).toInt(),
-            b = (state.strokeColor.blue * 255).toInt(),
-            a = (state.strokeColor.alpha * 255).toInt(),
-        )
-
-    private fun createFillColor(state: CircleState): Color =
-        Color.fromRgba(
-            r = (state.fillColor.red * 255).toInt(),
-            g = (state.fillColor.green * 255).toInt(),
-            b = (state.fillColor.blue * 255).toInt(),
-            a = (state.fillColor.alpha * 255).toInt(),
-        )
 }
