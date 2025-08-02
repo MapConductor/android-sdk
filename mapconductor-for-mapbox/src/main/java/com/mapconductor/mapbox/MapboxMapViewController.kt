@@ -1,7 +1,6 @@
 package com.mapconductor.mapbox
 
 import androidx.compose.ui.geometry.Offset
-import com.google.gson.JsonObject
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
@@ -25,27 +24,24 @@ import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleEntityImpl
-import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleOverlayManager
-import com.mapconductor.core.circle.CircleRenderer
+import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.meterToPixel
 import com.mapconductor.core.polygon.PolygonOverlayManager
 import com.mapconductor.core.polygon.PolygonRenderer
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.mapbox.circle.DefaultMapboxCircleRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleRenderer
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
@@ -62,7 +58,6 @@ import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
 
 interface IMapboxMapViewController : MapViewController<
     MapboxActualMarker,
@@ -119,6 +114,8 @@ internal class MapboxMapViewController(
             sourceId = "polygon-source",
             layerId = "polygon-layer",
         ),
+    private val circleRendererFactory: CircleRendererFactory<MapboxActualCircle> =
+        DefaultMapboxCircleRenderer(),
 ) : BaseMapViewController<
     CameraState,
     MapboxActualMarker,
@@ -164,7 +161,10 @@ internal class MapboxMapViewController(
 
     override fun createCircleOverlayManager(): CircleOverlayManager<MapboxActualCircle> =
         circleRendererFactory.create(
-
+            onAdd = circleRenderer::addCircles,
+            onChange = circleRenderer::changeCircle,
+            onRemove = circleRenderer::removeCircles,
+            onPostProcess = circleRenderer::redraw,
         )
 
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<MapboxActualMarker>) {
@@ -193,7 +193,7 @@ internal class MapboxMapViewController(
             coroutine = coroutine,
             layer = polygonLayer,
         )
-    override val circleRenderer: CircleRenderer<MapboxActualCircle> =
+    override val circleRenderer: MapboxCircleRenderer =
         MapboxCircleRenderer(
             holder = holder,
             coroutine = coroutine,
@@ -240,29 +240,6 @@ internal class MapboxMapViewController(
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
-
-    private fun createCircleFeature(state: CircleState): Feature {
-        val feature =
-            Feature.fromGeometry(
-                GeoPoint.from(state.center).toPoint(),
-                JsonObject().apply {
-                    addProperty(
-                        MapboxCircleLayer.Prop.RADIUS,
-                        meterToPixel(
-                            meter = state.radiusMeters,
-                            latitude = state.center.latitude,
-                            zoom = holder.map.cameraState.zoom,
-                            tileSize = ResourceProvider.getOptimalTileSize().toDouble(),
-                        ),
-                    )
-                    addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
-                    addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
-                    addProperty(MapboxCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
-                },
-                "circle-${state.id}",
-            )
-        return feature
-    }
 
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
