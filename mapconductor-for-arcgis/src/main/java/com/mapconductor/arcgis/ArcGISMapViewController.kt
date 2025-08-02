@@ -46,7 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IArcGISMapViewController : MapViewController<ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline> {
+interface IArcGISMapViewController : MapViewController<ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline, ArcGISActualGroundImage> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -88,7 +88,7 @@ class ArcGISMapViewController(
     private val polylineRendererFactory: PolylineRendererFactory<ArcGISActualPolyline> =
         DefaultArcGISPolylineRenderer(),
     override val circleManager: CircleManager<ArcGISActualCircle> = CircleManager(),
-) : BaseMapViewController<Camera, ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline>(),
+) : BaseMapViewController<Camera, ArcGISActualMarker, ArcGISActualCircle, ArcGISActualPolyline, ArcGISActualGroundImage>(),
     IArcGISMapViewController {
     override val markerRenderer: MarkerRenderer<ArcGISActualMarker> =
         ArcGISMarkerRenderer(

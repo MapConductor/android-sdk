@@ -57,7 +57,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 
-interface IMapboxMapViewController : MapViewController<MapboxActualMarker, MapboxActualCircle, MapboxActualPolyline> {
+interface IMapboxMapViewController : MapViewController<MapboxActualMarker, MapboxActualCircle, MapboxActualPolyline, MapboxActualGroundImage> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -103,7 +103,7 @@ internal class MapboxMapViewController(
             layerId = "polyline-layer",
         ),
     override val circleManager: CircleManager<MapboxActualCircle> = CircleManager(),
-) : BaseMapViewController<CameraState, MapboxActualMarker, MapboxActualCircle, MapboxActualPolyline>(),
+) : BaseMapViewController<CameraState, MapboxActualMarker, MapboxActualCircle, MapboxActualPolyline, MapboxActualGroundImage>(),
     IMapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,

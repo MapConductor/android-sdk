@@ -14,7 +14,7 @@ import android.os.Parcelable
 fun MapViewScope.Polyline(state: PolylineState) {
     val rememberState = remember { state }
     SideEffect {
-        polylineFlow.value = polylineFlow.value + rememberState
+                                                                                                                                                            polylineFlow.value = polylineFlow.value + rememberState
     }
 }
 

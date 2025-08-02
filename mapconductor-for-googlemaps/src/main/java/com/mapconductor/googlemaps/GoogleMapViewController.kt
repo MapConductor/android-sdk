@@ -14,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.GroundOverlay
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
@@ -24,6 +25,10 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.groundimage.GroundImageOverlayManager
+import com.mapconductor.core.groundimage.GroundImageRenderer
+import com.mapconductor.core.groundimage.GroundImageRendererFactory
+import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
@@ -35,6 +40,8 @@ import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.googlemaps.groundimage.DefaultGoogleMapGroundImageRenderer
+import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageRenderer
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.polyline.DefaultGoogleMapPolylineRenderer
@@ -43,7 +50,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline> {
+interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline, GroundOverlay> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -67,7 +74,8 @@ class GoogleMapViewController(
     private val markerRendererFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     override val circleManager: CircleManager<Circle> = CircleManager(),
-) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline>(),
+    private val groundImageRendererFactory: GroundImageRendererFactory<GroundOverlay> = DefaultGoogleMapGroundImageRenderer(),
+) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline, GroundOverlay>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -105,6 +113,19 @@ class GoogleMapViewController(
             onAdd = polylineRenderer::addLines,
             onChange = polylineRenderer::changeLine,
             onRemove = polylineRenderer::removeLines,
+        )
+
+    override val groundImageRenderer: GroundImageRenderer<GroundOverlay> =
+        GoogleMapGroundImageRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override fun createGroundImageOverlayManager(): GroundImageOverlayManager<GroundOverlay> =
+        groundImageRendererFactory.create(
+            onAdd = groundImageRenderer::addGroundImages,
+            onChange = groundImageRenderer::changeGroundImages,
+            onRemove = groundImageRenderer::removeGroundImages,
         )
 
     init {
@@ -191,6 +212,10 @@ class GoogleMapViewController(
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
+
+    override suspend fun addGroundImages(data: List<GroundImageState>) = groundImageOverlayManager.addGroundImages(data)
+
+    override suspend fun updateGroundImage(state: GroundImageState) = groundImageOverlayManager.updateGroundImage(state)
 
     override fun onCameraMove() {
         cameraMoveListener?.let {

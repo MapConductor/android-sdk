@@ -25,6 +25,7 @@ import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.LocalCircleCollector
 import com.mapconductor.core.LocalMarkerCollector
 import com.mapconductor.core.LocalPolylineCollector
+import com.mapconductor.core.LocalGroundImageCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewController
@@ -47,7 +48,7 @@ fun <
     SpecificState : MapViewState<*>,
     // Replace Any with a base MapViewController if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewController<*, *, *>,
+    SpecificController : MapViewController<*, *, *, *>,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
@@ -86,6 +87,7 @@ fun <
                 LocalInfoBubbleCollector provides scope.bubbleFlow,
                 LocalCircleCollector provides scope.circleFlow,
                 LocalPolylineCollector provides scope.polylineFlow,
+                LocalGroundImageCollector provides scope.groundImageFlow,
             ) {
                 with(scope) {
                     content?.invoke(this)

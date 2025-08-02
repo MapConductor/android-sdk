@@ -13,6 +13,7 @@ import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
 import com.here.sdk.mapview.MapPolyline
+import com.here.sdk.mapview.MapImage
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
@@ -23,6 +24,10 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.groundimage.GroundImageOverlayManager
+import com.mapconductor.core.groundimage.GroundImageRenderer
+import com.mapconductor.core.groundimage.GroundImageRendererFactory
+import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
@@ -45,7 +50,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline> {
+interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline, MapImage> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -68,8 +73,9 @@ class HereMapViewController(
         ),
     private val markerRendererFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
     private val polylineRendererFactory: PolylineRendererFactory<MapPolyline> = DefaultHereMapPolylineRenderer(),
+    private val groundImageRendererFactory: GroundImageRendererFactory<MapImage> = DefaultHereMapGroundImageRenderer(),
     override val circleManager: CircleManager<MapPolygon> = CircleManager(),
-) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon, MapPolyline>(),
+) : BaseMapViewController<MapCamera.State, MapMarker, MapPolygon, MapPolyline, MapImage>(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
@@ -104,6 +110,19 @@ class HereMapViewController(
             onRemove = polylineRenderer::removeLines,
         )
 
+    override val groundImageRenderer: GroundImageRenderer<MapImage> =
+        HereMapGroundImageRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override fun createGroundImageOverlayManager(): GroundImageOverlayManager<MapImage> =
+        groundImageRenderer.create(
+            onAdd = groundImageRenderer::addLines,
+            onChange = groundImageRenderer::changeLine,
+            onRemove = groundImageRenderer::removeLines,
+        )
+
     override suspend fun clearOverlays() {
         markerOverlayManager.clearOverlays()
         polylineOverlayManager.clearOverlays()
@@ -122,6 +141,10 @@ class HereMapViewController(
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
+
+    override suspend fun addGroundImages(data: List<GroundImageState>) = groundImageOverlayManager.addGroundImages(data)
+
+    override suspend fun updateGroundImage(state: GroundImageState) = groundImageOverlayManager.updateGroundImage(state)
 
     init {
         setupListeners()

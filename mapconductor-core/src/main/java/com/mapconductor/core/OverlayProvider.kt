@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
@@ -62,12 +63,14 @@ open class MapViewScope {
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
     val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
     val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
+    val groundImageFlow = MutableStateFlow<List<GroundImageState>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
         registry.register(MarkerOverlay(markerFlow))
         registry.register(CircleOverlay(circleFlow))
         registry.register(PolylineOverlay(polylineFlow))
+        registry.register(GroundImageOverlay(groundImageFlow))
         return registry
     }
 }
@@ -77,7 +80,7 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewController<*, *, *, *>,
     ) {
         controller.addMarkers(data)
     }
@@ -88,7 +91,7 @@ class CircleOverlay(
 ) : MapOverlay<CircleState> {
     override suspend fun render(
         data: List<CircleState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewController<*, *, *, *>,
     ) {
         controller.addCircles(data)
     }
@@ -104,9 +107,20 @@ class PolylineOverlay(
 ) : MapOverlay<PolylineState> {
     override suspend fun render(
         data: List<PolylineState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewController<*, *, *, *>,
     ) {
         controller.addPolylines(data)
+    }
+}
+
+class GroundImageOverlay(
+    override val flow: StateFlow<List<GroundImageState>>,
+) : MapOverlay<GroundImageState> {
+    override suspend fun render(
+        data: List<GroundImageState>,
+        controller: MapViewController<*, *, *, *>,
+    ) {
+        controller.addGroundImages(data)
     }
 }
 
@@ -120,10 +134,15 @@ val LocalCircleCollector =
         error("Circle must be under the <MapView />")
     }
 
+val LocalGroundImageCollector =
+    compositionLocalOf<MutableStateFlow<List<GroundImageState>>> {
+        error("GroundImage must be under the <MapView />")
+    }
+
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController<*, *, *>,
+    controller: MapViewController<*, *, *, *>,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")
