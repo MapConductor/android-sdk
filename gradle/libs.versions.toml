@@ -31,7 +31,6 @@ arcgisMapsKotlin = "200.7.0"
 uiTooling = "1.8.1"
 vectordrawable = "1.2.0"
 
-
 [libraries]
 # Android 基本
 androidx-core = { module = "androidx.test:core", version.ref = "core" }

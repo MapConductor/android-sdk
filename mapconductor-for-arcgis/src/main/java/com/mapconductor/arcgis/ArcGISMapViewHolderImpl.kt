@@ -52,7 +52,7 @@ class ArcGISMapViewHolderImpl private constructor(
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val result =
             map.locationToScreen(
-                point = GeoPoint.from(position).toPoint(),
+                point = GeoPoint.from(position).toPoint(map.scene?.spatialReference),
             )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())

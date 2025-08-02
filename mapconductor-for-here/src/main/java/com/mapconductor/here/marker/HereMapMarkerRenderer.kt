@@ -11,9 +11,9 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.UpdateParams
 import com.mapconductor.here.HereMapViewHolder
 import com.mapconductor.here.toAnchor2D
 import com.mapconductor.here.toGeoCoordinates
@@ -81,7 +81,7 @@ class HereMapMarkerRenderer(
     override suspend fun removeIcons(removeEntities: List<MarkerEntity<MapMarker>>) {
         coroutine.launch {
             val markers: List<MapMarker> = removeEntities.map { params -> params.marker }
-            holder.mapView.mapScene.removeMapMarkers(markers)
+            holder.map.removeMapMarkers(markers)
         }
     }
 
