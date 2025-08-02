@@ -65,7 +65,7 @@ class ArcGISCircleRenderer(
                     SimpleLineSymbol(
                         style = SimpleLineSymbolStyle.Solid,
                         color = state.strokeColor.toArcGISColor(),
-                        width = ResourceProvider.dpToPx(state.strokeWidth).toFloat(),
+                        width = state.strokeWidth.value,
                     )
                 val fillSymbol =
                     SimpleFillSymbol(
@@ -127,7 +127,7 @@ class ArcGISCircleRenderer(
                                     .toArcGISColor()
                         }
                         if (finger.strokeWidth != prevFinger.strokeWidth) {
-                            outline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
+                            outline.width = params.entity.state.strokeWidth.value
                         }
                     }
                 }
