@@ -17,6 +17,7 @@ import com.mapconductor.mapbox.MapboxActualCircle
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toMapboxColorString
 import com.mapconductor.mapbox.toPoint
+import kotlin.math.cos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -47,6 +48,8 @@ class MapboxCircleRenderer(
                 Feature.fromGeometry(
                     Point.fromLngLat(centerPoint.longitude(), centerPoint.latitude()),
                     JsonObject().apply {
+                        val latitudeCorrection = cos(Math.toRadians(centerPoint.latitude()))
+                        addProperty(MapboxCircleLayer.Prop.LATITUDE_CORRECTION, latitudeCorrection)
                         addProperty(MapboxCircleLayer.Prop.RADIUS, state.radiusMeters)
                         addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
                         addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
@@ -71,6 +74,8 @@ class MapboxCircleRenderer(
                 Feature.fromGeometry(
                     Point.fromLngLat(centerPoint.longitude(), centerPoint.latitude()),
                     JsonObject().apply {
+                        val latitudeCorrection = cos(Math.toRadians(centerPoint.latitude()))
+                        addProperty(MapboxCircleLayer.Prop.LATITUDE_CORRECTION, latitudeCorrection)
                         addProperty(MapboxCircleLayer.Prop.RADIUS, state.radiusMeters)
                         addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
                         addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
