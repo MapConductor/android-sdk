@@ -41,18 +41,20 @@ fun StoreMapComponent(
     var isMarkerAnimating by remember { mutableStateOf(false) }
     val colors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan)
 
-    val markerList = remember {
-        markers.mapIndexed { index, state ->
-            val randomColor = colors[index % colors.size]
-            state.copy(
-                icon = DefaultIcon(
-                    fillColor = randomColor,
-                    strokeColor = Color.White,
-                    strokeWidth = 2.dp,
-                ),
-            )
+    val markerList =
+        remember {
+            markers.mapIndexed { index, state ->
+                val randomColor = colors[index % colors.size]
+                state.copy(
+                    icon =
+                        DefaultIcon(
+                            fillColor = randomColor,
+                            strokeColor = Color.White,
+                            strokeWidth = 2.dp,
+                        ),
+                )
+            }
         }
-    }
 
     mapViewState?.let { mapViewState ->
         MapViewContainer(

@@ -46,12 +46,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IArcGISMapViewController : MapViewController<
-    ArcGISActualMarker,
-    ArcGISActualCircle,
-    ArcGISActualPolyline,
-    ArcGISActualPolygon,
-> {
+interface IArcGISMapViewController :
+    MapViewController<
+        ArcGISActualMarker,
+        ArcGISActualCircle,
+        ArcGISActualPolyline,
+        ArcGISActualPolygon,
+    > {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -100,7 +101,7 @@ class ArcGISMapViewController(
         DefaultArcGISPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<ArcGISActualCircle> =
         DefaultArcGISCircleRenderer(),
-    ) : BaseMapViewController<
+) : BaseMapViewController<
         Camera,
         ArcGISActualMarker,
         ArcGISActualCircle,
@@ -169,19 +170,15 @@ class ArcGISMapViewController(
         )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
-
     }
 
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ArcGISActualPolygon>) {
-
     }
 
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ArcGISActualPolyline>) {
-
     }
 
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ArcGISActualMarker>) {
-
     }
 
     init {
@@ -311,10 +308,11 @@ class ArcGISMapViewController(
 
         val circleEntity = circleOverlayManager.find(touchPosition)
         circleEntity?.let {
-            val event = CircleClickEvent(
-                state = circleEntity.state,
-                position = touchPosition,
-            )
+            val event =
+                CircleClickEvent(
+                    state = circleEntity.state,
+                    position = touchPosition,
+                )
             circleClickListener?.invoke(event)
         }
 

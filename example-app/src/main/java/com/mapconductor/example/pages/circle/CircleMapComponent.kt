@@ -5,7 +5,6 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.circle.Circle
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker

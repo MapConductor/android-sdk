@@ -24,7 +24,6 @@ import android.graphics.Path
 import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.util.Log
 
 interface MarkerIcon {
     val scale: Float

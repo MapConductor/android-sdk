@@ -74,8 +74,12 @@ class GoogleMapPolygonRenderer(
                     polygon.points = points
                 }
                 polygon.strokeWidth = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
-                polygon.strokeColor = params.entity.state.strokeColor.toArgb()
-                polygon.fillColor = params.entity.state.fillColor.toArgb()
+                polygon.strokeColor =
+                    params.entity.state.strokeColor
+                        .toArgb()
+                polygon.fillColor =
+                    params.entity.state.fillColor
+                        .toArgb()
                 return@map polygon
             }
         }

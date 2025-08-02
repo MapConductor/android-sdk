@@ -7,12 +7,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.MarkerState
 import android.os.Parcelable
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -89,16 +87,17 @@ class CircleState(
         id: String? = this.id,
         zIndex: Int? = this.zIndex,
         extra: Parcelable? = this.extra,
-    ): CircleState = CircleState(
-        center = center,
-        radiusMeters = radiusMeters,
-        strokeColor = strokeColor,
-        strokeWidth = strokeWidth,
-        fillColor = fillColor,
-        id = id,
-        zIndex = zIndex,
-        extra = extra,
-    )
+    ): CircleState =
+        CircleState(
+            center = center,
+            radiusMeters = radiusMeters,
+            strokeColor = strokeColor,
+            strokeWidth = strokeWidth,
+            fillColor = fillColor,
+            id = id,
+            zIndex = zIndex,
+            extra = extra,
+        )
 
     override fun equals(other: Any?): Boolean {
         val otherState = (other as? MarkerState) ?: return false

@@ -3,9 +3,7 @@ package com.mapconductor.here.polygon
 import androidx.compose.ui.graphics.toArgb
 import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon
-import com.here.sdk.mapview.MapMeasureDependentRenderSize
 import com.here.sdk.mapview.MapPolygon
-import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonRenderer
@@ -72,14 +70,26 @@ class HereMapPolygonRenderer(
                 params.entity.polygon.geometry = geoPolygon
             }
             if (finger.strokeColor != prevFinger.strokeColor) {
-                params.entity.polygon.outlineColor = Color.valueOf(params.entity.state.strokeColor.toArgb())
+                params.entity.polygon.outlineColor =
+                    Color.valueOf(
+                        params.entity.state.strokeColor
+                            .toArgb(),
+                    )
             }
             if (finger.strokeWidth != prevFinger.strokeWidth) {
-                val lineWidth = ResourceProvider.dpToPx(params.entity.state.strokeWidth.value.toDouble())
+                val lineWidth =
+                    ResourceProvider.dpToPx(
+                        params.entity.state.strokeWidth.value
+                            .toDouble(),
+                    )
                 params.entity.polygon.outlineWidth = lineWidth
             }
             if (finger.fillColor != prevFinger.fillColor) {
-                params.entity.polygon.fillColor = Color.valueOf(params.entity.state.fillColor.toArgb())
+                params.entity.polygon.fillColor =
+                    Color.valueOf(
+                        params.entity.state.fillColor
+                            .toArgb(),
+                    )
             }
             return@map params.entity.polygon
         }
@@ -88,11 +98,12 @@ class HereMapPolygonRenderer(
     private fun createGeoPolygon(state: PolygonState): GeoPolygon {
         val points = state.points.map { GeoPoint.from(it).toGeoCoordinates() }
         // Ensure the polygon is closed by adding the first point at the end if not already closed
-        val closedPoints = if (points.first() != points.last()) {
-            points + points.first()
-        } else {
-            points
-        }
+        val closedPoints =
+            if (points.first() != points.last()) {
+                points + points.first()
+            } else {
+                points
+            }
         return GeoPolygon(closedPoints)
     }
 }

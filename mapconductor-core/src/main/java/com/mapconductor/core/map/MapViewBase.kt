@@ -27,14 +27,12 @@ import com.mapconductor.core.LocalMarkerCollector
 import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.settings.Settings
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview

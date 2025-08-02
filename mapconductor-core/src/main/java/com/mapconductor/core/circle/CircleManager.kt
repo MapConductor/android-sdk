@@ -5,7 +5,6 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 
-
 class CircleManager<ActualCircle> {
     private val entities: ConcurrentHashMap<String, CircleEntity<ActualCircle>> = ConcurrentHashMap()
 
@@ -30,12 +29,13 @@ class CircleManager<ActualCircle> {
         entities.clear()
     }
 
-    fun find(position: IGeoPoint) : CircleEntity<ActualCircle>? {
-        val filtered = allEntities().filter { entity ->
-            val centerPos = entity.state.center
-            val distance = haversineDistance(centerPos, position)
-            return@filter (distance <= entity.state.radiusMeters)
-        }
+    fun find(position: IGeoPoint): CircleEntity<ActualCircle>? {
+        val filtered =
+            allEntities().filter { entity ->
+                val centerPos = entity.state.center
+                val distance = haversineDistance(centerPos, position)
+                return@filter (distance <= entity.state.radiusMeters)
+            }
 
         if (filtered.isEmpty()) {
             return null

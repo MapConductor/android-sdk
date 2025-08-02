@@ -7,5 +7,5 @@ data class SidebarItem(
     val title: String,
     val icon: ImageVector,
     val route: String,
-    val isSelected: Boolean = false
+    val isSelected: Boolean = false,
 )

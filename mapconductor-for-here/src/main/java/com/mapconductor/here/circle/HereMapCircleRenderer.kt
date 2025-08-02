@@ -16,11 +16,11 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.here.HereMapViewHolder
 import com.mapconductor.here.toGeoCoordinates
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class DefaultHereMapCircleRenderer : CircleRendererFactory<MapPolygon> {
     override fun create(
@@ -41,23 +41,23 @@ class HereMapCircleRenderer(
     override val holder: HereMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractCircleRenderer<MapPolygon>() {
-
     companion object {
         // Number of points to approximate a circle - more points = smoother circle
         private const val CIRCLE_POINT_COUNT = 64
     }
 
     override suspend fun addCircles(newCircles: List<CircleState>): List<MapPolygon?> {
-        val polygons = newCircles.map { state ->
-            val geoPolygon = createCirclePolygon(state)
-            val lineWidth = ResourceProvider.dpToPx(state.strokeWidth.value.toDouble())
-            MapPolygon(
-                geoPolygon,
-                Color.valueOf(state.fillColor.toArgb()),
-                Color.valueOf(state.strokeColor.toArgb()),
-                lineWidth,
-            )
-        }
+        val polygons =
+            newCircles.map { state ->
+                val geoPolygon = createCirclePolygon(state)
+                val lineWidth = ResourceProvider.dpToPx(state.strokeWidth.value.toDouble())
+                MapPolygon(
+                    geoPolygon,
+                    Color.valueOf(state.fillColor.toArgb()),
+                    Color.valueOf(state.strokeColor.toArgb()),
+                    lineWidth,
+                )
+            }
         coroutine.launch {
             polygons.forEach { holder.map.addMapPolygon(it) }
         }
@@ -83,18 +83,30 @@ class HereMapCircleRenderer(
 
             // Update stroke color
             if (finger.strokeColor != prevFinger.strokeColor) {
-                params.entity.circle.outlineColor = Color.valueOf(params.entity.state.strokeColor.toArgb())
+                params.entity.circle.outlineColor =
+                    Color.valueOf(
+                        params.entity.state.strokeColor
+                            .toArgb(),
+                    )
             }
 
             // Update stroke width
             if (finger.strokeWidth != prevFinger.strokeWidth) {
-                val lineWidth = ResourceProvider.dpToPx(params.entity.state.strokeWidth.value.toDouble())
+                val lineWidth =
+                    ResourceProvider.dpToPx(
+                        params.entity.state.strokeWidth.value
+                            .toDouble(),
+                    )
                 params.entity.circle.outlineWidth = lineWidth
             }
 
             // Update fill color
             if (finger.fillColor != prevFinger.fillColor) {
-                params.entity.circle.fillColor = Color.valueOf(params.entity.state.fillColor.toArgb())
+                params.entity.circle.fillColor =
+                    Color.valueOf(
+                        params.entity.state.fillColor
+                            .toArgb(),
+                    )
             }
 
             return@map params.entity.circle
@@ -132,7 +144,7 @@ class HereMapCircleRenderer(
     private fun calculateCirclePoint(
         center: GeoCoordinates,
         radiusMeters: Double,
-        angleRadians: Double
+        angleRadians: Double,
     ): GeoCoordinates {
         // Approximate conversion: 1 degree latitude ≈ 111,320 meters
         // Longitude conversion varies by latitude, use cosine correction
@@ -144,7 +156,7 @@ class HereMapCircleRenderer(
 
         return GeoCoordinates(
             center.latitude + deltaLat,
-            center.longitude + deltaLon
+            center.longitude + deltaLon,
         )
     }
 }

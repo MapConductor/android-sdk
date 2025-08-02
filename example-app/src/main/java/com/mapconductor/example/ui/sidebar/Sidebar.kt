@@ -43,86 +43,92 @@ fun OverlaySidebar(
     onItemClick: (SidebarItem) -> Unit,
     isVisible: Boolean,
     onToggleSidebar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // Overlay background
     if (isVisible) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-                .zIndex(10f)
-                .clickable { onToggleSidebar() }
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .zIndex(10f)
+                    .clickable { onToggleSidebar() },
         )
     }
-    
+
     // Sidebar panel
     AnimatedVisibility(
         visible = isVisible,
-        enter = slideInHorizontally(
-            initialOffsetX = { -it },
-            animationSpec = tween(durationMillis = 300)
-        ),
-        exit = slideOutHorizontally(
-            targetOffsetX = { -it },
-            animationSpec = tween(durationMillis = 300)
-        ),
-        modifier = modifier.zIndex(20f)
+        enter =
+            slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = tween(durationMillis = 300),
+            ),
+        exit =
+            slideOutHorizontally(
+                targetOffsetX = { -it },
+                animationSpec = tween(durationMillis = 300),
+            ),
+        modifier = modifier.zIndex(20f),
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(280.dp),
+            modifier =
+                Modifier
+                    .fillMaxHeight()
+                    .width(280.dp),
             color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 16.dp
+            shadowElevation = 16.dp,
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .padding(8.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 16.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 16.dp),
                 ) {
                     IconButton(
                         onClick = onToggleSidebar,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(40.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Close sidebar",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "MapConductor Demo",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                
+
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 8.dp),
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 items.forEach { item ->
                     SidebarItemView(
                         item = item,
                         isSelected = item.id == selectedItemId,
                         isExpanded = true,
-                        onClick = { 
+                        onClick = {
                             onItemClick(item)
                             onToggleSidebar() // Close sidebar after selection
-                        }
+                        },
                     )
                 }
             }
@@ -138,7 +144,7 @@ fun Sidebar(
     onItemClick: (SidebarItem) -> Unit,
     isExpanded: Boolean,
     onToggleSidebar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OverlaySidebar(
         items = items,
@@ -146,7 +152,7 @@ fun Sidebar(
         onItemClick = onItemClick,
         isVisible = isExpanded,
         onToggleSidebar = onToggleSidebar,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -155,49 +161,54 @@ private fun SidebarItemView(
     item: SidebarItem,
     isSelected: Boolean,
     isExpanded: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
-    val backgroundColor = if (isSelected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        Color.Transparent
-    }
-    
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    
+    val backgroundColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            Color.Transparent
+        }
+
+    val contentColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp, horizontal = 8.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .clickable { onClick() }
-            .padding(12.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp, horizontal = 8.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(backgroundColor)
+                .clickable { onClick() }
+                .padding(12.dp),
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = item.icon,
                 contentDescription = if (isExpanded) null else item.title,
                 modifier = Modifier.size(20.dp),
-                tint = contentColor
+                tint = contentColor,
             )
-            
+
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = slideInHorizontally(
-                    initialOffsetX = { -it },
-                    animationSpec = tween(durationMillis = 300)
-                ),
-                exit = slideOutHorizontally(
-                    targetOffsetX = { -it },
-                    animationSpec = tween(durationMillis = 300)
-                )
+                enter =
+                    slideInHorizontally(
+                        initialOffsetX = { -it },
+                        animationSpec = tween(durationMillis = 300),
+                    ),
+                exit =
+                    slideOutHorizontally(
+                        targetOffsetX = { -it },
+                        animationSpec = tween(durationMillis = 300),
+                    ),
             ) {
                 Row {
                     Spacer(modifier = Modifier.width(12.dp))
@@ -205,7 +216,7 @@ private fun SidebarItemView(
                         text = item.title,
                         style = MaterialTheme.typography.bodyMedium,
                         color = contentColor,
-                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                     )
                 }
             }

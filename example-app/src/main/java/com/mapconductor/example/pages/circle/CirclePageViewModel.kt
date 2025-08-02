@@ -33,59 +33,75 @@ interface CirclePageViewModel {
     val circleState: CircleState
 
     fun changeState(state: MapViewState<*>)
+
     fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
+
     fun onMarkerClick(clicked: MarkerState)
+
     fun onMapClick(clicked: GeoPoint)
+
     fun onCircleClick(event: CircleClickEvent)
+
     fun onMarkerDrag(dragged: MarkerState)
+
     fun showToast(text: String)
+
     fun removeToast(toastMessage: ToastMessage)
 }
 
-class CirclePageViewModelImpl : ViewModel(), CirclePageViewModel {
+class CirclePageViewModelImpl :
+    ViewModel(),
+    CirclePageViewModel {
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
-    override val initCameraPosition = MapCameraPosition(
-        position = GeoPoint.fromLatLong(
-            latitude = 21.382314,
-            longitude = -157.933097,
-        ),
-        zoom = 12.0,
-        bearing = 0.0,
-        tilt = 0.0,
-        paddings = null,
-    )
+    override val initCameraPosition =
+        MapCameraPosition(
+            position =
+                GeoPoint.fromLatLong(
+                    latitude = 21.382314,
+                    longitude = -157.933097,
+                ),
+            zoom = 12.0,
+            bearing = 0.0,
+            tilt = 0.0,
+            paddings = null,
+        )
 
     override val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
 
-    override val centerMarker = MarkerState(
-        id = "center_marker",
-        position = circleCenter,
-        icon = DefaultIcon(
-            fillColor = Color.Red,
-            strokeColor = Color.White,
-            label = "C"
-        ),
-        draggable = false
-    )
-
-    private val _edgeMarker: MutableState<MarkerState> = mutableStateOf(
+    override val centerMarker =
         MarkerState(
-            id = "edge_marker",
-            position = calculatePositionAtDistance(
-                center = circleCenter,
-                distanceMeters = 1000.0,
-                bearingDegrees = 90.0 // East
-            ),
-            icon = DefaultIcon(
-                fillColor = Color.Green,
-                strokeColor = Color.White,
-                label = "E"
-            ),
-            draggable = true
+            id = "center_marker",
+            position = circleCenter,
+            icon =
+                DefaultIcon(
+                    fillColor = Color.Red,
+                    strokeColor = Color.White,
+                    label = "C",
+                ),
+            draggable = false,
         )
-    )
+
+    private val _edgeMarker: MutableState<MarkerState> =
+        mutableStateOf(
+            MarkerState(
+                id = "edge_marker",
+                position =
+                    calculatePositionAtDistance(
+                        center = circleCenter,
+                        distanceMeters = 1000.0,
+                        bearingDegrees = 90.0, // East
+                    ),
+                icon =
+                    DefaultIcon(
+                        fillColor = Color.Green,
+                        strokeColor = Color.White,
+                        label = "E",
+                    ),
+                draggable = true,
+            ),
+        )
     override val edgeMarker: MarkerState
         get() = _edgeMarker.value
 
@@ -93,16 +109,17 @@ class CirclePageViewModelImpl : ViewModel(), CirclePageViewModel {
         haversineDistance(circleCenter, _edgeMarker.value.position)
     }
 
-    private val _circleState: MutableState<CircleState> = mutableStateOf(
-        CircleState(
-            id = "circle",
-            center = circleCenter,
-            radiusMeters = 1000.0, // Initial radius
-            strokeColor = Color.Blue,
-            strokeWidth = 2.dp,
-            fillColor = Color.Blue.copy(alpha = 0.2f)
+    private val _circleState: MutableState<CircleState> =
+        mutableStateOf(
+            CircleState(
+                id = "circle",
+                center = circleCenter,
+                radiusMeters = 1000.0, // Initial radius
+                strokeColor = Color.Blue,
+                strokeWidth = 2.dp,
+                fillColor = Color.Blue.copy(alpha = 0.2f),
+            ),
         )
-    )
     override val circleState: CircleState
         get() = _circleState.value
 
@@ -135,11 +152,10 @@ class CirclePageViewModelImpl : ViewModel(), CirclePageViewModel {
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
-
         _edgeMarker.value.position = dragged.position
 
         // Update circle radius
-        _circleState.value.radiusMeters = radiusMeters //haversineDistance(circleCenter, _edgeMarker.value.position)
+        _circleState.value.radiusMeters = radiusMeters // haversineDistance(circleCenter, _edgeMarker.value.position)
 
 //        showToast("Radius updated: ${radiusMeters.toInt()}m")
     }
