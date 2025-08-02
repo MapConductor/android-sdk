@@ -22,15 +22,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
+import com.mapconductor.core.LocalCircleCollector
 import com.mapconductor.core.LocalMarkerCollector
+import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.info.InfoWindowCompose
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.settings.Settings
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview
@@ -46,7 +48,7 @@ fun <
     SpecificState : MapViewState<*>,
     // Replace Any with a base MapViewController if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewController<*>,
+    SpecificController : MapViewControllerAlias,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
@@ -83,6 +85,8 @@ fun <
             CompositionLocalProvider(
                 LocalMarkerCollector provides scope.markerFlow,
                 LocalInfoBubbleCollector provides scope.bubbleFlow,
+                LocalCircleCollector provides scope.circleFlow,
+                LocalPolylineCollector provides scope.polylineFlow,
             ) {
                 with(scope) {
                     content?.invoke(this)
@@ -91,8 +95,24 @@ fun <
             val markers = scope.markerFlow.collectAsState()
             markers.value.forEach { markerState ->
                 LaunchedEffect(markerState.id) {
-                    markerState.asFlow().debounce(100).collectLatest {
+                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                         controller.updateMarker(markerState)
+                    }
+                }
+            }
+            val circles = scope.circleFlow.collectAsState()
+            circles.value.forEach { circleState ->
+                LaunchedEffect(circleState.id) {
+                    circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        controller.updateCircle(circleState)
+                    }
+                }
+            }
+            val polylines = scope.polylineFlow.collectAsState()
+            polylines.value.forEach { polylineState ->
+                LaunchedEffect(polylineState.id) {
+                    polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        controller.updatePolyline(polylineState)
                     }
                 }
             }
@@ -164,19 +184,17 @@ fun <
             bubbles.forEach { entry ->
                 val marker = entry.state.marker ?: return@forEach
                 val position = marker.position
-                val icon = marker.icon ?: MarkerIcon.Default()
-                val iconScale = icon.scale ?: 2f
                 val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
+                val icon = marker.icon ?: DefaultIcon()
+                val iconScale = icon.scale
+                val iconSize = ResourceProvider.dpToPx(icon.iconSize.value * iconScale).toFloat()
 
                 InfoWindowCompose(
                     positionOffset = positionOffset,
                     tailOffset = entry.state.tailOffset,
                     content = entry.content,
                     iconSize =
-                        Size(
-                            icon.size.width * iconScale,
-                            icon.size.height * iconScale,
-                        ),
+                        Size(iconSize, iconSize),
                     iconOffset = icon.anchor,
                     infoAnchorOffset = icon.infoAnchor,
                 )

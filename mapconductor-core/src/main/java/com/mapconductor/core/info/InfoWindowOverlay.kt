@@ -39,8 +39,8 @@ internal fun InfoWindowCompose(
     val y =
         positionOffset.y +
             (-tailOffset.y * size.height) + // tailOffset.y = 1.0 のとき、吹き出しの下部
-            (-iconOffset.y * iconSize.height) + // iconOffset.x = 0.5のとき、アイコンの中央
-            (-infoAnchorOffset.y * iconSize.height) // infoAnchorOffset.x = 0.5のとき、アイコンの中央
+            (-iconOffset.y * iconSize.height) + // iconOffset.y = 1.0のとき、アイコンの下部
+            (infoAnchorOffset.y * iconSize.height) // infoAnchorOffset.y = 0.0のとき、アイコンの上部
 
     Box(
         modifier =

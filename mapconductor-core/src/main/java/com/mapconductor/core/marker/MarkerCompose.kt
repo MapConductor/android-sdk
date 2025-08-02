@@ -9,8 +9,9 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {
+    val rememberMarker = remember { state }
     SideEffect {
-        markerFlow.value = markerFlow.value + state
+        markerFlow.value = markerFlow.value + rememberMarker
     }
 }
 
@@ -21,12 +22,10 @@ fun MapViewScope.Marker(
     extra: Parcelable? = null,
 ) {
     val state =
-        remember {
-            MarkerState(
-                position = position,
-                extra = extra,
-                icon = icon,
-            )
-        }
+        MarkerState(
+            position = position,
+            extra = extra,
+            icon = icon,
+        )
     Marker(state)
 }

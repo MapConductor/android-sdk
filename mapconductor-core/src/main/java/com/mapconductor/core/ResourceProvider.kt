@@ -1,10 +1,13 @@
 package com.mapconductor.core
 
-import androidx.annotation.Keep
-import com.mapconductor.core.marker.BitmapIcon
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import android.content.Context
+import android.content.res.Configuration
 import android.content.res.Resources
-import android.util.LruCache
+import android.os.Build
+import android.util.DisplayMetrics
+import android.util.TypedValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -22,81 +25,76 @@ object ResourceProvider {
     val initialized = _initialized.asStateFlow()
 
     private lateinit var appContext: Context
-    val density =
-        Resources
-            .getSystem()
-            .displayMetrics.density
-            .toDouble()
+
+    fun getDisplayMetrics(): DisplayMetrics = Resources.getSystem().displayMetrics
+
+    fun getSystemConfiguration(): Configuration = Resources.getSystem().configuration
 
     fun init(context: Context) {
         appContext = context.applicationContext
         _initialized.value = true
     }
 
-    fun toDp(value: Double): Double = value * density
+    fun getDensity(): Float = getDisplayMetrics().density
 
-    private val bitmapCache: LruCache<Int, BitmapIcon> by lazy {
-        // Get max memory size by bytes
-        val maxMemory = Runtime.getRuntime().maxMemory()
-        val cacheSize = maxMemory / 8
+    fun dpToPx(dp: Float): Double = dpToPx(dp.toDouble())
 
-        // Cache bytes
-        object : LruCache<Int, BitmapIcon>(cacheSize.toInt()) {
-            override fun sizeOf(
-                key: Int,
-                iconRes: BitmapIcon,
-            ): Int = iconRes.bitmap.byteCount / 1024
+    fun dpToPx(dp: Dp): Double = dpToPx(dp.value.toDouble())
+
+    fun dpToPx(dp: Double): Double =
+        TypedValue
+            .applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp.toFloat(),
+                getDisplayMetrics(),
+            ).toDouble()
+
+    fun pxToSp(px: Double): Double {
+        val displayMetrics = getDisplayMetrics()
+        val scaledDensity =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                // Android 14以降の推奨方法
+                displayMetrics.density * getSystemConfiguration().fontScale
+            } else {
+                // 従来の方法（API 33以下）
+                @Suppress("DEPRECATION")
+                displayMetrics.scaledDensity
+            }
+        return px / scaledDensity
+    }
+
+    fun spToPx(sp: Float): Double = spToPx(sp.toDouble())
+
+    fun spToPx(sp: TextUnit): Double = spToPx(sp.value.toDouble())
+
+    fun spToPx(sp: Double): Double =
+        TypedValue
+            .applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                sp.toFloat(),
+                getDisplayMetrics(),
+            ).toDouble()
+
+    fun getFontScale(): Float = getSystemConfiguration().fontScale
+
+    /**
+     * 効果的なスケール密度を現代的な方法で計算
+     */
+    fun getEffectiveScaledDensity(): Float {
+        val displayMetrics = getDisplayMetrics()
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14以降：density × fontScale で計算
+            displayMetrics.density * getSystemConfiguration().fontScale
+        } else {
+            // Android 13以下：従来の scaledDensity を使用
+            @Suppress("DEPRECATION")
+            displayMetrics.scaledDensity
         }
     }
-    val DEFAULT_MARKER =
-        IconResource(
-            name = "DEFAULT_MARKER",
-            width = 42.0,
-            height = 42.0,
-            anchorX = 24.0,
-            anchorY = 42.0,
-            resourceId = R.drawable.default_marker,
-        )
 
-    private val resourceIDs =
-        hashMapOf<String, IconResource>(
-            DEFAULT_MARKER.name to DEFAULT_MARKER,
-        )
-
-//    fun getIconResourceWithBitmap(name: String): BitmapIcon? {
-//        synchronized(bitmapCache) {
-//            val icon = this.resourceIDs.get(name) ?: return null
-//            val scaledWidth = toDp(icon.width.toDouble())
-//            val scaledHeight = toDp(icon.height.toDouble())
-//
-//            // If we have the bitmap in cache, return it
-//            bitmapCache.get(icon.resourceId)?.let {
-//                return it
-//            }
-//
-//            val bitmap = getBitmapFromDrawableRes(
-//                resId = icon.resourceId,
-//                width = scaledWidth,
-//                height = scaledHeight,
-//            ) ?: return null
-//
-//            // Save into the cache
-//            val iconRes = BitmapIcon(
-//                name = icon.name,
-//                width = scaledWidth,
-//                height = scaledHeight,
-//                anchorX = 0.5,
-//                anchorY = 1.0,
-//                bitmap = bitmap,
-//            )
-//            bitmapCache.put(icon.resourceId, iconRes)
-//
-//            return iconRes
-//        }
-//    }
-
-    @Keep
-    fun clearCache() {
-        bitmapCache.evictAll()
+    fun getOptimalTileSize(): Int {
+        val displayMetrics = getDisplayMetrics()
+        return if (displayMetrics.density >= 2.0f) 512 else 256
     }
 }

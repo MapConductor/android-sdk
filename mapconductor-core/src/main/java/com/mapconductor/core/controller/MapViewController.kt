@@ -1,8 +1,9 @@
 package com.mapconductor.core.controller
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.core.graphics.createBitmap
+import com.mapconductor.core.circle.CircleOverlayManager
+import com.mapconductor.core.circle.CircleRenderer
+import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
@@ -10,27 +11,37 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.spherical.haversineDistance
-import kotlin.math.abs
-import kotlin.math.pow
-import android.graphics.Canvas
-import android.graphics.Paint
+import com.mapconductor.core.polygon.PolygonOverlayManager
+import com.mapconductor.core.polygon.PolygonRenderer
+import com.mapconductor.core.polyline.PolylineOverlayManager
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController<ActualMarker> {
+interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManager<ActualMarker>
     val hexGeocell: HexGeocell
+    val polylineOverlayManager: PolylineOverlayManager<ActualPolyline>
+    val circleOverlayManager: CircleOverlayManager<ActualCircle>
+    val polygonOverlayManager: PolygonOverlayManager<ActualPolygon>
 
     suspend fun addMarkers(data: List<MarkerState>)
 
     suspend fun updateMarker(state: MarkerState)
+
+    suspend fun addPolylines(data: List<PolylineState>)
+
+    suspend fun updatePolyline(state: PolylineState)
+
+    suspend fun addCircles(data: List<CircleState>)
+
+    suspend fun updateCircle(state: CircleState)
 
     suspend fun clearOverlays()
 
@@ -38,6 +49,7 @@ interface MapViewController<ActualMarker> {
 
     fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
 }
+typealias MapViewControllerAlias = MapViewController<*, *, *, *>
 
 data class SearchRangeAnalysis(
     val clickPosition: IGeoPoint,
@@ -53,7 +65,8 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewController<ActualMarker> {
+abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
+    MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -63,11 +76,48 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         }
     }
 
-    protected open fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>) {
-        // Stub
+    abstract val polylineRenderer: PolylineRenderer<ActualPolyline>
+
+    override val polylineOverlayManager: PolylineOverlayManager<ActualPolyline> by lazy {
+        createPolylineOverlayManager().also { overlayManager ->
+            polylineRenderer.init(overlayManager)
+            onPolylineOverlayManagerInitialized(overlayManager)
+        }
     }
 
+    abstract val polygonRenderer: PolygonRenderer<ActualPolygon>
+
+    override val polygonOverlayManager: PolygonOverlayManager<ActualPolygon> by lazy {
+        createPolygonOverlayManager().also { overlayManager ->
+            polygonRenderer.init(overlayManager)
+            onPolygonOverlayManagerInitialized(overlayManager)
+        }
+    }
+
+    abstract val circleRenderer: CircleRenderer<ActualCircle>
+
+    override val circleOverlayManager: CircleOverlayManager<ActualCircle> by lazy {
+        createCircleOverlayManager().also { overlayManager ->
+            circleRenderer.init(overlayManager)
+            onCircleOverlayManagerInitialized(overlayManager)
+        }
+    }
+
+    protected abstract fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>)
+
+    protected abstract fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<ActualPolyline>)
+
+    protected abstract fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ActualPolygon>)
+
+    protected abstract fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ActualCircle>)
+
     protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
+
+    protected abstract fun createPolylineOverlayManager(): PolylineOverlayManager<ActualPolyline>
+
+    protected abstract fun createPolygonOverlayManager(): PolygonOverlayManager<ActualPolygon>
+
+    protected abstract fun createCircleOverlayManager(): CircleOverlayManager<ActualCircle>
 
     var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
     var mapClickListener: OnMapEventHandler? = null
@@ -76,6 +126,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
     var markerDragStartListener: OnMarkerEventHandler? = null
     var markerDragListener: OnMarkerEventHandler? = null
     var markerDragEndListener: OnMarkerEventHandler? = null
+    var circleClickListener: OnCircleEventHandler? = null
 
     abstract fun setupListeners()
 
@@ -87,216 +138,181 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker> : MapViewContro
         markerRenderer
             .setOnMarkerAnimationEnd(listener)
 
-    protected abstract fun clearPolyline()
-
-    protected abstract fun drawPolyline(geoPoints: List<IGeoPoint>)
-
-    protected fun adjustIconForAnchor(icon: BitmapIcon): BitmapIcon {
-        val offsetX = 0.5 - icon.anchor.x.toDouble()
-        val offsetY = 0.5 - icon.anchor.y.toDouble()
-        val dx = offsetX * icon.size.width
-        val dy = offsetY * icon.size.height
-        val width = icon.size.width + abs(dx)
-        val height = icon.size.height + abs(dy)
-
-        val bitmap = createBitmap(width.toInt(), height.toInt())
-
-        val paint =
-            Paint().apply {
-                isAntiAlias = true
-            }
-
-//        val rect = Rect(
-//            dx.toInt(),
-//            dy.toInt(),
-//            (dx + icon.size.width.toDouble()).toInt(),
-//            (dy + icon.size.height.toDouble()).toInt(),
+//    protected fun analyzeSearchRange(
+//        position: IGeoPoint,
+//        zoom: Double,
+//        tolerancePixels: Double,
+//    ): SearchRangeAnalysis {
+//        val toleranceMeters =
+//            markerOverlayManager.markerManager.metersPerPixel(
+//                position, zoom, tolerancePixels,
+//            )
+//
+//        val clickedCell = hexGeocell.latLngToHexCell(position, zoom)
+//
+//        // Hex metrics
+//        val scale = 1.0 / (2.0.pow(zoom))
+//        val latScale = kotlin.math.cos(position.latitude * kotlin.math.PI / 180).coerceAtLeast(0.01)
+//        val hexSideLength = hexGeocell.baseHexSideLength * scale / latScale
+//        val hexDistance = hexSideLength * kotlin.math.sqrt(3.0)
+//        val searchRadiusHexUnits = kotlin.math.ceil(toleranceMeters / hexDistance).toInt()
+//
+//        // Search cells
+//        val searchCells = hexGeocell.hexRange(clickedCell.coord, searchRadiusHexUnits)
+//        val outlineCells = findOutlineCells(searchCells)
+//
+//        // Find markers in range
+//        val markersInRange = findMarkersInSearchRange(position, searchCells, toleranceMeters, zoom)
+//
+//        return SearchRangeAnalysis(
+//            clickPosition = position,
+//            zoom = zoom,
+//            tolerancePixels = tolerancePixels,
+//            toleranceMeters = toleranceMeters,
+//            clickedCell = clickedCell,
+//            hexSideLength = hexSideLength,
+//            hexDistance = hexDistance,
+//            searchRadiusHexUnits = searchRadiusHexUnits,
+//            searchCells = searchCells,
+//            outlineCells = outlineCells,
+//            markersInRange = markersInRange,
 //        )
-        Canvas(bitmap).apply {
-            drawBitmap(icon.bitmap, abs(dx).toFloat(), abs(dy).toFloat(), paint)
-        }
-        return BitmapIcon(
-            bitmap = bitmap,
-            anchor = Offset((width * 0.5).toFloat(), height.toFloat()),
-            size = Size(width.toFloat(), height.toFloat()),
-        )
-    }
+//    }
+//
+//    /**
+//     * 検索範囲内のマーカーを特定
+//     */
+//    protected fun findMarkersInSearchRange(
+//        clickPosition: IGeoPoint,
+//        searchCells: List<HexCoord>,
+//        toleranceMeters: Double,
+//        zoom: Double,
+//    ): List<MarkerState> {
+//        val cellSet = searchCells.toSet()
+//        val markersInRange = mutableListOf<MarkerState>()
+//
+//        markerOverlayManager.markerManager.allEntities().forEach { markerEntity ->
+//            val markerCell = hexGeocell.latLngToHexCell(markerEntity.state.position, zoom)
+//
+//            if (markerCell.coord in cellSet) {
+//                val distance = haversineDistance(clickPosition, markerEntity.state.position)
+//                if (distance <= toleranceMeters) {
+//                    markersInRange.add(markerEntity.state)
+//                }
+//            }
+//        }
+//
+//        return markersInRange
+//    }
 
-    protected fun analyzeSearchRange(
-        position: IGeoPoint,
-        zoom: Double,
-        tolerancePixels: Double,
-    ): SearchRangeAnalysis {
-        val toleranceMeters =
-            markerOverlayManager.markerManager.metersPerPixel(
-                position, zoom, tolerancePixels,
-            )
+//    /**
+//     * 検索範囲の外郭セルを特定
+//     */
+//    protected fun findOutlineCells(searchCells: List<HexCoord>): List<HexCoord> {
+//        val cellSet = searchCells.toSet()
+//
+//        return searchCells.filter { cell ->
+//            // 近隣セルのいずれかが検索範囲外なら、これは外郭セル
+//            cell.neighbors().any { neighbor ->
+//                neighbor !in cellSet
+//            }
+//        }
+//    }
 
-        val clickedCell = hexGeocell.latLngToHexCell(position, zoom)
+//    /**
+//     * 円形の近似ポイントを生成
+//     */
+//    protected fun createCirclePoints(
+//        center: IGeoPoint,
+//        radiusMeters: Double,
+//        numPoints: Int = 32,
+//    ): List<IGeoPoint> {
+//        val points = mutableListOf<IGeoPoint>()
+//        val earthRadius = 6371000.0 // 地球半径（メートル）
+//
+//        for (i in 0 until numPoints) {
+//            val angle = 2.0 * kotlin.math.PI * i / numPoints
+//            val deltaLat = radiusMeters * kotlin.math.cos(angle) / earthRadius * 180.0 / kotlin.math.PI
+//            val deltaLng =
+//                radiusMeters * kotlin.math.sin(angle) / earthRadius * 180.0 / kotlin.math.PI /
+//                    kotlin.math.cos(center.latitude * kotlin.math.PI / 180.0)
+//
+//            points.add(
+//                object : IGeoPoint {
+//                    override val latitude = center.latitude + deltaLat
+//                    override val longitude = center.longitude + deltaLng
+//                    override val altitude = center.altitude
+//                },
+//            )
+//        }
+//
+//        // 円を閉じる
+//        if (points.isNotEmpty()) {
+//            points.add(points[0])
+//        }
+//
+//        return points
+//    }
 
-        // Hex metrics
-        val scale = 1.0 / (2.0.pow(zoom))
-        val latScale = kotlin.math.cos(position.latitude * kotlin.math.PI / 180).coerceAtLeast(0.01)
-        val hexSideLength = hexGeocell.baseHexSideLength * scale / latScale
-        val hexDistance = hexSideLength * kotlin.math.sqrt(3.0)
-        val searchRadiusHexUnits = kotlin.math.ceil(toleranceMeters / hexDistance).toInt()
+//    protected fun drawDistanceCircles(analysis: SearchRangeAnalysis) {
+//        // 距離サークルの近似（正n角形として）
+//        val circlePoints =
+//            createCirclePoints(
+//                center = analysis.clickPosition,
+//                radiusMeters = analysis.toleranceMeters,
+//                numPoints = 32,
+//            )
+//        drawPolyline(circlePoints)
+//    }
+//
+//    /**
+//     * 各種可視化モード
+//     */
+//    protected fun drawClickedCell(analysis: SearchRangeAnalysis) {
+//        val points =
+//            hexGeocell.hexToPolygonLatLng(
+//                coord = analysis.clickedCell.coord,
+//                latHint = analysis.clickPosition.latitude,
+//                zoom = analysis.zoom,
+//            )
+//        drawPolyline(points)
+//    }
 
-        // Search cells
-        val searchCells = hexGeocell.hexRange(clickedCell.coord, searchRadiusHexUnits)
-        val outlineCells = findOutlineCells(searchCells)
-
-        // Find markers in range
-        val markersInRange = findMarkersInSearchRange(position, searchCells, toleranceMeters, zoom)
-
-        return SearchRangeAnalysis(
-            clickPosition = position,
-            zoom = zoom,
-            tolerancePixels = tolerancePixels,
-            toleranceMeters = toleranceMeters,
-            clickedCell = clickedCell,
-            hexSideLength = hexSideLength,
-            hexDistance = hexDistance,
-            searchRadiusHexUnits = searchRadiusHexUnits,
-            searchCells = searchCells,
-            outlineCells = outlineCells,
-            markersInRange = markersInRange,
-        )
-    }
-
-    /**
-     * 検索範囲内のマーカーを特定
-     */
-    protected fun findMarkersInSearchRange(
-        clickPosition: IGeoPoint,
-        searchCells: List<HexCoord>,
-        toleranceMeters: Double,
-        zoom: Double,
-    ): List<MarkerState> {
-        val cellSet = searchCells.toSet()
-        val markersInRange = mutableListOf<MarkerState>()
-
-        markerOverlayManager.markerManager.allEntities().forEach { markerEntity ->
-            val markerCell = hexGeocell.latLngToHexCell(markerEntity.state.position, zoom)
-
-            if (markerCell.coord in cellSet) {
-                val distance = haversineDistance(clickPosition, markerEntity.state.position)
-                if (distance <= toleranceMeters) {
-                    markersInRange.add(markerEntity.state)
-                }
-            }
-        }
-
-        return markersInRange
-    }
-
-    /**
-     * 検索範囲の外郭セルを特定
-     */
-    protected fun findOutlineCells(searchCells: List<HexCoord>): List<HexCoord> {
-        val cellSet = searchCells.toSet()
-
-        return searchCells.filter { cell ->
-            // 近隣セルのいずれかが検索範囲外なら、これは外郭セル
-            cell.neighbors().any { neighbor ->
-                neighbor !in cellSet
-            }
-        }
-    }
-
-    /**
-     * 円形の近似ポイントを生成
-     */
-    protected fun createCirclePoints(
-        center: IGeoPoint,
-        radiusMeters: Double,
-        numPoints: Int = 32,
-    ): List<IGeoPoint> {
-        val points = mutableListOf<IGeoPoint>()
-        val earthRadius = 6371000.0 // 地球半径（メートル）
-
-        for (i in 0 until numPoints) {
-            val angle = 2.0 * kotlin.math.PI * i / numPoints
-            val deltaLat = radiusMeters * kotlin.math.cos(angle) / earthRadius * 180.0 / kotlin.math.PI
-            val deltaLng =
-                radiusMeters * kotlin.math.sin(angle) / earthRadius * 180.0 / kotlin.math.PI /
-                    kotlin.math.cos(center.latitude * kotlin.math.PI / 180.0)
-
-            points.add(
-                object : IGeoPoint {
-                    override val latitude = center.latitude + deltaLat
-                    override val longitude = center.longitude + deltaLng
-                    override val altitude = center.altitude
-                },
-            )
-        }
-
-        // 円を閉じる
-        if (points.isNotEmpty()) {
-            points.add(points[0])
-        }
-
-        return points
-    }
-
-    protected fun drawDistanceCircles(analysis: SearchRangeAnalysis) {
-        // 距離サークルの近似（正n角形として）
-        val circlePoints =
-            createCirclePoints(
-                center = analysis.clickPosition,
-                radiusMeters = analysis.toleranceMeters,
-                numPoints = 32,
-            )
-        drawPolyline(circlePoints)
-    }
-
-    /**
-     * 各種可視化モード
-     */
-    protected fun drawClickedCell(analysis: SearchRangeAnalysis) {
-        val points =
-            hexGeocell.hexToPolygonLatLng(
-                coord = analysis.clickedCell.coord,
-                latHint = analysis.clickPosition.latitude,
-                zoom = analysis.zoom,
-            )
-        drawPolyline(points)
-    }
-
-    protected fun drawFullSearchRange(analysis: SearchRangeAnalysis) {
-        val allPoints = mutableListOf<IGeoPoint>()
-
-        analysis.searchCells.take(50).forEach { coord ->
-            // パフォーマンス制限
-            val cellPoints =
-                hexGeocell.hexToPolygonLatLng(
-                    coord,
-                    analysis.clickPosition.latitude,
-                    analysis.zoom,
-                )
-            allPoints.addAll(cellPoints)
-            allPoints.add(cellPoints[0]) // 閉じる
-        }
-
-        if (allPoints.isNotEmpty()) {
-            drawPolyline(allPoints)
-        }
-    }
-
-    protected fun drawSearchOutline(analysis: SearchRangeAnalysis) {
-        val outlinePoints = mutableListOf<IGeoPoint>()
-
-        analysis.outlineCells.forEach { coord ->
-            val cellPoints =
-                hexGeocell.hexToPolygonLatLng(
-                    coord,
-                    analysis.clickPosition.latitude,
-                    analysis.zoom,
-                )
-            outlinePoints.addAll(cellPoints)
-        }
-
-        if (outlinePoints.isNotEmpty()) {
-            drawPolyline(outlinePoints)
-        }
-    }
+//    protected fun drawFullSearchRange(analysis: SearchRangeAnalysis) {
+//        val allPoints = mutableListOf<IGeoPoint>()
+//
+//        analysis.searchCells.take(50).forEach { coord ->
+//            // パフォーマンス制限
+//            val cellPoints =
+//                hexGeocell.hexToPolygonLatLng(
+//                    coord,
+//                    analysis.clickPosition.latitude,
+//                    analysis.zoom,
+//                )
+//            allPoints.addAll(cellPoints)
+//            allPoints.add(cellPoints[0]) // 閉じる
+//        }
+//
+//        if (allPoints.isNotEmpty()) {
+//            drawPolyline(allPoints)
+//        }
+//    }
+//
+//    protected fun drawSearchOutline(analysis: SearchRangeAnalysis) {
+//        val outlinePoints = mutableListOf<IGeoPoint>()
+//
+//        analysis.outlineCells.forEach { coord ->
+//            val cellPoints =
+//                hexGeocell.hexToPolygonLatLng(
+//                    coord,
+//                    analysis.clickPosition.latitude,
+//                    analysis.zoom,
+//                )
+//            outlinePoints.addAll(cellPoints)
+//        }
+//
+//        if (outlinePoints.isNotEmpty()) {
+//            drawPolyline(outlinePoints)
+//        }
+//    }
 }

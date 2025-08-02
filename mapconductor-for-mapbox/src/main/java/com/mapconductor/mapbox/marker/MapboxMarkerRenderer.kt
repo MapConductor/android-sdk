@@ -1,12 +1,12 @@
 package com.mapconductor.mapbox.marker
 
-import androidx.compose.ui.geometry.Offset
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.icons.Default
 import com.mapconductor.core.marker.AbstractMarkerRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
@@ -14,14 +14,13 @@ import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.UpdateParams
+import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
 import kotlin.coroutines.suspendCoroutine
-import android.graphics.Bitmap
-import android.graphics.Bitmap.createBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -49,23 +48,24 @@ class MapboxMarkerRenderer(
     override val coroutine: CoroutineScope,
     private val markerLayer: MarkerLayer,
     private val dragLayer: MarkerDragLayer,
-) : AbstractMarkerRenderer<Feature>() {
+) : AbstractMarkerRenderer<MapboxActualMarker>() {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
 
     object Prop {
         const val ICON_ID = "icon_id"
         const val DEFAULT_MARKER_ID = "default"
+        const val SCALE = "scale"
+        const val ICON_ANCHOR = "icon-offset"
     }
 
     override fun init(markerOverlayManager: MarkerOverlayManager<Feature>) {
         super.init(markerOverlayManager)
         holder.map.getStyle { style ->
-            defaultIcon = markerOverlayManager.markerManager.createBitmapIcon(MarkerIcon.Default())
             style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
         }
     }
 
-    fun drawMarkerLayer() {
+    fun redraw() {
         val entities = markerOverlayManager.markerManager.allEntities()
         coroutine.launch {
             markerLayer.draw(entities)
@@ -87,6 +87,7 @@ class MapboxMarkerRenderer(
             Feature.fromGeometry(
                 position.toPoint(),
                 markerEntity.marker.properties(),
+                "marker-${markerEntity.state.id}",
             )
         markerEntity.marker = feature
         val features =
@@ -115,14 +116,13 @@ class MapboxMarkerRenderer(
         newMarkers.forEach { (state, bitmapIcon) ->
             val iconKey = state.icon.hashCode().toString()
             if (!iconRefCounter.contains(iconKey)) {
-                val adjusted = adjustIconForAnchor(bitmapIcon)
-                style.addImage(iconKey, adjusted.bitmap)
+                style.addImage(iconKey, bitmapIcon.bitmap)
                 iconRefCounter[iconKey] = 0
             }
         }
 
         return newMarkers.map { (state, _) ->
-            val featureId = state.id
+            val featureId = "marker-${state.id}"
             val position = state.position.toPoint()
             val properties =
                 JsonObject().apply {
@@ -131,30 +131,27 @@ class MapboxMarkerRenderer(
                             val iconKey = icon.hashCode().toString()
                             iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
                             addProperty(Prop.ICON_ID, iconKey)
+                            // icon offset property
+                            add(Prop.ICON_ANCHOR, createIconOffset(icon))
                         }
                     } else {
                         addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                        add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                     }
+                    addProperty(Prop.SCALE, state.icon?.scale ?: 1.0)
                 }
             Feature.fromGeometry(position, properties, featureId)
         }
     }
 
     override suspend fun removeIcons(removeEntities: List<MarkerEntity<Feature>>) {
-        val style =
-            suspendCoroutine { continuation ->
-                holder.map.getStyle { style ->
-                    continuation.resumeWith(Result.success(style))
-                }
-            }
-
         removeEntities.forEach { entity ->
             entity.state.icon?.let { icon ->
                 val iconKey = icon.hashCode().toString()
                 val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
                 if (cnt == 0) {
                     iconRefCounter.remove(iconKey)
-                    style.removeStyleImage(iconKey)
+                    holder.map.style?.removeStyleImage(iconKey)
                 } else {
                     iconRefCounter[iconKey] = cnt
                 }
@@ -162,49 +159,54 @@ class MapboxMarkerRenderer(
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<Feature>>): List<Feature> {
-        val style =
-            suspendCoroutine { continuation ->
-                holder.map.getStyle { style ->
-                    continuation.resumeWith(Result.success(style))
-                }
-            }
-
-        return changes.map { params ->
+    override suspend fun changeIcons(changes: List<UpdateParams<Feature>>): List<Feature> =
+        changes.map { params ->
             val prevFinger = params.prevEntity.fingerPrint
             val currFinger = params.entity.fingerPrint
             val prevProperties = params.prevEntity.marker.properties()
 
             val properties =
                 JsonObject().apply {
+                    addProperty(
+                        Prop.SCALE,
+                        params.entity.state.icon
+                            ?.scale ?: 1.0f,
+                    )
                     if (currFinger.icon == prevFinger.icon) {
                         addProperty(
                             Prop.ICON_ID,
                             prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID,
+                        )
+
+                        add(
+                            Prop.ICON_ANCHOR,
+                            prevProperties?.get(Prop.ICON_ANCHOR) ?: getDefaultIconOffsetProperty(),
                         )
                     } else {
                         val iconKey = prevFinger.icon.toString()
                         val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
                         if (cnt == 0) {
                             iconRefCounter.remove(iconKey)
-                            style.removeStyleImage(iconKey)
+                            holder.map.style?.removeStyleImage(iconKey)
                         } else {
                             iconRefCounter[iconKey] = cnt
                         }
 
                         if (currFinger.icon == null) {
                             addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                            add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                         } else {
                             params.entity.state.icon?.let { icon ->
+                                // icon id
                                 val iconKey = icon.hashCode().toString()
                                 if (iconRefCounter.contains(iconKey)) {
                                     iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
                                 } else {
-                                    val adjusted = adjustIconForAnchor(params.bitmapIcon)
-                                    style.addImage(iconKey, adjusted.bitmap)
+                                    holder.map.style?.addImage(iconKey, params.bitmapIcon.bitmap)
                                     iconRefCounter[iconKey] = 1
                                 }
                                 addProperty(Prop.ICON_ID, iconKey)
+                                add(Prop.ICON_ANCHOR, createIconOffset(icon))
                             }
                         }
                     }
@@ -213,33 +215,17 @@ class MapboxMarkerRenderer(
             val position =
                 params.entity.state.position
                     .toPoint()
-            val featureId = params.entity.state.id
+            val featureId = "marker-${params.entity.state.id}"
             Feature.fromGeometry(position, properties, featureId)
         }
-    }
 
-    private fun adjustIconForAnchor(icon: BitmapIcon): BitmapIcon {
-        // BaseMapViewControllerのadjustIconForAnchorメソッドと同じ実装
-        val offsetX = 0.5 - icon.anchor.x.toDouble()
-        val offsetY = 0.5 - icon.anchor.y.toDouble()
-        val dx = offsetX * icon.size.width
-        val dy = offsetY * icon.size.height
-        val width = icon.size.width + kotlin.math.abs(dx)
-        val height = icon.size.height + kotlin.math.abs(dy)
+    private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultIcon)
 
-        val bitmap = createBitmap(width.toInt(), height.toInt(), Bitmap.Config.ARGB_8888)
-        val paint = android.graphics.Paint().apply { isAntiAlias = true }
-
-        android.graphics.Canvas(bitmap).apply {
-            drawBitmap(icon.bitmap, kotlin.math.abs(dx).toFloat(), kotlin.math.abs(dy).toFloat(), paint)
+    private fun createIconOffset(icon: BitmapIcon): JsonArray =
+        JsonArray().apply {
+            add(-(icon.size.width * icon.anchor.x) / ResourceProvider.getDensity())
+            add(-(icon.size.height * icon.anchor.y) / ResourceProvider.getDensity())
         }
 
-        return BitmapIcon(
-            bitmap = bitmap,
-            anchor = Offset(0.5f, 1.0f),
-            size =
-                androidx.compose.ui.geometry
-                    .Size(width.toFloat(), height.toFloat()),
-        )
-    }
+    private fun createIconOffset(icon: MarkerIcon): JsonArray = createIconOffset(icon.toBitmapIcon())
 }
