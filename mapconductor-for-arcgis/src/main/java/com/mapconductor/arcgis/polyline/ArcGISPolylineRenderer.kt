@@ -1,6 +1,5 @@
 package com.mapconductor.arcgis.polyline
 
-import com.arcgismaps.Color
 import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.PolylineBuilder
 import com.arcgismaps.mapping.symbology.SimpleLineSymbol
@@ -8,6 +7,7 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
@@ -51,7 +51,7 @@ class ArcGISPolylineRenderer(
                 val lineSymbol =
                     SimpleLineSymbol().apply {
                         style = SimpleLineSymbolStyle.Solid
-                        color = createStrokeColor(state)
+                        color = state.strokeColor.toArcGISColor()
                         width = state.strokeWidth.value.toFloat() // 線の太さ
                     }
 
@@ -85,7 +85,7 @@ class ArcGISPolylineRenderer(
 
                 (params.entity.polyline.symbol as SimpleLineSymbol).let { symbol ->
                     if (finger.strokeColor != prevFinger.strokeColor) {
-                        symbol.color = createStrokeColor(params.entity.state)
+                        symbol.color = params.entity.state.strokeColor.toArcGISColor()
                     }
                     if (finger.strokeWidth != prevFinger.strokeWidth) {
                         symbol.width = ResourceProvider.dpToPx(params.prevEntity.state.strokeWidth).toFloat()
@@ -95,14 +95,6 @@ class ArcGISPolylineRenderer(
             }
         }
     }
-
-    private fun createStrokeColor(state: PolylineState): Color =
-        Color.fromRgba(
-            r = (state.strokeColor.red * 255).toInt(),
-            g = (state.strokeColor.green * 255).toInt(),
-            b = (state.strokeColor.blue * 255).toInt(),
-            a = (state.strokeColor.alpha * 255).toInt(),
-        )
 
     private fun createGeometry(state: PolylineState): Geometry {
         val polylineBuilder =

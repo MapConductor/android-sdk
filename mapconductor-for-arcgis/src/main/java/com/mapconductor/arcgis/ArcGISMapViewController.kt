@@ -1,15 +1,5 @@
 package com.mapconductor.arcgis
 
-import androidx.compose.ui.graphics.toArgb
-import com.arcgismaps.Color
-import com.arcgismaps.geometry.GeodeticCurveType
-import com.arcgismaps.geometry.GeometryEngine
-import com.arcgismaps.geometry.LinearUnit
-import com.arcgismaps.geometry.LinearUnitId
-import com.arcgismaps.mapping.symbology.SimpleFillSymbol
-import com.arcgismaps.mapping.symbology.SimpleFillSymbolStyle
-import com.arcgismaps.mapping.symbology.SimpleLineSymbol
-import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
@@ -29,14 +19,12 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineRenderer
 import com.mapconductor.arcgis.polyline.DefaultArcGISPolylineRenderer
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleEntityImpl
 import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -203,31 +191,6 @@ class ArcGISMapViewController(
         holder.map.graphicsOverlays.add(polylineLayer)
         holder.map.graphicsOverlays.add(markerLayer)
         setupListeners()
-    }
-
-    private fun createCircle(state: CircleState): ArcGISActualCircle {
-        val spec = holder.mapView.sceneView.scene?.spatialReference
-        val center = GeoPoint.from(state.center).toPoint(spec)
-
-        val circle = GeometryEngine.bufferGeodeticOrNull(
-            geometry = center,
-            distance = state.radiusMeters,
-            distanceUnit = LinearUnit(LinearUnitId.Meters),
-            maxDeviation = Double.NaN,
-            curveType = GeodeticCurveType.Geodesic,
-        )
-        val stroke = SimpleLineSymbol(
-            style = SimpleLineSymbolStyle.Solid,
-            color = Color(state.strokeColor.toArgb()),
-            width = state.strokeWidth.value,
-        )
-        val fillSymbol =
-            SimpleFillSymbol(
-                style = SimpleFillSymbolStyle.Solid,
-                color = Color(state.fillColor.toArgb()),
-                outline = stroke,
-            )
-        return Graphic(circle, fillSymbol)
     }
 
     override fun setupListeners() {

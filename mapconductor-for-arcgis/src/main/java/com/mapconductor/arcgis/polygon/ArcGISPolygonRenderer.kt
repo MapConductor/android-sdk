@@ -1,6 +1,5 @@
 package com.mapconductor.arcgis.polygon
 
-import com.arcgismaps.Color
 import com.arcgismaps.geometry.Geometry
 import com.arcgismaps.geometry.PolygonBuilder
 import com.arcgismaps.mapping.symbology.SimpleFillSymbol
@@ -11,6 +10,7 @@ import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualPolygon
 import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
@@ -54,14 +54,14 @@ class ArcGISPolygonRenderer(
                 val outlineSymbol =
                     SimpleLineSymbol().apply {
                         style = SimpleLineSymbolStyle.Solid
-                        color = createStrokeColor(state)
+                        color = state.strokeColor.toArcGISColor()
                         width = state.strokeWidth.value.toFloat()
                     }
 
                 val fillSymbol =
                     SimpleFillSymbol().apply {
                         style = SimpleFillSymbolStyle.Solid
-                        color = createFillColor(state)
+                        color = state.fillColor.toArcGISColor()
                         outline = outlineSymbol
                     }
 
@@ -95,11 +95,11 @@ class ArcGISPolygonRenderer(
 
                 (params.entity.polygon.symbol as SimpleFillSymbol).let { symbol ->
                     if (finger.fillColor != prevFinger.fillColor) {
-                        symbol.color = createFillColor(params.entity.state)
+                        symbol.color = params.entity.state.fillColor.toArcGISColor()
                     }
                     symbol.outline?.let { outline ->
                         if (finger.strokeColor != prevFinger.strokeColor) {
-                            outline.color = createStrokeColor(params.entity.state)
+                            outline.color = params.entity.state.strokeColor.toArcGISColor()
                         }
                         if (finger.strokeWidth != prevFinger.strokeWidth) {
                             outline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
@@ -110,22 +110,6 @@ class ArcGISPolygonRenderer(
             }
         }
     }
-
-    private fun createStrokeColor(state: PolygonState): Color =
-        Color.fromRgba(
-            r = (state.strokeColor.red * 255).toInt(),
-            g = (state.strokeColor.green * 255).toInt(),
-            b = (state.strokeColor.blue * 255).toInt(),
-            a = (state.strokeColor.alpha * 255).toInt(),
-        )
-
-    private fun createFillColor(state: PolygonState): Color =
-        Color.fromRgba(
-            r = (state.fillColor.red * 255).toInt(),
-            g = (state.fillColor.green * 255).toInt(),
-            b = (state.fillColor.blue * 255).toInt(),
-            a = (state.fillColor.alpha * 255).toInt(),
-        )
 
     private fun createGeometry(state: PolygonState): Geometry {
         val polygonBuilder =
