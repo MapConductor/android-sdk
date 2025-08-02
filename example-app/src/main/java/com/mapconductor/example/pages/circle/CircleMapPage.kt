@@ -1,15 +1,20 @@
 package com.mapconductor.example.pages.circle
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
@@ -27,10 +32,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.rememberArcGISMapViewState
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.toFixed
 import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.IconItem
@@ -106,7 +114,7 @@ fun CircleMapPage(
             ),
         )
 
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(2) }
     LaunchedEffect(selectedIndex) {
         viewModel.changeState(menuItems.elementAt(selectedIndex).value)
     }
@@ -181,17 +189,7 @@ fun CircleMapPage(
                         ),
                 title = "Messages",
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Welcome to the Circle Map! Tap on the map to place circles.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "• Tap to add circles\n• Drag markers to move circles\n• Click circles to modify them",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                DebugPanel(mapViewState!!.mapCameraPosition.collectAsState().value)
             }
 
             ToastHost(
@@ -199,5 +197,28 @@ fun CircleMapPage(
                 onDismiss = { viewModel.removeToast(it) },
             )
         }
+    }
+}
+
+@Composable
+fun BoxScope.DebugPanel(camera: MapCameraPosition?) {
+    Column(
+        modifier =
+            Modifier
+                .align(Alignment.TopEnd)
+                .background(
+                    Color(
+                        red = 0.9f,
+                        green = 0.9f,
+                        blue = 0.9f,
+                        alpha = 0.75f,
+                    ),
+                ).wrapContentHeight()
+                .fillMaxWidth(),
+    ) {
+        Text("LatLng: (${camera?.position?.toUrlValue()})", color = Color.Black)
+        Text("Zoom: ${camera?.zoom?.toFixed(2)}", color = Color.Black)
+        Text("bearing: ${camera?.bearing?.toInt()}", color = Color.Black)
+        Text("tilt: ${camera?.tilt?.toInt()}", color = Color.Black)
     }
 }

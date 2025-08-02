@@ -29,6 +29,7 @@ import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -129,6 +130,11 @@ internal class MapboxMapViewController(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
+
+    companion object {
+        private const val ZOOM_ADJUST_VALUE = 1.0
+    }
+
     override val markerRenderer: MapboxMarkerRenderer =
         MapboxMarkerRenderer(
             holder = holder,
@@ -247,7 +253,7 @@ internal class MapboxMapViewController(
             CameraState(
                 cameraChanged.cameraState.center,
                 cameraChanged.cameraState.padding,
-                cameraChanged.cameraState.zoom + 1,
+                cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
                 cameraChanged.cameraState.bearing,
                 cameraChanged.cameraState.pitch,
             ),
@@ -262,7 +268,7 @@ internal class MapboxMapViewController(
             CameraOptions
                 .Builder()
                 .center(dstPosition.position.toPoint())
-                .zoom(dstPosition.zoom - 1)
+                .zoom(dstPosition.zoom - ZOOM_ADJUST_VALUE)
                 .pitch(dstPosition.tilt)
                 .bearing(dstPosition.bearing)
                 .build()
@@ -279,6 +285,14 @@ internal class MapboxMapViewController(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val targetCamera = dstPosition.toCameraOptions()
+        val adjustCamera = CameraOptions
+            .Builder()
+            .center(targetCamera.center)
+            .zoom(targetCamera.zoom!! + ZOOM_ADJUST_VALUE)
+            .pitch(targetCamera.pitch)
+            .bearing(targetCamera.pitch)
+            .build()
+
         val animationOptions =
             MapAnimationOptions
                 .Builder()
@@ -306,7 +320,7 @@ internal class MapboxMapViewController(
 
         coroutine.launch {
             holder.map.flyTo(
-                cameraOptions = targetCamera,
+                cameraOptions = adjustCamera,
                 animationOptions = animationOptions,
                 animatorListener = animatorListener,
             )

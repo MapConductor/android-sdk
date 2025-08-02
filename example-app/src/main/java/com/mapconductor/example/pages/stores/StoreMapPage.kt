@@ -39,7 +39,6 @@ import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoreMapPage(
     viewModel: StoreMapPageViewModel,
