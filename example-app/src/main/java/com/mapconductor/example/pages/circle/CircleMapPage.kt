@@ -1,20 +1,25 @@
 package com.mapconductor.example.pages.circle
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,10 +29,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.ArcGISDesign
@@ -36,6 +43,7 @@ import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.IconItem
 import com.mapconductor.example.ui.IconSelectMenu
+import com.mapconductor.example.ui.MessageCard
 import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
@@ -43,7 +51,6 @@ import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CircleMapPage(
     viewModel: CirclePageViewModel,
@@ -108,8 +115,16 @@ fun CircleMapPage(
 
     val mapViewState = viewModel.mapViewState.collectAsState().value
 
-    Scaffold { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        bottomBar = {
+
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(
+            start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+            end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+            bottom = paddingValues.calculateBottomPadding(),
+        )) {
             CircleMapComponent(
                 mapViewState = mapViewState,
                 viewModel = viewModel,
@@ -150,6 +165,30 @@ fun CircleMapPage(
                         },
                     )
                 }
+            }
+
+            // Message Card
+            MessageCard(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(
+                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
+                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
+                    ),
+                title = "Messages",
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Welcome to the Circle Map! Tap on the map to place circles.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "• Tap to add circles\n• Drag markers to move circles\n• Click circles to modify them",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             ToastHost(
