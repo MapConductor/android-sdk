@@ -278,14 +278,14 @@ internal class MapboxMapViewController(
 
     override fun animateCamera(
         dstPosition: MapCameraPosition,
-        durationMs: Long,
+        duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val targetCamera = dstPosition.toCameraOptions()
         val animationOptions =
             MapAnimationOptions
                 .Builder()
-                .duration(durationMs)
+                .duration(duration)
                 .build()
 
         val animatorListener =
