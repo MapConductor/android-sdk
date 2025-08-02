@@ -9,6 +9,7 @@ import com.here.sdk.gestures.TapListener
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
+import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
@@ -89,6 +90,10 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
+    companion object {
+        private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
+    }
+
     private var selectedMarker: MarkerEntity<MapMarker>? = null
 
     override val markerRenderer: MarkerRenderer<MapMarker> =
@@ -195,9 +200,14 @@ class HereMapViewController(
         listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
-        camera.applyUpdate(
-            dstPosition.toMapCameraUpdate(),
-        )
+        val adjustCameraUpdate =
+            MapCameraUpdateFactory.lookAt(
+                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom + ZOOM_ADJUST_VALUE),
+            )
+
+        camera.applyUpdate(adjustCameraUpdate)
         listener?.onComplete(true)
     }
 
@@ -216,7 +226,7 @@ class HereMapViewController(
             MapCameraAnimationFactory.flyTo(
                 GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
                 Duration.ofMillis(durationMs),
             )
@@ -233,12 +243,20 @@ class HereMapViewController(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        cameraMoveListener?.invoke(cameraState)
+        val correctCameraState =
+            MapCamera.State(
+                cameraState.targetCoordinates,
+                GeoOrientation(cameraState.orientationAtTarget.bearing, cameraState.orientationAtTarget.tilt),
+                0.0,
+                cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
+            )
+
+        cameraMoveListener?.invoke(correctCameraState)
     }
 
     override fun onTap(point: Point2D) {
         val position = this.getGeoPointFromPoint(point) ?: return
-        val zoom = holder.mapView.camera.state.zoomLevel
+        val zoom = holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
         val tolerance =
             Settings.Default.tapTolerance.value
                 .toDouble() * ResourceProvider.getDensity()
@@ -268,7 +286,7 @@ class HereMapViewController(
 
         when (gesture.value) {
             GestureState.BEGIN.value -> {
-                val zoom = holder.mapView.camera.state.zoomLevel
+                val zoom = holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
                 val tolerance =
                     Settings.Default.tapTolerance.value
                         .toDouble() * ResourceProvider.getDensity()
