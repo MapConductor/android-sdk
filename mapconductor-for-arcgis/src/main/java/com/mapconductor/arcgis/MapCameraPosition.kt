@@ -157,7 +157,7 @@ fun Camera.toMapCameraPosition() =
             converter.altitudeToZoomLevel(
                 altitude = this.location.z ?: 0.0,
             ),
-        bearing = 360 - this.heading,
+        bearing = (360 - this.heading) % 360,
         tilt = this.pitch,
         paddings = MapPaddingsImpl.Zeros,
     )
