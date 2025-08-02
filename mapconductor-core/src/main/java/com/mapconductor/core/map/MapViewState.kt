@@ -1,6 +1,6 @@
 package com.mapconductor.core.map
 
-import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -87,7 +87,7 @@ interface MapOverlay<DataType> {
 
     suspend fun render(
         data: List<DataType>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     )
 }
 

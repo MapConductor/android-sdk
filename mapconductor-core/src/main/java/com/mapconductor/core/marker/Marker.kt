@@ -66,13 +66,14 @@ class MarkerState(
     }
 
     fun copy(
+        id: String? = this.id,
         position: GeoPoint = this.position,
         extra: Parcelable? = this.extra,
         icon: MarkerIcon? = this.icon,
         draggable: Boolean? = this.draggable,
     ): MarkerState =
         MarkerState(
-            id = this.id, // Keep marker id
+            id = id, // Keep marker id
             position = position,
             extra = extra,
             icon = icon,

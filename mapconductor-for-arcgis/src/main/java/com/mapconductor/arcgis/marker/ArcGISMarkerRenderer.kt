@@ -50,7 +50,7 @@ class ArcGISMarkerRenderer(
         markerEntity: MarkerEntity<Graphic>,
         position: GeoPoint,
     ) {
-        markerEntity.marker.geometry = position.toPoint()
+        markerEntity.marker.geometry = position.toPoint(holder.map.scene?.spatialReference)
     }
 
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Graphic?> {
@@ -74,7 +74,7 @@ class ArcGISMarkerRenderer(
 
                     val marker =
                         Graphic(
-                            geometry = params.first.position.toPoint(),
+                            geometry = params.first.position.toPoint(holder.map.scene?.spatialReference),
                             symbol = pictureSymbolFuture,
                         ).also {
                             it.attributes.set("id", params.first.id)

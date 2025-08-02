@@ -87,6 +87,7 @@ class MapboxMarkerRenderer(
             Feature.fromGeometry(
                 position.toPoint(),
                 markerEntity.marker.properties(),
+                "marker-${markerEntity.state.id}",
             )
         markerEntity.marker = feature
         val features =
@@ -121,7 +122,7 @@ class MapboxMarkerRenderer(
         }
 
         return newMarkers.map { (state, _) ->
-            val featureId = state.id
+            val featureId = "marker-${state.id}"
             val position = state.position.toPoint()
             val properties =
                 JsonObject().apply {
@@ -214,7 +215,7 @@ class MapboxMarkerRenderer(
             val position =
                 params.entity.state.position
                     .toPoint()
-            val featureId = params.entity.state.id
+            val featureId = "marker-${params.entity.state.id}"
             Feature.fromGeometry(position, properties, featureId)
         }
 

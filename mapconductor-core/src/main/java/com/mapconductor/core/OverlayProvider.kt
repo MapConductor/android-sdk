@@ -4,11 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,12 +63,14 @@ open class MapViewScope {
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
     val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
     val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
+    val polygonFlow = MutableStateFlow<List<PolygonState>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
         registry.register(MarkerOverlay(markerFlow))
         registry.register(CircleOverlay(circleFlow))
         registry.register(PolylineOverlay(polylineFlow))
+        // registry.register(PolygonOverlay(polygonFlow)) // TODO: Implement addPolygons in MapViewController
         return registry
     }
 }
@@ -77,7 +80,7 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addMarkers(data)
     }
@@ -88,7 +91,7 @@ class CircleOverlay(
 ) : MapOverlay<CircleState> {
     override suspend fun render(
         data: List<CircleState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addCircles(data)
     }
@@ -104,7 +107,7 @@ class PolylineOverlay(
 ) : MapOverlay<PolylineState> {
     override suspend fun render(
         data: List<PolylineState>,
-        controller: MapViewController<*, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addPolylines(data)
     }
@@ -120,10 +123,27 @@ val LocalCircleCollector =
         error("Circle must be under the <MapView />")
     }
 
+// TODO: Implement addPolygons in MapViewController first
+// class PolygonOverlay(
+//     override val flow: StateFlow<List<PolygonState>>,
+// ) : MapOverlay<PolygonState> {
+//     override suspend fun render(
+//         data: List<PolygonState>,
+//         controller: MapViewController<*, *, *>,
+//     ) {
+//         controller.addPolygons(data)
+//     }
+// }
+//
+// val LocalPolygonCollector =
+//     compositionLocalOf<MutableStateFlow<List<PolygonState>>> {
+//         error("Polygon must be under the <MapView />")
+//     }
+
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController<*, *, *>,
+    controller: MapViewControllerAlias,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")

@@ -7,6 +7,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+// Calculate distance between two GeoPoints using Haversine formula
 fun haversineDistance(
     p1: IGeoPoint,
     p2: IGeoPoint,

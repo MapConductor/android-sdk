@@ -7,14 +7,16 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.marker.MarkerState
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class CircleState(
     center: IGeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
     fillColor: Color =
@@ -25,25 +27,28 @@ class CircleState(
             alpha = 127,
         ),
     id: String? = null,
+    zIndex: Int? = null,
     extra: Parcelable? = null,
 ) {
     var center by mutableStateOf(center)
-    var radius by mutableStateOf(radius)
+    var radiusMeters by mutableStateOf(radiusMeters)
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
     var extra by mutableStateOf(extra)
+    var zIndex by mutableStateOf<Int?>(zIndex)
 
     val id =
         (
             id ?: circleId(
                 listOf(
                     center.hashCode(),
-                    radius.hashCode(),
+                    radiusMeters.hashCode(),
                     extra?.hashCode() ?: 0,
                     strokeColor.hashCode(),
                     strokeWidth.hashCode(),
                     fillColor.hashCode(),
+                    zIndex.hashCode(),
                 ),
             )
         ).toString()
@@ -57,24 +62,74 @@ class CircleState(
         CircleFingerPrint(
             id = this.id.hashCode(),
             center = center.hashCode(),
-            radius = radius.hashCode(),
+            radiusMeters = radiusMeters.hashCode(),
             strokeColor = strokeColor.hashCode(),
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),
+            zIndex = zIndex.hashCode(),
             extra = extra?.hashCode() ?: 0,
         )
 
     fun asFlow(): Flow<CircleFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
+
+    fun copy(
+        center: IGeoPoint = this.center,
+        radiusMeters: Double = this.radiusMeters,
+        strokeColor: Color = this.strokeColor,
+        strokeWidth: Dp = this.strokeWidth,
+        fillColor: Color =
+            Color(
+                red = 255,
+                green = 255,
+                blue = 255,
+                alpha = 127,
+            ),
+        id: String? = this.id,
+        zIndex: Int? = this.zIndex,
+        extra: Parcelable? = this.extra,
+    ): CircleState =
+        CircleState(
+            center = center,
+            radiusMeters = radiusMeters,
+            strokeColor = strokeColor,
+            strokeWidth = strokeWidth,
+            fillColor = fillColor,
+            id = id,
+            zIndex = zIndex,
+            extra = extra,
+        )
+
+    override fun equals(other: Any?): Boolean {
+        val otherState = (other as? MarkerState) ?: return false
+        return hashCode() == otherState.hashCode()
+    }
+
+    override fun hashCode(): Int {
+        var result = extra?.hashCode() ?: 0
+        result = 31 * result + center.hashCode()
+        result = 31 * result + radiusMeters.hashCode()
+        result = 31 * result + strokeColor.hashCode()
+        result = 31 * result + strokeWidth.hashCode()
+        result = 31 * result + fillColor.hashCode()
+        result = 31 * result + zIndex.hashCode()
+        return result
+    }
 }
 
 data class CircleFingerPrint(
     val id: Int,
     val center: Int,
-    val radius: Int,
+    val radiusMeters: Int,
     val strokeColor: Int,
     val strokeWidth: Int,
     val fillColor: Int,
+    val zIndex: Int,
     val extra: Int,
 )
 
-typealias OnCircleEventHandler = (CircleState) -> Unit
+data class CircleClickEvent(
+    val state: CircleState,
+    val position: GeoPoint,
+)
+
+typealias OnCircleEventHandler = (CircleClickEvent) -> Unit
