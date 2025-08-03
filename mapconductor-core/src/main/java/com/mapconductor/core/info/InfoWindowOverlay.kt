@@ -15,11 +15,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.mapconductor.core.marker.MarkerState
-import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-internal fun InfoWindowCompose(
+internal fun InfoBubbleOverlay(
     positionOffset: Offset, // マーカーのposition
     iconSize: Size, // アイコンのサイズ
     iconOffset: Offset, // アイコンと地図が接続するポイント (0.0 - 1.0)
@@ -28,25 +27,25 @@ internal fun InfoWindowCompose(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    var size by remember { mutableStateOf(IntSize.Zero) }
+    var infoWndSize by remember { mutableStateOf(IntSize.Zero) }
 
     val x =
         positionOffset.x +
-            (-tailOffset.x * size.width) + // tailOffset.x = 0.5のとき、吹き出しの中央
-            (-iconOffset.x * iconSize.width) + // iconOffset.x = 0.5のとき、アイコンの中央
-            (infoAnchorOffset.x * iconSize.width) // infoAnchorOffset.x = 0.5のとき、アイコンの中央
+            (-tailOffset.x * infoWndSize.width) + // tailOffset.x = 0.5のとき、吹き出しの中央
+            ((0.5 - iconOffset.x) * iconSize.width) + // iconOffset.x = 0.5のとき、アイコンの中央とMarker.positionが一致
+            ((infoAnchorOffset.x - 0.5) * iconSize.width) // infoAnchorOffset.x = 0.5のとき、アイコンの中央にInfoBubbleを表示
 
     val y =
         positionOffset.y +
-            (-tailOffset.y * size.height) + // tailOffset.y = 1.0 のとき、吹き出しの下部
-            (-iconOffset.y * iconSize.height) + // iconOffset.y = 1.0のとき、アイコンの下部
-            (infoAnchorOffset.y * iconSize.height) // infoAnchorOffset.y = 0.0のとき、アイコンの上部
+            (-tailOffset.y * infoWndSize.height) + // tailOffset.y = 1.0 のとき、吹き出しの下部
+            ((0.5 - iconOffset.y) * iconSize.height) + // iconOffset.y = 0.5のとき、アイコンの中央とMarker.positionが一致
+            ((infoAnchorOffset.y - 0.5) * iconSize.height) // infoAnchorOffset.y = 0.5のとき、アイコンの中央にInfoBubbleを表示
 
     Box(
         modifier =
             modifier
                 .onGloballyPositioned {
-                    size = it.size
+                    infoWndSize = it.size
                 }.offset {
                     IntOffset(x.toInt(), y.toInt())
                 },
@@ -55,25 +54,9 @@ internal fun InfoWindowCompose(
     }
 }
 
-class InfoBubbleState(
-    val id: String = UUID.randomUUID().toString(),
-    val tailOffset: Offset = Offset(0.5f, 1.0f),
-) {
-    //    internal val _marker: MutableState<MarkerState?> = mutableStateOf(null)
-    var marker by mutableStateOf<MarkerState?>(null)
-        private set
-
-    fun open(markerState: MarkerState) {
-        this.marker = markerState
-    }
-
-    fun close() {
-        this.marker = null
-    }
-}
-
 data class InfoBubbleEntry(
-    val state: InfoBubbleState,
+    val marker: MarkerState,
+    val tailOffset: Offset = Offset(0.5f, 1.0f),
     val content: @Composable () -> Unit,
 )
 
