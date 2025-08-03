@@ -8,18 +8,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
-import com.mapconductor.icons.CircleIcon
-import com.mapconductor.icons.FlagIcon
-import com.mapconductor.settings.MarkerIconSize
+import com.mapconductor.example.R
 import android.os.Bundle
+
 
 @Composable
 fun StoreMapComponent(
@@ -36,35 +37,33 @@ fun StoreMapComponent(
     val bubbleColor by remember {
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
     }
+    val context = LocalContext.current
     var isMarkerAnimating by remember { mutableStateOf(false) }
-    val colors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan)
+    val icons = mapOf(
+        "coffee_bean" to DrawableDefaultIcon(
+            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_bean)!!
+        ),
+        "honolulu_coffee" to DrawableDefaultIcon(
+            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.honolulu_coffee)!!
+        ),
+        "coffee_extra" to DrawableDefaultIcon(
+            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_extra)!!
+        ),
+        "starbucks" to DrawableDefaultIcon(
+            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.starbucks)!!
+        ),
+    )
 
-    val markerList =
-        remember {
-            markers.mapIndexed { index, state ->
-                val randomColor = colors[index % colors.size]
+    val markerList = remember {
+        markers.map { state ->
+            (state.extra as Bundle).let { info ->
+                val store_icon = info.getString("store") ?: "coffee_extra"
                 state.copy(
-                    icon =
-                        when (index % 3) {
-                            0 ->
-                                DefaultIcon(
-                                    fillColor = randomColor,
-                                    iconSize = MarkerIconSize.Large,
-                                )
-                            1 ->
-                                FlagIcon(
-                                    fillColor = randomColor,
-                                    iconSize = MarkerIconSize.Regular,
-                                )
-                            else ->
-                                CircleIcon(
-                                    fillColor = randomColor.copy(alpha = 0.7f),
-                                    iconSize = MarkerIconSize.Small,
-                                )
-                        },
+                    icon = icons[store_icon]
                 )
             }
         }
+    }
 
     mapViewState?.let { currentMapViewState ->
         MapViewContainer(

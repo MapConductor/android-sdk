@@ -29,6 +29,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_bean")
                 },
             icon =
                 DefaultIcon(
@@ -53,13 +54,8 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_bean")
                 },
-            icon =
-                FlagIcon(
-                    fillColor = Color.Red,
-                    strokeColor = Color.White,
-                    strokeWidth = 0.5.dp,
-                ),
         ),
         MarkerState(
             position =
@@ -74,13 +70,8 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
-//            icon =
-//                MarkerIcon.Companion.StarInCircle(
-//                    fillColor = 0xFFFFD800.toInt(),
-//                    strokeColor = Color.WHITE,
-//                    strokeWidth = 2f,
-//                ),
         ),
         MarkerState(
             position =
@@ -95,6 +86,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
 //            icon =
 //                MarkerIcon.Companion.Triangle(
@@ -117,6 +109,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -132,6 +125,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -147,6 +141,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -162,6 +157,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -177,6 +173,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", true)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -192,6 +189,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -207,6 +205,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -222,6 +221,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -237,6 +237,7 @@ val StarbucksHI_list =
                     putBoolean("instore", false)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "honolulu_coffee")
                 },
         ),
         MarkerState(
@@ -252,6 +253,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -267,6 +269,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", true)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_bean")
                 },
         ),
         MarkerState(
@@ -282,6 +285,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -297,6 +301,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "honolulu_coffee")
                 },
         ),
         MarkerState(
@@ -312,6 +317,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -327,6 +333,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_bean")
                 },
         ),
         MarkerState(
@@ -342,6 +349,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -357,21 +365,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.294505444307,
-                    longitude = -157.841946089363,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Keeaumoku (WalMart)")
-                    putString("address", "678 Keeaumoku Street #106, Honolulu, HI 96814")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -387,6 +381,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -402,6 +397,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -417,6 +413,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -432,6 +429,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "honolulu_coffee")
                 },
         ),
         MarkerState(
@@ -447,21 +445,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.278908517307,
-                    longitude = -157.832413265507,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Outrigger Reef (Waikiki)")
-                    putString("address", "2169 Kalia Road #102, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -477,36 +461,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.30278387167,
-                    longitude = -157.879450611886,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Sand Island")
-                    putString("address", "120 Sand Island Access Road #4, Honolulu, HI 96819")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.289750395336,
-                    longitude = -157.843910788044,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Sears Ala Moana Center")
-                    putString("address", "1450 Ala Moana Blvd, Honolulu, HI 96814")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -522,21 +477,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.280533970958,
-                    longitude = -157.82749796628,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Waikiki Trade Center (Reserve Bar)")
-                    putString("address", "2255 Kuhio Avenue #S-1, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", true)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -552,6 +493,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -567,36 +509,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.279515520356,
-                    longitude = -157.829265712704,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Waikiki Walk")
-                    putString("address", "2222 Kalakaua Avenue, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.293340364607,
-                    longitude = -157.85256477721,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Ward Gateway")
-                    putString("address", "1142 Auahi Street, Honolulu, HI 96814")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -612,6 +525,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -627,6 +541,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -642,6 +557,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -657,6 +573,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -672,6 +589,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -687,6 +605,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -702,6 +621,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", true)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -717,6 +637,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -732,6 +653,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -747,6 +669,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -762,6 +685,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -777,6 +701,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_bean")
                 },
         ),
         MarkerState(
@@ -792,6 +717,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -807,6 +733,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -822,21 +749,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.453888574294,
-                    longitude = -158.007690940987,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Mililani Town Center")
-                    putString("address", "95-1249 Meheula Parkway, Mililani, HI 96789")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -852,6 +765,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -867,6 +781,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", true)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -882,21 +797,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.401138284746,
-                    longitude = -158.010288643364,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Waikele Center")
-                    putString("address", "94-799 Lumiaina Street, Waipahu, HI 96797")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -912,6 +813,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -927,6 +829,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -942,6 +845,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -957,6 +861,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "starbucks")
                 },
         ),
         MarkerState(
@@ -972,6 +877,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -987,21 +893,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.328151560875,
-                    longitude = -158.021804173199,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Laulani Village (Ewa Beach)")
-                    putString("address", "91-1105 Keaunui Drive #500, Ewa Beach, HI 96706")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", true)
-                    putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
         MarkerState(
@@ -1017,36 +909,7 @@ val StarbucksHI_list =
                     putBoolean("instore", true)
                     putBoolean("drive_through", false)
                     putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.349070820935,
-                    longitude = -157.932730132699,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Pearl Harbor NEX")
-                    putString("address", "4725 Bougainville Drive, Honolulu, HI 96818")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.356011085979,
-                    longitude = -157.893896231076,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Tripler Army Medical Center")
-                    putString("address", "1 Jarrett White Road, Honolulu, HI 96859")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
+                    putString("store", "coffee_extra")
                 },
         ),
     )
