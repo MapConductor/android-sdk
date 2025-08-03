@@ -8,18 +8,13 @@ import com.mapconductor.example.pages.stores.StoreMapPageViewModelImpl
 import android.os.Bundle
 
 class MainActivity : ComponentActivity() {
-    private val appViewModel: AppViewModelImpl by viewModels()
-    private val storeMapPageViewModel: StoreMapPageViewModelImpl by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            DemoAppScreen(
-                appViewModel = appViewModel,
-                storeMapPageViewModel = storeMapPageViewModel,
-            )
+            DemoAppScreen()
         }
     }
 }

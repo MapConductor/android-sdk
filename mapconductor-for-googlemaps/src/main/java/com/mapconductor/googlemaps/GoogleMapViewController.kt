@@ -244,6 +244,7 @@ class GoogleMapViewController(
     override fun onMarkerClick(marker: Marker): Boolean {
         val key = marker.tag?.toString() ?: return true
         val state = markerOverlayManager.getMarkerState(key) ?: return true
+        if (!state.clickable) return true
         markerClickListener?.let {
             coroutine.launch {
                 it(state)

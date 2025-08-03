@@ -15,16 +15,19 @@ import com.mapconductor.settings.Settings
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import androidx.core.graphics.withTranslation
+import com.mapconductor.core.marker.AbstractMarkerIcon
 
 class FlagIcon(
-    private val properties: IconProperties = IconProperties(),
-) : MarkerIcon {
+    private val properties: IconProperties,
+) : AbstractMarkerIcon() {
     data class IconProperties(
-        val fillColor: Color = Color.Red,
-        val strokeColor: Color = Color.White,
-        val strokeWidth: Dp = 1.dp,
-        val scale: Float = 1f,
-        val iconSize: Dp = Settings.Default.iconSize,
+        val fillColor: Color,
+        val strokeColor: Color,
+        val strokeWidth: Dp,
+        val scale: Float,
+        val iconSize: Dp,
+        val debug: Boolean,
     )
 
     constructor(
@@ -33,8 +36,9 @@ class FlagIcon(
         strokeWidth: Dp = Settings.Default.iconStroke,
         scale: Float = 1f,
         iconSize: Dp = Settings.Default.iconSize,
+        debug: Boolean = false,
     ) : this(
-        IconProperties(fillColor, strokeColor, strokeWidth, scale, iconSize),
+        IconProperties(fillColor, strokeColor, strokeWidth, scale, iconSize, debug)
     )
 
     // プロパティの委譲
@@ -45,6 +49,7 @@ class FlagIcon(
     override val iconSize: Dp by properties::iconSize
     override val anchor: Offset = Offset(0.176f, 0.91f)
     override val infoAnchor: Offset = Offset(0.5f, 0f)
+    override val debug: Boolean by properties::debug
 
     // data classのcopyを活用した独自copyメソッド
     fun copy(
@@ -53,6 +58,7 @@ class FlagIcon(
         strokeWidth: Dp = this.strokeWidth,
         scale: Float = this.scale,
         iconSize: Dp = this.iconSize,
+        debug: Boolean = this.debug,
     ): FlagIcon =
         FlagIcon(
             properties.copy(
@@ -61,6 +67,7 @@ class FlagIcon(
                 strokeWidth = strokeWidth,
                 scale = scale,
                 iconSize = iconSize,
+                debug = debug,
             ),
         )
 
@@ -74,7 +81,7 @@ class FlagIcon(
 
     override fun hashCode(): Int = properties.hashCode()
 
-    override fun toString(): String = "DefaultIcon($properties)"
+    override fun toString(): String = "FlagIcon($properties)"
 
     fun drawFlagOnCanvas(
         canvas: Canvas,
@@ -83,13 +90,13 @@ class FlagIcon(
         width: Float,
         height: Float,
     ) {
-        // SVGの実際の描画領域を計算
-        val svgLeft = 5.161f
-        val svgTop = 0f
-        val svgRight = 45.931f
-        val svgBottom = 51.48f
-        val svgWidth = svgRight - svgLeft
-        val svgHeight = svgBottom - svgTop
+        // SVGの実際の描画領域を計算（マージンを除去）
+        val svgLeft = 0f  // マージンを0にする
+        val svgTop = 0f   // マージンを0にする
+        val svgRight = 45.931f - 5.161f  // 実際の幅
+        val svgBottom = 51.48f - 5.161f  // 実際の高さ
+        val svgWidth = svgRight
+        val svgHeight = svgBottom
 
         // アスペクト比を維持したスケール計算
         val scaleX = width / svgWidth
@@ -104,43 +111,54 @@ class FlagIcon(
         val offsetX = (width - scaledWidth) / 2f
         val offsetY = (height - scaledHeight) / 2f
 
-        canvas.save()
-        canvas.translate(offsetX, offsetY)
-        canvas.scale(scale, scale)
-        canvas.translate(-svgLeft, -svgTop)
+        // Draw rectangle frame for debugging
+        if (this.debug) {
+            Paint().apply {
+                isAntiAlias = true
+                strokeWidth = 1f
+                this.color = Color.Black.toArgb()
+                style = Paint.Style.STROKE
+            }.also {
+                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+            }
+        }
 
-        val path = Path()
+        canvas.withTranslation(offsetX, offsetY) {
+            scale(scale, scale)
+            // 元のマージン分を差し引いて座標を調整
+            translate(-5.161f, -5.161f)
 
-        // メインフラッグ部分
-        path.moveTo(14.16f, 7.037f)
-        path.lineTo(41.892f, 7.037f)
+            val path = Path()
 
-        // 右端の装飾的な切り込み
-        path.lineTo(42.815f, 8.797f)
-        path.cubicTo(43.339f, 9.554f, 43.34f, 10.017f, 42.815f, 10.797f)
-        path.lineTo(41.5f, 10.699f)
-        path.cubicTo(39.579f, 13.477f, 39.558f, 17.846f, 41.453f, 20.646f)
-        path.lineTo(42.845f, 22.7f)
-        path.cubicTo(43.295f, 23.365f, 43.386f, 23.884f, 43.28f, 24.084f)
-        path.lineTo(41.891f, 24.499f)
-        path.lineTo(14.16f, 24.499f)
-        path.close()
+            // メインフラッグ部分（縦に拡張）
+            path.moveTo(14.16f, 7.037f)
+            path.lineTo(41.892f, 7.037f)
 
-        // 塗りつぶしと枠線
-        canvas.drawPath(path, fillPaint)
-        canvas.drawPath(path, strokePaint)
+            // 右端の装飾的な切り込み
+            path.lineTo(42.815f, 9.797f)
+            path.cubicTo(43.339f, 10.554f, 43.34f, 11.517f, 42.815f, 12.297f)
+            path.lineTo(41.5f, 12.199f)
+            path.cubicTo(39.579f, 16.477f, 39.558f, 22.846f, 41.453f, 26.646f)
+            path.lineTo(42.845f, 29.2f)
+            path.cubicTo(43.295f, 29.865f, 43.386f, 30.384f, 43.28f, 30.584f)
+            path.lineTo(41.891f, 30.999f)
+            path.lineTo(14.16f, 30.999f)
+            path.close()
 
-        // 旗竿
-        path.reset()
-        path.addRect(8.161f, 5.5f, 11.16f, 45.98f, Path.Direction.CW)
-        canvas.drawPath(path, fillPaint)
-        canvas.drawPath(path, strokePaint)
+            // 塗りつぶしと枠線
+            drawPath(path, fillPaint)
+            drawPath(path, strokePaint)
 
-        // 旗竿上部のキャップ
-        canvas.drawCircle(9.66f, 5.5f, 1.5f, fillPaint)
-        canvas.drawCircle(9.66f, 5.5f, 1.5f, strokePaint)
+            // 旗竿（太くする）
+            path.reset()
+            path.addRect(7.161f, 5.5f, 12.16f, 45.98f, Path.Direction.CW)
+            drawPath(path, fillPaint)
+            drawPath(path, strokePaint)
 
-        canvas.restore()
+            // 旗竿上部のキャップ（太くしたポールに合わせてサイズ調整）
+            drawCircle(9.66f, 5.5f, 2.0f, fillPaint)
+            drawCircle(9.66f, 5.5f, 2.0f, strokePaint)
+        }
     }
 
     override fun toBitmapIcon(): BitmapIcon {

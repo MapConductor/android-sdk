@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
+import com.mapconductor.core.marker.MarkerState
 
 // @Composable
 // fun MapViewScope.InfoAnchor(
@@ -24,7 +25,7 @@ import com.mapconductor.core.MapViewScope
 
 @Composable
 fun MapViewScope.InfoBubble(
-    state: InfoBubbleState,
+    marker: MarkerState,
     bubbleColor: Color = Color.Companion.White,
     borderColor: Color = Color.Companion.Black,
     contentPadding: Dp = 8.dp,
@@ -32,35 +33,30 @@ fun MapViewScope.InfoBubble(
     tailSize: Dp = 8.dp,
     content: @Composable () -> Unit,
 ) {
-    val entry =
-        remember {
-            val wrapped: @Composable () -> Unit = {
-                DrawInfoBubble(
-                    modifier = Modifier,
-                    bubbleColor = bubbleColor,
-                    borderColor = borderColor,
-                    contentPadding = contentPadding,
-                    cornerRadius = cornerRadius,
-                    tailSize = tailSize,
-                    content = content,
-                )
-            }
+    val wrapped: @Composable () -> Unit = {
+        DrawInfoBubble(
+            modifier = Modifier,
+            bubbleColor = bubbleColor,
+            borderColor = borderColor,
+            contentPadding = contentPadding,
+            cornerRadius = cornerRadius,
+            tailSize = tailSize,
+            content = content,
+        )
+    }
 
-            mutableStateOf(
-                InfoBubbleEntry(
-                    state = state,
-                    content = wrapped,
-                ),
-            )
-        }
+    val entry = InfoBubbleEntry(
+        marker = marker,
+        content = wrapped,
+    )
 
-    DisposableEffect(Unit) {
-        bubbleFlow.value = bubbleFlow.value + entry.value
+    DisposableEffect(marker) {
+        bubbleFlow.value = bubbleFlow.value + entry
 
         onDispose {
             bubbleFlow.value =
                 bubbleFlow.value.filter {
-                    it.state.id != entry.value.state.id
+                    it.marker.id != entry.marker.id
                 }
         }
     }

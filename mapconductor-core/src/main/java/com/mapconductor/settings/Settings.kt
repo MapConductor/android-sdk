@@ -15,8 +15,15 @@ sealed class Settings(
         tapTolerance = 14.dp,
         markerDropAnimateDuration = 100,
         markerBounceAnimateDuration = 2000,
-        iconSize = 48.dp,
-        iconStroke = 0.5.dp,
+        iconSize = MarkerIconSize.Regular,
+        iconStroke = 1.dp,
         composeEventDebounce = 5,
     )
+}
+object MarkerIconSize {
+    val ExtraSmall: Dp = 12.dp
+    val Small: Dp = 24.dp
+    val Regular: Dp = 32.dp
+    val Large: Dp = 48.dp
+    val ExtraLarge: Dp = 60.dp
 }

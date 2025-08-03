@@ -29,7 +29,7 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoWindowCompose
+import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.settings.Settings
@@ -74,46 +74,44 @@ fun <
     val bubbles by scope.bubbleFlow.collectAsState()
     val controller = controllerRef.value
 
-    if (initState == InitState.Initialized) {
+    if (initState == InitState.Initialized && controller != null) {
         // 収集した子コンポーネントを描画する
-        controllerRef.value?.also { controller ->
-            CollectAndRenderOverlays(
-                registry = registry, // This should come from the specific scope or be passed
-                controller = controller,
-            )
-            // 子コンポーネントを収集する
-            CompositionLocalProvider(
-                LocalMarkerCollector provides scope.markerFlow,
-                LocalInfoBubbleCollector provides scope.bubbleFlow,
-                LocalCircleCollector provides scope.circleFlow,
-                LocalPolylineCollector provides scope.polylineFlow,
-            ) {
-                with(scope) {
-                    content?.invoke(this)
+        CollectAndRenderOverlays(
+            registry = registry, // This should come from the specific scope or be passed
+            controller = controller,
+        )
+        // 子コンポーネントを収集する
+        CompositionLocalProvider(
+            LocalMarkerCollector provides scope.markerFlow,
+            LocalInfoBubbleCollector provides scope.bubbleFlow,
+            LocalCircleCollector provides scope.circleFlow,
+            LocalPolylineCollector provides scope.polylineFlow,
+        ) {
+            with(scope) {
+                content?.invoke(this)
+            }
+        }
+        val markers = scope.markerFlow.collectAsState()
+        markers.value.forEach { markerState ->
+            LaunchedEffect(markerState.id) {
+                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    controller.updateMarker(markerState)
                 }
             }
-            val markers = scope.markerFlow.collectAsState()
-            markers.value.forEach { markerState ->
-                LaunchedEffect(markerState.id) {
-                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        controller.updateMarker(markerState)
-                    }
+        }
+        val circles = scope.circleFlow.collectAsState()
+        circles.value.forEach { circleState ->
+            LaunchedEffect(circleState.id) {
+                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    controller.updateCircle(circleState)
                 }
             }
-            val circles = scope.circleFlow.collectAsState()
-            circles.value.forEach { circleState ->
-                LaunchedEffect(circleState.id) {
-                    circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        controller.updateCircle(circleState)
-                    }
-                }
-            }
-            val polylines = scope.polylineFlow.collectAsState()
-            polylines.value.forEach { polylineState ->
-                LaunchedEffect(polylineState.id) {
-                    polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        controller.updatePolyline(polylineState)
-                    }
+        }
+        val polylines = scope.polylineFlow.collectAsState()
+        polylines.value.forEach { polylineState ->
+            LaunchedEffect(polylineState.id) {
+                polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    controller.updatePolyline(polylineState)
                 }
             }
         }
@@ -182,19 +180,18 @@ fun <
                     .clipToBounds(),
         ) {
             bubbles.forEach { entry ->
-                val marker = entry.state.marker ?: return@forEach
+                val marker = entry.marker
                 val position = marker.position
                 val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
                 val icon = marker.icon ?: DefaultIcon()
                 val iconScale = icon.scale
-                val iconSize = ResourceProvider.dpToPx(icon.iconSize.value * iconScale).toFloat()
+                val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
 
-                InfoWindowCompose(
+                InfoBubbleOverlay(
                     positionOffset = positionOffset,
-                    tailOffset = entry.state.tailOffset,
+                    tailOffset = entry.tailOffset,
                     content = entry.content,
-                    iconSize =
-                        Size(iconSize, iconSize),
+                    iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
                     iconOffset = icon.anchor,
                     infoAnchorOffset = icon.infoAnchor,
                 )

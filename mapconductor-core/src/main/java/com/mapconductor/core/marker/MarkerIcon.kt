@@ -25,13 +25,14 @@ import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 
+
 interface MarkerIcon {
     val scale: Float
     val anchor: Offset
     val iconSize: Dp
     val infoAnchor: Offset
+    val debug: Boolean
 
-//    fun getSizeInPixel(): Size
     fun toBitmapIcon(): BitmapIcon
 }
 
@@ -40,6 +41,7 @@ abstract class AbstractMarkerIcon : MarkerIcon {
     abstract override val anchor: Offset
     abstract override val iconSize: Dp
     abstract override val infoAnchor: Offset
+    abstract override val debug: Boolean
 }
 
 abstract class AndroidDrawableIcon(
@@ -66,23 +68,24 @@ abstract class AndroidDrawableIcon(
 }
 
 class DefaultIcon(
-    private val properties: IconProperties = IconProperties(),
-) : MarkerIcon {
+    private val properties: IconProperties,
+) : AbstractMarkerIcon() {
     data class IconProperties(
-        val fillColor: Color = Color.Red,
-        val strokeColor: Color = Color.White,
-        val strokeWidth: Dp = 1.dp,
-        val scale: Float = 1f,
-        val label: String? = null,
-        val labelTextColor: Color? = Color.Black,
-        val labelTextSize: TextUnit = 18.sp,
-        val labelTypeFace: Typeface = Typeface.DEFAULT,
-        val labelStrokeColor: Color = Color.White,
-        val iconSize: Dp = Settings.Default.iconSize,
-        val adaptiveScaling: Boolean = true, // 適応的スケーリングを有効にするか
-        val maxFontScale: Float = 2.5f, // フォントスケールの上限
-        val minIconSize: Dp = 24.dp, // アイコンの最小サイズ
-        val maxIconSize: Dp = 120.dp, // アイコンの最大サイズ
+        val fillColor: Color,
+        val strokeColor: Color,
+        val strokeWidth: Dp,
+        val scale: Float,
+        val label: String?,
+        val labelTextColor: Color?,
+        val labelTextSize: TextUnit,
+        val labelTypeFace: Typeface,
+        val labelStrokeColor: Color,
+        val iconSize: Dp,
+        val adaptiveScaling: Boolean, // 適応的スケーリングを有効にするか
+        val maxFontScale: Float, // フォントスケールの上限
+        val minIconSize: Dp, // アイコンの最小サイズ
+        val maxIconSize: Dp, // アイコンの最大サイズ
+        val debug: Boolean,
     )
 
     // 便利なコンストラクタ
@@ -101,6 +104,7 @@ class DefaultIcon(
         maxFontScale: Float = 1.0f,
         minIconSize: Dp = 24.dp,
         maxIconSize: Dp = 80.dp,
+        debug: Boolean = false,
     ) : this(
         IconProperties(
             fillColor,
@@ -117,6 +121,7 @@ class DefaultIcon(
             maxFontScale,
             minIconSize,
             maxIconSize,
+            debug,
         ),
     )
 
@@ -132,11 +137,12 @@ class DefaultIcon(
     val labelStrokeColor: Color by properties::labelStrokeColor
     override val iconSize: Dp by properties::iconSize
     override val anchor: Offset = Offset(0.5f, 1f)
-    override val infoAnchor: Offset = Offset(0.1f, 0f)
+    override val infoAnchor: Offset = Offset(0.5f, 0f)
     val adaptiveScaling: Boolean by properties::adaptiveScaling
     val maxFontScale: Float by properties::maxFontScale
     val minIconSize: Dp by properties::minIconSize
     val maxIconSize: Dp by properties::maxIconSize
+    override val debug: Boolean by properties::debug
 
     /**
      * 適応的スケーリング情報
@@ -166,6 +172,7 @@ class DefaultIcon(
         maxFontScale: Float = this.maxFontScale,
         minIconSize: Dp = this.minIconSize,
         maxIconSize: Dp = this.maxIconSize,
+        debug: Boolean = this.debug,
     ): DefaultIcon =
         DefaultIcon(
             properties.copy(
@@ -183,6 +190,7 @@ class DefaultIcon(
                 maxFontScale = maxFontScale,
                 minIconSize = minIconSize,
                 maxIconSize = maxIconSize,
+                debug = debug,
             ),
         )
 
@@ -296,7 +304,7 @@ class DefaultIcon(
         val scaledWidth = originalSize.width * markerScale
         val scaledHeight = originalSize.height * markerScale
         val offsetX = (canvasSize - scaledWidth) / 2f
-        val offsetY = canvasSize - scaledHeight
+        val offsetY = canvasSize - scaledHeight + ResourceProvider.dpToPx(strokeWidth.value - 1f).toFloat()
 
         val strokePath =
             Path().apply {
@@ -378,6 +386,18 @@ class DefaultIcon(
                 strokeWidth = ResourceProvider.dpToPx(this@DefaultIcon.strokeWidth.value * iconScale).toFloat()
                 isAntiAlias = true
             }
+
+        // Draw rectangle frame for debugging
+        if (this.debug) {
+            Paint().apply {
+                isAntiAlias = true
+                strokeWidth = 1f
+                this.color = Color.Black.toArgb()
+                style = Paint.Style.STROKE
+            }.also {
+                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+            }
+        }
 
         canvas.drawPath(strokePath, fillPaint)
         canvas.drawPath(strokePath, strokePaint)

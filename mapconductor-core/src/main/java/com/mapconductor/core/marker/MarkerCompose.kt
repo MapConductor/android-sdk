@@ -18,6 +18,8 @@ fun MapViewScope.Marker(state: MarkerState) {
 @Composable
 fun MapViewScope.Marker(
     position: GeoPoint,
+    clickable: Boolean = true,
+    draggable: Boolean = false,
     icon: MarkerIcon? = null,
     extra: Parcelable? = null,
 ) {
@@ -25,6 +27,8 @@ fun MapViewScope.Marker(
         MarkerState(
             position = position,
             extra = extra,
+            clickable = clickable,
+            draggable = draggable,
             icon = icon,
         )
     Marker(state)

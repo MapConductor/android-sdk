@@ -23,6 +23,7 @@ class MarkerState(
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
     animation: MarkerAnimation? = null,
+    clickable: Boolean = true,
     draggable: Boolean = false,
 ) {
     val id =
@@ -32,6 +33,7 @@ class MarkerState(
                     position.hashCode(),
                     extra?.hashCode() ?: 0,
                     icon?.hashCode() ?: 0,
+                    clickable.hashCode(),
                     draggable.hashCode(),
                 ),
             )
@@ -43,6 +45,7 @@ class MarkerState(
         }
 
     var icon by mutableStateOf<MarkerIcon?>(icon)
+    var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
 
     private var dragPosition: GeoPoint = position
@@ -70,6 +73,7 @@ class MarkerState(
         position: GeoPoint = this.position,
         extra: Parcelable? = this.extra,
         icon: MarkerIcon? = this.icon,
+        clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
     ): MarkerState =
         MarkerState(
@@ -77,6 +81,7 @@ class MarkerState(
             position = position,
             extra = extra,
             icon = icon,
+            clickable = clickable ?: this.clickable,
             draggable = draggable ?: this.draggable,
         )
 
@@ -87,6 +92,7 @@ class MarkerState(
 
     override fun hashCode(): Int {
         var result = extra?.hashCode() ?: 0
+        result = 31 * result + clickable.hashCode()
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
@@ -99,6 +105,7 @@ class MarkerState(
             this.id.hashCode(),
             ResourceProvider.spToPx(1.0).hashCode(),
             icon.hashCode(),
+            clickable.hashCode(),
             draggable.hashCode(),
             internalPosition.hashCode(),
             animation.hashCode(),
@@ -111,6 +118,7 @@ data class MarkerFingerPrint(
     val id: Int,
     val displayMetrics: Int,
     val icon: Int?,
+    val clickable: Int,
     val draggable: Int,
     val position: Int,
     val animation: Int?,

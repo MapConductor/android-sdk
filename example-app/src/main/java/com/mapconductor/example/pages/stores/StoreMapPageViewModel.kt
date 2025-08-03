@@ -1,46 +1,29 @@
 package com.mapconductor.example.pages.stores
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.example.toast.ToastMessage
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface StoreMapPageViewModel {
     val initCameraPosition: MapCameraPosition
-    val mapViewState: StateFlow<MapViewState<*>?>
-    val selectedMarker: MarkerState?
-    val infoBubbleState: InfoBubbleState
+    val selectedMarker: StateFlow<MarkerState?>
     val markerList: List<MarkerState>
-    val messages: StateFlow<List<ToastMessage>>
+    val mapViewState: StateFlow<MapViewState<*>?>
 
-    fun changeState(state: MapViewState<*>)
-
-    fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
+    fun onMapViewChanged(mapViewState: MapViewState<*>)
 
     fun onMarkerClick(clicked: MarkerState)
 
     fun onMapClick(clicked: GeoPoint)
-
-    fun onCircleClick(event: CircleClickEvent)
-
-    fun showToast(text: String)
-
-    fun removeToast(toastMessage: ToastMessage)
 
     fun onDirectionButtonClick(markerState: MarkerState): Intent
 }
@@ -48,8 +31,6 @@ interface StoreMapPageViewModel {
 class StoreMapPageViewModelImpl :
     ViewModel(),
     StoreMapPageViewModel {
-    private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
-    override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
     // カメラの初期位置
     override val initCameraPosition =
@@ -67,25 +48,13 @@ class StoreMapPageViewModelImpl :
 
     override val markerList = StarbucksHI_list
 
-    private val _infoBubbleState: MutableState<InfoBubbleState> = mutableStateOf(InfoBubbleState())
-    override val infoBubbleState: InfoBubbleState
-        get() = _infoBubbleState.value
-
-    private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
+    private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
-    private val _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
-    override val selectedMarker: MarkerState?
-        get() = _selectedMarker.value
-
-    override fun changeState(newState: MapViewState<*>) {
-        this._selectedMarker.value = null
-        this._mapViewState.value = newState
-        this.infoBubbleState.close()
-    }
+    private val _selectedMarker: MutableStateFlow<MarkerState?> = MutableStateFlow(null)
+    override val selectedMarker: StateFlow<MarkerState?> = _selectedMarker.asStateFlow()
 
     override fun onDirectionButtonClick(markerState: MarkerState): Intent {
-        Log.d("StoreMap", "--->onDirectionButtonClick(${markerState.id})")
         val query =
             (markerState.extra as? Bundle)?.let {
                 Uri.encode(it.getString("address", ""))
@@ -96,43 +65,16 @@ class StoreMapPageViewModelImpl :
         return mapIntent
     }
 
-    override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {
-        this.mapViewState.value?.moveCameraTo(
-            cameraPosition = initCameraPosition,
-            durationMs = 3000,
-            listener = listener,
-        )
-    }
-
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
-        this._infoBubbleState.value.open(clicked)
-    }
-
-    override fun showToast(text: String) {
-        this._messages.value = this._messages.value +
-            ToastMessage(
-                text = text,
-            )
-    }
-
-    override fun removeToast(toastMessage: ToastMessage) {
-        this._messages.value =
-            this._messages.value.filter {
-                it != toastMessage
-            }
     }
 
     override fun onMapClick(clicked: GeoPoint) {
         this._selectedMarker.value = null
-        this.infoBubbleState.close()
     }
 
-    override fun onCircleClick(event: CircleClickEvent) {
-        event.state.fillColor = Color.Blue.copy(alpha = 0.5f)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
+    override fun onMapViewChanged(mapViewState: MapViewState<*>) {
+        this._selectedMarker.value = null
+        _mapViewState.value = mapViewState
     }
 }
