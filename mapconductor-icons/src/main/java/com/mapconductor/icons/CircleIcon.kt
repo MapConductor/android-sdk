@@ -10,7 +10,6 @@ import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.settings.Settings
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -95,44 +94,48 @@ class CircleIcon(
 
         // Draw rectangle frame for debugging
         if (this.debug) {
-            Paint().apply {
+            Paint()
+                .apply {
+                    isAntiAlias = true
+                    this.strokeWidth = 1f
+                    this.color = Color.Black.toArgb()
+                    style = Paint.Style.STROKE
+                }.also {
+                    canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+                }
+        }
+
+        Paint()
+            .apply {
+                color = fillColor.toArgb()
+                style = Paint.Style.FILL
                 isAntiAlias = true
-                this.strokeWidth = 1f
-                this.color = Color.Black.toArgb()
-                style = Paint.Style.STROKE
             }.also {
-                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+                canvas.drawCircle(centerX, centerY, overallDotRadius - strokeWidth, it)
             }
-        }
 
-        Paint().apply {
-            color = fillColor.toArgb()
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }.also {
-            canvas.drawCircle(centerX, centerY, overallDotRadius - strokeWidth, it)
-        }
-
-        Paint().apply {
-            color = strokeColor.toArgb()
-            style = Paint.Style.STROKE
-            isAntiAlias = true
-            this.strokeWidth = strokeWidth
-        }.also {
-            canvas.drawCircle(centerX, centerY, overallDotRadius - strokeWidth, it)
-        }
+        Paint()
+            .apply {
+                color = strokeColor.toArgb()
+                style = Paint.Style.STROKE
+                isAntiAlias = true
+                this.strokeWidth = strokeWidth
+            }.also {
+                canvas.drawCircle(centerX, centerY, overallDotRadius - strokeWidth, it)
+            }
 
         // Draw cross-lines for debugging
         if (this.debug) {
-            Paint().apply {
-                color = Color.Black.toArgb()
-                isAntiAlias = true
-                style = Paint.Style.STROKE
-                this.strokeWidth = strokeWidth
-            }.also {
-                canvas.drawLine(centerX, 0f, centerX, canvas.height.toFloat(), it)
-                canvas.drawLine(0f, centerY, canvas.width.toFloat(), centerY, it)
-            }
+            Paint()
+                .apply {
+                    color = Color.Black.toArgb()
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    this.strokeWidth = strokeWidth
+                }.also {
+                    canvas.drawLine(centerX, 0f, centerX, canvas.height.toFloat(), it)
+                    canvas.drawLine(0f, centerY, canvas.width.toFloat(), centerY, it)
+                }
         }
 
         val result =

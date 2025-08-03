@@ -7,16 +7,15 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withTranslation
 import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.settings.Settings
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
-import androidx.core.graphics.withTranslation
-import com.mapconductor.core.marker.AbstractMarkerIcon
 
 class FlagIcon(
     private val properties: IconProperties,
@@ -38,7 +37,7 @@ class FlagIcon(
         iconSize: Dp = Settings.Default.iconSize,
         debug: Boolean = false,
     ) : this(
-        IconProperties(fillColor, strokeColor, strokeWidth, scale, iconSize, debug)
+        IconProperties(fillColor, strokeColor, strokeWidth, scale, iconSize, debug),
     )
 
     // プロパティの委譲
@@ -91,10 +90,10 @@ class FlagIcon(
         height: Float,
     ) {
         // SVGの実際の描画領域を計算（マージンを除去）
-        val svgLeft = 0f  // マージンを0にする
-        val svgTop = 0f   // マージンを0にする
-        val svgRight = 45.931f - 5.161f  // 実際の幅
-        val svgBottom = 51.48f - 5.161f  // 実際の高さ
+        val svgLeft = 0f // マージンを0にする
+        val svgTop = 0f // マージンを0にする
+        val svgRight = 45.931f - 5.161f // 実際の幅
+        val svgBottom = 51.48f - 5.161f // 実際の高さ
         val svgWidth = svgRight
         val svgHeight = svgBottom
 
@@ -113,14 +112,15 @@ class FlagIcon(
 
         // Draw rectangle frame for debugging
         if (this.debug) {
-            Paint().apply {
-                isAntiAlias = true
-                strokeWidth = 1f
-                this.color = Color.Black.toArgb()
-                style = Paint.Style.STROKE
-            }.also {
-                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
-            }
+            Paint()
+                .apply {
+                    isAntiAlias = true
+                    strokeWidth = 1f
+                    this.color = Color.Black.toArgb()
+                    style = Paint.Style.STROKE
+                }.also {
+                    canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+                }
         }
 
         canvas.withTranslation(offsetX, offsetY) {

@@ -25,7 +25,6 @@ import android.graphics.Typeface
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 
-
 interface MarkerIcon {
     val scale: Float
     val anchor: Offset
@@ -389,14 +388,15 @@ class DefaultIcon(
 
         // Draw rectangle frame for debugging
         if (this.debug) {
-            Paint().apply {
-                isAntiAlias = true
-                strokeWidth = 1f
-                this.color = Color.Black.toArgb()
-                style = Paint.Style.STROKE
-            }.also {
-                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
-            }
+            Paint()
+                .apply {
+                    isAntiAlias = true
+                    strokeWidth = 1f
+                    this.color = Color.Black.toArgb()
+                    style = Paint.Style.STROKE
+                }.also {
+                    canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+                }
         }
 
         canvas.drawPath(strokePath, fillPaint)

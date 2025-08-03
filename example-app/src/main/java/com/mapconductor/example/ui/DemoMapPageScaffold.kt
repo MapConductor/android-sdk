@@ -46,7 +46,6 @@ fun DemoMapPageScaffold(
     onMapViewStateChanged: (MapViewState<*>) -> Unit = {},
     content: @Composable BoxScope.(PaddingValues) -> Unit = {},
 ) {
-
     // ---------- Map States ---------------
     val googleMapState =
         rememberGoogleMapViewState(
@@ -122,14 +121,15 @@ fun DemoMapPageScaffold(
             content(paddingValues)
 
             Card(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(
-                        top = paddingValues.calculateTopPadding(),
-                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
-                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
-                        bottom = paddingValues.calculateBottomPadding(),
-                    ),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(
+                            top = paddingValues.calculateTopPadding(),
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
+                            bottom = paddingValues.calculateBottomPadding(),
+                        ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
                 Row(

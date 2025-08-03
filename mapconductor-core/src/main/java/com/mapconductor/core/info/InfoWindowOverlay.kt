@@ -14,7 +14,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -30,15 +29,16 @@ internal fun InfoBubbleOverlay(
 ) {
     var infoWndSize by remember { mutableStateOf(IntSize.Zero) }
 
-    val x = positionOffset.x +
-        (-tailOffset.x * infoWndSize.width) +  // tailOffset.x = 0.5のとき、吹き出しの中央
-        ((0.5 - iconOffset.x) * iconSize.width) +  // iconOffset.x = 0.5のとき、アイコンの中央とMarker.positionが一致
-        ((infoAnchorOffset.x - 0.5) * iconSize.width) // infoAnchorOffset.x = 0.5のとき、アイコンの中央にInfoBubbleを表示
+    val x =
+        positionOffset.x +
+            (-tailOffset.x * infoWndSize.width) + // tailOffset.x = 0.5のとき、吹き出しの中央
+            ((0.5 - iconOffset.x) * iconSize.width) + // iconOffset.x = 0.5のとき、アイコンの中央とMarker.positionが一致
+            ((infoAnchorOffset.x - 0.5) * iconSize.width) // infoAnchorOffset.x = 0.5のとき、アイコンの中央にInfoBubbleを表示
 
     val y =
         positionOffset.y +
             (-tailOffset.y * infoWndSize.height) + // tailOffset.y = 1.0 のとき、吹き出しの下部
-            ((0.5 - iconOffset.y) * iconSize.height) +  // iconOffset.y = 0.5のとき、アイコンの中央とMarker.positionが一致
+            ((0.5 - iconOffset.y) * iconSize.height) + // iconOffset.y = 0.5のとき、アイコンの中央とMarker.positionが一致
             ((infoAnchorOffset.y - 0.5) * iconSize.height) // infoAnchorOffset.y = 0.5のとき、アイコンの中央にInfoBubbleを表示
 
     Box(
@@ -53,7 +53,6 @@ internal fun InfoBubbleOverlay(
         content()
     }
 }
-
 
 data class InfoBubbleEntry(
     val marker: MarkerState,

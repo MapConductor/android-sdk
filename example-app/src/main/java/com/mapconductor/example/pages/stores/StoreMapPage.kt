@@ -9,7 +9,6 @@ fun StoreMapPage(
     viewModel: StoreMapPageViewModel = StoreMapPageViewModelImpl(),
     onToggleSidebar: () -> Unit = {},
 ) {
-
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,

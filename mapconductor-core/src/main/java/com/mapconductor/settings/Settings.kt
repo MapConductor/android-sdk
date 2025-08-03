@@ -20,6 +20,7 @@ sealed class Settings(
         composeEventDebounce = 5,
     )
 }
+
 object MarkerIconSize {
     val ExtraSmall: Dp = 12.dp
     val Small: Dp = 24.dp

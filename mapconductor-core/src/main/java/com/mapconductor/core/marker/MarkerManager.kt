@@ -42,8 +42,7 @@ class MarkerManager<ActualMarker>(
                 entryIDs
                     .filter { entryId ->
                         entities[entryId]?.state?.clickable == true
-                    }
-                    .filterNotNull()
+                    }.filterNotNull()
                     .sortedBy { entryId ->
                         entities[entryId]?.let { entity ->
                             haversineDistance(position, entity.state.position)

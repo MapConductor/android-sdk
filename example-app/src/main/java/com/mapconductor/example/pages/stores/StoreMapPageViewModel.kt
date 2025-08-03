@@ -31,7 +31,6 @@ interface StoreMapPageViewModel {
 class StoreMapPageViewModelImpl :
     ViewModel(),
     StoreMapPageViewModel {
-
     // カメラの初期位置
     override val initCameraPosition =
         MapCameraPosition(

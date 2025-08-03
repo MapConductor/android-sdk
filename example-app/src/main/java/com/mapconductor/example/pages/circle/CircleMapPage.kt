@@ -19,11 +19,10 @@ fun CircleMapPage(
     viewModel: CirclePageViewModel = CirclePageViewModelImpl(),
     onToggleSidebar: () -> Unit = {},
 ) {
-
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
-        onMapViewStateChanged = viewModel::onMapViewChanged
+        onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
 
@@ -48,7 +47,12 @@ fun CircleMapPage(
                     ),
             title = "Messages",
         ) {
-            MapViewStatePanel(mapViewState.value?.mapCameraPosition?.collectAsState()?.value)
+            MapViewStatePanel(
+                mapViewState.value
+                    ?.mapCameraPosition
+                    ?.collectAsState()
+                    ?.value,
+            )
         }
 
         ToastHost(

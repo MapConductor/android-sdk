@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
@@ -45,20 +44,24 @@ fun StoreMapComponent(
             markers.mapIndexed { index, state ->
                 val randomColor = colors[index % colors.size]
                 state.copy(
-                    icon = when (index % 3) {
-                        0 -> DefaultIcon(
-                            fillColor = randomColor,
-                            iconSize = MarkerIconSize.Large,
-                        )
-                        1 -> FlagIcon(
-                            fillColor = randomColor,
-                            iconSize = MarkerIconSize.Regular,
-                        )
-                        else -> CircleIcon(
-                            fillColor = randomColor.copy(alpha = 0.7f),
-                            iconSize = MarkerIconSize.Small,
-                        )
-                    }
+                    icon =
+                        when (index % 3) {
+                            0 ->
+                                DefaultIcon(
+                                    fillColor = randomColor,
+                                    iconSize = MarkerIconSize.Large,
+                                )
+                            1 ->
+                                FlagIcon(
+                                    fillColor = randomColor,
+                                    iconSize = MarkerIconSize.Regular,
+                                )
+                            else ->
+                                CircleIcon(
+                                    fillColor = randomColor.copy(alpha = 0.7f),
+                                    iconSize = MarkerIconSize.Small,
+                                )
+                        },
                 )
             }
         }
