@@ -48,8 +48,6 @@ fun StoreMapComponent(
                     icon = when (index % 3) {
                         0 -> DefaultIcon(
                             fillColor = randomColor,
-                            strokeColor = Color.DarkGray.copy(alpha = 0.4f),
-                            strokeWidth = 2.dp,
                             iconSize = MarkerIconSize.Large,
                         )
                         1 -> FlagIcon(
@@ -58,7 +56,6 @@ fun StoreMapComponent(
                         )
                         else -> CircleIcon(
                             fillColor = randomColor.copy(alpha = 0.7f),
-                            strokeColor = Color.Blue.copy(alpha = 0.4f),
                             iconSize = MarkerIconSize.Small,
                         )
                     }
