@@ -3,15 +3,12 @@ package com.mapconductor.example.pages.stores
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.DefaultIcon
@@ -19,14 +16,15 @@ import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
-import com.mapconductor.example.demo.StoreCard
+import com.mapconductor.icons.CircleIcon
+import com.mapconductor.icons.FlagIcon
+import com.mapconductor.settings.MarkerIconSize
 import android.os.Bundle
 
 @Composable
 fun StoreMapComponent(
     mapViewState: MapViewState<*>?,
     selectedMarker: MarkerState?,
-    infoBubbleState: InfoBubbleState,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onDirectionButtonClick: OnMarkerEventHandler = {},
@@ -47,38 +45,46 @@ fun StoreMapComponent(
                 val randomColor = colors[index % colors.size]
                 state.copy(
                     icon =
-                        DefaultIcon(
-                            fillColor = randomColor,
-                            strokeColor = Color.White,
-                            strokeWidth = 2.dp,
-                        ),
+                        when (index % 3) {
+                            0 ->
+                                DefaultIcon(
+                                    fillColor = randomColor,
+                                    iconSize = MarkerIconSize.Large,
+                                )
+                            1 ->
+                                FlagIcon(
+                                    fillColor = randomColor,
+                                    iconSize = MarkerIconSize.Regular,
+                                )
+                            else ->
+                                CircleIcon(
+                                    fillColor = randomColor.copy(alpha = 0.7f),
+                                    iconSize = MarkerIconSize.Small,
+                                )
+                        },
                 )
             }
         }
 
-    mapViewState?.let { mapViewState ->
+    mapViewState?.let { currentMapViewState ->
         MapViewContainer(
             modifier = modifier,
-            state = mapViewState,
+            state = currentMapViewState,
             onMapClick = onMapClickHandler,
             onMarkerClick = onMarkerClickHandler,
             onMarkerDrag = onMarkerDragHandler,
             onMarkerAnimateStart = { isMarkerAnimating = true },
             onMarkerAnimateEnd = { isMarkerAnimating = false },
         ) {
-            markerList.forEach { markerState ->
-                key(markerState.id) {
-                    Marker(markerState)
-                }
-            }
+            markerList.forEach { markerState -> Marker(markerState) }
 
             selectedMarker?.let {
-                if (isMarkerAnimating == false) {
+                if (!isMarkerAnimating) {
                     InfoBubble(
                         bubbleColor = bubbleColor,
-                        state = infoBubbleState,
+                        marker = it,
                     ) {
-                        StoreCard(
+                        StoreInfoView(
                             info = it.extra as Bundle,
                             onClick = {
                                 onDirectionButtonClick(it)

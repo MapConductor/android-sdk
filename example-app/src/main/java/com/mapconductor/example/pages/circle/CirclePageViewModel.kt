@@ -32,7 +32,7 @@ interface CirclePageViewModel {
     val edgeMarker: MarkerState
     val circleState: CircleState
 
-    fun changeState(state: MapViewState<*>)
+    fun onMapViewChanged(state: MapViewState<*>)
 
     fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
 
@@ -126,8 +126,8 @@ class CirclePageViewModelImpl :
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
-    override fun changeState(newState: MapViewState<*>) {
-        this._mapViewState.value = newState
+    override fun onMapViewChanged(state: MapViewState<*>) {
+        this._mapViewState.value = state
     }
 
     override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {
