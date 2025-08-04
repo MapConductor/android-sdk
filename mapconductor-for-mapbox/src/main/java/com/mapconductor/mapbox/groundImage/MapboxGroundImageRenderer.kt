@@ -1,13 +1,25 @@
 package com.mapconductor.mapbox.groundImage
 
+import com.mapbox.geojson.Feature
+import com.mapconductor.core.groundimage.AbstractGroundImageRenderer
+import com.mapconductor.core.groundimage.GroundImageEntity
+import com.mapconductor.core.groundimage.GroundImageRenderer
 import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.mapbox.MapboxMapViewHolder
+import kotlinx.coroutines.CoroutineScope
 
-class MapboxGroundImageRenderer {
-    fun addOverlay(state: GroundImageState) {
-        // Not implemented
+class MapboxGroundImageRenderer(
+        override val holder: MapboxMapViewHolder,
+        override val coroutine: CoroutineScope
+    ) : AbstractGroundImageRenderer<Feature>() {
+    override suspend fun addGroundImages(newGroundImages: List<GroundImageState>): List<Feature?> {
+        return emptyList()
     }
 
-    fun updateOverlay(state: GroundImageState) {
-        // Not implemented
+    override suspend fun changeGroundImages(changes: List<GroundImageRenderer.UpdateParams<Feature>>): List<Feature?> {
+        return emptyList()
+    }
+
+    override suspend fun removeGroundImages(removeEntities: List<GroundImageEntity<Feature>>) {
     }
 }

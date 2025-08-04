@@ -121,7 +121,7 @@ class GroundImageOverlay(
 ) : MapOverlay<GroundImageState> {
     override suspend fun render(
         data: List<GroundImageState>,
-        controller: MapViewController<*, *, *, *>,
+        controller: MapViewControllerAlias,
     ) {
         controller.addGroundImages(data)
     }

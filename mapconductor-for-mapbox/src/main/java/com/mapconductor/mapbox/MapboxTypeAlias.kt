@@ -6,3 +6,4 @@ typealias MapboxActualMarker = Feature
 typealias MapboxActualCircle = Feature
 typealias MapboxActualPolyline = Feature
 typealias MapboxActualPolygon = Feature
+typealias MapboxActualGroundImage = Feature

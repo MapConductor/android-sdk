@@ -100,6 +100,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
             polygonRenderer.init(overlayManager)
             onPolygonOverlayManagerInitialized(overlayManager)
         }
+    }
     abstract val groundImageRenderer: GroundImageRenderer<ActualGroundImage>
 
     override val groundImageOverlayManager: GroundImageOverlayManager<ActualGroundImage> by lazy {
@@ -108,8 +109,6 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
             onGroundImageOverlayManagerInitialized(overlayManager)
         }
     }
-
-    protected abstract fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<ActualMarker>)
 
     abstract val circleRenderer: CircleRenderer<ActualCircle>
 

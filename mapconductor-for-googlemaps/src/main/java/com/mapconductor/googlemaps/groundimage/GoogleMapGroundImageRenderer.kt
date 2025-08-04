@@ -70,11 +70,12 @@ class GoogleMapGroundImageRenderer(
                 val finger = params.entity.state.fingerPrint()
                 val prevFinger = params.prevEntity.fingerPrint
                 if (finger.bounds != prevFinger.bounds) {
-                    val bounds = params.entity.state.bounds.map { GeoRectBounds.toLatLngBounds() }
-                    groundOverlay.position = bounds
+                    params.entity.state.bounds.toLatLngBounds()?.let{
+                        groundOverlay.setPositionFromBounds(it)
+                    }
                 }
                 groundOverlay.transparency = params.prevEntity.state.alpha
-                groundOverlay.setImage(BitmapDescriptorFactory.fromBitmap(params.entity.state.image.toBitmap())
+                groundOverlay.setImage(BitmapDescriptorFactory.fromBitmap(params.entity.state.image.toBitmap()))
                 return@map groundOverlay
             }
         }
