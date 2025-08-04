@@ -1,4 +1,4 @@
-package com.mapconductor.example.demo
+package com.mapconductor.example.pages.stores
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import android.os.Bundle
 
 @Composable
-fun StoreCard(
+fun StoreInfoView(
     info: Bundle,
     onClick: () -> Unit = {},
 ) {

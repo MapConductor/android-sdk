@@ -3,30 +3,28 @@ package com.mapconductor.example.pages.stores
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
-import com.mapconductor.example.demo.StoreCard
+import com.mapconductor.example.R
 import android.os.Bundle
 
 @Composable
 fun StoreMapComponent(
     mapViewState: MapViewState<*>?,
     selectedMarker: MarkerState?,
-    infoBubbleState: InfoBubbleState,
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onDirectionButtonClick: OnMarkerEventHandler = {},
@@ -38,47 +36,59 @@ fun StoreMapComponent(
     val bubbleColor by remember {
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
     }
+    val context = LocalContext.current
     var isMarkerAnimating by remember { mutableStateOf(false) }
-    val colors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta, Color.Cyan)
 
+    val icons =
+        mapOf(
+            "coffee_bean" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_bean)!!,
+                ),
+            "honolulu_coffee" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.honolulu_coffee)!!,
+                ),
+            "coffee_extra" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_extra)!!,
+                ),
+            "starbucks" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.starbucks)!!,
+                ),
+        )
     val markerList =
         remember {
-            markers.mapIndexed { index, state ->
-                val randomColor = colors[index % colors.size]
-                state.copy(
-                    icon =
-                        DefaultIcon(
-                            fillColor = randomColor,
-                            strokeColor = Color.White,
-                            strokeWidth = 2.dp,
-                        ),
-                )
+            markers.map { state ->
+                (state.extra as Bundle).let { info ->
+                    val storeIcon = info.getString("store") ?: "coffee_extra"
+                    state.copy(
+                        icon = icons[storeIcon],
+                    )
+                }
             }
         }
 
-    mapViewState?.let { mapViewState ->
+    mapViewState?.let { currentMapViewState ->
         MapViewContainer(
             modifier = modifier,
-            state = mapViewState,
+            state = currentMapViewState,
             onMapClick = onMapClickHandler,
             onMarkerClick = onMarkerClickHandler,
             onMarkerDrag = onMarkerDragHandler,
             onMarkerAnimateStart = { isMarkerAnimating = true },
             onMarkerAnimateEnd = { isMarkerAnimating = false },
         ) {
-            markerList.forEach { markerState ->
-                key(markerState.id) {
-                    Marker(markerState)
-                }
-            }
+            markerList.forEach { markerState -> Marker(markerState) }
 
             selectedMarker?.let {
-                if (isMarkerAnimating == false) {
+                if (!isMarkerAnimating) {
                     InfoBubble(
                         bubbleColor = bubbleColor,
-                        state = infoBubbleState,
+                        marker = it,
                     ) {
-                        StoreCard(
+                        StoreInfoView(
                             info = it.extra as Bundle,
                             onClick = {
                                 onDirectionButtonClick(it)

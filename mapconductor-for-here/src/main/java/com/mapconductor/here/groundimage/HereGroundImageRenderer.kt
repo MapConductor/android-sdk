@@ -33,15 +33,18 @@ class HereMapGroundImageRenderer(
     override val coroutine: CoroutineScope
 ) : AbstractGroundImageRenderer<MapImage>() {
     override suspend fun addGroundImages(newGroundImages: List<GroundImageState>): List<MapImage?> {
-        return withContext(coroutine.newCoroutineContext){
-            return@withContext newGroundImages.map { state ->
-                val bounds = state.bounds ?: return@withContext emptyList()
-                val image =
-                val alpha =
-                val options =
-            }
-        }
+        return emptyList()
     }
+//    override suspend fun addGroundImages(newGroundImages: List<GroundImageState>): List<MapImage?> {
+//        return withContext(coroutine.coroutineContext){
+//            return@withContext newGroundImages.map { state ->
+//                val bounds = state.bounds ?: return@withContext emptyList()
+//                val image = state.image
+//                val alpha = state.alpha
+//                val options = state.extra
+//            }
+//        }
+//    }
 
     override suspend fun changeGroundImages(changes: List<GroundImageRenderer.UpdateParams<MapImage>>): List<MapImage?> {
         return emptyList()

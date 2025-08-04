@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class CircleState(
     center: IGeoPoint,
     radiusMeters: Double,
+    clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
     fillColor: Color =
@@ -31,6 +32,7 @@ class CircleState(
     extra: Parcelable? = null,
 ) {
     var center by mutableStateOf(center)
+    var clickable by mutableStateOf(clickable)
     var radiusMeters by mutableStateOf(radiusMeters)
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
@@ -44,6 +46,7 @@ class CircleState(
                 listOf(
                     center.hashCode(),
                     radiusMeters.hashCode(),
+                    clickable.hashCode(),
                     extra?.hashCode() ?: 0,
                     strokeColor.hashCode(),
                     strokeWidth.hashCode(),
@@ -63,6 +66,7 @@ class CircleState(
             id = this.id.hashCode(),
             center = center.hashCode(),
             radiusMeters = radiusMeters.hashCode(),
+            clickable = clickable.hashCode(),
             strokeColor = strokeColor.hashCode(),
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),
@@ -90,6 +94,7 @@ class CircleState(
     ): CircleState =
         CircleState(
             center = center,
+            clickable = clickable,
             radiusMeters = radiusMeters,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
@@ -107,6 +112,7 @@ class CircleState(
     override fun hashCode(): Int {
         var result = extra?.hashCode() ?: 0
         result = 31 * result + center.hashCode()
+        result = 31 * result + clickable.hashCode()
         result = 31 * result + radiusMeters.hashCode()
         result = 31 * result + strokeColor.hashCode()
         result = 31 * result + strokeWidth.hashCode()
@@ -120,6 +126,7 @@ data class CircleFingerPrint(
     val id: Int,
     val center: Int,
     val radiusMeters: Int,
+    val clickable: Int,
     val strokeColor: Int,
     val strokeWidth: Int,
     val fillColor: Int,
