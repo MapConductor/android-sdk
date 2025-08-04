@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
+import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
@@ -37,6 +39,12 @@ fun DemoAppScreen() {
                 title = "Circle Demo",
                 icon = Icons.Default.CheckCircle,
                 route = "circle",
+            ),
+            SidebarItem(
+                id = "polyline",
+                title = "Polyline Demo",
+                icon = Icons.Default.PlayArrow,
+                route = "polyline",
             ),
 //            SidebarItem(
 //                id = "examples",
@@ -64,6 +72,11 @@ fun DemoAppScreen() {
                     }
                     "circle" -> {
                         CircleMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "polyline" -> {
+                        PolylineMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
