@@ -12,9 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.mapconductor.core.circle.Circle
-import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.info.InfoBubbleState
 import com.mapconductor.core.map.MapViewState
@@ -22,7 +19,6 @@ import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polyline.Polyline
 
 @Composable
 fun MapArea(
@@ -35,7 +31,6 @@ fun MapArea(
     onMapClickHandler: OnMapEventHandler = {},
     onMarkerClickHandler: OnMarkerEventHandler = {},
     onMarkerDragHandler: OnMarkerEventHandler = {},
-    onCircleClickHandler: OnCircleEventHandler = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
@@ -52,25 +47,10 @@ fun MapArea(
             onMarkerDrag = onMarkerDragHandler,
             onMarkerAnimateStart = { isMarkerAnimating = true },
             onMarkerAnimateEnd = { isMarkerAnimating = false },
-            onCircleClick = onCircleClickHandler,
         ) {
-            Polyline(
-                points = markers.map { it.position },
-                strokeColor = Color(0x88FF3366),
-                strokeWidth = 5.dp,
-            )
-
             markers.forEach { markerState ->
                 key(markerState.id) {
                     Marker(markerState)
-                    // TODO: circleStateに置換する。このコードはデバッグ用
-                    Circle(
-                        center = markerState.position,
-                        radius = 1000.0,
-                        fillColor = Color(0x88FF3366),
-                        strokeColor = Color.White,
-                        strokeWidth = 1.dp,
-                    )
                 }
             }
 

@@ -92,4 +92,9 @@ object ResourceProvider {
             displayMetrics.scaledDensity
         }
     }
+
+    fun getOptimalTileSize(): Int {
+        val displayMetrics = getDisplayMetrics()
+        return if (displayMetrics.density >= 2.0f) 512 else 256
+    }
 }
