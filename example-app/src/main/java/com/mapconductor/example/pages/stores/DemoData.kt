@@ -6,7 +6,6 @@ import androidx.compose.ui.unit.sp
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.icons.FlagIcon
 import android.os.Bundle
 
 /**

@@ -21,7 +21,6 @@ import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.R
 import android.os.Bundle
 
-
 @Composable
 fun StoreMapComponent(
     mapViewState: MapViewState<*>?,
@@ -39,31 +38,37 @@ fun StoreMapComponent(
     }
     val context = LocalContext.current
     var isMarkerAnimating by remember { mutableStateOf(false) }
-    val icons = mapOf(
-        "coffee_bean" to DrawableDefaultIcon(
-            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_bean)!!
-        ),
-        "honolulu_coffee" to DrawableDefaultIcon(
-            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.honolulu_coffee)!!
-        ),
-        "coffee_extra" to DrawableDefaultIcon(
-            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_extra)!!
-        ),
-        "starbucks" to DrawableDefaultIcon(
-            backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.starbucks)!!
-        ),
-    )
 
-    val markerList = remember {
-        markers.map { state ->
-            (state.extra as Bundle).let { info ->
-                val store_icon = info.getString("store") ?: "coffee_extra"
-                state.copy(
-                    icon = icons[store_icon]
-                )
+    val icons =
+        mapOf(
+            "coffee_bean" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_bean)!!,
+                ),
+            "honolulu_coffee" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.honolulu_coffee)!!,
+                ),
+            "coffee_extra" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.coffee_extra)!!,
+                ),
+            "starbucks" to
+                DrawableDefaultIcon(
+                    backgroundDrawable = ContextCompat.getDrawable(context, R.drawable.starbucks)!!,
+                ),
+        )
+    val markerList =
+        remember {
+            markers.map { state ->
+                (state.extra as Bundle).let { info ->
+                    val storeIcon = info.getString("store") ?: "coffee_extra"
+                    state.copy(
+                        icon = icons[storeIcon],
+                    )
+                }
             }
         }
-    }
 
     mapViewState?.let { currentMapViewState ->
         MapViewContainer(

@@ -1,12 +1,9 @@
 package com.mapconductor.core.marker
 
-import android.graphics.*
-import android.graphics.drawable.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -16,6 +13,17 @@ import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.settings.Settings
 import kotlin.math.max
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Rect
+import android.graphics.Typeface
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 
 /**
  * DefaultIconの基底クラス
@@ -24,7 +32,6 @@ import kotlin.math.max
 abstract class AbstractDefaultIcon(
     protected val baseProperties: BaseIconProperties,
 ) : AbstractMarkerIcon() {
-
     data class BaseIconProperties(
         val strokeColor: Color,
         val strokeWidth: Dp,
@@ -55,7 +62,12 @@ abstract class AbstractDefaultIcon(
     /**
      * サブクラスでマーカーのフィル描画を実装する
      */
-    protected abstract fun drawMarkerFill(canvas: Canvas, path: Path, canvasSize: Float, iconScale: Float)
+    protected abstract fun drawMarkerFill(
+        canvas: Canvas,
+        path: Path,
+        canvasSize: Float,
+        iconScale: Float,
+    )
 
     /**
      * サブクラスで等価性比較のための固有プロパティを返す
@@ -84,11 +96,12 @@ abstract class AbstractDefaultIcon(
             textSize = labelTextSize,
         )
 
-        val result = BitmapIcon(
-            bitmap = bitmap,
-            anchor = anchor,
-            size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
-        )
+        val result =
+            BitmapIcon(
+                bitmap = bitmap,
+                anchor = anchor,
+                size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
+            )
         BitmapIconCache.put(id, result)
         return result
     }
@@ -119,7 +132,10 @@ abstract class AbstractDefaultIcon(
     /**
      * マーカーのパスを生成
      */
-    protected fun createMarkerPath(canvasSize: Float, iconScale: Float): Path {
+    protected fun createMarkerPath(
+        canvasSize: Float,
+        iconScale: Float,
+    ): Path {
         val originalSize = Size(23.5f, 25.6f)
         val markerScale = minOf(canvasSize / originalSize.width, canvasSize / originalSize.height)
         val scaledWidth = originalSize.width * markerScale
@@ -196,27 +212,27 @@ abstract class AbstractDefaultIcon(
     /**
      * ストローク用のPaintを作成
      */
-    protected fun createStrokePaint(iconScale: Float): Paint {
-        return Paint().apply {
+    protected fun createStrokePaint(iconScale: Float): Paint =
+        Paint().apply {
             color = strokeColor.toArgb()
             style = Paint.Style.STROKE
             strokeWidth = ResourceProvider.dpToPx(this@AbstractDefaultIcon.strokeWidth.value * iconScale).toFloat()
             isAntiAlias = true
         }
-    }
 
     /**
      * デバッグ用の枠描画
      */
     private fun drawDebugFrame(canvas: Canvas) {
-        Paint().apply {
-            isAntiAlias = true
-            strokeWidth = 1f
-            color = Color.Black.toArgb()
-            style = Paint.Style.STROKE
-        }.also {
-            canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
-        }
+        Paint()
+            .apply {
+                isAntiAlias = true
+                strokeWidth = 1f
+                color = Color.Black.toArgb()
+                style = Paint.Style.STROKE
+            }.also {
+                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+            }
     }
 
     /**
@@ -232,14 +248,15 @@ abstract class AbstractDefaultIcon(
             // 基本テキストサイズを計算（スケーリング適用）
             val baseTextSize = convertTextUnitToPx(textSize, 1f)
 
-            val textPaint = Paint().apply {
-                color = labelTextColor?.toArgb() ?: Color.Black.toArgb()
-                this.textSize = baseTextSize
-                textAlign = Paint.Align.CENTER
-                typeface = labelTypeFace
-                isAntiAlias = true
-                isSubpixelText = true
-            }
+            val textPaint =
+                Paint().apply {
+                    color = labelTextColor?.toArgb() ?: Color.Black.toArgb()
+                    this.textSize = baseTextSize
+                    textAlign = Paint.Align.CENTER
+                    typeface = labelTypeFace
+                    isAntiAlias = true
+                    isSubpixelText = true
+                }
 
             // マーカーの円形部分の中心に配置
             val markerCenterX = canvasSize / 2f
@@ -250,18 +267,20 @@ abstract class AbstractDefaultIcon(
             val baselineOffset = textHeight / 2f - metrics.descent
 
             // アウトライン描画（アイコンスケールを考慮したストローク幅）
-            val outlineStrokeWidth = max(
-                ResourceProvider.dpToPx(1f * iconScale).toFloat(),
-                2f, // 最小2px
-            )
+            val outlineStrokeWidth =
+                max(
+                    ResourceProvider.dpToPx(1f * iconScale).toFloat(),
+                    2f, // 最小2px
+                )
 
-            val outlinePaint = Paint(textPaint).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = outlineStrokeWidth
-                color = labelStrokeColor.toArgb()
-                strokeJoin = Paint.Join.ROUND
-                strokeCap = Paint.Cap.ROUND
-            }
+            val outlinePaint =
+                Paint(textPaint).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = outlineStrokeWidth
+                    color = labelStrokeColor.toArgb()
+                    strokeJoin = Paint.Join.ROUND
+                    strokeCap = Paint.Cap.ROUND
+                }
 
             canvas.drawText(labelText, markerCenterX, markerCenterY + baselineOffset, outlinePaint)
             canvas.drawText(labelText, markerCenterX, markerCenterY + baselineOffset, textPaint)
@@ -274,8 +293,8 @@ abstract class AbstractDefaultIcon(
     protected fun convertTextUnitToPx(
         textUnit: TextUnit,
         scale: Float,
-    ): Float {
-        return when (textUnit.type) {
+    ): Float =
+        when (textUnit.type) {
             TextUnitType.Sp -> {
                 val spValue = textUnit.value * scale
                 ResourceProvider.spToPx(spValue.toDouble()).toFloat()
@@ -290,7 +309,6 @@ abstract class AbstractDefaultIcon(
                 ResourceProvider.dpToPx(dpValue.toDouble()).toFloat()
             }
         }
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -300,13 +318,10 @@ abstract class AbstractDefaultIcon(
             getUniqueProperties() == other.getUniqueProperties()
     }
 
-    override fun hashCode(): Int {
-        return baseProperties.hashCode() * 31 + getUniqueProperties().hashCode()
-    }
+    override fun hashCode(): Int = baseProperties.hashCode() * 31 + getUniqueProperties().hashCode()
 
-    override fun toString(): String {
-        return "${this::class.simpleName}(baseProperties=$baseProperties, uniqueProperties=${getUniqueProperties()})"
-    }
+    override fun toString(): String =
+        "${this::class.simpleName}(baseProperties=$baseProperties, uniqueProperties=${getUniqueProperties()})"
 }
 
 /**
@@ -316,7 +331,6 @@ class ColorDefaultIcon(
     private val fillColor: Color,
     baseProperties: BaseIconProperties,
 ) : AbstractDefaultIcon(baseProperties) {
-
     // 便利なコンストラクタ
     constructor(
         fillColor: Color = Color.Red,
@@ -332,25 +346,32 @@ class ColorDefaultIcon(
         debug: Boolean = false,
     ) : this(
         fillColor = fillColor,
-        baseProperties = BaseIconProperties(
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            scale = scale,
-            label = label,
-            labelTextColor = labelTextColor,
-            labelTextSize = labelTextSize,
-            labelTypeFace = labelTypeFace,
-            labelStrokeColor = labelStrokeColor,
-            iconSize = iconSize,
-            debug = debug,
-        ),
+        baseProperties =
+            BaseIconProperties(
+                strokeColor = strokeColor,
+                strokeWidth = strokeWidth,
+                scale = scale,
+                label = label,
+                labelTextColor = labelTextColor,
+                labelTextSize = labelTextSize,
+                labelTypeFace = labelTypeFace,
+                labelStrokeColor = labelStrokeColor,
+                iconSize = iconSize,
+                debug = debug,
+            ),
     )
 
-    override fun drawMarkerFill(canvas: Canvas, path: Path, canvasSize: Float, iconScale: Float) {
-        val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            color = fillColor.toArgb()
-        }
+    override fun drawMarkerFill(
+        canvas: Canvas,
+        path: Path,
+        canvasSize: Float,
+        iconScale: Float,
+    ) {
+        val fillPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.FILL
+                color = fillColor.toArgb()
+            }
         canvas.drawPath(path, fillPaint)
     }
 
@@ -368,21 +389,23 @@ class ColorDefaultIcon(
         labelStrokeColor: Color = this.labelStrokeColor,
         iconSize: Dp = this.iconSize,
         debug: Boolean = this.debug,
-    ): ColorDefaultIcon = ColorDefaultIcon(
-        fillColor = fillColor,
-        baseProperties = baseProperties.copy(
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            scale = scale,
-            label = label,
-            labelTextColor = labelTextColor,
-            labelTextSize = labelTextSize,
-            labelTypeFace = labelTypeFace,
-            labelStrokeColor = labelStrokeColor,
-            iconSize = iconSize,
-            debug = debug,
-        ),
-    )
+    ): ColorDefaultIcon =
+        ColorDefaultIcon(
+            fillColor = fillColor,
+            baseProperties =
+                baseProperties.copy(
+                    strokeColor = strokeColor,
+                    strokeWidth = strokeWidth,
+                    scale = scale,
+                    label = label,
+                    labelTextColor = labelTextColor,
+                    labelTextSize = labelTextSize,
+                    labelTypeFace = labelTypeFace,
+                    labelStrokeColor = labelStrokeColor,
+                    iconSize = iconSize,
+                    debug = debug,
+                ),
+        )
 
     fun copy(
         scale: Float,
@@ -397,7 +420,6 @@ class ImageDefaultIcon(
     private val backgroundBitmap: Bitmap,
     baseProperties: BaseIconProperties,
 ) : AbstractDefaultIcon(baseProperties) {
-
     // 便利なコンストラクタ
     constructor(
         backgroundBitmap: Bitmap,
@@ -413,21 +435,27 @@ class ImageDefaultIcon(
         debug: Boolean = false,
     ) : this(
         backgroundBitmap = backgroundBitmap,
-        baseProperties = BaseIconProperties(
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            scale = scale,
-            label = label,
-            labelTextColor = labelTextColor,
-            labelTextSize = labelTextSize,
-            labelTypeFace = labelTypeFace,
-            labelStrokeColor = labelStrokeColor,
-            iconSize = iconSize,
-            debug = debug,
-        ),
+        baseProperties =
+            BaseIconProperties(
+                strokeColor = strokeColor,
+                strokeWidth = strokeWidth,
+                scale = scale,
+                label = label,
+                labelTextColor = labelTextColor,
+                labelTextSize = labelTextSize,
+                labelTypeFace = labelTypeFace,
+                labelStrokeColor = labelStrokeColor,
+                iconSize = iconSize,
+                debug = debug,
+            ),
     )
 
-    override fun drawMarkerFill(canvas: Canvas, path: Path, canvasSize: Float, iconScale: Float) {
+    override fun drawMarkerFill(
+        canvas: Canvas,
+        path: Path,
+        canvasSize: Float,
+        iconScale: Float,
+    ) {
         canvas.save()
 
         // マーカー形状でクリッピング
@@ -485,28 +513,29 @@ class ImageDefaultIcon(
         labelStrokeColor: Color = this.labelStrokeColor,
         iconSize: Dp = this.iconSize,
         debug: Boolean = this.debug,
-    ): ImageDefaultIcon = ImageDefaultIcon(
-        backgroundBitmap = backgroundBitmap,
-        baseProperties = baseProperties.copy(
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            scale = scale,
-            label = label,
-            labelTextColor = labelTextColor,
-            labelTextSize = labelTextSize,
-            labelTypeFace = labelTypeFace,
-            labelStrokeColor = labelStrokeColor,
-            iconSize = iconSize,
-            debug = debug,
-        ),
-    )
+    ): ImageDefaultIcon =
+        ImageDefaultIcon(
+            backgroundBitmap = backgroundBitmap,
+            baseProperties =
+                baseProperties.copy(
+                    strokeColor = strokeColor,
+                    strokeWidth = strokeWidth,
+                    scale = scale,
+                    label = label,
+                    labelTextColor = labelTextColor,
+                    labelTextSize = labelTextSize,
+                    labelTypeFace = labelTypeFace,
+                    labelStrokeColor = labelStrokeColor,
+                    iconSize = iconSize,
+                    debug = debug,
+                ),
+        )
 
     fun copy(
         scale: Float,
         iconSize: Dp,
     ): ImageDefaultIcon = copy(scale = scale, iconSize = iconSize)
 }
-
 
 /**
  * Drawable フィル版のDefaultIcon
@@ -515,7 +544,6 @@ class DrawableDefaultIcon(
     private val backgroundDrawable: Drawable,
     baseProperties: BaseIconProperties,
 ) : AbstractDefaultIcon(baseProperties) {
-
     // 便利なコンストラクタ
     constructor(
         backgroundDrawable: Drawable,
@@ -531,21 +559,27 @@ class DrawableDefaultIcon(
         debug: Boolean = false,
     ) : this(
         backgroundDrawable = backgroundDrawable,
-        baseProperties = BaseIconProperties(
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            scale = scale,
-            label = label,
-            labelTextColor = labelTextColor,
-            labelTextSize = labelTextSize,
-            labelTypeFace = labelTypeFace,
-            labelStrokeColor = labelStrokeColor,
-            iconSize = iconSize,
-            debug = debug,
-        ),
+        baseProperties =
+            BaseIconProperties(
+                strokeColor = strokeColor,
+                strokeWidth = strokeWidth,
+                scale = scale,
+                label = label,
+                labelTextColor = labelTextColor,
+                labelTextSize = labelTextSize,
+                labelTypeFace = labelTypeFace,
+                labelStrokeColor = labelStrokeColor,
+                iconSize = iconSize,
+                debug = debug,
+            ),
     )
 
-    override fun drawMarkerFill(canvas: Canvas, path: Path, canvasSize: Float, iconScale: Float) {
+    override fun drawMarkerFill(
+        canvas: Canvas,
+        path: Path,
+        canvasSize: Float,
+        iconScale: Float,
+    ) {
         canvas.save()
 
         // マーカー形状でクリッピング
@@ -563,17 +597,18 @@ class DrawableDefaultIcon(
             val drawableRatio = intrinsicWidth.toFloat() / intrinsicHeight.toFloat()
             val canvasRatio = 1f // 正方形のキャンバス
 
-            val bounds = if (drawableRatio > canvasRatio) {
-                // Drawableが横長の場合：高さを合わせてセンタリング
-                val scaledWidth = (canvasInt * drawableRatio).toInt()
-                val offsetX = (canvasInt - scaledWidth) / 2
-                Rect(offsetX, 0, offsetX + scaledWidth, canvasInt)
-            } else {
-                // Drawableが縦長または正方形の場合：幅を合わせてセンタリング
-                val scaledHeight = (canvasInt / drawableRatio).toInt()
-                val offsetY = (canvasInt - scaledHeight) / 2
-                Rect(0, offsetY, canvasInt, offsetY + scaledHeight)
-            }
+            val bounds =
+                if (drawableRatio > canvasRatio) {
+                    // Drawableが横長の場合：高さを合わせてセンタリング
+                    val scaledWidth = (canvasInt * drawableRatio).toInt()
+                    val offsetX = (canvasInt - scaledWidth) / 2
+                    Rect(offsetX, 0, offsetX + scaledWidth, canvasInt)
+                } else {
+                    // Drawableが縦長または正方形の場合：幅を合わせてセンタリング
+                    val scaledHeight = (canvasInt / drawableRatio).toInt()
+                    val offsetY = (canvasInt - scaledHeight) / 2
+                    Rect(0, offsetY, canvasInt, offsetY + scaledHeight)
+                }
 
             backgroundDrawable.bounds = bounds
         } else {
@@ -605,13 +640,13 @@ class DrawableDefaultIcon(
 
                             // 正しい引数でgetPixelsを呼び出し
                             bitmap.getPixels(
-                                buffer,           // pixels配列
-                                0,               // offset
-                                sampleWidth,     // stride（一行のピクセル数）
-                                0,               // x開始位置
-                                0,               // y開始位置
-                                sampleWidth,     // 取得する幅
-                                sampleHeight     // 取得する高さ
+                                buffer, // pixels配列
+                                0, // offset
+                                sampleWidth, // stride（一行のピクセル数）
+                                0, // x開始位置
+                                0, // y開始位置
+                                sampleWidth, // 取得する幅
+                                sampleHeight, // 取得する高さ
                             )
                             buffer.contentHashCode()
                         } catch (e: Exception) {
@@ -648,21 +683,23 @@ class DrawableDefaultIcon(
         labelStrokeColor: Color = this.labelStrokeColor,
         iconSize: Dp = this.iconSize,
         debug: Boolean = this.debug,
-    ): DrawableDefaultIcon = DrawableDefaultIcon(
-        backgroundDrawable = backgroundDrawable,
-        baseProperties = baseProperties.copy(
-            strokeColor = strokeColor,
-            strokeWidth = strokeWidth,
-            scale = scale,
-            label = label,
-            labelTextColor = labelTextColor,
-            labelTextSize = labelTextSize,
-            labelTypeFace = labelTypeFace,
-            labelStrokeColor = labelStrokeColor,
-            iconSize = iconSize,
-            debug = debug,
-        ),
-    )
+    ): DrawableDefaultIcon =
+        DrawableDefaultIcon(
+            backgroundDrawable = backgroundDrawable,
+            baseProperties =
+                baseProperties.copy(
+                    strokeColor = strokeColor,
+                    strokeWidth = strokeWidth,
+                    scale = scale,
+                    label = label,
+                    labelTextColor = labelTextColor,
+                    labelTextSize = labelTextSize,
+                    labelTypeFace = labelTypeFace,
+                    labelStrokeColor = labelStrokeColor,
+                    iconSize = iconSize,
+                    debug = debug,
+                ),
+        )
 
     fun copy(
         scale: Float,
