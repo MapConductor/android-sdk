@@ -1,53 +1,51 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import android.graphics.Color
-import android.graphics.Path
+import androidx.compose.ui.unit.Dp
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 
-class MarkerIcon(
-    val outsideColor: Int? = Color.RED, // 外側objectの色
-    val outsideStrokeColor: Int? = Color.WHITE, // 外周の色
-    val insideColor: Int? = Color.WHITE, // 内側objectの色
-    val outsideWidth: Float? = 1f,
-    val scale: Float? = 2f,
-    val label: String? = null,
-    val labelTextColor: Int? = Color.BLACK,
-    val labelTextSizeLogical: Float? = 10f,
-    val fillDrawable: Drawable? = null,
-    val iconDrawable: Drawable? = null,
-    val anchor: Offset = Offset(0.5f, 1.0f),
-    val size: Size = Size(32f, 32f),
-    val infoAnchor: Offset = Offset(0.5f, 0.5f),
-    val outsidePath: Path, // 外側のPath
-    val insidePath: Path? = null, // 内側のPath(nullなら描画しない)
-//    val management: Int? = 0,
-) {
-    companion object
+interface MarkerIcon {
+    val scale: Float
+    val anchor: Offset
+    val iconSize: Dp
+    val infoAnchor: Offset
+    val debug: Boolean
+
+    fun toBitmapIcon(): BitmapIcon
 }
-//
-// fun drawableToBitmap(drawable: Drawable, width: Int = 96, height: Int = 96): Bitmap {
-//    val bmpWidth = drawable.intrinsicWidth.takeIf { it > 0 } ?: width
-//    val bmpHeight = drawable.intrinsicHeight.takeIf { it > 0 } ?: height
-//
-//    val bitmap = createBitmap(bmpWidth, bmpHeight)
-//    val canvas = Canvas(bitmap)
-//    drawable.setBounds(0, 0, canvas.width, canvas.height)
-//    drawable.draw(canvas)
-//    return bitmap
-// }
-//
-// //
-// @Composable
-// fun RememberDrawable(@DrawableRes resId: Int): Bitmap {
-//    val context = LocalContext.current
-//
-//    val drawableResId = rememberSaveable { mutableStateOf(resId) }
-//
-//    return remember(drawableResId.value) {
-//        val drawable = ContextCompat.getDrawable(context, drawableResId.value) ?:
-//            throw IllegalArgumentException("Resource is not available")
-//        drawableToBitmap(drawable)
-//    }
-// }
+
+abstract class AbstractMarkerIcon : MarkerIcon {
+    abstract override val scale: Float
+    abstract override val anchor: Offset
+    abstract override val iconSize: Dp
+    abstract override val infoAnchor: Offset
+    abstract override val debug: Boolean
+}
+
+abstract class AndroidDrawableIcon(
+    val drawable: Drawable,
+) : AbstractMarkerIcon() {
+    protected fun toBitmap(
+        drawable: Drawable,
+        width: Int,
+        height: Int,
+    ): Bitmap {
+        return when (drawable) {
+            is BitmapDrawable -> {
+                drawable.bitmap.scale(width, height)
+            }
+            else -> {
+                val bitmap = createBitmap(width, height)
+                val canvas = Canvas(bitmap)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                return bitmap
+            }
+        }
+    }
+}

@@ -8,6 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import java.io.ByteArrayOutputStream
 import android.graphics.Bitmap
@@ -17,12 +18,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-//    val id: String = UUID.randomUUID().toString(),
     position: GeoPoint,
     id: String? = null,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
     animation: MarkerAnimation? = null,
+    clickable: Boolean = true,
     draggable: Boolean = false,
 ) {
     val id =
@@ -32,6 +33,7 @@ class MarkerState(
                     position.hashCode(),
                     extra?.hashCode() ?: 0,
                     icon?.hashCode() ?: 0,
+                    clickable.hashCode(),
                     draggable.hashCode(),
                 ),
             )
@@ -43,6 +45,7 @@ class MarkerState(
         }
 
     var icon by mutableStateOf<MarkerIcon?>(icon)
+    var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
 
     private var dragPosition: GeoPoint = position
@@ -66,16 +69,19 @@ class MarkerState(
     }
 
     fun copy(
+        id: String? = this.id,
         position: GeoPoint = this.position,
         extra: Parcelable? = this.extra,
         icon: MarkerIcon? = this.icon,
+        clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
     ): MarkerState =
         MarkerState(
-            id = this.id, // Keep marker id
+            id = id, // Keep marker id
             position = position,
             extra = extra,
             icon = icon,
+            clickable = clickable ?: this.clickable,
             draggable = draggable ?: this.draggable,
         )
 
@@ -86,16 +92,20 @@ class MarkerState(
 
     override fun hashCode(): Int {
         var result = extra?.hashCode() ?: 0
+        result = 31 * result + clickable.hashCode()
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
+        result = 31 * result + (ResourceProvider.spToPx(1.0).hashCode() ?: 0)
         return result
     }
 
     fun fingerPrint(): MarkerFingerPrint =
         MarkerFingerPrint(
             this.id.hashCode(),
+            ResourceProvider.spToPx(1.0).hashCode(),
             icon.hashCode(),
+            clickable.hashCode(),
             draggable.hashCode(),
             internalPosition.hashCode(),
             animation.hashCode(),
@@ -106,7 +116,9 @@ class MarkerState(
 
 data class MarkerFingerPrint(
     val id: Int,
+    val displayMetrics: Int,
     val icon: Int?,
+    val clickable: Int,
     val draggable: Int,
     val position: Int,
     val animation: Int?,

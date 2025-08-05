@@ -78,7 +78,7 @@ fun calculateCameraForOrbitParameters(
     distance: Double,
     cameraHeadingOffset: Double,
     cameraPitchOffset: Double,
-): com.arcgismaps.mapping.view.Camera {
+): Camera {
     val finalPitch = cameraPitchOffset.coerceIn(MIN_ANGLE, ARCGIS_MAX_PITCH)
     val pitchRad = finalPitch.toRadians()
 
@@ -95,7 +95,7 @@ fun calculateCameraForOrbitParameters(
             distance = horizontalDistance,
         )
 
-    return com.arcgismaps.mapping.view.Camera(
+    return Camera(
         latitude = cameraCoordinates.latitude,
         longitude = cameraCoordinates.longitude,
         altitude = altitude,
@@ -157,7 +157,7 @@ fun Camera.toMapCameraPosition() =
             converter.altitudeToZoomLevel(
                 altitude = this.location.z ?: 0.0,
             ),
-        bearing = 360 - this.heading,
+        bearing = (360 - this.heading) % 360,
         tilt = this.pitch,
         paddings = MapPaddingsImpl.Zeros,
     )

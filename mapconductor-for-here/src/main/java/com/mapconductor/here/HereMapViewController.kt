@@ -6,19 +6,24 @@ import com.here.sdk.core.Point2D
 import com.here.sdk.gestures.GestureState
 import com.here.sdk.gestures.LongPressListener
 import com.here.sdk.gestures.TapListener
-import com.here.sdk.mapview.HereMap
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
+import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMarker
 import com.here.sdk.mapview.MapMeasure
+import com.here.sdk.mapview.MapPolygon
+import com.here.sdk.mapview.MapPolyline
+import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleOverlayManager
+import com.mapconductor.core.circle.CircleRendererFactory
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
@@ -28,15 +33,27 @@ import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polygon.PolygonOverlayManager
+import com.mapconductor.core.polygon.PolygonRendererFactory
+import com.mapconductor.core.polyline.PolylineOverlayManager
+import com.mapconductor.core.polyline.PolylineRenderer
+import com.mapconductor.core.polyline.PolylineRendererFactory
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.here.circle.DefaultHereMapCircleRenderer
+import com.mapconductor.here.circle.HereMapCircleRenderer
 import com.mapconductor.here.marker.DefaultHereMapMarkerRenderer
 import com.mapconductor.here.marker.HereMapMarkerRenderer
+import com.mapconductor.here.polygon.DefaultHereMapPolygonRenderer
+import com.mapconductor.here.polygon.HereMapPolygonRenderer
+import com.mapconductor.here.polyline.DefaultHereMapPolylineRenderer
+import com.mapconductor.here.polyline.HereMapPolylineRenderer
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IHereMapViewController : MapViewController<MapMarker> {
+interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline, MapPolygon> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -50,19 +67,33 @@ interface IHereMapViewController : MapViewController<MapMarker> {
 }
 
 class HereMapViewController(
-    override val holder: MapViewHolder<MapView, HereMap>,
+    override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     override val hexGeocell: HexGeocell =
         HexGeocell(
             projection = WebMercator,
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
-    private val overlayManagerFactory: MarkerRendererFactory<MapMarker> = DefaultHereMapMarkerRenderer(),
-) : BaseMapViewController<MapCamera.State, MapMarker>(),
+    private val markerRendererFactory: MarkerRendererFactory<HereMapActualMarker> = DefaultHereMapMarkerRenderer(),
+    private val polylineRendererFactory: PolylineRendererFactory<HereMapActualPolyline> =
+        DefaultHereMapPolylineRenderer(),
+    private val polygonRendererFactory: PolygonRendererFactory<HereMapActualPolygon> = DefaultHereMapPolygonRenderer(),
+    private val circleRendererFactory: CircleRendererFactory<HereMapActualCircle> = DefaultHereMapCircleRenderer(),
+) : BaseMapViewController<
+        MapCamera.State,
+        HereMapActualMarker,
+        HereMapActualCircle,
+        HereMapActualPolyline,
+        HereMapActualPolygon,
+    >(),
     IHereMapViewController,
     MapCameraListener,
     TapListener,
     LongPressListener {
+    companion object {
+        private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
+    }
+
     private var selectedMarker: MarkerEntity<MapMarker>? = null
 
     override val markerRenderer: MarkerRenderer<MapMarker> =
@@ -72,7 +103,7 @@ class HereMapViewController(
         )
 
     override fun createMarkerOverlayManager(): MarkerOverlayManager<MapMarker> =
-        overlayManagerFactory.create(
+        markerRendererFactory.create(
             hexGeocell = hexGeocell,
             onIconAdd = markerRenderer::addIcons,
             onIconRemove = markerRenderer::removeIcons,
@@ -80,15 +111,81 @@ class HereMapViewController(
             onAnimate = markerRenderer::animate,
         )
 
+    override val polylineRenderer: PolylineRenderer<MapPolyline> =
+        HereMapPolylineRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override val polygonRenderer =
+        HereMapPolygonRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override val circleRenderer =
+        HereMapCircleRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereMapActualCircle>) {
+    }
+
+    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<HereMapActualPolygon>) {
+    }
+
+    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<HereMapActualPolyline>) {
+    }
+
+    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<HereMapActualMarker>) {
+    }
+
+    override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =
+        polylineRendererFactory.create(
+            onAdd = polylineRenderer::addLines,
+            onChange = polylineRenderer::changeLine,
+            onRemove = polylineRenderer::removeLines,
+        )
+
+    override fun createPolygonOverlayManager(): PolygonOverlayManager<MapPolygon> =
+        polygonRendererFactory.create(
+            onAdd = polygonRenderer::addPolygons,
+            onChange = polygonRenderer::changePolygon,
+            onRemove = polygonRenderer::removePolygons,
+        )
+
+    override fun createCircleOverlayManager(): CircleOverlayManager<MapPolygon> =
+        circleRendererFactory.create(
+            onAdd = circleRenderer::addCircles,
+            onChange = circleRenderer::changeCircle,
+            onRemove = circleRenderer::removeCircles,
+        )
+
+    override suspend fun clearOverlays() {
+        markerOverlayManager.clearOverlays()
+        polylineOverlayManager.clearOverlays()
+        polygonOverlayManager.clearOverlays()
+        circleOverlayManager.clearOverlays()
+    }
+
     override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
 
-    override suspend fun clearOverlays() = markerOverlayManager.clearOverlays()
-
     override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+
+    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
+
+    override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
+
+    override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+
+    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     init {
         setupListeners()
         markerRenderer.init(markerOverlayManager)
+        polygonRenderer.init(polygonOverlayManager)
+        circleRenderer.init(circleOverlayManager)
     }
 
     override fun setupListeners() {
@@ -103,9 +200,14 @@ class HereMapViewController(
         listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
-        camera.applyUpdate(
-            dstPosition.toMapCameraUpdate(),
-        )
+        val adjustCameraUpdate =
+            MapCameraUpdateFactory.lookAt(
+                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom + ZOOM_ADJUST_VALUE),
+            )
+
+        camera.applyUpdate(adjustCameraUpdate)
         listener?.onComplete(true)
     }
 
@@ -124,7 +226,7 @@ class HereMapViewController(
             MapCameraAnimationFactory.flyTo(
                 GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
                 Duration.ofMillis(durationMs),
             )
@@ -141,15 +243,23 @@ class HereMapViewController(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        cameraMoveListener?.invoke(cameraState)
+        val correctCameraState =
+            MapCamera.State(
+                cameraState.targetCoordinates,
+                GeoOrientation(cameraState.orientationAtTarget.bearing, cameraState.orientationAtTarget.tilt),
+                0.0,
+                cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
+            )
+
+        cameraMoveListener?.invoke(correctCameraState)
     }
 
     override fun onTap(point: Point2D) {
         val position = this.getGeoPointFromPoint(point) ?: return
-        val zoom = holder.mapView.camera.state.zoomLevel
+        val zoom = holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
         val tolerance =
             Settings.Default.tapTolerance.value
-                .toDouble() * ResourceProvider.density
+                .toDouble() * ResourceProvider.getDensity()
 
         val entity =
             markerRenderer.findNearestMarker(
@@ -176,10 +286,10 @@ class HereMapViewController(
 
         when (gesture.value) {
             GestureState.BEGIN.value -> {
-                val zoom = holder.mapView.camera.state.zoomLevel
+                val zoom = holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
                 val tolerance =
                     Settings.Default.tapTolerance.value
-                        .toDouble() * ResourceProvider.density
+                        .toDouble() * ResourceProvider.getDensity()
 
                 val entity =
                     markerRenderer.findNearestMarker(
@@ -225,19 +335,4 @@ class HereMapViewController(
         holder.mapView
             .viewToGeoCoordinates(point)
             ?.toGeoPoint()
-
-//    override fun setMarkerPosition(
-//        markerEntity: MarkerEntity<MapMarker>,
-//        position: GeoPoint,
-//    ) {
-//        markerEntity.marker.coordinates = position.toGeoCoordinates()
-//    }
-
-    override fun clearPolyline() {
-        TODO("Not yet implemented")
-    }
-
-    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
-        TODO("Not yet implemented")
-    }
 }

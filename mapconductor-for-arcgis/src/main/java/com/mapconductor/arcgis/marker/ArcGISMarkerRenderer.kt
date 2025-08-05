@@ -15,9 +15,9 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerOverlayManagerImpl
+import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.UpdateParams
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,7 +50,7 @@ class ArcGISMarkerRenderer(
         markerEntity: MarkerEntity<Graphic>,
         position: GeoPoint,
     ) {
-        markerEntity.marker.geometry = position.toPoint()
+        markerEntity.marker.geometry = position.toPoint(holder.map.scene?.spatialReference)
     }
 
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Graphic?> {
@@ -58,10 +58,10 @@ class ArcGISMarkerRenderer(
             newMarkers
                 .map { params ->
                     val bitmapDrawable = params.second.bitmap.toDrawable(holder.mapView.context.resources)
-                    val density = ResourceProvider.density
-                    val width = (params.second.size.width / density)
-                    val height = (params.second.size.height / density)
-                    val anchorX = (params.second.anchor.x - 0.5) * width
+                    val density = ResourceProvider.getDensity()
+                    val width = ((params.second.size.width * (params.first.icon?.scale ?: 1.0f)) / density)
+                    val height = ((params.second.size.height * (params.first.icon?.scale ?: 1.0f)) / density)
+                    val anchorX = (0.5 - params.second.anchor.x) * width
                     val anchorY = (params.second.anchor.y - 0.5) * height
 
                     val pictureSymbolFuture =
@@ -74,10 +74,11 @@ class ArcGISMarkerRenderer(
 
                     val marker =
                         Graphic(
-                            geometry = params.first.position.toPoint(),
+                            geometry = params.first.position.toPoint(holder.map.scene?.spatialReference),
                             symbol = pictureSymbolFuture,
-                        )
-                    marker.attributes.set("id", params.first.id)
+                        ).also {
+                            it.attributes.set("id", params.first.id)
+                        }
                     return@map marker
                 }.also {
                     markerLayer.graphics.addAll(it)
@@ -99,7 +100,7 @@ class ArcGISMarkerRenderer(
                 val currFinger = params.entity.fingerPrint
                 if (currFinger.icon != prevFinger.icon) {
                     val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
-                    val density = ResourceProvider.density
+                    val density = ResourceProvider.getDensity()
                     val width = (params.bitmapIcon.size.width / density)
                     val height = (params.bitmapIcon.size.height / density)
                     val anchorX = (params.bitmapIcon.anchor.x - 0.5) * width
