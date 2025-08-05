@@ -34,8 +34,6 @@ interface CirclePageViewModel {
 
     fun onMapViewChanged(state: MapViewState<*>)
 
-    fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
-
     fun onMarkerClick(clicked: MarkerState)
 
     fun onMapClick(clicked: GeoPoint)
@@ -54,6 +52,15 @@ class CirclePageViewModelImpl :
     CirclePageViewModel {
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
+    private val colors: List<Color> = listOf(
+        Color.Blue.copy(0.2f),
+        Color.Red.copy(alpha = 0.2f),
+        Color.Green.copy(alpha = 0.2f),
+        Color.Cyan.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.2f),
+        Color.Magenta.copy(alpha = 0.2f),
+    )
+    private var tapIdx = 0
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -115,9 +122,9 @@ class CirclePageViewModelImpl :
                 id = "circle",
                 center = circleCenter,
                 radiusMeters = 1000.0, // Initial radius
-                strokeColor = Color.Blue,
+                strokeColor = Color.Blue.copy(alpha = 0.5f),
                 strokeWidth = 2.dp,
-                fillColor = Color.Blue.copy(alpha = 0.2f),
+                fillColor = this.colors[0],
             ),
         )
     override val circleState: CircleState
@@ -130,14 +137,6 @@ class CirclePageViewModelImpl :
         this._mapViewState.value = state
     }
 
-    override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {
-        this.mapViewState.value?.moveCameraTo(
-            cameraPosition = initCameraPosition,
-            durationMs = 3000,
-            listener = listener,
-        )
-    }
-
     override fun onMarkerClick(clicked: MarkerState) {
         showToast("${clicked.icon?.let { (it as? DefaultIcon)?.label } ?: "Marker"} clicked")
     }
@@ -147,7 +146,8 @@ class CirclePageViewModelImpl :
     }
 
     override fun onCircleClick(event: CircleClickEvent) {
-        event.state.fillColor = Color.Blue.copy(alpha = 0.5f)
+        this.tapIdx = (this.tapIdx + 1) % this.colors.size
+        event.state.fillColor = this.colors[this.tapIdx]
         showToast("Circle clicked - Radius: ${radiusMeters.toInt()}m")
     }
 
