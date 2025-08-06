@@ -1,7 +1,6 @@
 package com.mapconductor.example.pages.polyline
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
@@ -16,30 +15,26 @@ fun PolylineMapComponent(
     mapViewState: MapViewState<*>?,
     viewModel: PolylinePageViewModel,
     modifier: Modifier = Modifier,
-    onMapClickHandler: OnMapEventHandler = {},
-    onMarkerClickHandler: OnMarkerEventHandler = {},
-    onPolylineClickHandler: OnPolylineEventHandler = {},
+    onMapClick: OnMapEventHandler = {},
+    onMarkerClick: OnMarkerEventHandler = {},
+    onPolylineClick: OnPolylineEventHandler = {},
     onMarkerDrag: OnMarkerEventHandler = {},
 ) {
-    mapViewState?.let { mapViewState ->
+    mapViewState?.let { it ->
         MapViewContainer(
             modifier = modifier,
-            state = mapViewState,
-            onMapClick = onMapClickHandler,
-            onMarkerClick = onMarkerClickHandler,
-            onPolylineClick = onPolylineClickHandler,
+            state = it,
+            onMapClick = onMapClick,
+            onMarkerClick = onMarkerClick,
+            onPolylineClick = onPolylineClick,
             onMarkerDrag = onMarkerDrag,
         ) {
             // Polyline
-            key(viewModel.polylineState.id) {
-                Polyline(viewModel.polylineState)
-            }
+            Polyline(viewModel.polylineState)
 
             // Waypoint markers
             viewModel.wayPointMarkers.forEach { marker ->
-                key(marker.id) {
-                    Marker(marker)
-                }
+                Marker(marker)
             }
         }
     }

@@ -52,14 +52,15 @@ class CirclePageViewModelImpl :
     CirclePageViewModel {
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
-    private val colors: List<Color> = listOf(
-        Color.Blue.copy(0.2f),
-        Color.Red.copy(alpha = 0.2f),
-        Color.Green.copy(alpha = 0.2f),
-        Color.Cyan.copy(alpha = 0.2f),
-        Color.LightGray.copy(alpha = 0.2f),
-        Color.Magenta.copy(alpha = 0.2f),
-    )
+    private val colors: List<Color> =
+        listOf(
+            Color.Blue.copy(0.2f),
+            Color.Red.copy(alpha = 0.2f),
+            Color.Green.copy(alpha = 0.2f),
+            Color.Cyan.copy(alpha = 0.2f),
+            Color.LightGray.copy(alpha = 0.2f),
+            Color.Magenta.copy(alpha = 0.2f),
+        )
     private var tapIdx = 0
 
     override val initCameraPosition =

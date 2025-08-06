@@ -54,7 +54,7 @@ class PolylinePageViewModelImpl :
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
-            zoom = 12.0,
+            zoom = 15.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -83,9 +83,25 @@ class PolylinePageViewModelImpl :
                     position = point,
                     icon =
                         DefaultIcon(
-                            fillColor = if (index == 0 || index == _polylinePoints.value.size - 1) Color.Green else Color.Blue,
+                            fillColor =
+                                if (index == 0 ||
+                                    index == _polylinePoints.value.size - 1
+                                ) {
+                                    Color.Green
+                                } else {
+                                    Color.Blue
+                                },
                             strokeColor = Color.White,
-                            label = if (index == 0) "S" else if (index == _polylinePoints.value.size - 1) "E" else "${index}",
+                            label =
+                                if (index ==
+                                    0
+                                ) {
+                                    "S"
+                                } else if (index == _polylinePoints.value.size - 1) {
+                                    "E"
+                                } else {
+                                    "$index"
+                                },
                         ),
                     draggable = true,
                 )
@@ -132,19 +148,30 @@ class PolylinePageViewModelImpl :
 
     override fun onMarkerDrag(dragged: MarkerState) {
         val markerIndex = _wayPointMarkers.value.indexOfFirst { it.id == dragged.id }
-        if (markerIndex >= 0) {
-            val updatedMarkers = _wayPointMarkers.value.toMutableList()
-            updatedMarkers[markerIndex] = updatedMarkers[markerIndex].copy(position = dragged.position)
-            _wayPointMarkers.value = updatedMarkers
+        if (markerIndex < 0) return
 
-            val updatedPoints = _polylinePoints.value.toMutableList()
-            updatedPoints[markerIndex] = dragged.position
-            _polylinePoints.value = updatedPoints
+        // 1. pointsを更新
+        val updatedPoints = _polylinePoints.value.toMutableList()
+        updatedPoints.set(markerIndex, dragged.position)
+//        updatedPoints[markerIndex] = dragged.position
+//        _polylinePoints.value = updatedPoints
 
-            _polylineState.value.points = updatedPoints
+        // 2. markersを更新
+//        val updatedMarkers = _wayPointMarkers.value.toMutableList()
+//        updatedMarkers[markerIndex] = updatedMarkers[markerIndex].copy(position = dragged.position)
+//        _wayPointMarkers.value = updatedMarkers
 
-            showToast("Waypoint ${markerIndex + 1} moved")
-        }
+        // 3. polylineStateを更新
+        _polylineState.value.points = updatedPoints
+        // または新しいインスタンスを作成
+//        _polylineState.value = PolylineState(
+//            id = _polylineState.value.id,
+//            points = updatedPoints,
+//            strokeColor = _polylineState.value.strokeColor,
+//            strokeWidth = _polylineState.value.strokeWidth,
+//            geodesic = _polylineState.value.geodesic,
+//            extra = _polylineState.value.extra
+//        )
     }
 
     override fun showToast(text: String) {

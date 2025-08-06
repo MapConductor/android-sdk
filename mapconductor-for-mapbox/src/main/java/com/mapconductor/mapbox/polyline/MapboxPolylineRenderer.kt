@@ -40,7 +40,7 @@ class MapboxPolylineRenderer(
     override val coroutine: CoroutineScope,
     private val layer: MapboxPolylineLayer,
 ) : AbstractPolylineRenderer<MapboxActualPolyline>() {
-    override suspend fun addLines(newLines: List<PolylineState>): List<MapboxActualPolyline?> {
+    override suspend fun addPolylines(newLines: List<PolylineState>): List<MapboxActualPolyline?> {
         val polylines =
             newLines.map { state ->
                 val points = state.points.map { GeoPoint.from(it).toPoint() }
@@ -56,12 +56,14 @@ class MapboxPolylineRenderer(
         return polylines
     }
 
-    override suspend fun removeLines(removeEntities: List<PolylineEntity<MapboxActualPolyline>>) {
+    override suspend fun removePolylines(removeEntities: List<PolylineEntity<MapboxActualPolyline>>) {
         val featureIds = removeEntities.map { "polyline-${it.state.id}" }
         layer.source.removeGeoJSONSourceFeatures(featureIds)
     }
 
-    override suspend fun changeLine(changes: List<UpdateParams<MapboxActualPolyline>>): List<MapboxActualPolyline> {
+    override suspend fun changePolylines(
+        changes: List<UpdateParams<MapboxActualPolyline>>,
+    ): List<MapboxActualPolyline> {
         val features =
             changes.map { params ->
                 val state = params.entity.state

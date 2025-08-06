@@ -32,9 +32,9 @@ fun CircleMapPage(
         CircleMapComponent(
             mapViewState = mapViewState.value,
             viewModel = viewModel,
-            onMapClickHandler = viewModel::onMapClick,
-            onMarkerClickHandler = viewModel::onMarkerClick,
-            onCircleClickHandler = viewModel::onCircleClick,
+            onMapClick = viewModel::onMapClick,
+            onMarkerClick = viewModel::onMarkerClick,
+            onCircleClick = viewModel::onCircleClick,
             onMarkerDrag = viewModel::onMarkerDrag,
         )
 

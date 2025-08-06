@@ -144,9 +144,9 @@ class HereMapViewController(
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =
         polylineRendererFactory.create(
-            onAdd = polylineRenderer::addLines,
-            onChange = polylineRenderer::changeLine,
-            onRemove = polylineRenderer::removeLines,
+            onAdd = polylineRenderer::addPolylines,
+            onChange = polylineRenderer::changePolylines,
+            onRemove = polylineRenderer::removePolylines,
         )
 
     override fun createPolygonOverlayManager(): PolygonOverlayManager<MapPolygon> =
@@ -282,7 +282,6 @@ class HereMapViewController(
             circleClickListener?.invoke(event)
             return
         }
-
 
         // If no overlay is processed, process the tap as onMapClick
         mapClickListener?.let { it(touchPosition) }

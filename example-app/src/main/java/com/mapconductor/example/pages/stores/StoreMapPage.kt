@@ -28,8 +28,8 @@ fun StoreMapPage(
                 val intent = viewModel.onDirectionButtonClick(state)
                 context.startActivity(intent)
             },
-            onMapClickHandler = viewModel::onMapClick,
-            onMarkerClickHandler = viewModel::onMarkerClick,
+            onMapClick = viewModel::onMapClick,
+            onMarkerClick = viewModel::onMarkerClick,
             selectedMarker = selectedMarker.value,
         )
     }

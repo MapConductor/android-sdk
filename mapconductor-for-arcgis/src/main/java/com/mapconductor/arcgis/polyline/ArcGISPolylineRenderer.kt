@@ -42,7 +42,7 @@ class ArcGISPolylineRenderer(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractPolylineRenderer<Graphic>() {
-    override suspend fun addLines(newLines: List<PolylineState>): List<Graphic?> {
+    override suspend fun addPolylines(newLines: List<PolylineState>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext newLines.map { state ->
 
@@ -67,14 +67,14 @@ class ArcGISPolylineRenderer(
         }
     }
 
-    override suspend fun removeLines(removeEntities: List<PolylineEntity<Graphic>>) {
+    override suspend fun removePolylines(removeEntities: List<PolylineEntity<Graphic>>) {
         val polylines = removeEntities.map { it.polyline }
         coroutine.launch {
             polylineLayer.graphics.removeAll(polylines)
         }
     }
 
-    override suspend fun changeLine(changes: List<UpdateParams<Graphic>>): List<Graphic> {
+    override suspend fun changePolylines(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
             return@withContext changes.map { params ->
                 val finger = params.entity.state.fingerPrint()
