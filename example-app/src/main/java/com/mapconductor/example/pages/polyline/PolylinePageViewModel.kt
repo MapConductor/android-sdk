@@ -1,7 +1,7 @@
 package com.mapconductor.example.pages.polyline
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -22,7 +22,6 @@ interface PolylinePageViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
-    val polylinePoints: List<GeoPoint>
     val wayPointMarkers: List<MarkerState>
     val polylineState: PolylineState
 
@@ -60,24 +59,18 @@ class PolylinePageViewModelImpl :
             paddings = null,
         )
 
-    private val _polylinePoints: MutableState<List<GeoPoint>> =
-        mutableStateOf(
-            listOf(
-                GeoPoint.fromLatLong(21.382314, -157.933097), // Honolulu center
-                GeoPoint.fromLatLong(21.385314, -157.930097), // Northeast
-                GeoPoint.fromLatLong(21.387314, -157.935097), // Northwest
-                GeoPoint.fromLatLong(21.380314, -157.937097), // Southwest
-                GeoPoint.fromLatLong(21.378314, -157.930097), // Southeast
-                GeoPoint.fromLatLong(21.382314, -157.933097), // Back to center
-            ),
+    private val polylinePoints = mutableStateListOf(
+            GeoPoint.fromLatLong(21.382314, -157.933097), // Honolulu center
+            GeoPoint.fromLatLong(21.385314, -157.930097), // Northeast
+            GeoPoint.fromLatLong(21.387314, -157.935097), // Northwest
+            GeoPoint.fromLatLong(21.380314, -157.937097), // Southwest
+            GeoPoint.fromLatLong(21.378314, -157.930097), // Southeast
+            GeoPoint.fromLatLong(21.382314, -157.933097), // Back to center
         )
-
-    override val polylinePoints: List<GeoPoint>
-        get() = _polylinePoints.value
 
     private val _wayPointMarkers: MutableState<List<MarkerState>> =
         mutableStateOf(
-            _polylinePoints.value.mapIndexed { index, point ->
+            polylinePoints.mapIndexed { index, point ->
                 MarkerState(
                     id = "waypoint_$index",
                     position = point,
@@ -85,7 +78,7 @@ class PolylinePageViewModelImpl :
                         DefaultIcon(
                             fillColor =
                                 if (index == 0 ||
-                                    index == _polylinePoints.value.size - 1
+                                    index == polylinePoints.size - 1
                                 ) {
                                     Color.Green
                                 } else {
@@ -97,7 +90,7 @@ class PolylinePageViewModelImpl :
                                     0
                                 ) {
                                     "S"
-                                } else if (index == _polylinePoints.value.size - 1) {
+                                } else if (index == polylinePoints.size - 1) {
                                     "E"
                                 } else {
                                     "$index"
@@ -115,7 +108,7 @@ class PolylinePageViewModelImpl :
         mutableStateOf(
             PolylineState(
                 id = "example_polyline",
-                points = _polylinePoints.value,
+                points = polylinePoints,
                 strokeColor = Color.Red,
                 strokeWidth = 4.dp,
                 geodesic = true,
@@ -151,27 +144,8 @@ class PolylinePageViewModelImpl :
         if (markerIndex < 0) return
 
         // 1. pointsを更新
-        val updatedPoints = _polylinePoints.value.toMutableList()
-        updatedPoints.set(markerIndex, dragged.position)
-//        updatedPoints[markerIndex] = dragged.position
-//        _polylinePoints.value = updatedPoints
-
-        // 2. markersを更新
-//        val updatedMarkers = _wayPointMarkers.value.toMutableList()
-//        updatedMarkers[markerIndex] = updatedMarkers[markerIndex].copy(position = dragged.position)
-//        _wayPointMarkers.value = updatedMarkers
-
-        // 3. polylineStateを更新
-        _polylineState.value.points = updatedPoints
-        // または新しいインスタンスを作成
-//        _polylineState.value = PolylineState(
-//            id = _polylineState.value.id,
-//            points = updatedPoints,
-//            strokeColor = _polylineState.value.strokeColor,
-//            strokeWidth = _polylineState.value.strokeWidth,
-//            geodesic = _polylineState.value.geodesic,
-//            extra = _polylineState.value.extra
-//        )
+        polylinePoints[markerIndex].latitude = dragged.position.latitude
+        polylinePoints[markerIndex].longitude = dragged.position.longitude
     }
 
     override fun showToast(text: String) {
