@@ -77,8 +77,8 @@ class ArcGISPolylineRenderer(
     override suspend fun changePolylines(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
             return@withContext changes.map { params ->
-                val finger = params.entity.state.fingerPrint()
-                val prevFinger = params.prevEntity.state.fingerPrint()
+                val finger = params.entity.fingerPrint
+                val prevFinger = params.prevEntity.fingerPrint
                 if (finger.points != prevFinger.points) {
                     params.entity.polyline.geometry = createGeometry(params.entity.state)
                 }

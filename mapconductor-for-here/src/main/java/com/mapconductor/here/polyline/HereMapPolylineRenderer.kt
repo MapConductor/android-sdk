@@ -62,8 +62,8 @@ class HereMapPolylineRenderer(
 
     override suspend fun changePolylines(changes: List<UpdateParams<MapPolyline>>): List<MapPolyline> {
         return changes.map { params ->
-            val finger = params.entity.state.fingerPrint()
-            val prevFinger = params.prevEntity.state.fingerPrint()
+            val finger = params.entity.fingerPrint
+            val prevFinger = params.prevEntity.fingerPrint
             if (finger.points != prevFinger.points) {
                 val geoPolyline = createGeoPolyline(params.entity.state)
                 params.entity.polyline.geometry = geoPolyline
