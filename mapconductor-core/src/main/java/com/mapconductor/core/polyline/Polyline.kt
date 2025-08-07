@@ -7,7 +7,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -36,8 +35,7 @@ class PolylineState(
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
-    var points by StateFlowDelegate<List<IGeoPoint>>(points)
-
+    var points by mutableStateOf<List<IGeoPoint>>(points)
     var extra by mutableStateOf(extra)
 
     private fun polylineId(hashCodes: List<Int>): Int =
@@ -55,9 +53,26 @@ class PolylineState(
         result = 31 * result + this@PolylineState.strokeColor.hashCode()
         result = 31 * result + this@PolylineState.strokeWidth.hashCode()
         result = 31 * result + geodesic.hashCode()
-        result = 31 * result + points.hashCode()
+        result = 31 * result + listHashCode(points)
         return result
     }
+
+    fun copy(
+        points: List<IGeoPoint> = this.points,
+        id: String? = this.id,
+        strokeColor: Color = this.strokeColor,
+        strokeWidth: Dp = this.strokeWidth,
+        geodesic: Boolean = this.geodesic,
+        extra: Parcelable? = this.extra,
+    ): PolylineState =
+        PolylineState(
+            points = points,
+            id = id,
+            strokeColor = strokeColor,
+            strokeWidth = strokeWidth,
+            geodesic = geodesic,
+            extra = extra,
+        )
 
     private fun <T> listHashCode(list: List<T>): Int {
         var result = 0

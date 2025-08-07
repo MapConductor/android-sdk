@@ -9,6 +9,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.here.HereMapView
@@ -28,6 +29,7 @@ fun MapViewContainer(
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
@@ -43,6 +45,7 @@ fun MapViewContainer(
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
+                onPolylineClick = onPolylineClick,
                 content = content,
             )
 
@@ -57,6 +60,8 @@ fun MapViewContainer(
                 onMarkerDragEnd = onMarkerDragEnd,
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
+                onCircleClick = onCircleClick,
+                onPolylineClick = onPolylineClick,
                 content = content,
             )
 
@@ -72,6 +77,7 @@ fun MapViewContainer(
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
+                onPolylineClick = onPolylineClick,
                 content = content,
             )
 
@@ -87,6 +93,7 @@ fun MapViewContainer(
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
+                onPolylineClick = onPolylineClick,
                 content = content,
             )
 

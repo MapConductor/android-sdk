@@ -18,6 +18,7 @@ import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
@@ -143,9 +144,9 @@ class HereMapViewController(
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =
         polylineRendererFactory.create(
-            onAdd = polylineRenderer::addLines,
-            onChange = polylineRenderer::changeLine,
-            onRemove = polylineRenderer::removeLines,
+            onAdd = polylineRenderer::addPolylines,
+            onChange = polylineRenderer::changePolylines,
+            onRemove = polylineRenderer::removePolylines,
         )
 
     override fun createPolygonOverlayManager(): PolygonOverlayManager<MapPolygon> =
@@ -255,7 +256,7 @@ class HereMapViewController(
     }
 
     override fun onTap(point: Point2D) {
-        val position = this.getGeoPointFromPoint(point) ?: return
+        val touchPosition = this.getGeoPointFromPoint(point) ?: return
         val zoom = holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
         val tolerance =
             Settings.Default.tapTolerance.value
@@ -263,7 +264,7 @@ class HereMapViewController(
 
         val entity =
             markerRenderer.findNearestMarker(
-                position = position,
+                position = touchPosition,
                 tolerance = tolerance,
                 zoom = zoom,
             )
@@ -272,10 +273,18 @@ class HereMapViewController(
             return
         }
 
-        // TODO: Implement click handling for other overlays
+        circleOverlayManager.find(touchPosition)?.let { entity ->
+            val event =
+                CircleClickEvent(
+                    state = entity.state,
+                    position = touchPosition,
+                )
+            circleClickListener?.invoke(event)
+            return
+        }
 
         // If no overlay is processed, process the tap as onMapClick
-        mapClickListener?.let { it(position) }
+        mapClickListener?.let { it(touchPosition) }
     }
 
     override fun onLongPress(
