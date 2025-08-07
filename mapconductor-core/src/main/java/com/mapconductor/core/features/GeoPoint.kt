@@ -1,5 +1,8 @@
 package com.mapconductor.core.features
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.mapconductor.core.toFixed
 import kotlin.math.abs
 
@@ -10,10 +13,14 @@ interface IGeoPoint {
 }
 
 class GeoPoint(
-    override val latitude: Double,
-    override val longitude: Double,
-    override val altitude: Double = 0.0,
+    latitude: Double,
+    longitude: Double,
+    altitude: Double = 0.0,
 ) : IGeoPoint {
+
+    override var latitude by mutableStateOf(latitude)
+    override var longitude by mutableStateOf(longitude)
+    override var altitude by mutableStateOf(altitude)
     fun toUrlValue(precision: Int = 6): String = "${latitude.toFixed(precision)},${longitude.toFixed(precision)}"
 
     override fun equals(other: Any?): Boolean {
@@ -36,6 +43,18 @@ class GeoPoint(
         result = 31 * result + lngHash.hashCode()
         result = 31 * result + altHash.hashCode()
         return result
+    }
+
+    fun copy(
+        latitude: Double? = null,
+        longitude: Double? = null,
+        altitude: Double? = null,
+    ): GeoPoint {
+        return GeoPoint(
+            latitude = latitude ?: this.latitude,
+            longitude = longitude ?: this.longitude,
+            altitude = altitude ?: this.altitude,
+        )
     }
 
     companion object {

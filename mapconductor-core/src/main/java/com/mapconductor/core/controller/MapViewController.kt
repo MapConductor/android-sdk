@@ -17,6 +17,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.PolygonOverlayManager
 import com.mapconductor.core.polygon.PolygonRenderer
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineState
@@ -127,6 +128,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
     var markerDragListener: OnMarkerEventHandler? = null
     var markerDragEndListener: OnMarkerEventHandler? = null
     var circleClickListener: OnCircleEventHandler? = null
+    var polylineClickListener: OnPolylineEventHandler? = null
 
     abstract fun setupListeners()
 

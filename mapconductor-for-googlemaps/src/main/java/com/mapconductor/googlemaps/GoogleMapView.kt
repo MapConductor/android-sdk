@@ -16,6 +16,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.view.ViewGroup
 
 @Composable
@@ -30,6 +31,7 @@ fun GoogleMapsView(
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     onCircleClick: OnCircleEventHandler? = {},
+    onPolylineClick: OnPolylineEventHandler? = {},
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -81,9 +83,10 @@ fun GoogleMapsView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
+            controller.circleClickListener = onCircleClick
+            controller.polylineClickListener = onPolylineClick
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
-            controller.circleClickListener = onCircleClick
 
             holderRef.value = controller.holder
             controllerRef.value = controller

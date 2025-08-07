@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
 class NavigationViewModel : ViewModel() {
-    private val _currentPage = mutableStateOf("map")
+    private val _currentPage = mutableStateOf("polyline")
     val currentPage: State<String> = _currentPage
 
     private val _isSidebarExpanded = mutableStateOf(false)
