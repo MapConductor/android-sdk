@@ -49,7 +49,7 @@ class GoogleMapGroundImageRenderer(
                     GroundOverlayOptions()
                         .image(image)
                         .positionFromBounds(bounds)
-                        .transparency(alpha)
+//                        .transparency(alpha)
                 holder.map.addGroundOverlay(options)?.also {
                     it.tag = state.id
                 }

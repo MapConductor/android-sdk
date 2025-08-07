@@ -7,8 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.mapconductor.core.groundimage.GroundImageClickEvent
+import com.mapconductor.example.R
 import com.mapconductor.example.pages.circle.CircleMapComponent
 import com.mapconductor.example.pages.circle.CirclePageViewModel
 import com.mapconductor.example.pages.circle.CirclePageViewModelImpl
@@ -16,10 +20,14 @@ import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MapViewStatePanel
 import com.mapconductor.example.ui.MessageCard
+import android.content.Context
+import android.graphics.drawable.Drawable
 
 @Composable
 fun GroundImageMapPage(
-    viewModel: GroundImageMapPageViewModel = GroundImageMapPageViewModelImpl(),
+    context: Context = LocalContext.current,
+    image: Drawable = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
+    viewModel: GroundImageMapPageViewModel = GroundImageMapPageViewModelImpl(image),
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(

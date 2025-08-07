@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
@@ -30,6 +31,8 @@ fun HereMapView(
     onMarkerDragEnd: OnMarkerEventHandler? = {},
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
+    onGroundImageClick: OnGroundImageEventHandler? = null,
+    onGroundImageChange: OnGroundImageEventHandler? = null,
     content: (@Composable HereMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<HereMapViewHolder>() }
