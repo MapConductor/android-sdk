@@ -12,7 +12,6 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,31 +19,20 @@ import kotlinx.coroutines.flow.asStateFlow
 interface PolylinePageViewModel {
     val initCameraPosition: MapCameraPosition
     val mapViewState: StateFlow<MapViewState<*>?>
-    val messages: StateFlow<List<ToastMessage>>
 
     val wayPointMarkers: List<MarkerState>
     val polylineState: PolylineState
 
     fun onMapViewChanged(state: MapViewState<*>)
 
-    fun onMarkerClick(clicked: MarkerState)
-
-    fun onMapClick(clicked: GeoPoint)
-
     fun onPolylineClick(state: PolylineState)
 
     fun onMarkerDrag(dragged: MarkerState)
-
-    fun showToast(text: String)
-
-    fun removeToast(toastMessage: ToastMessage)
 }
 
-class PolylinePageViewModelImpl :
+class PolylinePageViewModelImpl() :
     ViewModel(),
     PolylinePageViewModel {
-    private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
-    override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -71,30 +59,24 @@ class PolylinePageViewModelImpl :
     private val _wayPointMarkers: MutableState<List<MarkerState>> =
         mutableStateOf(
             polylinePoints.mapIndexed { index, point ->
+                val markerColor = when {
+                    index == 0 -> Color.Green
+                    index == polylinePoints.size - 1 -> Color.Green
+                    else -> Color.Yellow
+                }
+                val label = when {
+                    index == 0 -> "S"
+                    index == polylinePoints.size - 1 -> "E"
+                    else -> "$index"
+                }
                 MarkerState(
                     id = "waypoint_$index",
                     position = point,
                     icon =
                         DefaultIcon(
-                            fillColor =
-                                if (index == 0 ||
-                                    index == polylinePoints.size - 1
-                                ) {
-                                    Color.Green
-                                } else {
-                                    Color.Blue
-                                },
-                            strokeColor = Color.White,
-                            label =
-                                if (index ==
-                                    0
-                                ) {
-                                    "S"
-                                } else if (index == polylinePoints.size - 1) {
-                                    "E"
-                                } else {
-                                    "$index"
-                                },
+                            fillColor = markerColor,
+                            strokeColor = Color.Black,
+                            label = label,
                         ),
                     draggable = true,
                 )
@@ -125,18 +107,8 @@ class PolylinePageViewModelImpl :
         this._mapViewState.value = state
     }
 
-    override fun onMarkerClick(clicked: MarkerState) {
-        val markerLabel = (clicked.icon as? DefaultIcon)?.label ?: "Marker"
-        showToast("Waypoint $markerLabel clicked")
-    }
-
-    override fun onMapClick(clicked: GeoPoint) {
-        showToast("Map clicked at: ${clicked.toUrlValue()}")
-    }
-
     override fun onPolylineClick(state: PolylineState) {
         _polylineState.value.strokeColor = Color.Magenta
-        showToast("Polyline clicked - ${state.points.size} points")
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
@@ -146,14 +118,6 @@ class PolylinePageViewModelImpl :
         // 1. pointsを更新
         polylinePoints[markerIndex].latitude = dragged.position.latitude
         polylinePoints[markerIndex].longitude = dragged.position.longitude
-    }
-
-    override fun showToast(text: String) {
-        this._messages.value = this._messages.value + ToastMessage(text = text)
-    }
-
-    override fun removeToast(toastMessage: ToastMessage) {
-        this._messages.value = this._messages.value.filter { it != toastMessage }
     }
 
     override fun onCleared() {
