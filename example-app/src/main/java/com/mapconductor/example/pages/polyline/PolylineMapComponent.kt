@@ -3,20 +3,20 @@ package com.mapconductor.example.pages.polyline
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.Polyline
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer
 
 @Composable
 fun PolylineMapComponent(
     mapViewState: MapViewState<*>?,
-    viewModel: PolylinePageViewModel,
+    polylineState: PolylineState,
+    wayPointMarkers: List<MarkerState>,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler = {},
-    onMarkerClick: OnMarkerEventHandler = {},
     onPolylineClick: OnPolylineEventHandler = {},
     onMarkerDrag: OnMarkerEventHandler = {},
 ) {
@@ -24,16 +24,14 @@ fun PolylineMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onMapClick = onMapClick,
-            onMarkerClick = onMarkerClick,
             onPolylineClick = onPolylineClick,
             onMarkerDrag = onMarkerDrag,
         ) {
             // Polyline
-            Polyline(viewModel.polylineState)
+            Polyline(polylineState)
 
             // Waypoint markers
-            viewModel.wayPointMarkers.forEach { marker ->
+            wayPointMarkers.forEach { marker ->
                 Marker(marker)
             }
         }

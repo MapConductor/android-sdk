@@ -141,7 +141,7 @@ abstract class AbstractDefaultIcon(
         val scaledWidth = originalSize.width * markerScale
         val scaledHeight = originalSize.height * markerScale
         val offsetX = (canvasSize - scaledWidth) / 2f
-        val offsetY = canvasSize - scaledHeight + ResourceProvider.dpToPx(strokeWidth.value - 1f).toFloat()
+        val offsetY = canvasSize - scaledHeight + ResourceProvider.dpToPx(strokeWidth.value).toFloat()
 
         return Path().apply {
             moveTo(12f * markerScale + offsetX, 0f * markerScale + offsetY)
