@@ -106,9 +106,9 @@ class GoogleMapViewController(
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<Polyline> =
         polylineRendererFactory.create(
-            onAdd = polylineRenderer::addLines,
-            onChange = polylineRenderer::changeLine,
-            onRemove = polylineRenderer::removeLines,
+            onAdd = polylineRenderer::addPolylines,
+            onChange = polylineRenderer::changePolylines,
+            onRemove = polylineRenderer::removePolylines,
         )
 
     override val polygonRenderer: PolygonRenderer<Polygon> =

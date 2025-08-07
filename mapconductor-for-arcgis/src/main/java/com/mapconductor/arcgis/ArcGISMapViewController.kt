@@ -129,9 +129,9 @@ class ArcGISMapViewController(
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<ArcGISActualPolyline> =
         polylineRendererFactory.create(
-            onAdd = polylineRenderer::addLines,
-            onChange = polylineRenderer::changeLine,
-            onRemove = polylineRenderer::removeLines,
+            onAdd = polylineRenderer::addPolylines,
+            onChange = polylineRenderer::changePolylines,
+            onRemove = polylineRenderer::removePolylines,
         )
 
     override val polylineRenderer: PolylineRenderer<ArcGISActualPolyline> =

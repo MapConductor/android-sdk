@@ -2,16 +2,19 @@ package com.mapconductor.example.pages.circle
 
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.example.ui.MapViewStatePanel
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
@@ -29,9 +32,9 @@ fun CircleMapPage(
         CircleMapComponent(
             mapViewState = mapViewState.value,
             viewModel = viewModel,
-            onMapClickHandler = viewModel::onMapClick,
-            onMarkerClickHandler = viewModel::onMarkerClick,
-            onCircleClickHandler = viewModel::onCircleClick,
+            onMapClick = viewModel::onMapClick,
+            onMarkerClick = viewModel::onMarkerClick,
+            onCircleClick = viewModel::onCircleClick,
             onMarkerDrag = viewModel::onMarkerDrag,
         )
 
@@ -47,11 +50,9 @@ fun CircleMapPage(
                     ),
             title = "Messages",
         ) {
-            MapViewStatePanel(
-                mapViewState.value
-                    ?.mapCameraPosition
-                    ?.collectAsState()
-                    ?.value,
+            Text(
+                text = stringResource(R.string.circle_example_description),
+                modifier = Modifier.fillMaxSize(),
             )
         }
 

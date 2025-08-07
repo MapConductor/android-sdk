@@ -28,9 +28,9 @@ fun StoreMapComponent(
     modifier: Modifier = Modifier,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onDirectionButtonClick: OnMarkerEventHandler = {},
-    onMapClickHandler: OnMapEventHandler = {},
-    onMarkerClickHandler: OnMarkerEventHandler = {},
-    onMarkerDragHandler: OnMarkerEventHandler = {},
+    onMapClick: OnMapEventHandler = {},
+    onMarkerClick: OnMarkerEventHandler = {},
+    onMarkerDrag: OnMarkerEventHandler = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
@@ -74,9 +74,9 @@ fun StoreMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = currentMapViewState,
-            onMapClick = onMapClickHandler,
-            onMarkerClick = onMarkerClickHandler,
-            onMarkerDrag = onMarkerDragHandler,
+            onMapClick = onMapClick,
+            onMarkerClick = onMarkerClick,
+            onMarkerDrag = onMarkerDrag,
             onMarkerAnimateStart = { isMarkerAnimating = true },
             onMarkerAnimateEnd = { isMarkerAnimating = false },
         ) {

@@ -40,7 +40,7 @@ class HereMapPolylineRenderer(
     override val holder: HereMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractPolylineRenderer<MapPolyline>() {
-    override suspend fun addLines(newLines: List<PolylineState>): List<MapPolyline?> {
+    override suspend fun addPolylines(newLines: List<PolylineState>): List<MapPolyline?> {
         val polylines =
             newLines.map { state ->
                 val geoPolyline = createGeoPolyline(state)
@@ -53,17 +53,17 @@ class HereMapPolylineRenderer(
         return polylines
     }
 
-    override suspend fun removeLines(removeEntities: List<PolylineEntity<MapPolyline>>) {
+    override suspend fun removePolylines(removeEntities: List<PolylineEntity<MapPolyline>>) {
         val polylines = removeEntities.map { it.polyline }
         coroutine.launch {
             holder.map.removeMapPolylines(polylines)
         }
     }
 
-    override suspend fun changeLine(changes: List<UpdateParams<MapPolyline>>): List<MapPolyline> {
+    override suspend fun changePolylines(changes: List<UpdateParams<MapPolyline>>): List<MapPolyline> {
         return changes.map { params ->
-            val finger = params.entity.state.fingerPrint()
-            val prevFinger = params.prevEntity.state.fingerPrint()
+            val finger = params.entity.fingerPrint
+            val prevFinger = params.prevEntity.fingerPrint
             if (finger.points != prevFinger.points) {
                 val geoPolyline = createGeoPolyline(params.entity.state)
                 params.entity.polyline.geometry = geoPolyline

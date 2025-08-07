@@ -37,7 +37,7 @@ class GoogleMapPolylineRenderer(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractPolylineRenderer<Polyline>() {
-    override suspend fun addLines(newLines: List<PolylineState>): List<Polyline?> {
+    override suspend fun addPolylines(newLines: List<PolylineState>): List<Polyline?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext newLines.map { state ->
                 val points = state.points.map { GeoPoint.from(it).toLatLng() }
@@ -46,7 +46,7 @@ class GoogleMapPolylineRenderer(
                         .addAll(points)
                         .color(state.strokeColor.toArgb())
                         .width(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
-                        .clickable(true)
+                        .clickable(false)
                 holder.map.addPolyline(options).also {
                     it.tag = state.id
                 }
@@ -54,24 +54,25 @@ class GoogleMapPolylineRenderer(
         }
     }
 
-    override suspend fun removeLines(removeEntities: List<PolylineEntity<Polyline>>) {
+    override suspend fun removePolylines(removeEntities: List<PolylineEntity<Polyline>>) {
         coroutine.launch {
             removeEntities.forEach { params -> params.polyline.remove() }
         }
     }
 
-    override suspend fun changeLine(changes: List<UpdateParams<Polyline>>): List<Polyline> {
+    override suspend fun changePolylines(changes: List<UpdateParams<Polyline>>): List<Polyline> {
         return withContext(coroutine.coroutineContext) {
             return@withContext changes.map { params ->
                 val polyline = params.entity.polyline
-                val finger = params.entity.state.fingerPrint()
-                val prevFinger = params.prevEntity.state.fingerPrint()
-                if (finger.points != prevFinger.points) {
-                    val points =
-                        params.entity.state.points
-                            .map { GeoPoint.from(it).toLatLng() }
-                    polyline.points = points
-                }
+                val finger = params.entity.fingerPrint
+                val prevFinger = params.prevEntity.fingerPrint
+//                if (finger.points != prevFinger.points) {
+                val points =
+                    params.entity.state.points
+                        .map { GeoPoint.from(it).toLatLng() }
+                polyline.points = points
+//                }
+//                printPoints("change", params.entity.state.points)
                 polyline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
                 polyline.color =
                     params.entity.state.strokeColor

@@ -94,8 +94,35 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
         }
     }
 
-    override suspend fun updatePolyline(polyline: PolylineState) {
-        TODO("Not implemented yet")
+    override suspend fun updatePolyline(state: PolylineState) {
+        semaphore.withPermit {
+            polylineEntities[state.id]?.let { prevEntity ->
+
+                val updates =
+                    listOf(
+                        object : PolylineRenderer.UpdateParams<ActualPolyline> {
+                            override val entity: PolylineEntity<ActualPolyline> =
+                                PolylineEntityImpl(
+                                    state = state,
+                                    polyline = prevEntity.polyline,
+                                )
+                            override val prevEntity: PolylineEntity<ActualPolyline> = prevEntity
+                        },
+                    )
+
+                val actualPolylines: List<ActualPolyline?> = onChange(updates)
+                actualPolylines.forEachIndexed { index, actualPolyline ->
+                    actualPolyline?.let {
+                        val entity =
+                            PolylineEntityImpl<ActualPolyline>(
+                                state = state,
+                                polyline = actualPolyline,
+                            )
+                        polylineEntities[state.id] = entity
+                    }
+                }
+            }
+        }
     }
 
     override suspend fun clearOverlays() {
