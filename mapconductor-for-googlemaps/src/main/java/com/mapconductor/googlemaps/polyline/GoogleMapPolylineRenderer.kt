@@ -46,6 +46,7 @@ class GoogleMapPolylineRenderer(
                         .addAll(points)
                         .color(state.strokeColor.toArgb())
                         .width(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
+                        .geodesic(state.geodesic)
                         .clickable(false)
                 holder.map.addPolyline(options).also {
                     it.tag = state.id
@@ -66,13 +67,13 @@ class GoogleMapPolylineRenderer(
                 val polyline = params.entity.polyline
                 val finger = params.entity.fingerPrint
                 val prevFinger = params.prevEntity.fingerPrint
-//                if (finger.points != prevFinger.points) {
-                val points =
-                    params.entity.state.points
-                        .map { GeoPoint.from(it).toLatLng() }
-                polyline.points = points
-//                }
-//                printPoints("change", params.entity.state.points)
+                if (finger.points != prevFinger.points) {
+                    val points =
+                        params.entity.state.points
+                            .map { GeoPoint.from(it).toLatLng() }
+                    polyline.points = points
+                }
+                polyline.isGeodesic = params.entity.state.geodesic
                 polyline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
                 polyline.color =
                     params.entity.state.strokeColor

@@ -8,7 +8,9 @@ import com.here.sdk.mapview.MapMeasureDependentRenderSize
 import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.createGeodesicPoints
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.polyline.AbstractPolylineRenderer
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineOverlayManager
@@ -16,8 +18,16 @@ import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer.UpdateParams
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.toDegree
+import com.mapconductor.core.toRadius
 import com.mapconductor.here.HereMapViewHolder
 import com.mapconductor.here.toGeoCoordinates
+import java.lang.Math.pow
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -77,9 +87,17 @@ class HereMapPolylineRenderer(
     }
 
     private fun createGeoPolyline(state: PolylineState): GeoPolyline {
-        val points = state.points.map { GeoPoint.from(it).toGeoCoordinates() }
-        return GeoPolyline(points)
+        val points = when (state.geodesic) {
+            false -> state.points.map { GeoPoint.from(it).toGeoCoordinates() }
+            true -> {
+                val results = createGeodesicPoints(state.points)
+                results.map { GeoPoint.from(it).toGeoCoordinates() }
+            }
+        }
+        val geoPolyline = GeoPolyline(points)
+        return geoPolyline
     }
+
 
     private fun createRepresentation(state: PolylineState): MapPolyline.Representation {
         val lineWidth =
