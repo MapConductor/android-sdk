@@ -30,7 +30,7 @@ interface PolylinePageViewModel {
     fun onMarkerDrag(dragged: MarkerState)
 }
 
-class PolylinePageViewModelImpl() :
+class PolylinePageViewModelImpl :
     ViewModel(),
     PolylinePageViewModel {
 
@@ -124,3 +124,4 @@ class PolylinePageViewModelImpl() :
         super.onCleared()
     }
 }
+
