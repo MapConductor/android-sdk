@@ -66,9 +66,9 @@ fun MessageCard(
                 Icon(
                     imageVector =
                         if (isCardExpanded) {
-                            Icons.Default.KeyboardArrowUp
-                        } else {
                             Icons.Default.KeyboardArrowDown
+                        } else {
+                            Icons.Default.KeyboardArrowUp
                         },
                     contentDescription = if (isCardExpanded) "Collapse" else "Expand",
                     modifier =

@@ -17,10 +17,9 @@ fun PolylineMapPage(
         val mapViewState = viewModel.mapViewState.collectAsState()
 
         PolylineMapComponent(
+            polylineState = viewModel.polylineState,
+            wayPointMarkers = viewModel.wayPointMarkers,
             mapViewState = mapViewState.value,
-            viewModel = viewModel,
-            onMapClick = viewModel::onMapClick,
-            onMarkerClick = viewModel::onMarkerClick,
             onPolylineClick = viewModel::onPolylineClick,
             onMarkerDrag = viewModel::onMarkerDrag,
         )
