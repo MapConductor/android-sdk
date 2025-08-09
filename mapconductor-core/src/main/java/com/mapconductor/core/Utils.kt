@@ -102,11 +102,9 @@ fun interpolateGeodesicPolyline(origin: IGeoPoint, dest: IGeoPoint): List<IGeoPo
 
 fun createGeodesicPoints(points: List<IGeoPoint>): List<IGeoPoint> {
     val results = mutableListOf<IGeoPoint>()
-    var prev = points[0]
     for (i in 1..points.size - 1) {
-        val current = points[i]
-        results.addAll(interpolateGeodesicPolyline(prev, current))
-        prev = current
+        val interpolatedPoints = interpolateGeodesicPolyline(points[i - 1], points[i])
+        results.addAll(interpolatedPoints)
     }
     return results
 }
