@@ -35,7 +35,8 @@ fun FlyToMapPage(
 
         FlyToMapComponent(
             mapViewState = mapViewState.value,
-            viewModel = viewModel,
+            polylines = viewModel.polylines,
+            markers = viewModel.markers,
             onMapClick = viewModel::onMapClick,
         )
 

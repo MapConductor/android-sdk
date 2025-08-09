@@ -5,6 +5,7 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
 import com.mapbox.maps.extension.style.sources.updateGeoJSONSourceFeatures
+import com.mapconductor.core.createGeodesicPoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polyline.AbstractPolylineRenderer
 import com.mapconductor.core.polyline.PolylineEntity
@@ -43,7 +44,8 @@ class MapboxPolylineRenderer(
     override suspend fun addPolylines(newLines: List<PolylineState>): List<MapboxActualPolyline?> {
         val polylines =
             newLines.map { state ->
-                val points = state.points.map { GeoPoint.from(it).toPoint() }
+//                val points = state.points.map { GeoPoint.from(it).toPoint() }
+                val points = createGeodesicPoints(state.points).map { GeoPoint.from(it).toPoint() }
                 Feature.fromGeometry(
                     LineString.fromLngLats(points),
                     JsonObject().apply {
@@ -67,7 +69,7 @@ class MapboxPolylineRenderer(
         val features =
             changes.map { params ->
                 val state = params.entity.state
-                val points = state.points.map { GeoPoint.from(it).toPoint() }
+                val points = createGeodesicPoints(state.points).map { GeoPoint.from(it).toPoint() }
                 Feature.fromGeometry(
                     LineString.fromLngLats(points),
                     JsonObject().apply {

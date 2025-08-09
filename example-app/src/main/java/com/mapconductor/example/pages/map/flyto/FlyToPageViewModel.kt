@@ -57,6 +57,7 @@ class FlyToPageViewModelImpl(
     private val tokyoLocation = GeoPoint.fromLatLong(35.6762, 139.6503)
     private val londonLocation = GeoPoint.fromLatLong(51.5074, -0.1278)
     private val newYorkLocation = GeoPoint.fromLatLong(40.7128, -74.0060)
+    private val sydneyLocation = GeoPoint.fromLatLong(-33.9506, 151.1815)
 
     override val markers = listOf(
         MarkerState(
@@ -86,58 +87,60 @@ class FlyToPageViewModelImpl(
             icon = ImageIcon(
                 drawable = icons.newYork,
             ),
+        ),
+        MarkerState(
+            id = "sydney_marker",
+            position = sydneyLocation,
+            icon = ImageIcon(
+                drawable = icons.sydney,
+            ),
         )
     )
 
+    private val drawGeodesicLines = true
+
     override val polylines = listOf(
-        // Honolulu to Tokyo
-        PolylineState(
-            id = "honolulu_to_tokyo",
-            points = listOf(honoluluLocation, tokyoLocation),
-            strokeColor = Color.Blue.copy(alpha = 0.7f),
-            strokeWidth = 3.dp,
-            geodesic = true,
-        ),
-        // Honolulu to London
-        PolylineState(
-            id = "honolulu_to_london",
-            points = listOf(honoluluLocation, londonLocation),
-            strokeColor = Color.Blue.copy(alpha = 0.7f),
-            strokeWidth = 3.dp,
-            geodesic = true,
-        ),
         // Honolulu to NewYork
         PolylineState(
             id = "honolulu_to_newyork",
             points = listOf(honoluluLocation, newYorkLocation),
             strokeColor = Color.Blue.copy(alpha = 0.7f),
             strokeWidth = 3.dp,
-            geodesic = true,
+            geodesic = drawGeodesicLines,
+        ),
+        // Honolulu to Sydney
+        PolylineState(
+            id = "honolulu_to_sydney",
+            points = listOf(honoluluLocation, sydneyLocation),
+            strokeColor = Color.Blue.copy(alpha = 0.7f),
+            strokeWidth = 3.dp,
+            geodesic = drawGeodesicLines,
         ),
 
         // Tokyo to London
         PolylineState(
             id = "tokyo_to_london",
             points = listOf(tokyoLocation, londonLocation),
-            strokeColor = Color.Green.copy(alpha = 0.7f),
+            strokeColor = Color.Black.copy(alpha = 0.7f),
             strokeWidth = 3.dp,
-            geodesic = true,
+            geodesic = drawGeodesicLines,
         ),
-        // Tokyo to NewYork
+
+        //   Tokyo to NewYork
         PolylineState(
-            id = "tokyo_to_london",
+            id = "tokyo_to_newyork",
             points = listOf(tokyoLocation, newYorkLocation),
-            strokeColor = Color.Green.copy(alpha = 0.7f),
+            strokeColor = Color.Black.copy(alpha = 0.7f),
             strokeWidth = 3.dp,
-            geodesic = true,
+            geodesic = drawGeodesicLines,
         ),
         // Tokyo to Honolulu
         PolylineState(
             id = "tokyo_to_honolulu",
             points = listOf(tokyoLocation, honoluluLocation),
-            strokeColor = Color.Green.copy(alpha = 0.7f),
+            strokeColor = Color.Black.copy(alpha = 0.7f),
             strokeWidth = 3.dp,
-            geodesic = true,
+            geodesic = drawGeodesicLines,
         ),
 
         // London to New York
@@ -146,16 +149,17 @@ class FlyToPageViewModelImpl(
             points = listOf(londonLocation, newYorkLocation),
             strokeColor = Color.Red.copy(alpha = 0.7f),
             strokeWidth = 3.dp,
-            geodesic = true,
+            geodesic = drawGeodesicLines,
         ),
-        // New York back to Honolulu to complete the circuit
+
+        // London to Sydney
         PolylineState(
-            id = "newyork_to_honolulu",
-            points = listOf(newYorkLocation, honoluluLocation),
-            strokeColor = Color.Magenta.copy(alpha = 0.7f),
+            id = "london_to_sydney",
+            points = listOf(londonLocation, sydneyLocation),
+            strokeColor = Color.Red.copy(alpha = 0.7f),
             strokeWidth = 3.dp,
-            geodesic = true,
-        )
+            geodesic = drawGeodesicLines,
+        ),
     )
 
     override fun onMapViewChanged(state: MapViewState<*>) {

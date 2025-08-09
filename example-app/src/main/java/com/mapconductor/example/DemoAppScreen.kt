@@ -38,6 +38,7 @@ fun DemoAppScreen() {
             tokyo = ContextCompat.getDrawable(context, R.drawable.tokyo)!!,
             london = ContextCompat.getDrawable(context, R.drawable.london)!!,
             newYork = ContextCompat.getDrawable(context, R.drawable.newyork)!!,
+            sydney = ContextCompat.getDrawable(context, R.drawable.sydney)!!,
         )
     }
 

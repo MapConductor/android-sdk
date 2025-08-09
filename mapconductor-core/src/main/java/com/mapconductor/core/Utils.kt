@@ -93,7 +93,9 @@ fun interpolateGeodesicPolyline(origin: IGeoPoint, dest: IGeoPoint): List<IGeoPo
             override val longitude: Double = toDegree(lng)
             override val altitude: Double? = null
         }
+//        if (point.longitude> 179) break
         wayPoints.add(point)
+        Log.d("debug", " ${GeoPoint.from(point).toUrlValue()}")
         fraction += fractionI
     }
 
@@ -105,6 +107,7 @@ fun createGeodesicPoints(points: List<IGeoPoint>): List<IGeoPoint> {
     for (i in 1..points.size - 1) {
         val interpolatedPoints = interpolateGeodesicPolyline(points[i - 1], points[i])
         results.addAll(interpolatedPoints)
+//        if (points[i].longitude < 0) break
     }
     return results
 }
