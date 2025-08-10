@@ -17,10 +17,10 @@ class GeoPoint(
     longitude: Double,
     altitude: Double = 0.0,
 ) : IGeoPoint {
-
     override var latitude by mutableStateOf(latitude)
     override var longitude by mutableStateOf(longitude)
     override var altitude by mutableStateOf(altitude)
+
     fun toUrlValue(precision: Int = 6): String = "${latitude.toFixed(precision)},${longitude.toFixed(precision)}"
 
     override fun equals(other: Any?): Boolean {
@@ -49,13 +49,12 @@ class GeoPoint(
         latitude: Double? = null,
         longitude: Double? = null,
         altitude: Double? = null,
-    ): GeoPoint {
-        return GeoPoint(
+    ): GeoPoint =
+        GeoPoint(
             latitude = latitude ?: this.latitude,
             longitude = longitude ?: this.longitude,
             altitude = altitude ?: this.altitude,
         )
-    }
 
     companion object {
         fun fromLatLong(

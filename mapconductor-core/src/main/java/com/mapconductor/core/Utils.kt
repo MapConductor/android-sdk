@@ -2,7 +2,6 @@ package com.mapconductor.core
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.polyline.PolylineState
 import java.lang.Math.pow
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -40,31 +39,32 @@ fun printPoints(
     }
 }
 
-fun toRadius(degValue: Double): Double {
-    return degValue * (Math.PI / 180.0)
-}
+fun toRadius(degValue: Double): Double = degValue * (Math.PI / 180.0)
 
-fun toDegree(radValue: Double): Double {
-    return radValue / (Math.PI / 180.0)
-}
+fun toDegree(radValue: Double): Double = radValue / (Math.PI / 180.0)
 
 /**
  * Calculate waypoints from start to finish on geodesic line
  * @ref http://jamesmccaffrey.wordpress.com/2011/04/17/drawing-a-geodesic-line-for-bing-maps-ajax/
  */
-fun interpolateGeodesicPolyline(origin: IGeoPoint, dest: IGeoPoint): List<IGeoPoint> {
+fun interpolateGeodesicPolyline(
+    origin: IGeoPoint,
+    dest: IGeoPoint,
+): List<IGeoPoint> {
     // convert to radians
     val lat1 = toRadius(origin.latitude)
     val lng1 = toRadius(origin.longitude)
     val lat2 = toRadius(dest.latitude)
     val lng2 = toRadius(dest.longitude)
 
-    val distance = 2 * abs(
-        sqrt(
-            pow(sin((lat1 - lat2) / 2.0), 2.0) +
-            cos(lat1) * cos(lat2) * pow(sin((lng1 - lng2) / 2.0), 2.0)
-        )
-    )
+    val distance =
+        2 *
+            abs(
+                sqrt(
+                    pow(sin((lat1 - lat2) / 2.0), 2.0) +
+                        cos(lat1) * cos(lat2) * pow(sin((lng1 - lng2) / 2.0), 2.0),
+                ),
+            )
     val wayPoints = mutableListOf<IGeoPoint>()
     var fraction: Float = 0f // fraction of the curve
     val fractionI: Float = 0.01f // fraction increment
@@ -88,11 +88,12 @@ fun interpolateGeodesicPolyline(origin: IGeoPoint, dest: IGeoPoint): List<IGeoPo
         val lat = atan2(z, sqrt((x * x) + (y * y)))
         val lng = atan2(y, x)
 
-        val point = object : IGeoPoint {
-            override val latitude: Double = toDegree(lat)
-            override val longitude: Double = toDegree(lng)
-            override val altitude: Double? = null
-        }
+        val point =
+            object : IGeoPoint {
+                override val latitude: Double = toDegree(lat)
+                override val longitude: Double = toDegree(lng)
+                override val altitude: Double? = null
+            }
 //        if (point.longitude> 179) break
         wayPoints.add(point)
         Log.d("debug", " ${GeoPoint.from(point).toUrlValue()}")
@@ -108,6 +109,29 @@ fun createGeodesicPoints(points: List<IGeoPoint>): List<IGeoPoint> {
         val interpolatedPoints = interpolateGeodesicPolyline(points[i - 1], points[i])
         results.addAll(interpolatedPoints)
 //        if (points[i].longitude < 0) break
+    }
+    return results
+}
+
+fun splitByMeridian(points: List<IGeoPoint>): List<List<IGeoPoint>> {
+    val results = mutableListOf<List<IGeoPoint>>()
+    var fragment = mutableListOf<IGeoPoint>()
+    for (point in points) {
+        if (fragment.isEmpty()) {
+            fragment.add(point)
+            continue
+        }
+        val tailLng = fragment.last().longitude
+        if (tailLng >= 0 && point.longitude >= 0 || tailLng < 0 && point.longitude < 0) {
+            fragment.add(point)
+            continue
+        }
+        results.add(fragment.toList())
+        fragment = mutableListOf<IGeoPoint>()
+        fragment.add(point)
+    }
+    if (fragment.isNotEmpty()) {
+        results.add(fragment.toList())
     }
     return results
 }

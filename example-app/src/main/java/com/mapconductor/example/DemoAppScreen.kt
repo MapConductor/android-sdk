@@ -17,7 +17,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
-import com.mapconductor.example.pages.map.flyto.FlyToMapComponent
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
@@ -32,15 +31,16 @@ fun DemoAppScreen() {
     val currentPage by navigationViewModel.currentPage
     val isSidebarExpanded by navigationViewModel.isSidebarExpanded
     val context = LocalContext.current
-    val flyToMapPageIcons = remember {
-        FlyToMapIcons(
-            honolulu = ContextCompat.getDrawable(context, R.drawable.honolulu)!!,
-            tokyo = ContextCompat.getDrawable(context, R.drawable.tokyo)!!,
-            london = ContextCompat.getDrawable(context, R.drawable.london)!!,
-            newYork = ContextCompat.getDrawable(context, R.drawable.newyork)!!,
-            sydney = ContextCompat.getDrawable(context, R.drawable.sydney)!!,
-        )
-    }
+    val flyToMapPageIcons =
+        remember {
+            FlyToMapIcons(
+                honolulu = ContextCompat.getDrawable(context, R.drawable.honolulu)!!,
+                tokyo = ContextCompat.getDrawable(context, R.drawable.tokyo)!!,
+                london = ContextCompat.getDrawable(context, R.drawable.london)!!,
+                newYork = ContextCompat.getDrawable(context, R.drawable.newyork)!!,
+                sydney = ContextCompat.getDrawable(context, R.drawable.sydney)!!,
+            )
+        }
 
     val sidebarItems =
         listOf(

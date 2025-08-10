@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
-import android.graphics.drawable.Drawable
 
 @Composable
 fun FlyToMapPage(
@@ -27,6 +26,7 @@ fun FlyToMapPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(
+        initSelect = 1,
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
@@ -54,22 +54,22 @@ fun FlyToMapPage(
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
                         onClick = { viewModel.flyToHonolulu() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Honolulu")
                     }
 
                     Button(
                         onClick = { viewModel.flyToTokyo() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Tokyo")
                     }
@@ -77,18 +77,18 @@ fun FlyToMapPage(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
                         onClick = { viewModel.flyToLondon() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("London")
                     }
 
                     Button(
                         onClick = { viewModel.flyToNewYork() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("New York")
                     }
