@@ -117,6 +117,14 @@ fun <
                 }
             }
         }
+        val groundImage = scope.groundImageFlow.collectAsState()
+        groundImage.value.forEach { groundImageState ->
+            LaunchedEffect(groundImageState.id) {
+                groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    controller.updateGroundImage(groundImageState)
+                }
+            }
+        }
     }
 
     Box(

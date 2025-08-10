@@ -9,12 +9,16 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
+import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
@@ -25,6 +29,14 @@ fun DemoAppScreen() {
     val navigationViewModel: NavigationViewModel = viewModel()
     val currentPage by navigationViewModel.currentPage
     val isSidebarExpanded by navigationViewModel.isSidebarExpanded
+
+    val context = LocalContext.current
+    val groundImageResources = remember {
+        GroundImageResources(
+            imageToggle0 = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
+            imageToggle1 = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
+        )
+    }
 
     val sidebarItems =
         listOf(
@@ -77,6 +89,7 @@ fun DemoAppScreen() {
                     }
                     "groundImage" -> {
                         GroundImageMapPage(
+                            groundImageResources = groundImageResources,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

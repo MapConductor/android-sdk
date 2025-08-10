@@ -25,6 +25,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.groundimage.GroundImageClickEvent
 import com.mapconductor.core.groundimage.GroundImageOverlayManager
 import com.mapconductor.core.groundimage.GroundImageRenderer
 import com.mapconductor.core.groundimage.GroundImageRendererFactory
@@ -292,6 +293,16 @@ class GoogleMapViewController(
                     position = touchPosition,
                 )
             circleClickListener?.invoke(event)
+            return
+        }
+
+        groundImageOverlayManager.find(touchPosition)?.let { entity ->
+            val event =
+                GroundImageClickEvent(
+                    state = entity.state,
+                    position = touchPosition,
+                )
+            groundImageClickListener?.invoke(event)
             return
         }
 

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import android.os.Parcelable
 import com.mapconductor.core.StateFlowDelegate
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import android.graphics.drawable.Drawable
 import kotlinx.coroutines.flow.Flow
@@ -14,22 +15,22 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class GroundImageState(
     bounds: GeoRectBounds,
     image: Drawable,
-    alpha: Float = 1.0f,
+    opacity: Float = 1.0f,
     id: String? = null,
     extra: Parcelable? = null,
 ) {
-    val id = (id ?: generateId(bounds, image, alpha, extra)).toString()
+    val id = (id ?: generateId(bounds, image, opacity, extra)).toString()
 
     var bounds by StateFlowDelegate(bounds)
     var image by mutableStateOf(image)
-    var alpha by mutableStateOf(alpha)
+    var opacity by mutableStateOf(opacity)
     var extra by mutableStateOf(extra)
 
     fun fingerPrint(): GroundImageFingerPrint = GroundImageFingerPrint(
         id = id.hashCode(),
         bounds = bounds.hashCode(),
         image = image.hashCode(),
-        alpha = alpha.hashCode(),
+        opacity = opacity.hashCode(),
         extra = extra?.hashCode() ?: 0,
     )
 
@@ -39,12 +40,12 @@ class GroundImageState(
     private fun generateId(
         bounds: GeoRectBounds,
         image: Drawable,
-        alpha: Float,
+        opacity: Float,
         extra: Parcelable?
     ): Int {
         var result = bounds.hashCode()
         result = 31 * result + image.hashCode()
-        result = 31 * result + alpha.hashCode()
+        result = 31 * result + opacity.hashCode()
         result = 31 * result + (extra?.hashCode() ?: 0)
         return result
     }
@@ -59,13 +60,13 @@ data class GroundImageFingerPrint(
     val id: Int,
     val bounds: Int,
     val image: Int,
-    val alpha: Int,
+    val opacity: Int,
     val extra: Int,
 )
 
 data class GroundImageClickEvent(
     val state: GroundImageState,
-    val bounds: GeoRectBounds,
+    val position: GeoPoint?,
 )
 
-typealias OnGroundImageEventHandler = (GroundImageClickEvent) -> Unit
+typealias OnGroundImageClickEventHandler = (GroundImageClickEvent) -> Unit

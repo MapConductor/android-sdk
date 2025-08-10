@@ -20,14 +20,14 @@ fun MapViewScope.GroundImage(state: GroundImageState) {
 fun MapViewScope.GroundImage(
     bounds: GeoRectBounds,
     image: Drawable,
-    alpha: Float = 0.5f,
+    opacity: Float = 0.5f,
     id: String? = null,
     extra: Parcelable? = null,
 ) {
     val state = GroundImageState(
         bounds = bounds,
         image = image,
-        alpha = alpha,
+        opacity = opacity,
         id = id,
         extra = extra,
     )

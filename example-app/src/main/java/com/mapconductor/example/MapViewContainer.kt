@@ -6,7 +6,7 @@ import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -29,8 +29,7 @@ fun MapViewContainer(
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
-    onGroundImageClick: OnGroundImageEventHandler? = null,
-    onGroundImageChange: OnGroundImageEventHandler? = null,
+    onGroundImageClick: OnGroundImageClickEventHandler? = null,
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
@@ -47,7 +46,6 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onGroundImageClick = onGroundImageClick,
-                onGroundImageChange = onGroundImageChange,
                 content = content,
             )
 
@@ -63,7 +61,6 @@ fun MapViewContainer(
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onGroundImageClick = onGroundImageClick,
-                onGroundImageChange = onGroundImageChange,
                 content = content,
             )
 
@@ -80,7 +77,6 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onGroundImageClick = onGroundImageClick,
-                onGroundImageChange = onGroundImageChange,
                 content = content,
             )
 
@@ -97,7 +93,6 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onGroundImageClick = onGroundImageClick,
-                onGroundImageChange = onGroundImageChange,
                 content = content,
             )
 

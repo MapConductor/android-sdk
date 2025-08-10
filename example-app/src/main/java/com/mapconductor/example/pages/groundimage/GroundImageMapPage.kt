@@ -11,11 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.mapconductor.core.groundimage.GroundImageClickEvent
 import com.mapconductor.example.R
-import com.mapconductor.example.pages.circle.CircleMapComponent
-import com.mapconductor.example.pages.circle.CirclePageViewModel
-import com.mapconductor.example.pages.circle.CirclePageViewModelImpl
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MapViewStatePanel
@@ -25,9 +21,8 @@ import android.graphics.drawable.Drawable
 
 @Composable
 fun GroundImageMapPage(
-    context: Context = LocalContext.current,
-    image: Drawable = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
-    viewModel: GroundImageMapPageViewModel = GroundImageMapPageViewModelImpl(image),
+    groundImageResources: GroundImageResources,
+    viewModel: GroundImageMapPageViewModel = GroundImageMapPageViewModelImpl(groundImageResources),
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(
@@ -42,7 +37,6 @@ fun GroundImageMapPage(
             viewModel = viewModel,
             onMapClick = viewModel::onMapClick,
             onGroundImageClick = viewModel::onGroundImageClick,
-            onGroundImageChange = viewModel::onGroundImageChange,
         )
 
         // Message Card

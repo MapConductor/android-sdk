@@ -4,9 +4,6 @@ import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.GroundOverlay
 import com.google.android.gms.maps.model.GroundOverlayOptions
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.groundimage.AbstractGroundImageRenderer
 import com.mapconductor.core.groundimage.GroundImageEntity
 import com.mapconductor.core.groundimage.GroundImageOverlayManager
@@ -44,12 +41,12 @@ class GoogleMapGroundImageRenderer(
             return@withContext newImages.map { state ->
                 val bounds = state.bounds.toLatLngBounds() ?: return@withContext emptyList()
                 val image = BitmapDescriptorFactory.fromBitmap(state.image.toBitmap())
-                val alpha = state.alpha
+                val opacity = state.opacity
                 val options =
                     GroundOverlayOptions()
                         .image(image)
                         .positionFromBounds(bounds)
-//                        .transparency(alpha)
+                        .transparency(1.0f - opacity)
                 holder.map.addGroundOverlay(options)?.also {
                     it.tag = state.id
                 }
@@ -74,19 +71,10 @@ class GoogleMapGroundImageRenderer(
                         groundOverlay.setPositionFromBounds(it)
                     }
                 }
-                groundOverlay.transparency = params.prevEntity.state.alpha
+                groundOverlay.transparency = 1.0f - params.entity.state.opacity
                 groundOverlay.setImage(BitmapDescriptorFactory.fromBitmap(params.entity.state.image.toBitmap()))
                 return@map groundOverlay
             }
         }
-    }
-
-    private fun GeoRectBounds.toLatLngBounds(): LatLngBounds? {
-        val sw = southWest ?: return null
-        val ne = northEast ?: return null
-        return LatLngBounds(
-            LatLng(sw.latitude, sw.longitude),
-            LatLng(ne.latitude, ne.longitude)
-        )
     }
 }

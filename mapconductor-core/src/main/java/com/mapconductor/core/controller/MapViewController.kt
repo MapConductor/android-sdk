@@ -11,6 +11,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.groundimage.GroundImageOverlayManager
 import com.mapconductor.core.groundimage.GroundImageRenderer
 import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -147,6 +148,7 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
     var markerDragListener: OnMarkerEventHandler? = null
     var markerDragEndListener: OnMarkerEventHandler? = null
     var circleClickListener: OnCircleEventHandler? = null
+    var groundImageClickListener: OnGroundImageClickEventHandler? = null
 
     abstract fun setupListeners()
 

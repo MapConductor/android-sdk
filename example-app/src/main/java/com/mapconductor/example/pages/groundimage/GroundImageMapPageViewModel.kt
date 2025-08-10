@@ -1,26 +1,14 @@
 package com.mapconductor.example.pages.groundimage
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.groundimage.GroundImageClickEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
-import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.spherical.calculatePositionAtDistance
-import com.mapconductor.core.spherical.haversineDistance
-import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,8 +21,9 @@ interface GroundImageMapPageViewModel {
     val messages: StateFlow<List<ToastMessage>>
 
     val bounds: GeoRectBounds
+    val imageResources: GroundImageResources
     val image: Drawable
-    val alpha: Float
+    val opacity: Float
     val groundImageState: GroundImageState
 
     fun onMapViewChanged(state: MapViewState<*>)
@@ -43,16 +32,14 @@ interface GroundImageMapPageViewModel {
 
     fun onMapClick(clicked: GeoPoint)
 
-    fun onGroundImageClick(event: GroundImageClickEvent)
-
-    fun onGroundImageChange(event: GroundImageClickEvent)
+    fun onGroundImageClick(clicked: GroundImageClickEvent)
 
     fun showToast(text: String)
 
     fun removeToast(toastMessage: ToastMessage)
 }
 
-class GroundImageMapPageViewModelImpl(override val image: Drawable) :
+class GroundImageMapPageViewModelImpl(override val imageResources: GroundImageResources) :
     ViewModel(),
     GroundImageMapPageViewModel {
 
@@ -60,8 +47,8 @@ class GroundImageMapPageViewModelImpl(override val image: Drawable) :
         MapCameraPosition(
             position =
                 GeoPoint.fromLatLong(
-                    latitude = 21.382314,
-                    longitude = -157.933097,
+                    latitude = 40.7430785,
+                    longitude = -74.175995,
                 ),
             zoom = 12.0,
             bearing = 0.0,
@@ -87,12 +74,14 @@ class GroundImageMapPageViewModelImpl(override val image: Drawable) :
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
-    override val bounds = GeoRectBounds(
-        southWest = GeoPoint.fromLatLong(20.842314, -158.458097),
-        northEast = GeoPoint.fromLatLong(21.922314, -157.408097)
+    override val bounds = GeoRectBounds(    // ココが固定だと変化できないので、後日処理を書き換え。
+        southWest = GeoPoint.fromLatLong(40.712216, -74.22655),
+        northEast = GeoPoint.fromLatLong(40.773941, -74.12544)
     )
 
-    override val alpha = 1.0f
+    override val image = imageResources.imageToggle0
+
+    override val opacity = 1.0f
 
     private val _groundImageState: MutableState<GroundImageState> =
         mutableStateOf(
@@ -102,6 +91,7 @@ class GroundImageMapPageViewModelImpl(override val image: Drawable) :
                 image = image,
             ),
         )
+
     override val groundImageState: GroundImageState
         get() = _groundImageState.value
 
@@ -109,10 +99,15 @@ class GroundImageMapPageViewModelImpl(override val image: Drawable) :
         showToast("Map clicked at: ${clicked.toUrlValue()}")
     }
 
-    override fun onGroundImageClick(event: GroundImageClickEvent) {
-    }
+    override fun onGroundImageClick(clicked: GroundImageClickEvent) {
+        if (clicked.state.image == imageResources.imageToggle0) {
+            _groundImageState.value.image = imageResources.imageToggle1
+        }
+        else {
+            _groundImageState.value.image = imageResources.imageToggle0
+        }
 
-    override fun onGroundImageChange(event: GroundImageClickEvent) {
+        showToast("Ground Image clicked.")
     }
 
     override fun showToast(text: String) {

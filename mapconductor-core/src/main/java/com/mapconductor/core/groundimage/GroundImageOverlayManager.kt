@@ -1,5 +1,6 @@
 package com.mapconductor.core.groundimage
 
+import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 
 interface GroundImageOverlayManager<ActualGroundImage> {
@@ -12,6 +13,8 @@ interface GroundImageOverlayManager<ActualGroundImage> {
     fun getGroundImageState(id: String): GroundImageState?
 
     fun getAllEntities(): List<GroundImageEntity<ActualGroundImage>>
+
+    fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>?
 }
 
 class GroundImageOverlayManagerImpl<ActualGroundImage>(
@@ -91,9 +94,30 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
         semaphore.release()
     }
 
-    override suspend fun updateGroundImage(overlay: GroundImageState) {
+    override suspend fun updateGroundImage(state: GroundImageState) {
+        val updated = mutableListOf<GroundImageRenderer.UpdateParams<ActualGroundImage>>()
+
         semaphore.acquire()
-        // Implement fine-grained update logic if needed
+        val prevEntity = groundImageEntities[state.id]!!
+        updated.add(object : GroundImageRenderer.UpdateParams<ActualGroundImage> {
+            override val entity: GroundImageEntity<ActualGroundImage> =
+                GroundImageEntityImpl(
+                    groundImage = prevEntity.groundImage,
+                    state = state
+                )
+            override val prevEntity: GroundImageEntity<ActualGroundImage> = prevEntity
+        })
+
+        val actualOverlays: List<ActualGroundImage?> = onChange(updated)
+        actualOverlays.forEachIndexed { index, actualOverlay ->
+            actualOverlay?.let {
+                val entity = GroundImageEntityImpl<ActualGroundImage>(
+                    groundImage = it,
+                    state = state
+                )
+                groundImageEntities[state.id] = entity
+            }
+        }
         semaphore.release()
     }
 
@@ -108,4 +132,10 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
     override fun getGroundImageState(id: String): GroundImageState? = groundImageEntities[id]?.state
 
     override fun getAllEntities(): List<GroundImageEntity<ActualGroundImage>> = groundImageEntities.values.toList()
+
+    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? {
+        return groundImageEntities.values.find { entity ->
+            entity.state.bounds.contains(position)
+        }
+    }
 }

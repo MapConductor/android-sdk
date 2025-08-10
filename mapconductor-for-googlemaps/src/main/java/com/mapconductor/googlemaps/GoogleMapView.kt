@@ -13,7 +13,7 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -31,8 +31,7 @@ fun GoogleMapsView(
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     onCircleClick: OnCircleEventHandler? = {},
-    onGroundImageClick: OnGroundImageEventHandler? = null,
-    onGroundImageChange: OnGroundImageEventHandler? = null,
+    onGroundImageClick: OnGroundImageClickEventHandler? = null,
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -87,6 +86,7 @@ fun GoogleMapsView(
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
             controller.circleClickListener = onCircleClick
+            controller.groundImageClickListener = onGroundImageClick
 
             holderRef.value = controller.holder
             controllerRef.value = controller
