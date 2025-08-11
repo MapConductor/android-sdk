@@ -104,6 +104,7 @@ dependencies {
     implementation(project(":mapconductor-for-mapbox"))
     implementation(project(":mapconductor-for-arcgis"))
     implementation(libs.androidx.vectordrawable)
+    implementation(libs.androidx.room.runtime.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core)

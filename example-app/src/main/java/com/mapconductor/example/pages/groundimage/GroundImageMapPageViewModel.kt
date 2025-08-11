@@ -1,8 +1,11 @@
 package com.mapconductor.example.pages.groundimage
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.room.util.copy
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.groundimage.GroundImageClickEvent
@@ -33,6 +36,8 @@ interface GroundImageMapPageViewModel {
     fun onMapClick(clicked: GeoPoint)
 
     fun onGroundImageClick(clicked: GroundImageClickEvent)
+
+    fun setOpacity(value: Float)
 
     fun showToast(text: String)
 
@@ -79,9 +84,16 @@ class GroundImageMapPageViewModelImpl(override val imageResources: GroundImageRe
         northEast = GeoPoint.fromLatLong(40.773941, -74.12544)
     )
 
-    override val image = imageResources.imageToggle0
+    override fun setOpacity(value: Float) {
+        val normalizedValue = value.coerceIn(0f, 1f)
+        _opacity = normalizedValue
+        _groundImageState.value.opacity = normalizedValue
+    }
+    private var _opacity by mutableStateOf(1.0f)
+    override val opacity
+        get() = _opacity
 
-    override val opacity = 1.0f
+    override val image = imageResources.imageToggle0
 
     private val _groundImageState: MutableState<GroundImageState> =
         mutableStateOf(

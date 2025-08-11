@@ -1,12 +1,17 @@
 package com.mapconductor.example.pages.groundimage
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -51,12 +56,24 @@ fun GroundImageMapPage(
                     ),
             title = "Messages",
         ) {
-            MapViewStatePanel(
-                mapViewState.value
-                    ?.mapCameraPosition
-                    ?.collectAsState()
-                    ?.value,
-            )
+            Column {
+                Text("opacity: ${"%.2f".format(viewModel.opacity)}", color = Color.Black)
+                Slider(
+                    value = viewModel.opacity,
+                    onValueChange = { newValue ->
+                        viewModel.setOpacity(newValue)
+                    },
+                    valueRange = 0.0f..1.0f,    // スライダー範囲
+                    steps = 0,                       // 中間ステップ数（範囲内を1000分割）
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.Black,               // つまみの色
+                        activeTrackColor = Color.DarkGray,      // 値までのトラック
+                        inactiveTrackColor = Color.LightGray,   // 残りのトラック
+                        activeTickColor = Color.Black,          // 有効ステップの目盛り
+                        inactiveTickColor = Color.White         // 無効ステップの目盛り
+                    )
+                )
+            }
         }
 
         ToastHost(
