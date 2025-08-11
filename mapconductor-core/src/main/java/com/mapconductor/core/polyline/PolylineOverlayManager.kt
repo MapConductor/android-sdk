@@ -122,6 +122,7 @@ class PolylineOverlayManagerImpl<ActualPolyline>(
                     }
                 }
             }
+            onPostProcess?.invoke()
         }
     }
 

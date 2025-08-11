@@ -80,7 +80,7 @@ class ArcGISPolylineRenderer(
             return@withContext changes.map { params ->
                 val finger = params.entity.fingerPrint
                 val prevFinger = params.prevEntity.fingerPrint
-                if (finger.points != prevFinger.points) {
+                if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
                     params.entity.polyline.geometry = createGeometry(params.entity.state)
                 }
 
@@ -109,7 +109,7 @@ class ArcGISPolylineRenderer(
                     return@also
                 }
 
-                builder.addPoint(GeoPoint.from(state.points[0]).toPoint(holder.map.spatialReference.value))
+                builder.addPoint(GeoPoint.from(state.points[0]).toPoint())
                 for (i in 1 until state.points.size) {
                     var fraction = 0.0
                     while (fraction <= 1.0) {
@@ -119,10 +119,10 @@ class ArcGISPolylineRenderer(
                                 to = state.points[i],
                                 fraction = fraction,
                             )
-                        builder.addPoint(point.toPoint(holder.map.spatialReference.value))
+                        builder.addPoint(point.toPoint())
                         fraction += 0.01
                     }
-                    builder.addPoint(GeoPoint.from(state.points[i]).toPoint(holder.map.spatialReference.value))
+                    builder.addPoint(GeoPoint.from(state.points[i]).toPoint())
                 }
             }
         return polylineBuilder.toGeometry()

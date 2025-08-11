@@ -18,8 +18,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
@@ -74,7 +72,7 @@ fun FlyToMapPage(
                         Switch(
                             checked = viewModel.geodesic,
                             onCheckedChange = {
-                                viewModel.geodesic = !viewModel.geodesic
+                                viewModel.setGeodesic(!viewModel.geodesic)
                             },
                             thumbContent =
                                 if (viewModel.geodesic) {

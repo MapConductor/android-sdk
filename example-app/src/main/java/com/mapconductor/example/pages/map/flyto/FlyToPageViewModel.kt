@@ -25,7 +25,7 @@ interface FlyToPageViewModel {
     val messages: StateFlow<List<ToastMessage>>
     val markers: List<MarkerState>
     val polylines: List<PolylineState>
-    var geodesic: Boolean
+    val geodesic: Boolean
 
     fun onMapViewChanged(state: MapViewState<*>)
 
@@ -40,6 +40,8 @@ interface FlyToPageViewModel {
     fun flyToNewYork()
 
     fun flyToSydney()
+
+    fun setGeodesic(value: Boolean)
 }
 
 class FlyToPageViewModelImpl(
@@ -61,8 +63,8 @@ class FlyToPageViewModelImpl(
 
     override val initCameraPosition =
         MapCameraPosition(
-            position = londonLocation,
-            zoom = 8.0,
+            position = tokyoLocation,
+            zoom = 0.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -112,7 +114,15 @@ class FlyToPageViewModelImpl(
             ),
         )
 
-    override var geodesic by mutableStateOf(true)
+    private var _geodesic by mutableStateOf(false)
+    override val geodesic
+        get() = _geodesic
+
+    override fun setGeodesic(value: Boolean) {
+        this._geodesic = value
+
+        polylines.forEach { it.geodesic = value }
+    }
 
     override val polylines =
         listOf(
@@ -122,7 +132,7 @@ class FlyToPageViewModelImpl(
                 points = listOf(honoluluLocation, newYorkLocation),
                 strokeColor = Color.Green.copy(alpha = 0.7f),
                 strokeWidth = 3.dp,
-                geodesic = geodesic,
+                geodesic = false,
             ),
             // Honolulu to Sydney
             PolylineState(
@@ -136,7 +146,7 @@ class FlyToPageViewModelImpl(
                         alpha = 0.7f,
                     ),
                 strokeWidth = 3.dp,
-                geodesic = true,
+                geodesic = false,
             ),
             // Tokyo to London
             PolylineState(
@@ -150,7 +160,7 @@ class FlyToPageViewModelImpl(
                         alpha = 0.7f,
                     ),
                 strokeWidth = 3.dp,
-                geodesic = true,
+                geodesic = false,
             ),
             // Tokyo to NewYork
             PolylineState(
@@ -158,7 +168,7 @@ class FlyToPageViewModelImpl(
                 points = listOf(tokyoLocation, newYorkLocation),
                 strokeColor = Color.Blue.copy(alpha = 0.7f),
                 strokeWidth = 3.dp,
-                geodesic = true,
+                geodesic = false,
             ),
             // Tokyo to Honolulu
             PolylineState(
@@ -172,7 +182,7 @@ class FlyToPageViewModelImpl(
                         alpha = 0.7f,
                     ),
                 strokeWidth = 3.dp,
-                geodesic = true,
+                geodesic = false,
             ),
             // London to New York
             PolylineState(
@@ -186,7 +196,7 @@ class FlyToPageViewModelImpl(
                         alpha = 0.7f,
                     ),
                 strokeWidth = 3.dp,
-                geodesic = true,
+                geodesic = false,
             ),
             // London to Sydney
             PolylineState(
@@ -195,7 +205,7 @@ class FlyToPageViewModelImpl(
                 strokeColor =
                     Color.Magenta.copy(alpha = 0.7f),
                 strokeWidth = 3.dp,
-                geodesic = true,
+                geodesic = false,
             ),
         )
 

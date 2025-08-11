@@ -118,7 +118,7 @@ fun GoogleMapsView(
                         }
                     lifecycle.addObserver(observer)
                     onDispose {
-                        // _state.resetInitState()
+                        _state.resetInitState()
                         lifecycle.removeObserver(observer)
                     }
                 }

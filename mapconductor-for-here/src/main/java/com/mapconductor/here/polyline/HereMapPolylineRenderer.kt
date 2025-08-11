@@ -9,6 +9,7 @@ import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.polyline.AbstractPolylineRenderer
@@ -18,18 +19,19 @@ import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer.UpdateParams
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.here.HereMapActualPolyline
 import com.mapconductor.here.HereMapViewHolder
 import com.mapconductor.here.toGeoCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class DefaultHereMapPolylineRenderer : PolylineRendererFactory<MapPolyline> {
+class DefaultHereMapPolylineRenderer : PolylineRendererFactory<HereMapActualPolyline> {
     override fun create(
-        onAdd: suspend (List<PolylineState>) -> List<MapPolyline?>,
-        onChange: suspend (List<UpdateParams<MapPolyline>>) -> List<MapPolyline?>,
-        onRemove: suspend (List<PolylineEntity<MapPolyline>>) -> Unit,
+        onAdd: suspend (List<PolylineState>) -> List<HereMapActualPolyline?>,
+        onChange: suspend (List<UpdateParams<HereMapActualPolyline>>) -> List<MapPolyline?>,
+        onRemove: suspend (List<PolylineEntity<HereMapActualPolyline>>) -> Unit,
         onPostProcess: (suspend () -> Unit)?,
-    ): PolylineOverlayManager<MapPolyline> =
+    ): PolylineOverlayManager<HereMapActualPolyline> =
         PolylineOverlayManagerImpl(
             onRemove = onRemove,
             onAdd = onAdd,
@@ -41,7 +43,7 @@ class DefaultHereMapPolylineRenderer : PolylineRendererFactory<MapPolyline> {
 class HereMapPolylineRenderer(
     override val holder: HereMapViewHolder,
     override val coroutine: CoroutineScope,
-) : AbstractPolylineRenderer<MapPolyline>() {
+) : AbstractPolylineRenderer<HereMapActualPolyline>() {
     override suspend fun addPolylines(newLines: List<PolylineState>): List<MapPolyline?> {
         val polylines =
             newLines.map { state ->
@@ -55,18 +57,20 @@ class HereMapPolylineRenderer(
         return polylines
     }
 
-    override suspend fun removePolylines(removeEntities: List<PolylineEntity<MapPolyline>>) {
+    override suspend fun removePolylines(removeEntities: List<PolylineEntity<HereMapActualPolyline>>) {
         val polylines = removeEntities.map { it.polyline }
         coroutine.launch {
             holder.map.removeMapPolylines(polylines)
         }
     }
 
-    override suspend fun changePolylines(changes: List<UpdateParams<MapPolyline>>): List<MapPolyline> {
-        return changes.map { params ->
+    override suspend fun changePolylines(changes: List<UpdateParams<HereMapActualPolyline>>): List<HereMapActualPolyline> {
+        val removed = mutableListOf<HereMapActualPolyline>()
+        val polylines = changes.map { params ->
             val finger = params.entity.fingerPrint
             val prevFinger = params.prevEntity.fingerPrint
-            if (finger.points != prevFinger.points) {
+            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
+                removed.add(params.prevEntity.polyline)
                 val geoPolyline = createGeoPolyline(params.entity.state)
                 params.entity.polyline.geometry = geoPolyline
             }
@@ -76,13 +80,19 @@ class HereMapPolylineRenderer(
             }
             return@map params.entity.polyline
         }
+
+        coroutine.launch {
+            holder.map.removeMapPolylines(removed)
+            holder.map.addMapPolylines(polylines)
+        }
+        return polylines
     }
 
     private fun createGeoPolyline(state: PolylineState): GeoPolyline {
         val geoPoints: List<IGeoPoint> =
             when (state.geodesic) {
                 true -> createInterpolatePoints(state.points)
-                false -> state.points
+                false -> createLinearInterpolatePoints(state.points)
             }
         val points = geoPoints.map { GeoPoint.from(it).toGeoCoordinates() }
         val geoPolyline = GeoPolyline(points)
