@@ -8,8 +8,9 @@ import com.here.sdk.mapview.MapMeasureDependentRenderSize
 import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.createGeodesicPoints
+import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.polyline.AbstractPolylineRenderer
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineOverlayManager
@@ -78,14 +79,12 @@ class HereMapPolylineRenderer(
     }
 
     private fun createGeoPolyline(state: PolylineState): GeoPolyline {
-        val points =
+        val geoPoints: List<IGeoPoint> =
             when (state.geodesic) {
-                false -> state.points.map { GeoPoint.from(it).toGeoCoordinates() }
-                true -> {
-                    val results = createGeodesicPoints(state.points)
-                    results.map { GeoPoint.from(it).toGeoCoordinates() }
-                }
+                true -> createInterpolatePoints(state.points)
+                false -> state.points
             }
+        val points = geoPoints.map { GeoPoint.from(it).toGeoCoordinates() }
         val geoPolyline = GeoPolyline(points)
         return geoPolyline
     }

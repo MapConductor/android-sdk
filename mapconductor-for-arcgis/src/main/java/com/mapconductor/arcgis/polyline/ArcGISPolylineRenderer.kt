@@ -18,6 +18,7 @@ import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer.UpdateParams
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.Spherical
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,8 +102,27 @@ class ArcGISPolylineRenderer(
     private fun createGeometry(state: PolylineState): Geometry {
         val polylineBuilder =
             PolylineBuilder().also { builder ->
-                state.points.forEach {
-                    builder.addPoint(GeoPoint.from(it).toPoint())
+                if (state.geodesic) {
+                    state.points.forEach {
+                        builder.addPoint(GeoPoint.from(it).toPoint())
+                    }
+                    return@also
+                }
+
+                builder.addPoint(GeoPoint.from(state.points[0]).toPoint(holder.map.spatialReference.value))
+                for (i in 1 until state.points.size) {
+                    var fraction = 0.0
+                    while (fraction <= 1.0) {
+                        val point =
+                            Spherical.linearInterpolate(
+                                from = state.points[i - 1],
+                                to = state.points[i],
+                                fraction = fraction,
+                            )
+                        builder.addPoint(point.toPoint(holder.map.spatialReference.value))
+                        fraction += 0.01
+                    }
+                    builder.addPoint(GeoPoint.from(state.points[i]).toPoint(holder.map.spatialReference.value))
                 }
             }
         return polylineBuilder.toGeometry()

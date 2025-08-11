@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 
 @Composable
@@ -17,7 +17,7 @@ fun MapViewScope.Marker(state: MarkerState) {
 
 @Composable
 fun MapViewScope.Marker(
-    position: GeoPoint,
+    position: IGeoPoint,
     clickable: Boolean = true,
     draggable: Boolean = false,
     icon: MarkerIcon? = null,

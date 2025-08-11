@@ -8,10 +8,18 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
@@ -26,7 +34,6 @@ fun FlyToMapPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(
-        initSelect = 1,
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
@@ -37,7 +44,6 @@ fun FlyToMapPage(
             mapViewState = mapViewState.value,
             polylines = viewModel.polylines,
             markers = viewModel.markers,
-            onMapClick = viewModel::onMapClick,
         )
 
         // Control Panel
@@ -51,11 +57,53 @@ fun FlyToMapPage(
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
             title = "Fly To Controls",
+            maxHeight = 200.dp,
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Switch(
+                            checked = viewModel.geodesic,
+                            onCheckedChange = {
+                                viewModel.geodesic = !viewModel.geodesic
+                            },
+                            thumbContent =
+                                if (viewModel.geodesic) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Filled.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                        )
+                        Text(
+                            text = "geodesic",
+                            modifier =
+                                Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(16.dp),
+                        )
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.flyToSydney() },
+                    ) {
+                        Text("Sydney")
+                    }
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

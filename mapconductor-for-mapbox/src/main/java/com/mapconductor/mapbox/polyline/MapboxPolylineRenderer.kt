@@ -4,9 +4,11 @@ import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
-import com.mapconductor.core.createGeodesicPoints
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.normalize
 import com.mapconductor.core.polyline.AbstractPolylineRenderer
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineOverlayManager
@@ -48,25 +50,33 @@ class MapboxPolylineRenderer(
     private fun createMapboxLines(state: PolylineState): List<Feature> {
         val geoPoints: List<IGeoPoint> =
             when (state.geodesic) {
-                true -> createGeodesicPoints(state.points)
-                false -> state.points
-            }
-        return splitByMeridian(geoPoints).map { linePoints ->
+                true -> createInterpolatePoints(state.points)
+                false -> createLinearInterpolatePoints(state.points)
+            }.map { it.normalize() }
+        return splitByMeridian(geoPoints, state.geodesic).mapIndexed { index, linePoints ->
             val points = linePoints.map { GeoPoint.from(it).toPoint() }
-            return@map Feature.fromGeometry(
+            val id = "polyline-${state.id}-$index"
+
+            return@mapIndexed Feature.fromGeometry(
                 LineString.fromLngLats(points),
                 JsonObject().apply {
                     addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                     addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                    addProperty("id", id)
                 },
-                "polyline-${state.id}",
+                id,
             )
         }
     }
 
     override suspend fun removePolylines(removeEntities: List<PolylineEntity<MapboxActualPolyline>>) {
-        val featureIds = removeEntities.map { "polyline-${it.state.id}" }
-        layer.source.removeGeoJSONSourceFeatures(featureIds)
+        val featureIds =
+            removeEntities.map { entity ->
+                entity.polyline.map { feature ->
+                    feature.getStringProperty("id")
+                }
+            }
+        layer.source.removeGeoJSONSourceFeatures(featureIds.flatten())
     }
 
     override suspend fun changePolylines(

@@ -88,8 +88,7 @@ class GoogleMapMarkerRenderer(
                 }
                 if (params.entity.state.position != params.prevEntity.state.position) {
                     params.entity.marker.position =
-                        params.entity.state.position
-                            .toLatLng()
+                        GeoPoint.from(params.entity.state.position).toLatLng()
                 }
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
