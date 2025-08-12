@@ -17,7 +17,7 @@ typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
 
 class MapboxMapViewHolderImpl private constructor(
     override val mapView: MapView,
-) : MapViewHolder<MapView, MapboxMap>,
+) : MapboxMapViewHolder,
     MapboxLifecycleObserver {
     override lateinit var map: MapboxMap
 
@@ -53,7 +53,7 @@ class MapboxMapViewHolderImpl private constructor(
         fun create(
             context: Context,
             mapInitOptions: MapInitOptions,
-        ): MapViewHolder<MapView, MapboxMap> {
+        ): MapboxMapViewHolder {
             val cameraOptions =
                 CameraOptions
                     .Builder()

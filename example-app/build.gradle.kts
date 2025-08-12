@@ -56,6 +56,11 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    packaging {
+        jniLibs {
+            pickFirsts += "**/libc++_shared.so"
+        }
+    }
 }
 secrets {
     // To add your Maps API key to this project:
@@ -96,6 +101,9 @@ dependencies {
     implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
+    // OpenMobileMap SDK
+    implementation(libs.openmobilemaps.mapscore)
+
     // Map Conductor
     implementation(project(":mapconductor-core"))
     implementation(project(":mapconductor-icons"))
@@ -103,6 +111,7 @@ dependencies {
     implementation(project(":mapconductor-for-here"))
     implementation(project(":mapconductor-for-mapbox"))
     implementation(project(":mapconductor-for-arcgis"))
+    implementation(project(":mapconductor-for-openmobilemaps"))
     implementation(libs.androidx.vectordrawable)
 
     testImplementation(libs.junit)

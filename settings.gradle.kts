@@ -43,3 +43,4 @@ val modulesProp =
         ?: emptyList()
 
 modulesProp.forEach { include(":$it") }
+include(":mapconductor-for-openmobilemaps")

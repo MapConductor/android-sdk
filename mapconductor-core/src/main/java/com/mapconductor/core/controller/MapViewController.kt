@@ -50,6 +50,7 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
 
     fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
 }
+
 typealias MapViewControllerAlias = MapViewController<*, *, *, *>
 
 data class SearchRangeAnalysis(

@@ -68,7 +68,7 @@ interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapP
 }
 
 class HereMapViewController(
-    override val holder: MapViewHolder<MapView, MapScene>,
+    override val holder: HereMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     override val hexGeocell: HexGeocell =
         HexGeocell(
@@ -262,13 +262,11 @@ class HereMapViewController(
             Settings.Default.tapTolerance.value
                 .toDouble() * ResourceProvider.getDensity()
 
-        val entity =
-            markerRenderer.findNearestMarker(
-                position = touchPosition,
-                tolerance = tolerance,
-                zoom = zoom,
-            )
-        if (entity != null) {
+        markerRenderer.findNearestMarker(
+            position = touchPosition,
+            tolerance = tolerance,
+            zoom = zoom,
+        )?.let { entity ->
             markerClickListener?.invoke(entity.state)
             return
         }
