@@ -34,11 +34,13 @@ fun BasicMapPage() {
     val initCameraPosition = MapCameraPosition(
         position = GeoPoint.fromLatLong(0.0, 0.0),
     )
-    val state = OpenMobileMapViewState(
-        id = "test",
-        initCameraPosition = initCameraPosition,
-        mapDesignType = OpenMobileMapDesign.OpenStreetMap,
-    )
+    val state = remember {
+        OpenMobileMapViewState(
+            id = "test",
+            initCameraPosition = initCameraPosition,
+            mapDesignType = OpenMobileMapDesign.OpenStreetMap,
+        )
+    }
 
     var geodesic by remember { mutableStateOf(false) }
     // Honolulu to Tokyo
