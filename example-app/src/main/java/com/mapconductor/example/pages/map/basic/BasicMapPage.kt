@@ -13,9 +13,11 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +32,7 @@ import com.mapconductor.openmobilemaps.OpenMobileMapView
 import com.mapconductor.openmobilemaps.OpenMobileMapViewState
 
 @Composable
-fun BasicMapPage() {
+fun BasicMapPage(viewModel: BasicMapPageViewModel = viewModel<BasicMapPageViewModelImpl>()) {
     val initCameraPosition = MapCameraPosition(
         position = GeoPoint.fromLatLong(0.0, 0.0),
     )
@@ -42,23 +44,14 @@ fun BasicMapPage() {
         )
     }
 
-    var geodesic by remember { mutableStateOf(false) }
-    // Honolulu to Tokyo
-    val honoluluLocation = GeoPoint.fromLatLong(21.3099, -157.8581)
-    val tokyoLocation = GeoPoint.fromLatLong(35.6762, 139.6503)
-    val polylineState = PolylineState(
-        id = "honolulu_to_tokyo",
-        points = listOf(honoluluLocation, tokyoLocation),
-        strokeColor = Color.Blue.copy(alpha = 0.7f),
-        strokeWidth = 3.dp,
-        geodesic = geodesic,
-    )
-
     Box(modifier = Modifier.fillMaxSize()) {
         OpenMobileMapView(state) {
-            Polyline(
-                state = polylineState
-            )
+
+            viewModel.polylines.forEach { polyline ->
+                key(polyline.id) {
+                    Polyline(polyline)
+                }
+            }
         }
 
         MessageCard(
@@ -76,12 +69,12 @@ fun BasicMapPage() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Switch(
-                    checked = geodesic,
+                    checked = viewModel.geodesic,
                     onCheckedChange = {
-                        geodesic = !geodesic
+                        viewModel.geodesic = !viewModel.geodesic
                     },
                     thumbContent =
-                        if (geodesic) {
+                        if (viewModel.geodesic) {
                             {
                                 Icon(
                                     imageVector = Icons.Filled.Check,
