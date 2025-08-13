@@ -25,11 +25,9 @@ interface FlyToPageViewModel {
     val messages: StateFlow<List<ToastMessage>>
     val markers: List<MarkerState>
     val polylines: List<PolylineState>
-    val geodesic: Boolean
+    var geodesic: Boolean
 
     fun onMapViewChanged(state: MapViewState<*>)
-
-    fun onMapClick(clicked: GeoPoint)
 
     fun flyToHonolulu()
 
@@ -40,8 +38,6 @@ interface FlyToPageViewModel {
     fun flyToNewYork()
 
     fun flyToSydney()
-
-    fun setGeodesic(value: Boolean)
 }
 
 class FlyToPageViewModelImpl(
@@ -60,6 +56,8 @@ class FlyToPageViewModelImpl(
     private val londonLocation = GeoPoint.fromLatLong(51.5074, -0.1278)
     private val newYorkLocation = GeoPoint.fromLatLong(40.7128, -74.0060)
     private val sydneyLocation = GeoPoint.fromLatLong(-33.9506, 151.1815)
+
+    override var geodesic by mutableStateOf(false)
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -114,107 +112,94 @@ class FlyToPageViewModelImpl(
             ),
         )
 
-    private var _geodesic by mutableStateOf(false)
-    override val geodesic
-        get() = _geodesic
-
-    override fun setGeodesic(value: Boolean) {
-        this._geodesic = value
-
-        polylines.forEach { it.geodesic = value }
-    }
-
-    override val polylines =
-        listOf(
-            // Honolulu to NewYork
-            PolylineState(
-                id = "honolulu_to_newyork",
-                points = listOf(honoluluLocation, newYorkLocation),
-                strokeColor = Color.Green.copy(alpha = 0.7f),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-            // Honolulu to Sydney
-            PolylineState(
-                id = "honolulu_to_sydney",
-                points = listOf(honoluluLocation, sydneyLocation),
-                strokeColor =
-                    Color( // lime
-                        red = 0.7f,
-                        green = 0f,
-                        blue = 0f,
-                        alpha = 0.7f,
-                    ),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-            // Tokyo to London
-            PolylineState(
-                id = "tokyo_to_london",
-                points = listOf(tokyoLocation, londonLocation),
-                strokeColor =
-                    Color( // Fuchsia
-                        red = 1.0f,
-                        green = 0f,
-                        blue = 1.0f,
-                        alpha = 0.7f,
-                    ),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-            // Tokyo to NewYork
-            PolylineState(
-                id = "tokyo_to_newyork",
-                points = listOf(tokyoLocation, newYorkLocation),
-                strokeColor = Color.Blue.copy(alpha = 0.7f),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-            // Tokyo to Honolulu
-            PolylineState(
-                id = "tokyo_to_honolulu",
-                points = listOf(tokyoLocation, honoluluLocation),
-                strokeColor =
-                    Color( // Neon orange
-                        red = 1.0f,
-                        green = 0.35f,
-                        blue = 0.12f,
-                        alpha = 0.7f,
-                    ),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-            // London to New York
-            PolylineState(
-                id = "london_to_newyork",
-                points = listOf(londonLocation, newYorkLocation),
-                strokeColor =
-                    Color( // maroon
-                        red = 0.75f,
-                        green = 0f,
-                        blue = 0f,
-                        alpha = 0.7f,
-                    ),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-            // London to Sydney
-            PolylineState(
-                id = "london_to_sydney",
-                points = listOf(londonLocation, sydneyLocation),
-                strokeColor =
-                    Color.Magenta.copy(alpha = 0.7f),
-                strokeWidth = 3.dp,
-                geodesic = false,
-            ),
-        )
+    override val polylines
+        get() =
+            listOf(
+                // Honolulu to NewYork
+                PolylineState(
+                    id = "honolulu_to_newyork",
+                    points = listOf(honoluluLocation, newYorkLocation),
+                    strokeColor = Color.Green.copy(alpha = 0.7f),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+                // Honolulu to Sydney
+                PolylineState(
+                    id = "honolulu_to_sydney",
+                    points = listOf(honoluluLocation, sydneyLocation),
+                    strokeColor =
+                        Color( // lime
+                            red = 0.7f,
+                            green = 0f,
+                            blue = 0f,
+                            alpha = 0.7f,
+                        ),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+                // Tokyo to London
+                PolylineState(
+                    id = "tokyo_to_london",
+                    points = listOf(tokyoLocation, londonLocation),
+                    strokeColor =
+                        Color( // Fuchsia
+                            red = 1.0f,
+                            green = 0f,
+                            blue = 1.0f,
+                            alpha = 0.7f,
+                        ),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+                // Tokyo to NewYork
+                PolylineState(
+                    id = "tokyo_to_newyork",
+                    points = listOf(tokyoLocation, newYorkLocation),
+                    strokeColor = Color.Blue.copy(alpha = 0.7f),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+                // Tokyo to Honolulu
+                PolylineState(
+                    id = "tokyo_to_honolulu",
+                    points = listOf(tokyoLocation, honoluluLocation),
+                    strokeColor =
+                        Color( // Neon orange
+                            red = 1.0f,
+                            green = 0.35f,
+                            blue = 0.12f,
+                            alpha = 0.7f,
+                        ),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+                // London to New York
+                PolylineState(
+                    id = "london_to_newyork",
+                    points = listOf(londonLocation, newYorkLocation),
+                    strokeColor =
+                        Color( // maroon
+                            red = 0.75f,
+                            green = 0f,
+                            blue = 0f,
+                            alpha = 0.7f,
+                        ),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+                // London to Sydney
+                PolylineState(
+                    id = "london_to_sydney",
+                    points = listOf(londonLocation, sydneyLocation),
+                    strokeColor =
+                        Color.Magenta.copy(alpha = 0.7f),
+                    strokeWidth = 3.dp,
+                    geodesic = geodesic,
+                ),
+            )
 
     override fun onMapViewChanged(state: MapViewState<*>) {
         _mapViewState.value = state
-    }
-
-    override fun onMapClick(clicked: GeoPoint) {
-//        showToast("Map clicked at: ${clicked.toUrlValue()}")
     }
 
     override fun flyToHonolulu() {
@@ -258,9 +243,5 @@ class FlyToPageViewModelImpl(
                 )
             }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 }

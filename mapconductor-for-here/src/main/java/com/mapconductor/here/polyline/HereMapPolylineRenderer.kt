@@ -64,22 +64,25 @@ class HereMapPolylineRenderer(
         }
     }
 
-    override suspend fun changePolylines(changes: List<UpdateParams<HereMapActualPolyline>>): List<HereMapActualPolyline> {
+    override suspend fun changePolylines(
+        changes: List<UpdateParams<HereMapActualPolyline>>,
+    ): List<HereMapActualPolyline> {
         val removed = mutableListOf<HereMapActualPolyline>()
-        val polylines = changes.map { params ->
-            val finger = params.entity.fingerPrint
-            val prevFinger = params.prevEntity.fingerPrint
-            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
-                removed.add(params.prevEntity.polyline)
-                val geoPolyline = createGeoPolyline(params.entity.state)
-                params.entity.polyline.geometry = geoPolyline
+        val polylines =
+            changes.map { params ->
+                val finger = params.entity.fingerPrint
+                val prevFinger = params.prevEntity.fingerPrint
+                if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
+                    removed.add(params.prevEntity.polyline)
+                    val geoPolyline = createGeoPolyline(params.entity.state)
+                    params.entity.polyline.geometry = geoPolyline
+                }
+                if (finger.strokeColor != prevFinger.strokeColor || finger.strokeWidth != prevFinger.strokeColor) {
+                    val representation = createRepresentation(params.entity.state)
+                    params.entity.polyline.setRepresentation(representation)
+                }
+                return@map params.entity.polyline
             }
-            if (finger.strokeColor != prevFinger.strokeColor || finger.strokeWidth != prevFinger.strokeColor) {
-                val representation = createRepresentation(params.entity.state)
-                params.entity.polyline.setRepresentation(representation)
-            }
-            return@map params.entity.polyline
-        }
 
         coroutine.launch {
             holder.map.removeMapPolylines(removed)

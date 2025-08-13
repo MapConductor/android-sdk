@@ -22,15 +22,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun FlyToMapPage(
     icons: FlyToMapIcons,
-    viewModel: FlyToPageViewModel = FlyToPageViewModelImpl(icons),
     onToggleSidebar: () -> Unit = {},
 ) {
+    val viewModel: FlyToPageViewModel =
+        viewModel<FlyToPageViewModelImpl>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(FlyToPageViewModelImpl::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return FlyToPageViewModelImpl(icons) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                },
+        )
+
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
@@ -72,7 +88,7 @@ fun FlyToMapPage(
                         Switch(
                             checked = viewModel.geodesic,
                             onCheckedChange = {
-                                viewModel.setGeodesic(!viewModel.geodesic)
+                                viewModel.geodesic = !viewModel.geodesic
                             },
                             thumbContent =
                                 if (viewModel.geodesic) {

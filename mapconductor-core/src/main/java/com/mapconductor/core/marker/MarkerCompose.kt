@@ -9,9 +9,9 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {
-    val rememberMarker = remember { state }
+    val rememberMarker = remember(state.fingerPrint()) { state }
     SideEffect {
-        markerFlow.value = markerFlow.value + rememberMarker
+        markerFlow.value = markerFlow.value.filter { it.id != rememberMarker.id } + rememberMarker
     }
 }
 
