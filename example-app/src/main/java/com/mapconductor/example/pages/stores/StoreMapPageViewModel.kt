@@ -57,7 +57,7 @@ class StoreMapPageViewModelImpl :
         val query =
             (markerState.extra as? Bundle)?.let {
                 Uri.encode(it.getString("address", ""))
-            } ?: markerState.position.toUrlValue()
+            } ?: GeoPoint.from(markerState.position).toUrlValue()
         val gmmIntentUri = "google.navigation:q=$query".toUri()
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         mapIntent.setPackage("com.google.android.apps.maps")

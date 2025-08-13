@@ -95,8 +95,7 @@ class HereMapMarkerRenderer(
             }
             if (params.entity.state.position != params.prevEntity.state.position) {
                 params.entity.marker.coordinates =
-                    params.entity.state.position
-                        .toGeoCoordinates()
+                    GeoPoint.from(params.entity.state.position).toGeoCoordinates()
             }
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

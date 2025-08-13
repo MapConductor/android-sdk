@@ -74,7 +74,7 @@ class ArcGISMarkerRenderer(
 
                     val marker =
                         Graphic(
-                            geometry = params.first.position.toPoint(holder.map.scene?.spatialReference),
+                            geometry = GeoPoint.from(params.first.position).toPoint(holder.map.scene?.spatialReference),
                             symbol = pictureSymbolFuture,
                         ).also {
                             it.attributes.set("id", params.first.id)
@@ -118,8 +118,7 @@ class ArcGISMarkerRenderer(
 
                 if (params.entity.state.position != params.prevEntity.state.position) {
                     params.entity.marker.geometry =
-                        params.entity.state.position
-                            .toPoint()
+                        GeoPoint.from(params.entity.state.position).toPoint()
                 }
 
                 // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

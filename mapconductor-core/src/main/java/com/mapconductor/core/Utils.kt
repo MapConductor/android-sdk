@@ -2,15 +2,13 @@ package com.mapconductor.core
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.features.normalize
+import com.mapconductor.core.spherical.Spherical
 import java.lang.Math.pow
 import kotlin.math.abs
-import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sin
-import kotlin.math.sqrt
 import android.util.Log
 
 fun calculateZIndex(geoPointBase: IGeoPoint): Int {
@@ -40,73 +38,252 @@ fun printPoints(
     }
 }
 
-fun toRadius(degValue: Double): Double {
-    return degValue * (Math.PI / 180.0)
+fun normalize(points: List<IGeoPoint>): List<IGeoPoint> = points.map { it.normalize() }
+
+fun createInterpolatePoints(points: List<IGeoPoint>): List<IGeoPoint> {
+    val results = mutableListOf<IGeoPoint>()
+    val fractionStep = 0.01
+    results.add(points[0])
+    for (i in 1 until points.size) {
+        var fraction = fractionStep
+        while (fraction <= 1.0) {
+            val point =
+                Spherical.interpolate(
+                    from = points[i - 1],
+                    to = points[i],
+                    fraction = fraction,
+                )
+            results.add(point)
+            fraction += fractionStep
+        }
+        results.add(points[i])
+    }
+    return results
 }
 
-fun toDegree(radValue: Double): Double {
-    return radValue / (Math.PI / 180.0)
+fun createLinearInterpolatePoints(points: List<IGeoPoint>): List<IGeoPoint> {
+    val results = mutableListOf<IGeoPoint>()
+    val fractionStep = 0.01
+    results.add(points[0])
+    for (i in 1 until points.size) {
+        var fraction = fractionStep
+        while (fraction <= 1.0) {
+            val point =
+                Spherical.linearInterpolate(
+                    from = points[i - 1],
+                    to = points[i],
+                    fraction = fraction,
+                )
+            results.add(point)
+            fraction += fractionStep
+        }
+        results.add(points[i])
+    }
+    return results
 }
 
 /**
- * Calculate waypoints from start to finish on geodesic line
- * @ref http://jamesmccaffrey.wordpress.com/2011/04/17/drawing-a-geodesic-line-for-bing-maps-ajax/
+ * Splits a list of points by the 180°/-180° meridian line and adds interpolated points
+ * at the meridian crossings to eliminate gaps.
+ *
+ * @param points List of IGeoPoint to split
+ * @param geodesic If true, uses geodesic (great circle) interpolation; if false, uses linear interpolation
+ * @return List of point groups, each representing a continuous segment without meridian crossings
  */
-fun interpolateGeodesicPolyline(origin: IGeoPoint, dest: IGeoPoint): List<IGeoPoint> {
-    // convert to radians
-    val lat1 = toRadius(origin.latitude)
-    val lng1 = toRadius(origin.longitude)
-    val lat2 = toRadius(dest.latitude)
-    val lng2 = toRadius(dest.longitude)
+fun splitByMeridian(
+    points: List<IGeoPoint>,
+    geodesic: Boolean,
+): List<List<IGeoPoint>> {
+    if (points.isEmpty()) return emptyList()
 
-    val distance = 2 * abs(
-        sqrt(
-            pow(sin((lat1 - lat2) / 2.0), 2.0) +
-            cos(lat1) * cos(lat2) * pow(sin((lng1 - lng2) / 2.0), 2.0)
-        )
-    )
-    val wayPoints = mutableListOf<IGeoPoint>()
-    var fraction: Float = 0f // fraction of the curve
-    val fractionI: Float = 0.01f // fraction increment
+    val results = mutableListOf<List<IGeoPoint>>()
+    var fragment = mutableListOf<IGeoPoint>()
 
-    val sinD = sin(distance)
-    while (fraction <= 1f) {
-        val argA = sin((1.0f - fraction) * distance) / sinD
-        val argB = sin(fraction * distance) / sinD
+    for (i in points.indices) {
+        val currentPoint = points[i]
 
-        val cosLat1 = cos(lat1)
-        val cosLng1 = cos(lng1)
-        val cosLat2 = cos(lat2)
-        val cosLng2 = cos(lng2)
-        val sinLat1 = sin(lat1)
-        val sinLat2 = sin(lat2)
-        val sinLng1 = sin(lng1)
-        val sinLng2 = sin(lng2)
-        val x = argA * cosLat1 * cosLng1 + argB * cosLat2 * cosLng2
-        val y = argA * cosLat1 * sinLng1 + argB * cosLat2 * sinLng2
-        val z = argA * sinLat1 + argB * sinLat2
-        val lat = atan2(z, sqrt((x * x) + (y * y)))
-        val lng = atan2(y, x)
-
-        val point = object : IGeoPoint {
-            override val latitude: Double = toDegree(lat)
-            override val longitude: Double = toDegree(lng)
-            override val altitude: Double? = null
+        if (fragment.isEmpty()) {
+            fragment.add(currentPoint)
+            continue
         }
-        wayPoints.add(point)
-        fraction += fractionI
+
+        val previousPoint = fragment.last()
+        val prevLng = previousPoint.longitude
+        val currLng = currentPoint.longitude
+
+        // Check if meridian crossing occurs
+//        val crossesMeridian = (prevLng >= 0 && currLng < 0) || (prevLng < 0 && currLng >= 0)
+        // 180°線交差のみを検出（0°線は除外）
+        val lngDiff = currLng - prevLng
+        val crossesMeridian = abs(lngDiff) > 180.0
+
+        if (!crossesMeridian) {
+            // No meridian crossing, add point to current fragment
+            fragment.add(currentPoint)
+        } else {
+            // Meridian crossing detected, add interpolated point at meridian
+            val meridianPoint = interpolateAtMeridian(previousPoint, currentPoint, geodesic)
+            fragment.add(meridianPoint)
+
+            // Close current fragment and start new one
+            results.add(fragment.toList())
+            fragment = mutableListOf<IGeoPoint>()
+
+            // Add the opposite meridian point to start the new fragment
+            val oppositeMeridianPoint = createOppositeMeridianPoint(meridianPoint)
+            fragment.add(oppositeMeridianPoint)
+            fragment.add(currentPoint)
+        }
     }
 
-    return wayPoints
+    if (fragment.isNotEmpty()) {
+        results.add(fragment.toList())
+    }
+
+    return results
 }
 
-fun createGeodesicPoints(points: List<IGeoPoint>): List<IGeoPoint> {
-    val results = mutableListOf<IGeoPoint>()
-    var prev = points[0]
-    for (i in 1..points.size - 1) {
-        val current = points[i]
-        results.addAll(interpolateGeodesicPolyline(prev, current))
-        prev = current
+/**
+ * Interpolates a point at the 180°/-180° meridian line between two points.
+ *
+ * @param from Starting point
+ * @param to Ending point
+ * @param geodesic If true, uses geodesic (great circle) interpolation; if false, uses linear interpolation
+ * @return Point at the meridian crossing
+ */
+private fun interpolateAtMeridian(
+    from: IGeoPoint,
+    to: IGeoPoint,
+    geodesic: Boolean,
+): GeoPoint {
+    if (geodesic) {
+        // Use geodesic interpolation (great circle path)
+        return interpolateAtMeridianGeodesic(from, to)
+    } else {
+        // Use linear interpolation
+        return interpolateAtMeridianLinear(from, to)
     }
-    return results
+}
+
+/**
+ * Performs linear interpolation to find the meridian crossing point.
+ */
+private fun interpolateAtMeridianLinear(
+    from: IGeoPoint,
+    to: IGeoPoint,
+): GeoPoint {
+    val fromLng = from.longitude
+    val toLng = to.longitude
+
+    // Determine which meridian to interpolate to (180 or -180)
+    val targetMeridian = if (fromLng >= 0) 180.0 else -180.0
+
+    // Calculate the fraction where meridian crossing occurs
+    val totalLngDiff = toLng - fromLng
+    val meridianDiff = targetMeridian - fromLng
+    val fraction = meridianDiff / totalLngDiff
+
+    // Interpolate latitude and altitude at the meridian
+    val interpolatedLatitude = from.latitude + fraction * (to.latitude - from.latitude)
+    val interpolatedAltitude =
+        when {
+            from.altitude != null && to.altitude != null ->
+                from.altitude!! + fraction * (to.altitude!! - from.altitude!!)
+            from.altitude != null -> from.altitude
+            to.altitude != null -> to.altitude
+            else -> 0.0
+        }
+
+    return GeoPoint(
+        latitude = interpolatedLatitude,
+        longitude = targetMeridian,
+        altitude = interpolatedAltitude!!,
+    )
+}
+
+/**
+ * Performs geodesic interpolation to find the meridian crossing point.
+ * Uses iterative method to find where the great circle path crosses the meridian.
+ */
+private fun interpolateAtMeridianGeodesic(
+    from: IGeoPoint,
+    to: IGeoPoint,
+): GeoPoint {
+    val fromLng = from.longitude
+
+    // Determine target meridian
+    val targetMeridian = if (fromLng >= 0) 180.0 else -180.0
+
+    // Use binary search to find the crossing point on the great circle
+    var low = 0.0
+    var high = 1.0
+    val tolerance = 1e-10
+    val maxIterations = 50
+
+    var iteration = 0
+    while (iteration < maxIterations && (high - low) > tolerance) {
+        val mid = (low + high) / 2.0
+        val interpolatedPoint = Spherical.interpolate(from, to, mid)
+        val interpolatedLng = interpolatedPoint.longitude
+
+        // Normalize longitude to handle crossing
+        val normalizedLng =
+            when {
+                interpolatedLng > 180 -> interpolatedLng - 360
+                interpolatedLng <= -180 -> interpolatedLng + 360
+                else -> interpolatedLng
+            }
+
+        // Check which side of the target meridian we're on
+        val onTargetSide =
+            if (targetMeridian > 0) {
+                // Looking for 180°
+                normalizedLng >= 0
+            } else {
+                // Looking for -180°
+                normalizedLng < 0
+            }
+
+        val fromOnTargetSide =
+            if (targetMeridian > 0) {
+                fromLng >= 0
+            } else {
+                fromLng < 0
+            }
+
+        if (onTargetSide == fromOnTargetSide) {
+            low = mid
+        } else {
+            high = mid
+        }
+
+        iteration++
+    }
+
+    // Final interpolation at the crossing point
+    val finalFraction = (low + high) / 2.0
+    val crossingPoint = Spherical.interpolate(from, to, finalFraction)
+
+    // Ensure the longitude is exactly at the target meridian
+    return GeoPoint(
+        latitude = crossingPoint.latitude,
+        longitude = targetMeridian,
+        altitude = crossingPoint.altitude,
+    )
+}
+
+/**
+ * Creates a point at the opposite meridian (180° ↔ -180°) with the same latitude and altitude.
+ *
+ * @param point Point at one meridian
+ * @return Point at the opposite meridian
+ */
+private fun createOppositeMeridianPoint(point: IGeoPoint): GeoPoint {
+    val oppositeLongitude = if (point.longitude >= 0) -180.0 else 180.0
+
+    return GeoPoint(
+        latitude = point.latitude,
+        longitude = oppositeLongitude,
+        altitude = point.altitude ?: 0.0,
+    )
 }

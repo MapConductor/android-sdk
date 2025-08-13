@@ -8,7 +8,13 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -16,16 +22,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
-import android.graphics.drawable.Drawable
 
 @Composable
 fun FlyToMapPage(
     icons: FlyToMapIcons,
-    viewModel: FlyToPageViewModel = FlyToPageViewModelImpl(icons),
     onToggleSidebar: () -> Unit = {},
 ) {
+    val viewModel: FlyToPageViewModel =
+        viewModel<FlyToPageViewModelImpl>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(FlyToPageViewModelImpl::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return FlyToPageViewModelImpl(icons) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                },
+        )
+
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
@@ -35,8 +56,8 @@ fun FlyToMapPage(
 
         FlyToMapComponent(
             mapViewState = mapViewState.value,
-            viewModel = viewModel,
-            onMapClick = viewModel::onMapClick,
+            polylines = viewModel.polylines,
+            markers = viewModel.markers,
         )
 
         // Control Panel
@@ -50,25 +71,67 @@ fun FlyToMapPage(
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
             title = "Fly To Controls",
+            maxHeight = 200.dp,
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Switch(
+                            checked = viewModel.geodesic,
+                            onCheckedChange = {
+                                viewModel.geodesic = !viewModel.geodesic
+                            },
+                            thumbContent =
+                                if (viewModel.geodesic) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Filled.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
+                        )
+                        Text(
+                            text = "geodesic",
+                            modifier =
+                                Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(16.dp),
+                        )
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.flyToSydney() },
+                    ) {
+                        Text("Sydney")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
                         onClick = { viewModel.flyToHonolulu() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Honolulu")
                     }
 
                     Button(
                         onClick = { viewModel.flyToTokyo() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Tokyo")
                     }
@@ -76,18 +139,18 @@ fun FlyToMapPage(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
                         onClick = { viewModel.flyToLondon() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("London")
                     }
 
                     Button(
                         onClick = { viewModel.flyToNewYork() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("New York")
                     }

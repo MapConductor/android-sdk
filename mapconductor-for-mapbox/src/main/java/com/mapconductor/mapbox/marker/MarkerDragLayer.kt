@@ -23,7 +23,7 @@ class MarkerDragLayer(
             selected?.let {
                 val feature =
                     Feature.fromGeometry(
-                        it.state.position.toPoint(),
+                        GeoPoint.from(it.state.position).toPoint(),
                         it.marker.properties(),
                         it.state.id,
                     )

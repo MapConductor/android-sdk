@@ -12,9 +12,9 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Polygon(state: PolygonState) {
-    val rememberState = remember { state }
+    val rememberState = remember(state.fingerPrint()) { state }
     SideEffect {
-        polygonFlow.value = polygonFlow.value + rememberState
+        polygonFlow.value = polygonFlow.value.filter { it.id != rememberState.id } + rememberState
     }
 }
 

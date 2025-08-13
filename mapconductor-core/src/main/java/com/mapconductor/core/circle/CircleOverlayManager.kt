@@ -130,6 +130,7 @@ class CircleOverlayManagerImpl<ActualCircle>(
                     }
                 }
             }
+            onPostProcess?.invoke()
         }
     }
 
