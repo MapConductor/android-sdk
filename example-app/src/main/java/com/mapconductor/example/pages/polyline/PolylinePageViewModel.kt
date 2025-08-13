@@ -33,7 +33,6 @@ interface PolylinePageViewModel {
 class PolylinePageViewModelImpl :
     ViewModel(),
     PolylinePageViewModel {
-
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -47,7 +46,8 @@ class PolylinePageViewModelImpl :
             paddings = null,
         )
 
-    private val polylinePoints = mutableStateListOf(
+    private val polylinePoints =
+        mutableStateListOf(
             GeoPoint.fromLatLong(21.382314, -157.933097), // Honolulu center
             GeoPoint.fromLatLong(21.385314, -157.930097), // Northeast
             GeoPoint.fromLatLong(21.387314, -157.935097), // Northwest
@@ -59,16 +59,18 @@ class PolylinePageViewModelImpl :
     private val _wayPointMarkers: MutableState<List<MarkerState>> =
         mutableStateOf(
             polylinePoints.mapIndexed { index, point ->
-                val markerColor = when {
-                    index == 0 -> Color.Green
-                    index == polylinePoints.size - 1 -> Color.Green
-                    else -> Color.Yellow
-                }
-                val label = when {
-                    index == 0 -> "S"
-                    index == polylinePoints.size - 1 -> "E"
-                    else -> "$index"
-                }
+                val markerColor =
+                    when {
+                        index == 0 -> Color.Green
+                        index == polylinePoints.size - 1 -> Color.Green
+                        else -> Color.Yellow
+                    }
+                val label =
+                    when {
+                        index == 0 -> "S"
+                        index == polylinePoints.size - 1 -> "E"
+                        else -> "$index"
+                    }
                 MarkerState(
                     id = "waypoint_$index",
                     position = point,
@@ -124,4 +126,3 @@ class PolylinePageViewModelImpl :
         super.onCleared()
     }
 }
-

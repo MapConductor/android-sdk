@@ -9,7 +9,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
 import java.io.ByteArrayOutputStream
 import android.graphics.Bitmap
 import android.os.Parcelable
@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-    position: GeoPoint,
+    position: IGeoPoint,
     id: String? = null,
     var extra: Parcelable? = null,
     icon: MarkerIcon? = null,
@@ -48,7 +48,7 @@ class MarkerState(
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
 
-    private var dragPosition: GeoPoint = position
+    private var dragPosition: IGeoPoint = position
     private var _isDragging by mutableStateOf(false)
     var isDragging: Boolean
         get() = _isDragging
@@ -70,7 +70,7 @@ class MarkerState(
 
     fun copy(
         id: String? = this.id,
-        position: GeoPoint = this.position,
+        position: IGeoPoint = this.position,
         extra: Parcelable? = this.extra,
         icon: MarkerIcon? = this.icon,
         clickable: Boolean? = this.clickable,

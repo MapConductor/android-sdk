@@ -7,4 +7,5 @@ data class FlyToMapIcons(
     val tokyo: Drawable,
     val newYork: Drawable,
     val london: Drawable,
+    val sydney: Drawable,
 )
