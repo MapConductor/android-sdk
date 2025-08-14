@@ -36,9 +36,10 @@ class MapboxPolylineLayer(
         }
 
     fun draw(entities: List<PolylineEntity<MapboxActualPolyline>>) {
-        val features = entities.map { it.polyline }
+        val featureSet = entities.map { it.polyline }
+
         source.featureCollection(
-            FeatureCollection.fromFeatures(features),
+            FeatureCollection.fromFeatures(featureSet.flatten()),
         )
     }
 }

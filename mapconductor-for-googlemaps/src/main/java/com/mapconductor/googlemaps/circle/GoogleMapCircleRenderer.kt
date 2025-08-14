@@ -49,7 +49,7 @@ class GoogleMapCircleRenderer(
                         .strokeColor(state.strokeColor.toArgb())
                         .strokeWidth(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                         .fillColor(state.fillColor.toArgb())
-                        .clickable(true)
+                        .clickable(false)
                 holder.map.addCircle(options).also {
                     it.tag = state.id
                 }

@@ -13,10 +13,11 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.view.ViewGroup
 
 @Composable
@@ -31,7 +32,8 @@ fun GoogleMapsView(
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     onCircleClick: OnCircleEventHandler? = {},
-    onGroundImageClick: OnGroundImageClickEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = {},
+    onGroundImageClick: OnGroundImageEventHandler? = {},
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -83,10 +85,11 @@ fun GoogleMapsView(
             controller.markerDragStartListener = onMarkerDragStart
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
+            controller.circleClickListener = onCircleClick
+            controller.polylineClickListener = onPolylineClick
+            controller.groundImageClickListener = onGroundImageClick
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
-            controller.circleClickListener = onCircleClick
-            controller.groundImageClickListener = onGroundImageClick
 
             holderRef.value = controller.holder
             controllerRef.value = controller

@@ -7,10 +7,11 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -27,7 +28,8 @@ fun MapboxMapView(
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     onCircleClick: OnCircleEventHandler? = {},
-    onGroundImageClick: OnGroundImageClickEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = {},
+    onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
@@ -75,6 +77,7 @@ fun MapboxMapView(
             controller.markerDragListener = onMarkerDrag
             controller.markerDragEndListener = onMarkerDragEnd
             controller.circleClickListener = onCircleClick
+            controller.polylineClickListener = onPolylineClick
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 

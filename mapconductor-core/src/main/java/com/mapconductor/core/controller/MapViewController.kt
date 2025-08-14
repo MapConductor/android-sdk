@@ -11,7 +11,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.groundimage.GroundImageOverlayManager
 import com.mapconductor.core.groundimage.GroundImageRenderer
 import com.mapconductor.core.groundimage.GroundImageState
-import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -21,6 +21,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.PolygonOverlayManager
 import com.mapconductor.core.polygon.PolygonRenderer
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineState
@@ -148,7 +149,8 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
     var markerDragListener: OnMarkerEventHandler? = null
     var markerDragEndListener: OnMarkerEventHandler? = null
     var circleClickListener: OnCircleEventHandler? = null
-    var groundImageClickListener: OnGroundImageClickEventHandler? = null
+    var groundImageClickListener: OnGroundImageEventHandler? = null
+    var polylineClickListener: OnPolylineEventHandler? = null
 
     abstract fun setupListeners()
 

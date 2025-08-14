@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MapConductor</string>
+    <string name="circle_example_description">Hold the marker labeled \'E\' for one sec, then drag it. The circle will expand and shrink followed by the marker. Also changes the circle color by tap on it.</string>
+    <string name="flyto_example_description">Click the buttons below to animate the camera to different cities around the world using mapState.flyTo().</string>
 </resources>

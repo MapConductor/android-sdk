@@ -11,7 +11,6 @@ import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.GroundOverlay
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -25,7 +24,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.groundimage.GroundImageClickEvent
+import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageOverlayManager
 import com.mapconductor.core.groundimage.GroundImageRenderer
 import com.mapconductor.core.groundimage.GroundImageRendererFactory
@@ -116,9 +115,9 @@ class GoogleMapViewController(
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<Polyline> =
         polylineRendererFactory.create(
-            onAdd = polylineRenderer::addLines,
-            onChange = polylineRenderer::changeLine,
-            onRemove = polylineRenderer::removeLines,
+            onAdd = polylineRenderer::addPolylines,
+            onChange = polylineRenderer::changePolylines,
+            onRemove = polylineRenderer::removePolylines,
         )
 
     override val polygonRenderer: PolygonRenderer<Polygon> =
@@ -298,7 +297,7 @@ class GoogleMapViewController(
 
         groundImageOverlayManager.find(touchPosition)?.let { entity ->
             val event =
-                GroundImageClickEvent(
+                GroundImageEvent(
                     state = entity.state,
                     position = touchPosition,
                 )

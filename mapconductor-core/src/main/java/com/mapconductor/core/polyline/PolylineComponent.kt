@@ -12,9 +12,9 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Polyline(state: PolylineState) {
-    val rememberState = remember { state }
+    val rememberState = remember(state.fingerPrint()) { state }
     SideEffect {
-                                                                                                                                                            polylineFlow.value = polylineFlow.value + rememberState
+        polylineFlow.value = polylineFlow.value.filter { it.id != rememberState.id } + rememberState
     }
 }
 

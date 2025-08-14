@@ -18,6 +18,7 @@ import com.mapconductor.core.polyline.PolylineOverlayManagerImpl
 import com.mapconductor.core.polyline.PolylineRenderer.UpdateParams
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.Spherical
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,7 +43,7 @@ class ArcGISPolylineRenderer(
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractPolylineRenderer<Graphic>() {
-    override suspend fun addLines(newLines: List<PolylineState>): List<Graphic?> {
+    override suspend fun addPolylines(newLines: List<PolylineState>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext newLines.map { state ->
 
@@ -67,19 +68,19 @@ class ArcGISPolylineRenderer(
         }
     }
 
-    override suspend fun removeLines(removeEntities: List<PolylineEntity<Graphic>>) {
+    override suspend fun removePolylines(removeEntities: List<PolylineEntity<Graphic>>) {
         val polylines = removeEntities.map { it.polyline }
         coroutine.launch {
             polylineLayer.graphics.removeAll(polylines)
         }
     }
 
-    override suspend fun changeLine(changes: List<UpdateParams<Graphic>>): List<Graphic> {
+    override suspend fun changePolylines(changes: List<UpdateParams<Graphic>>): List<Graphic> {
         return withContext(coroutine.coroutineContext) {
             return@withContext changes.map { params ->
-                val finger = params.entity.state.fingerPrint()
-                val prevFinger = params.prevEntity.state.fingerPrint()
-                if (finger.points != prevFinger.points) {
+                val finger = params.entity.fingerPrint
+                val prevFinger = params.prevEntity.fingerPrint
+                if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
                     params.entity.polyline.geometry = createGeometry(params.entity.state)
                 }
 
@@ -101,8 +102,27 @@ class ArcGISPolylineRenderer(
     private fun createGeometry(state: PolylineState): Geometry {
         val polylineBuilder =
             PolylineBuilder().also { builder ->
-                state.points.forEach {
-                    builder.addPoint(GeoPoint.from(it).toPoint())
+                if (state.geodesic) {
+                    state.points.forEach {
+                        builder.addPoint(GeoPoint.from(it).toPoint())
+                    }
+                    return@also
+                }
+
+                builder.addPoint(GeoPoint.from(state.points[0]).toPoint())
+                for (i in 1 until state.points.size) {
+                    var fraction = 0.0
+                    while (fraction <= 1.0) {
+                        val point =
+                            Spherical.linearInterpolate(
+                                from = state.points[i - 1],
+                                to = state.points[i],
+                                fraction = fraction,
+                            )
+                        builder.addPoint(point.toPoint())
+                        fraction += 0.01
+                    }
+                    builder.addPoint(GeoPoint.from(state.points[i]).toPoint())
                 }
             }
         return polylineBuilder.toGeometry()

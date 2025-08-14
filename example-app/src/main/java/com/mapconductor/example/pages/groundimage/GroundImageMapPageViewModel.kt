@@ -5,10 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.room.util.copy
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.groundimage.GroundImageClickEvent
+import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
@@ -35,7 +34,7 @@ interface GroundImageMapPageViewModel {
 
     fun onMapClick(clicked: GeoPoint)
 
-    fun onGroundImageClick(clicked: GroundImageClickEvent)
+    fun onGroundImageClick(clicked: GroundImageEvent)
 
     fun setOpacity(value: Float)
 
@@ -111,7 +110,7 @@ class GroundImageMapPageViewModelImpl(override val imageResources: GroundImageRe
         showToast("Map clicked at: ${clicked.toUrlValue()}")
     }
 
-    override fun onGroundImageClick(clicked: GroundImageClickEvent) {
+    override fun onGroundImageClick(clicked: GroundImageEvent) {
         if (clicked.state.image == imageResources.imageToggle0) {
             _groundImageState.value.image = imageResources.imageToggle1
         }

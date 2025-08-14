@@ -12,9 +12,9 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Circle(state: CircleState) {
-    val rememberState = remember { state }
+    val rememberState = remember(state.fingerPrint()) { state }
     SideEffect {
-        circleFlow.value = circleFlow.value + rememberState
+        circleFlow.value = circleFlow.value.filter { it.id != rememberState.id } + rememberState
     }
 }
 

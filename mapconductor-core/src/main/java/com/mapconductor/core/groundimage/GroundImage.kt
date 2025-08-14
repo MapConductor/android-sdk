@@ -64,9 +64,9 @@ data class GroundImageFingerPrint(
     val extra: Int,
 )
 
-data class GroundImageClickEvent(
+data class GroundImageEvent(
     val state: GroundImageState,
     val position: GeoPoint?,
 )
 
-typealias OnGroundImageClickEventHandler = (GroundImageClickEvent) -> Unit
+typealias OnGroundImageEventHandler = (GroundImageEvent) -> Unit

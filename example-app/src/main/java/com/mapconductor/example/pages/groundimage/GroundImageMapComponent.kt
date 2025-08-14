@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.groundimage.GroundImage
-import com.mapconductor.core.groundimage.OnGroundImageClickEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.example.MapViewContainer
@@ -15,7 +15,7 @@ fun GroundImageMapComponent(
     viewModel: GroundImageMapPageViewModel,
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler = {},
-    onGroundImageClick: OnGroundImageClickEventHandler = {},
+    onGroundImageClick: OnGroundImageEventHandler = {},
 ) {
     mapViewState?.let { mapViewState ->
         MapViewContainer(
