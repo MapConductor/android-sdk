@@ -4,11 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import android.os.Parcelable
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import android.graphics.drawable.Drawable
+import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -26,22 +26,22 @@ class GroundImageState(
     var opacity by mutableStateOf(opacity)
     var extra by mutableStateOf(extra)
 
-    fun fingerPrint(): GroundImageFingerPrint = GroundImageFingerPrint(
-        id = id.hashCode(),
-        bounds = bounds.hashCode(),
-        image = image.hashCode(),
-        opacity = opacity.hashCode(),
-        extra = extra?.hashCode() ?: 0,
-    )
+    fun fingerPrint(): GroundImageFingerPrint =
+        GroundImageFingerPrint(
+            id = id.hashCode(),
+            bounds = bounds.hashCode(),
+            image = image.hashCode(),
+            opacity = opacity.hashCode(),
+            extra = extra?.hashCode() ?: 0,
+        )
 
-    fun asFlow(): Flow<GroundImageFingerPrint> =
-        snapshotFlow { fingerPrint() }.distinctUntilChanged()
+    fun asFlow(): Flow<GroundImageFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
 
     private fun generateId(
         bounds: GeoRectBounds,
         image: Drawable,
         opacity: Float,
-        extra: Parcelable?
+        extra: Parcelable?,
     ): Int {
         var result = bounds.hashCode()
         result = 31 * result + image.hashCode()
@@ -50,8 +50,7 @@ class GroundImageState(
         return result
     }
 
-    override fun equals(other: Any?): Boolean =
-        (other as? GroundImageState)?.hashCode() == this.hashCode()
+    override fun equals(other: Any?): Boolean = (other as? GroundImageState)?.hashCode() == this.hashCode()
 
     override fun hashCode(): Int = fingerPrint().hashCode()
 }

@@ -45,13 +45,13 @@ fun DemoAppScreen() {
             )
         }
 
-    val context = LocalContext.current
-    val groundImageResources = remember {
-        GroundImageResources(
-            imageToggle0 = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
-            imageToggle1 = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
-        )
-    }
+    val groundImageResources =
+        remember {
+            GroundImageResources(
+                image = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
+                clickedImage = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
+            )
+        }
 
     val sidebarItems =
         listOf(

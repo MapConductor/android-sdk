@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
 class NavigationViewModel : ViewModel() {
-    private val _currentPage = mutableStateOf("flyTo")
+    private val _currentPage = mutableStateOf("groundImage")
     val currentPage: State<String> = _currentPage
 
     private val _isSidebarExpanded = mutableStateOf(false)

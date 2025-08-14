@@ -20,12 +20,10 @@ interface GroundImageOverlayManager<ActualGroundImage> {
 class GroundImageOverlayManagerImpl<ActualGroundImage>(
     val onAdd: suspend (List<GroundImageState>) -> List<ActualGroundImage?>,
     val onChange: suspend (List<GroundImageRenderer.UpdateParams<ActualGroundImage>>) -> List<ActualGroundImage?>,
-
     val onRemove: suspend (List<GroundImageEntity<ActualGroundImage>>) -> Unit,
     val onPostProcess: (suspend () -> Unit)? = null,
 ) : GroundImageOverlayManager<ActualGroundImage> {
-
-val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundImage>>()
+    val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundImage>>()
     val semaphore = Semaphore(1)
 
     override suspend fun addGroundImages(images: List<GroundImageState>) {
@@ -38,13 +36,16 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
         images.forEach {
             if (previous.contains(it.id)) {
                 val prevEntity = groundImageEntities[it.id]!!
-                updated.add(object : GroundImageRenderer.UpdateParams<ActualGroundImage> {
-                    override val entity = GroundImageEntityImpl(
-                        groundImage = prevEntity.groundImage,
-                        state = it
-                    )
-                    override val prevEntity = prevEntity
-                })
+                updated.add(
+                    object : GroundImageRenderer.UpdateParams<ActualGroundImage> {
+                        override val entity =
+                            GroundImageEntityImpl(
+                                groundImage = prevEntity.groundImage,
+                                state = it,
+                            )
+                        override val prevEntity = prevEntity
+                    },
+                )
                 previous.remove(it.id)
             } else {
                 added.add(it)
@@ -63,10 +64,11 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
             actualOverlays.forEachIndexed { index, actualOverlay ->
                 actualOverlay?.let {
                     val state = added[index]
-                    val entity = GroundImageEntityImpl<ActualGroundImage>(
-                        groundImage = it,
-                        state = state
-                    )
+                    val entity =
+                        GroundImageEntityImpl<ActualGroundImage>(
+                            groundImage = it,
+                            state = state,
+                        )
                     groundImageEntities[state.id] = entity
                 }
             }
@@ -77,10 +79,11 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
             actualOverlays.forEachIndexed { index, actualOverlay ->
                 actualOverlay?.let {
                     val state = updated[index].entity.state
-                    val entity = GroundImageEntityImpl<ActualGroundImage>(
-                        groundImage = it,
-                        state = state
-                    )
+                    val entity =
+                        GroundImageEntityImpl<ActualGroundImage>(
+                            groundImage = it,
+                            state = state,
+                        )
                     groundImageEntities[state.id] = entity
                 }
             }
@@ -99,22 +102,25 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
 
         semaphore.acquire()
         val prevEntity = groundImageEntities[state.id]!!
-        updated.add(object : GroundImageRenderer.UpdateParams<ActualGroundImage> {
-            override val entity: GroundImageEntity<ActualGroundImage> =
-                GroundImageEntityImpl(
-                    groundImage = prevEntity.groundImage,
-                    state = state
-                )
-            override val prevEntity: GroundImageEntity<ActualGroundImage> = prevEntity
-        })
+        updated.add(
+            object : GroundImageRenderer.UpdateParams<ActualGroundImage> {
+                override val entity: GroundImageEntity<ActualGroundImage> =
+                    GroundImageEntityImpl(
+                        groundImage = prevEntity.groundImage,
+                        state = state,
+                    )
+                override val prevEntity: GroundImageEntity<ActualGroundImage> = prevEntity
+            },
+        )
 
         val actualOverlays: List<ActualGroundImage?> = onChange(updated)
         actualOverlays.forEachIndexed { index, actualOverlay ->
             actualOverlay?.let {
-                val entity = GroundImageEntityImpl<ActualGroundImage>(
-                    groundImage = it,
-                    state = state
-                )
+                val entity =
+                    GroundImageEntityImpl<ActualGroundImage>(
+                        groundImage = it,
+                        state = state,
+                    )
                 groundImageEntities[state.id] = entity
             }
         }
@@ -133,9 +139,8 @@ val groundImageEntities = mutableMapOf<String, GroundImageEntity<ActualGroundIma
 
     override fun getAllEntities(): List<GroundImageEntity<ActualGroundImage>> = groundImageEntities.values.toList()
 
-    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? {
-        return groundImageEntities.values.find { entity ->
+    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? =
+        groundImageEntities.values.find { entity ->
             entity.state.bounds.contains(position)
         }
-    }
 }

@@ -10,15 +10,13 @@ import com.mapconductor.core.groundimage.GroundImageRendererFactory
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.here.HereMapViewHolder
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.newCoroutineContext
-import kotlinx.coroutines.withContext
 
 class DefaultHereMapGroundImageRenderer : GroundImageRendererFactory<MapImage> {
     override fun create(
         onAdd: suspend (List<GroundImageState>) -> List<MapImage?>,
         onChange: suspend (List<GroundImageRenderer.UpdateParams<MapImage>>) -> List<MapImage?>,
         onRemove: suspend (List<GroundImageEntity<MapImage>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
+        onPostProcess: (suspend () -> Unit)?,
     ): GroundImageOverlayManager<MapImage> =
         GroundImageOverlayManagerImpl(
             onRemove = onRemove,
@@ -30,7 +28,7 @@ class DefaultHereMapGroundImageRenderer : GroundImageRendererFactory<MapImage> {
 
 class HereMapGroundImageRenderer(
     override val holder: HereMapViewHolder,
-    override val coroutine: CoroutineScope
+    override val coroutine: CoroutineScope,
 ) : AbstractGroundImageRenderer<MapImage>() {
     override suspend fun addGroundImages(newGroundImages: List<GroundImageState>): List<MapImage?> {
         return emptyList()
@@ -44,9 +42,9 @@ class HereMapGroundImageRenderer(
 //        }
     }
 
-    override suspend fun changeGroundImages(changes: List<GroundImageRenderer.UpdateParams<MapImage>>): List<MapImage?> {
-        return emptyList()
-    }
+    override suspend fun changeGroundImages(
+        changes: List<GroundImageRenderer.UpdateParams<MapImage>>,
+    ): List<MapImage?> = emptyList()
 
     override suspend fun removeGroundImages(removeEntities: List<GroundImageEntity<MapImage>>) {
     }

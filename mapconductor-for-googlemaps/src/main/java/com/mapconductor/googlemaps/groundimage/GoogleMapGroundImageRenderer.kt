@@ -22,7 +22,7 @@ class DefaultGoogleMapGroundImageRenderer : GroundImageRendererFactory<GroundOve
         onAdd: suspend (List<GroundImageState>) -> List<GroundOverlay?>,
         onChange: suspend (List<GroundImageRenderer.UpdateParams<GroundOverlay>>) -> List<GroundOverlay?>,
         onRemove: suspend (List<GroundImageEntity<GroundOverlay>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?
+        onPostProcess: (suspend () -> Unit)?,
     ): GroundImageOverlayManager<GroundOverlay> =
         GroundImageOverlayManagerImpl(
             onRemove = onRemove,
@@ -60,19 +60,27 @@ class GoogleMapGroundImageRenderer(
         }
     }
 
-    override suspend fun changeGroundImages(changes: List<GroundImageRenderer.UpdateParams<GroundOverlay>>): List<GroundOverlay?> {
+    override suspend fun changeGroundImages(
+        changes: List<GroundImageRenderer.UpdateParams<GroundOverlay>>,
+    ): List<GroundOverlay?> {
         return withContext(coroutine.coroutineContext) {
-            return@withContext changes.map { params->
+            return@withContext changes.map { params ->
                 val groundOverlay = params.entity.groundImage
-                val finger = params.entity.state.fingerPrint()
+                val finger = params.entity.fingerPrint
                 val prevFinger = params.prevEntity.fingerPrint
                 if (finger.bounds != prevFinger.bounds) {
-                    params.entity.state.bounds.toLatLngBounds()?.let{
+                    params.entity.state.bounds.toLatLngBounds()?.let {
                         groundOverlay.setPositionFromBounds(it)
                     }
                 }
                 groundOverlay.transparency = 1.0f - params.entity.state.opacity
-                groundOverlay.setImage(BitmapDescriptorFactory.fromBitmap(params.entity.state.image.toBitmap()))
+                if (finger.image != prevFinger.image) {
+                    val bitmap =
+                        params.entity.state.image
+                            .toBitmap()
+                    val bitmapDesc = BitmapDescriptorFactory.fromBitmap(bitmap)
+                    groundOverlay.setImage(bitmapDesc)
+                }
                 return@map groundOverlay
             }
         }

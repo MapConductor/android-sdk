@@ -7,12 +7,13 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoRectBounds
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
+import kotlinx.coroutines.flow.filter
 
 @Composable
 fun MapViewScope.GroundImage(state: GroundImageState) {
-    val rememberState = remember { state }
+    val rememberState = remember(state.fingerPrint()) { state }
     SideEffect {
-        groundImageFlow.value += rememberState
+        groundImageFlow.value = groundImageFlow.value.filter { it.id != state.id } + rememberState
     }
 }
 
@@ -24,12 +25,13 @@ fun MapViewScope.GroundImage(
     id: String? = null,
     extra: Parcelable? = null,
 ) {
-    val state = GroundImageState(
-        bounds = bounds,
-        image = image,
-        opacity = opacity,
-        id = id,
-        extra = extra,
-    )
+    val state =
+        GroundImageState(
+            bounds = bounds,
+            image = image,
+            opacity = opacity,
+            id = id,
+            extra = extra,
+        )
     GroundImage(state)
 }

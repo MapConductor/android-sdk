@@ -83,10 +83,12 @@ class HereMapViewController(
             baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
         ),
     private val markerRendererFactory: MarkerRendererFactory<HereMapActualMarker> = DefaultHereMapMarkerRenderer(),
-    private val polylineRendererFactory: PolylineRendererFactory<HereMapActualPolyline> = DefaultHereMapPolylineRenderer(),
+    private val polylineRendererFactory: PolylineRendererFactory<HereMapActualPolyline> =
+        DefaultHereMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<HereMapActualPolygon> = DefaultHereMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<HereMapActualCircle> = DefaultHereMapCircleRenderer(),
-    private val groundImageRendererFactory: GroundImageRendererFactory<HereMapActualGroundImage> = DefaultHereMapGroundImageRenderer(),
+    private val groundImageRendererFactory: GroundImageRendererFactory<HereMapActualGroundImage> =
+        DefaultHereMapGroundImageRenderer(),
 ) : BaseMapViewController<
         MapCamera.State,
         HereMapActualMarker,
@@ -138,10 +140,12 @@ class HereMapViewController(
             coroutine = coroutine,
         )
 
-    override val groundImageRenderer: GroundImageRenderer<HereMapActualGroundImage> = HereMapGroundImageRenderer(
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val groundImageRenderer: GroundImageRenderer<HereMapActualGroundImage> =
+        HereMapGroundImageRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
+
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereMapActualCircle>) {
     }
 
@@ -154,7 +158,9 @@ class HereMapViewController(
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<HereMapActualMarker>) {
     }
 
-    override fun onGroundImageOverlayManagerInitialized(overlayManager: GroundImageOverlayManager<HereMapActualGroundImage>) {
+    override fun onGroundImageOverlayManagerInitialized(
+        overlayManager: GroundImageOverlayManager<HereMapActualGroundImage>,
+    ) {
     }
 
     override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =

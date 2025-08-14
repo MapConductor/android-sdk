@@ -75,8 +75,14 @@ data class SearchRangeAnalysis(
     val markersInRange: List<MarkerState>,
 )
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline, ActualPolygon, ActualGroundImage> :
-    MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon, ActualGroundImage> {
+abstract class BaseMapViewController<
+    ActualCamera,
+    ActualMarker,
+    ActualCircle,
+    ActualPolyline,
+    ActualPolygon,
+    ActualGroundImage,
+> : MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon, ActualGroundImage> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -129,7 +135,9 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
 
     protected abstract fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ActualCircle>)
 
-    protected abstract fun onGroundImageOverlayManagerInitialized(overlayManager: GroundImageOverlayManager<ActualGroundImage>)
+    protected abstract fun onGroundImageOverlayManagerInitialized(
+        overlayManager: GroundImageOverlayManager<ActualGroundImage>,
+    )
 
     protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
 

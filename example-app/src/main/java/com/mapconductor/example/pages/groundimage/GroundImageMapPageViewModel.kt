@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.groundimage
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,28 +24,24 @@ interface GroundImageMapPageViewModel {
     val bounds: GeoRectBounds
     val imageResources: GroundImageResources
     val image: Drawable
-    val opacity: Float
+    var opacity: Float
     val groundImageState: GroundImageState
 
     fun onMapViewChanged(state: MapViewState<*>)
 
     fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
 
-    fun onMapClick(clicked: GeoPoint)
-
     fun onGroundImageClick(clicked: GroundImageEvent)
-
-    fun setOpacity(value: Float)
 
     fun showToast(text: String)
 
     fun removeToast(toastMessage: ToastMessage)
 }
 
-class GroundImageMapPageViewModelImpl(override val imageResources: GroundImageResources) :
-    ViewModel(),
+class GroundImageMapPageViewModelImpl(
+    override val imageResources: GroundImageResources,
+) : ViewModel(),
     GroundImageMapPageViewModel {
-
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -78,44 +73,30 @@ class GroundImageMapPageViewModelImpl(override val imageResources: GroundImageRe
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
-    override val bounds = GeoRectBounds(    // ココが固定だと変化できないので、後日処理を書き換え。
-        southWest = GeoPoint.fromLatLong(40.712216, -74.22655),
-        northEast = GeoPoint.fromLatLong(40.773941, -74.12544)
-    )
+    override val bounds =
+        GeoRectBounds( // ココが固定だと変化できないので、後日処理を書き換え。
+            southWest = GeoPoint.fromLatLong(40.712216, -74.22655),
+            northEast = GeoPoint.fromLatLong(40.773941, -74.12544),
+        )
 
-    override fun setOpacity(value: Float) {
-        val normalizedValue = value.coerceIn(0f, 1f)
-        _opacity = normalizedValue
-        _groundImageState.value.opacity = normalizedValue
-    }
-    private var _opacity by mutableStateOf(1.0f)
-    override val opacity
-        get() = _opacity
+    override var opacity by mutableStateOf(0.5f)
 
-    override val image = imageResources.imageToggle0
+    override var image by mutableStateOf(imageResources.image)
 
-    private val _groundImageState: MutableState<GroundImageState> =
-        mutableStateOf(
+    override val groundImageState
+        get() =
             GroundImageState(
                 id = "groundImage",
                 bounds = bounds,
                 image = image,
-            ),
-        )
-
-    override val groundImageState: GroundImageState
-        get() = _groundImageState.value
-
-    override fun onMapClick(clicked: GeoPoint) {
-        showToast("Map clicked at: ${clicked.toUrlValue()}")
-    }
+                opacity = opacity,
+            )
 
     override fun onGroundImageClick(clicked: GroundImageEvent) {
-        if (clicked.state.image == imageResources.imageToggle0) {
-            _groundImageState.value.image = imageResources.imageToggle1
-        }
-        else {
-            _groundImageState.value.image = imageResources.imageToggle0
+        if (clicked.state.image == imageResources.image) {
+            image = imageResources.clickedImage
+        } else {
+            image = imageResources.image
         }
 
         showToast("Ground Image clicked.")

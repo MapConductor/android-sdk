@@ -11,13 +11,12 @@ fun GeoRectBounds.toLatLngBounds(): LatLngBounds? {
 
     return LatLngBounds(
         LatLng(sw.latitude, sw.longitude),
-        LatLng(ne.latitude, ne.longitude)
+        LatLng(ne.latitude, ne.longitude),
     )
 }
 
-fun LatLngBounds.toGeoRectBounds(): GeoRectBounds {
-    return GeoRectBounds(
+fun LatLngBounds.toGeoRectBounds(): GeoRectBounds =
+    GeoRectBounds(
         southWest = GeoPoint(southwest.latitude, southwest.longitude),
-        northEast = GeoPoint(northeast.latitude, northeast.longitude)
+        northEast = GeoPoint(northeast.latitude, northeast.longitude),
     )
-}

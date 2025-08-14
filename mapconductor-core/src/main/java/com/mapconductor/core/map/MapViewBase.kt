@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.LocalCircleCollector
+import com.mapconductor.core.LocalGroundImageCollector
 import com.mapconductor.core.LocalMarkerCollector
 import com.mapconductor.core.LocalPolylineCollector
-import com.mapconductor.core.LocalGroundImageCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewControllerAlias

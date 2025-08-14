@@ -12,24 +12,34 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import com.mapconductor.example.R
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.example.ui.MapViewStatePanel
 import com.mapconductor.example.ui.MessageCard
-import android.content.Context
-import android.graphics.drawable.Drawable
 
 @Composable
 fun GroundImageMapPage(
     groundImageResources: GroundImageResources,
-    viewModel: GroundImageMapPageViewModel = GroundImageMapPageViewModelImpl(groundImageResources),
     onToggleSidebar: () -> Unit = {},
 ) {
+    val viewModel: GroundImageMapPageViewModel =
+        viewModel<GroundImageMapPageViewModelImpl>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(GroundImageMapPageViewModelImpl::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return GroundImageMapPageViewModelImpl(groundImageResources) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                },
+        )
+
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
@@ -40,7 +50,6 @@ fun GroundImageMapPage(
         GroundImageMapComponent(
             mapViewState = mapViewState.value,
             viewModel = viewModel,
-            onMapClick = viewModel::onMapClick,
             onGroundImageClick = viewModel::onGroundImageClick,
         )
 
@@ -61,16 +70,16 @@ fun GroundImageMapPage(
                 Slider(
                     value = viewModel.opacity,
                     onValueChange = { newValue ->
-                        viewModel.setOpacity(newValue)
+                        viewModel.opacity = newValue
                     },
-                    valueRange = 0.0f..1.0f,    // スライダー範囲
-                    steps = 0,                       // 中間ステップ数（範囲内を1000分割）
+                    valueRange = 0.0f..1.0f, // スライダー範囲
+                    steps = 0, // 中間ステップ数（範囲内を1000分割）
                     colors = SliderDefaults.colors(
                         thumbColor = Color.Black,               // つまみの色
                         activeTrackColor = Color.DarkGray,      // 値までのトラック
                         inactiveTrackColor = Color.LightGray,   // 残りのトラック
                         activeTickColor = Color.Black,          // 有効ステップの目盛り
-                        inactiveTickColor = Color.White         // 無効ステップの目盛り
+                        inactiveTickColor = Color.White,        // 無効ステップの目盛り
                     )
                 )
             }

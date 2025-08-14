@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.example.MapViewContainer
 
 @Composable
@@ -14,18 +13,16 @@ fun GroundImageMapComponent(
     mapViewState: MapViewState<*>?,
     viewModel: GroundImageMapPageViewModel,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler = {},
     onGroundImageClick: OnGroundImageEventHandler = {},
 ) {
     mapViewState?.let { mapViewState ->
         MapViewContainer(
             modifier = modifier,
             state = mapViewState,
-            onMapClick = onMapClick,
             onGroundImageClick = onGroundImageClick,
         ) {
             // GroundImage
-            key(viewModel.groundImageState.id) {
+            key(viewModel.groundImageState.fingerPrint()) {
                 GroundImage(viewModel.groundImageState)
             }
         }

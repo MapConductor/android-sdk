@@ -11,7 +11,7 @@ import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.arcgis.circle.ArcGISCircleRenderer
 import com.mapconductor.arcgis.circle.DefaultArcGISCircleRenderer
-import com.mapconductor.arcgis.groundoverlay.ArcGISGroundImageRenderer
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
 import com.mapconductor.arcgis.polygon.ArcGISPolygonRenderer
@@ -179,13 +179,16 @@ class ArcGISMapViewController(
             coroutine = coroutine,
         )
 
-    override fun onGroundImageOverlayManagerInitialized(overlayManager: GroundImageOverlayManager<ArcGISActualGroundImage>) {
+    override fun onGroundImageOverlayManagerInitialized(
+        overlayManager: GroundImageOverlayManager<ArcGISActualGroundImage>,
+    ) {
     }
 
-    override val groundImageRenderer: GroundImageRenderer<ArcGISActualGroundImage> = ArcGISGroundImageRenderer(
-        holder = holder,
-        coroutine = coroutine,
-    )
+    override val groundImageRenderer: GroundImageRenderer<ArcGISActualGroundImage> =
+        ArcGISGroundImageRenderer(
+            holder = holder,
+            coroutine = coroutine,
+        )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
     }
@@ -351,6 +354,7 @@ class ArcGISMapViewController(
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
+
     override suspend fun addGroundImages(data: List<GroundImageState>) {
         TODO("Not yet implemented")
     }

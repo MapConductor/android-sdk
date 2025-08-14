@@ -82,7 +82,8 @@ class GoogleMapViewController(
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<Polygon> = DefaultGoogleMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
-    private val groundImageRendererFactory: GroundImageRendererFactory<GroundOverlay> = DefaultGoogleMapGroundImageRenderer(),
+    private val groundImageRendererFactory: GroundImageRendererFactory<GroundOverlay> =
+        DefaultGoogleMapGroundImageRenderer(),
 ) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline, Polygon, GroundOverlay>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
