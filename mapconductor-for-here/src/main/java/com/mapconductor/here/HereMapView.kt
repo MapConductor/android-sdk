@@ -68,7 +68,7 @@ fun HereMapView(
 
             (state as? HereMapViewState)?.let { mapViewState ->
                 mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::OnCameraChange)
+                controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
             controller.setMapClickListener(onMapClick)
             controller.setMarkerClickListener(onMarkerClick)
@@ -94,7 +94,7 @@ fun HereMapView(
                 controllerRef.value = controller
 
                 return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
-                    val restoreCameraPosition = state.mapCameraPosition.value ?: state.initCameraPosition
+                    val restoreCameraPosition = state.cameraPosition.value ?: state.initCameraPosition
                     controller.moveCamera(
                         dstPosition = restoreCameraPosition,
                         listener =

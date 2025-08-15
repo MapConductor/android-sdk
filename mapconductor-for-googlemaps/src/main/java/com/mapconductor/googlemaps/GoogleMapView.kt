@@ -52,7 +52,7 @@ fun GoogleMapsView(
             // Specific Google Maps initialization logic
             // This lambda will be executed within state.initAsync by MapViewBase
             val cameraPosition =
-                state.mapCameraPosition.value?.let {
+                state.cameraPosition.value?.let {
                     CameraPosition
                         .Builder()
                         .apply {
@@ -76,7 +76,7 @@ fun GoogleMapsView(
                 )
             (state as? GoogleMapViewState)?.let { mapViewState ->
                 mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::OnCameraChange)
+                controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
             controller.setMapClickListener(onMapClick)
             controller.setMarkerClickListener(onMarkerClick)

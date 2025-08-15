@@ -61,7 +61,7 @@ fun ArcGISMapView(
             state.controller = controller
             controller.holder.mapView.onCreate(owner)
             controller.holder.mapView.onResume(owner)
-            controller.setCameraMoveListener(state::OnCameraChange)
+            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setMarkerClickListener(onMarkerClick)
             controller.setMarkerDragStartListener(onMarkerDragStart)
@@ -75,7 +75,7 @@ fun ArcGISMapView(
             state.controller = controller
 
             val restoreCameraPosition =
-                state.mapCameraPosition.value
+                state.cameraPosition.value
                     ?: MapCameraPosition.from(state.initCameraPosition)
             controller.moveCamera(restoreCameraPosition)
 

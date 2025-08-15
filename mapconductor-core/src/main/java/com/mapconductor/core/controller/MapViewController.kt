@@ -43,7 +43,7 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
 
     suspend fun clearOverlays()
 
-    fun <ActualCamera> setCameraMoveListener(listener: OnCameraMoveHandler<ActualCamera>?)
+    fun setCameraMoveListener(listener: OnCameraMoveHandler?)
 
     fun setMapClickListener(listener: OnMapEventHandler?)
 
@@ -67,7 +67,7 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
 }
 typealias MapViewControllerAlias = MapViewController<*, *, *, *>
 
-abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
+abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
     MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
@@ -121,48 +121,52 @@ abstract class BaseMapViewController<ActualCamera, ActualMarker, ActualCircle, A
 
     protected abstract fun createCircleOverlayManager(): CircleOverlayManager<ActualCircle>
 
-    protected var cameraMoveListener: (OnCameraMoveHandler<ActualCamera>)? = null
-    protected var mapClickListener: OnMapEventHandler? = null
-    protected var mapLongClickListener: OnMapEventHandler? = null
-    protected var markerClickListener: OnMarkerEventHandler? = null
-    protected var markerDragStartListener: OnMarkerEventHandler? = null
-    protected var markerDragListener: OnMarkerEventHandler? = null
-    protected var markerDragEndListener: OnMarkerEventHandler? = null
-    protected var circleClickListener: OnCircleEventHandler? = null
-    protected var polylineClickListener: OnPolylineEventHandler? = null
+    protected var cameraMoveCallback: OnCameraMoveHandler? = null
+    protected var mapClickCallback: OnMapEventHandler? = null
+    protected var mapLongClickCallback: OnMapEventHandler? = null
+    protected var markerClickCallback: OnMarkerEventHandler? = null
+    protected var markerDragStartCallback: OnMarkerEventHandler? = null
+    protected var markerDragCallback: OnMarkerEventHandler? = null
+    protected var markerDragEndCallback: OnMarkerEventHandler? = null
+    protected var circleClickCallback: OnCircleEventHandler? = null
+    protected var polylineClickCallback: OnPolylineEventHandler? = null
 
     abstract fun setupListeners()
 
+    override fun setCameraMoveListener(listener: OnCameraMoveHandler?) {
+        this.cameraMoveCallback = listener
+    }
+
     override fun setMapClickListener(listener: OnMapEventHandler?) {
-        this.mapClickListener = listener
+        this.mapClickCallback = listener
     }
 
     override fun setMapLongClickListener(listener: OnMapEventHandler?) {
-        this.mapClickListener = listener
+        this.mapClickCallback = listener
     }
 
     override fun setMarkerClickListener(listener: OnMarkerEventHandler?) {
-        this.markerClickListener = listener
+        this.markerClickCallback = listener
     }
 
     override fun setMarkerDragStartListener(listener: OnMarkerEventHandler?) {
-        this.markerDragStartListener = listener
+        this.markerDragStartCallback = listener
     }
 
     override fun setMarkerDragListener(listener: OnMarkerEventHandler?) {
-        this.markerDragListener = listener
+        this.markerDragCallback = listener
     }
 
     override fun setMarkerDragEndListener(listener: OnMarkerEventHandler?) {
-        this.markerDragEndListener = listener
+        this.markerDragEndCallback = listener
     }
 
     override fun setCircleClickListener(listener: OnCircleEventHandler?) {
-        this.circleClickListener = listener
+        this.circleClickCallback = listener
     }
 
     override fun setPolylineClickListener(listener: OnPolylineEventHandler?) {
-        this.polylineClickListener = listener
+        this.polylineClickCallback = listener
     }
 
     override fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?) =
