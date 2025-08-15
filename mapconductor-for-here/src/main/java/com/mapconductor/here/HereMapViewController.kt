@@ -90,7 +90,6 @@ class HereMapViewController(
     private val groundImageRendererFactory: GroundImageRendererFactory<HereMapActualGroundImage> =
         DefaultHereMapGroundImageRenderer(),
 ) : BaseMapViewController<
-        MapCamera.State,
         HereMapActualMarker,
         HereMapActualCircle,
         HereMapActualPolyline,
@@ -290,7 +289,10 @@ class HereMapViewController(
                 cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
             )
 
-        cameraMoveListener?.invoke(correctCameraState)
+        cameraMoveCallback?.let {
+            val mapCameraPosition = correctCameraState.toMapCameraPosition()
+            it(mapCameraPosition)
+        }
     }
 
     override fun onTap(point: Point2D) {
@@ -307,7 +309,7 @@ class HereMapViewController(
                 zoom = zoom,
             )
         if (entity != null) {
-            markerClickListener?.invoke(entity.state)
+            markerClickCallback?.invoke(entity.state)
             return
         }
 
@@ -317,12 +319,12 @@ class HereMapViewController(
                     state = entity.state,
                     position = touchPosition,
                 )
-            circleClickListener?.invoke(event)
+            circleClickCallback?.invoke(event)
             return
         }
 
         // If no overlay is processed, process the tap as onMapClick
-        mapClickListener?.let { it(touchPosition) }
+        mapClickCallback?.invoke(touchPosition)
     }
 
     override fun onLongPress(
@@ -351,7 +353,7 @@ class HereMapViewController(
                 // Suppress the recomposition for the position property
                 markerRenderer.setDraggingState(entity.state, true)
 
-                markerDragStartListener?.invoke(entity.state)
+                markerDragStartCallback?.invoke(entity.state)
             }
 
             GestureState.UPDATE.value -> {
@@ -360,7 +362,7 @@ class HereMapViewController(
                         selected.marker.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
-                    markerDragListener?.invoke(selected.state)
+                    markerDragCallback?.invoke(selected.state)
                 }
             }
 
@@ -371,7 +373,7 @@ class HereMapViewController(
                     // Restore the recomposition for the position property
                     markerRenderer.setDraggingState(selected.state, false)
 
-                    markerDragEndListener?.invoke(selected.state)
+                    markerDragEndCallback?.invoke(selected.state)
                     selectedMarker = null
                 }
             }

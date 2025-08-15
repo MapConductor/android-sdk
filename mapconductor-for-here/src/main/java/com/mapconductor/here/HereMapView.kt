@@ -70,15 +70,17 @@ fun HereMapView(
 
             (state as? HereMapViewState)?.let { mapViewState ->
                 mapViewState.controller = controller
-                controller.cameraMoveListener = mapViewState::OnCameraChange
+                controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
-            controller.mapClickListener = onMapClick
-            controller.markerClickListener = onMarkerClick
-            controller.markerDragStartListener = onMarkerDragStart
-            controller.markerDragListener = onMarkerDrag
-            controller.markerDragEndListener = onMarkerDragEnd
-            controller.circleClickListener = onCircleClick
-            controller.polylineClickListener = onPolylineClick
+            controller.setMapClickListener(onMapClick)
+            controller.setMarkerClickListener(onMarkerClick)
+            controller.setMarkerDragStartListener(onMarkerDragStart)
+            controller.setMarkerDragListener(onMarkerDrag)
+            controller.setMarkerDragEndListener(onMarkerDragEnd)
+            controller.setCircleClickListener(onCircleClick)
+            controller.setPolylineClickListener(onPolylineClick)
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 
@@ -94,7 +96,7 @@ fun HereMapView(
                 controllerRef.value = controller
 
                 return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
-                    val restoreCameraPosition = state.mapCameraPosition.value ?: state.initCameraPosition
+                    val restoreCameraPosition = state.cameraPosition.value ?: state.initCameraPosition
                     controller.moveCamera(
                         dstPosition = restoreCameraPosition,
                         listener =

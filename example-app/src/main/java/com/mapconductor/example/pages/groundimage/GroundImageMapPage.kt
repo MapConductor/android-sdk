@@ -74,13 +74,14 @@ fun GroundImageMapPage(
                     },
                     valueRange = 0.0f..1.0f, // スライダー範囲
                     steps = 0, // 中間ステップ数（範囲内を1000分割）
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.Black,               // つまみの色
-                        activeTrackColor = Color.DarkGray,      // 値までのトラック
-                        inactiveTrackColor = Color.LightGray,   // 残りのトラック
-                        activeTickColor = Color.Black,          // 有効ステップの目盛り
-                        inactiveTickColor = Color.White,        // 無効ステップの目盛り
-                    )
+                    colors =
+                        SliderDefaults.colors(
+                            thumbColor = Color.Black, // つまみの色
+                            activeTrackColor = Color.DarkGray, // 値までのトラック
+                            inactiveTrackColor = Color.LightGray, // 残りのトラック
+                            activeTickColor = Color.Black, // 有効ステップの目盛り
+                            inactiveTickColor = Color.White, // 無効ステップの目盛り
+                        ),
                 )
             }
         }
