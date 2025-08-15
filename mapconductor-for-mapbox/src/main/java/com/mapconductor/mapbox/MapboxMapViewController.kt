@@ -247,13 +247,14 @@ internal class MapboxMapViewController(
 
     override fun run(cameraChanged: CameraChanged) {
         cameraMoveCallback?.let {
-            val mapCameraPosition = CameraState(
-                cameraChanged.cameraState.center,
-                cameraChanged.cameraState.padding,
-                cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
-                cameraChanged.cameraState.bearing,
-                cameraChanged.cameraState.pitch,
-            ).toMapCameraPosition()
+            val mapCameraPosition =
+                CameraState(
+                    cameraChanged.cameraState.center,
+                    cameraChanged.cameraState.padding,
+                    cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
+                    cameraChanged.cameraState.bearing,
+                    cameraChanged.cameraState.pitch,
+                ).toMapCameraPosition()
 
             it(mapCameraPosition)
         }
