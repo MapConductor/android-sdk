@@ -252,7 +252,7 @@ class HereMapViewController(
                 cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
             )
 
-        _cameraMoveListener?.invoke(correctCameraState)
+        cameraMoveListener?.invoke(correctCameraState)
     }
 
     override fun onTap(point: Point2D) {
@@ -269,7 +269,7 @@ class HereMapViewController(
                 zoom = zoom,
             )
         if (entity != null) {
-            _markerClickListener?.invoke(entity.state)
+            markerClickListener?.invoke(entity.state)
             return
         }
 
@@ -279,12 +279,12 @@ class HereMapViewController(
                     state = entity.state,
                     position = touchPosition,
                 )
-            _circleClickListener?.invoke(event)
+            circleClickListener?.invoke(event)
             return
         }
 
         // If no overlay is processed, process the tap as onMapClick
-        _mapClickListener?.let { it(touchPosition) }
+        mapClickListener?.let { it(touchPosition) }
     }
 
     override fun onLongPress(
@@ -313,7 +313,7 @@ class HereMapViewController(
                 // Suppress the recomposition for the position property
                 markerRenderer.setDraggingState(entity.state, true)
 
-                _markerDragStartListener?.invoke(entity.state)
+                markerDragStartListener?.invoke(entity.state)
             }
 
             GestureState.UPDATE.value -> {
@@ -322,7 +322,7 @@ class HereMapViewController(
                         selected.marker.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
-                    _markerDragListener?.invoke(selected.state)
+                    markerDragListener?.invoke(selected.state)
                 }
             }
 
@@ -333,7 +333,7 @@ class HereMapViewController(
                     // Restore the recomposition for the position property
                     markerRenderer.setDraggingState(selected.state, false)
 
-                    _markerDragEndListener?.invoke(selected.state)
+                    markerDragEndListener?.invoke(selected.state)
                     selectedMarker = null
                 }
             }

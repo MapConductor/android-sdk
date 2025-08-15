@@ -209,7 +209,7 @@ class ArcGISMapViewController(
     }
 
     private fun onViewpointChange() {
-        this._cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
+        this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {
@@ -219,7 +219,7 @@ class ArcGISMapViewController(
             val position = point.toGeoPoint()
             it.graphic.geometry = point
             it.state.position = position
-            _markerDragListener?.invoke(it.state)
+            markerDragListener?.invoke(it.state)
         }
     }
 
@@ -234,7 +234,7 @@ class ArcGISMapViewController(
             // Restore the recomposition for the position property
             markerRenderer.setDraggingState(it.state, false)
 
-            _markerDragEndListener?.invoke(it.state)
+            markerDragEndListener?.invoke(it.state)
             with(holder.map) {
                 interactionOptions.isPanEnabled = true
                 interactionOptions.isRotateEnabled = true
@@ -262,7 +262,7 @@ class ArcGISMapViewController(
         val graphics = identifyResult.getOrNull()?.graphics
         val graphic = graphics?.firstOrNull()
         if (graphic == null) {
-            _mapLongClickListener?.invoke(position)
+            mapLongClickListener?.invoke(position)
             return
         }
         val markerId = (graphic.attributes.get("id") as? String) ?: return
@@ -282,7 +282,7 @@ class ArcGISMapViewController(
         // Suppress the recomposition for the position property
         markerRenderer.setDraggingState(state, true)
 
-        _markerDragStartListener?.invoke(state)
+        markerDragStartListener?.invoke(state)
     }
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
@@ -302,7 +302,7 @@ class ArcGISMapViewController(
                 zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
             )
         if (markerEntity != null) {
-            _markerClickListener?.invoke(markerEntity.state)
+            markerClickListener?.invoke(markerEntity.state)
             return
         }
 
@@ -313,11 +313,11 @@ class ArcGISMapViewController(
                     state = circleEntity.state,
                     position = touchPosition,
                 )
-            _circleClickListener?.invoke(event)
+            circleClickListener?.invoke(event)
         }
 
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {
-            _mapClickListener?.invoke(it.toGeoPoint())
+            mapClickListener?.invoke(it.toGeoPoint())
         }
     }
 

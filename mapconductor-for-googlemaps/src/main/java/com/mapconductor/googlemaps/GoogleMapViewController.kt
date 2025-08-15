@@ -218,25 +218,25 @@ class GoogleMapViewController(
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     override fun onCameraMove() {
-        _cameraMoveListener?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onCameraIdle() {
-        _cameraMoveListener?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onCameraMoveStarted(p0: Int) {
-        _cameraMoveListener?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
 
     override fun onCameraMoveCanceled() {
-        _cameraMoveListener?.let {
+        cameraMoveListener?.let {
             coroutine.launch { it(holder.map.cameraPosition) }
         }
     }
@@ -245,7 +245,7 @@ class GoogleMapViewController(
         val key = marker.tag?.toString() ?: return true
         val state = markerOverlayManager.getMarkerState(key) ?: return true
         if (!state.clickable) return true
-        _markerClickListener?.let {
+        markerClickListener?.let {
             coroutine.launch {
                 it(state)
             }
@@ -262,11 +262,11 @@ class GoogleMapViewController(
                     state = entity.state,
                     position = touchPosition,
                 )
-            _circleClickListener?.invoke(event)
+            circleClickListener?.invoke(event)
             return
         }
 
-        _mapClickListener?.let {
+        mapClickListener?.let {
             coroutine.launch { it(position.toGeoPoint()) }
         }
     }
@@ -283,14 +283,14 @@ class GoogleMapViewController(
             markerRenderer.setDraggingState(state, true)
 
             state.position = marker.position.toGeoPoint()
-            _markerDragListener?.invoke(state)
+            markerDragListener?.invoke(state)
         }
     }
 
     override fun onMarkerDragEnd(marker: Marker) {
         this.getMarkerStateFrom(marker)?.also { state ->
             state.position = marker.position.toGeoPoint()
-            _markerDragEndListener?.invoke(state)
+            markerDragEndListener?.invoke(state)
         }
     }
 
@@ -301,7 +301,7 @@ class GoogleMapViewController(
             // Restore the recomposition for the position property
             markerRenderer.setDraggingState(state, false)
 
-            _markerDragStartListener?.invoke(state)
+            markerDragStartListener?.invoke(state)
         }
     }
 }
