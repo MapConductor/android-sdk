@@ -67,15 +67,17 @@ fun MapboxMapView(
                 )
             (state as? MapboxMapViewState)?.let { mapViewState ->
                 mapViewState.controller = controller
-                controller.cameraMoveListener = mapViewState::OnCameraChange
+                controller.setCameraMoveListener(mapViewState::OnCameraChange)
             }
-            controller.mapClickListener = onMapClick
-            controller.markerClickListener = onMarkerClick
-            controller.markerDragStartListener = onMarkerDragStart
-            controller.markerDragListener = onMarkerDrag
-            controller.markerDragEndListener = onMarkerDragEnd
-            controller.circleClickListener = onCircleClick
-            controller.polylineClickListener = onPolylineClick
+            controller.setMapClickListener(onMapClick)
+            controller.setMarkerClickListener(onMarkerClick)
+            controller.setMarkerDragStartListener(onMarkerDragStart)
+            controller.setMarkerDragListener(onMarkerDrag)
+            controller.setMarkerDragEndListener(onMarkerDragEnd)
+            controller.setCircleClickListener(onCircleClick)
+            controller.setPolylineClickListener(onPolylineClick)
+            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 

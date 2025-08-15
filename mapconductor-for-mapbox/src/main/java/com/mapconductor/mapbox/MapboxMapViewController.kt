@@ -247,7 +247,7 @@ internal class MapboxMapViewController(
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
     override fun run(cameraChanged: CameraChanged) {
-        cameraMoveListener?.invoke(
+        _cameraMoveListener?.invoke(
             CameraState(
                 cameraChanged.cameraState.center,
                 cameraChanged.cameraState.padding,
@@ -342,11 +342,11 @@ internal class MapboxMapViewController(
             markerRenderer.redraw()
             markerRenderer.drawDragLayer()
 
-            markerDragStartListener?.invoke(entity.state)
+            _markerDragStartListener?.invoke(entity.state)
             return true
         }
 
-        mapLongClickListener?.invoke(geoPoint)
+        _mapLongClickListener?.invoke(geoPoint)
         return true
     }
 
@@ -359,7 +359,7 @@ internal class MapboxMapViewController(
                 tolerance = ResourceProvider.dpToPx(Settings.Default.tapTolerance),
                 zoom = holder.map.cameraState.zoom,
             )?.let {
-                markerClickListener?.invoke(it.state)
+                _markerClickListener?.invoke(it.state)
                 return true
             }
 
@@ -370,11 +370,11 @@ internal class MapboxMapViewController(
                     state = circleEntity.state,
                     position = touchPosition,
                 )
-            circleClickListener?.invoke(event)
+            _circleClickListener?.invoke(event)
             return true
         }
 
-        mapClickListener?.invoke(touchPosition)
+        _mapClickListener?.invoke(touchPosition)
         return true
     }
 
@@ -401,7 +401,7 @@ internal class MapboxMapViewController(
                 markerRenderer.drawDragLayer()
             }
 
-            markerDragListener?.invoke(entity.state)
+            _markerDragListener?.invoke(entity.state)
             return true
         }
         return false
@@ -425,7 +425,7 @@ internal class MapboxMapViewController(
             markerRenderer.setDraggingState(entity.state, false) // Restore the recomposition for the position property
             markerOverlayManager.markerManager.registerEntity(entity)
             markerRenderer.redraw()
-            markerDragEndListener?.invoke(entity.state)
+            _markerDragEndListener?.invoke(entity.state)
         }
     }
 }
