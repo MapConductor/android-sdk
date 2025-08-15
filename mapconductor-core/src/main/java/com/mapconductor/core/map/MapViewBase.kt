@@ -40,7 +40,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
-typealias OnCameraMoveHandler<CameraPosition> = (CameraPosition) -> Unit
+typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -70,7 +70,7 @@ fun <
 ) {
     val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
     val initState by state.isInitialized.collectAsState()
-    val cameraPosition by state.mapCameraPosition.collectAsState()
+    val cameraPosition by state.cameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
     val controller = controllerRef.value
 
@@ -172,7 +172,7 @@ fun <
         }
     }
 
-    if (controller != null && cameraPosition != null && bubbles.isNotEmpty()) {
+    if (controller != null && bubbles.isNotEmpty()) {
         Box(
             modifier =
                 Modifier
