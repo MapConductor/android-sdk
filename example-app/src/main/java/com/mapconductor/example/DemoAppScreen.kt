@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
+import com.mapconductor.example.pages.animation.AnimationMapPage
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
@@ -68,6 +69,12 @@ fun DemoAppScreen() {
                 icon = Icons.Default.PlayArrow,
                 route = "polyline",
             ),
+            SidebarItem(
+                id = "animation",
+                title = "Animation ",
+                icon = Icons.Default.PlayArrow,
+                route = "animation",
+            ),
 //            SidebarItem(
 //                id = "examples",
 //                title = "Map Examples",
@@ -105,6 +112,11 @@ fun DemoAppScreen() {
                     "flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "animation" -> {
+                        AnimationMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
