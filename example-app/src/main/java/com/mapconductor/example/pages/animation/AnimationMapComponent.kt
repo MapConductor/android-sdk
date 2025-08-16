@@ -30,11 +30,6 @@ fun AnimationMapComponent(
             onCircleClick = onCircleClick,
             onMarkerDrag = onMarkerDrag,
         ) {
-            // Circle
-            key(viewModel.circleState.id) {
-                Circle(viewModel.circleState)
-            }
-
             // Center marker (not draggable)
             key(viewModel.centerMarker.id) {
                 Marker(viewModel.centerMarker)
