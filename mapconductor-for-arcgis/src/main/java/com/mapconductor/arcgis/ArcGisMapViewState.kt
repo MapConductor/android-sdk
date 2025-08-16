@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
@@ -19,8 +20,11 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 interface IArcGISMapViewState : MapViewState<String>
 
@@ -37,8 +41,13 @@ class ArcGISMapViewState(
     internal var controller: IArcGISMapViewController? = null
 
     // Camera position
-    private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
-    override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+    private val cameraPosition = MutableStateFlow<Camera?>(null)
+    override val mapCameraPosition: StateFlow<MapCameraPosition?> =
+        cameraPosition.map { it?.toMapCameraPosition() }.stateIn(
+            scope = mainCoroutine,
+            started = SharingStarted.Eagerly,
+            initialValue = null,
+        )
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPosition,
@@ -69,13 +78,13 @@ class ArcGISMapViewState(
         // Do nothing here
     }
 
-    internal fun onCameraChange(cameraPosition: MapCameraPosition) {
-        this._cameraPosition.value = cameraPosition
+    internal fun OnCameraChange(cameraPosition: Camera) {
+        this.cameraPosition.value = cameraPosition
     }
 }
 
 class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewState>() {
-    override fun extractCameraPosition(state: ArcGISMapViewState): MapCameraPosition? = state.cameraPosition.value
+    override fun extractCameraPosition(state: ArcGISMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
     override fun saveMapDesign(
         state: ArcGISMapViewState,

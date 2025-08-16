@@ -48,7 +48,7 @@ fun MapboxMapView(
             MapboxInitSDK(context)
 
             val cameraOptions =
-                state.cameraPosition.value?.toCameraOptions()
+                state.mapCameraPosition.value?.toCameraOptions()
 
             val styleUri = state.mapDesignType.getValue()
             val mapInitOptions =
@@ -67,17 +67,15 @@ fun MapboxMapView(
                 )
             (state as? MapboxMapViewState)?.let { mapViewState ->
                 mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::onCameraChange)
+                controller.cameraMoveListener = mapViewState::OnCameraChange
             }
-            controller.setMapClickListener(onMapClick)
-            controller.setMarkerClickListener(onMarkerClick)
-            controller.setMarkerDragStartListener(onMarkerDragStart)
-            controller.setMarkerDragListener(onMarkerDrag)
-            controller.setMarkerDragEndListener(onMarkerDragEnd)
-            controller.setCircleClickListener(onCircleClick)
-            controller.setPolylineClickListener(onPolylineClick)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
+            controller.mapClickListener = onMapClick
+            controller.markerClickListener = onMarkerClick
+            controller.markerDragStartListener = onMarkerDragStart
+            controller.markerDragListener = onMarkerDrag
+            controller.markerDragEndListener = onMarkerDragEnd
+            controller.circleClickListener = onCircleClick
+            controller.polylineClickListener = onPolylineClick
             controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 

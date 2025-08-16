@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
@@ -15,8 +16,11 @@ import com.mapconductor.core.map.MapViewStateImpl
 import java.util.UUID
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 interface IGoogleMapViewState : MapViewState<Int>
 
@@ -31,8 +35,13 @@ class GoogleMapViewState(
     val padding: StateFlow<MapPaddingsImpl> = _padding.asStateFlow()
 
     // Camera position
-    private val _cameraPosition = MutableStateFlow(initCameraPosition)
-    override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+    private val cameraPosition = MutableStateFlow<CameraPosition>(initCameraPosition.toCameraPosition())
+    override val mapCameraPosition: StateFlow<MapCameraPosition?> =
+        cameraPosition.map { it.toMapCameraPosition(padding.value) }.stateIn(
+            scope = mainCoroutine,
+            started = SharingStarted.Eagerly,
+            initialValue = null,
+        )
 
     internal var controller: IGoogleMapViewController? = null
 
@@ -46,7 +55,11 @@ class GoogleMapViewState(
             listener?.onComplete(false)
             return
         }
-        val currCameraPosition = this.cameraPosition.value
+        val currCameraPosition = this.mapCameraPosition.value
+        if (currCameraPosition == null) {
+            listener?.onComplete(false)
+            return
+        }
         val newPosition =
             currCameraPosition.copy(
                 position = position,
@@ -75,8 +88,8 @@ class GoogleMapViewState(
         } ?: listener?.onComplete(false)
     }
 
-    internal fun onCameraChange(cameraPosition: MapCameraPosition) {
-        this._cameraPosition.value = cameraPosition
+    internal fun OnCameraChange(cameraPosition: CameraPosition) {
+        this.cameraPosition.value = cameraPosition
     }
 
 //    override fun onCameraMoveStart(cameraPosition: CameraPosition) {
@@ -102,7 +115,7 @@ class GoogleMapViewState(
 
 // GoogleMapViewSaver implementation
 class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
-    override fun extractCameraPosition(state: GoogleMapViewState): MapCameraPosition? = state.cameraPosition.value
+    override fun extractCameraPosition(state: GoogleMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
     override fun saveMapDesign(
         state: GoogleMapViewState,
