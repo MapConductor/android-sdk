@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.LongPressEvent
@@ -101,6 +102,7 @@ class ArcGISMapViewController(
     private val circleRendererFactory: CircleRendererFactory<ArcGISActualCircle> =
         DefaultArcGISCircleRenderer(),
 ) : BaseMapViewController<
+        Camera,
         ArcGISActualMarker,
         ArcGISActualCircle,
         ArcGISActualPolyline,
@@ -207,10 +209,7 @@ class ArcGISMapViewController(
     }
 
     private fun onViewpointChange() {
-        this.cameraMoveCallback?.let {
-            val mapCamera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
-            it(mapCamera)
-        }
+        this.cameraMoveListener?.invoke(holder.map.getCurrentViewpointCamera())
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {
@@ -220,7 +219,7 @@ class ArcGISMapViewController(
             val position = point.toGeoPoint()
             it.graphic.geometry = point
             it.state.position = position
-            markerDragCallback?.invoke(it.state)
+            markerDragListener?.invoke(it.state)
         }
     }
 
@@ -235,7 +234,7 @@ class ArcGISMapViewController(
             // Restore the recomposition for the position property
             markerRenderer.setDraggingState(it.state, false)
 
-            markerDragEndCallback?.invoke(it.state)
+            markerDragEndListener?.invoke(it.state)
             with(holder.map) {
                 interactionOptions.isPanEnabled = true
                 interactionOptions.isRotateEnabled = true
@@ -263,7 +262,7 @@ class ArcGISMapViewController(
         val graphics = identifyResult.getOrNull()?.graphics
         val graphic = graphics?.firstOrNull()
         if (graphic == null) {
-            mapLongClickCallback?.invoke(position)
+            mapLongClickListener?.invoke(position)
             return
         }
         val markerId = (graphic.attributes.get("id") as? String) ?: return
@@ -283,7 +282,7 @@ class ArcGISMapViewController(
         // Suppress the recomposition for the position property
         markerRenderer.setDraggingState(state, true)
 
-        markerDragStartCallback?.invoke(state)
+        markerDragStartListener?.invoke(state)
     }
 
     private suspend fun onMapTap(event: SingleTapConfirmedEvent) {
@@ -303,7 +302,7 @@ class ArcGISMapViewController(
                 zoom = holder.map.getCurrentViewpointCamera().getZoomLevel(),
             )
         if (markerEntity != null) {
-            markerClickCallback?.invoke(markerEntity.state)
+            markerClickListener?.invoke(markerEntity.state)
             return
         }
 
@@ -314,11 +313,11 @@ class ArcGISMapViewController(
                     state = circleEntity.state,
                     position = touchPosition,
                 )
-            circleClickCallback?.invoke(event)
+            circleClickListener?.invoke(event)
         }
 
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {
-            mapClickCallback?.invoke(it.toGeoPoint())
+            mapClickListener?.invoke(it.toGeoPoint())
         }
     }
 

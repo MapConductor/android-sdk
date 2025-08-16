@@ -25,7 +25,7 @@ interface MapViewState<T> {
     val id: String
     val initCameraPosition: MapCameraPosition
     val isInitialized: StateFlow<InitState>
-    val cameraPosition: StateFlow<MapCameraPosition>
+    val mapCameraPosition: StateFlow<MapCameraPosition?>
     val mapDesignType: MapDesignType<T>
 
     fun initAsync(init: suspend () -> Boolean)

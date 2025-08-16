@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapScheme
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
@@ -21,8 +22,10 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 interface IHereMapViewState : MapViewState<MapScheme>
 
@@ -35,8 +38,13 @@ class HereMapViewState(
     internal var controller: IHereMapViewController? = null
 
     // Camera center position
-    private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
-    override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+    private val cameraPosition = MutableStateFlow<MapCamera.State?>(null)
+    override val mapCameraPosition: StateFlow<MapCameraPosition?> =
+        cameraPosition.map { it?.toMapCameraPosition() }.stateIn(
+            scope = mainCoroutine,
+            started = SharingStarted.Eagerly,
+            initialValue = null,
+        )
 
     override fun moveCameraTo(
         position: GeoPoint,
@@ -48,7 +56,11 @@ class HereMapViewState(
             listener?.onComplete(false)
             return
         }
-        val currCameraPosition = this.cameraPosition.value
+        val currCameraPosition = this.mapCameraPosition.value
+        if (currCameraPosition == null) {
+            listener?.onComplete(false)
+            return
+        }
         val newPosition =
             currCameraPosition.copy(
                 position = position,
@@ -79,13 +91,13 @@ class HereMapViewState(
         }
     }
 
-    internal fun onCameraChange(cameraState: MapCameraPosition) {
-        this._cameraPosition.value = cameraState
+    internal fun OnCameraChange(cameraState: MapCamera.State) {
+        this.cameraPosition.value = cameraState
     }
 }
 
 class HereMapViewSaver : BaseMapViewSaver<HereMapViewState>() {
-    override fun extractCameraPosition(state: HereMapViewState): MapCameraPosition? = state.cameraPosition.value
+    override fun extractCameraPosition(state: HereMapViewState): MapCameraPosition? = state.mapCameraPosition.value
 
     override fun saveMapDesign(
         state: HereMapViewState,
