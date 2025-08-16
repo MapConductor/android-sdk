@@ -9,7 +9,6 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -74,7 +73,7 @@ class GoogleMapViewController(
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<Polygon> = DefaultGoogleMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
-) : BaseMapViewController<CameraPosition, Marker, Circle, Polyline, Polygon>(),
+) : BaseMapViewController<Marker, Circle, Polyline, Polygon>(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -218,26 +217,30 @@ class GoogleMapViewController(
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
     override fun onCameraMove() {
-        cameraMoveListener?.let {
-            coroutine.launch { it(holder.map.cameraPosition) }
+        cameraMoveCallback?.let {
+            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
+            coroutine.launch { it(mapCameraPosition) }
         }
     }
 
     override fun onCameraIdle() {
-        cameraMoveListener?.let {
-            coroutine.launch { it(holder.map.cameraPosition) }
+        cameraMoveCallback?.let {
+            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
+            coroutine.launch { it(mapCameraPosition) }
         }
     }
 
     override fun onCameraMoveStarted(p0: Int) {
-        cameraMoveListener?.let {
-            coroutine.launch { it(holder.map.cameraPosition) }
+        cameraMoveCallback?.let {
+            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
+            coroutine.launch { it(mapCameraPosition) }
         }
     }
 
     override fun onCameraMoveCanceled() {
-        cameraMoveListener?.let {
-            coroutine.launch { it(holder.map.cameraPosition) }
+        cameraMoveCallback?.let {
+            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
+            coroutine.launch { it(mapCameraPosition) }
         }
     }
 
@@ -245,7 +248,7 @@ class GoogleMapViewController(
         val key = marker.tag?.toString() ?: return true
         val state = markerOverlayManager.getMarkerState(key) ?: return true
         if (!state.clickable) return true
-        markerClickListener?.let {
+        markerClickCallback?.let {
             coroutine.launch {
                 it(state)
             }
@@ -262,11 +265,11 @@ class GoogleMapViewController(
                     state = entity.state,
                     position = touchPosition,
                 )
-            circleClickListener?.invoke(event)
+            circleClickCallback?.invoke(event)
             return
         }
 
-        mapClickListener?.let {
+        mapClickCallback?.let {
             coroutine.launch { it(position.toGeoPoint()) }
         }
     }
@@ -283,14 +286,14 @@ class GoogleMapViewController(
             markerRenderer.setDraggingState(state, true)
 
             state.position = marker.position.toGeoPoint()
-            markerDragListener?.invoke(state)
+            markerDragCallback?.invoke(state)
         }
     }
 
     override fun onMarkerDragEnd(marker: Marker) {
         this.getMarkerStateFrom(marker)?.also { state ->
             state.position = marker.position.toGeoPoint()
-            markerDragEndListener?.invoke(state)
+            markerDragEndCallback?.invoke(state)
         }
     }
 
@@ -301,7 +304,7 @@ class GoogleMapViewController(
             // Restore the recomposition for the position property
             markerRenderer.setDraggingState(state, false)
 
-            markerDragStartListener?.invoke(state)
+            markerDragStartCallback?.invoke(state)
         }
     }
 }
