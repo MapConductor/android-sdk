@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.mapbox.maps.CameraState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
@@ -16,10 +15,8 @@ import com.mapconductor.mapbox.MapboxMapDesign.Standard
 import java.util.UUID
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
 
 interface IMapboxMapViewState : MapViewState<String>
 
@@ -32,13 +29,8 @@ class MapboxMapViewState(
     internal var controller: IMapboxMapViewController? = null
 
     // Camera center position
-    private val cameraState = MutableStateFlow<CameraState>(initCameraPosition.toCameraState())
-    override val mapCameraPosition: StateFlow<MapCameraPosition?> =
-        cameraState.map { it.toMapCameraPosition() }.stateIn(
-            scope = this.mainCoroutine,
-            started = SharingStarted.Eagerly,
-            initialValue = null,
-        )
+    private val _cameraPosition = MutableStateFlow(initCameraPosition)
+    override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
 
     override fun moveCameraTo(
         position: GeoPoint,
@@ -50,11 +42,7 @@ class MapboxMapViewState(
             listener?.onComplete(false)
             return
         }
-        val currentPosition = this.mapCameraPosition.value
-        if (currentPosition == null) {
-            listener?.onComplete(false)
-            return
-        }
+        val currentPosition = this.cameraPosition.value
         val newPosition =
             currentPosition.copy(
                 position = position,
@@ -84,13 +72,13 @@ class MapboxMapViewState(
         }
     }
 
-    internal fun OnCameraChange(state: CameraState) {
-        cameraState.value = state
+    internal fun onCameraChange(cameraPosition: MapCameraPosition) {
+        _cameraPosition.value = cameraPosition
     }
 }
 
 class MapboxMapViewSaver : BaseMapViewSaver<MapboxMapViewState>() {
-    override fun extractCameraPosition(state: MapboxMapViewState): MapCameraPosition? = state.mapCameraPosition.value
+    override fun extractCameraPosition(state: MapboxMapViewState): MapCameraPosition? = state.cameraPosition.value
 
     override fun saveMapDesign(
         state: MapboxMapViewState,
