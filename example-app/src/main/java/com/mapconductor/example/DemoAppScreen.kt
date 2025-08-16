@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,7 +73,7 @@ fun DemoAppScreen() {
             SidebarItem(
                 id = "animation",
                 title = "Animation ",
-                icon = Icons.Default.PlayArrow,
+                icon = Icons.Default.Place,
                 route = "animation",
             ),
 //            SidebarItem(
