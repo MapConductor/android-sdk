@@ -29,13 +29,17 @@ fun GroundImageMapComponent(
             onMarkerDrag = onMarkerDrag,
         ) {
             // GroundImage
-            key(viewModel.groundImageState.fingerPrint()) {
+            key(viewModel.groundImageState.id) {
                 GroundImage(viewModel.groundImageState)
             }
 
             // BoundsMarkers
-            Marker(southWestMarker)
-            Marker(northEastMarker)
+            key(southWestMarker.id) {
+                Marker(southWestMarker)
+            }
+            key(northEastMarker.id) {
+                Marker(northEastMarker)
+            }
         }
     }
 }

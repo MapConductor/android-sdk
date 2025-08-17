@@ -9,7 +9,6 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.GoogleMapViewState

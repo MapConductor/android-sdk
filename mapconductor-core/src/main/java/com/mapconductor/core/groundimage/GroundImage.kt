@@ -4,10 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.marker.MarkerState
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -37,9 +35,10 @@ class GroundImageState(
             extra = extra?.hashCode() ?: 0,
         )
 
-    fun asFlow(): Flow<GroundImageFingerPrint> = snapshotFlow {
-        fingerPrint()
-    }.distinctUntilChanged()
+    fun asFlow(): Flow<GroundImageFingerPrint> =
+        snapshotFlow {
+            fingerPrint()
+        }.distinctUntilChanged()
 
     private fun generateId(
         bounds: GeoRectBounds,

@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.groundimage
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,7 +24,6 @@ interface GroundImageMapPageViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
-    val bounds: GeoRectBounds
     val southWest: MarkerState
     val northEast: MarkerState
     val imageResources: GroundImageResources
@@ -34,8 +32,6 @@ interface GroundImageMapPageViewModel {
     val groundImageState: GroundImageState
 
     fun onMapViewChanged(state: MapViewState<*>)
-
-    fun cameraReset(listener: MapViewState.MoveCameraCallback? = null)
 
     fun onGroundImageClick(clicked: GroundImageEvent)
 
@@ -70,59 +66,53 @@ class GroundImageMapPageViewModelImpl(
         this._mapViewState.value = state
     }
 
-    override fun cameraReset(listener: MapViewState.MoveCameraCallback?) {
-        this.mapViewState.value?.moveCameraTo(
-            cameraPosition = initCameraPosition,
-            durationMs = 3000,
-            listener = listener,
-        )
-    }
-
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
-    private val _southWest: MutableState<MarkerState> =
-        mutableStateOf(
-            MarkerState(
-                id = "south_west",
-                position = GeoPoint.fromLatLong(40.712216, -74.22655),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Blue,
-                        strokeColor = Color.White,
-                        label = "SW",
-                    ),
-                draggable = true,
-            )
+    override val southWest: MarkerState =
+        MarkerState(
+            id = "south_west",
+            position =
+                GeoPoint(
+                    latitude = 40.712216,
+                    longitude = -74.22655,
+                ),
+            icon =
+                DefaultIcon(
+                    fillColor = Color.Blue,
+                    strokeColor = Color.White,
+                    label = "SW",
+                ),
+            draggable = true,
         )
-    override val southWest: MarkerState
-        get() = _southWest.value
 
-    private val _northEast: MutableState<MarkerState> =
-        mutableStateOf(
-            MarkerState(
-                id = "north_east",
-                position = GeoPoint.fromLatLong(40.773941,-74.12544),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Red,
-                        strokeColor = Color.White,
-                        label = "NE",
-                    ),
-                draggable = true,
-            )
-        )
-    override val northEast: MarkerState
-        get() = _northEast.value
-
-    override val bounds: GeoRectBounds = GeoRectBounds(
-            southWest = GeoPoint.from(southWest.position),
-            northEast = GeoPoint.from(northEast.position),
+    override val northEast: MarkerState =
+        MarkerState(
+            id = "north_east",
+            position =
+                GeoPoint(
+                    latitude = 40.773941,
+                    longitude = -74.12544,
+                ),
+            icon =
+                DefaultIcon(
+                    fillColor = Color.Red,
+                    strokeColor = Color.White,
+                    label = "NE",
+                ),
+            draggable = true,
         )
 
     override var opacity by mutableStateOf(0.5f)
 
     override var image by mutableStateOf(imageResources.image)
+
+    private var bounds by mutableStateOf(
+        GeoRectBounds(
+            southWest = GeoPoint.from(southWest.position),
+            northEast = GeoPoint.from(northEast.position),
+        ),
+    )
 
     override val groundImageState
         get() =
@@ -147,12 +137,11 @@ class GroundImageMapPageViewModelImpl(
         if (dragged.id == "south_west") {
             val southWest = GeoPoint.from(dragged.position)
             val northEast = groundImageState.bounds.northEast
-            groundImageState.bounds = GeoRectBounds(southWest, northEast)
-        }
-        else {
+            bounds = GeoRectBounds(southWest, northEast)
+        } else {
             val southWest = groundImageState.bounds.southWest
             val northEast = GeoPoint.from(dragged.position)
-            groundImageState.bounds = GeoRectBounds(southWest, northEast)
+            bounds = GeoRectBounds(southWest, northEast)
         }
     }
 
