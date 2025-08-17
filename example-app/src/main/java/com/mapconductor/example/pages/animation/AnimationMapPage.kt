@@ -1,19 +1,20 @@
 package com.mapconductor.example.pages.animation
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.example.R
-import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
@@ -32,10 +33,7 @@ fun AnimationMapPage(
         AnimationMapComponent(
             mapViewState = mapViewState.value,
             viewModel = viewModel,
-            onMapClick = viewModel::onMapClick,
             onMarkerClick = viewModel::onMarkerClick,
-            onCircleClick = viewModel::onCircleClick,
-            onMarkerDrag = viewModel::onMarkerDrag,
         )
 
         // Message Card
@@ -48,17 +46,21 @@ fun AnimationMapPage(
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
-            title = "Messages",
+            title = "Animation list",
         ) {
-            Text(
-                text = stringResource(R.string.circle_example_description),
+            Column(
                 modifier = Modifier.fillMaxSize(),
-            )
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.onMarkerClick(viewModel.bounceMarker) },
+                    ) {
+                        Text("Bounce")
+                    }
+                }
+            }
         }
-
-        ToastHost(
-            messages = viewModel.messages.collectAsState().value,
-            onDismiss = { viewModel.removeToast(it) },
-        )
     }
 }

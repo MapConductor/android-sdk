@@ -1,22 +1,14 @@
 package com.mapconductor.example.pages.animation
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.spherical.calculatePositionAtDistance
-import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,24 +20,11 @@ interface AnimationPageViewModel {
     val messages: StateFlow<List<ToastMessage>>
 
     val circleCenter: GeoPoint
-    val radiusMeters: Double
-    val centerMarker: MarkerState
-    val edgeMarker: MarkerState
-    val circleState: CircleState
+    val bounceMarker: MarkerState
 
     fun onMapViewChanged(state: MapViewState<*>)
 
     fun onMarkerClick(clicked: MarkerState)
-
-    fun onMapClick(clicked: GeoPoint)
-
-    fun onCircleClick(event: CircleClickEvent)
-
-    fun onMarkerDrag(dragged: MarkerState)
-
-    fun showToast(text: String)
-
-    fun removeToast(toastMessage: ToastMessage)
 }
 
 class AnimationPageViewModelImpl :
@@ -62,7 +41,6 @@ class AnimationPageViewModelImpl :
             Color.LightGray.copy(alpha = 0.2f),
             Color.Magenta.copy(alpha = 0.2f),
         )
-    private var tapIdx = 0
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -79,58 +57,23 @@ class AnimationPageViewModelImpl :
 
     override val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
 
-    override val centerMarker =
+    private val _bounceMarker =
         MarkerState(
-            id = "center_marker",
+            id = "bounce_marker",
             position = circleCenter,
             icon =
                 DefaultIcon(
-                    fillColor = Color.Red,
+                    fillColor = colors[0],
                     strokeColor = Color.White,
-                    label = "C",
+                    label = "B",
                 ),
-            draggable = false,
+            // If the marker is set animation on creating an instance,
+            // the marker will be animated when the map will be opened.
+            animation = MarkerAnimation.Bounce,
         )
 
-    private val _edgeMarker: MutableState<MarkerState> =
-        mutableStateOf(
-            MarkerState(
-                id = "edge_marker",
-                position =
-                    calculatePositionAtDistance(
-                        center = circleCenter,
-                        distanceMeters = 1000.0,
-                        bearingDegrees = 90.0, // East
-                    ),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Green,
-                        strokeColor = Color.White,
-                        label = "E",
-                    ),
-                draggable = true,
-            ),
-        )
-    override val edgeMarker: MarkerState
-        get() = _edgeMarker.value
-
-    override val radiusMeters by derivedStateOf {
-        haversineDistance(circleCenter, _edgeMarker.value.position)
-    }
-
-    private val _circleState: MutableState<CircleState> =
-        mutableStateOf(
-            CircleState(
-                id = "circle",
-                center = circleCenter,
-                radiusMeters = 1000.0, // Initial radius
-                strokeColor = Color.Blue.copy(alpha = 0.5f),
-                strokeWidth = 2.dp,
-                fillColor = this.colors[0],
-            ),
-        )
-    override val circleState: CircleState
-        get() = _circleState.value
+    override val bounceMarker: MarkerState
+        get() = _bounceMarker
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
@@ -140,37 +83,7 @@ class AnimationPageViewModelImpl :
     }
 
     override fun onMarkerClick(clicked: MarkerState) {
+        // When you want to activate the marker, set the animation for the marker.
         clicked.animation = MarkerAnimation.Bounce
-    }
-
-    override fun onMapClick(clicked: GeoPoint) {
-        showToast("Map clicked at: ${clicked.toUrlValue()}")
-    }
-
-    override fun onCircleClick(event: CircleClickEvent) {
-        this.tapIdx = (this.tapIdx + 1) % this.colors.size
-        event.state.fillColor = this.colors[this.tapIdx]
-        showToast("Circle clicked - Radius: ${radiusMeters.toInt()}m")
-    }
-
-    override fun onMarkerDrag(dragged: MarkerState) {
-        _edgeMarker.value.position = dragged.position
-
-        // Update circle radius
-        _circleState.value.radiusMeters = radiusMeters // haversineDistance(circleCenter, _edgeMarker.value.position)
-
-//        showToast("Radius updated: ${radiusMeters.toInt()}m")
-    }
-
-    override fun showToast(text: String) {
-        this._messages.value = this._messages.value + ToastMessage(text = text)
-    }
-
-    override fun removeToast(toastMessage: ToastMessage) {
-        this._messages.value = this._messages.value.filter { it != toastMessage }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 }
