@@ -51,6 +51,7 @@ fun GroundImageMapPage(
             mapViewState = mapViewState.value,
             viewModel = viewModel,
             onGroundImageClick = viewModel::onGroundImageClick,
+            onMarkerDrag = viewModel::onMarkerDrag,
         )
 
         // Message Card
@@ -73,7 +74,7 @@ fun GroundImageMapPage(
                         viewModel.opacity = newValue
                     },
                     valueRange = 0.0f..1.0f, // スライダー範囲
-                    steps = 0, // 中間ステップ数（範囲内を1000分割）
+                    steps = 0,
                     colors = SliderDefaults.colors(
                         thumbColor = Color.Black,               // つまみの色
                         activeTrackColor = Color.DarkGray,      // 値までのトラック

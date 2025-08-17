@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.marker.MarkerState
 import android.graphics.drawable.Drawable
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +22,8 @@ class GroundImageState(
 ) {
     val id = (id ?: generateId(bounds, image, opacity, extra)).toString()
 
-    var bounds by StateFlowDelegate(bounds)
+//    var bounds by StateFlowDelegate(bounds)
+    var bounds by mutableStateOf(bounds)
     var image by mutableStateOf(image)
     var opacity by mutableStateOf(opacity)
     var extra by mutableStateOf(extra)
