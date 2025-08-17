@@ -123,7 +123,6 @@ internal class MapboxMapViewController(
     private val circleRendererFactory: CircleRendererFactory<MapboxActualCircle> =
         DefaultMapboxCircleRenderer(),
 ) : BaseMapViewController<
-        CameraState,
         MapboxActualMarker,
         MapboxActualCircle,
         MapboxActualPolyline,
@@ -276,15 +275,18 @@ internal class MapboxMapViewController(
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
     override fun run(cameraChanged: CameraChanged) {
-        cameraMoveListener?.invoke(
-            CameraState(
-                cameraChanged.cameraState.center,
-                cameraChanged.cameraState.padding,
-                cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
-                cameraChanged.cameraState.bearing,
-                cameraChanged.cameraState.pitch,
-            ),
-        )
+        cameraMoveCallback?.let {
+            val mapCameraPosition =
+                CameraState(
+                    cameraChanged.cameraState.center,
+                    cameraChanged.cameraState.padding,
+                    cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
+                    cameraChanged.cameraState.bearing,
+                    cameraChanged.cameraState.pitch,
+                ).toMapCameraPosition()
+
+            it(mapCameraPosition)
+        }
     }
 
     override fun moveCamera(
@@ -371,11 +373,11 @@ internal class MapboxMapViewController(
             markerRenderer.redraw()
             markerRenderer.drawDragLayer()
 
-            markerDragStartListener?.invoke(entity.state)
+            markerDragStartCallback?.invoke(entity.state)
             return true
         }
 
-        mapLongClickListener?.invoke(geoPoint)
+        mapLongClickCallback?.invoke(geoPoint)
         return true
     }
 
@@ -388,7 +390,7 @@ internal class MapboxMapViewController(
                 tolerance = ResourceProvider.dpToPx(Settings.Default.tapTolerance),
                 zoom = holder.map.cameraState.zoom,
             )?.let {
-                markerClickListener?.invoke(it.state)
+                markerClickCallback?.invoke(it.state)
                 return true
             }
 
@@ -399,11 +401,11 @@ internal class MapboxMapViewController(
                     state = circleEntity.state,
                     position = touchPosition,
                 )
-            circleClickListener?.invoke(event)
+            circleClickCallback?.invoke(event)
             return true
         }
 
-        mapClickListener?.invoke(touchPosition)
+        mapClickCallback?.invoke(touchPosition)
         return true
     }
 
@@ -430,7 +432,7 @@ internal class MapboxMapViewController(
                 markerRenderer.drawDragLayer()
             }
 
-            markerDragListener?.invoke(entity.state)
+            markerDragCallback?.invoke(entity.state)
             return true
         }
         return false
@@ -454,7 +456,7 @@ internal class MapboxMapViewController(
             markerRenderer.setDraggingState(entity.state, false) // Restore the recomposition for the position property
             markerOverlayManager.markerManager.registerEntity(entity)
             markerRenderer.redraw()
-            markerDragEndListener?.invoke(entity.state)
+            markerDragEndCallback?.invoke(entity.state)
         }
     }
 }
