@@ -134,14 +134,9 @@ class GroundImageMapPageViewModelImpl(
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
-        if (dragged.id == "south_west") {
-            val southWest = GeoPoint.from(dragged.position)
-            val northEast = groundImageState.bounds.northEast
-            bounds = GeoRectBounds(southWest, northEast)
-        } else {
-            val southWest = groundImageState.bounds.southWest
-            val northEast = GeoPoint.from(dragged.position)
-            bounds = GeoRectBounds(southWest, northEast)
+        bounds = GeoRectBounds().also {
+            it.extend(southWest.position)
+            it.extend(northEast.position)
         }
     }
 
