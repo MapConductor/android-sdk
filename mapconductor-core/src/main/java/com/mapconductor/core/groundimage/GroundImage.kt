@@ -37,7 +37,9 @@ class GroundImageState(
             extra = extra?.hashCode() ?: 0,
         )
 
-    fun asFlow(): Flow<GroundImageFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
+    fun asFlow(): Flow<GroundImageFingerPrint> = snapshotFlow {
+        fingerPrint()
+    }.distinctUntilChanged()
 
     private fun generateId(
         bounds: GeoRectBounds,

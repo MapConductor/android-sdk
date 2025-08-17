@@ -25,22 +25,6 @@ fun MapViewScope.GroundImage(state: GroundImageState) {
 }
 
 @Composable
-fun MapViewScope.SouthWest(state: MarkerState) {
-    val rememberState = remember(state.fingerPrint()) { state }
-    SideEffect {
-        markerFlow.value = markerFlow.value.filter { it.id != state.id } + rememberState
-    }
-}
-
-@Composable
-fun MapViewScope.NorthEast(state: MarkerState) {
-    val rememberState = remember(state.fingerPrint()) { state }
-    SideEffect {
-        markerFlow.value = markerFlow.value.filter { it.id != state.id } + rememberState
-    }
-}
-
-@Composable
 fun MapViewScope.GroundImage(
     bounds: GeoRectBounds,
     image: Drawable,
