@@ -15,6 +15,7 @@ import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,8 +25,7 @@ interface GroundImageMapPageViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
-    val southWest: MarkerState
-    val northEast: MarkerState
+    val markers: List<MarkerState>
     val imageResources: GroundImageResources
     val image: Drawable
     var opacity: Float
@@ -69,39 +69,76 @@ class GroundImageMapPageViewModelImpl(
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
-    override val southWest: MarkerState =
-        MarkerState(
-            id = "south_west",
-            position =
-                GeoPoint(
-                    latitude = 40.712216,
-                    longitude = -74.22655,
-                ),
-            icon =
-                DefaultIcon(
-                    fillColor = Color.Blue,
-                    strokeColor = Color.White,
-                    label = "SW",
-                ),
-            draggable = true,
-        )
+    private var _southWestPosition by mutableStateOf(
+        GeoPoint(
+            latitude = 40.712216,
+            longitude = -74.22655,
+        ),
+    )
 
-    override val northEast: MarkerState =
-        MarkerState(
-            id = "north_east",
-            position =
-                GeoPoint(
-                    latitude = 40.773941,
-                    longitude = -74.12544,
+    private var _northEastPosition by mutableStateOf(
+        GeoPoint(
+            latitude = 40.773941,
+            longitude = -74.12544,
+        ),
+    )
+
+    private fun calculateMarkerLabels(): Pair<String, String> {
+        val swLat = _southWestPosition.latitude
+        val swLng = _southWestPosition.longitude
+        val neLat = _northEastPosition.latitude
+        val neLng = _northEastPosition.longitude
+
+        val southWestLabel =
+            when {
+                swLat <= neLat && swLng <= neLng -> "SW" // Normal
+                swLat <= neLat && swLng > neLng -> "SE" // East-West flipped
+                swLat > neLat && swLng <= neLng -> "NW" // North-South flipped
+                else -> "NE" // Both flipped
+            }
+
+        val northEastLabel =
+            when {
+                neLat >= swLat && neLng >= swLng -> "NE" // Normal
+                neLat >= swLat && neLng < swLng -> "NW" // East-West flipped
+                neLat < swLat && neLng >= swLng -> "SE" // North-South flipped
+                else -> "SW" // Both flipped
+            }
+
+        return Pair(southWestLabel, northEastLabel)
+    }
+
+    override val markers: List<MarkerState>
+        get() {
+            val (swLabel, neLabel) = calculateMarkerLabels()
+            Log.d("debug", "$swLabel, $neLabel")
+            return listOf(
+                MarkerState(
+                    id = "south_west",
+                    position = _southWestPosition,
+                    icon =
+                        DefaultIcon(
+                            fillColor = Color.Blue,
+                            strokeColor = Color.White,
+                            label = swLabel,
+                            labelTextColor = Color.White,
+                        ),
+                    draggable = true,
                 ),
-            icon =
-                DefaultIcon(
-                    fillColor = Color.Red,
-                    strokeColor = Color.White,
-                    label = "NE",
+                MarkerState(
+                    id = "north_east",
+                    position = _northEastPosition,
+                    icon =
+                        DefaultIcon(
+                            fillColor = Color.Red,
+                            strokeColor = Color.White,
+                            label = neLabel,
+                            labelTextColor = Color.White,
+                        ),
+                    draggable = true,
                 ),
-            draggable = true,
-        )
+            )
+        }
 
     override var opacity by mutableStateOf(0.5f)
 
@@ -109,8 +146,8 @@ class GroundImageMapPageViewModelImpl(
 
     private var bounds by mutableStateOf(
         GeoRectBounds(
-            southWest = GeoPoint.from(southWest.position),
-            northEast = GeoPoint.from(northEast.position),
+            southWest = GeoPoint.from(_southWestPosition),
+            northEast = GeoPoint.from(_northEastPosition),
         ),
     )
 
@@ -134,10 +171,18 @@ class GroundImageMapPageViewModelImpl(
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
-        bounds = GeoRectBounds().also {
-            it.extend(southWest.position)
-            it.extend(northEast.position)
+        // Update the internal position based on which marker was dragged
+        when (dragged.id) {
+            "south_west" -> _southWestPosition = GeoPoint.from(dragged.position)
+            "north_east" -> _northEastPosition = GeoPoint.from(dragged.position)
         }
+
+        // Update bounds using the new positions
+        bounds =
+            GeoRectBounds().also {
+                it.extend(markers[0].position)
+                it.extend(markers[1].position)
+            }
     }
 
     override fun showToast(text: String) {

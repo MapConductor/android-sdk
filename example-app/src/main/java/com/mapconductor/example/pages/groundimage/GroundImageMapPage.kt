@@ -46,12 +46,8 @@ fun GroundImageMapPage(
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
-        val southWestMarker = viewModel.southWest
-        val northEastMarker = viewModel.northEast
 
         GroundImageMapComponent(
-            southWestMarker = southWestMarker,
-            northEastMarker = northEastMarker,
             mapViewState = mapViewState.value,
             viewModel = viewModel,
             onGroundImageClick = viewModel::onGroundImageClick,

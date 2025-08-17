@@ -1,8 +1,5 @@
 package com.mapconductor.core.features
 
-import kotlin.math.max
-import kotlin.math.min
-
 data class GeoRectBounds(
     var southWest: GeoPoint? = null,
     var northEast: GeoPoint? = null,
@@ -27,8 +24,8 @@ data class GeoRectBounds(
                 val south = minOf(sw.latitude, position.latitude)
                 val north = maxOf(sw.latitude, position.latitude)
                 // 1点ずつなので子午線跨ぎの判定は不要。単純に min/max でOK
-                val west  = minOf(sw.longitude, position.longitude)
-                val east  = maxOf(sw.longitude, position.longitude)
+                val west = minOf(sw.longitude, position.longitude)
+                val east = maxOf(sw.longitude, position.longitude)
 
                 southWest = GeoPoint(south, west)
                 northEast = GeoPoint(north, east)
@@ -40,8 +37,8 @@ data class GeoRectBounds(
                 val ne = northEast!!
                 val south = minOf(ne.latitude, position.latitude)
                 val north = maxOf(ne.latitude, position.latitude)
-                val west  = minOf(ne.longitude, position.longitude)
-                val east  = maxOf(ne.longitude, position.longitude)
+                val west = minOf(ne.longitude, position.longitude)
+                val east = maxOf(ne.longitude, position.longitude)
 
                 southWest = GeoPoint(south, west)
                 northEast = GeoPoint(north, east)

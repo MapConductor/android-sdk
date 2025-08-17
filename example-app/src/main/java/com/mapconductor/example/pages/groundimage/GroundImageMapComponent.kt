@@ -7,7 +7,6 @@ import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 
@@ -15,8 +14,6 @@ import com.mapconductor.example.MapViewContainer
 fun GroundImageMapComponent(
     mapViewState: MapViewState<*>?,
     viewModel: GroundImageMapPageViewModel,
-    southWestMarker: MarkerState,
-    northEastMarker: MarkerState,
     modifier: Modifier = Modifier,
     onGroundImageClick: OnGroundImageEventHandler = {},
     onMarkerDrag: OnMarkerEventHandler = {},
@@ -34,11 +31,10 @@ fun GroundImageMapComponent(
             }
 
             // BoundsMarkers
-            key(southWestMarker.id) {
-                Marker(southWestMarker)
-            }
-            key(northEastMarker.id) {
-                Marker(northEastMarker)
+            viewModel.markers.forEach { marker ->
+                key(marker.fingerPrint()) {
+                    Marker(marker)
+                }
             }
         }
     }
