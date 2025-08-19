@@ -15,7 +15,6 @@ import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -111,7 +110,6 @@ class GroundImageMapPageViewModelImpl(
     override val markers: List<MarkerState>
         get() {
             val (swLabel, neLabel) = calculateMarkerLabels()
-            Log.d("debug", "$swLabel, $neLabel")
             return listOf(
                 MarkerState(
                     id = "south_west",

@@ -26,15 +26,11 @@ fun GroundImageMapComponent(
             onMarkerDrag = onMarkerDrag,
         ) {
             // GroundImage
-            key(viewModel.groundImageState.id) {
-                GroundImage(viewModel.groundImageState)
-            }
+            GroundImage(viewModel.groundImageState)
 
             // BoundsMarkers
             viewModel.markers.forEach { marker ->
-                key(marker.fingerPrint()) {
-                    Marker(marker)
-                }
+                Marker(marker)
             }
         }
     }

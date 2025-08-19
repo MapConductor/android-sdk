@@ -75,7 +75,7 @@ fun DemoAppScreen() {
             ),
             SidebarItem(
                 id = "groundImage",
-                title = "GroundImage Demo",
+                title = "GroundImage",
                 icon = Icons.Default.Favorite,
                 route = "groundImage",
             ),

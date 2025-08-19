@@ -1,6 +1,7 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import com.mapconductor.core.MapViewScope
@@ -9,9 +10,8 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {
-    val rememberMarker = remember(state.id) { state }
-    SideEffect {
-        markerFlow.value = markerFlow.value.filter { it.id != rememberMarker.id } + rememberMarker
+    LaunchedEffect(state.fingerPrint()) {
+        markerFlow.value = markerFlow.value.filter { it.id != state.id } + state
     }
 }
 
