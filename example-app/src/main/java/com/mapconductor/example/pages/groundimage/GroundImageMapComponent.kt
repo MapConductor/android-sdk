@@ -1,7 +1,6 @@
 package com.mapconductor.example.pages.groundimage
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler

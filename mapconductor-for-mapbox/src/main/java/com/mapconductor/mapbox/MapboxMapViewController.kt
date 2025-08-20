@@ -30,9 +30,6 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.groundimage.GroundImageOverlayManager
-import com.mapconductor.core.groundimage.GroundImageRenderer
-import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
@@ -47,7 +44,6 @@ import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.circle.DefaultMapboxCircleRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleRenderer
-import com.mapconductor.mapbox.groundImage.MapboxGroundImageRenderer
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
 import com.mapconductor.mapbox.marker.MarkerDragLayer
@@ -69,7 +65,6 @@ interface IMapboxMapViewController :
         MapboxActualCircle,
         MapboxActualPolyline,
         MapboxActualPolygon,
-        MapboxActualGroundImage,
     > {
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -127,7 +122,6 @@ internal class MapboxMapViewController(
         MapboxActualCircle,
         MapboxActualPolyline,
         MapboxActualPolygon,
-        MapboxActualGroundImage,
     >(),
     IMapboxMapViewController,
     CameraChangedCallback,
@@ -176,10 +170,6 @@ internal class MapboxMapViewController(
             onPostProcess = circleRenderer::redraw,
         )
 
-    override fun createGroundImageOverlayManager(): GroundImageOverlayManager<MapboxActualGroundImage> {
-        TODO("Not yet implemented")
-    }
-
     override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<MapboxActualMarker>) {
         holder.map.getStyle { style ->
             style.addSource(circleLayer.source)
@@ -211,17 +201,6 @@ internal class MapboxMapViewController(
             holder = holder,
             coroutine = coroutine,
             layer = circleLayer,
-        )
-
-    override fun onGroundImageOverlayManagerInitialized(
-        overlayManager: GroundImageOverlayManager<MapboxActualGroundImage>,
-    ) {
-    }
-
-    override val groundImageRenderer: GroundImageRenderer<MapboxActualGroundImage> =
-        MapboxGroundImageRenderer(
-            holder = holder,
-            coroutine = coroutine,
         )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<MapboxActualCircle>) {
@@ -261,14 +240,6 @@ internal class MapboxMapViewController(
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
-
-    override suspend fun addGroundImages(data: List<GroundImageState>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updateGroundImage(state: GroundImageState) {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 

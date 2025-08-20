@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.groundimage.GroundImageOverlay
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
@@ -113,17 +114,6 @@ class PolylineOverlay(
         controller: MapViewControllerAlias,
     ) {
         controller.addPolylines(data)
-    }
-}
-
-class GroundImageOverlay(
-    override val flow: StateFlow<List<GroundImageState>>,
-) : MapOverlay<GroundImageState> {
-    override suspend fun render(
-        data: List<GroundImageState>,
-        controller: MapViewControllerAlias,
-    ) {
-        controller.addGroundImages(data)
     }
 }
 

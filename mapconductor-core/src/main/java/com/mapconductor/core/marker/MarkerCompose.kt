@@ -2,8 +2,6 @@ package com.mapconductor.core.marker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable

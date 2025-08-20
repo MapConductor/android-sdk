@@ -4,41 +4,24 @@ import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.GroundOverlay
 import com.google.android.gms.maps.model.GroundOverlayOptions
-import com.mapconductor.core.groundimage.AbstractGroundImageRenderer
+import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.groundimage.GroundImageEntity
-import com.mapconductor.core.groundimage.GroundImageOverlayManager
-import com.mapconductor.core.groundimage.GroundImageOverlayManagerImpl
-import com.mapconductor.core.groundimage.GroundImageRenderer
-import com.mapconductor.core.groundimage.GroundImageRendererFactory
 import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.googlemaps.ActualGoogleMapGroundImage
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLngBounds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class DefaultGoogleMapGroundImageRenderer : GroundImageRendererFactory<GroundOverlay> {
-    override fun create(
-        onAdd: suspend (List<GroundImageState>) -> List<GroundOverlay?>,
-        onChange: suspend (List<GroundImageRenderer.UpdateParams<GroundOverlay>>) -> List<GroundOverlay?>,
-        onRemove: suspend (List<GroundImageEntity<GroundOverlay>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): GroundImageOverlayManager<GroundOverlay> =
-        GroundImageOverlayManagerImpl(
-            onRemove = onRemove,
-            onAdd = onAdd,
-            onChange = onChange,
-            onPostProcess = onPostProcess,
-        )
-}
-
 class GoogleMapGroundImageRenderer(
-    override val holder: GoogleMapViewHolder,
-    override val coroutine: CoroutineScope,
-) : AbstractGroundImageRenderer<GroundOverlay>() {
-    override suspend fun addGroundImages(newImages: List<GroundImageState>): List<GroundOverlay?> {
+    val holder: GoogleMapViewHolder,
+    val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+) : OverlayRenderer<ActualGoogleMapGroundImage, GroundImageState, GroundImageEntity<ActualGoogleMapGroundImage>> {
+    override suspend fun onAdd(data: List<GroundImageState>): List<ActualGoogleMapGroundImage?> {
         return withContext(coroutine.coroutineContext) {
-            return@withContext newImages.map { state ->
+            return@withContext data.map { state ->
                 val bounds = state.bounds.toLatLngBounds() ?: return@withContext emptyList()
                 val image = BitmapDescriptorFactory.fromBitmap(state.image.toBitmap())
                 val opacity = state.opacity
@@ -54,29 +37,33 @@ class GoogleMapGroundImageRenderer(
         }
     }
 
-    override suspend fun removeGroundImages(removeEntities: List<GroundImageEntity<GroundOverlay>>) {
+    override suspend fun onRemove(data: List<GroundImageEntity<ActualGoogleMapGroundImage>>) {
         coroutine.launch {
-            removeEntities.forEach { params -> params.groundImage.remove() }
+            data.forEach { params -> params.groundImage.remove() }
         }
     }
 
-    override suspend fun changeGroundImages(
-        changes: List<GroundImageRenderer.UpdateParams<GroundOverlay>>,
+    override suspend fun onPostProcess() {
+        // Do nothing here
+    }
+
+    override suspend fun onChange(
+        data: List<OverlayRenderer.Changes<GroundImageEntity<ActualGoogleMapGroundImage>>>,
     ): List<GroundOverlay?> {
         return withContext(coroutine.coroutineContext) {
-            return@withContext changes.map { params ->
-                val groundOverlay = params.entity.groundImage
-                val finger = params.entity.fingerPrint
-                val prevFinger = params.prevEntity.fingerPrint
+            return@withContext data.map { params ->
+                val groundOverlay = params.current.groundImage
+                val finger = params.current.fingerPrint
+                val prevFinger = params.prev.fingerPrint
                 if (finger.bounds != prevFinger.bounds) {
-                    params.entity.state.bounds.toLatLngBounds()?.let {
+                    params.current.state.bounds.toLatLngBounds()?.let {
                         groundOverlay.setPositionFromBounds(it)
                     }
                 }
-                groundOverlay.transparency = 1.0f - params.entity.state.opacity
+                groundOverlay.transparency = 1.0f - params.current.state.opacity
                 if (finger.image != prevFinger.image) {
                     val bitmap =
-                        params.entity.state.image
+                        params.current.state.image
                             .toBitmap()
                     val bitmapDesc = BitmapDescriptorFactory.fromBitmap(bitmap)
                     groundOverlay.setImage(bitmapDesc)

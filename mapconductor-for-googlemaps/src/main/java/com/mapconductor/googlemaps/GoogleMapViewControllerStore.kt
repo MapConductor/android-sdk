@@ -3,8 +3,10 @@ package com.mapconductor.googlemaps
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
+import com.mapconductor.core.groundimage.GroundImageController
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
+import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -28,8 +30,19 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewController>() {
                 options = options,
             )
 
+        val groundImageRenderer =
+            GoogleMapGroundImageRenderer(
+                holder = holder,
+            )
+
+        val groundImageController =
+            GroundImageController(
+                renderer = groundImageRenderer,
+            )
+
         val controller =
             GoogleMapViewController(
+                groundImageController = groundImageController,
                 holder = holder,
             )
         this.set(id, controller)
