@@ -3,6 +3,7 @@ package com.mapconductor.example
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -22,6 +23,7 @@ import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.mapDesign.MapDesignMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -85,6 +87,12 @@ fun DemoAppScreen() {
                 icon = Icons.Default.PlayArrow,
                 route = "polyline",
             ),
+            SidebarItem(
+                id = "mapDesign",
+                title = "MapDesign Demo",
+                icon = Icons.Default.Build,
+                route = "mapDesign",
+            ),
 //            SidebarItem(
 //                id = "examples",
 //                title = "Map Examples",
@@ -128,6 +136,11 @@ fun DemoAppScreen() {
                     "groundImage" -> {
                         GroundImageMapPage(
                             groundImageResources = groundImageResources,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "mapDesign" -> {
+                        MapDesignMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

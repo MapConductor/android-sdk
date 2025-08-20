@@ -58,7 +58,7 @@ fun HereMapView(
 
             val mapInitOptions =
                 HereMapViewInitOptions(
-                    scheme = state.mapDesignType.id,
+                    scheme = state.mapDesignType.getValue(),
                 )
 
             val controller =
@@ -86,7 +86,7 @@ fun HereMapView(
 
             (state as? HereMapViewState)?.controller = controller
 
-            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
+            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
                 if (mapError != null) {
                     throw Throwable("Loading map failed: mapError: " + mapError.name)
                 }

@@ -57,6 +57,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline, Polygon, GroundOverlay> {
+    fun changeMapDesign(
+        value: Int
+    )
+
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -187,6 +191,14 @@ class GoogleMapViewController(
         holder.map.setOnMarkerClickListener(this)
         holder.map.setOnMapClickListener(this)
         holder.map.setOnMarkerDragListener(this)
+    }
+
+    override fun changeMapDesign(
+        value: Int
+    ){
+        coroutine.launch {
+            holder.map.mapType = value
+        }
     }
 
     override fun moveCamera(
