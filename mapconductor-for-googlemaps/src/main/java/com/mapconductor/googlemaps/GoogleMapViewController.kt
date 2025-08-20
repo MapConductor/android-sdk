@@ -286,7 +286,7 @@ class GoogleMapViewController(
             val event =
                 GroundImageEvent(
                     state = entity.state,
-                    position = touchPosition,
+                    clicked = touchPosition,
                 )
             coroutine.launch {
                 groundImageController.clickListener?.invoke(event)
