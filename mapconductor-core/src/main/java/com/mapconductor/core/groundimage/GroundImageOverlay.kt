@@ -11,6 +11,6 @@ class GroundImageOverlay(
         data: List<GroundImageState>,
         controller: MapViewControllerAlias,
     ) {
-        (controller as? GroundImageCapable<*>)?.compositionGroundImages(data)
+        (controller as? GroundImageCapable)?.compositionGroundImages(data)
     }
 }
