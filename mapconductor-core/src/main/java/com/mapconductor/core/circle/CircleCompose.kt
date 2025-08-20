@@ -1,8 +1,7 @@
 package com.mapconductor.core.circle
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -12,9 +11,8 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Circle(state: CircleState) {
-    val rememberState = remember(state.fingerPrint()) { state }
-    SideEffect {
-        circleFlow.value = circleFlow.value.filter { it.id != rememberState.id } + rememberState
+    LaunchedEffect(state.fingerPrint()) {
+        circleFlow.value = circleFlow.value.filter { it.id != state.id } + state
     }
 }
 

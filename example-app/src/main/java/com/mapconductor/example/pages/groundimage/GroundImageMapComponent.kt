@@ -1,7 +1,6 @@
 package com.mapconductor.example.pages.groundimage
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
@@ -26,15 +25,11 @@ fun GroundImageMapComponent(
             onMarkerDrag = onMarkerDrag,
         ) {
             // GroundImage
-            key(viewModel.groundImageState.id) {
-                GroundImage(viewModel.groundImageState)
-            }
+            GroundImage(viewModel.groundImageState)
 
             // BoundsMarkers
             viewModel.markers.forEach { marker ->
-                key(marker.fingerPrint()) {
-                    Marker(marker)
-                }
+                Marker(marker)
             }
         }
     }

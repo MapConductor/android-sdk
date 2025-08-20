@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.groundimage.GroundImageOverlay
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
@@ -116,17 +117,6 @@ class PolylineOverlay(
     }
 }
 
-class GroundImageOverlay(
-    override val flow: StateFlow<List<GroundImageState>>,
-) : MapOverlay<GroundImageState> {
-    override suspend fun render(
-        data: List<GroundImageState>,
-        controller: MapViewControllerAlias,
-    ) {
-        controller.addGroundImages(data)
-    }
-}
-
 val LocalPolylineCollector =
     compositionLocalOf<MutableStateFlow<List<PolylineState>>> {
         error("Polyline must be under the <MapView />")
@@ -170,7 +160,9 @@ fun CollectAndRenderOverlays(
 
         LaunchedEffect(Unit) {
             typedOverlay.flow.collect {
-                typedOverlay.render(it, controller)
+                if (it.isNotEmpty()) {
+                    typedOverlay.render(it, controller)
+                }
             }
         }
 

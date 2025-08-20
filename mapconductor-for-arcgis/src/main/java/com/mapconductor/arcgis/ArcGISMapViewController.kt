@@ -10,7 +10,6 @@ import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
 import com.mapconductor.arcgis.circle.ArcGISCircleRenderer
 import com.mapconductor.arcgis.circle.DefaultArcGISCircleRenderer
-import com.mapconductor.arcgis.groundimage.ArcGISGroundImageRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerRender
 import com.mapconductor.arcgis.polygon.ArcGISPolygonRenderer
@@ -26,9 +25,6 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.groundimage.GroundImageOverlayManager
-import com.mapconductor.core.groundimage.GroundImageRenderer
-import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
@@ -55,7 +51,6 @@ interface IArcGISMapViewController :
         ArcGISActualCircle,
         ArcGISActualPolyline,
         ArcGISActualPolygon,
-        ArcGISActualGroundImage,
     > {
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -110,7 +105,6 @@ class ArcGISMapViewController(
         ArcGISActualCircle,
         ArcGISActualPolyline,
         ArcGISActualPolygon,
-        ArcGISActualGroundImage,
     >(),
     IArcGISMapViewController {
     override val markerRenderer: MarkerRenderer<ArcGISActualMarker> =
@@ -166,24 +160,9 @@ class ArcGISMapViewController(
             onRemove = circleRenderer::removeCircles,
         )
 
-    override fun createGroundImageOverlayManager(): GroundImageOverlayManager<ArcGISActualGroundImage> {
-        TODO("Not yet implemented")
-    }
-
     override val circleRenderer: CircleRenderer<ArcGISActualCircle> =
         ArcGISCircleRenderer(
             circleLayer = circleLayer,
-            holder = holder,
-            coroutine = coroutine,
-        )
-
-    override fun onGroundImageOverlayManagerInitialized(
-        overlayManager: GroundImageOverlayManager<ArcGISActualGroundImage>,
-    ) {
-    }
-
-    override val groundImageRenderer: GroundImageRenderer<ArcGISActualGroundImage> =
-        ArcGISGroundImageRenderer(
             holder = holder,
             coroutine = coroutine,
         )
@@ -355,14 +334,6 @@ class ArcGISMapViewController(
     override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
-
-    override suspend fun addGroundImages(data: List<GroundImageState>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updateGroundImage(state: GroundImageState) {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 

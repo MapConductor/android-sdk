@@ -30,6 +30,7 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
@@ -117,11 +118,13 @@ fun <
                 }
             }
         }
-        val groundImage = scope.groundImageFlow.collectAsState()
-        groundImage.value.forEach { groundImageState ->
-            LaunchedEffect(groundImageState.id) {
-                groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updateGroundImage(groundImageState)
+        (controller as? GroundImageCapable<*>)?.let {
+            val groundImage = scope.groundImageFlow.collectAsState()
+            groundImage.value.forEach { groundImageState ->
+                LaunchedEffect(groundImageState.id) {
+                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        controller.updateGroundImage(groundImageState)
+                    }
                 }
             }
         }

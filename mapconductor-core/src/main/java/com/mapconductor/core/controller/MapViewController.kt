@@ -4,11 +4,8 @@ import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.groundimage.GroundImageOverlayManager
-import com.mapconductor.core.groundimage.GroundImageRenderer
-import com.mapconductor.core.groundimage.GroundImageState
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -24,7 +21,7 @@ import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon, ActualGroundImage> {
+interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val markerOverlayManager: MarkerOverlayManager<ActualMarker>
@@ -32,7 +29,6 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
     val polylineOverlayManager: PolylineOverlayManager<ActualPolyline>
     val circleOverlayManager: CircleOverlayManager<ActualCircle>
     val polygonOverlayManager: PolygonOverlayManager<ActualPolygon>
-    val groundImageOverlayManager: GroundImageOverlayManager<ActualGroundImage>
 
     suspend fun addMarkers(data: List<MarkerState>)
 
@@ -41,10 +37,6 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
     suspend fun addPolylines(data: List<PolylineState>)
 
     suspend fun updatePolyline(state: PolylineState)
-
-    suspend fun addGroundImages(data: List<GroundImageState>)
-
-    suspend fun updateGroundImage(state: GroundImageState)
 
     suspend fun addCircles(data: List<CircleState>)
 
@@ -73,13 +65,57 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
     fun setOnMarkerAnimationStart(listener: OnMarkerEventHandler?)
 
     fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
-
-    fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?)
 }
-typealias MapViewControllerAlias = MapViewController<*, *, *, *, *>
+typealias MapViewControllerAlias = MapViewController<*, *, *, *>
 
-abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon, ActualGroundImage> :
-    MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon, ActualGroundImage> {
+interface OverlayRenderer<ActualType, StateType, EntityType> {
+    interface Changes<EntityType> {
+        val current: EntityType
+        val prev: EntityType
+    }
+
+    suspend fun onAdd(data: List<StateType>): List<ActualType?>
+
+    suspend fun onChange(data: List<Changes<EntityType>>): List<ActualType?>
+
+    suspend fun onRemove(data: List<EntityType>)
+
+    suspend fun onPostProcess()
+}
+
+interface OverlayController<ActualType, StateType, EntityType, EventType> {
+    val zIndex: Int
+
+    // val overlayManager: OverlayManager<StateType, EntityType>
+    val renderer: OverlayRenderer<ActualType, StateType, EntityType>
+
+    suspend fun add(data: List<StateType>)
+
+    suspend fun update(state: StateType)
+
+    suspend fun clear()
+
+    var clickListener: ((EventType) -> Unit)?
+
+    fun find(position: IGeoPoint): EntityType?
+}
+
+interface OverlayManager<StateType, EntityType> {
+    suspend fun add(states: List<StateType>)
+
+    suspend fun update(state: StateType)
+
+    suspend fun clear()
+
+    fun getById(id: String): StateType?
+
+    fun allEntities(): List<EntityType>
+
+    fun find(position: IGeoPoint): EntityType?
+}
+
+abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
+    MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
 
     override val markerOverlayManager: MarkerOverlayManager<ActualMarker> by lazy {
@@ -106,14 +142,6 @@ abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline,
             onPolygonOverlayManagerInitialized(overlayManager)
         }
     }
-    abstract val groundImageRenderer: GroundImageRenderer<ActualGroundImage>
-
-    override val groundImageOverlayManager: GroundImageOverlayManager<ActualGroundImage> by lazy {
-        createGroundImageOverlayManager().also { overlayManager ->
-            groundImageRenderer.init(overlayManager)
-            onGroundImageOverlayManagerInitialized(overlayManager)
-        }
-    }
 
     abstract val circleRenderer: CircleRenderer<ActualCircle>
 
@@ -132,10 +160,6 @@ abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline,
 
     protected abstract fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ActualCircle>)
 
-    protected abstract fun onGroundImageOverlayManagerInitialized(
-        overlayManager: GroundImageOverlayManager<ActualGroundImage>,
-    )
-
     protected abstract fun createMarkerOverlayManager(): MarkerOverlayManager<ActualMarker>
 
     protected abstract fun createPolylineOverlayManager(): PolylineOverlayManager<ActualPolyline>
@@ -143,8 +167,6 @@ abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline,
     protected abstract fun createPolygonOverlayManager(): PolygonOverlayManager<ActualPolygon>
 
     protected abstract fun createCircleOverlayManager(): CircleOverlayManager<ActualCircle>
-
-    protected abstract fun createGroundImageOverlayManager(): GroundImageOverlayManager<ActualGroundImage>
 
     protected var cameraMoveCallback: OnCameraMoveHandler? = null
     protected var mapClickCallback: OnMapEventHandler? = null
@@ -155,7 +177,6 @@ abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline,
     protected var markerDragEndCallback: OnMarkerEventHandler? = null
     protected var circleClickCallback: OnCircleEventHandler? = null
     protected var polylineClickCallback: OnPolylineEventHandler? = null
-    protected var groundImageClickCallback: OnGroundImageEventHandler? = null
 
     abstract fun setupListeners()
 
@@ -202,8 +223,4 @@ abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline,
     override fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?) =
         markerRenderer
             .setOnMarkerAnimationEnd(listener)
-
-    override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
-        this.groundImageClickCallback = listener
-    }
 }

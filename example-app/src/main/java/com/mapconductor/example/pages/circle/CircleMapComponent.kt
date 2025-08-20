@@ -31,9 +31,7 @@ fun CircleMapComponent(
             onMarkerDrag = onMarkerDrag,
         ) {
             // Circle
-            key(viewModel.circleState.id) {
-                Circle(viewModel.circleState)
-            }
+            Circle(viewModel.circleState)
 
             // Center marker (not draggable)
             key(viewModel.centerMarker.id) {

@@ -15,7 +15,6 @@ import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -69,14 +68,14 @@ class GroundImageMapPageViewModelImpl(
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
-    private var _southWestPosition by mutableStateOf(
+    private var southWestPosition by mutableStateOf(
         GeoPoint(
             latitude = 40.712216,
             longitude = -74.22655,
         ),
     )
 
-    private var _northEastPosition by mutableStateOf(
+    private var northEastPosition by mutableStateOf(
         GeoPoint(
             latitude = 40.773941,
             longitude = -74.12544,
@@ -84,10 +83,10 @@ class GroundImageMapPageViewModelImpl(
     )
 
     private fun calculateMarkerLabels(): Pair<String, String> {
-        val swLat = _southWestPosition.latitude
-        val swLng = _southWestPosition.longitude
-        val neLat = _northEastPosition.latitude
-        val neLng = _northEastPosition.longitude
+        val swLat = southWestPosition.latitude
+        val swLng = southWestPosition.longitude
+        val neLat = northEastPosition.latitude
+        val neLng = northEastPosition.longitude
 
         val southWestLabel =
             when {
@@ -111,11 +110,10 @@ class GroundImageMapPageViewModelImpl(
     override val markers: List<MarkerState>
         get() {
             val (swLabel, neLabel) = calculateMarkerLabels()
-            Log.d("debug", "$swLabel, $neLabel")
             return listOf(
                 MarkerState(
                     id = "south_west",
-                    position = _southWestPosition,
+                    position = southWestPosition,
                     icon =
                         DefaultIcon(
                             fillColor = Color.Blue,
@@ -127,7 +125,7 @@ class GroundImageMapPageViewModelImpl(
                 ),
                 MarkerState(
                     id = "north_east",
-                    position = _northEastPosition,
+                    position = northEastPosition,
                     icon =
                         DefaultIcon(
                             fillColor = Color.Red,
@@ -146,8 +144,8 @@ class GroundImageMapPageViewModelImpl(
 
     private var bounds by mutableStateOf(
         GeoRectBounds(
-            southWest = GeoPoint.from(_southWestPosition),
-            northEast = GeoPoint.from(_northEastPosition),
+            southWest = GeoPoint.from(southWestPosition),
+            northEast = GeoPoint.from(northEastPosition),
         ),
     )
 
@@ -173,8 +171,8 @@ class GroundImageMapPageViewModelImpl(
     override fun onMarkerDrag(dragged: MarkerState) {
         // Update the internal position based on which marker was dragged
         when (dragged.id) {
-            "south_west" -> _southWestPosition = GeoPoint.from(dragged.position)
-            "north_east" -> _northEastPosition = GeoPoint.from(dragged.position)
+            "south_west" -> southWestPosition = GeoPoint.from(dragged.position)
+            "north_east" -> northEastPosition = GeoPoint.from(dragged.position)
         }
 
         // Update bounds using the new positions
