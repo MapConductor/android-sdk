@@ -100,20 +100,6 @@ interface OverlayController<ActualType, StateType, EntityType, EventType> {
     fun find(position: IGeoPoint): EntityType?
 }
 
-interface OverlayManager<StateType, EntityType> {
-    suspend fun add(states: List<StateType>)
-
-    suspend fun update(state: StateType)
-
-    suspend fun clear()
-
-    fun getById(id: String): StateType?
-
-    fun allEntities(): List<EntityType>
-
-    fun find(position: IGeoPoint): EntityType?
-}
-
 abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
     MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
     abstract val markerRenderer: MarkerRenderer<ActualMarker>
