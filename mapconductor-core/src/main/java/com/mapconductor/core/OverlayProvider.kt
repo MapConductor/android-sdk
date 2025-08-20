@@ -170,7 +170,9 @@ fun CollectAndRenderOverlays(
 
         LaunchedEffect(Unit) {
             typedOverlay.flow.collect {
-                typedOverlay.render(it, controller)
+                if (it.isNotEmpty()) {
+                    typedOverlay.render(it, controller)
+                }
             }
         }
 
