@@ -6,7 +6,7 @@ import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-interface GroundImageCapable<ActualGroundImage> {
+interface GroundImageCapable {
     suspend fun compositionGroundImages(data: List<GroundImageState>)
 
     suspend fun updateGroundImage(state: GroundImageState)

@@ -55,7 +55,7 @@ import kotlinx.coroutines.launch
 
 interface IGoogleMapViewController :
     MapViewController<Marker, Circle, Polyline, Polygon>,
-    GroundImageCapable<ActualGoogleMapGroundImage> {
+    GroundImageCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
