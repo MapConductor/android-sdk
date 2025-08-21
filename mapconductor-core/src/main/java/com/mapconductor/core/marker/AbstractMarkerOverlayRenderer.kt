@@ -1,0 +1,135 @@
+package com.mapconductor.core.marker
+
+import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.settings.Settings
+import kotlin.math.min
+import kotlin.math.pow
+import android.os.SystemClock
+import android.view.animation.BounceInterpolator
+import android.view.animation.LinearInterpolator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+
+abstract class AbstractMarkerOverlayRenderer<
+    MapViewHolderType : MapViewHolder<*, *>,
+    ActualMarker,
+>(
+    val holder: MapViewHolderType,
+    val coroutine: CoroutineScope,
+    val tileSize: Int = 256,
+    val dropAnimateDuration: Int = Settings.Default.markerDropAnimateDuration,
+    val bounceAnimateDuration: Int = Settings.Default.markerBounceAnimateDuration,
+) : MarkerOverlayRenderer<ActualMarker> {
+    override var animateStartListener: OnMarkerEventHandler? = null
+    override var animateEndListener: OnMarkerEventHandler? = null
+
+    abstract fun setMarkerPosition(
+        markerEntity: MarkerEntity<ActualMarker>,
+        position: GeoPoint,
+    )
+
+    override suspend fun onAnimate(entity: MarkerEntity<ActualMarker>) {
+        val animation = entity.state.getAnimation()
+        when (animation) {
+            MarkerAnimation.Drop ->
+                animateMarkerDrop(
+                    entity = entity,
+                    duration = dropAnimateDuration,
+                )
+            MarkerAnimation.Bounce ->
+                animateMarkerBounce(
+                    entity = entity,
+                    duration = bounceAnimateDuration,
+                )
+            else -> throw IllegalArgumentException("No animation is available: $animation")
+        }
+    }
+
+    fun zoomToMetersPerPixel(zoom: Double): Double {
+        val earthCircumference = 40075016.686
+        return earthCircumference / (tileSize * 2.0.pow(zoom))
+    }
+
+    fun animateMarkerDrop(
+        entity: MarkerEntity<ActualMarker>,
+        duration: Int,
+    ) {
+        // アニメーションの最終的な目標地点(地理座標)
+        val target = entity.state.position
+
+        // 線形補間
+        val interpolator = LinearInterpolator()
+
+        // 開始地点:x座標はMarkerと同じ、y座標は画面上端。なければreturn
+        val startPoint = holder.toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
+
+        animateStartListener?.invoke(entity.state)
+
+        flow {
+            val startTime = SystemClock.uptimeMillis()
+            var t = 0f
+            while (t < 1f) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                t = min(1f, elapsed.toFloat() / duration)
+                emit(interpolator.getInterpolation(t))
+                delay(16L)
+            }
+        }.onEach { t: Float ->
+            // 開始時の画面座標から緯度経度に戻す(垂直方向アニメーション起点)
+            val startLatLng = holder.fromScreenOffset(startPoint)!!
+
+            // 緯度・経度を線形補間
+            val lat = t * target.latitude + (1f - t) * startLatLng.latitude
+            val lng = t * target.longitude + (1f - t) * startLatLng.longitude
+
+            // 現在の座標をマーカーに適用
+            val newPosition = GeoPoint.fromLatLong(lat, lng)
+            setMarkerPosition(entity, newPosition)
+        }.onCompletion {
+            entity.state.position = target
+            entity.state.setAnimation(null)
+            animateEndListener?.invoke(entity.state)
+        }.launchIn(coroutine)
+    }
+
+    fun animateMarkerBounce(
+        entity: MarkerEntity<ActualMarker>,
+        duration: Int,
+    ) {
+        val startTime = SystemClock.uptimeMillis()
+
+        val target = entity.state.position
+        val interpolator = BounceInterpolator()
+        val startPoint = holder.toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
+
+        animateStartListener?.invoke(entity.state)
+        flow {
+            var t = 0f
+            while (t < 1f) {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                t = interpolator.getInterpolation(min(1f, elapsed.toFloat() / duration))
+                emit(t)
+                delay(16L)
+            }
+        }.onEach { t ->
+            val startLatLng = holder.fromScreenOffset(startPoint) ?: return@onEach
+            val lng = t * target.longitude + (1f - t) * startLatLng.longitude
+            val lat = t * target.latitude + (1f - t) * startLatLng.latitude
+
+            // 現在の座標をマーカーに適用
+            val newPosition = GeoPoint.fromLatLong(lat, lng)
+            setMarkerPosition(entity, newPosition)
+        }.onCompletion {
+            // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
+            entity.state.position = target
+            entity.state.setAnimation(null)
+            animateEndListener?.invoke(entity.state)
+        }.launchIn(coroutine)
+    }
+}

@@ -18,21 +18,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface IGoogleMapViewState : MapViewState<Int>
+interface GoogleMapViewState : MapViewState<Int>
 
-class GoogleMapViewState(
+class GoogleMapViewStateImpl(
     override val id: String,
     override val mapDesignType: GoogleMapDesignType,
     override val initCameraPosition: MapCameraPosition,
 ) : MapViewStateImpl<Int>(),
-    IGoogleMapViewState {
+    GoogleMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddingsImpl> = _padding.asStateFlow()
 
     // Camera position
-    private val _cameraPosition = MutableStateFlow(initCameraPosition)
-    override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+    private val _cameraPosition = MutableStateFlow<MapCameraPosition?>(initCameraPosition)
+    override val cameraPosition: StateFlow<MapCameraPosition?> = _cameraPosition.asStateFlow()
 
     internal var controller: IGoogleMapViewController? = null
 
@@ -46,12 +46,13 @@ class GoogleMapViewState(
             listener?.onComplete(false)
             return
         }
-        val currCameraPosition = this.cameraPosition.value
-        val newPosition =
-            currCameraPosition.copy(
-                position = position,
-            )
-        this.moveCameraTo(newPosition, durationMs, listener)
+        this.cameraPosition.value?.let { current ->
+            val newPosition =
+                current.copy(
+                    position = position,
+                )
+            this.moveCameraTo(newPosition, durationMs, listener)
+        }
     }
 
     override fun moveCameraTo(
@@ -101,11 +102,11 @@ class GoogleMapViewState(
 }
 
 // GoogleMapViewSaver implementation
-class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
-    override fun extractCameraPosition(state: GoogleMapViewState): MapCameraPosition? = state.cameraPosition.value
+class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewStateImpl>() {
+    override fun extractCameraPosition(state: GoogleMapViewStateImpl): MapCameraPosition? = state.cameraPosition.value
 
     override fun saveMapDesign(
-        state: GoogleMapViewState,
+        state: GoogleMapViewStateImpl,
         bundle: Bundle,
     ) {
         bundle.putInt("id", state.mapDesignType.id)
@@ -115,8 +116,8 @@ class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
         stateId: String,
         mapDesignBundle: Bundle?,
         cameraPosition: MapCameraPosition,
-    ): GoogleMapViewState =
-        GoogleMapViewState(
+    ): GoogleMapViewStateImpl =
+        GoogleMapViewStateImpl(
             id = stateId,
             mapDesignType =
                 GoogleMapDesign.Create(
@@ -125,14 +126,14 @@ class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
             initCameraPosition = cameraPosition,
         )
 
-    override fun getStateId(state: GoogleMapViewState): String = state.id
+    override fun getStateId(state: GoogleMapViewStateImpl): String = state.id
 }
 
 @Composable
 fun rememberGoogleMapViewState(
     mapDesign: GoogleMapDesignType = GoogleMapDesign.Normal,
     cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
-): GoogleMapViewState {
+): GoogleMapViewStateImpl {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()
         mutableStateOf(uuid)
@@ -142,7 +143,7 @@ fun rememberGoogleMapViewState(
             stateSaver = GoogleMapViewSaver().createSaver(),
         ) {
             mutableStateOf(
-                GoogleMapViewState(
+                GoogleMapViewStateImpl(
                     id = stateId,
                     mapDesignType = mapDesign,
                     initCameraPosition = MapCameraPosition.from(cameraPosition),

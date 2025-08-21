@@ -10,6 +10,7 @@ import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
+import com.mapconductor.core.marker.MarkerOverlay
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineState
@@ -76,17 +77,6 @@ open class MapViewScope {
         // registry.register(PolygonOverlay(polygonFlow)) // TODO: Implement addPolygons in MapViewController
         registry.register(GroundImageOverlay(groundImageFlow))
         return registry
-    }
-}
-
-class MarkerOverlay(
-    override val flow: StateFlow<List<MarkerState>>,
-) : MapOverlay<MarkerState> {
-    override suspend fun render(
-        data: List<MarkerState>,
-        controller: MapViewControllerAlias,
-    ) {
-        controller.addMarkers(data)
     }
 }
 

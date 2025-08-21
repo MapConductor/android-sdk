@@ -4,13 +4,14 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.toPoint
 
 class MarkerDragLayer(
     sourceId: String,
     layerId: String,
 ) : MarkerLayer(sourceId, layerId) {
-    var selected: MarkerEntity<Feature>? = null
+    var selected: MarkerEntity<MapboxActualMarker>? = null
 
     fun updatePosition(geoPoint: GeoPoint) {
         selected?.let {
@@ -28,8 +29,8 @@ class MarkerDragLayer(
                         it.state.id,
                     )
                 it.marker = feature
-                listOf<Feature>(feature)
-            } ?: emptyList<Feature>()
+                listOf<MapboxActualMarker>(feature)
+            } ?: emptyList<MapboxActualMarker>()
 
         source.featureCollection(
             FeatureCollection.fromFeatures(features),

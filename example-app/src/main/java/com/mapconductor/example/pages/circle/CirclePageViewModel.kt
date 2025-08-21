@@ -40,7 +40,7 @@ interface CirclePageViewModel {
 
     fun onCircleClick(event: CircleClickEvent)
 
-    fun onMarkerDrag(dragged: MarkerState)
+    fun onMarkerMove(dragged: MarkerState)
 
     fun showToast(text: String)
 
@@ -152,7 +152,7 @@ class CirclePageViewModelImpl :
         showToast("Circle clicked - Radius: ${radiusMeters.toInt()}m")
     }
 
-    override fun onMarkerDrag(dragged: MarkerState) {
+    override fun onMarkerMove(dragged: MarkerState) {
         _edgeMarker.value.position = dragged.position
 
         // Update circle radius

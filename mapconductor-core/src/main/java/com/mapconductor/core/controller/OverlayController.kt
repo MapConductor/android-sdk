@@ -2,12 +2,8 @@ package com.mapconductor.core.controller
 
 import com.mapconductor.core.features.IGeoPoint
 
-
 interface OverlayController<ActualType, StateType, EntityType, EventType> {
     val zIndex: Int
-
-    // val overlayManager: OverlayManager<StateType, EntityType>
-    val renderer: OverlayRenderer<ActualType, StateType, EntityType>
 
     suspend fun add(data: List<StateType>)
 

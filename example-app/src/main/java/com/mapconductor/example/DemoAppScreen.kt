@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
@@ -29,8 +31,21 @@ import com.mapconductor.example.ui.sidebar.SidebarItem
 import com.mapconductor.example.ui.theme.AppTheme
 
 @Composable
-fun DemoAppScreen() {
-    val navigationViewModel: NavigationViewModel = viewModel()
+fun DemoAppScreen(initPage: String = "map") {
+    val navigationViewModel: NavigationViewModel =
+        viewModel<NavigationViewModel>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(NavigationViewModel::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return NavigationViewModel(initPage) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                },
+        )
+
     val currentPage by navigationViewModel.currentPage
     val isSidebarExpanded by navigationViewModel.isSidebarExpanded
     val context = LocalContext.current

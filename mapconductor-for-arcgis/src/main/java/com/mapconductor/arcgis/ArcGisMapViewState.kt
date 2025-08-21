@@ -22,14 +22,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface IArcGISMapViewState : MapViewState<String>
+interface ArcGISMapViewState : MapViewState<String>
 
-class ArcGISMapViewState(
+class ArcGISMapViewStateImpl(
     override val id: String,
     override val initCameraPosition: MapCameraPosition,
     override val mapDesignType: ArcGISDesign,
 ) : MapViewStateImpl<String>(),
-    IArcGISMapViewState {
+    ArcGISMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
@@ -74,11 +74,11 @@ class ArcGISMapViewState(
     }
 }
 
-class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewState>() {
-    override fun extractCameraPosition(state: ArcGISMapViewState): MapCameraPosition? = state.cameraPosition.value
+class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewStateImpl>() {
+    override fun extractCameraPosition(state: ArcGISMapViewStateImpl): MapCameraPosition? = state.cameraPosition.value
 
     override fun saveMapDesign(
-        state: ArcGISMapViewState,
+        state: ArcGISMapViewStateImpl,
         bundle: Bundle,
     ) {
         bundle.putString("id", state.mapDesignType.id)
@@ -88,8 +88,8 @@ class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewState>() {
         stateId: String,
         mapDesignBundle: Bundle?,
         cameraPosition: MapCameraPosition,
-    ): ArcGISMapViewState =
-        ArcGISMapViewState(
+    ): ArcGISMapViewStateImpl =
+        ArcGISMapViewStateImpl(
             id = stateId,
             mapDesignType =
                 ArcGISDesign.Create(
@@ -98,14 +98,14 @@ class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewState>() {
             initCameraPosition = cameraPosition,
         )
 
-    override fun getStateId(state: ArcGISMapViewState): String = state.id
+    override fun getStateId(state: ArcGISMapViewStateImpl): String = state.id
 }
 
 @Composable
 fun rememberArcGISMapViewState(
     mapDesign: ArcGISDesign = ArcGISDesign.Streets,
     cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
-): ArcGISMapViewState {
+): ArcGISMapViewStateImpl {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()
         mutableStateOf(uuid)
@@ -115,7 +115,7 @@ fun rememberArcGISMapViewState(
             stateSaver = ArcGISMapViewSaver().createSaver(),
         ) {
             mutableStateOf(
-                ArcGISMapViewState(
+                ArcGISMapViewStateImpl(
                     id = stateId,
                     mapDesignType = mapDesign,
                     initCameraPosition = MapCameraPosition.from(cameraPosition),

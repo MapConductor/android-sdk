@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DemoMapPageScaffold
+import com.mapconductor.example.ui.GroundImageCapableMapViewItems
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
@@ -41,7 +42,7 @@ fun GroundImageMapPage(
         )
 
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = GroundImageCapableMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->

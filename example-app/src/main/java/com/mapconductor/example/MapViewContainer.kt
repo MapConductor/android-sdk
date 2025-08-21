@@ -3,7 +3,7 @@ package com.mapconductor.example
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISMapView
-import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.arcgis.ArcGISMapViewStateImpl
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
@@ -11,12 +11,12 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.googlemaps.GoogleMapViewStateImpl
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.here.HereMapView
-import com.mapconductor.here.HereMapViewState
+import com.mapconductor.here.HereViewStateImpl
 import com.mapconductor.mapbox.MapboxMapView
-import com.mapconductor.mapbox.MapboxMapViewState
+import com.mapconductor.mapbox.MapboxViewStateImpl
 
 @Composable
 fun MapViewContainer(
@@ -35,7 +35,7 @@ fun MapViewContainer(
     content: @Composable MapViewScope.() -> Unit,
 ) {
     when (state) {
-        is GoogleMapViewState ->
+        is GoogleMapViewStateImpl ->
             GoogleMapsView(
                 modifier = modifier,
                 state = state,
@@ -52,7 +52,7 @@ fun MapViewContainer(
                 content = content,
             )
 
-        is HereMapViewState ->
+        is HereViewStateImpl ->
             HereMapView(
                 modifier = modifier,
                 state = state,
@@ -63,13 +63,12 @@ fun MapViewContainer(
                 onMarkerDragEnd = onMarkerDragEnd,
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onGroundImageClick = onGroundImageClick,
                 onCircleClick = onCircleClick,
                 onPolylineClick = onPolylineClick,
                 content = content,
             )
 
-        is MapboxMapViewState ->
+        is MapboxViewStateImpl ->
             MapboxMapView(
                 modifier = modifier,
                 state = state,
@@ -82,11 +81,10 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onPolylineClick = onPolylineClick,
-                onGroundImageClick = onGroundImageClick,
                 content = content,
             )
 
-        is ArcGISMapViewState ->
+        is ArcGISMapViewStateImpl ->
             ArcGISMapView(
                 modifier = modifier,
                 state = state,
@@ -98,7 +96,6 @@ fun MapViewContainer(
                 onMarkerAnimateStart = onMarkerAnimateStart,
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
-                onGroundImageClick = onGroundImageClick,
                 onPolylineClick = onPolylineClick,
                 content = content,
             )

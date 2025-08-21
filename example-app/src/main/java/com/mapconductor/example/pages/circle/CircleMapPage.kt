@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
@@ -23,7 +24,7 @@ fun CircleMapPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
@@ -35,7 +36,7 @@ fun CircleMapPage(
             onMapClick = viewModel::onMapClick,
             onMarkerClick = viewModel::onMarkerClick,
             onCircleClick = viewModel::onCircleClick,
-            onMarkerDrag = viewModel::onMarkerDrag,
+            onMarkerMove = viewModel::onMarkerMove,
         )
 
         // Message Card

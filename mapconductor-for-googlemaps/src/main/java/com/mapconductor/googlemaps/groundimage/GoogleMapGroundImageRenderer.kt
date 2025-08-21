@@ -7,7 +7,7 @@ import com.google.android.gms.maps.model.GroundOverlayOptions
 import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.groundimage.GroundImageEntity
 import com.mapconductor.core.groundimage.GroundImageState
-import com.mapconductor.googlemaps.ActualGoogleMapGroundImage
+import com.mapconductor.googlemaps.GoogleMapActualGroundImage
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLngBounds
 import kotlinx.coroutines.CoroutineScope
@@ -18,8 +18,8 @@ import kotlinx.coroutines.withContext
 class GoogleMapGroundImageRenderer(
     val holder: GoogleMapViewHolder,
     val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : OverlayRenderer<ActualGoogleMapGroundImage, GroundImageState, GroundImageEntity<ActualGoogleMapGroundImage>> {
-    override suspend fun onAdd(data: List<GroundImageState>): List<ActualGoogleMapGroundImage?> {
+) : OverlayRenderer<GoogleMapActualGroundImage, GroundImageState, GroundImageEntity<GoogleMapActualGroundImage>> {
+    override suspend fun onAdd(data: List<GroundImageState>): List<GoogleMapActualGroundImage?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext data.map { state ->
                 val bounds = state.bounds.toLatLngBounds() ?: return@withContext emptyList()
@@ -37,7 +37,7 @@ class GoogleMapGroundImageRenderer(
         }
     }
 
-    override suspend fun onRemove(data: List<GroundImageEntity<ActualGoogleMapGroundImage>>) {
+    override suspend fun onRemove(data: List<GroundImageEntity<GoogleMapActualGroundImage>>) {
         coroutine.launch {
             data.forEach { params -> params.groundImage.remove() }
         }
@@ -48,7 +48,7 @@ class GoogleMapGroundImageRenderer(
     }
 
     override suspend fun onChange(
-        data: List<OverlayRenderer.Changes<GroundImageEntity<ActualGoogleMapGroundImage>>>,
+        data: List<OverlayRenderer.ChangeParams<GroundImageEntity<GoogleMapActualGroundImage>>>,
     ): List<GroundOverlay?> {
         return withContext(coroutine.coroutineContext) {
             return@withContext data.map { params ->

@@ -10,7 +10,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
@@ -24,18 +23,17 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun HereMapView(
-    state: IHereMapViewState,
+    state: HereViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler? = {},
-    onMarkerClick: OnMarkerEventHandler? = {},
-    onMarkerDragStart: OnMarkerEventHandler? = {},
-    onMarkerDrag: OnMarkerEventHandler? = {},
-    onMarkerDragEnd: OnMarkerEventHandler? = {},
-    onMarkerAnimateStart: OnMarkerEventHandler? = {},
-    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
-    onGroundImageClick: OnGroundImageEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = {},
-    onPolylineClick: OnPolylineEventHandler? = {},
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
     content: (@Composable HereMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<HereMapViewHolder>() }
@@ -68,23 +66,21 @@ fun HereMapView(
                     options = mapInitOptions,
                 )
 
-            (state as? HereMapViewState)?.let { mapViewState ->
+            (state as? HereViewStateImpl)?.let { mapViewState ->
                 mapViewState.controller = controller
                 controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
             controller.setMapClickListener(onMapClick)
-            controller.setMarkerClickListener(onMarkerClick)
-            controller.setMarkerDragStartListener(onMarkerDragStart)
-            controller.setMarkerDragListener(onMarkerDrag)
-            controller.setMarkerDragEndListener(onMarkerDragEnd)
+            controller.setOnMarkerClickListener(onMarkerClick)
+            controller.setOnMarkerDragStart(onMarkerDragStart)
+            controller.setOnMarkerDrag(onMarkerDrag)
+            controller.setOnMarkerDragEnd(onMarkerDragEnd)
+            controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setCircleClickListener(onCircleClick)
             controller.setPolylineClickListener(onPolylineClick)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
 
-            (state as? HereMapViewState)?.controller = controller
+            (state as? HereViewStateImpl)?.controller = controller
 
             controller.holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
                 if (mapError != null) {

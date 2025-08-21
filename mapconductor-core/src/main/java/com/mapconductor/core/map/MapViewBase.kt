@@ -34,6 +34,7 @@ import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.settings.Settings
 import android.view.View
 import android.view.ViewGroup
@@ -98,7 +99,7 @@ fun <
         markers.value.forEach { markerState ->
             LaunchedEffect(markerState.id) {
                 markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updateMarker(markerState)
+                    (controller as? MarkerCapable<*>)?.updateMarker(markerState)
                 }
             }
         }
@@ -118,7 +119,7 @@ fun <
                 }
             }
         }
-        (controller as? GroundImageCapable<*>)?.let {
+        (controller as? GroundImageCapable)?.let {
             val groundImage = scope.groundImageFlow.collectAsState()
             groundImage.value.forEach { groundImageState ->
                 LaunchedEffect(groundImageState.id) {
@@ -185,7 +186,7 @@ fun <
         }
     }
 
-    if (controller != null && bubbles.isNotEmpty()) {
+    if (controller != null && bubbles.isNotEmpty() && cameraPosition != null) {
         Box(
             modifier =
                 Modifier

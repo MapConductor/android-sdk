@@ -7,11 +7,8 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveCanceledListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
-import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
-import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
 import com.mapconductor.core.circle.CircleClickEvent
@@ -21,7 +18,6 @@ import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.groundimage.GroundImageController
 import com.mapconductor.core.groundimage.GroundImageEvent
@@ -29,10 +25,9 @@ import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerOverlayManager
-import com.mapconductor.core.marker.MarkerRenderer
-import com.mapconductor.core.marker.MarkerRendererFactory
+import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.PolygonOverlayManager
 import com.mapconductor.core.polygon.PolygonRenderer
 import com.mapconductor.core.polygon.PolygonRendererFactory
@@ -40,11 +35,9 @@ import com.mapconductor.core.polyline.PolylineOverlayManager
 import com.mapconductor.core.polyline.PolylineRenderer
 import com.mapconductor.core.polyline.PolylineRendererFactory
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.circle.DefaultGoogleMapCircleRenderer
 import com.mapconductor.googlemaps.circle.GoogleMapCircleRenderer
-import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerRenderer
-import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.polygon.DefaultGoogleMapPolygonRenderer
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonRenderer
 import com.mapconductor.googlemaps.polyline.DefaultGoogleMapPolylineRenderer
@@ -54,8 +47,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface IGoogleMapViewController :
-    MapViewController<Marker, Circle, Polyline, Polygon>,
-    GroundImageCapable {
+    MapViewController<Circle, Polyline, Polygon>,
+    GroundImageCapable,
+    MarkerCapable<GoogleMapActualMarker> {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -70,46 +64,23 @@ interface IGoogleMapViewController :
 
 class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
+    private val markerController: GoogleMapMarkerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    override val hexGeocell: HexGeocell =
-        HexGeocell(
-            projection = WebMercator,
-            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-        ),
-    private val markerRendererFactory: MarkerRendererFactory<Marker> = DefaultGoogleMapMarkerRenderer(),
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<Polygon> = DefaultGoogleMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
-    private val groundImageController: GroundImageController<ActualGoogleMapGroundImage>,
+    private val groundImageController: GroundImageController<GoogleMapActualGroundImage>,
 ) : BaseMapViewController<
-        ActualGoogleMapMarker,
-        ActualGoogleMapCircle,
-        ActualGoogleMapPolyline,
-        ActualGoogleMapPolygon,
+        GoogleMapActualCircle,
+        GoogleMapActualPolyline,
+        GoogleMapActualPolygon,
     >(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
     OnCameraIdleListener,
-    OnMarkerClickListener,
-    OnMapClickListener,
-    OnMarkerDragListener {
-    override val markerRenderer: MarkerRenderer<Marker> =
-        GoogleMapMarkerRenderer(
-            holder = holder,
-            coroutine = coroutine,
-        )
-
-    override fun createMarkerOverlayManager(): MarkerOverlayManager<Marker> =
-        markerRendererFactory.create(
-            hexGeocell = hexGeocell,
-            onIconAdd = markerRenderer::addIcons,
-            onIconRemove = markerRenderer::removeIcons,
-            onIconChange = markerRenderer::changeIcons,
-            onAnimate = markerRenderer::animate,
-        )
-
+    OnMapClickListener {
     override val polylineRenderer: PolylineRenderer<Polyline> =
         GoogleMapPolylineRenderer(
             holder = holder,
@@ -145,9 +116,6 @@ class GoogleMapViewController(
     override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<Polyline>) {
     }
 
-    override fun onMarkerOverlayManagerInitialized(overlayManager: MarkerOverlayManager<Marker>) {
-    }
-
     override val circleRenderer: CircleRenderer<Circle> =
         GoogleMapCircleRenderer(
             holder = holder,
@@ -163,7 +131,6 @@ class GoogleMapViewController(
 
     init {
         setupListeners()
-        markerRenderer.init(markerOverlayManager)
     }
 
     override fun setupListeners() {
@@ -171,9 +138,7 @@ class GoogleMapViewController(
         holder.map.setOnCameraMoveCanceledListener(this)
         holder.map.setOnCameraMoveListener(this)
         holder.map.setOnCameraIdleListener(this)
-        holder.map.setOnMarkerClickListener(this)
         holder.map.setOnMapClickListener(this)
-        holder.map.setOnMarkerDragListener(this)
     }
 
     override fun moveCamera(
@@ -213,13 +178,16 @@ class GoogleMapViewController(
     }
 
     override suspend fun clearOverlays() {
-        markerOverlayManager.clearOverlays()
+        markerController.clear()
+        groundImageController.clear()
+        circleOverlayManager.clearOverlays()
         polylineOverlayManager.clearOverlays()
+        polygonOverlayManager.clearOverlays()
     }
 
-    override suspend fun addMarkers(markerList: List<MarkerState>) = markerOverlayManager.addMarkers(markerList)
+    override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
 
-    override suspend fun updateMarker(state: MarkerState) = markerOverlayManager.updateMarker(state)
+    override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
 
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
@@ -257,18 +225,6 @@ class GoogleMapViewController(
         }
     }
 
-    override fun onMarkerClick(marker: Marker): Boolean {
-        val key = marker.tag?.toString() ?: return true
-        val state = markerOverlayManager.getMarkerState(key) ?: return true
-        if (!state.clickable) return true
-        markerClickCallback?.let {
-            coroutine.launch {
-                it(state)
-            }
-        }
-        return true
-    }
-
     override fun onMapClick(position: LatLng) {
         val touchPosition = position.toGeoPoint()
 
@@ -299,45 +255,35 @@ class GoogleMapViewController(
         }
     }
 
-    private fun getMarkerStateFrom(marker: Marker): MarkerState? {
-        val markerId = marker.tag as? String ?: return null
-        return markerOverlayManager.getMarkerState(markerId)
-    }
-
-    override fun onMarkerDrag(marker: Marker) {
-        this.getMarkerStateFrom(marker)?.also { state ->
-
-            // Suppress the recomposition for the position property
-            markerRenderer.setDraggingState(state, true)
-
-            state.position = marker.position.toGeoPoint()
-            markerDragCallback?.invoke(state)
-        }
-    }
-
-    override fun onMarkerDragEnd(marker: Marker) {
-        this.getMarkerStateFrom(marker)?.also { state ->
-            state.position = marker.position.toGeoPoint()
-            markerDragEndCallback?.invoke(state)
-        }
-    }
-
-    override fun onMarkerDragStart(marker: Marker) {
-        this.getMarkerStateFrom(marker)?.also { state ->
-            state.position = marker.position.toGeoPoint()
-
-            // Restore the recomposition for the position property
-            markerRenderer.setDraggingState(state, false)
-
-            markerDragStartCallback?.invoke(state)
-        }
-    }
-
     override suspend fun compositionGroundImages(data: List<GroundImageState>) = groundImageController.add(data)
 
     override suspend fun updateGroundImage(state: GroundImageState) = groundImageController.update(state)
 
-    fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
+    override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
+        this.markerController.dragStartListener = listener
+    }
+
+    override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
+        this.markerController.dragListener = listener
+    }
+
+    override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
+        this.markerController.dragEndListener = listener
+    }
+
+    override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
+        this.markerController.renderer.animateStartListener = listener
+    }
+
+    override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
+        this.markerController.renderer.animateEndListener = listener
+    }
+
+    override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
+        this.markerController.clickListener = listener
+    }
+
+    override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
         this.groundImageController.clickListener = listener
     }
 }

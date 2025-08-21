@@ -7,29 +7,32 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.mapbox.marker.MapboxMarkerController
+import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 
 @Composable
 fun MapboxMapView(
-    state: IMapboxMapViewState,
+    state: MapboxViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler? = {},
-    onMarkerClick: OnMarkerEventHandler? = {},
-    onMarkerDragStart: OnMarkerEventHandler? = {},
-    onMarkerDrag: OnMarkerEventHandler? = {},
-    onMarkerDragEnd: OnMarkerEventHandler? = {},
-    onMarkerAnimateStart: OnMarkerEventHandler? = {},
-    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
-    onCircleClick: OnCircleEventHandler? = {},
-    onPolylineClick: OnPolylineEventHandler? = {},
-    onGroundImageClick: OnGroundImageEventHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
     content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
@@ -62,26 +65,26 @@ fun MapboxMapView(
                 )
 
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
+            val markerController = getMarkerController(holder)
 
             val controller =
                 MapboxMapViewController(
                     holder = holder,
+                    markerController = markerController,
                 )
-            (state as? MapboxMapViewState)?.let { mapViewState ->
+            (state as? MapboxViewStateImpl)?.let { mapViewState ->
                 mapViewState.controller = controller
                 controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
             controller.setMapClickListener(onMapClick)
-            controller.setMarkerClickListener(onMarkerClick)
-            controller.setMarkerDragStartListener(onMarkerDragStart)
-            controller.setMarkerDragListener(onMarkerDrag)
-            controller.setMarkerDragEndListener(onMarkerDragEnd)
             controller.setCircleClickListener(onCircleClick)
             controller.setPolylineClickListener(onPolylineClick)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
+            controller.setOnMarkerClickListener(onMarkerClick)
+            controller.setOnMarkerDragStart(onMarkerDragStart)
+            controller.setOnMarkerDrag(onMarkerDrag)
+            controller.setOnMarkerDragEnd(onMarkerDragEnd)
+            controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
 
             holderRef.value = holder
             controllerRef.value = controller
@@ -92,6 +95,26 @@ fun MapboxMapView(
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
     )
+}
+
+internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerController {
+    val hexGeocell =
+        HexGeocell(
+            projection = WebMercator,
+            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+        )
+    val manager = MarkerManager<MapboxActualMarker>(hexGeocell)
+
+    val renderer =
+        MapboxMarkerRenderer(
+            holder = holder,
+            markerManager = manager,
+        )
+    val controller =
+        MapboxMarkerController(
+            renderer = renderer,
+        )
+    return controller
 }
 
 internal fun Context.findActivity(): Activity? =

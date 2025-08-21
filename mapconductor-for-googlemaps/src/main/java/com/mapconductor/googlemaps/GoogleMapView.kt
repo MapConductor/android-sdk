@@ -22,18 +22,18 @@ import android.view.ViewGroup
 
 @Composable
 fun GoogleMapsView(
-    state: IGoogleMapViewState,
+    state: GoogleMapViewState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler? = {},
-    onMarkerClick: OnMarkerEventHandler? = {},
-    onMarkerDragStart: OnMarkerEventHandler? = {},
-    onMarkerDrag: OnMarkerEventHandler? = {},
-    onMarkerDragEnd: OnMarkerEventHandler? = {},
-    onMarkerAnimateStart: OnMarkerEventHandler? = {},
-    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
-    onCircleClick: OnCircleEventHandler? = {},
-    onPolylineClick: OnPolylineEventHandler? = {},
-    onGroundImageClick: OnGroundImageEventHandler? = {},
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -54,14 +54,14 @@ fun GoogleMapsView(
             // Specific Google Maps initialization logic
             // This lambda will be executed within state.initAsync by MapViewBase
             val cameraPosition =
-                state.cameraPosition.value.let {
+                state.cameraPosition.value?.let { camera ->
                     CameraPosition
                         .Builder()
                         .apply {
-                            target(GeoPoint.from(it.position).toLatLng())
-                            zoom(it.zoom.toFloat())
-                            bearing(it.bearing.toFloat())
-                            tilt(it.tilt.toFloat())
+                            target(GeoPoint.from(camera.position).toLatLng())
+                            zoom(camera.zoom.toFloat())
+                            bearing(camera.bearing.toFloat())
+                            tilt(camera.tilt.toFloat())
                         }.build()
                 }
 
@@ -76,19 +76,19 @@ fun GoogleMapsView(
                     id = state.id,
                     options = mapInitOptions,
                 )
-            (state as? GoogleMapViewState)?.let { mapViewState ->
+            (state as? GoogleMapViewStateImpl)?.let { mapViewState ->
                 mapViewState.controller = controller
                 controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
             controller.setMapClickListener(onMapClick)
-            controller.setMarkerClickListener(onMarkerClick)
-            controller.setMarkerDragStartListener(onMarkerDragStart)
-            controller.setMarkerDragListener(onMarkerDrag)
-            controller.setMarkerDragEndListener(onMarkerDragEnd)
+            controller.setOnMarkerClickListener(onMarkerClick)
+            controller.setOnMarkerDragStart(onMarkerDragStart)
+            controller.setOnMarkerDrag(onMarkerDrag)
+            controller.setOnMarkerDragEnd(onMarkerDragEnd)
             controller.setCircleClickListener(onCircleClick)
             controller.setPolylineClickListener(onPolylineClick)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
+            controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setOnGroundImageClickListener(onGroundImageClick)
 
             holderRef.value = controller.holder

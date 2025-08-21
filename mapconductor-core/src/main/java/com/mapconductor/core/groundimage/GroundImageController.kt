@@ -10,10 +10,12 @@ interface GroundImageCapable {
     suspend fun compositionGroundImages(data: List<GroundImageState>)
 
     suspend fun updateGroundImage(state: GroundImageState)
+
+    fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?)
 }
 
 class GroundImageController<ActualGroundImage>(
-    override val renderer: OverlayRenderer<ActualGroundImage, GroundImageState, GroundImageEntity<ActualGroundImage>>,
+    val renderer: OverlayRenderer<ActualGroundImage, GroundImageState, GroundImageEntity<ActualGroundImage>>,
     override var clickListener: OnGroundImageEventHandler? = null,
 ) : OverlayController<
         ActualGroundImage,
@@ -29,14 +31,14 @@ class GroundImageController<ActualGroundImage>(
         semaphore.withPermit {
             val previous = entities.keys.toMutableSet()
             val added = mutableListOf<GroundImageState>()
-            val updated = mutableListOf<OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>>>()
+            val updated = mutableListOf<OverlayRenderer.ChangeParams<GroundImageEntity<ActualGroundImage>>>()
             val removed = mutableListOf<GroundImageEntity<ActualGroundImage>>()
 
             data.forEach {
                 if (previous.contains(it.id)) {
                     val prevEntity = entities[it.id]!!
                     updated.add(
-                        object : OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>> {
+                        object : OverlayRenderer.ChangeParams<GroundImageEntity<ActualGroundImage>> {
                             override val current =
                                 GroundImageEntityImpl(
                                     groundImage = prevEntity.groundImage,
@@ -98,10 +100,10 @@ class GroundImageController<ActualGroundImage>(
 
     override suspend fun update(state: GroundImageState) {
         semaphore.withPermit {
-            val updated = mutableListOf<OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>>>()
+            val updated = mutableListOf<OverlayRenderer.ChangeParams<GroundImageEntity<ActualGroundImage>>>()
             val prevEntity = entities[state.id]!!
             updated.add(
-                object : OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>> {
+                object : OverlayRenderer.ChangeParams<GroundImageEntity<ActualGroundImage>> {
                     override val current: GroundImageEntity<ActualGroundImage> =
                         GroundImageEntityImpl(
                             groundImage = prevEntity.groundImage,

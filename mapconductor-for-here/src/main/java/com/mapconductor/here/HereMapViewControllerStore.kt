@@ -5,8 +5,13 @@ import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.here.marker.HereMapMarkerRenderer
+import com.mapconductor.here.marker.HereMarkerController
 import android.content.Context
 import android.content.pm.PackageManager
 
@@ -77,12 +82,35 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
 //                }
 //            }
 //        }
+        val markerController = getMarkerController(holder)
 
         val controller =
             HereMapViewController(
                 holder = holder,
+                markerController = markerController,
             )
         this.set(id, controller)
+        return controller
+    }
+
+    private fun getMarkerController(holder: HereMapViewHolder): HereMarkerController {
+        val hexGeocell =
+            HexGeocell(
+                projection = WebMercator,
+                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+            )
+        val manager = MarkerManager<HereMapActualMarker>(hexGeocell)
+
+        val renderer =
+            HereMapMarkerRenderer(
+                holder = holder,
+            )
+
+        val controller =
+            HereMarkerController(
+                markerManager = manager,
+                renderer = renderer,
+            )
         return controller
     }
 

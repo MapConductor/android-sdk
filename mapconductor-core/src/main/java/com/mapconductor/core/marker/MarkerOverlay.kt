@@ -11,6 +11,6 @@ class MarkerOverlay(
         data: List<MarkerState>,
         controller: MapViewControllerAlias,
     ) {
-        controller.addMarkers(data)
+        (controller as? MarkerCapable<*>)?.compositionMarkers(data)
     }
 }

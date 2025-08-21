@@ -11,7 +11,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            DemoAppScreen()
+            DemoAppScreen(
+                initPage = "circle",
+            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.polyline
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
@@ -10,7 +11,7 @@ fun PolylineMapPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->

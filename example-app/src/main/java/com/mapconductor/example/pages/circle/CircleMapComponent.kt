@@ -19,7 +19,7 @@ fun CircleMapComponent(
     onMapClick: OnMapEventHandler = {},
     onMarkerClick: OnMarkerEventHandler = {},
     onCircleClick: OnCircleEventHandler = {},
-    onMarkerDrag: OnMarkerEventHandler = {},
+    onMarkerMove: OnMarkerEventHandler = {},
 ) {
     mapViewState?.let { it ->
         MapViewContainer(
@@ -28,7 +28,9 @@ fun CircleMapComponent(
             onMapClick = onMapClick,
             onMarkerClick = onMarkerClick,
             onCircleClick = onCircleClick,
-            onMarkerDrag = onMarkerDrag,
+            onMarkerDragStart = onMarkerMove,
+            onMarkerDrag = onMarkerMove,
+            onMarkerDragEnd = onMarkerMove,
         ) {
             // Circle
             Circle(viewModel.circleState)

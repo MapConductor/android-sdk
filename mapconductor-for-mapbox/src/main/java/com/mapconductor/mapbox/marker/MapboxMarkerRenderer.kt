@@ -6,50 +6,44 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.marker.AbstractMarkerRenderer
+import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
-import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
-import com.mapconductor.core.marker.MarkerRendererFactory
-import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class DefaultMapboxMarkerRenderer : MarkerRendererFactory<Feature> {
-    override fun create(
-        hexGeocell: HexGeocell,
-        onIconAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<Feature?>,
-        onIconRemove: suspend (List<MarkerEntity<Feature>>) -> Unit,
-        onIconChange: suspend (List<UpdateParams<Feature>>) -> List<Feature>,
-        onAnimate: suspend (MarkerEntity<Feature>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): MarkerOverlayManager<Feature> =
-        MarkerOverlayManagerImpl(
-            markerManager = MarkerManager(hexGeocell),
-            onRemove = onIconRemove,
-            onAdd = onIconAdd,
-            onChange = onIconChange,
-            onPostProcess = onPostProcess,
-            onAnimate = onAnimate,
-        )
-}
-
 class MapboxMarkerRenderer(
-    override val holder: MapboxMapViewHolder,
-    override val coroutine: CoroutineScope,
-    private val markerLayer: MarkerLayer,
-    private val dragLayer: MarkerDragLayer,
-) : AbstractMarkerRenderer<MapboxActualMarker>() {
+    holder: MapboxMapViewHolder,
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    val markerManager: MarkerManager<MapboxActualMarker>,
+    val markerLayer: MarkerLayer =
+        MarkerLayer(
+            sourceId = "markers-source",
+            layerId = "markers-layer",
+        ),
+    val dragLayer: MarkerDragLayer =
+        MarkerDragLayer(
+            sourceId = "marker-drag-source",
+            layerId = "marker-drag-layer",
+        ),
+) : AbstractMarkerOverlayRenderer<
+        MapboxMapViewHolder,
+        MapboxActualMarker,
+    >(
+        holder = holder,
+        coroutine = coroutine,
+    ) {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
+    private val defaultIcon: BitmapIcon = DefaultIcon().toBitmapIcon()
 
     object Prop {
         const val ICON_ID = "icon_id"
@@ -58,15 +52,14 @@ class MapboxMarkerRenderer(
         const val ICON_ANCHOR = "icon-offset"
     }
 
-    override fun init(markerOverlayManager: MarkerOverlayManager<Feature>) {
-        super.init(markerOverlayManager)
+    init {
         holder.map.getStyle { style ->
             style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
         }
     }
 
     fun redraw() {
-        val entities = markerOverlayManager.markerManager.allEntities()
+        val entities = markerManager.allEntities()
         coroutine.launch {
             markerLayer.draw(entities)
         }
@@ -82,7 +75,7 @@ class MapboxMarkerRenderer(
         markerEntity: MarkerEntity<Feature>,
         position: GeoPoint,
     ) {
-        val entities = markerOverlayManager.markerManager.allEntities()
+        val entities = markerManager.allEntities()
         val feature =
             Feature.fromGeometry(
                 position.toPoint(),
@@ -105,7 +98,7 @@ class MapboxMarkerRenderer(
         }
     }
 
-    override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Feature> {
+    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Feature> {
         val style =
             suspendCoroutine { continuation ->
                 holder.map.getStyle { style ->
@@ -113,21 +106,24 @@ class MapboxMarkerRenderer(
                 }
             }
 
-        newMarkers.forEach { (state, bitmapIcon) ->
-            val iconKey = state.icon.hashCode().toString()
+        data.forEach {
+            val iconKey =
+                it.state.icon
+                    .hashCode()
+                    .toString()
             if (!iconRefCounter.contains(iconKey)) {
-                style.addImage(iconKey, bitmapIcon.bitmap)
+                style.addImage(iconKey, it.bitmapIcon.bitmap)
                 iconRefCounter[iconKey] = 0
             }
         }
 
-        return newMarkers.map { (state, _) ->
-            val featureId = "marker-${state.id}"
-            val position = GeoPoint.from(state.position).toPoint()
+        return data.map {
+            val featureId = "marker-${it.state.id}"
+            val position = GeoPoint.from(it.state.position).toPoint()
             val properties =
                 JsonObject().apply {
-                    if (state.icon != null) {
-                        state.icon?.let { icon ->
+                    if (it.state.icon != null) {
+                        it.state.icon?.let { icon ->
                             val iconKey = icon.hashCode().toString()
                             iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
                             addProperty(Prop.ICON_ID, iconKey)
@@ -138,14 +134,14 @@ class MapboxMarkerRenderer(
                         addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                         add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                     }
-                    addProperty(Prop.SCALE, state.icon?.scale ?: 1.0)
+                    addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
                 }
             Feature.fromGeometry(position, properties, featureId)
         }
     }
 
-    override suspend fun removeIcons(removeEntities: List<MarkerEntity<Feature>>) {
-        removeEntities.forEach { entity ->
+    override suspend fun onRemove(data: List<MarkerEntity<MapboxActualMarker>>) {
+        data.forEach { entity ->
             entity.state.icon?.let { icon ->
                 val iconKey = icon.hashCode().toString()
                 val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
@@ -159,17 +155,23 @@ class MapboxMarkerRenderer(
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<Feature>>): List<Feature> =
-        changes.map { params ->
-            val prevFinger = params.prevEntity.fingerPrint
-            val currFinger = params.entity.fingerPrint
-            val prevProperties = params.prevEntity.marker.properties()
+    override suspend fun onPostProcess() {
+        redraw()
+    }
+
+    override suspend fun onChange(
+        data: List<MarkerOverlayRenderer.ChangeParams<MapboxActualMarker>>,
+    ): List<MapboxActualMarker?> =
+        data.map { params ->
+            val prevFinger = params.prev.fingerPrint
+            val currFinger = params.current.fingerPrint
+            val prevProperties = params.prev.marker.properties()
 
             val properties =
                 JsonObject().apply {
                     addProperty(
                         Prop.SCALE,
-                        params.entity.state.icon
+                        params.current.state.icon
                             ?.scale ?: 1.0f,
                     )
                     if (currFinger.icon == prevFinger.icon) {
@@ -196,7 +198,7 @@ class MapboxMarkerRenderer(
                             addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                             add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                         } else {
-                            params.entity.state.icon?.let { icon ->
+                            params.current.state.icon?.let { icon ->
                                 // icon id
                                 val iconKey = icon.hashCode().toString()
                                 if (iconRefCounter.contains(iconKey)) {
@@ -213,8 +215,8 @@ class MapboxMarkerRenderer(
                 }
 
             val position =
-                GeoPoint.from(params.entity.state.position).toPoint()
-            val featureId = "marker-${params.entity.state.id}"
+                GeoPoint.from(params.current.state.position).toPoint()
+            val featureId = "marker-${params.current.state.id}"
             Feature.fromGeometry(position, properties, featureId)
         }
 
