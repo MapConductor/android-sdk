@@ -78,7 +78,7 @@ fun HereMapView(
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setCircleClickListener(onCircleClick)
-            controller.setPolylineClickListener(onPolylineClick)
+            controller.setOnPolylineClickListener(onPolylineClick)
 
             (state as? HereViewStateImpl)?.controller = controller
 

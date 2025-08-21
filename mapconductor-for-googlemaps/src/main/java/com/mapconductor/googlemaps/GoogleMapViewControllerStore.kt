@@ -12,6 +12,8 @@ import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
+import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -39,10 +41,24 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewController>() {
             GoogleMapViewController(
                 markerController = getMarkerController(holder),
                 groundImageController = getGroundImageController(holder),
+                polylineController = getPolylineController(holder),
                 holder = holder,
             )
         this.set(id, controller)
 
+        return controller
+    }
+
+    private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylineController {
+        val renderer =
+            GoogleMapPolylineOverlayRenderer(
+                holder = holder,
+            )
+
+        val controller =
+            GoogleMapPolylineController(
+                renderer = renderer,
+            )
         return controller
     }
 

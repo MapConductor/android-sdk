@@ -12,6 +12,8 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.here.marker.HereMapMarkerRenderer
 import com.mapconductor.here.marker.HereMarkerController
+import com.mapconductor.here.polyline.HerePolylineController
+import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import android.content.Context
 import android.content.pm.PackageManager
 
@@ -82,14 +84,27 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
 //                }
 //            }
 //        }
-        val markerController = getMarkerController(holder)
 
         val controller =
             HereMapViewController(
                 holder = holder,
-                markerController = markerController,
+                markerController = getMarkerController(holder),
+                polylineController = getPolylineController(holder),
             )
         this.set(id, controller)
+        return controller
+    }
+
+    private fun getPolylineController(holder: HereMapViewHolder): HerePolylineController {
+        val renderer =
+            HerePolylineOverlayRenderer(
+                holder = holder,
+            )
+
+        val controller =
+            HerePolylineController(
+                renderer = renderer,
+            )
         return controller
     }
 

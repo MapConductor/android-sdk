@@ -35,6 +35,7 @@ import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerCapable
+import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
 import android.view.View
 import android.view.ViewGroup
@@ -115,7 +116,7 @@ fun <
         polylines.value.forEach { polylineState ->
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updatePolyline(polylineState)
+                    (controller as? PolylineCapable)?.updatePolyline(polylineState)
                 }
             }
         }

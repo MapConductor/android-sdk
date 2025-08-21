@@ -13,6 +13,7 @@ import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerOverlay
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.polyline.PolylineOverlay
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -95,17 +96,6 @@ val LocalMarkerCollector =
     compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
         error("Marker must be under the <MapView />")
     }
-
-class PolylineOverlay(
-    override val flow: StateFlow<List<PolylineState>>,
-) : MapOverlay<PolylineState> {
-    override suspend fun render(
-        data: List<PolylineState>,
-        controller: MapViewControllerAlias,
-    ) {
-        controller.addPolylines(data)
-    }
-}
 
 val LocalPolylineCollector =
     compositionLocalOf<MutableStateFlow<List<PolylineState>>> {

@@ -5,6 +5,8 @@ import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
+import com.mapconductor.arcgis.polyline.ArcGISPolylineController
+import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
@@ -36,8 +38,28 @@ object ArcGISViewControllerStore :
             ArcGISMapViewController(
                 holder = holder,
                 markerController = getMarkerController(holder),
+                polylineController = getPolylineController(holder),
             )
         this.set(id, controller)
+        return controller
+    }
+
+    private fun getPolylineController(holder: ArcGISMapViewHolder): ArcGISPolylineController {
+        val polylineLayer: GraphicsOverlay =
+            GraphicsOverlay().apply {
+                sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
+            }
+
+        val renderer =
+            ArcGISPolylineOverlayRenderer(
+                polylineLayer = polylineLayer,
+                holder = holder,
+            )
+
+        val controller =
+            ArcGISPolylineController(
+                renderer = renderer,
+            )
         return controller
     }
 

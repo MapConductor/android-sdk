@@ -13,9 +13,13 @@ import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
+import com.mapconductor.mapbox.polyline.MapboxPolylineController
+import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
+import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -65,12 +69,12 @@ fun MapboxMapView(
                 )
 
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
-            val markerController = getMarkerController(holder)
 
             val controller =
                 MapboxMapViewController(
                     holder = holder,
-                    markerController = markerController,
+                    markerController = getMarkerController(holder),
+                    polylineController = getPolylineController(holder),
                 )
             (state as? MapboxViewStateImpl)?.let { mapViewState ->
                 mapViewState.controller = controller
@@ -78,7 +82,7 @@ fun MapboxMapView(
             }
             controller.setMapClickListener(onMapClick)
             controller.setCircleClickListener(onCircleClick)
-            controller.setPolylineClickListener(onPolylineClick)
+            controller.setOnPolylineClickListener(onPolylineClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
             controller.setOnMarkerDrag(onMarkerDrag)
@@ -95,6 +99,28 @@ fun MapboxMapView(
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
     )
+}
+
+internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineController {
+    val polylineLayer: MapboxPolylineLayer =
+        MapboxPolylineLayer(
+            sourceId = "polyline-source",
+            layerId = "polyline-layer",
+        )
+    val polylineManager = PolylineManagerImpl<MapboxActualPolyline>()
+
+    val renderer =
+        MapboxPolylineOverlayRenderer(
+            layer = polylineLayer,
+            polylineManager = polylineManager,
+            holder = holder,
+        )
+
+    val controller =
+        MapboxPolylineController(
+            renderer = renderer,
+        )
+    return controller
 }
 
 internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerController {

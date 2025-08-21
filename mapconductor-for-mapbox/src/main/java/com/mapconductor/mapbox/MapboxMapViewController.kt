@@ -34,8 +34,8 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.PolygonOverlayManager
 import com.mapconductor.core.polygon.PolygonRenderer
-import com.mapconductor.core.polyline.PolylineOverlayManager
-import com.mapconductor.core.polyline.PolylineRendererFactory
+import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.circle.DefaultMapboxCircleRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
@@ -43,9 +43,7 @@ import com.mapconductor.mapbox.circle.MapboxCircleRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonRenderer
-import com.mapconductor.mapbox.polyline.DefaultMapboxPolylineRenderer
-import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
-import com.mapconductor.mapbox.polyline.MapboxPolylineRenderer
+import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,10 +52,10 @@ import kotlinx.coroutines.launch
 interface IMapboxMapViewController :
     MapViewController<
         MapboxActualCircle,
-        MapboxActualPolyline,
         MapboxActualPolygon,
     >,
-    MarkerCapable<MapboxActualMarker> {
+    MarkerCapable<MapboxActualMarker>,
+    PolylineCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -73,18 +71,12 @@ interface IMapboxMapViewController :
 internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
     private val markerController: MapboxMarkerController,
+    private val polylineController: MapboxPolylineController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    private val polylineRendererFactory: PolylineRendererFactory<MapboxActualPolyline> =
-        DefaultMapboxPolylineRenderer(),
     private val circleLayer: MapboxCircleLayer =
         MapboxCircleLayer(
             sourceId = "circle-source",
             layerId = "circle-layer",
-        ),
-    private val polylineLayer: MapboxPolylineLayer =
-        MapboxPolylineLayer(
-            sourceId = "polyline-source",
-            layerId = "polyline-layer",
         ),
     private val polygonLayer: MapboxPolygonLayer =
         MapboxPolygonLayer(
@@ -95,7 +87,6 @@ internal class MapboxMapViewController(
         DefaultMapboxCircleRenderer(),
 ) : BaseMapViewController<
         MapboxActualCircle,
-        MapboxActualPolyline,
         MapboxActualPolygon,
     >(),
     IMapboxMapViewController,
@@ -107,14 +98,6 @@ internal class MapboxMapViewController(
         private const val ZOOM_ADJUST_VALUE = 1.0
     }
 
-    override fun createPolylineOverlayManager(): PolylineOverlayManager<MapboxActualPolyline> =
-        polylineRendererFactory.create(
-            onAdd = polylineRenderer::addPolylines,
-            onChange = polylineRenderer::changePolylines,
-            onRemove = polylineRenderer::removePolylines,
-            onPostProcess = polylineRenderer::redraw,
-        )
-
     override fun createPolygonOverlayManager(): PolygonOverlayManager<MapboxActualPolygon> {
         TODO("Not yet implemented")
     }
@@ -125,13 +108,6 @@ internal class MapboxMapViewController(
             onChange = circleRenderer::changeCircle,
             onRemove = circleRenderer::removeCircles,
             onPostProcess = circleRenderer::redraw,
-        )
-
-    override val polylineRenderer: MapboxPolylineRenderer =
-        MapboxPolylineRenderer(
-            holder = holder,
-            coroutine = coroutine,
-            layer = polylineLayer,
         )
 
     override val polygonRenderer: PolygonRenderer<MapboxActualPolygon> =
@@ -153,15 +129,12 @@ internal class MapboxMapViewController(
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<MapboxActualPolygon>) {
     }
 
-    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<MapboxActualPolyline>) {
-    }
-
     init {
         holder.map.getStyle { style ->
             style.addSource(circleLayer.source)
             style.addLayer(circleLayer.layer)
-            style.addSource(polylineLayer.source)
-            style.addLayer(polylineLayer.layer)
+            style.addSource(polylineController.renderer.layer.source)
+            style.addLayer(polylineController.renderer.layer.layer)
             style.addSource(markerController.renderer.markerLayer.source)
             style.addLayer(markerController.renderer.markerLayer.layer)
             style.addSource(markerController.renderer.dragLayer.source)
@@ -184,16 +157,16 @@ internal class MapboxMapViewController(
 
     override suspend fun clearOverlays() {
         markerController.clear()
-        polylineOverlayManager.clearOverlays()
+        polylineController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
 
     override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
 
-    override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+    override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
 
-    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
+    override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
@@ -389,5 +362,9 @@ internal class MapboxMapViewController(
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
         markerController.clickListener = listener
+    }
+
+    override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
+        polylineController.clickListener = listener
     }
 }

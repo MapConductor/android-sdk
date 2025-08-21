@@ -12,7 +12,6 @@ import com.here.sdk.mapview.MapCameraListener
 import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
-import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
@@ -31,24 +30,23 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.PolygonOverlayManager
 import com.mapconductor.core.polygon.PolygonRendererFactory
-import com.mapconductor.core.polyline.PolylineOverlayManager
-import com.mapconductor.core.polyline.PolylineRenderer
-import com.mapconductor.core.polyline.PolylineRendererFactory
+import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.circle.DefaultHereMapCircleRenderer
 import com.mapconductor.here.circle.HereMapCircleRenderer
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.polygon.DefaultHereMapPolygonRenderer
 import com.mapconductor.here.polygon.HereMapPolygonRenderer
-import com.mapconductor.here.polyline.DefaultHereMapPolylineRenderer
-import com.mapconductor.here.polyline.HereMapPolylineRenderer
+import com.mapconductor.here.polyline.HerePolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface IHereMapViewController :
-    MapViewController<MapPolygon, MapPolyline, MapPolygon>,
-    MarkerCapable<HereMapActualMarker> {
+    MapViewController<MapPolygon, MapPolygon>,
+    MarkerCapable<HereMapActualMarker>,
+    PolylineCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -63,15 +61,13 @@ interface IHereMapViewController :
 
 class HereMapViewController(
     private val markerController: HereMarkerController,
+    private val polylineController: HerePolylineController,
     override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    private val polylineRendererFactory: PolylineRendererFactory<HereMapActualPolyline> =
-        DefaultHereMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<HereMapActualPolygon> = DefaultHereMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<HereMapActualCircle> = DefaultHereMapCircleRenderer(),
 ) : BaseMapViewController<
         HereMapActualCircle,
-        HereMapActualPolyline,
         HereMapActualPolygon,
     >(),
     IHereMapViewController,
@@ -81,12 +77,6 @@ class HereMapViewController(
     companion object {
         private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
-
-    override val polylineRenderer: PolylineRenderer<MapPolyline> =
-        HereMapPolylineRenderer(
-            holder = holder,
-            coroutine = coroutine,
-        )
 
     override val polygonRenderer =
         HereMapPolygonRenderer(
@@ -106,16 +96,6 @@ class HereMapViewController(
     override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<HereMapActualPolygon>) {
     }
 
-    override fun onPolylineOverlayManagerInitialized(overlayManager: PolylineOverlayManager<HereMapActualPolyline>) {
-    }
-
-    override fun createPolylineOverlayManager(): PolylineOverlayManager<MapPolyline> =
-        polylineRendererFactory.create(
-            onAdd = polylineRenderer::addPolylines,
-            onChange = polylineRenderer::changePolylines,
-            onRemove = polylineRenderer::removePolylines,
-        )
-
     override fun createPolygonOverlayManager(): PolygonOverlayManager<MapPolygon> =
         polygonRendererFactory.create(
             onAdd = polygonRenderer::addPolygons,
@@ -132,7 +112,7 @@ class HereMapViewController(
 
     override suspend fun clearOverlays() {
         markerController.clear()
-        polylineOverlayManager.clearOverlays()
+        polylineController.clear()
         polygonOverlayManager.clearOverlays()
         circleOverlayManager.clearOverlays()
     }
@@ -169,9 +149,9 @@ class HereMapViewController(
 
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
-    override suspend fun addPolylines(data: List<PolylineState>) = polylineOverlayManager.addPolylines(data)
+    override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
 
-    override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
+    override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
     init {
         setupListeners()
@@ -314,4 +294,8 @@ class HereMapViewController(
         holder.mapView
             .viewToGeoCoordinates(point)
             ?.toGeoPoint()
+
+    override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
+        polylineController.clickListener = listener
+    }
 }

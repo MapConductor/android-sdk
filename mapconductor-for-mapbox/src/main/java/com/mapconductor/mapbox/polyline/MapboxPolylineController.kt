@@ -1,0 +1,92 @@
+package com.mapconductor.mapbox.polyline
+
+import com.google.gson.JsonObject
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.LineString
+import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.normalize
+import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
+import com.mapconductor.core.polyline.PolylineController
+import com.mapconductor.core.polyline.PolylineEntity
+import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.splitByMeridian
+import com.mapconductor.mapbox.MapboxActualPolyline
+import com.mapconductor.mapbox.MapboxMapViewHolder
+import com.mapconductor.mapbox.toMapboxColorString
+import com.mapconductor.mapbox.toPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class MapboxPolylineController(
+    override val renderer: MapboxPolylineOverlayRenderer,
+    polylineManager: PolylineManager<MapboxActualPolyline> = renderer.polylineManager,
+) : PolylineController<MapboxActualPolyline>(polylineManager, renderer)
+
+class MapboxPolylineOverlayRenderer(
+    val layer: MapboxPolylineLayer,
+    val polylineManager: PolylineManager<MapboxActualPolyline>,
+    override val holder: MapboxMapViewHolder,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+) : AbstractPolylineOverlayRenderer<MapboxActualPolyline>() {
+    override suspend fun createPolyline(state: PolylineState): MapboxActualPolyline? = createMapboxLines(state)
+
+    override suspend fun updatePolylineProperties(
+        polyline: MapboxActualPolyline,
+        current: PolylineEntity<MapboxActualPolyline>,
+        prev: PolylineEntity<MapboxActualPolyline>,
+    ): MapboxActualPolyline? {
+        // For Mapbox, we need to recreate the features when properties change
+        return createMapboxLines(current.state)
+    }
+
+    override suspend fun removePolyline(entity: PolylineEntity<MapboxActualPolyline>) {
+        val featureIds =
+            entity.polyline.map { feature ->
+                feature.getStringProperty("id")
+            }
+        layer.source.removeGeoJSONSourceFeatures(featureIds)
+    }
+
+    override suspend fun onPostProcess() {
+        // Redraw all polylines on the layer
+        val polylines = getAllPolylineEntities()
+        coroutine.launch {
+            layer.draw(polylines)
+        }
+    }
+
+    private fun createMapboxLines(state: PolylineState): List<Feature> {
+        val geoPoints: List<IGeoPoint> =
+            when (state.geodesic) {
+                true -> createInterpolatePoints(state.points)
+                false -> createLinearInterpolatePoints(state.points)
+            }.map { it.normalize() }
+
+        return splitByMeridian(geoPoints, state.geodesic).mapIndexed { index, linePoints ->
+            val points = linePoints.map { GeoPoint.from(it).toPoint() }
+            val id = "polyline-${state.id}-$index"
+
+            return@mapIndexed Feature.fromGeometry(
+                LineString.fromLngLats(points),
+                JsonObject().apply {
+                    addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
+                    addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                    addProperty("id", id)
+                },
+                id,
+            )
+        }
+    }
+
+    private fun getAllPolylineEntities(): List<PolylineEntity<MapboxActualPolyline>> {
+        // This would need access to the polyline manager
+        // For now, we'll implement a simple workaround
+        return polylineManager.allEntities()
+    }
+}
