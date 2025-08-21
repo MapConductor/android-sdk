@@ -1,8 +1,25 @@
 package com.mapconductor.example.pages.mapDesign
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.mapconductor.example.ui.DemoMapPageScaffold
+import com.mapconductor.example.ui.MessageCard
+import androidx.compose.material3.Button
+import com.mapconductor.core.map.MapViewState
+import com.mapconductor.googlemaps.GoogleMapDesign
 
 @Composable
 fun MapDesignMapPage(
@@ -21,72 +38,68 @@ fun MapDesignMapPage(
             onMapClick = viewModel::onMapClick,
         )
 
-//        // Control Panel
-//        MessageCard(
-//            modifier =
-//                Modifier
-//                    .align(Alignment.BottomStart)
-//                    .padding(
-//                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
-//                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
-//                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-//                    ),
-//            title = "Select Map Design...",
-//            maxHeight = 400.dp,
-//        ) {
-//            Column(
-//                modifier = Modifier.fillMaxSize(),
-//                verticalArrangement = Arrangement.spacedBy(8.dp),
-//            ) {
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                ) {
-//                    Button(
-//                        modifier = Modifier.weight(1f),
-//                        onClick = { viewModel.flyToSydney() },
-//                    ) {
-//                        Text("Normal")
-//                    }
-//
-//                    Button(
-//                        modifier = Modifier.weight(1f),
-//                        onClick = { viewModel.flyToSydney() },
-//                    ) {
-//                        Text("Satellite")
-//                    }
-//                }
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                ) {
-//                    Button(
-//                        modifier = Modifier.weight(1f),
-//                        onClick = { viewModel.flyToHonolulu() },
-//                    ) {
-//                        Text("Hybrid")
-//                    }
-//
-//                    Button(
-//                        modifier = Modifier.weight(1f),
-//                        onClick = { viewModel.flyToTokyo() },
-//                    ) {
-//                        Text("Terrain")
-//                    }
-//                }
-//
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                ) {
-//                    Button(
-//                        modifier = Modifier.weight(1f),
-//                        onClick = { viewModel.flyToLondon() },
-//                    ) {
-//                        Text("None")
-//                    }
-//                }
-//            }
-//        }
+        // Message Card
+        MessageCard(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(
+                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
+                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
+                    ),
+            title = "Select Map Design...",
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+                            ?.changeMapDesignType(GoogleMapDesign.Normal) },
+                    ) {
+                        Text("Normal")
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+                            ?.changeMapDesignType(GoogleMapDesign.Satellite) },
+                    ) {
+                        Text("Satellite")
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+                            ?.changeMapDesignType(GoogleMapDesign.Hybrid) },
+                    ) {
+                        Text("Hybrid")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+                            ?.changeMapDesignType(GoogleMapDesign.Terrain) },
+                    ) {
+                        Text("Terrain")
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+                            ?.changeMapDesignType(GoogleMapDesign.None) },
+                    ) {
+                        Text("None")
+                    }
+                }
+            }
+        }
     }
 }

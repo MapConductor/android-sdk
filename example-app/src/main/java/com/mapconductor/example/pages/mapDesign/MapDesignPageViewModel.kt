@@ -56,7 +56,6 @@ class MapDesignPageViewModelImpl():
     override var design by mutableStateOf(1)
 
     override fun onMapViewChanged(state: MapViewState<*>) {
-//        state.mapDesignType = GoogleMapDesign.Satellite
         this._mapViewState.value = state
     }
 
