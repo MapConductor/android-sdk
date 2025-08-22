@@ -200,7 +200,5 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         entities.clear()
     }
 
-    override fun findNearest(position: IGeoPoint): PolylineEntity<ActualPolyline>? {
-        return entities.values.firstOrNull()
-    }
+    override fun findNearest(position: IGeoPoint): PolylineEntity<ActualPolyline>? = entities.values.firstOrNull()
 }
