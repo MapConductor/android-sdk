@@ -18,20 +18,63 @@ import androidx.compose.ui.unit.dp
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 import androidx.compose.material3.Button
+import com.mapbox.maps.extension.style.expressions.dsl.generated.mod
+import com.mapconductor.arcgis.ArcGISDesign
+import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.core.map.MapDesignType
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.googlemaps.GoogleMapDesign
+import com.mapconductor.googlemaps.GoogleMapDesignType
+import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.here.HereMapDesign
+import com.mapconductor.here.HereMapDesignType
+import com.mapconductor.here.HereMapViewState
+import com.mapconductor.mapbox.MapboxMapDesign
+import com.mapconductor.mapbox.MapboxMapViewState
+
+data class DesignList<T>(
+    val text: String,
+    val design: MapDesignType<T>
+)
 
 @Composable
 fun MapDesignMapPage(
     viewModel: MapDesignPageViewModel = MapDesignPageViewModelImpl(),
     onToggleSidebar: () -> Unit = {},
 ) {
+    val buttons = viewModel.buttons.collectAsState()
+
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
+
+        fun callChangeMapDesignType(state: MapViewState<*>,designType: MapDesignType<*>) {
+            when (state) {
+                is GoogleMapViewState -> {
+                    (designType as? GoogleMapDesign)?.let {
+                        state.changeMapDesignType(it)
+                    }
+                }
+//                is HereMapViewState -> {
+//                    (designType as? MapViewState<HereMapDesign>)?.let {
+//                        state.changeMapDesignType(it)
+//                    }
+//                }
+//                is MapboxMapViewState -> {
+//                    (designType as? MapViewState<MapboxMapDesign>)?.let {
+//                        state.changeMapDesignType(it)
+//                    }
+//                }
+//                is ArcGISMapViewState -> {
+//                    (designType as? MapViewState<ArcGISDesign>)?.let {
+//                        state.changeMapDesignType(it)
+//                    }
+//                }
+            }
+        }
 
         MapDesignMapComponent(
             mapViewState = mapViewState.value,
@@ -53,53 +96,119 @@ fun MapDesignMapPage(
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-            ){
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
-                            ?.changeMapDesignType(GoogleMapDesign.Normal) },
-                    ) {
-                        Text("Normal")
-                    }
-                    Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
-                            ?.changeMapDesignType(GoogleMapDesign.Satellite) },
-                    ) {
-                        Text("Satellite")
-                    }
-                    Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
-                            ?.changeMapDesignType(GoogleMapDesign.Hybrid) },
-                    ) {
-                        Text("Hybrid")
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
-                            ?.changeMapDesignType(GoogleMapDesign.Terrain) },
-                    ) {
-                        Text("Terrain")
-                    }
-                    Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
-                            ?.changeMapDesignType(GoogleMapDesign.None) },
-                    ) {
-                        Text("None")
+            ) {
+                Row {
+                    buttons.value.forEach {
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                callChangeMapDesignType(mapViewState.value!!, it.designType)
+                            }
+                        ){
+                            Text(it.label)
+                        }
                     }
                 }
             }
+//            Column(
+//                modifier = Modifier.fillMaxSize(),
+//                verticalArrangement = Arrangement.spacedBy(8.dp),
+//            ) {
+//                when (mapViewState) {
+//                    is GoogleMapViewState -> {
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                        ) {
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+//                                        ?.changeMapDesignType(GoogleMapDesign.Normal)
+//                                },
+//                            ) {
+//                                Text("Normal")
+//                            }
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+//                                        ?.changeMapDesignType(GoogleMapDesign.Satellite)
+//                                },
+//                            ) {
+//                                Text("Satellite")
+//                            }
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+//                                        ?.changeMapDesignType(GoogleMapDesign.Hybrid)
+//                                },
+//                            ) {
+//                                Text("Hybrid")
+//                            }
+//                        }
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                        ) {
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+//                                        ?.changeMapDesignType(GoogleMapDesign.Terrain)
+//                                },
+//                            ) {
+//                                Text("Terrain")
+//                            }
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<GoogleMapDesign>)
+//                                        ?.changeMapDesignType(GoogleMapDesign.None)
+//                                },
+//                            ) {
+//                                Text("None")
+//                            }
+//                        }
+//                    }
+//
+//                    is HereMapViewState -> {
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                        ) {
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<HereMapDesign>)
+//                                        ?.changeMapDesignType(HereMapDesign.NormalDay)
+//                                },
+//                            ) {
+//                                Text("NormalDay")
+//                            }
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<HereMapDesign>)
+//                                        ?.changeMapDesignType(HereMapDesign.NormalNigh)
+//                                },
+//                            ) {
+//                                Text("NormalNigh")
+//                            }
+//                            Button(
+//                                modifier = Modifier.weight(1f),
+//                                onClick = {
+//                                    (viewModel.mapViewState.value as? MapViewState<HereMapDesign>)
+//                                        ?.changeMapDesignType(HereMapDesign.Satellite)
+//                                },
+//                            ) {
+//                                Text("Satellite")
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 }
