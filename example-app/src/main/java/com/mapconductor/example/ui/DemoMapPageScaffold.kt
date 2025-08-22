@@ -129,6 +129,15 @@ fun GroundImageCapableMapViewItems(
     )
 
 @Composable
+fun PolygonCapableMapViewItems(initCameraPosition: IMapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
+    listOf(
+        GetGoogleMapViewItem(initCameraPosition),
+        GetMapboxViewItem(initCameraPosition),
+        GetHereViewItem(initCameraPosition),
+        GetArcGISViewItem(initCameraPosition),
+    )
+
+@Composable
 fun DemoMapPageScaffold(
     menuItems: List<IconItem<out MapViewStateImpl<out Any>>>,
     initSelect: Int = 0,

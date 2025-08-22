@@ -28,24 +28,26 @@ import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polygon.PolygonOverlayManager
-import com.mapconductor.core.polygon.PolygonRendererFactory
+import com.mapconductor.core.polygon.OnPolygonEventHandler
+import com.mapconductor.core.polygon.PolygonCapable
+import com.mapconductor.core.polygon.PolygonEvent
+import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.circle.DefaultHereMapCircleRenderer
 import com.mapconductor.here.circle.HereMapCircleRenderer
 import com.mapconductor.here.marker.HereMarkerController
-import com.mapconductor.here.polygon.DefaultHereMapPolygonRenderer
-import com.mapconductor.here.polygon.HereMapPolygonRenderer
+import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IHereMapViewController :
-    MapViewController<MapPolygon, MapPolygon>,
+interface HereMapViewController :
+    MapViewController<HereMapActualCircle>,
     MarkerCapable<HereMapActualMarker>,
+    PolygonCapable,
     PolylineCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -59,30 +61,21 @@ interface IHereMapViewController :
     )
 }
 
-class HereMapViewController(
+class HereMapViewControllerImpl(
     private val markerController: HereMarkerController,
     private val polylineController: HerePolylineController,
+    private val polygonController: HerePolygonController,
     override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    private val polygonRendererFactory: PolygonRendererFactory<HereMapActualPolygon> = DefaultHereMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<HereMapActualCircle> = DefaultHereMapCircleRenderer(),
-) : BaseMapViewController<
-        HereMapActualCircle,
-        HereMapActualPolygon,
-    >(),
-    IHereMapViewController,
+) : BaseMapViewController<HereMapActualCircle>(),
+    HereMapViewController,
     MapCameraListener,
     TapListener,
     LongPressListener {
     companion object {
         private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
-
-    override val polygonRenderer =
-        HereMapPolygonRenderer(
-            holder = holder,
-            coroutine = coroutine,
-        )
 
     override val circleRenderer =
         HereMapCircleRenderer(
@@ -92,16 +85,6 @@ class HereMapViewController(
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereMapActualCircle>) {
     }
-
-    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<HereMapActualPolygon>) {
-    }
-
-    override fun createPolygonOverlayManager(): PolygonOverlayManager<MapPolygon> =
-        polygonRendererFactory.create(
-            onAdd = polygonRenderer::addPolygons,
-            onChange = polygonRenderer::changePolygon,
-            onRemove = polygonRenderer::removePolygons,
-        )
 
     override fun createCircleOverlayManager(): CircleOverlayManager<MapPolygon> =
         circleRendererFactory.create(
@@ -113,7 +96,7 @@ class HereMapViewController(
     override suspend fun clearOverlays() {
         markerController.clear()
         polylineController.clear()
-        polygonOverlayManager.clearOverlays()
+        polygonController.clear()
         circleOverlayManager.clearOverlays()
     }
 
@@ -153,9 +136,12 @@ class HereMapViewController(
 
     override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
+    override suspend fun compositionPolygons(data: List<PolygonState>) = polygonController.add(data)
+
+    override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
+
     init {
         setupListeners()
-        polygonRenderer.init(polygonOverlayManager)
         circleRenderer.init(circleOverlayManager)
     }
 
@@ -246,6 +232,18 @@ class HereMapViewController(
             return
         }
 
+        polygonController.find(touchPosition)?.let { entity ->
+            val event =
+                PolygonEvent(
+                    state = entity.state,
+                    clicked = touchPosition,
+                )
+            coroutine.launch {
+                polygonController.clickListener?.invoke(event)
+            }
+            return
+        }
+
         // If no overlay is processed, process the tap as onMapClick
         mapClickCallback?.invoke(touchPosition)
     }
@@ -297,5 +295,9 @@ class HereMapViewController(
 
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
         polylineController.clickListener = listener
+    }
+
+    override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
+        polygonController.clickListener = listener
     }
 }

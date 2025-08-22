@@ -10,6 +10,7 @@ import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.GoogleMapViewStateImpl
 import com.mapconductor.googlemaps.GoogleMapsView
@@ -31,6 +32,7 @@ fun MapViewContainer(
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
     content: @Composable MapViewScope.() -> Unit,
 ) {

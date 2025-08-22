@@ -37,7 +37,7 @@ fun GoogleMapsView(
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
-    val controllerRef = remember { Ref<GoogleMapViewController>() }
+    val controllerRef = remember { Ref<GoogleMapViewControllerImpl>() }
     val scope = remember { GoogleMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }

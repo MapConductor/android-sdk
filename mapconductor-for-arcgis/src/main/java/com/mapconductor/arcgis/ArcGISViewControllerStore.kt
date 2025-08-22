@@ -17,14 +17,14 @@ import android.content.Context
 typealias ArcGISMapViewHolder = MapViewHolder<WrapSceneView, SceneView>
 
 object ArcGISViewControllerStore :
-    StaticHolder<ArcGISMapViewController>() {
+    StaticHolder<ArcGISMapViewControllerImpl>() {
     fun hasCache(id: String): Boolean = this.has(id)
 
     fun getOrCreate(
         context: Context,
         id: String,
         options: ArcGISMapViewInitOptions,
-    ): ArcGISMapViewController {
+    ): ArcGISMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) return existing
 
@@ -35,7 +35,7 @@ object ArcGISViewControllerStore :
             )
 
         val controller =
-            ArcGISMapViewController(
+            ArcGISMapViewControllerImpl(
                 holder = holder,
                 markerController = getMarkerController(holder),
                 polylineController = getPolylineController(holder),

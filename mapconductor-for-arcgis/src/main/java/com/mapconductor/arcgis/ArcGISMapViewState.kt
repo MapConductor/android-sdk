@@ -34,7 +34,7 @@ class ArcGISMapViewStateImpl(
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
 
-    internal var controller: IArcGISMapViewController? = null
+    internal var controller: ArcGISMapViewController? = null
 
     // Camera position
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)

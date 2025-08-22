@@ -8,10 +8,12 @@ import com.mapconductor.core.groundimage.GroundImageController
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.polygon.GoogleMapPolygonRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import android.app.Activity
@@ -20,12 +22,12 @@ import android.content.ContextWrapper
 
 typealias GoogleMapViewHolder = MapViewHolder<MapView, GoogleMap>
 
-object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewController>() {
+object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>() {
     suspend fun getOrCreate(
         context: Context,
         id: String,
         options: GoogleMapOptions,
-    ): GoogleMapViewController {
+    ): GoogleMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) {
             return existing
@@ -38,10 +40,11 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewController>() {
             )
 
         val controller =
-            GoogleMapViewController(
+            GoogleMapViewControllerImpl(
                 markerController = getMarkerController(holder),
                 groundImageController = getGroundImageController(holder),
                 polylineController = getPolylineController(holder),
+                polygonController = getPolygonController(holder),
                 holder = holder,
             )
         this.set(id, controller)
@@ -98,6 +101,20 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewController>() {
             )
 
         return groundImageController
+    }
+
+    private fun getPolygonController(holder: GoogleMapViewHolder): PolygonController<GoogleMapActualPolygon> {
+        val polygonRenderer =
+            GoogleMapPolygonRenderer(
+                holder = holder,
+            )
+
+        val polygonController =
+            PolygonController(
+                renderer = polygonRenderer,
+            )
+
+        return polygonController
     }
 }
 

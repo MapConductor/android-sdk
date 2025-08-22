@@ -38,7 +38,7 @@ fun HereMapView(
 ) {
     val holderRef = remember { Ref<HereMapViewHolder>() }
     val scope = remember { HereMapViewScope() }
-    val controllerRef = remember { Ref<HereMapViewController>() }
+    val controllerRef = remember { Ref<HereMapViewControllerImpl>() }
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }

@@ -5,13 +5,9 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Polygon
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
 import com.mapbox.maps.extension.style.sources.updateGeoJSONSourceFeatures
+import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.polygon.AbstractPolygonRenderer
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonOverlayManager
-import com.mapconductor.core.polygon.PolygonOverlayManagerImpl
-import com.mapconductor.core.polygon.PolygonRenderer.UpdateParams
-import com.mapconductor.core.polygon.PolygonRendererFactory
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.mapbox.MapboxActualPolygon
 import com.mapconductor.mapbox.MapboxMapViewHolder
@@ -20,29 +16,14 @@ import com.mapconductor.mapbox.toPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class DefaultMapboxPolygonRenderer : PolygonRendererFactory<MapboxActualPolygon> {
-    override fun create(
-        onAdd: suspend (List<PolygonState>) -> List<MapboxActualPolygon?>,
-        onChange: suspend (List<UpdateParams<MapboxActualPolygon>>) -> List<MapboxActualPolygon?>,
-        onRemove: suspend (List<PolygonEntity<MapboxActualPolygon>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): PolygonOverlayManager<MapboxActualPolygon> =
-        PolygonOverlayManagerImpl(
-            onRemove = onRemove,
-            onAdd = onAdd,
-            onChange = onChange,
-            onPostProcess = onPostProcess,
-        )
-}
-
 class MapboxPolygonRenderer(
-    override val holder: MapboxMapViewHolder,
-    override val coroutine: CoroutineScope,
+    val holder: MapboxMapViewHolder,
+    val coroutine: CoroutineScope,
     private val layer: MapboxPolygonLayer,
-) : AbstractPolygonRenderer<MapboxActualPolygon>() {
-    override suspend fun addPolygons(newPolygons: List<PolygonState>): List<MapboxActualPolygon?> {
+) : OverlayRenderer<MapboxActualPolygon, PolygonState, PolygonEntity<MapboxActualPolygon>> {
+    override suspend fun onAdd(data: List<PolygonState>): List<MapboxActualPolygon?> {
         val polygons =
-            newPolygons.map { state ->
+            data.map { state ->
                 val points = state.points.map { GeoPoint.from(it).toPoint() }
                 // Close the polygon by adding the first point at the end if not already closed
                 val closedPoints =
@@ -64,15 +45,21 @@ class MapboxPolygonRenderer(
         return polygons
     }
 
-    override suspend fun removePolygons(removeEntities: List<PolygonEntity<MapboxActualPolygon>>) {
-        val featureIds = removeEntities.map { "polygon-${it.state.id}" }
+    override suspend fun onRemove(data: List<PolygonEntity<MapboxActualPolygon>>) {
+        val featureIds = data.map { "polygon-${it.state.id}" }
         layer.source.removeGeoJSONSourceFeatures(featureIds)
     }
 
-    override suspend fun changePolygon(changes: List<UpdateParams<MapboxActualPolygon>>): List<MapboxActualPolygon> {
+    override suspend fun onPostProcess() {
+        // Do nothing here
+    }
+
+    override suspend fun onChange(
+        data: List<OverlayRenderer.ChangeParams<PolygonEntity<MapboxActualPolygon>>>,
+    ): List<MapboxActualPolygon?> {
         val features =
-            changes.map { params ->
-                val state = params.entity.state
+            data.map { params ->
+                val state = params.current.state
                 val points = state.points.map { GeoPoint.from(it).toPoint() }
                 // Close the polygon by adding the first point at the end if not already closed
                 val closedPoints =
@@ -96,9 +83,10 @@ class MapboxPolygonRenderer(
     }
 
     fun redraw() {
-        val polygons = polygonOverlayManager.getAllEntities()
+        // Note: This method needs to be updated to work with the new architecture
+        // when a polygon overlay manager is available
         coroutine.launch {
-            layer.draw(polygons)
+            // TODO: Update this method when MapViewController integration is complete
         }
     }
 }

@@ -29,7 +29,7 @@ fun ArcGISMapView(
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
-    val controllerRef = remember { Ref<ArcGISMapViewController>() }
+    val controllerRef = remember { Ref<ArcGISMapViewControllerImpl>() }
     val scope = remember { ArcGISMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }

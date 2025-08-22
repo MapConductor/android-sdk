@@ -24,6 +24,7 @@ import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -100,6 +101,12 @@ fun DemoAppScreen(initPage: String = "map") {
                 icon = Icons.Default.PlayArrow,
                 route = "polyline",
             ),
+            SidebarItem(
+                id = "polygon",
+                title = "polygon ",
+                icon = Icons.Default.PlayArrow,
+                route = "polygon",
+            ),
 //            SidebarItem(
 //                id = "examples",
 //                title = "Map Examples",
@@ -113,6 +120,7 @@ fun DemoAppScreen(initPage: String = "map") {
 //                route = "settings",
 //            ),
         )
+
 
     AppTheme {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -131,6 +139,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "polyline" -> {
                         PolylineMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "polygon" -> {
+                        PolygonMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

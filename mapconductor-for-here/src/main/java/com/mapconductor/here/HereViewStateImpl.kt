@@ -32,7 +32,7 @@ class HereViewStateImpl(
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewStateImpl<MapScheme>(),
     HereViewState {
-    internal var controller: IHereMapViewController? = null
+    internal var controller: HereMapViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)

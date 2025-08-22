@@ -25,6 +25,7 @@ import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.LocalCircleCollector
 import com.mapconductor.core.LocalGroundImageCollector
 import com.mapconductor.core.LocalMarkerCollector
+import com.mapconductor.core.LocalPolygonCollector
 import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
@@ -35,6 +36,7 @@ import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerCapable
+import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
 import android.view.View
@@ -90,25 +92,28 @@ fun <
             LocalInfoBubbleCollector provides scope.bubbleFlow,
             LocalCircleCollector provides scope.circleFlow,
             LocalPolylineCollector provides scope.polylineFlow,
+            LocalPolygonCollector provides scope.polygonFlow,
             LocalGroundImageCollector provides scope.groundImageFlow,
         ) {
             with(scope) {
                 content?.invoke(this)
             }
         }
-        val markers = scope.markerFlow.collectAsState()
-        markers.value.forEach { markerState ->
-            LaunchedEffect(markerState.id) {
-                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? MarkerCapable<*>)?.updateMarker(markerState)
+        (controller as? GroundImageCapable)?.let {
+            val groundImage = scope.groundImageFlow.collectAsState()
+            groundImage.value.forEach { groundImageState ->
+                LaunchedEffect(groundImageState.id) {
+                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        controller.updateGroundImage(groundImageState)
+                    }
                 }
             }
         }
-        val circles = scope.circleFlow.collectAsState()
-        circles.value.forEach { circleState ->
-            LaunchedEffect(circleState.id) {
-                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updateCircle(circleState)
+        val polygons = scope.polygonFlow.collectAsState()
+        polygons.value.forEach { polygonState ->
+            LaunchedEffect(polygonState.id) {
+                polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    (controller as? PolygonCapable)?.updatePolygon(polygonState)
                 }
             }
         }
@@ -120,13 +125,19 @@ fun <
                 }
             }
         }
-        (controller as? GroundImageCapable)?.let {
-            val groundImage = scope.groundImageFlow.collectAsState()
-            groundImage.value.forEach { groundImageState ->
-                LaunchedEffect(groundImageState.id) {
-                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        controller.updateGroundImage(groundImageState)
-                    }
+        val circles = scope.circleFlow.collectAsState()
+        circles.value.forEach { circleState ->
+            LaunchedEffect(circleState.id) {
+                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    controller.updateCircle(circleState)
+                }
+            }
+        }
+        val markers = scope.markerFlow.collectAsState()
+        markers.value.forEach { markerState ->
+            LaunchedEffect(markerState.id) {
+                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    (controller as? MarkerCapable<*>)?.updateMarker(markerState)
                 }
             }
         }

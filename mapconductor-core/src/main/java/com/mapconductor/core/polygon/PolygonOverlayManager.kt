@@ -4,6 +4,14 @@ import com.mapconductor.core.polygon.PolygonRenderer.UpdateParams
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
+interface PolygonCapable {
+    suspend fun compositionPolygons(data: List<PolygonState>)
+
+    suspend fun updatePolygon(state: PolygonState)
+
+    fun setOnPolygonClickListener(listener: OnPolygonEventHandler?)
+}
+
 interface PolygonOverlayManager<ActualPolygon> {
     suspend fun addPolygons(polygons: List<PolygonState>)
 

@@ -12,14 +12,18 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.here.marker.HereMapMarkerRenderer
 import com.mapconductor.here.marker.HereMarkerController
+import com.mapconductor.here.polygon.HereMapPolygonRenderer
+import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import android.content.Context
 import android.content.pm.PackageManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 typealias HereMapViewHolder = MapViewHolder<MapView, MapScene>
 
-object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
+object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
     private var mapCount: Int = 0
 
     fun initSDK(context: Context) {
@@ -55,7 +59,7 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
         context: Context,
         id: String,
         options: HereMapViewInitOptions,
-    ): HereMapViewController {
+    ): HereMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) {
             return existing
@@ -86,10 +90,11 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
 //        }
 
         val controller =
-            HereMapViewController(
+            HereMapViewControllerImpl(
                 holder = holder,
                 markerController = getMarkerController(holder),
                 polylineController = getPolylineController(holder),
+                polygonController = getPolygonController(holder),
             )
         this.set(id, controller)
         return controller
@@ -124,6 +129,20 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewController>() {
         val controller =
             HereMarkerController(
                 markerManager = manager,
+                renderer = renderer,
+            )
+        return controller
+    }
+
+    private fun getPolygonController(holder: HereMapViewHolder): HerePolygonController {
+        val renderer =
+            HereMapPolygonRenderer(
+                holder = holder,
+                coroutine = CoroutineScope(Dispatchers.Default),
+            )
+
+        val controller =
+            HerePolygonController(
                 renderer = renderer,
             )
         return controller

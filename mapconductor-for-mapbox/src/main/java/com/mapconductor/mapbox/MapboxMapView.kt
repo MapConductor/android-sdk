@@ -12,6 +12,7 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.core.projection.WebMercator
@@ -37,11 +38,12 @@ fun MapboxMapView(
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
     val context = LocalContext.current
-    val controllerRef = remember { Ref<MapboxMapViewController>() }
+    val controllerRef = remember { Ref<MapboxMapViewControllerImpl>() }
     val scope = remember { MapboxMapViewScope() }
     val registry = remember { scope.buildRegistry() }
 
@@ -71,7 +73,7 @@ fun MapboxMapView(
             val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
 
             val controller =
-                MapboxMapViewController(
+                MapboxMapViewControllerImpl(
                     holder = holder,
                     markerController = getMarkerController(holder),
                     polylineController = getPolylineController(holder),
@@ -83,6 +85,7 @@ fun MapboxMapView(
             controller.setMapClickListener(onMapClick)
             controller.setCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
+            controller.setOnPolygonClickListener(onPolygonClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
             controller.setOnMarkerDrag(onMarkerDrag)

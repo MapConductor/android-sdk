@@ -12,7 +12,6 @@ import com.mapconductor.arcgis.circle.DefaultArcGISCircleRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.SelectedMarker
 import com.mapconductor.arcgis.polygon.ArcGISPolygonRenderer
-import com.mapconductor.arcgis.polygon.DefaultArcGISPolygonRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineController
 import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleOverlayManager
@@ -26,9 +25,11 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polygon.PolygonOverlayManager
-import com.mapconductor.core.polygon.PolygonRenderer
-import com.mapconductor.core.polygon.PolygonRendererFactory
+import com.mapconductor.core.polygon.OnPolygonEventHandler
+import com.mapconductor.core.polygon.PolygonCapable
+import com.mapconductor.core.polygon.PolygonController
+import com.mapconductor.core.polygon.PolygonEvent
+import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
@@ -38,13 +39,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IArcGISMapViewController :
+interface ArcGISMapViewController :
     MapViewController<
         ArcGISActualCircle,
-        ArcGISActualPolygon,
     >,
     MarkerCapable<ArcGISActualMarker>,
-    PolylineCapable {
+    PolylineCapable,
+    PolygonCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -57,7 +58,7 @@ interface IArcGISMapViewController :
     )
 }
 
-class ArcGISMapViewController(
+class ArcGISMapViewControllerImpl(
     override val holder: ArcGISMapViewHolder,
     private val polylineController: ArcGISPolylineController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
@@ -69,30 +70,13 @@ class ArcGISMapViewController(
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
         },
-    private val polygonRendererFactory: PolygonRendererFactory<ArcGISActualPolygon> =
-        DefaultArcGISPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<ArcGISActualCircle> =
         DefaultArcGISCircleRenderer(),
     private val markerController: ArcGISMarkerController,
 ) : BaseMapViewController<
         ArcGISActualCircle,
-        ArcGISActualPolygon,
     >(),
-    IArcGISMapViewController {
-    override fun createPolygonOverlayManager(): PolygonOverlayManager<ArcGISActualPolygon> =
-        polygonRendererFactory.create(
-            onAdd = polygonRenderer::addPolygons,
-            onChange = polygonRenderer::changePolygon,
-            onRemove = polygonRenderer::removePolygons,
-        )
-
-    override val polygonRenderer: PolygonRenderer<ArcGISActualPolygon> =
-        ArcGISPolygonRenderer(
-            polygonLayer = polygonLayer,
-            holder = holder,
-            coroutine = coroutine,
-        )
-
+    ArcGISMapViewController {
     override fun createCircleOverlayManager(): CircleOverlayManager<ArcGISActualCircle> =
         circleRendererFactory.create(
             onAdd = circleRenderer::addCircles,
@@ -107,15 +91,23 @@ class ArcGISMapViewController(
             coroutine = coroutine,
         )
 
-    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
-    }
+    private val polygonController: PolygonController<ArcGISActualPolygon> =
+        PolygonController(
+            renderer =
+                ArcGISPolygonRenderer(
+                    polygonLayer = polygonLayer,
+                    holder = holder,
+                    coroutine = coroutine,
+                ),
+        )
 
-    override fun onPolygonOverlayManagerInitialized(overlayManager: PolygonOverlayManager<ArcGISActualPolygon>) {
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
     }
 
     init {
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(circleLayer)
+        holder.map.graphicsOverlays.add(polygonLayer)
         holder.map.graphicsOverlays.add(polylineController.renderer.polylineLayer)
         holder.map.graphicsOverlays.add(markerController.renderer.markerLayer)
         setupListeners()
@@ -237,6 +229,17 @@ class ArcGISMapViewController(
                     position = touchPosition,
                 )
             circleClickCallback?.invoke(event)
+            return
+        }
+
+        polygonController.find(touchPosition)?.let { polygonEntity ->
+            val event =
+                PolygonEvent(
+                    state = polygonEntity.state,
+                    clicked = touchPosition,
+                )
+            polygonClickCallback?.invoke(event)
+            return
         }
 
         holder.map.screenToLocation(screenPoint).getOrNull()?.also {
@@ -247,6 +250,7 @@ class ArcGISMapViewController(
     override suspend fun clearOverlays() {
         markerController.clear()
         polylineController.clear()
+        polygonController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
@@ -256,6 +260,10 @@ class ArcGISMapViewController(
     override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
 
     override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
+
+    override suspend fun compositionPolygons(data: List<PolygonState>) = polygonController.add(data)
+
+    override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
 
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
@@ -316,5 +324,9 @@ class ArcGISMapViewController(
 
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
         this.polylineController.clickListener = listener
+    }
+
+    override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
+        this.polygonClickCallback = listener
     }
 }

@@ -5,41 +5,22 @@ import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.polygon.AbstractPolygonRenderer
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonOverlayManager
-import com.mapconductor.core.polygon.PolygonOverlayManagerImpl
-import com.mapconductor.core.polygon.PolygonRenderer.UpdateParams
-import com.mapconductor.core.polygon.PolygonRendererFactory
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.here.HereMapViewHolder
 import com.mapconductor.here.toGeoCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class DefaultHereMapPolygonRenderer : PolygonRendererFactory<MapPolygon> {
-    override fun create(
-        onAdd: suspend (List<PolygonState>) -> List<MapPolygon?>,
-        onChange: suspend (List<UpdateParams<MapPolygon>>) -> List<MapPolygon?>,
-        onRemove: suspend (List<PolygonEntity<MapPolygon>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): PolygonOverlayManager<MapPolygon> =
-        PolygonOverlayManagerImpl(
-            onRemove = onRemove,
-            onAdd = onAdd,
-            onChange = onChange,
-            onPostProcess = onPostProcess,
-        )
-}
-
 class HereMapPolygonRenderer(
-    override val holder: HereMapViewHolder,
-    override val coroutine: CoroutineScope,
-) : AbstractPolygonRenderer<MapPolygon>() {
-    override suspend fun addPolygons(newPolygons: List<PolygonState>): List<MapPolygon?> {
+    val holder: HereMapViewHolder,
+    val coroutine: CoroutineScope,
+) : OverlayRenderer<MapPolygon, PolygonState, PolygonEntity<MapPolygon>> {
+    override suspend fun onAdd(data: List<PolygonState>): List<MapPolygon?> {
         val polygons =
-            newPolygons.map { state ->
+            data.map { state ->
                 val geoPolygon = createGeoPolygon(state)
                 val lineWidth = ResourceProvider.dpToPx(state.strokeWidth.value.toDouble())
                 MapPolygon(
@@ -55,43 +36,49 @@ class HereMapPolygonRenderer(
         return polygons
     }
 
-    override suspend fun removePolygons(removeEntities: List<PolygonEntity<MapPolygon>>) {
+    override suspend fun onRemove(data: List<PolygonEntity<MapPolygon>>) {
         coroutine.launch {
-            removeEntities.forEach { holder.map.removeMapPolygon(it.polygon) }
+            data.forEach { holder.map.removeMapPolygon(it.polygon) }
         }
     }
 
-    override suspend fun changePolygon(changes: List<UpdateParams<MapPolygon>>): List<MapPolygon> {
-        return changes.map { params ->
-            val finger = params.entity.state.fingerPrint()
-            val prevFinger = params.prevEntity.state.fingerPrint()
+    override suspend fun onPostProcess() {
+        // Do nothing here
+    }
+
+    override suspend fun onChange(
+        data: List<OverlayRenderer.ChangeParams<PolygonEntity<MapPolygon>>>,
+    ): List<MapPolygon?> {
+        return data.map { params ->
+            val finger = params.current.fingerPrint
+            val prevFinger = params.prev.fingerPrint
             if (finger.points != prevFinger.points) {
-                val geoPolygon = createGeoPolygon(params.entity.state)
-                params.entity.polygon.geometry = geoPolygon
+                val geoPolygon = createGeoPolygon(params.current.state)
+                params.current.polygon.geometry = geoPolygon
             }
             if (finger.strokeColor != prevFinger.strokeColor) {
-                params.entity.polygon.outlineColor =
+                params.current.polygon.outlineColor =
                     Color.valueOf(
-                        params.entity.state.strokeColor
+                        params.current.state.strokeColor
                             .toArgb(),
                     )
             }
             if (finger.strokeWidth != prevFinger.strokeWidth) {
                 val lineWidth =
                     ResourceProvider.dpToPx(
-                        params.entity.state.strokeWidth.value
+                        params.current.state.strokeWidth.value
                             .toDouble(),
                     )
-                params.entity.polygon.outlineWidth = lineWidth
+                params.current.polygon.outlineWidth = lineWidth
             }
             if (finger.fillColor != prevFinger.fillColor) {
-                params.entity.polygon.fillColor =
+                params.current.polygon.fillColor =
                     Color.valueOf(
-                        params.entity.state.fillColor
+                        params.current.state.fillColor
                             .toArgb(),
                     )
             }
-            return@map params.entity.polygon
+            return@map params.current.polygon
         }
     }
 

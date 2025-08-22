@@ -13,41 +13,22 @@ import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.polygon.AbstractPolygonRenderer
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonOverlayManager
-import com.mapconductor.core.polygon.PolygonOverlayManagerImpl
-import com.mapconductor.core.polygon.PolygonRenderer.UpdateParams
-import com.mapconductor.core.polygon.PolygonRendererFactory
 import com.mapconductor.core.polygon.PolygonState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class DefaultArcGISPolygonRenderer : PolygonRendererFactory<ArcGISActualPolygon> {
-    override fun create(
-        onAdd: suspend (List<PolygonState>) -> List<ArcGISActualPolygon?>,
-        onChange: suspend (List<UpdateParams<ArcGISActualPolygon>>) -> List<ArcGISActualPolygon?>,
-        onRemove: suspend (List<PolygonEntity<ArcGISActualPolygon>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): PolygonOverlayManager<ArcGISActualPolygon> =
-        PolygonOverlayManagerImpl(
-            onRemove = onRemove,
-            onAdd = onAdd,
-            onChange = onChange,
-            onPostProcess = onPostProcess,
-        )
-}
-
 class ArcGISPolygonRenderer(
     val polygonLayer: GraphicsOverlay,
-    override val holder: ArcGISMapViewHolder,
-    override val coroutine: CoroutineScope,
-) : AbstractPolygonRenderer<ArcGISActualPolygon>() {
-    override suspend fun addPolygons(newPolygons: List<PolygonState>): List<ArcGISActualPolygon?> {
+    val holder: ArcGISMapViewHolder,
+    val coroutine: CoroutineScope,
+) : OverlayRenderer<ArcGISActualPolygon, PolygonState, PolygonEntity<ArcGISActualPolygon>> {
+    override suspend fun onAdd(data: List<PolygonState>): List<ArcGISActualPolygon?> {
         return withContext(coroutine.coroutineContext) {
-            return@withContext newPolygons.map { state ->
+            return@withContext data.map { state ->
 
                 val geometry = createGeometry(state)
 
@@ -77,40 +58,46 @@ class ArcGISPolygonRenderer(
         }
     }
 
-    override suspend fun removePolygons(removeEntities: List<PolygonEntity<ArcGISActualPolygon>>) {
-        val polygons = removeEntities.map { it.polygon }
+    override suspend fun onRemove(data: List<PolygonEntity<ArcGISActualPolygon>>) {
+        val polygons = data.map { it.polygon }
         coroutine.launch {
             polygonLayer.graphics.removeAll(polygons)
         }
     }
 
-    override suspend fun changePolygon(changes: List<UpdateParams<ArcGISActualPolygon>>): List<ArcGISActualPolygon> {
+    override suspend fun onPostProcess() {
+        // Do nothing here
+    }
+
+    override suspend fun onChange(
+        data: List<OverlayRenderer.ChangeParams<PolygonEntity<ArcGISActualPolygon>>>,
+    ): List<ArcGISActualPolygon?> {
         return withContext(coroutine.coroutineContext) {
-            return@withContext changes.map { params ->
-                val finger = params.entity.state.fingerPrint()
-                val prevFinger = params.prevEntity.state.fingerPrint()
+            return@withContext data.map { params ->
+                val finger = params.current.fingerPrint
+                val prevFinger = params.prev.fingerPrint
                 if (finger.points != prevFinger.points) {
-                    params.entity.polygon.geometry = createGeometry(params.entity.state)
+                    params.current.polygon.geometry = createGeometry(params.current.state)
                 }
 
-                (params.entity.polygon.symbol as SimpleFillSymbol).let { symbol ->
+                (params.current.polygon.symbol as SimpleFillSymbol).let { symbol ->
                     if (finger.fillColor != prevFinger.fillColor) {
                         symbol.color =
-                            params.entity.state.fillColor
+                            params.current.state.fillColor
                                 .toArcGISColor()
                     }
                     symbol.outline?.let { outline ->
                         if (finger.strokeColor != prevFinger.strokeColor) {
                             outline.color =
-                                params.entity.state.strokeColor
+                                params.current.state.strokeColor
                                     .toArcGISColor()
                         }
                         if (finger.strokeWidth != prevFinger.strokeWidth) {
-                            outline.width = ResourceProvider.dpToPx(params.entity.state.strokeWidth).toFloat()
+                            outline.width = ResourceProvider.dpToPx(params.current.state.strokeWidth).toFloat()
                         }
                     }
                 }
-                return@map params.entity.polygon
+                return@map params.current.polygon
             }
         }
     }

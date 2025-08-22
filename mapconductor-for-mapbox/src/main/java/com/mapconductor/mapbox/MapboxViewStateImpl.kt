@@ -26,7 +26,7 @@ class MapboxViewStateImpl(
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewStateImpl<String>(),
     MapboxViewState {
-    internal var controller: IMapboxMapViewController? = null
+    internal var controller: MapboxMapViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow(initCameraPosition)

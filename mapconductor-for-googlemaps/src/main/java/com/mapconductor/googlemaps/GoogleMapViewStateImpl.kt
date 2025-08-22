@@ -34,7 +34,7 @@ class GoogleMapViewStateImpl(
     private val _cameraPosition = MutableStateFlow<MapCameraPosition?>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition?> = _cameraPosition.asStateFlow()
 
-    internal var controller: IGoogleMapViewController? = null
+    internal var controller: GoogleMapViewController? = null
 
     override fun moveCameraTo(
         position: GeoPoint,

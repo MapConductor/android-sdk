@@ -6,14 +6,12 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.polygon.PolygonOverlayManager
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController<ActualCircle, ActualPolygon> {
+interface MapViewController<ActualCircle> {
     val holder: MapViewHolder<*, *>
     val coroutine: CoroutineScope
     val circleOverlayManager: CircleOverlayManager<ActualCircle>
-    val polygonOverlayManager: PolygonOverlayManager<ActualPolygon>
 
     suspend fun addCircles(data: List<CircleState>)
 
@@ -30,4 +28,4 @@ interface MapViewController<ActualCircle, ActualPolygon> {
     fun setCircleClickListener(listener: OnCircleEventHandler?)
 }
 
-typealias MapViewControllerAlias = MapViewController<*, *>
+typealias MapViewControllerAlias = MapViewController<*>

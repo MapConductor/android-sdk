@@ -95,4 +95,9 @@ data class PolygonFingerPrint(
     val extra: Int,
 )
 
-typealias OnPolygonEventHandler = (PolygonState) -> Unit
+data class PolygonEvent(
+    val state: PolygonState,
+    val clicked: IGeoPoint?,
+)
+
+typealias OnPolygonEventHandler = (PolygonEvent) -> Unit
