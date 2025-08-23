@@ -68,11 +68,11 @@ fun MapDesignMapPage(
                         state.changeMapDesignType(it)
                     }
                 }
-//                is ArcGISMapViewState -> {
-//                    (designType as? MapViewState<ArcGISDesign>)?.let {
-//                        state.changeMapDesignType(it)
-//                    }
-//                }
+                is ArcGISMapViewState -> {
+                    (designType as? ArcGISDesign)?.let {
+                        state.changeMapDesignType(it)
+                    }
+                }
             }
         }
 

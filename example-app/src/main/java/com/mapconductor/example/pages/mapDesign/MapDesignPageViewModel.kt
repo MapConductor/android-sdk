@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.mapconductor.arcgis.ArcGISDesign
+import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapDesignType
@@ -111,6 +113,18 @@ class MapDesignPageViewModelImpl():
                     MapDesignButton(
                         label = "standard-satellite",
                         designType = MapboxMapDesign.StandardSatellite,
+                    ),
+                )
+            }
+            is ArcGISMapViewState -> {
+                _buttons.value = listOf(
+                    MapDesignButton(
+                        label = "Streets",
+                        designType = ArcGISDesign.Streets,
+                    ),
+                    MapDesignButton(
+                        label = "Imagery",
+                        designType = ArcGISDesign.Imagery,
                     ),
                 )
             }
