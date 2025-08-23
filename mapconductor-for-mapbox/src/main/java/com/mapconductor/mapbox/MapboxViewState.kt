@@ -33,7 +33,8 @@ class MapboxMapViewState(
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
 
     override fun changeMapDesignType(value: MapboxDesignType) {
-        TODO("Not yet implemented")
+        this.mapDesignType = value
+        this.controller?.changeMapDesign(value.getValue())
     }
 
     override fun moveCameraTo(

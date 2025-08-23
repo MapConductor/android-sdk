@@ -17,6 +17,8 @@ import com.mapconductor.googlemaps.GoogleMapDesignType
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereMapViewState
+import com.mapconductor.mapbox.MapboxMapDesign
+import com.mapconductor.mapbox.MapboxMapViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
@@ -77,7 +79,7 @@ class MapDesignPageViewModelImpl():
         this._mapViewState.value = state
         when(state) {
             is GoogleMapViewState -> {
-                _buttons.value = listOf<MapDesignButton>(
+                _buttons.value = listOf(
                     MapDesignButton(
                         label = "Normal",
                         designType = GoogleMapDesign.Normal,
@@ -89,7 +91,7 @@ class MapDesignPageViewModelImpl():
                 )
             }
             is HereMapViewState -> {
-                _buttons.value = listOf<MapDesignButton>(
+                _buttons.value = listOf(
                     MapDesignButton(
                         label = "NormalDay",
                         designType = HereMapDesign.NormalDay,
@@ -97,6 +99,18 @@ class MapDesignPageViewModelImpl():
                     MapDesignButton(
                         label = "NormalNigh",
                         designType = HereMapDesign.NormalNigh,
+                    ),
+                )
+            }
+            is MapboxMapViewState -> {
+                _buttons.value = listOf(
+                    MapDesignButton(
+                        label = "standard",
+                        designType = MapboxMapDesign.Standard,
+                    ),
+                    MapDesignButton(
+                        label = "standard-satellite",
+                        designType = MapboxMapDesign.StandardSatellite,
                     ),
                 )
             }
