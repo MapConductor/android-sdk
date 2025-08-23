@@ -15,6 +15,7 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapPolygon
 import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.MapScene
+import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
 import com.mapconductor.core.ResourceProvider
@@ -55,6 +56,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline, MapPolygon> {
+    fun changeMapDesign(
+        value: MapScheme
+    )
+
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -193,6 +198,14 @@ class HereMapViewController(
         holder.mapView.camera.addListener(this)
         holder.mapView.gestures.tapListener = this
         holder.mapView.gestures.longPressListener = this
+    }
+
+    override fun changeMapDesign(
+        value: MapScheme
+    ){
+        coroutine.launch {
+            holder.mapView.mapScene.loadScene(value){}
+        }
     }
 
     override fun moveCamera(

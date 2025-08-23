@@ -38,8 +38,11 @@ class HereMapViewState(
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
 
-    override fun changeMapDesignType(value: HereMapDesignType) {
-        TODO("Not yet implemented")
+    override fun changeMapDesignType(
+        value: HereMapDesignType
+    ) {
+        this.mapDesignType = value
+        this.controller?.changeMapDesign(value.getValue())
     }
 
     override fun moveCameraTo(

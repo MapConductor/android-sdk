@@ -58,11 +58,11 @@ fun MapDesignMapPage(
                         state.changeMapDesignType(it)
                     }
                 }
-//                is HereMapViewState -> {
-//                    (designType as? MapViewState<HereMapDesign>)?.let {
-//                        state.changeMapDesignType(it)
-//                    }
-//                }
+                is HereMapViewState -> {
+                    (designType as? HereMapDesign)?.let {
+                        state.changeMapDesignType(it)
+                    }
+                }
 //                is MapboxMapViewState -> {
 //                    (designType as? MapViewState<MapboxMapDesign>)?.let {
 //                        state.changeMapDesignType(it)
