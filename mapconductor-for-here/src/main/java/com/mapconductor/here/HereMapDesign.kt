@@ -76,5 +76,22 @@ sealed class HereMapDesign(
                 RoadNetworkNight.id -> RoadNetworkNight
                 else -> throw IllegalArgumentException("Unsupported MapScene : $id")
             }
+
+        fun all(): List<Pair<String, HereMapDesign>> = listOf(
+            "NormalDay" to NormalDay,
+            "NormalNigh" to NormalNigh,
+            "Satellite" to Satellite,
+            "HybridDay" to HybridDay,
+            "HybridNight" to HybridNight,
+            "LiteDay" to LiteDay,
+            "LiteNight" to LiteNight,
+            "LiteHybridDay" to LiteHybridDay,
+            "LiteHybridNight" to LiteHybridNight,
+            "LogisticsDay" to LogisticsDay,
+            "LogisticsNight" to LogisticsNight,
+            "LogisticsHybridDay" to LogisticsHybridDay,
+            "RoadNetworkDay" to RoadNetworkDay,
+            "RoadNetworkNight" to RoadNetworkNight,
+        )
     }
 }

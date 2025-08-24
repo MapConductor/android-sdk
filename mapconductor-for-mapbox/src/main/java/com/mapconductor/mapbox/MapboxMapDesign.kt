@@ -50,5 +50,25 @@ sealed class MapboxMapDesign(
                 NavigationNight.id -> NavigationNight
                 else -> Custom(layerId)
             }
+
+        fun all(): List<Pair<String, MapboxMapDesign>> = listOf(
+            "Standard" to Standard,
+            "StandardSatellite" to StandardSatellite,
+            "Streets" to Streets,
+            "Outdoors" to Outdoors,
+            "Light" to Light,
+            "Dark" to Dark,
+            "Satellite" to Satellite,
+            "SatelliteStreets" to SatelliteStreets,
+            "NavigationDay" to NavigationDay,
+            "NavigationNight" to NavigationNight,
+        )
+
+        // カスタムスタイルも併せてリスト化したい場合はこっちを使うらしい
+        fun allWithCustom(
+            customs: List<Pair<String, String>>
+        ): List<Pair<String, MapboxMapDesign>> = all() + customs.map {
+            (label, styleId) -> label to Custom(styleId)
+        }
     }
 }

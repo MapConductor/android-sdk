@@ -30,7 +30,7 @@ data class ArcGISDesign(
         val Navigation = ArcGISDesign("arc_gis_navigation")
         val NavigationNight = ArcGISDesign("arc_gis_navigation_night")
         val StreetsNight = ArcGISDesign("arc_gis_streets_night")
-        val StreetsRelief = ArcGISDesign("arc_gis_Streets_relief")
+        val StreetsRelief = ArcGISDesign("arc_gis_Streets_relief") // "arc_gis_streets_relief"の誤記?
         val Topographic = ArcGISDesign("arc_gis_topographic")
         val Oceans = ArcGISDesign("arc_gis_oceans")
         val OceansBase = ArcGISDesign("arc_gis_oceans_base")
@@ -53,7 +53,7 @@ data class ArcGISDesign(
         val ModernAntiqueBase = ArcGISDesign("arc_gis_modern_antique_base")
         val HumanGeography = ArcGISDesign("arc_gis_human_geography")
         val HumanGeographyBase = ArcGISDesign("arc_gis_human_geography_base")
-        val HumanGeographyDetail = ArcGISDesign("arc_gis_humanGeography_detail")
+        val HumanGeographyDetail = ArcGISDesign("arc_gis_humanGeography_detail") // "arc_gis_human_geography_detail"の誤記?
         val HumanGeographyLabels = ArcGISDesign("arc_gis_human_geography_labels")
         val HumanGeographyDark = ArcGISDesign("arc_gis_human_geography_dark")
         val HumanGeographyDarkBase = ArcGISDesign("arc_gis_human_geography_dark_base")
@@ -210,5 +210,73 @@ data class ArcGISDesign(
                 OsmNavigationDark.id -> BasemapStyle.OsmNavigationDark
                 else -> throw Throwable("unknown design id: \"$designType.id\"")
             }
+
+        fun all(): List<Pair<String, ArcGISDesign>> = listOf(
+            // ArcGIS ベースマップ
+            "Streets" to Streets,
+            "Imagery" to Imagery,
+            "ImageryStandard" to ImageryStandard,
+            "ImageryLabels" to ImageryLabels,
+            "LightGray" to LightGray,
+            "LightGrayBase" to LightGrayBase,
+            "LightGrayLabels" to LightGrayLabels,
+            "DarkGray" to DarkGray,
+            "DarkGrayBase" to DarkGrayBase,
+            "DarkGrayLabels" to DarkGrayLabels,
+            "Navigation" to Navigation,
+            "NavigationNight" to NavigationNight,
+            "StreetsNight" to StreetsNight,
+            "StreetsRelief" to StreetsRelief,
+            "Topographic" to Topographic,
+            "Oceans" to Oceans,
+            "OceansBase" to OceansBase,
+            "OceansLabels" to OceansLabels,
+            "Terrain" to Terrain,
+            "TerrainBase" to TerrainBase,
+            "TerrainDetail" to TerrainDetail,
+            "Community" to Community,
+            "ChartedTerritory" to ChartedTerritory,
+            "ColoredPencil" to ColoredPencil,
+            "Nova" to Nova,
+            "ModernAntique" to ModernAntique,
+            "Midcentury" to Midcentury,
+            "Newspaper" to Newspaper,
+            "HillshadeLight" to HillshadeLight,
+            "HillshadeDark" to HillshadeDark,
+            "StreetsReliefBase" to StreetsReliefBase,
+            "TopographicBase" to TopographicBase,
+            "ChartedTerritoryBase" to ChartedTerritoryBase,
+            "ModernAntiqueBase" to ModernAntiqueBase,
+
+            // Human Geography
+            "HumanGeography" to HumanGeography,
+            "HumanGeographyBase" to HumanGeographyBase,
+            "HumanGeographyDetail" to HumanGeographyDetail,
+            "HumanGeographyLabels" to HumanGeographyLabels,
+            "HumanGeographyDark" to HumanGeographyDark,
+            "HumanGeographyDarkBase" to HumanGeographyDarkBase,
+            "HumanGeographyDarkDetail" to HumanGeographyDarkDetail,
+            "HumanGeographyDarkLabels" to HumanGeographyDarkLabels,
+
+            // Outdoor / OSM 系
+            "Outdoor" to Outdoor,
+            "OsmStandard" to OsmStandard,
+            "OsmStandardRelief" to OsmStandardRelief,
+            "OsmStandardReliefBase" to OsmStandardReliefBase,
+            "OsmStreets" to OsmStreets,
+            "OsmStreetsRelief" to OsmStreetsRelief,
+            "OsmLightGray" to OsmLightGray,
+            "OsmLightGrayBase" to OsmLightGrayBase,
+            "OsmLightGrayLabels" to OsmLightGrayLabels,
+            "OsmDarkGray" to OsmDarkGray,
+            "OsmDarkGrayBase" to OsmDarkGrayBase,
+            "OsmDarkGrayLabels" to OsmDarkGrayLabels,
+            "OsmStreetsReliefBase" to OsmStreetsReliefBase,
+            "OsmBlueprint" to OsmBlueprint,
+            "OsmHybrid" to OsmHybrid,
+            "OsmHybridDetail" to OsmHybridDetail,
+            "OsmNavigation" to OsmNavigation,
+            "OsmNavigationDark" to OsmNavigationDark,
+        )
     }
 }
