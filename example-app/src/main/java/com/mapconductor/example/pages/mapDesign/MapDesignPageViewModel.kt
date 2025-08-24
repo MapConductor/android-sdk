@@ -85,6 +85,18 @@ class MapDesignPageViewModelImpl():
                         label = "Satellite",
                         design = GoogleMapDesign.Satellite,
                     ),
+                    MapDesignOptions(
+                        label = "Hybrid",
+                        design = GoogleMapDesign.Hybrid,
+                    ),
+                    MapDesignOptions(
+                        label = "Terrain",
+                        design = GoogleMapDesign.Terrain,
+                    ),
+                    MapDesignOptions(
+                        label = "None",
+                        design = GoogleMapDesign.None,
+                    ),
                 )
             }
             is HereMapViewState -> {
@@ -97,17 +109,97 @@ class MapDesignPageViewModelImpl():
                         label = "NormalNigh",
                         design = HereMapDesign.NormalNigh,
                     ),
+                    MapDesignOptions(
+                        label = "Satellite",
+                        design = HereMapDesign.Satellite,
+                    ),
+                    MapDesignOptions(
+                        label = "HybridDay",
+                        design = HereMapDesign.HybridDay,
+                    ),
+                    MapDesignOptions(
+                        label = "HybridNight",
+                        design = HereMapDesign.HybridNight,
+                    ),
+                    MapDesignOptions(
+                        label = "LiteDay",
+                        design = HereMapDesign.LiteDay,
+                    ),
+                    MapDesignOptions(
+                        label = "LiteNight",
+                        design = HereMapDesign.LiteNight,
+                    ),
+                    MapDesignOptions(
+                        label = "LiteHybridDay",
+                        design = HereMapDesign.LiteHybridDay,
+                    ),
+                    MapDesignOptions(
+                        label = "LiteHybridNight",
+                        design = HereMapDesign.LiteHybridNight,
+                    ),
+                    MapDesignOptions(
+                        label = "LogisticsDay",
+                        design = HereMapDesign.LogisticsDay,
+                    ),
+                    MapDesignOptions(
+                        label = "LogisticsNight",
+                        design = HereMapDesign.LogisticsNight,
+                    ),
+                    MapDesignOptions(
+                        label = "LogisticsHybridDay",
+                        design = HereMapDesign.LogisticsHybridDay,
+                    ),
+                    MapDesignOptions(
+                        label = "RoadNetworkDay",
+                        design = HereMapDesign.RoadNetworkDay,
+                    ),
+                    MapDesignOptions(
+                        label = "RoadNetworkNight",
+                        design = HereMapDesign.RoadNetworkNight,
+                    ),
                 )
             }
             is MapboxMapViewState -> {
                 _options.value = listOf(
                     MapDesignOptions(
-                        label = "standard",
+                        label = "Standard",
                         design = MapboxMapDesign.Standard,
                     ),
                     MapDesignOptions(
-                        label = "standard-satellite",
+                        label = "StandardSatellite",
                         design = MapboxMapDesign.StandardSatellite,
+                    ),
+                    MapDesignOptions(
+                        label = "Streets",
+                        design = MapboxMapDesign.Streets,
+                    ),
+                    MapDesignOptions(
+                        label = "Outdoors",
+                        design = MapboxMapDesign.Outdoors,
+                    ),
+                    MapDesignOptions(
+                        label = "Light",
+                        design = MapboxMapDesign.Light,
+                    ),
+                    MapDesignOptions(
+                        label = "Dark",
+                        design = MapboxMapDesign.Dark,
+                    ),
+                    MapDesignOptions(
+                        label = "Satellite",
+                        design = MapboxMapDesign.Satellite,
+                    ),
+                    MapDesignOptions(
+                        label = "SatelliteStreets",
+                        design = MapboxMapDesign.SatelliteStreets,
+                    ),
+                    MapDesignOptions(
+                        label = "NavigationDay",
+                        design = MapboxMapDesign.NavigationDay,
+                    ),
+                    MapDesignOptions(
+                        label = "NavigationNight",
+                        design = MapboxMapDesign.NavigationNight,
                     ),
                 )
             }
@@ -120,6 +212,238 @@ class MapDesignPageViewModelImpl():
                     MapDesignOptions(
                         label = "Imagery",
                         design = ArcGISDesign.Imagery,
+                    ),
+                    MapDesignOptions(
+                        label = "ImageryStandard",
+                        design = ArcGISDesign.ImageryStandard,
+                    ),
+                    MapDesignOptions(
+                        label = "ImageryLabels",
+                        design = ArcGISDesign.ImageryLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "LightGray",
+                        design = ArcGISDesign.LightGray,
+                    ),
+                    MapDesignOptions(
+                        label = "LightGrayBase",
+                        design = ArcGISDesign.LightGrayBase,
+                    ),
+                    MapDesignOptions(
+                        label = "LightGrayLabels",
+                        design = ArcGISDesign.LightGrayLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "DarkGray",
+                        design = ArcGISDesign.DarkGray,
+                    ),
+                    MapDesignOptions(
+                        label = "DarkGrayBase",
+                        design = ArcGISDesign.DarkGrayBase,
+                    ),
+                    MapDesignOptions(
+                        label = "DarkGrayLabels",
+                        design = ArcGISDesign.DarkGrayLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "Navigation",
+                        design = ArcGISDesign.Navigation,
+                    ),
+                    MapDesignOptions(
+                        label = "NavigationNight",
+                        design = ArcGISDesign.NavigationNight,
+                    ),
+                    MapDesignOptions(
+                        label = "StreetsNight",
+                        design = ArcGISDesign.StreetsNight,
+                    ),
+                    MapDesignOptions(
+                        label = "StreetsRelief",
+                        design = ArcGISDesign.StreetsRelief,
+                    ),
+                    MapDesignOptions(
+                        label = "Topographic",
+                        design = ArcGISDesign.Topographic,
+                    ),
+                    MapDesignOptions(
+                        label = "Oceans",
+                        design = ArcGISDesign.Oceans,
+                    ),
+                    MapDesignOptions(
+                        label = "OceansBase",
+                        design = ArcGISDesign.OceansBase,
+                    ),
+                    MapDesignOptions(
+                        label = "OceansLabels",
+                        design = ArcGISDesign.OceansLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "Terrain",
+                        design = ArcGISDesign.Terrain,
+                    ),
+                    MapDesignOptions(
+                        label = "TerrainBase",
+                        design = ArcGISDesign.TerrainBase,
+                    ),
+                    MapDesignOptions(
+                        label = "TerrainDetail",
+                        design = ArcGISDesign.TerrainDetail,
+                    ),
+                    MapDesignOptions(
+                        label = "Community",
+                        design = ArcGISDesign.Community,
+                    ),
+                    MapDesignOptions(
+                        label = "ChartedTerritory",
+                        design = ArcGISDesign.ChartedTerritory,
+                    ),
+                    MapDesignOptions(
+                        label = "ColoredPencil",
+                        design = ArcGISDesign.ColoredPencil,
+                    ),
+                    MapDesignOptions(
+                        label = "Nova",
+                        design = ArcGISDesign.Nova,
+                    ),
+                    MapDesignOptions(
+                        label = "ModernAntique",
+                        design = ArcGISDesign.ModernAntique,
+                    ),
+                    MapDesignOptions(
+                        label = "Midcentury",
+                        design = ArcGISDesign.Midcentury,
+                    ),
+                    MapDesignOptions(
+                        label = "Newspaper",
+                        design = ArcGISDesign.Newspaper,
+                    ),
+                    MapDesignOptions(
+                        label = "HillshadeLight",
+                        design = ArcGISDesign.HillshadeLight,
+                    ),
+                    MapDesignOptions(
+                        label = "HillshadeDark",
+                        design = ArcGISDesign.HillshadeDark,
+                    ),
+                    MapDesignOptions(
+                        label = "StreetsReliefBase",
+                        design = ArcGISDesign.StreetsReliefBase,
+                    ),
+                    MapDesignOptions(
+                        label = "TopographicBase",
+                        design = ArcGISDesign.TopographicBase,
+                    ),
+                    MapDesignOptions(
+                        label = "ChartedTerritoryBase",
+                        design = ArcGISDesign.ChartedTerritoryBase,
+                    ),
+                    MapDesignOptions(
+                        label = "ModernAntiqueBase",
+                        design = ArcGISDesign.ModernAntiqueBase,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeography",
+                        design = ArcGISDesign.HumanGeography,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyBase",
+                        design = ArcGISDesign.HumanGeographyBase,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyDetail",
+                        design = ArcGISDesign.HumanGeographyDetail,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyLabels",
+                        design = ArcGISDesign.HumanGeographyLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyDark",
+                        design = ArcGISDesign.HumanGeographyDark,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyDarkBase",
+                        design = ArcGISDesign.HumanGeographyDarkBase,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyDarkDetail",
+                        design = ArcGISDesign.HumanGeographyDarkDetail,
+                    ),
+                    MapDesignOptions(
+                        label = "HumanGeographyDarkLabels",
+                        design = ArcGISDesign.HumanGeographyDarkLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "Outdoor",
+                        design = ArcGISDesign.Outdoor,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmStandard",
+                        design = ArcGISDesign.OsmStandard,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmStandardRelief",
+                        design = ArcGISDesign.OsmStandardRelief,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmStandardReliefBase",
+                        design = ArcGISDesign.OsmStandardReliefBase,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmStreets",
+                        design = ArcGISDesign.OsmStreets,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmStreetsRelief",
+                        design = ArcGISDesign.OsmStreetsRelief,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmLightGray",
+                        design = ArcGISDesign.OsmLightGray,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmLightGrayBase",
+                        design = ArcGISDesign.OsmLightGrayBase,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmLightGrayLabels",
+                        design = ArcGISDesign.OsmLightGrayLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmDarkGray",
+                        design = ArcGISDesign.OsmDarkGray,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmDarkGrayBase",
+                        design = ArcGISDesign.OsmDarkGrayBase,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmDarkGrayLabels",
+                        design = ArcGISDesign.OsmDarkGrayLabels,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmStreetsReliefBase",
+                        design = ArcGISDesign.OsmStreetsReliefBase,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmBlueprint",
+                        design = ArcGISDesign.OsmBlueprint,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmHybrid",
+                        design = ArcGISDesign.OsmHybrid,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmHybridDetail",
+                        design = ArcGISDesign.OsmHybridDetail,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmNavigation",
+                        design = ArcGISDesign.OsmNavigation,
+                    ),
+                    MapDesignOptions(
+                        label = "OsmNavigationDark",
+                        design = ArcGISDesign.OsmNavigationDark,
                     ),
                 )
             }
