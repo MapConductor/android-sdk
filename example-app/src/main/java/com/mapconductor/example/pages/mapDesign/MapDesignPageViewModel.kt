@@ -1,7 +1,6 @@
 package com.mapconductor.example.pages.mapDesign
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -11,11 +10,8 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapDesignType
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.toast.ToastMessage
 import com.mapconductor.googlemaps.GoogleMapDesign
-import com.mapconductor.googlemaps.GoogleMapDesignType
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereMapViewState
@@ -23,12 +19,11 @@ import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxMapViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-data class MapDesignButton(
+data class MapDesignOptions(
     val label: String,
-    val designType: MapDesignType<*>
+    val design: MapDesignType<*>
 )
 
 
@@ -39,7 +34,7 @@ interface MapDesignPageViewModel {
 
     var design: Int
 
-    val buttons: StateFlow<List<MapDesignButton>>
+    val options: StateFlow<List<MapDesignOptions>>
     fun onMapViewChanged(state: MapViewState<*>)
 
     fun onMapClick(clicked: GeoPoint)
@@ -72,8 +67,8 @@ class MapDesignPageViewModelImpl():
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
-    private val _buttons: MutableStateFlow<List<MapDesignButton>> = MutableStateFlow(emptyList())
-    override val buttons: StateFlow<List<MapDesignButton>> = _buttons.asStateFlow()
+    private val _options: MutableStateFlow<List<MapDesignOptions>> = MutableStateFlow(emptyList())
+    override val options: StateFlow<List<MapDesignOptions>> = _options.asStateFlow()
 
     override var design by mutableStateOf(1)
 
@@ -81,50 +76,50 @@ class MapDesignPageViewModelImpl():
         this._mapViewState.value = state
         when(state) {
             is GoogleMapViewState -> {
-                _buttons.value = listOf(
-                    MapDesignButton(
+                _options.value = listOf(
+                    MapDesignOptions(
                         label = "Normal",
-                        designType = GoogleMapDesign.Normal,
+                        design = GoogleMapDesign.Normal,
                     ),
-                    MapDesignButton(
+                    MapDesignOptions(
                         label = "Satellite",
-                        designType = GoogleMapDesign.Satellite,
+                        design = GoogleMapDesign.Satellite,
                     ),
                 )
             }
             is HereMapViewState -> {
-                _buttons.value = listOf(
-                    MapDesignButton(
+                _options.value = listOf(
+                    MapDesignOptions(
                         label = "NormalDay",
-                        designType = HereMapDesign.NormalDay,
+                        design = HereMapDesign.NormalDay,
                     ),
-                    MapDesignButton(
+                    MapDesignOptions(
                         label = "NormalNigh",
-                        designType = HereMapDesign.NormalNigh,
+                        design = HereMapDesign.NormalNigh,
                     ),
                 )
             }
             is MapboxMapViewState -> {
-                _buttons.value = listOf(
-                    MapDesignButton(
+                _options.value = listOf(
+                    MapDesignOptions(
                         label = "standard",
-                        designType = MapboxMapDesign.Standard,
+                        design = MapboxMapDesign.Standard,
                     ),
-                    MapDesignButton(
+                    MapDesignOptions(
                         label = "standard-satellite",
-                        designType = MapboxMapDesign.StandardSatellite,
+                        design = MapboxMapDesign.StandardSatellite,
                     ),
                 )
             }
             is ArcGISMapViewState -> {
-                _buttons.value = listOf(
-                    MapDesignButton(
+                _options.value = listOf(
+                    MapDesignOptions(
                         label = "Streets",
-                        designType = ArcGISDesign.Streets,
+                        design = ArcGISDesign.Streets,
                     ),
-                    MapDesignButton(
+                    MapDesignOptions(
                         label = "Imagery",
-                        designType = ArcGISDesign.Imagery,
+                        design = ArcGISDesign.Imagery,
                     ),
                 )
             }

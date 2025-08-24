@@ -1,11 +1,7 @@
 package com.mapconductor.example.pages.mapDesign
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,7 +12,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
-import androidx.compose.material3.Button
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.map.MapDesignType
@@ -33,11 +28,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-
-data class DesignList<T>(
-    val text: String,
-    val design: MapDesignType<T>
-)
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +37,7 @@ fun MapDesignMapPage(
     viewModel: MapDesignPageViewModel = MapDesignPageViewModelImpl(),
     onToggleSidebar: () -> Unit = {},
 ) {
-    val buttons = viewModel.buttons.collectAsState()
+    val optionsState = viewModel.options.collectAsState()
 
     DemoMapPageScaffold(
         initCameraPosition = viewModel.initCameraPosition,
@@ -60,26 +52,6 @@ fun MapDesignMapPage(
                 is HereMapViewState   -> (designType as? HereMapDesign  )?.let { state.changeMapDesignType(it) }
                 is MapboxMapViewState -> (designType as? MapboxMapDesign)?.let { state.changeMapDesignType(it) }
                 is ArcGISMapViewState -> (designType as? ArcGISDesign   )?.let { state.changeMapDesignType(it) }
-//                is GoogleMapViewState -> {
-//                    (designType as? GoogleMapDesign)?.let {
-//                        state.changeMapDesignType(it)
-//                    }
-//                }
-//                is HereMapViewState -> {
-//                    (designType as? HereMapDesign)?.let {
-//                        state.changeMapDesignType(it)
-//                    }
-//                }
-//                is MapboxMapViewState -> {
-//                    (designType as? MapboxMapDesign)?.let {
-//                        state.changeMapDesignType(it)
-//                    }
-//                }
-//                is ArcGISMapViewState -> {
-//                    (designType as? ArcGISDesign)?.let {
-//                        state.changeMapDesignType(it)
-//                    }
-//                }
             }
         }
 
@@ -100,62 +72,62 @@ fun MapDesignMapPage(
                     ),
             title = "Select Map Design...",
         ) {
-            // --- ここからドロップダウン ---
             var expanded by remember { mutableStateOf(false) }
-            val items = buttons.value
-            var selectedLabel by rememberSaveable { mutableStateOf(items.firstOrNull()?.label ?: "") }
+            val items = optionsState.value
 
-            // mapViewState が null の間は選択させない
+            // SDKキー（Google/Here/Mapbox/ArcGISで切替）
+            val sdkKey = when (mapViewState.value) {
+                is GoogleMapViewState -> "google"
+                is HereMapViewState   -> "here"
+                is MapboxMapViewState -> "mapbox"
+                is ArcGISMapViewState -> "arcgis"
+                else -> "none"
+            }
+
+            var selectedLabel by rememberSaveable(sdkKey) {  // SDKごとに独立して保存
+                mutableStateOf(items.firstOrNull()?.label ?: "")
+            }
+
+            // ★ options（候補リスト）が変わったら選択と展開状態をリセット
+            LaunchedEffect(items) {
+                selectedLabel = items.firstOrNull()?.label ?: ""
+                expanded = false
+            }
+
             val enabled = mapViewState.value != null && items.isNotEmpty()
 
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { if (enabled) expanded = !expanded }
-            ) {
-                TextField(
-                    modifier = Modifier.menuAnchor(), // ExposedDropdownMenuBoxScope
-                    value = selectedLabel,
-                    onValueChange = {},
-                    readOnly = true,
-                    enabled = enabled,
-                    label = { Text("Map design") },
-                )
-                ExposedDropdownMenu(
+            key(sdkKey) { // ★ SDK切替でサブツリーごと作り直し
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onExpandedChange = { if (enabled) expanded = !expanded }
                 ) {
-                    items.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(item.label) },
-                            onClick = {
-                                selectedLabel = item.label
-                                expanded = false
-                                mapViewState.value?.let { state ->
-                                    callChangeMapDesignType(state, item.designType)
+                    TextField(
+                        modifier = Modifier.menuAnchor(),
+                        value = selectedLabel,
+                        onValueChange = {},
+                        readOnly = true,
+                        enabled = enabled,
+                        label = { Text("Map design") },
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        items.forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text(item.label) },
+                                onClick = {
+                                    selectedLabel = item.label
+                                    expanded = false
+                                    mapViewState.value?.let { state ->
+                                        callChangeMapDesignType(state, item.design)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
-            // --- ここまでドロップダウン ---
-//            Column(
-//                modifier = Modifier.fillMaxSize(),
-//                verticalArrangement = Arrangement.spacedBy(8.dp),
-//            ) {
-//                Row {
-//                    buttons.value.forEach {
-//                        Button(
-//                            modifier = Modifier.weight(1f),
-//                            onClick = {
-//                                callChangeMapDesignType(mapViewState.value!!, it.designType)
-//                            }
-//                        ){
-//                            Text(it.label)
-//                        }
-//                    }
-//                }
-//            }
         }
     }
 }
