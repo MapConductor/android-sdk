@@ -1,0 +1,9 @@
+package com.mapconductor.core.polyline
+
+interface PolylineCapable {
+    suspend fun compositionPolylines(data: List<PolylineState>)
+
+    suspend fun updatePolyline(state: PolylineState)
+
+    fun setOnPolylineClickListener(listener: OnPolylineEventHandler?)
+}

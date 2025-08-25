@@ -5,42 +5,16 @@ import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-interface PolylineCapable {
-    suspend fun compositionPolylines(data: List<PolylineState>)
-
-    suspend fun updatePolyline(state: PolylineState)
-
-    fun setOnPolylineClickListener(listener: OnPolylineEventHandler?)
-}
-
-interface PolylineOverlayRenderer<ActualPolyline> {
-    interface AddParams {
-        val state: PolylineState
-    }
-
-    interface ChangeParams<ActualPolyline> {
-        val current: PolylineEntity<ActualPolyline>
-        val prev: PolylineEntity<ActualPolyline>
-    }
-
-    suspend fun onAdd(data: List<AddParams>): List<ActualPolyline?>
-
-    suspend fun onChange(data: List<ChangeParams<ActualPolyline>>): List<ActualPolyline?>
-
-    suspend fun onRemove(data: List<PolylineEntity<ActualPolyline>>)
-
-    suspend fun onPostProcess()
-}
 
 abstract class PolylineController<ActualPolyline>(
     val polylineManager: PolylineManager<ActualPolyline>,
     open val renderer: PolylineOverlayRenderer<ActualPolyline>,
     override var clickListener: OnPolylineEventHandler? = null,
 ) : OverlayController<
-        ActualPolyline,
-        PolylineState,
-        PolylineEntity<ActualPolyline>,
-        PolylineState,
+    ActualPolyline,
+    PolylineState,
+    PolylineEntity<ActualPolyline>,
+    PolylineState,
     > {
     override val zIndex: Int = 5
     val semaphore = Semaphore(1)
@@ -166,39 +140,5 @@ abstract class PolylineController<ActualPolyline>(
         }
     }
 
-    override fun find(position: IGeoPoint): PolylineEntity<ActualPolyline>? = polylineManager.findNearest(position)
-}
-
-interface PolylineManager<ActualPolyline> {
-    fun registerEntity(entity: PolylineEntity<ActualPolyline>)
-
-    fun removeEntity(id: String): PolylineEntity<ActualPolyline>?
-
-    fun getEntity(id: String): PolylineEntity<ActualPolyline>?
-
-    fun allEntities(): List<PolylineEntity<ActualPolyline>>
-
-    fun clear()
-
-    fun findNearest(position: IGeoPoint): PolylineEntity<ActualPolyline>?
-}
-
-class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
-    private val entities = mutableMapOf<String, PolylineEntity<ActualPolyline>>()
-
-    override fun registerEntity(entity: PolylineEntity<ActualPolyline>) {
-        entities[entity.state.id] = entity
-    }
-
-    override fun removeEntity(id: String): PolylineEntity<ActualPolyline>? = entities.remove(id)
-
-    override fun getEntity(id: String): PolylineEntity<ActualPolyline>? = entities[id]
-
-    override fun allEntities(): List<PolylineEntity<ActualPolyline>> = entities.values.toList()
-
-    override fun clear() {
-        entities.clear()
-    }
-
-    override fun findNearest(position: IGeoPoint): PolylineEntity<ActualPolyline>? = entities.values.firstOrNull()
+    override fun find(position: IGeoPoint): PolylineEntity<ActualPolyline>? = polylineManager.find(position)
 }

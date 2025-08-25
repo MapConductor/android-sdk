@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 class PolygonController<ActualPolygon>(
+    val polygonManager: PolygonManager<ActualPolygon>,
     val renderer: OverlayRenderer<ActualPolygon, PolygonState, PolygonEntity<ActualPolygon>>,
     override var clickListener: OnPolygonEventHandler? = null,
 ) : OverlayController<
@@ -16,12 +17,11 @@ class PolygonController<ActualPolygon>(
         PolygonEvent,
     > {
     override val zIndex: Int = 3
-    val entities = mutableMapOf<String, PolygonEntity<ActualPolygon>>()
     val semaphore = Semaphore(1)
 
     override suspend fun add(data: List<PolygonState>) {
         semaphore.withPermit {
-            val previous = entities.keys.toMutableSet()
+            val previous = polygonManager.allEntities().map { it.state.id }
             val added = mutableListOf<PolygonState>()
             val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<ActualPolygon>>>()
             val removed = mutableListOf<PolygonEntity<ActualPolygon>>()

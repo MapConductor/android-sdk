@@ -6,14 +6,6 @@ import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-interface GroundImageCapable {
-    suspend fun compositionGroundImages(data: List<GroundImageState>)
-
-    suspend fun updateGroundImage(state: GroundImageState)
-
-    fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?)
-}
-
 class GroundImageController<ActualGroundImage>(
     val renderer: OverlayRenderer<ActualGroundImage, GroundImageState, GroundImageEntity<ActualGroundImage>>,
     override var clickListener: OnGroundImageEventHandler? = null,
