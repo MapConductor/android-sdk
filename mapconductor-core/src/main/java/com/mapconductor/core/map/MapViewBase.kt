@@ -185,7 +185,7 @@ fun <
         }
     }
 
-    if (controller != null && bubbles.isNotEmpty()) {
+    if (controller != null && cameraPosition != null && bubbles.isNotEmpty()) {
         Box(
             modifier =
                 Modifier
