@@ -26,17 +26,37 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapDesignMapPage(
-    viewModel: MapDesignPageViewModel = MapDesignPageViewModelImpl(),
     onToggleSidebar: () -> Unit = {},
 ) {
+    val viewModel: MapDesignPageViewModel =
+        viewModel<MapDesignPageViewModelImpl>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(MapDesignPageViewModelImpl::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return MapDesignPageViewModelImpl() as T
+                        }
+                        throw IllegalArgumentException("Unknown VieModel class")
+                    }
+                }
+        )
+
     val optionsState = viewModel.options.collectAsState()
 
     DemoMapPageScaffold(
@@ -57,7 +77,6 @@ fun MapDesignMapPage(
 
         MapDesignMapComponent(
             mapViewState = mapViewState.value,
-            onMapClick = viewModel::onMapClick,
         )
 
         // Message Card

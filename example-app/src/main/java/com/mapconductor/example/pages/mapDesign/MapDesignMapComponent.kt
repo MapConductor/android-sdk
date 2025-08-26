@@ -10,13 +10,11 @@ import com.mapconductor.example.MapViewContainer
 fun MapDesignMapComponent(
     mapViewState: MapViewState<*>?,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler = {},
 ) {
     mapViewState?.let { state ->
         MapViewContainer(
             modifier = modifier,
             state = state,
-            onMapClick = onMapClick,
         ) {}
     }
 }
