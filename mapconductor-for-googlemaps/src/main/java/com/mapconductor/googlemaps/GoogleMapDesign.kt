@@ -33,13 +33,5 @@ sealed class GoogleMapDesign(
                 Terrain.id -> Terrain
                 else -> None
             }
-
-        fun all(): List<Pair<String, GoogleMapDesign>> = listOf(
-            "Normal" to Normal,
-            "Satellite" to Satellite,
-            "Hybrid" to Hybrid,
-            "Terrain" to Terrain,
-            "None" to None,
-        )
     }
 }
