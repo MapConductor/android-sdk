@@ -7,6 +7,7 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
@@ -25,6 +26,7 @@ fun ArcGISMapView(
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     onCircleClick: OnCircleEventHandler? = {},
+    onGroundImageClick: OnGroundImageEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = {},
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {

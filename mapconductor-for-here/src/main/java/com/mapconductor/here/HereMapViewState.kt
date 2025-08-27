@@ -24,19 +24,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface IHereMapViewState : MapViewState<MapScheme>
+interface IHereMapViewState : MapViewState<HereMapDesignType>
 
 class HereMapViewState(
     override val id: String,
-    override val mapDesignType: HereMapDesignType,
+    override var mapDesignType: HereMapDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<MapScheme>(),
+) : MapViewStateImpl<HereMapDesignType>(),
     IHereMapViewState {
     internal var controller: IHereMapViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+
+    override fun changeMapDesignType(
+        value: HereMapDesignType
+    ) {
+        this.mapDesignType = value
+        this.controller?.changeMapDesign(value.getValue())
+    }
 
     override fun moveCameraTo(
         position: GeoPoint,

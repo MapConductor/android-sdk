@@ -17,7 +17,7 @@ enum class InitState {
     Failed,
 }
 
-interface MapViewState<T> {
+interface MapViewState<ActualMapDesignType> {
     interface MoveCameraCallback {
         fun onComplete(result: Boolean)
     }
@@ -26,11 +26,15 @@ interface MapViewState<T> {
     val initCameraPosition: MapCameraPosition
     val isInitialized: StateFlow<InitState>
     val cameraPosition: StateFlow<MapCameraPosition>
-    val mapDesignType: MapDesignType<T>
+    var mapDesignType: ActualMapDesignType
 
     fun initAsync(init: suspend () -> Boolean)
 
     fun resetInitState()
+
+    fun changeMapDesignType(
+        value: ActualMapDesignType
+    )
 
     fun moveCameraTo(
         cameraPosition: MapCameraPosition,

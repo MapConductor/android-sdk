@@ -23,12 +23,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.LocalCircleCollector
+import com.mapconductor.core.LocalGroundImageCollector
 import com.mapconductor.core.LocalMarkerCollector
 import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
@@ -86,6 +88,7 @@ fun <
             LocalInfoBubbleCollector provides scope.bubbleFlow,
             LocalCircleCollector provides scope.circleFlow,
             LocalPolylineCollector provides scope.polylineFlow,
+            LocalGroundImageCollector provides scope.groundImageFlow,
         ) {
             with(scope) {
                 content?.invoke(this)
@@ -112,6 +115,16 @@ fun <
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     controller.updatePolyline(polylineState)
+                }
+            }
+        }
+        (controller as? GroundImageCapable<*>)?.let {
+            val groundImage = scope.groundImageFlow.collectAsState()
+            groundImage.value.forEach { groundImageState ->
+                LaunchedEffect(groundImageState.id) {
+                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        controller.updateGroundImage(groundImageState)
+                    }
                 }
             }
         }

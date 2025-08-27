@@ -22,6 +22,11 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.groundimage.GroundImageCapable
+import com.mapconductor.core.groundimage.GroundImageController
+import com.mapconductor.core.groundimage.GroundImageEvent
+import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerOverlayManager
@@ -48,7 +53,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface IGoogleMapViewController : MapViewController<Marker, Circle, Polyline, Polygon> {
+interface IGoogleMapViewController :
+    MapViewController<Marker, Circle, Polyline, Polygon>,
+    GroundImageCapable<ActualGoogleMapGroundImage> {
+    fun changeMapDesign(
+        value: Int
+    )
+
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -73,7 +84,13 @@ class GoogleMapViewController(
     private val polylineRendererFactory: PolylineRendererFactory<Polyline> = DefaultGoogleMapPolylineRenderer(),
     private val polygonRendererFactory: PolygonRendererFactory<Polygon> = DefaultGoogleMapPolygonRenderer(),
     private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
-) : BaseMapViewController<Marker, Circle, Polyline, Polygon>(),
+    private val groundImageController: GroundImageController<ActualGoogleMapGroundImage>,
+) : BaseMapViewController<
+    ActualGoogleMapMarker,
+    ActualGoogleMapCircle,
+    ActualGoogleMapPolyline,
+    ActualGoogleMapPolygon,
+    >(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
@@ -161,6 +178,14 @@ class GoogleMapViewController(
         holder.map.setOnMarkerClickListener(this)
         holder.map.setOnMapClickListener(this)
         holder.map.setOnMarkerDragListener(this)
+    }
+
+    override fun changeMapDesign(
+        value: Int
+    ){
+        coroutine.launch {
+            holder.map.mapType = value
+        }
     }
 
     override fun moveCamera(
@@ -269,6 +294,18 @@ class GoogleMapViewController(
             return
         }
 
+        groundImageController.find(touchPosition)?.let { entity ->
+            val event =
+                GroundImageEvent(
+                    state = entity.state,
+                    position = touchPosition,
+                )
+            coroutine.launch {
+                groundImageController.clickListener?.invoke(event)
+            }
+            return
+        }
+
         mapClickCallback?.let {
             coroutine.launch { it(position.toGeoPoint()) }
         }
@@ -306,5 +343,13 @@ class GoogleMapViewController(
 
             markerDragStartCallback?.invoke(state)
         }
+    }
+
+    override suspend fun compositionGroundImages(data: List<GroundImageState>) = groundImageController.add(data)
+
+    override suspend fun updateGroundImage(state: GroundImageState) = groundImageController.update(state)
+
+    fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
+        this.groundImageController.clickListener = listener
     }
 }

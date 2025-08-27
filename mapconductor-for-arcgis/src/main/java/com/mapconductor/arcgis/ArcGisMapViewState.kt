@@ -9,6 +9,7 @@ import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapDesignType
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
@@ -22,14 +23,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface IArcGISMapViewState : MapViewState<String>
-
 class ArcGISMapViewState(
     override val id: String,
     override val initCameraPosition: MapCameraPosition,
-    override val mapDesignType: ArcGISDesign,
-) : MapViewStateImpl<String>(),
-    IArcGISMapViewState {
+    override var mapDesignType: ArcGISDesign,
+) : MapViewStateImpl<ArcGISDesign>()
+    {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
@@ -39,6 +38,11 @@ class ArcGISMapViewState(
     // Camera position
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+
+    override fun changeMapDesignType(value: ArcGISDesign) {
+        this.mapDesignType = value
+        this.controller?.changeMapDesign(value.getValue())
+    }
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPosition,

@@ -7,6 +7,7 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -28,6 +29,7 @@ fun MapboxMapView(
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
     onCircleClick: OnCircleEventHandler? = {},
     onPolylineClick: OnPolylineEventHandler? = {},
+    onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }

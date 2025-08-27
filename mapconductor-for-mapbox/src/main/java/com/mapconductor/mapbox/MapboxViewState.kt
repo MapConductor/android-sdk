@@ -18,19 +18,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface IMapboxMapViewState : MapViewState<String>
+interface IMapboxMapViewState : MapViewState<MapboxDesignType>
 
 class MapboxMapViewState(
     override val id: String,
-    override val mapDesignType: MapboxDesignType,
+    override var mapDesignType: MapboxDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<String>(),
+) : MapViewStateImpl<MapboxDesignType>(),
     IMapboxMapViewState {
     internal var controller: IMapboxMapViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+
+    override fun changeMapDesignType(value: MapboxDesignType) {
+        this.mapDesignType = value
+        this.controller?.changeMapDesign(value.getValue())
+    }
 
     override fun moveCameraTo(
         position: GeoPoint,

@@ -44,6 +44,7 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.arcgismaps.mapping.Basemap
 
 interface IArcGISMapViewController :
     MapViewController<
@@ -52,6 +53,10 @@ interface IArcGISMapViewController :
         ArcGISActualPolyline,
         ArcGISActualPolygon,
     > {
+    fun changeMapDesign(
+        value: String
+    )
+
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -338,6 +343,20 @@ class ArcGISMapViewController(
     override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
 
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
+
+    override fun changeMapDesign(
+        value: String
+    ){
+        coroutine.launch {
+            holder.map.scene!!.setBasemap(
+                Basemap(
+                    ArcGISDesign.toBasemapStyle(
+                        ArcGISDesign(value)
+                    )
+                )
+            )
+        }
+    }
 
     override fun moveCamera(
         dstPosition: MapCameraPosition,

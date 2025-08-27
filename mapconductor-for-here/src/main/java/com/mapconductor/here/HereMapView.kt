@@ -10,6 +10,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
@@ -32,6 +33,7 @@ fun HereMapView(
     onMarkerDragEnd: OnMarkerEventHandler? = {},
     onMarkerAnimateStart: OnMarkerEventHandler? = {},
     onMarkerAnimateEnd: OnMarkerEventHandler? = {},
+    onGroundImageClick: OnGroundImageEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = {},
     onPolylineClick: OnPolylineEventHandler? = {},
     content: (@Composable HereMapViewScope.() -> Unit)? = null,
@@ -56,7 +58,7 @@ fun HereMapView(
 
             val mapInitOptions =
                 HereMapViewInitOptions(
-                    scheme = state.mapDesignType.id,
+                    scheme = state.mapDesignType.getValue(),
                 )
 
             val controller =
@@ -84,7 +86,7 @@ fun HereMapView(
 
             (state as? HereMapViewState)?.controller = controller
 
-            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
+            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
                 if (mapError != null) {
                     throw Throwable("Loading map failed: mapError: " + mapError.name)
                 }

@@ -5,6 +5,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.groundimage.GroundImageOverlay
+import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
@@ -64,6 +66,7 @@ open class MapViewScope {
     val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
     val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
     val polygonFlow = MutableStateFlow<List<PolygonState>>(emptyList())
+    val groundImageFlow = MutableStateFlow<List<GroundImageState>>(emptyList())
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
@@ -71,6 +74,7 @@ open class MapViewScope {
         registry.register(CircleOverlay(circleFlow))
         registry.register(PolylineOverlay(polylineFlow))
         // registry.register(PolygonOverlay(polygonFlow)) // TODO: Implement addPolygons in MapViewController
+        registry.register(GroundImageOverlay(groundImageFlow))
         return registry
     }
 }
@@ -140,6 +144,11 @@ val LocalCircleCollector =
 //         error("Polygon must be under the <MapView />")
 //     }
 
+val LocalGroundImageCollector =
+    compositionLocalOf<MutableStateFlow<List<GroundImageState>>> {
+        error("GroundImage must be under the <MapView />")
+    }
+
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
@@ -151,7 +160,9 @@ fun CollectAndRenderOverlays(
 
         LaunchedEffect(Unit) {
             typedOverlay.flow.collect {
-                typedOverlay.render(it, controller)
+                if (it.isNotEmpty()) {
+                    typedOverlay.render(it, controller)
+                }
             }
         }
 
