@@ -31,8 +31,6 @@ interface MapDesignPageViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
-    var design: Int
-
     val options: StateFlow<List<MapDesignOptions>>
     fun onMapViewChanged(state: MapViewState<*>)
 
@@ -68,8 +66,6 @@ class MapDesignPageViewModelImpl():
 
     private val _options: MutableStateFlow<List<MapDesignOptions>> = MutableStateFlow(emptyList())
     override val options: StateFlow<List<MapDesignOptions>> = _options.asStateFlow()
-
-    override var design by mutableStateOf(1)
 
     override fun onMapViewChanged(state: MapViewState<*>) {
         this._mapViewState.value = state
