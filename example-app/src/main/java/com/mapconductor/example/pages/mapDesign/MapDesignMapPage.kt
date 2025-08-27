@@ -3,46 +3,44 @@ package com.mapconductor.example.pages.mapDesign
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.example.ui.MessageCard
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.map.MapDesignType
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.example.ui.DemoMapPageScaffold
+import com.mapconductor.example.ui.MessageCard
 import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxMapViewState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.TextField
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapDesignMapPage(
-    onToggleSidebar: () -> Unit = {},
-) {
+fun MapDesignMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel: MapDesignPageViewModel =
         viewModel<MapDesignPageViewModelImpl>(
             factory =
@@ -54,7 +52,7 @@ fun MapDesignMapPage(
                         }
                         throw IllegalArgumentException("Unknown VieModel class")
                     }
-                }
+                },
         )
 
     val optionsState = viewModel.options.collectAsState()
@@ -66,12 +64,15 @@ fun MapDesignMapPage(
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
 
-        fun callChangeMapDesignType(state: MapViewState<*>,designType: MapDesignType<*>) {
+        fun callChangeMapDesignType(
+            state: MapViewState<*>,
+            designType: MapDesignType<*>,
+        ) {
             when (state) {
                 is GoogleMapViewState -> (designType as? GoogleMapDesign)?.let { state.changeMapDesignType(it) }
-                is HereMapViewState   -> (designType as? HereMapDesign  )?.let { state.changeMapDesignType(it) }
+                is HereMapViewState -> (designType as? HereMapDesign)?.let { state.changeMapDesignType(it) }
                 is MapboxMapViewState -> (designType as? MapboxMapDesign)?.let { state.changeMapDesignType(it) }
-                is ArcGISMapViewState -> (designType as? ArcGISDesign   )?.let { state.changeMapDesignType(it) }
+                is ArcGISMapViewState -> (designType as? ArcGISDesign)?.let { state.changeMapDesignType(it) }
             }
         }
 
@@ -95,15 +96,17 @@ fun MapDesignMapPage(
             val items = optionsState.value
 
             // SDKキー（Google/Here/Mapbox/ArcGISで切替）
-            val sdkKey = when (mapViewState.value) {
-                is GoogleMapViewState -> "google"
-                is HereMapViewState   -> "here"
-                is MapboxMapViewState -> "mapbox"
-                is ArcGISMapViewState -> "arcgis"
-                else -> "none"
-            }
+            val sdkKey =
+                when (mapViewState.value) {
+                    is GoogleMapViewState -> "google"
+                    is HereMapViewState -> "here"
+                    is MapboxMapViewState -> "mapbox"
+                    is ArcGISMapViewState -> "arcgis"
+                    else -> "none"
+                }
 
-            var selectedLabel by rememberSaveable(sdkKey) {  // SDKごとに独立して保存
+            var selectedLabel by rememberSaveable(sdkKey) {
+                // SDKごとに独立して保存
                 mutableStateOf(items.firstOrNull()?.label ?: "")
             }
 
@@ -115,13 +118,14 @@ fun MapDesignMapPage(
 
             val enabled = mapViewState.value != null && items.isNotEmpty()
 
-            key(sdkKey) { // ★ SDK切替でサブツリーごと作り直し
+            key(sdkKey) {
+                // ★ SDK切替でサブツリーごと作り直し
                 ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onExpandedChange = { if (enabled) expanded = !expanded }
+                    onExpandedChange = { if (enabled) expanded = !expanded },
                 ) {
                     TextField(
-                        modifier = Modifier.menuAnchor(),
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled),
                         value = selectedLabel,
                         onValueChange = {},
                         readOnly = true,
@@ -130,7 +134,7 @@ fun MapDesignMapPage(
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onDismissRequest = { expanded = false },
                     ) {
                         items.forEach { item ->
                             DropdownMenuItem(
@@ -141,7 +145,7 @@ fun MapDesignMapPage(
                                     mapViewState.value?.let { state ->
                                         callChangeMapDesignType(state, item.design)
                                     }
-                                }
+                                },
                             )
                         }
                     }
