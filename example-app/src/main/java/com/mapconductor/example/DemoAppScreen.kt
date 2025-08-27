@@ -3,7 +3,9 @@ package com.mapconductor.example
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Text
@@ -17,8 +19,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
+import com.mapconductor.example.pages.groundimage.GroundImageMapPage
+import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.mapDesign.MapDesignMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -39,6 +44,14 @@ fun DemoAppScreen() {
                 london = ContextCompat.getDrawable(context, R.drawable.london)!!,
                 newYork = ContextCompat.getDrawable(context, R.drawable.newyork)!!,
                 sydney = ContextCompat.getDrawable(context, R.drawable.sydney)!!,
+            )
+        }
+
+    val groundImageResources =
+        remember {
+            GroundImageResources(
+                image = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_0)!!,
+                clickedImage = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
             )
         }
 
@@ -63,10 +76,22 @@ fun DemoAppScreen() {
                 route = "circle",
             ),
             SidebarItem(
+                id = "groundImage",
+                title = "GroundImage",
+                icon = Icons.Default.Favorite,
+                route = "groundImage",
+            ),
+            SidebarItem(
                 id = "polyline",
                 title = "Polyline ",
                 icon = Icons.Default.PlayArrow,
                 route = "polyline",
+            ),
+            SidebarItem(
+                id = "mapDesign",
+                title = "MapDesign Demo",
+                icon = Icons.Default.Build,
+                route = "mapDesign",
             ),
 //            SidebarItem(
 //                id = "examples",
@@ -105,6 +130,17 @@ fun DemoAppScreen() {
                     "flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "groundImage" -> {
+                        GroundImageMapPage(
+                            groundImageResources = groundImageResources,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "mapDesign" -> {
+                        MapDesignMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

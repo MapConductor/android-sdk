@@ -1,8 +1,5 @@
 package com.mapconductor.core.features
 
-import kotlin.math.max
-import kotlin.math.min
-
 data class GeoRectBounds(
     var southWest: GeoPoint? = null,
     var northEast: GeoPoint? = null,
@@ -11,38 +8,68 @@ data class GeoRectBounds(
         get() = southWest == null || northEast == null
 
     fun extend(point: IGeoPoint) {
-        val target = GeoPoint.from(point)
+        val position = GeoPoint.from(point)
 
-        if (isEmpty) {
-            southWest = target
-            northEast = target
-            return
-        }
+        when {
+            // まだ何もない：両方に同じ点を入れて初期化
+            southWest == null && northEast == null -> {
+                southWest = position
+                northEast = position
+                return
+            }
 
-        val sw = southWest!!
-        val ne = northEast!!
+            // southWest だけある：既存点と position の2点から SW/NE を決める
+            southWest != null && northEast == null -> {
+                val sw = southWest!!
+                val south = minOf(sw.latitude, position.latitude)
+                val north = maxOf(sw.latitude, position.latitude)
+                // 1点ずつなので子午線跨ぎの判定は不要。単純に min/max でOK
+                val west = minOf(sw.longitude, position.longitude)
+                val east = maxOf(sw.longitude, position.longitude)
 
-        val south = min(sw.latitude, target.latitude)
-        val north = max(ne.latitude, target.latitude)
+                southWest = GeoPoint(south, west)
+                northEast = GeoPoint(north, east)
+                return
+            }
 
-        var west = sw.longitude
-        var east = ne.longitude
+            // northEast だけある：既存点と position の2点から SW/NE を決める
+            southWest == null && northEast != null -> {
+                val ne = northEast!!
+                val south = minOf(ne.latitude, position.latitude)
+                val north = maxOf(ne.latitude, position.latitude)
+                val west = minOf(ne.longitude, position.longitude)
+                val east = maxOf(ne.longitude, position.longitude)
 
-        val lon = target.longitude
+                southWest = GeoPoint(south, west)
+                northEast = GeoPoint(north, east)
+                return
+            }
 
-        if (!containsLongitude(lon, west, east)) {
-            val distToEast = distanceEast(lon, east)
-            val distToWest = distanceWest(west, lon)
+            else -> {
+                // どちらもある：従来ロジック（子午線跨ぎ考慮）＋ 緯度/経度の参照を修正
+                val south = minOf(position.latitude, southWest!!.latitude)
+                val north = maxOf(position.latitude, northEast!!.latitude)
 
-            if (distToEast < distToWest) {
-                east = lon
-            } else {
-                west = lon
+                var west = southWest!!.longitude
+                var east = northEast!!.longitude
+
+                if (west > 0 && east < 0) {
+                    // すでに経度が + と - に分かれている＝日付変更線跨ぎの矩形
+                    if (position.longitude > 0) {
+                        west = minOf(position.longitude, west)
+                    } else {
+                        east = maxOf(position.longitude, east)
+                    }
+                } else {
+                    // 通常ケース：単純に min/max
+                    west = minOf(position.longitude, southWest!!.longitude)
+                    east = maxOf(position.longitude, northEast!!.longitude)
+                }
+
+                southWest = GeoPoint(south, west)
+                northEast = GeoPoint(north, east)
             }
         }
-
-        southWest = GeoPoint(south, west)
-        northEast = GeoPoint(north, east)
     }
 
     private fun distanceEast(

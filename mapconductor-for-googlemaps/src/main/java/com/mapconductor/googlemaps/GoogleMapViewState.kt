@@ -12,19 +12,20 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
+import com.mapconductor.core.state.StateOrValue
 import java.util.UUID
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface IGoogleMapViewState : MapViewState<Int>
+interface IGoogleMapViewState : MapViewState<GoogleMapDesign>
 
 class GoogleMapViewState(
     override val id: String,
-    override val mapDesignType: GoogleMapDesignType,
+    override var mapDesignType: GoogleMapDesign,
     override val initCameraPosition: MapCameraPosition,
-) : MapViewStateImpl<Int>(),
+) : MapViewStateImpl<GoogleMapDesign>(),
     IGoogleMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
@@ -35,6 +36,13 @@ class GoogleMapViewState(
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
 
     internal var controller: IGoogleMapViewController? = null
+
+    override fun changeMapDesignType(
+        value: GoogleMapDesign,
+    ){
+        this.mapDesignType = value
+        this.controller?.changeMapDesign(value.getValue())
+    }
 
     override fun moveCameraTo(
         position: GeoPoint,
@@ -130,7 +138,7 @@ class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewState>() {
 
 @Composable
 fun rememberGoogleMapViewState(
-    mapDesign: GoogleMapDesignType = GoogleMapDesign.Normal,
+    mapDesign: GoogleMapDesign = GoogleMapDesign.Normal,
     cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
 ): GoogleMapViewState {
     val stateId by rememberSaveable {
