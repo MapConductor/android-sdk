@@ -13,11 +13,15 @@ import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
+import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
+import com.mapconductor.mapbox.polygon.MapboxPolygonController
+import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
+import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
@@ -77,6 +81,7 @@ fun MapboxMapView(
                     holder = holder,
                     markerController = getMarkerController(holder),
                     polylineController = getPolylineController(holder),
+                    polygonController = getPolygonController(holder),
                 )
             (state as? MapboxViewStateImpl)?.let { mapViewState ->
                 mapViewState.controller = controller
@@ -102,6 +107,28 @@ fun MapboxMapView(
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
     )
+}
+
+internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonController {
+    val polygonLayer: MapboxPolygonLayer =
+        MapboxPolygonLayer(
+            sourceId = "polygon-source",
+            layerId = "polygon-layer",
+        )
+    val polygonManager = PolygonManagerImpl<MapboxActualPolygon>()
+
+    val renderer =
+        MapboxPolygonOverlayRenderer(
+            layer = polygonLayer,
+            polygonManager = polygonManager,
+            holder = holder,
+        )
+
+    val controller =
+        MapboxPolygonController(
+            renderer = renderer,
+        )
+    return controller
 }
 
 internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineController {

@@ -45,7 +45,7 @@ class PolygonMapPageViewModelImpl :
     override val initCameraPosition =
         MapCameraPosition(
             position = GeoPoint(35.6762, 139.6503), // Tokyo
-            zoom = 12.0,
+            zoom = 14.0,
         )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)

@@ -45,74 +45,65 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
 
-        Column {
-            // Polygon Controls
-            Column(
-                modifier =
-                    Modifier.padding(
-                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                        top = paddingValues.calculateTopPadding(),
+        // Map Component
+        PolygonMapComponent(
+            mapViewState = mapViewState.value,
+            viewModel = viewModel,
+            modifier =
+                Modifier.padding(
+                    bottom = paddingValues.calculateBottomPadding(),
+                ),
+            onPolygonClick = viewModel::onPolygonClick,
+            onMarkerDrag = viewModel::onMarkerDrag,
+        )
+        MessageCard(
+            title = "Polygon Example",
+            maxHeight = 250.dp,
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(
+                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
+                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
+        ) {
+
+            // Fill Opacity Control
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                MessageCard(
-                    title = "Polygon Example",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                ) {
-                    Text(
-                        "This example demonstrates polygon rendering with draggable vertices. " +
-                            "Drag the markers to change the polygon shape.",
-                    )
-                }
-
-                // Fill Opacity Control
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text("Fill Opacity: ${String.format("%.1f", viewModel.fillOpacity)}")
-                    Slider(
-                        value = viewModel.fillOpacity,
-                        onValueChange = { viewModel.fillOpacity = it },
-                        valueRange = 0f..1f,
-                        colors =
-                            SliderDefaults.colors(
-                                thumbColor = Color.Blue,
-                                activeTrackColor = Color.Blue,
-                            ),
-                    )
-                }
-
-                // Stroke Width Control
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text("Stroke Width: ${String.format("%.1f", viewModel.strokeWidth)}dp")
-                    Slider(
-                        value = viewModel.strokeWidth,
-                        onValueChange = { viewModel.strokeWidth = it },
-                        valueRange = 1f..10f,
-                        colors =
-                            SliderDefaults.colors(
-                                thumbColor = Color.Blue,
-                                activeTrackColor = Color.Blue,
-                            ),
-                    )
-                }
+                Text("Fill Opacity: ${String.format("%.1f", viewModel.fillOpacity)}")
+                Slider(
+                    value = viewModel.fillOpacity,
+                    onValueChange = { viewModel.fillOpacity = it },
+                    valueRange = 0f..1f,
+                    colors =
+                        SliderDefaults.colors(
+                            thumbColor = Color.Blue,
+                            activeTrackColor = Color.Blue,
+                        ),
+                )
             }
 
-            // Map Component
-            PolygonMapComponent(
-                mapViewState = mapViewState.value,
-                viewModel = viewModel,
-                modifier =
-                    Modifier.padding(
-                        bottom = paddingValues.calculateBottomPadding(),
-                    ),
-                onPolygonClick = viewModel::onPolygonClick,
-                onMarkerDrag = viewModel::onMarkerDrag,
-            )
+            // Stroke Width Control
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("Stroke Width: ${String.format("%.1f", viewModel.strokeWidth)}dp")
+                Slider(
+                    value = viewModel.strokeWidth,
+                    onValueChange = { viewModel.strokeWidth = it },
+                    valueRange = 1f..10f,
+                    colors =
+                        SliderDefaults.colors(
+                            thumbColor = Color.Blue,
+                            activeTrackColor = Color.Blue,
+                        ),
+                )
+            }
         }
 
         // Toast messages

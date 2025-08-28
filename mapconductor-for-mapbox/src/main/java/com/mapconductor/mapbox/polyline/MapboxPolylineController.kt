@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
@@ -76,7 +77,7 @@ class MapboxPolylineOverlayRenderer(
                 LineString.fromLngLats(points),
                 JsonObject().apply {
                     addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
-                    addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                    addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, ResourceProvider.dpToPx(state.strokeWidth.value))
                     addProperty("id", id)
                 },
                 id,

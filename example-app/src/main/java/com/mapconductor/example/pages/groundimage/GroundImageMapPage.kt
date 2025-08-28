@@ -65,7 +65,7 @@ fun GroundImageMapPage(
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
-            title = "Messages",
+            title = "GroundImage Example",
         ) {
             Column {
                 Text("opacity: ${"%.2f".format(viewModel.opacity)}", color = Color.Black)

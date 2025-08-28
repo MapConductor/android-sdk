@@ -46,7 +46,6 @@ import com.mapconductor.mapbox.circle.MapboxCircleRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.polygon.MapboxPolygonController
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
-import com.mapconductor.mapbox.polygon.createMapboxPolygonController
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
@@ -82,11 +81,6 @@ internal class MapboxMapViewControllerImpl(
         MapboxCircleLayer(
             sourceId = "circle-source",
             layerId = "circle-layer",
-        ),
-    private val polygonLayer: MapboxPolygonLayer =
-        MapboxPolygonLayer(
-            sourceId = "polygon-source",
-            layerId = "polygon-layer",
         ),
     private val circleRendererFactory: CircleRendererFactory<MapboxActualCircle> =
         DefaultMapboxCircleRenderer(),
@@ -124,8 +118,8 @@ internal class MapboxMapViewControllerImpl(
         holder.map.getStyle { style ->
             style.addSource(circleLayer.source)
             style.addLayer(circleLayer.layer)
-            style.addSource(polygonLayer.source)
-            style.addLayer(polygonLayer.layer)
+            style.addSource(polygonController.renderer.layer.source)
+            style.addLayer(polygonController.renderer.layer.layer)
             style.addSource(polylineController.renderer.layer.source)
             style.addLayer(polylineController.renderer.layer.layer)
             style.addSource(markerController.renderer.markerLayer.source)
