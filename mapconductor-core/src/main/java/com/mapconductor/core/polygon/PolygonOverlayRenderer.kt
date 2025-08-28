@@ -9,8 +9,8 @@ interface PolygonOverlayRenderer<ActualPolygon> {
         val prev: PolygonEntity<ActualPolygon>
     }
 
-    suspend fun onAdd(data: List<AddParams>): List<ActualPolygon>
+    suspend fun onAdd(data: List<AddParams>): List<ActualPolygon?>
     suspend fun onChange(data: List<ChangeParams<ActualPolygon>>): List<ActualPolygon?>
-    suspend fun onRemove(data: PolygonEntity<ActualPolygon>)
+    suspend fun onRemove(data: List<PolygonEntity<ActualPolygon>>)
     suspend fun onPostProcess()
 }

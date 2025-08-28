@@ -1,24 +1,44 @@
 package com.mapconductor.mapbox.polygon
 
+import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
+import com.mapconductor.core.controller.OverlayController
+import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonController
+import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonManager
+import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.mapbox.MapboxActualPolygon
 import com.mapconductor.mapbox.MapboxMapViewHolder
+import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class MapboxPolygonController(
-    override val renderer: MapboxPolygonRenderer,
-    polygonManager: PolygonManager<>
-)
-fun createMapboxPolygonController(
-    holder: MapboxMapViewHolder,
-    coroutine: CoroutineScope,
-    layer: MapboxPolygonLayer,
-): PolygonController<MapboxActualPolygon> =
-    PolygonController(
-        renderer =
-            MapboxPolygonRenderer(
-                holder = holder,
-                coroutine = coroutine,
-                layer = layer,
-            ),
-    )
+    override val renderer: MapboxPolygonOverlayRenderer,
+    polygonManager: PolygonManager<MapboxActualPolygon> = renderer.polygonManager,
+) : PolygonController<MapboxActualPolygon>(polygonManager, renderer)
+
+class MapboxPolygonOverlayRenderer(
+    val layer: MapboxPolygonLayer,
+    val polygonManager: PolygonManager<MapboxActualPolygon>,
+    override val holder: MapboxMapViewHolder,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+) : AbstractPolygonOverlayRenderer<MapboxActualPolygon>() {
+    override suspend fun createPolygon(state: PolygonState): MapboxActualPolygon? = createMapboxPolygons(state)
+
+    override suspend fun updatePolygonProperties(
+        polygon: MapboxActualPolygon,
+        current: PolygonEntity<MapboxActualPolygon>,
+        prev: PolygonEntity<MapboxActualPolygon>
+    ): MapboxActualPolygon? {
+        return createMapboxPolygons(current.state)
+    }
+
+    override suspend fun removePolygon(entity: PolygonEntity<MapboxActualPolygon>) {
+        val featureIds =
+            entity.polygon.map { feature ->
+                feature.getStringProperty("id")
+            }
+        layer.source.removeGeoJSONSourceFeatures(featureIds)
+    }
+}

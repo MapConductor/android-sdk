@@ -91,16 +91,6 @@ class ArcGISMapViewControllerImpl(
             coroutine = coroutine,
         )
 
-    private val polygonController: PolygonController<ArcGISActualPolygon> =
-        PolygonController(
-            renderer =
-                ArcGISPolygonRenderer(
-                    polygonLayer = polygonLayer,
-                    holder = holder,
-                    coroutine = coroutine,
-                ),
-        )
-
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<ArcGISActualCircle>) {
     }
 

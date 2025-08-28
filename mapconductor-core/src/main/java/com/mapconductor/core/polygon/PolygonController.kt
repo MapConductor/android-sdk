@@ -1,14 +1,13 @@
 package com.mapconductor.core.polygon
 
 import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-class PolygonController<ActualPolygon>(
+abstract class PolygonController<ActualPolygon>(
     val polygonManager: PolygonManager<ActualPolygon>,
-    val renderer: OverlayRenderer<ActualPolygon, PolygonState, PolygonEntity<ActualPolygon>>,
+    open val renderer: PolygonOverlayRenderer<ActualPolygon>,
     override var clickListener: OnPolygonEventHandler? = null,
 ) : OverlayController<
         ActualPolygon,
@@ -21,69 +20,77 @@ class PolygonController<ActualPolygon>(
 
     override suspend fun add(data: List<PolygonState>) {
         semaphore.withPermit {
-            val previous = polygonManager.allEntities().map { it.state.id }
-            val added = mutableListOf<PolygonState>()
-            val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<ActualPolygon>>>()
+            val modifiedEntities = mutableListOf<PolygonEntity<ActualPolygon>>()
+            val previous = polygonManager.allEntities().map { it.state.id }.toMutableSet()
+            val added = mutableListOf<PolygonOverlayRenderer.AddParams>()
+            val updated = mutableListOf<PolygonOverlayRenderer.ChangeParams<ActualPolygon>>()
             val removed = mutableListOf<PolygonEntity<ActualPolygon>>()
 
-            data.forEach {
-                if (previous.contains(it.id)) {
-                    val prevEntity = entities[it.id]!!
+            data.forEach { state ->
+                if (previous.contains(state.id)) {
+                    val prevEntity = polygonManager.getEntity(state.id)!!
                     updated.add(
-                        object : OverlayRenderer.ChangeParams<PolygonEntity<ActualPolygon>> {
-                            override val current =
+                        object : PolygonOverlayRenderer.ChangeParams<ActualPolygon> {
+                            override val current: PolygonEntity<ActualPolygon> =
                                 PolygonEntityImpl(
+                                    state = state,
                                     polygon = prevEntity.polygon,
-                                    state = it,
                                 )
-                            override val prev = prevEntity
+                            override val prev: PolygonEntity<ActualPolygon> = prevEntity
                         },
                     )
-                    previous.remove(it.id)
+                    previous.remove(state.id)
                 } else {
-                    added.add(it)
-                    previous.remove(it.id)
+                    added.add(
+                        object : PolygonOverlayRenderer.AddParams {
+                            override val state: PolygonState = state
+                        }
+                    )
+                    previous.remove(state.id)
                 }
             }
 
             previous.forEach { remainId ->
-                entities.remove(remainId)?.let { removedEntity ->
+                polygonManager.removeEntity(remainId)?.let { removedEntity ->
                     removed.add(removedEntity)
                 }
             }
 
-            if (added.isNotEmpty()) {
-                val actualOverlays = renderer.onAdd(added)
-                actualOverlays.forEachIndexed { index, actualOverlay ->
-                    actualOverlay?.let {
-                        val state = added[index]
-                        val entity =
-                            PolygonEntityImpl<ActualPolygon>(
-                                polygon = it,
-                                state = state,
-                            )
-                        entities[state.id] = entity
-                    }
-                }
-            }
-
-            if (updated.isNotEmpty()) {
-                val actualOverlays = renderer.onChange(updated.toList())
-                actualOverlays.forEachIndexed { index, actualOverlay ->
-                    actualOverlay?.let {
-                        val state = updated[index].current.state
-                        val entity =
-                            PolygonEntityImpl<ActualPolygon>(
-                                polygon = it,
-                                state = state,
-                            )
-                        entities[state.id] = entity
-                    }
-                }
-            }
-
+            // Remove polygon
             if (removed.isNotEmpty()) {
                 renderer.onRemove(removed)
+            }
+
+            // Add new polygons
+            if (added.isNotEmpty()) {
+                val actualPolygons: List<ActualPolygon?> = renderer.onAdd(added)
+                actualPolygons.forEachIndexed { index, polygon ->
+                    polygon?.let {
+                        val entity =
+                            PolygonEntityImpl<ActualPolygon>(
+                                polygon = polygon,
+                                state = added[index].state,
+                            )
+                        polygonManager.registerEntity(entity)
+                        modifiedEntities.add(entity)
+                    }
+                }
+            }
+
+            // Update changed polygons
+            if (updated.isNotEmpty()) {
+                val actualPolygons: List<ActualPolygon?> = renderer.onChange(updated)
+                actualPolygons.forEachIndexed { index, polygon ->
+                    polygon?.let {
+                        val params = updated[index]
+                        val entity =
+                            PolygonEntityImpl<ActualPolygon>(
+                                state = params.current.state,
+                                polygon = polygon,
+                            )
+                        polygonManager.registerEntity(entity)
+                    }
+                }
             }
 
             renderer.onPostProcess()
@@ -92,46 +99,44 @@ class PolygonController<ActualPolygon>(
 
     override suspend fun update(state: PolygonState) {
         semaphore.withPermit {
-            val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<ActualPolygon>>>()
-            val prevEntity = entities[state.id]!!
-            updated.add(
-                object : OverlayRenderer.ChangeParams<PolygonEntity<ActualPolygon>> {
-                    override val current: PolygonEntity<ActualPolygon> =
-                        PolygonEntityImpl(
-                            polygon = prevEntity.polygon,
-                            state = state,
-                        )
-                    override val prev: PolygonEntity<ActualPolygon> = prevEntity
-                },
-            )
+            val prevEntity = polygonManager.getEntity(state.id) ?: return
+            val currentFinger = state.fingerPrint()
+            val prevFinger = prevEntity.fingerPrint
+            if (currentFinger == prevFinger) {
+                return
+            }
 
-            val actualOverlays: List<ActualPolygon?> = renderer.onChange(updated)
-            actualOverlays.forEachIndexed { index, actualOverlay ->
-                actualOverlay?.let {
-                    val entity =
-                        PolygonEntityImpl<ActualPolygon>(
-                            polygon = it,
-                            state = state,
-                        )
-                    entities[state.id] = entity
+            val polygon = prevEntity.polygon
+            val entity =
+                PolygonEntityImpl(
+                    polygon = polygon,
+                    state = state,
+                )
+            val polygonParams =
+                object : PolygonOverlayRenderer.ChangeParams<ActualPolygon> {
+                    override val current: PolygonEntity<ActualPolygon> = entity
+                    override val prev: PolygonEntity<ActualPolygon> = prevEntity
                 }
+            val polygons = renderer.onChange(listOf(polygonParams))
+
+            polygons[0]?.let {
+                val entity =
+                    PolygonEntityImpl<ActualPolygon>(
+                        polygon = it,
+                        state = state,
+                    )
+                polygonManager.registerEntity(entity)
             }
         }
     }
 
     override suspend fun clear() {
         semaphore.withPermit {
-            renderer.onRemove(entities.values.toList())
-            entities.clear()
+            val entities: List<PolygonEntity<ActualPolygon>> = polygonManager.allEntities()
+            renderer.onRemove(entities)
+            polygonManager.clear()
         }
     }
 
-    override fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>? {
-        // TODO: Improve this implementation later
-        return entities.values.find { entity ->
-            // For polygons, we need a point-in-polygon check
-            // This is a simplified version - would need proper implementation
-            entity.state.points.isNotEmpty()
-        }
-    }
+    override fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>? = polygonManager.find(position)
 }

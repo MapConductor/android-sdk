@@ -6,6 +6,7 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbol
 import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.mapconductor.arcgis.ArcGISActualPolyline
 import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
@@ -24,16 +25,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ArcGISPolylineController(
-    polylineManager: PolylineManager<Graphic> = PolylineManagerImpl(),
+    polylineManager: PolylineManager<ArcGISActualPolyline> = PolylineManagerImpl(),
     override val renderer: ArcGISPolylineOverlayRenderer,
-) : PolylineController<Graphic>(polylineManager, renderer)
+) : PolylineController<ArcGISActualPolyline>(polylineManager, renderer)
 
 class ArcGISPolylineOverlayRenderer(
     val polylineLayer: GraphicsOverlay,
     override val holder: ArcGISMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-) : AbstractPolylineOverlayRenderer<Graphic>() {
-    override suspend fun createPolyline(state: PolylineState): Graphic? =
+) : AbstractPolylineOverlayRenderer<ArcGISActualPolyline>() {
+    override suspend fun createPolyline(state: PolylineState): ArcGISActualPolyline? =
         withContext(coroutine.coroutineContext) {
             val geometry = createGeometry(state)
 
@@ -54,10 +55,10 @@ class ArcGISPolylineOverlayRenderer(
         }
 
     override suspend fun updatePolylineProperties(
-        polyline: Graphic,
-        current: PolylineEntity<Graphic>,
-        prev: PolylineEntity<Graphic>,
-    ): Graphic? =
+        polyline: ArcGISActualPolyline,
+        current: PolylineEntity<ArcGISActualPolyline>,
+        prev: PolylineEntity<ArcGISActualPolyline>,
+    ): ArcGISActualPolyline? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
@@ -78,7 +79,7 @@ class ArcGISPolylineOverlayRenderer(
             polyline
         }
 
-    override suspend fun removePolyline(entity: PolylineEntity<Graphic>) {
+    override suspend fun removePolyline(entity: PolylineEntity<ArcGISActualPolyline>) {
         coroutine.launch {
             polylineLayer.graphics.remove(entity.polyline)
         }

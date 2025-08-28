@@ -44,6 +44,7 @@ import com.mapconductor.mapbox.circle.DefaultMapboxCircleRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
+import com.mapconductor.mapbox.polygon.MapboxPolygonController
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
 import com.mapconductor.mapbox.polygon.createMapboxPolygonController
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
@@ -114,13 +115,6 @@ internal class MapboxMapViewControllerImpl(
             holder = holder,
             coroutine = coroutine,
             layer = circleLayer,
-        )
-
-    private val polygonController: PolygonController<MapboxActualPolygon> =
-        createMapboxPolygonController(
-            holder = holder,
-            coroutine = coroutine,
-            layer = polygonLayer,
         )
 
     override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<MapboxActualCircle>) {

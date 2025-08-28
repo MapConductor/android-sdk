@@ -65,11 +65,11 @@ abstract class PolylineController<ActualPolyline>(
             // Add new polylines
             if (added.isNotEmpty()) {
                 val actualPolylines: List<ActualPolyline?> = renderer.onAdd(added)
-                actualPolylines.forEachIndexed { index, actualPolyline ->
-                    actualPolyline?.let {
+                actualPolylines.forEachIndexed { index, polyline ->
+                    polyline?.let {
                         val entity =
                             PolylineEntityImpl<ActualPolyline>(
-                                polyline = actualPolyline,
+                                polyline = polyline,
                                 state = added[index].state,
                             )
                         polylineManager.registerEntity(entity)
@@ -82,13 +82,13 @@ abstract class PolylineController<ActualPolyline>(
             if (updated.isNotEmpty()) {
                 val actualPolylines: List<ActualPolyline?> = renderer.onChange(updated)
 
-                actualPolylines.forEachIndexed { index, actualPolyline ->
-                    actualPolyline?.let {
+                actualPolylines.forEachIndexed { index, polyline ->
+                    polyline?.let {
                         val params = updated[index]
                         val entity =
                             PolylineEntityImpl<ActualPolyline>(
                                 state = params.current.state,
-                                polyline = actualPolyline,
+                                polyline = polyline,
                             )
                         polylineManager.registerEntity(entity)
                     }
