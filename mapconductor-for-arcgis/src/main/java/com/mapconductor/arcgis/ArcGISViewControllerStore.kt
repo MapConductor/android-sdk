@@ -5,6 +5,8 @@ import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
+import com.mapconductor.arcgis.polygon.ArcGISPolygonController
+import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.core.geocell.HexGeocell
@@ -39,6 +41,7 @@ object ArcGISViewControllerStore :
                 holder = holder,
                 markerController = getMarkerController(holder),
                 polylineController = getPolylineController(holder),
+                polygonController = getPolygonController(holder),
             )
         this.set(id, controller)
         return controller
@@ -58,6 +61,25 @@ object ArcGISViewControllerStore :
 
         val controller =
             ArcGISPolylineController(
+                renderer = renderer,
+            )
+        return controller
+    }
+
+    private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonController {
+        val polygonLayer: GraphicsOverlay =
+            GraphicsOverlay().apply {
+                sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
+            }
+
+        val renderer =
+            ArcGISPolygonOverlayRenderer(
+                polygonLayer = polygonLayer,
+                holder = holder,
+            )
+
+        val controller =
+            ArcGISPolygonController(
                 renderer = renderer,
             )
         return controller

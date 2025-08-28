@@ -11,6 +11,7 @@ import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineManager
 import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.googlemaps.GoogleMapActualPolyline
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
 import kotlinx.coroutines.CoroutineScope
@@ -19,15 +20,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class GoogleMapPolylineController(
-    polylineManager: PolylineManager<Polyline> = PolylineManagerImpl(),
+    polylineManager: PolylineManager<GoogleMapActualPolyline> = PolylineManagerImpl(),
     renderer: GoogleMapPolylineOverlayRenderer,
-) : PolylineController<Polyline>(polylineManager, renderer)
+) : PolylineController<GoogleMapActualPolyline>(polylineManager, renderer)
 
 class GoogleMapPolylineOverlayRenderer(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : AbstractPolylineOverlayRenderer<Polyline>() {
-    override suspend fun createPolyline(state: PolylineState): Polyline? =
+) : AbstractPolylineOverlayRenderer<GoogleMapActualPolyline>() {
+    override suspend fun createPolyline(state: PolylineState): GoogleMapActualPolyline? =
         withContext(coroutine.coroutineContext) {
             val points = state.points.map { GeoPoint.from(it).toLatLng() }
             val options =
@@ -44,9 +45,9 @@ class GoogleMapPolylineOverlayRenderer(
         }
 
     override suspend fun updatePolylineProperties(
-        polyline: Polyline,
-        current: PolylineEntity<Polyline>,
-        prev: PolylineEntity<Polyline>,
+        polyline: GoogleMapActualPolyline,
+        current: PolylineEntity<GoogleMapActualPolyline>,
+        prev: PolylineEntity<GoogleMapActualPolyline>,
     ): Polyline? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -72,7 +73,7 @@ class GoogleMapPolylineOverlayRenderer(
             polyline
         }
 
-    override suspend fun removePolyline(entity: PolylineEntity<Polyline>) {
+    override suspend fun removePolyline(entity: PolylineEntity<GoogleMapActualPolyline>) {
         coroutine.launch {
             entity.polyline.remove()
         }

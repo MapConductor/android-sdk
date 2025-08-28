@@ -11,7 +11,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 
-internal class HereMapViewHolderImpl private constructor(
+internal class HereViewHolderImpl private constructor(
     override val mapView: MapView,
 ) : MapViewHolder<MapView, MapScene> {
     override lateinit var map: MapScene
@@ -48,7 +48,7 @@ internal class HereMapViewHolderImpl private constructor(
                     onResume()
                 }
 
-            val holder = HereMapViewHolderImpl(mapView)
+            val holder = HereViewHolderImpl(mapView)
             holder.map = mapView.mapScene
             return holder
         }

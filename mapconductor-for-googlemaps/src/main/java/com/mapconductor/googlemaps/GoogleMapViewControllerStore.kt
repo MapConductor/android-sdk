@@ -8,12 +8,12 @@ import com.mapconductor.core.groundimage.GroundImageController
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
-import com.mapconductor.googlemaps.polygon.GoogleMapPolygonRenderer
+import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
+import com.mapconductor.googlemaps.polygon.GoogleMapPolygonOverlayRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import android.app.Activity
@@ -52,6 +52,18 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
         return controller
     }
 
+    private fun getPolygonController(holder: GoogleMapViewHolder): GoogleMapPolygonController {
+        val renderer =
+            GoogleMapPolygonOverlayRenderer(
+                holder = holder,
+            )
+
+        val controller =
+            GoogleMapPolygonController(
+                renderer = renderer,
+            )
+        return controller
+    }
     private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylineController {
         val renderer =
             GoogleMapPolylineOverlayRenderer(
@@ -101,20 +113,6 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
             )
 
         return groundImageController
-    }
-
-    private fun getPolygonController(holder: GoogleMapViewHolder): PolygonController<GoogleMapActualPolygon> {
-        val polygonRenderer =
-            GoogleMapPolygonRenderer(
-                holder = holder,
-            )
-
-        val polygonController =
-            PolygonController(
-                renderer = polygonRenderer,
-            )
-
-        return polygonController
     }
 }
 

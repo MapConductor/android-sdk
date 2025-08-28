@@ -2,6 +2,6 @@ package com.mapconductor.here
 
 import com.here.sdk.mapview.MapScheme
 
-data class HereMapViewInitOptions(
+data class HereViewInitOptions(
     val scheme: MapScheme = MapScheme.NORMAL_DAY,
 )

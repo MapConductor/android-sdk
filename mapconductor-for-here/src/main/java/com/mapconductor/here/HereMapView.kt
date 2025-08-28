@@ -34,10 +34,10 @@ fun HereMapView(
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
-    content: (@Composable HereMapViewScope.() -> Unit)? = null,
+    content: (@Composable HereViewScope.() -> Unit)? = null,
 ) {
-    val holderRef = remember { Ref<HereMapViewHolder>() }
-    val scope = remember { HereMapViewScope() }
+    val holderRef = remember { Ref<HereViewHolder>() }
+    val scope = remember { HereViewScope() }
     val controllerRef = remember { Ref<HereMapViewControllerImpl>() }
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -55,7 +55,7 @@ fun HereMapView(
             HereMapViewControllerStore.initSDK(context)
 
             val mapInitOptions =
-                HereMapViewInitOptions(
+                HereViewInitOptions(
                     scheme = state.mapDesignType.id,
                 )
 

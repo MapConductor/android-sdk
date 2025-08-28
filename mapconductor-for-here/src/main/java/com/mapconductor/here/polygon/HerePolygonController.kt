@@ -7,35 +7,35 @@ import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonEntityImpl
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.here.HereMapActualPolygon
+import com.mapconductor.here.HereActualPolygon
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 class HerePolygonController(
-    val renderer: OverlayRenderer<HereMapActualPolygon, PolygonState, PolygonEntity<HereMapActualPolygon>>,
+    val renderer: OverlayRenderer<HereActualPolygon, PolygonState, PolygonEntity<HereActualPolygon>>,
     override var clickListener: OnPolygonEventHandler? = null,
 ) : OverlayController<
-        HereMapActualPolygon,
+        HereActualPolygon,
         PolygonState,
-        PolygonEntity<HereMapActualPolygon>,
+        PolygonEntity<HereActualPolygon>,
         PolygonEvent,
     > {
     override val zIndex: Int = 3
-    val entities = mutableMapOf<String, PolygonEntity<HereMapActualPolygon>>()
+    val entities = mutableMapOf<String, PolygonEntity<HereActualPolygon>>()
     val semaphore = Semaphore(1)
 
     override suspend fun add(data: List<PolygonState>) {
         semaphore.withPermit {
             val previous = entities.keys.toMutableSet()
             val added = mutableListOf<PolygonState>()
-            val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<HereMapActualPolygon>>>()
-            val removed = mutableListOf<PolygonEntity<HereMapActualPolygon>>()
+            val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<HereActualPolygon>>>()
+            val removed = mutableListOf<PolygonEntity<HereActualPolygon>>()
 
             data.forEach {
                 if (previous.contains(it.id)) {
                     val prevEntity = entities[it.id]!!
                     updated.add(
-                        object : OverlayRenderer.ChangeParams<PolygonEntity<HereMapActualPolygon>> {
+                        object : OverlayRenderer.ChangeParams<PolygonEntity<HereActualPolygon>> {
                             override val current =
                                 PolygonEntityImpl(
                                     polygon = prevEntity.polygon,
@@ -63,7 +63,7 @@ class HerePolygonController(
                     actualOverlay?.let {
                         val state = added[index]
                         val entity =
-                            PolygonEntityImpl<HereMapActualPolygon>(
+                            PolygonEntityImpl<HereActualPolygon>(
                                 polygon = it,
                                 state = state,
                             )
@@ -78,7 +78,7 @@ class HerePolygonController(
                     actualOverlay?.let {
                         val state = updated[index].current.state
                         val entity =
-                            PolygonEntityImpl<HereMapActualPolygon>(
+                            PolygonEntityImpl<HereActualPolygon>(
                                 polygon = it,
                                 state = state,
                             )
@@ -97,24 +97,24 @@ class HerePolygonController(
 
     override suspend fun update(state: PolygonState) {
         semaphore.withPermit {
-            val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<HereMapActualPolygon>>>()
+            val updated = mutableListOf<OverlayRenderer.ChangeParams<PolygonEntity<HereActualPolygon>>>()
             val prevEntity = entities[state.id]!!
             updated.add(
-                object : OverlayRenderer.ChangeParams<PolygonEntity<HereMapActualPolygon>> {
-                    override val current: PolygonEntity<HereMapActualPolygon> =
+                object : OverlayRenderer.ChangeParams<PolygonEntity<HereActualPolygon>> {
+                    override val current: PolygonEntity<HereActualPolygon> =
                         PolygonEntityImpl(
                             polygon = prevEntity.polygon,
                             state = state,
                         )
-                    override val prev: PolygonEntity<HereMapActualPolygon> = prevEntity
+                    override val prev: PolygonEntity<HereActualPolygon> = prevEntity
                 },
             )
 
-            val actualOverlays: List<HereMapActualPolygon?> = renderer.onChange(updated)
+            val actualOverlays: List<HereActualPolygon?> = renderer.onChange(updated)
             actualOverlays.forEachIndexed { index, actualOverlay ->
                 actualOverlay?.let {
                     val entity =
-                        PolygonEntityImpl<HereMapActualPolygon>(
+                        PolygonEntityImpl<HereActualPolygon>(
                             polygon = it,
                             state = state,
                         )
@@ -131,7 +131,7 @@ class HerePolygonController(
         }
     }
 
-    override fun find(position: IGeoPoint): PolygonEntity<HereMapActualPolygon>? {
+    override fun find(position: IGeoPoint): PolygonEntity<HereActualPolygon>? {
         // TODO: Improve this implementation later with proper point-in-polygon check
         return entities.values.find { entity ->
             entity.state.points.isNotEmpty()

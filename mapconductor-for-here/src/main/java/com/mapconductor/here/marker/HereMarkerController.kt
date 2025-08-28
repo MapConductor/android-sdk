@@ -6,19 +6,19 @@ import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.spherical.haversineDistance
-import com.mapconductor.here.HereMapActualMarker
+import com.mapconductor.here.HereActualMarker
 import com.mapconductor.settings.Settings
 
 class HereMarkerController(
-    markerManager: MarkerManager<HereMapActualMarker>,
-    override val renderer: HereMapMarkerRenderer,
-) : AbstractMarkerController<HereMapActualMarker>(
+    markerManager: MarkerManager<HereActualMarker>,
+    override val renderer: HereMarkerRenderer,
+) : AbstractMarkerController<HereActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
     ) {
-    private var internalSelectedMarker: MarkerEntity<HereMapActualMarker>? = null
+    private var internalSelectedMarker: MarkerEntity<HereActualMarker>? = null
 
-    internal var selectedMarker: MarkerEntity<HereMapActualMarker>?
+    internal var selectedMarker: MarkerEntity<HereActualMarker>?
         set(value) {
             if (value == null) {
                 internalSelectedMarker?.let {
@@ -37,7 +37,7 @@ class HereMarkerController(
         private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
 
-    override fun find(position: IGeoPoint): MarkerEntity<HereMapActualMarker>? {
+    override fun find(position: IGeoPoint): MarkerEntity<HereActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom = renderer.holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
             val tolerance =

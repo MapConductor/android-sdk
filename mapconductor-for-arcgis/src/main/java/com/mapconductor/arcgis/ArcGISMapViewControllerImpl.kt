@@ -11,7 +11,7 @@ import com.mapconductor.arcgis.circle.ArcGISCircleRenderer
 import com.mapconductor.arcgis.circle.DefaultArcGISCircleRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.SelectedMarker
-import com.mapconductor.arcgis.polygon.ArcGISPolygonRenderer
+import com.mapconductor.arcgis.polygon.ArcGISPolygonController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineController
 import com.mapconductor.core.circle.CircleClickEvent
 import com.mapconductor.core.circle.CircleOverlayManager
@@ -27,7 +27,6 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonCapable
-import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -61,14 +60,11 @@ interface ArcGISMapViewController :
 class ArcGISMapViewControllerImpl(
     override val holder: ArcGISMapViewHolder,
     private val polylineController: ArcGISPolylineController,
+    private val polygonController: ArcGISPolygonController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     private val circleLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
-        },
-    private val polygonLayer: GraphicsOverlay =
-        GraphicsOverlay().apply {
-            sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
         },
     private val circleRendererFactory: CircleRendererFactory<ArcGISActualCircle> =
         DefaultArcGISCircleRenderer(),
@@ -97,7 +93,7 @@ class ArcGISMapViewControllerImpl(
     init {
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(circleLayer)
-        holder.map.graphicsOverlays.add(polygonLayer)
+        holder.map.graphicsOverlays.add(polygonController.renderer.polygonLayer)
         holder.map.graphicsOverlays.add(polylineController.renderer.polylineLayer)
         holder.map.graphicsOverlays.add(markerController.renderer.markerLayer)
         setupListeners()

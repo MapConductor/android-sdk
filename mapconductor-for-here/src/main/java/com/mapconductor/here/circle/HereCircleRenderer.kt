@@ -14,7 +14,7 @@ import com.mapconductor.core.circle.CircleRenderer.UpdateParams
 import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.here.HereMapViewHolder
+import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toGeoCoordinates
 import kotlin.math.PI
 import kotlin.math.cos
@@ -38,7 +38,7 @@ class DefaultHereMapCircleRenderer : CircleRendererFactory<MapPolygon> {
 }
 
 class HereMapCircleRenderer(
-    override val holder: HereMapViewHolder,
+    override val holder: HereViewHolder,
     override val coroutine: CoroutineScope,
 ) : AbstractCircleRenderer<MapPolygon>() {
     companion object {

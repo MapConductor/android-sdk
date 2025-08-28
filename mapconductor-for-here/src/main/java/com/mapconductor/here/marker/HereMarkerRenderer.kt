@@ -7,8 +7,8 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
-import com.mapconductor.here.HereMapActualMarker
-import com.mapconductor.here.HereMapViewHolder
+import com.mapconductor.here.HereActualMarker
+import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toAnchor2D
 import com.mapconductor.here.toGeoCoordinates
 import com.mapconductor.here.toMapImage
@@ -17,24 +17,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HereMapMarkerRenderer(
-    holder: HereMapViewHolder,
+class HereMarkerRenderer(
+    holder: HereViewHolder,
     coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractMarkerOverlayRenderer<
-        HereMapViewHolder,
-        HereMapActualMarker,
+        HereViewHolder,
+        HereActualMarker,
     >(
         holder = holder,
         coroutine = coroutine,
     ) {
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<HereMapActualMarker>,
+        markerEntity: MarkerEntity<HereActualMarker>,
         position: GeoPoint,
     ) {
         markerEntity.marker.coordinates = position.toGeoCoordinates()
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereMapActualMarker?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {
         val markers =
             withContext(coroutine.coroutineContext) {
                 data.map { params ->
@@ -60,9 +60,9 @@ class HereMapMarkerRenderer(
         return markers
     }
 
-    override suspend fun onRemove(data: List<MarkerEntity<HereMapActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntity<HereActualMarker>>) {
         coroutine.launch {
-            val markers: List<HereMapActualMarker> = data.map { params -> params.marker }
+            val markers: List<HereActualMarker> = data.map { params -> params.marker }
             holder.map.removeMapMarkers(markers)
         }
     }
@@ -72,8 +72,8 @@ class HereMapMarkerRenderer(
     }
 
     override suspend fun onChange(
-        changes: List<MarkerOverlayRenderer.ChangeParams<HereMapActualMarker>>,
-    ): List<HereMapActualMarker?> =
+        changes: List<MarkerOverlayRenderer.ChangeParams<HereActualMarker>>,
+    ): List<HereActualMarker?> =
         changes.map { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint

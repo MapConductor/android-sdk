@@ -45,8 +45,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface HereMapViewController :
-    MapViewController<HereMapActualCircle>,
-    MarkerCapable<HereMapActualMarker>,
+    MapViewController<HereActualCircle>,
+    MarkerCapable<HereActualMarker>,
     PolygonCapable,
     PolylineCapable {
     fun moveCamera(
@@ -67,8 +67,8 @@ class HereMapViewControllerImpl(
     private val polygonController: HerePolygonController,
     override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    private val circleRendererFactory: CircleRendererFactory<HereMapActualCircle> = DefaultHereMapCircleRenderer(),
-) : BaseMapViewController<HereMapActualCircle>(),
+    private val circleRendererFactory: CircleRendererFactory<HereActualCircle> = DefaultHereMapCircleRenderer(),
+) : BaseMapViewController<HereActualCircle>(),
     HereMapViewController,
     MapCameraListener,
     TapListener,
@@ -83,7 +83,7 @@ class HereMapViewControllerImpl(
             coroutine = coroutine,
         )
 
-    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereMapActualCircle>) {
+    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereActualCircle>) {
     }
 
     override fun createCircleOverlayManager(): CircleOverlayManager<MapPolygon> =
