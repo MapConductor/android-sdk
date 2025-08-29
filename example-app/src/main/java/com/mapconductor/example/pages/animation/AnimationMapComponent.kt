@@ -29,8 +29,10 @@ fun AnimationMapComponent(
             onCircleClick = onCircleClick,
             onMarkerDrag = onMarkerDrag,
         ) {
-            key(viewModel.bounceMarker.id) {
-                Marker(viewModel.bounceMarker)
+            viewModel.allMarkers.forEach { marker ->
+                key(marker.id) {
+                    Marker(marker)
+                }
             }
         }
     }

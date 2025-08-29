@@ -55,9 +55,36 @@ fun AnimationMapPage(
                 Row {
                     Button(
                         modifier = Modifier.weight(1f),
-                        onClick = { viewModel.onMarkerClick(viewModel.bounceMarker) },
+                        onClick = { viewModel.onMarkerClick(viewModel.allMarkers[0]) },
                     ) {
-                        Text("Bounce")
+                        Text(viewModel.getSpotName(viewModel.allMarkers[0].id))
+                    }
+                }
+
+                Row {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.onMarkerClick(viewModel.allMarkers[1]) },
+                    ) {
+                        Text(viewModel.getSpotName(viewModel.allMarkers[1].id))
+                    }
+                }
+
+                Row {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.onMarkerClick(viewModel.allMarkers[2]) },
+                    ) {
+                        Text(viewModel.getSpotName(viewModel.allMarkers[2].id))
+                    }
+                }
+
+                Row {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { viewModel.onMarkerClick(viewModel.allMarkers[3]) },
+                    ) {
+                        Text(viewModel.getSpotName(viewModel.allMarkers[3].id))
                     }
                 }
             }

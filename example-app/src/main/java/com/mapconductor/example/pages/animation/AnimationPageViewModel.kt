@@ -1,5 +1,6 @@
 package com.mapconductor.example.pages.animation
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -13,17 +14,27 @@ import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.io.Serializable
+import java.util.NoSuchElementException
+
+private data class Spot(val id: String, val name: String, val point: GeoPoint)
+private val exampleSpots = listOf(
+    Spot("s1", "Honolulu", GeoPoint.fromLatLong(21.3069, -157.8583)),
+    Spot("s2", "Waikiki Beach", GeoPoint.fromLatLong(21.2766, -157.8289)),
+    Spot("s3", "Pearl Harbor", GeoPoint.fromLatLong(21.3649, -157.9491)),
+    Spot("s4", "Mililani", GeoPoint.fromLatLong(21.4513, -158.0152)),
+)
 
 interface AnimationPageViewModel {
     val initCameraPosition: MapCameraPosition
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
+    val allMarkers: List<MarkerState>
 
     val circleCenter: GeoPoint
-    val bounceMarker: MarkerState
 
+    fun getSpotName(markerId: String): String
     fun onMapViewChanged(state: MapViewState<*>)
-
     fun onMarkerClick(clicked: MarkerState)
 }
 
@@ -32,15 +43,6 @@ class AnimationPageViewModelImpl :
     AnimationPageViewModel {
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
-    private val colors: List<Color> =
-        listOf(
-            Color.Blue.copy(0.2f),
-            Color.Red.copy(alpha = 0.2f),
-            Color.Green.copy(alpha = 0.2f),
-            Color.Cyan.copy(alpha = 0.2f),
-            Color.LightGray.copy(alpha = 0.2f),
-            Color.Magenta.copy(alpha = 0.2f),
-        )
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -49,7 +51,7 @@ class AnimationPageViewModelImpl :
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
-            zoom = 12.0,
+            zoom = 9.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -57,26 +59,22 @@ class AnimationPageViewModelImpl :
 
     override val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
 
-    private val _bounceMarker =
-        MarkerState(
-            id = "bounce_marker",
-            position = circleCenter,
-            icon =
-                DefaultIcon(
-                    fillColor = colors[0],
-                    strokeColor = Color.White,
-                    label = "B",
-                ),
-            // If the marker is set animation on creating an instance,
-            // the marker will be animated when the map will be opened.
-            animation = MarkerAnimation.Bounce,
+    private val markers: Map<String, MarkerState> = exampleSpots.associate { spot ->
+        spot.id to MarkerState(
+            id = "marker_${spot.id}",
+            position = spot.point,
+            icon = DefaultIcon(label = spot.name.first().uppercase()),
+            animation = null
         )
-
-    override val bounceMarker: MarkerState
-        get() = _bounceMarker
+    }
+    override val allMarkers: List<MarkerState> get() = markers.values.toList()
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+
+    override fun getSpotName(markerId: String): String =
+        exampleSpots.firstOrNull { "marker_${it.id}" == markerId }?.name
+            ?: throw NoSuchElementException("Spot not found: $markerId")
 
     override fun onMapViewChanged(state: MapViewState<*>) {
         this._mapViewState.value = state
@@ -84,6 +82,7 @@ class AnimationPageViewModelImpl :
 
     override fun onMarkerClick(clicked: MarkerState) {
         // When you want to activate the marker, set the animation for the marker.
+        Log.i("AnimationPageViewModelImpl", "onMarkerClick: ${clicked.id}")
         clicked.animation = MarkerAnimation.Bounce
     }
 }
