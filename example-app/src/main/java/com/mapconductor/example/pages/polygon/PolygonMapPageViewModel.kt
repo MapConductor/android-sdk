@@ -1,6 +1,7 @@
 package com.mapconductor.example.pages.polygon
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -15,6 +16,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.toast.ToastMessage
+import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +25,6 @@ import kotlinx.coroutines.flow.asStateFlow
 interface PolygonMapPageViewModel {
     val initCameraPosition: MapCameraPosition
     val mapViewState: StateFlow<MapViewState<*>?>
-    val messages: StateFlow<List<ToastMessage>>
 
     val polygonVertexMarkers: List<MarkerState>
     var fillOpacity: Float
@@ -32,29 +33,19 @@ interface PolygonMapPageViewModel {
 
     fun onMapViewChanged(state: MapViewState<*>)
 
-    fun onPolygonClick(clicked: PolygonEvent)
-
     fun onMarkerDrag(dragged: MarkerState)
-
-    fun showToast(text: String)
-
-    fun removeToast(toastMessage: ToastMessage)
 }
 
 class PolygonMapPageViewModelImpl :
     ViewModel(),
     PolygonMapPageViewModel {
 
-
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
-    private val _messages = MutableStateFlow<List<ToastMessage>>(emptyList())
-    override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
-
-    // Polygon vertices (triangle around Tokyo landmarks)
+    // Polygon vertices
     private val polygonVertices =
-        mutableListOf(
+        mutableStateListOf(
             GeoPoint(41.79883, 140.75675),
             GeoPoint(41.799240000000005, 140.75875000000002),
             GeoPoint(41.797650000000004, 140.75905),
@@ -82,9 +73,16 @@ class PolygonMapPageViewModelImpl :
         polygonVertices.mapIndexed { index, point ->
             MarkerState(
                 position = point,
-                icon = DefaultIcon(),
+                icon = DefaultIcon(
+                    scale = 0.7f,
+                    fillColor = Color.Yellow,
+                    strokeColor = Color.Black,
+                ),
                 id = "vertex_$index",
                 draggable = true,
+                extra = Bundle().apply {
+                    putInt("index", index)
+                }
             )
         }
 
@@ -93,7 +91,7 @@ class PolygonMapPageViewModelImpl :
             PolygonState(
                 points = polygonVertices,
                 id = "example_polygon",
-                strokeColor = Color.Blue,
+                strokeColor = Color.Red,
                 strokeWidth = strokeWidth.dp,
                 fillColor = Color.Blue.copy(alpha = fillOpacity),
                 geodesic = false,
@@ -103,29 +101,11 @@ class PolygonMapPageViewModelImpl :
         _mapViewState.value = state
     }
 
-    override fun onPolygonClick(clicked: PolygonEvent) {
-        val clickedPoint = clicked.clicked
-        if (clickedPoint != null) {
-            showToast("Polygon clicked at: ${clickedPoint.latitude}, ${clickedPoint.longitude}")
-        } else {
-            showToast("Polygon clicked")
-        }
-    }
-
     override fun onMarkerDrag(dragged: MarkerState) {
-        when (dragged.id) {
-            "vertex_0" -> polygonVertices[0] = GeoPoint.from(dragged.position)
-            "vertex_1" -> polygonVertices[1] = GeoPoint.from(dragged.position)
-            "vertex_2" -> polygonVertices[2] = GeoPoint.from(dragged.position)
+        (dragged.extra as? Bundle)?.getInt("index")?.let { index ->
+            if (index >= 0 && index < polygonVertices.size) {
+                polygonVertices[index] = GeoPoint.from(dragged.position)
+            }
         }
-    }
-
-    override fun showToast(text: String) {
-        val newMessage = ToastMessage(text = text)
-        _messages.value = _messages.value + newMessage
-    }
-
-    override fun removeToast(toastMessage: ToastMessage) {
-        _messages.value = _messages.value - toastMessage
     }
 }

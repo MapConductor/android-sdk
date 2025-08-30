@@ -17,6 +17,7 @@ import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import com.mapconductor.googlemaps.toLatLng
 import kotlin.coroutines.coroutineContext
+import android.util.Log
 import kotlinx.coroutines.AbstractCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +63,7 @@ class GoogleMapPolygonOverlayRenderer(
             val polygon = current.polygon
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
+            Log.d("GoogleMaps", "----->$finger, $prevFinger")
             if (finger.points != prevFinger.points) {
                 val points =
                     current.state.points

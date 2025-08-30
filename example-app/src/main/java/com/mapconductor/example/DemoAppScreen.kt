@@ -26,6 +26,7 @@ import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
+import com.mapconductor.example.pages.polyline.PolylinePageViewModelImpl
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem

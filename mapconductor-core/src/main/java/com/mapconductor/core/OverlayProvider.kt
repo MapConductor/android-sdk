@@ -89,7 +89,7 @@ class CircleOverlay(
         data: List<CircleState>,
         controller: MapViewControllerAlias,
     ) {
-//        controller.addCircles(data)
+        controller.addCircles(data)
     }
 }
 

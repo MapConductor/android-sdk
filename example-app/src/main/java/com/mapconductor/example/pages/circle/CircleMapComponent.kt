@@ -4,20 +4,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 
 @Composable
 fun CircleMapComponent(
     mapViewState: MapViewState<*>?,
-    viewModel: CirclePageViewModel,
+    circleState: CircleState,
+    centerMarker: MarkerState,
+    edgeMarker: MarkerState,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler = {},
-    onMarkerClick: OnMarkerEventHandler = {},
     onCircleClick: OnCircleEventHandler = {},
     onMarkerMove: OnMarkerEventHandler = {},
 ) {
@@ -25,25 +27,19 @@ fun CircleMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onMapClick = onMapClick,
-            onMarkerClick = onMarkerClick,
             onCircleClick = onCircleClick,
             onMarkerDragStart = onMarkerMove,
             onMarkerDrag = onMarkerMove,
             onMarkerDragEnd = onMarkerMove,
         ) {
             // Circle
-            Circle(viewModel.circleState)
+            Circle(circleState)
 
             // Center marker (not draggable)
-            key(viewModel.centerMarker.id) {
-                Marker(viewModel.centerMarker)
-            }
+            Marker(centerMarker)
 
             // Edge marker (draggable)
-            key(viewModel.edgeMarker.id) {
-                Marker(viewModel.edgeMarker)
-            }
+            Marker(edgeMarker)
         }
     }
 }

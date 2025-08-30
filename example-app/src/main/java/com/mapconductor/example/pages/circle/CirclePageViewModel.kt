@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -31,6 +32,8 @@ interface CirclePageViewModel {
     val centerMarker: MarkerState
     val edgeMarker: MarkerState
     val circleState: CircleState
+    var fillOpacity: Float
+    var strokeWidth: Float
 
     fun onMapViewChanged(state: MapViewState<*>)
 
@@ -54,14 +57,16 @@ class CirclePageViewModelImpl :
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
     private val colors: List<Color> =
         listOf(
-            Color.Blue.copy(0.2f),
-            Color.Red.copy(alpha = 0.2f),
-            Color.Green.copy(alpha = 0.2f),
-            Color.Cyan.copy(alpha = 0.2f),
-            Color.LightGray.copy(alpha = 0.2f),
-            Color.Magenta.copy(alpha = 0.2f),
+            Color.Blue,
+            Color.Red,
+            Color.Green,
+            Color.Cyan,
+            Color.LightGray,
+            Color.Magenta,
         )
     private var tapIdx = 0
+    override var fillOpacity by mutableStateOf(0.3f)
+    override var strokeWidth by mutableStateOf(3.0f)
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -117,19 +122,15 @@ class CirclePageViewModelImpl :
         haversineDistance(circleCenter, _edgeMarker.value.position)
     }
 
-    private val _circleState: MutableState<CircleState> =
-        mutableStateOf(
-            CircleState(
-                id = "circle",
-                center = circleCenter,
-                radiusMeters = 1000.0, // Initial radius
-                strokeColor = Color.Blue.copy(alpha = 0.5f),
-                strokeWidth = 2.dp,
-                fillColor = this.colors[0],
-            ),
-        )
     override val circleState: CircleState
-        get() = _circleState.value
+        get() = CircleState(
+            id = "circle",
+            center = circleCenter,
+            radiusMeters = radiusMeters, // Initial radius
+            strokeColor = Color.Blue.copy(alpha = 0.5f),
+            strokeWidth = strokeWidth.dp,
+            fillColor = this.colors[0].copy(alpha = fillOpacity),
+        )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
@@ -148,7 +149,7 @@ class CirclePageViewModelImpl :
 
     override fun onCircleClick(event: CircleClickEvent) {
         this.tapIdx = (this.tapIdx + 1) % this.colors.size
-        event.state.fillColor = this.colors[this.tapIdx]
+        event.state.fillColor = this.colors[this.tapIdx].copy(alpha = fillOpacity)
         showToast("Circle clicked - Radius: ${radiusMeters.toInt()}m")
     }
 
@@ -156,7 +157,7 @@ class CirclePageViewModelImpl :
         _edgeMarker.value.position = dragged.position
 
         // Update circle radius
-        _circleState.value.radiusMeters = radiusMeters // haversineDistance(circleCenter, _edgeMarker.value.position)
+        circleState.radiusMeters = radiusMeters // haversineDistance(circleCenter, _edgeMarker.value.position)
 
 //        showToast("Radius updated: ${radiusMeters.toInt()}m")
     }

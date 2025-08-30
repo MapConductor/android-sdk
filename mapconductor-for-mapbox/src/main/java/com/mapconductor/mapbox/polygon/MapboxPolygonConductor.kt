@@ -48,18 +48,29 @@ class MapboxPolygonConductor(
     }
 
     override suspend fun update(state: PolygonState) {
+
+        polygonOverlay.createPolygon(state)?.let { polygon ->
+            val polygonEntity = PolygonEntityImpl(
+                polygon = polygon,
+                state = state,
+            )
+            polygonOverlay.polygonManager.registerEntity(polygonEntity)
+        }
+
+        val polylineState = state.toPolylineState()
+        polylineOverlay.createPolyline(polylineState)?.let { polyline ->
+            val polylineEntity = PolylineEntityImpl(
+                polyline = polyline,
+                state = polylineState,
+            )
+            polylineOverlay.polylineManager.registerEntity(polylineEntity)
+        }
+        polygonOverlay.onPostProcess()
+        polylineOverlay.onPostProcess()
     }
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null
     override fun find(position: IGeoPoint): PolygonEntity<PolygonState>? {
-        return null
-    }
-
-    suspend fun updatePolygonProperties(
-        polygon: MapboxOutlineAndFill,
-        current: PolygonEntity<MapboxOutlineAndFill>,
-        prev: PolygonEntity<MapboxOutlineAndFill>
-    ): MapboxOutlineAndFill? {
         return null
     }
 
