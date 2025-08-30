@@ -17,6 +17,7 @@ import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.view.ViewGroup
 
@@ -33,6 +34,7 @@ fun GoogleMapsView(
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
@@ -87,6 +89,7 @@ fun GoogleMapsView(
             controller.setOnMarkerDragEnd(onMarkerDragEnd)
             controller.setCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
+            controller.setOnPolygonClickListener(onPolygonClick)
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setOnGroundImageClickListener(onGroundImageClick)

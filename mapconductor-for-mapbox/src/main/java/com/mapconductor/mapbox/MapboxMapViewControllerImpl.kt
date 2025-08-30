@@ -34,7 +34,6 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonCapable
-import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -44,8 +43,7 @@ import com.mapconductor.mapbox.circle.DefaultMapboxCircleRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
-import com.mapconductor.mapbox.polygon.MapboxPolygonController
-import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
+import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
@@ -75,7 +73,7 @@ internal class MapboxMapViewControllerImpl(
     override val holder: MapboxMapViewHolder,
     private val markerController: MapboxMarkerController,
     private val polylineController: MapboxPolylineController,
-    private val polygonController: MapboxPolygonController,
+    private val polygonController: MapboxPolygonConductor,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     private val circleLayer: MapboxCircleLayer =
         MapboxCircleLayer(
@@ -116,12 +114,21 @@ internal class MapboxMapViewControllerImpl(
 
     init {
         holder.map.getStyle { style ->
+            // Circle
             style.addSource(circleLayer.source)
             style.addLayer(circleLayer.layer)
-            style.addSource(polygonController.renderer.layer.source)
-            style.addLayer(polygonController.renderer.layer.layer)
+
+            // Polygon
+            style.addSource(polygonController.polygonOverlay.layer.source)
+            style.addLayer(polygonController.polygonOverlay.layer.layer)
+            style.addSource(polygonController.polylineOverlay.layer.source)
+            style.addLayer(polygonController.polylineOverlay.layer.layer)
+
+            // Polyline
             style.addSource(polylineController.renderer.layer.source)
             style.addLayer(polylineController.renderer.layer.layer)
+
+            // Marker
             style.addSource(markerController.renderer.markerLayer.source)
             style.addLayer(markerController.renderer.markerLayer.layer)
             style.addSource(markerController.renderer.dragLayer.source)

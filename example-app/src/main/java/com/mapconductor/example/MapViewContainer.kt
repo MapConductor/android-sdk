@@ -50,6 +50,7 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onPolylineClick = onPolylineClick,
+                onPolygonClick = onPolygonClick,
                 onGroundImageClick = onGroundImageClick,
                 content = content,
             )
@@ -67,6 +68,7 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onPolylineClick = onPolylineClick,
+                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
@@ -83,6 +85,7 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onPolylineClick = onPolylineClick,
+                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
@@ -99,6 +102,7 @@ fun MapViewContainer(
                 onMarkerAnimateEnd = onMarkerAnimateEnd,
                 onCircleClick = onCircleClick,
                 onPolylineClick = onPolylineClick,
+                onPolygonClick = onPolygonClick,
                 content = content,
             )
 

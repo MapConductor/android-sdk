@@ -14,6 +14,7 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.util.Log
 import android.view.ViewGroup
@@ -34,6 +35,7 @@ fun HereMapView(
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable HereViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<HereViewHolder>() }
@@ -79,6 +81,7 @@ fun HereMapView(
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
+            controller.setOnPolygonClickListener(onPolygonClick)
 
             (state as? HereViewStateImpl)?.controller = controller
 

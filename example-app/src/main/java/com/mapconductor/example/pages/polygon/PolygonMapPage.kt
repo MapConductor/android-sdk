@@ -39,6 +39,7 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
         )
 
     DemoMapPageScaffold(
+        initSelect = 1,
         menuItems = PolygonCapableMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
@@ -80,10 +81,7 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
                     onValueChange = { viewModel.fillOpacity = it },
                     valueRange = 0f..1f,
                     colors =
-                        SliderDefaults.colors(
-                            thumbColor = Color.Blue,
-                            activeTrackColor = Color.Blue,
-                        ),
+                        SliderDefaults.colors(),
                 )
             }
 
@@ -98,10 +96,7 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
                     onValueChange = { viewModel.strokeWidth = it },
                     valueRange = 1f..10f,
                     colors =
-                        SliderDefaults.colors(
-                            thumbColor = Color.Blue,
-                            activeTrackColor = Color.Blue,
-                        ),
+                        SliderDefaults.colors(),
                 )
             }
         }

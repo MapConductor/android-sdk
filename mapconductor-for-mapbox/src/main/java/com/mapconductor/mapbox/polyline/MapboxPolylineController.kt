@@ -18,6 +18,7 @@ import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.splitByMeridian
 import com.mapconductor.mapbox.MapboxActualPolyline
 import com.mapconductor.mapbox.MapboxMapViewHolder
+import com.mapconductor.mapbox.createMapboxLines
 import com.mapconductor.mapbox.toMapboxColorString
 import com.mapconductor.mapbox.toPoint
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +36,14 @@ class MapboxPolylineOverlayRenderer(
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolylineOverlayRenderer<MapboxActualPolyline>() {
-    override suspend fun createPolyline(state: PolylineState): MapboxActualPolyline? = createMapboxLines(state)
+    override suspend fun createPolyline(state: PolylineState): MapboxActualPolyline? =
+        createMapboxLines(
+            id = state.id,
+            points = state.points,
+            geodesic = state.geodesic,
+            strokeColor = state.strokeColor,
+            strokeWidth = state.strokeWidth,
+        )
 
     override suspend fun updatePolylineProperties(
         polyline: MapboxActualPolyline,
@@ -43,7 +51,13 @@ class MapboxPolylineOverlayRenderer(
         prev: PolylineEntity<MapboxActualPolyline>,
     ): MapboxActualPolyline? {
         // For Mapbox, we need to recreate the features when properties change
-        return createMapboxLines(current.state)
+        return createMapboxLines(
+            id = current.state.id,
+            points = current.state.points,
+            geodesic = current.state.geodesic,
+            strokeColor = current.state.strokeColor,
+            strokeWidth = current.state.strokeWidth,
+        )
     }
 
     override suspend fun removePolyline(entity: PolylineEntity<MapboxActualPolyline>) {
@@ -59,29 +73,6 @@ class MapboxPolylineOverlayRenderer(
         val polylines = getAllPolylineEntities()
         coroutine.launch {
             layer.draw(polylines)
-        }
-    }
-
-    private fun createMapboxLines(state: PolylineState): List<Feature> {
-        val geoPoints: List<IGeoPoint> =
-            when (state.geodesic) {
-                true -> createInterpolatePoints(state.points)
-                false -> createLinearInterpolatePoints(state.points)
-            }.map { it.normalize() }
-
-        return splitByMeridian(geoPoints, state.geodesic).mapIndexed { index, linePoints ->
-            val points = linePoints.map { GeoPoint.from(it).toPoint() }
-            val id = "polyline-${state.id}-$index"
-
-            return@mapIndexed Feature.fromGeometry(
-                LineString.fromLngLats(points),
-                JsonObject().apply {
-                    addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
-                    addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, ResourceProvider.dpToPx(state.strokeWidth.value))
-                    addProperty("id", id)
-                },
-                id,
-            )
         }
     }
 

@@ -11,6 +11,7 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 
 @Composable
@@ -26,6 +27,7 @@ fun ArcGISMapView(
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
@@ -65,6 +67,7 @@ fun ArcGISMapView(
             controller.setMapClickListener(onMapClick)
             controller.setCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
+            controller.setOnPolygonClickListener(onPolygonClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
             controller.setOnMarkerDrag(onMarkerDrag)
