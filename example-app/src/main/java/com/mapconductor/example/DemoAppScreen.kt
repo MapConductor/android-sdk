@@ -24,9 +24,9 @@ import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.marker.MarkerBasicPage
 import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
-import com.mapconductor.example.pages.polyline.PolylinePageViewModelImpl
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
@@ -79,6 +79,12 @@ fun DemoAppScreen(initPage: String = "map") {
                 route = "map",
             ),
             SidebarItem(
+                id = "marker-basic",
+                title = "Marker",
+                icon = Icons.Default.Home,
+                route = "marker-basic",
+            ),
+            SidebarItem(
                 id = "flyTo",
                 title = "Move camera",
                 icon = Icons.Default.PlayArrow,
@@ -122,7 +128,6 @@ fun DemoAppScreen(initPage: String = "map") {
 //            ),
         )
 
-
     AppTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             // Main content
@@ -130,6 +135,11 @@ fun DemoAppScreen(initPage: String = "map") {
                 when (currentPage) {
                     "map" -> {
                         StoreMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-basic" -> {
+                        MarkerBasicPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

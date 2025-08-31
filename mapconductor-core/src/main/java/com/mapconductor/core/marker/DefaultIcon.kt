@@ -137,7 +137,7 @@ abstract class AbstractDefaultIcon(
         iconScale: Float,
     ): Path {
         val originalSize = Size(23.5f, 25.6f)
-        val markerScale = minOf(canvasSize / originalSize.width, canvasSize / originalSize.height)
+        val markerScale = minOf(canvasSize / originalSize.width, canvasSize / originalSize.height) * iconScale
         val scaledWidth = originalSize.width * markerScale
         val scaledHeight = originalSize.height * markerScale
         val offsetX = (canvasSize - scaledWidth) / 2f

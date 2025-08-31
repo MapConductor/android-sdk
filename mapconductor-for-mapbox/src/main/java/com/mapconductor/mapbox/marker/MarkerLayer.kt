@@ -17,7 +17,7 @@ open class MarkerLayer(
 ) {
     val layer =
         symbolLayer(layerId, sourceId) {
-            iconSize(Expression.get(MapboxMarkerRenderer.Prop.SCALE))
+//            iconSize(Expression.get(MapboxMarkerRenderer.Prop.SCALE))
             iconImage(Expression.get(MapboxMarkerRenderer.Prop.ICON_ID))
             iconAllowOverlap(true)
             iconIgnorePlacement(true)
