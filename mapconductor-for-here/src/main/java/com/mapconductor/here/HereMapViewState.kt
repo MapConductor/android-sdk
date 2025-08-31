@@ -50,16 +50,16 @@ class HereMapViewState(
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
-        if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
-            return
-        }
         val currCameraPosition = this.cameraPosition.value
         val newPosition =
             currCameraPosition.copy(
                 position = position,
             )
+        if (this.isInitialized.value != InitState.Initialized) {
+            onCameraChange(newPosition)
+            listener?.onComplete(true)
+            return
+        }
         this.moveCameraTo(newPosition, durationMs, listener)
     }
 
@@ -69,8 +69,8 @@ class HereMapViewState(
         listener: MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
+            onCameraChange(cameraPosition)
+            listener?.onComplete(true)
             return
         }
 

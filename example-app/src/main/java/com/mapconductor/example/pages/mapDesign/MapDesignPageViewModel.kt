@@ -67,6 +67,9 @@ class MapDesignPageViewModelImpl :
     override val options: StateFlow<List<MapDesignOptions>> = _options.asStateFlow()
 
     override fun onMapViewChanged(state: MapViewState<*>) {
+        mapViewState.value?.cameraPosition?.value?.let {
+            state.moveCameraTo(it)
+        }
         this._mapViewState.value = state
         when (state) {
             is GoogleMapViewState -> {

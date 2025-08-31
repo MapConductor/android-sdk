@@ -42,16 +42,16 @@ class MapboxMapViewState(
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
-            return
-        }
         val currentPosition = this.cameraPosition.value
         val newPosition =
             currentPosition.copy(
                 position = position,
             )
+        if (this.isInitialized.value != InitState.Initialized) {
+            onCameraChange(newPosition)
+            listener?.onComplete(true)
+            return
+        }
         this.moveCameraTo(newPosition, durationMs, listener)
     }
 
@@ -61,8 +61,8 @@ class MapboxMapViewState(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
+            onCameraChange(cameraPosition)
+            listener?.onComplete(true)
             return
         }
         val dstCameraPosition = MapCameraPosition.from(cameraPosition)

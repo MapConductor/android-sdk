@@ -50,8 +50,8 @@ class ArcGISMapViewState(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
+            onCameraChange(cameraPosition)
+            listener?.onComplete(true)
             return
         }
 
