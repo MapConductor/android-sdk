@@ -5,7 +5,6 @@ import androidx.compose.ui.unit.Dp
 import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.LineString
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
@@ -35,7 +34,7 @@ internal fun createMapboxLines(
             LineString.fromLngLats(points),
             JsonObject().apply {
                 addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, strokeColor.toMapboxColorString())
-                addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, ResourceProvider.dpToPx(strokeWidth.value))
+                addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, strokeWidth.value)
                 addProperty("id", id)
             },
             id,
