@@ -31,7 +31,6 @@ class ArcGISPolygonController(
     override val renderer: ArcGISPolygonOverlayRenderer,
 ) : PolygonController<ArcGISActualPolygon>(polygonManager, renderer)
 
-
 class ArcGISPolygonOverlayRenderer(
     val polygonLayer: GraphicsOverlay,
     override val holder: ArcGISMapViewHolder,
@@ -66,7 +65,7 @@ class ArcGISPolygonOverlayRenderer(
     override suspend fun updatePolygonProperties(
         polygon: ArcGISActualPolygon,
         current: PolygonEntity<ArcGISActualPolygon>,
-        prev: PolygonEntity<ArcGISActualPolygon>
+        prev: PolygonEntity<ArcGISActualPolygon>,
     ): ArcGISActualPolygon? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint

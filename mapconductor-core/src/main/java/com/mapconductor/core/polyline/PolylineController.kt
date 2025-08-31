@@ -5,16 +5,15 @@ import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-
 abstract class PolylineController<ActualPolyline>(
     val polylineManager: PolylineManager<ActualPolyline>,
     open val renderer: PolylineOverlayRenderer<ActualPolyline>,
     override var clickListener: OnPolylineEventHandler? = null,
 ) : OverlayController<
-    ActualPolyline,
-    PolylineState,
-    PolylineEntity<ActualPolyline>,
-    PolylineState,
+        ActualPolyline,
+        PolylineState,
+        PolylineEntity<ActualPolyline>,
+        PolylineState,
     > {
     override val zIndex: Int = 5
     val semaphore = Semaphore(1)

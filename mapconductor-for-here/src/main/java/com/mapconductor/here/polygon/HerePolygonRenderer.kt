@@ -3,13 +3,8 @@ package com.mapconductor.here.polygon
 import androidx.compose.ui.graphics.toArgb
 import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon
-import com.here.sdk.mapview.LineCap
-import com.here.sdk.mapview.MapMeasureDependentRenderSize
 import com.here.sdk.mapview.MapPolygon
-import com.here.sdk.mapview.MapPolyline
-import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonController
@@ -17,7 +12,6 @@ import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.HereActualPolygon
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toGeoCoordinates
@@ -44,12 +38,13 @@ class HerePolygonOverlayRenderer(
     override suspend fun createPolygon(state: PolygonState): HereActualPolygon? {
         val geoPolygon = createGeoPolygon(state)
         val lineWidth = ResourceProvider.dpToPx(state.strokeWidth.value.toDouble())
-        val mapPolygon = MapPolygon(
-            geoPolygon,
-            Color.valueOf(state.fillColor.toArgb()),
-            Color.valueOf(state.strokeColor.toArgb()),
-            lineWidth,
-        )
+        val mapPolygon =
+            MapPolygon(
+                geoPolygon,
+                Color.valueOf(state.fillColor.toArgb()),
+                Color.valueOf(state.strokeColor.toArgb()),
+                lineWidth,
+            )
         coroutine.launch {
             holder.map.addMapPolygon(mapPolygon)
         }
@@ -59,7 +54,7 @@ class HerePolygonOverlayRenderer(
     override suspend fun updatePolygonProperties(
         polygon: HereActualPolygon,
         current: PolygonEntity<HereActualPolygon>,
-        prev: PolygonEntity<HereActualPolygon>
+        prev: PolygonEntity<HereActualPolygon>,
     ): HereActualPolygon? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -78,7 +73,8 @@ class HerePolygonOverlayRenderer(
             if (finger.strokeWidth != prevFinger.strokeWidth) {
                 val lineWidth =
                     ResourceProvider.dpToPx(
-                        current.state.strokeWidth.value.toDouble(),
+                        current.state.strokeWidth.value
+                            .toDouble(),
                     )
                 current.polygon.outlineWidth = lineWidth
             }

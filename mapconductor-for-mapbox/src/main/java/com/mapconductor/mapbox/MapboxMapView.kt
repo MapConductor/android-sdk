@@ -136,10 +136,11 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
             holder = holder,
         )
 
-    val conductor = MapboxPolygonConductor(
-        polygonOverlay = polygonOverlayRenderer,
-        polylineOverlay = polylineOverlayRenderer,
-    )
+    val conductor =
+        MapboxPolygonConductor(
+            polygonOverlay = polygonOverlayRenderer,
+            polylineOverlay = polylineOverlayRenderer,
+        )
     return conductor
 }
 

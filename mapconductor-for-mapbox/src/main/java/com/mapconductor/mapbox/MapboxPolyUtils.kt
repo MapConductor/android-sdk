@@ -29,7 +29,7 @@ internal fun createMapboxLines(
 
     return splitByMeridian(geoPoints, geodesic).mapIndexed { index, linePoints ->
         val points = linePoints.map { GeoPoint.from(it).toPoint() }
-        val id = "polyline-${id}-$index"
+        val id = "polyline-$id-$index"
 
         return@mapIndexed Feature.fromGeometry(
             LineString.fromLngLats(points),

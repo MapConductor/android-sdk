@@ -64,6 +64,7 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
             )
         return controller
     }
+
     private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylineController {
         val renderer =
             GoogleMapPolylineOverlayRenderer(

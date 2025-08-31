@@ -44,7 +44,7 @@ abstract class PolygonController<ActualPolygon>(
                     added.add(
                         object : PolygonOverlayRenderer.AddParams {
                             override val state: PolygonState = state
-                        }
+                        },
                     )
                     previous.remove(state.id)
                 }

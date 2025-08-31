@@ -7,9 +7,7 @@ import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
-fun PolylineMapPage(
-    onToggleSidebar: () -> Unit = {},
-) {
+fun PolylineMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { PolylinePageViewModelImpl() }
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),

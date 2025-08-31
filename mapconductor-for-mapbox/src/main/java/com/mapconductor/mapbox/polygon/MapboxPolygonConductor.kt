@@ -5,41 +5,41 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonEntityImpl
 import com.mapconductor.core.polygon.PolygonEvent
-import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineEntityImpl
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.mapbox.MapboxOutlineAndFill
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 
 class MapboxPolygonConductor(
     val polygonOverlay: MapboxPolygonOverlayRenderer,
     val polylineOverlay: MapboxPolylineOverlayRenderer,
 ) : OverlayController<
-    PolygonState,
-    PolygonState,
-    PolygonEntity<PolygonState>,
-    PolygonEvent,
-> {
+        PolygonState,
+        PolygonState,
+        PolygonEntity<PolygonState>,
+        PolygonEvent,
+    > {
     override val zIndex: Int = 2
+
     override suspend fun add(data: List<PolygonState>) {
         data.forEach { polygonState ->
 
             polygonOverlay.createPolygon(polygonState)?.let { polygon ->
-                val polygonEntity = PolygonEntityImpl(
-                    polygon = polygon,
-                    state = polygonState,
-                )
+                val polygonEntity =
+                    PolygonEntityImpl(
+                        polygon = polygon,
+                        state = polygonState,
+                    )
                 polygonOverlay.polygonManager.registerEntity(polygonEntity)
             }
 
             val polylineState = polygonState.toPolylineState()
             polylineOverlay.createPolyline(polylineState)?.let { polyline ->
-                val polylineEntity = PolylineEntityImpl(
-                    polyline = polyline,
-                    state = polylineState,
-                )
+                val polylineEntity =
+                    PolylineEntityImpl(
+                        polyline = polyline,
+                        state = polylineState,
+                    )
                 polylineOverlay.polylineManager.registerEntity(polylineEntity)
             }
         }
@@ -48,21 +48,22 @@ class MapboxPolygonConductor(
     }
 
     override suspend fun update(state: PolygonState) {
-
         polygonOverlay.createPolygon(state)?.let { polygon ->
-            val polygonEntity = PolygonEntityImpl(
-                polygon = polygon,
-                state = state,
-            )
+            val polygonEntity =
+                PolygonEntityImpl(
+                    polygon = polygon,
+                    state = state,
+                )
             polygonOverlay.polygonManager.registerEntity(polygonEntity)
         }
 
         val polylineState = state.toPolylineState()
         polylineOverlay.createPolyline(polylineState)?.let { polyline ->
-            val polylineEntity = PolylineEntityImpl(
-                polyline = polyline,
-                state = polylineState,
-            )
+            val polylineEntity =
+                PolylineEntityImpl(
+                    polyline = polyline,
+                    state = polylineState,
+                )
             polylineOverlay.polylineManager.registerEntity(polylineEntity)
         }
         polygonOverlay.onPostProcess()
@@ -70,9 +71,8 @@ class MapboxPolygonConductor(
     }
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null
-    override fun find(position: IGeoPoint): PolygonEntity<PolygonState>? {
-        return null
-    }
+
+    override fun find(position: IGeoPoint): PolygonEntity<PolygonState>? = null
 
     override suspend fun clear() {
     }

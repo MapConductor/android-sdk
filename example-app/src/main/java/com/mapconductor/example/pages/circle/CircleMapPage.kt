@@ -3,7 +3,6 @@ package com.mapconductor.example.pages.circle
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -13,19 +12,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun CircleMapPage(
-    onToggleSidebar: () -> Unit = {},
-) {
+fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { CirclePageViewModelImpl() }
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -55,7 +50,6 @@ fun CircleMapPage(
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
         ) {
-
             // Fill Opacity Control
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp),

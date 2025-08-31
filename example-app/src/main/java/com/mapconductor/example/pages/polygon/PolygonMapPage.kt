@@ -53,7 +53,6 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
         ) {
-
             // Fill Opacity Control
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp),

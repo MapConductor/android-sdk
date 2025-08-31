@@ -4,10 +4,15 @@ import com.mapconductor.core.features.IGeoPoint
 
 interface PolygonManager<ActualPolygon> {
     fun registerEntity(entity: PolygonEntity<ActualPolygon>)
+
     fun removeEntity(id: String): PolygonEntity<ActualPolygon>?
+
     fun getEntity(id: String): PolygonEntity<ActualPolygon>?
+
     fun allEntities(): List<PolygonEntity<ActualPolygon>>
+
     fun clear()
+
     fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>?
 }
 
@@ -29,5 +34,4 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
     }
 
     override fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>? = entities.values.firstOrNull()
-
 }

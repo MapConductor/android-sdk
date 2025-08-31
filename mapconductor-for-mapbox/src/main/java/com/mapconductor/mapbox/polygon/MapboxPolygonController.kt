@@ -5,7 +5,6 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Polygon
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polygon.PolygonState
@@ -23,7 +22,6 @@ class MapboxPolygonOverlayRenderer(
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolygonOverlayRenderer<MapboxActualPolygon>() {
-
     override suspend fun onRemove(data: List<PolygonEntity<MapboxActualPolygon>>) {
 //        val featureIds = data.map { entity ->
 //            entity.polygon.getStringProperty("id")
@@ -53,19 +51,21 @@ class MapboxPolygonOverlayRenderer(
             } else {
                 points
             }
-        return listOf(Feature.fromGeometry(
-            Polygon.fromLngLats(listOf(closedPoints)),
-            JsonObject().apply {
-                addProperty(MapboxPolygonLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
-            },
-            "polygon-${state.id}",
-        ))
+        return listOf(
+            Feature.fromGeometry(
+                Polygon.fromLngLats(listOf(closedPoints)),
+                JsonObject().apply {
+                    addProperty(MapboxPolygonLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
+                },
+                "polygon-${state.id}",
+            ),
+        )
     }
 
     override suspend fun updatePolygonProperties(
         polygon: MapboxActualPolygon,
         current: PolygonEntity<MapboxActualPolygon>,
-        prev: PolygonEntity<MapboxActualPolygon>
+        prev: PolygonEntity<MapboxActualPolygon>,
     ): MapboxActualPolygon? {
 //        val state = current.state
 //        val points = state.points.map { GeoPoint.from(it).toPoint() }
@@ -94,6 +94,4 @@ class MapboxPolygonOverlayRenderer(
         // For now, we'll implement a simple workaround
         return polygonManager.allEntities()
     }
-
-
 }

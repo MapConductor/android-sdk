@@ -1,26 +1,14 @@
 package com.mapconductor.mapbox.polyline
 
-import com.google.gson.JsonObject
-import com.mapbox.geojson.Feature
-import com.mapbox.geojson.LineString
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
-import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.createLinearInterpolatePoints
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.features.normalize
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineController
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineManager
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.core.splitByMeridian
 import com.mapconductor.mapbox.MapboxActualPolyline
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.createMapboxLines
-import com.mapconductor.mapbox.toMapboxColorString
-import com.mapconductor.mapbox.toPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

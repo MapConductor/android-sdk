@@ -8,16 +8,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.example.toast.ToastMessage
 import android.os.Bundle
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +35,6 @@ interface PolygonMapPageViewModel {
 class PolygonMapPageViewModelImpl :
     ViewModel(),
     PolygonMapPageViewModel {
-
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
@@ -57,12 +52,12 @@ class PolygonMapPageViewModelImpl :
             GeoPoint(41.79576, 140.75475),
             GeoPoint(41.796150000000004, 140.75364000000002),
             GeoPoint(41.79744, 140.75454000000002),
-            GeoPoint(41.79909000000001, 140.75465)
+            GeoPoint(41.79909000000001, 140.75465),
         )
 
     override val initCameraPosition =
         MapCameraPosition(
-            position = GeoPoint(41.796855,140.756910),
+            position = GeoPoint(41.796855, 140.756910),
             zoom = 16.0,
         )
 
@@ -73,16 +68,18 @@ class PolygonMapPageViewModelImpl :
         polygonVertices.mapIndexed { index, point ->
             MarkerState(
                 position = point,
-                icon = DefaultIcon(
-                    scale = 0.7f,
-                    fillColor = Color.Yellow,
-                    strokeColor = Color.Black,
-                ),
+                icon =
+                    DefaultIcon(
+                        scale = 0.7f,
+                        fillColor = Color.Yellow,
+                        strokeColor = Color.Black,
+                    ),
                 id = "vertex_$index",
                 draggable = true,
-                extra = Bundle().apply {
-                    putInt("index", index)
-                }
+                extra =
+                    Bundle().apply {
+                        putInt("index", index)
+                    },
             )
         }
 

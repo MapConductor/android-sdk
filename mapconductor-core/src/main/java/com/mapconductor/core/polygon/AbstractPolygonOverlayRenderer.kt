@@ -1,8 +1,6 @@
 package com.mapconductor.core.polygon
 
 import com.mapconductor.core.map.MapViewHolder
-import com.mapconductor.core.polyline.PolylineState
-import android.icu.util.Currency
 import kotlinx.coroutines.CoroutineScope
 
 abstract class AbstractPolygonOverlayRenderer<ActualPolygon> : PolygonOverlayRenderer<ActualPolygon> {
@@ -21,7 +19,7 @@ abstract class AbstractPolygonOverlayRenderer<ActualPolygon> : PolygonOverlayRen
         polygon: ActualPolygon,
         current: PolygonEntity<ActualPolygon>,
         prev: PolygonEntity<ActualPolygon>,
-    ) : ActualPolygon?
+    ): ActualPolygon?
 
     override suspend fun onAdd(data: List<PolygonOverlayRenderer.AddParams>): List<ActualPolygon?> =
         data.map { params -> createPolygon(params.state) }

@@ -3,7 +3,6 @@ package com.mapconductor.googlemaps.polygon
 import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonController
@@ -11,14 +10,10 @@ import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.PolylineController
 import com.mapconductor.googlemaps.GoogleMapActualPolygon
 import com.mapconductor.googlemaps.GoogleMapViewHolder
-import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import com.mapconductor.googlemaps.toLatLng
-import kotlin.coroutines.coroutineContext
 import android.util.Log
-import kotlinx.coroutines.AbstractCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,7 +52,7 @@ class GoogleMapPolygonOverlayRenderer(
     override suspend fun updatePolygonProperties(
         polygon: GoogleMapActualPolygon,
         current: PolygonEntity<GoogleMapActualPolygon>,
-        prev: PolygonEntity<GoogleMapActualPolygon>
+        prev: PolygonEntity<GoogleMapActualPolygon>,
     ): GoogleMapActualPolygon? =
         withContext(coroutine.coroutineContext) {
             val polygon = current.polygon

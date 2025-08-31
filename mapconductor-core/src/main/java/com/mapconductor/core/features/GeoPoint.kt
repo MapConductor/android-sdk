@@ -1,7 +1,6 @@
 package com.mapconductor.core.features
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.toFixed
@@ -17,7 +16,7 @@ data class GeoPoint(
     override val latitude: Double,
     override val longitude: Double,
     override val altitude: Double = 0.0,
-): IGeoPoint {
+) : IGeoPoint {
     fun toUrlValue(precision: Int = 6): String = "${latitude.toFixed(precision)},${longitude.toFixed(precision)}"
 
     override fun equals(other: Any?): Boolean {
@@ -65,11 +64,11 @@ data class GeoPoint(
             }
     }
 }
-//class GeoPoint(
+// class GeoPoint(
 //    latitude: Double,
 //    longitude: Double,
 //    altitude: Double = 0.0,
-//) : IGeoPoint {
+// ) : IGeoPoint {
 //    override var latitude by mutableStateOf(latitude)
 //    override var longitude by mutableStateOf(longitude)
 //    override var altitude by mutableStateOf(altitude)
@@ -126,7 +125,7 @@ data class GeoPoint(
 //            altitude = position.altitude ?: 0.0,
 //        )
 //    }
-//}
+// }
 
 /**
  * Extension function to create a normalized GeoPoint with clamped/normalized coordinates

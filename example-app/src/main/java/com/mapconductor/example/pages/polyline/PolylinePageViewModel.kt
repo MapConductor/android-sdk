@@ -1,8 +1,6 @@
 package com.mapconductor.example.pages.polyline
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -79,20 +77,22 @@ class PolylinePageViewModelImpl :
                         label = label,
                     ),
                 draggable = true,
-                extra = Bundle().apply {
-                    putInt("index", index)
-                }
+                extra =
+                    Bundle().apply {
+                        putInt("index", index)
+                    },
             )
         }
 
     override val polylineState: PolylineState
-        get() = PolylineState(
-            id = "example_polyline",
-            points = polylinePoints,
-            strokeColor = Color.Red,
-            strokeWidth = 4.dp,
-            geodesic = true,
-        )
+        get() =
+            PolylineState(
+                id = "example_polyline",
+                points = polylinePoints,
+                strokeColor = Color.Red,
+                strokeWidth = 4.dp,
+                geodesic = true,
+            )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()

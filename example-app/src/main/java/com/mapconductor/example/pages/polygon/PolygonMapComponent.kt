@@ -6,7 +6,6 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer

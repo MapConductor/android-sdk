@@ -2,7 +2,6 @@ package com.mapconductor.core.polyline
 
 import com.mapconductor.core.features.IGeoPoint
 
-
 interface PolylineManager<ActualPolyline> {
     fun registerEntity(entity: PolylineEntity<ActualPolyline>)
 

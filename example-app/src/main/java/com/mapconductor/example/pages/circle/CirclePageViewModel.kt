@@ -123,14 +123,15 @@ class CirclePageViewModelImpl :
     }
 
     override val circleState: CircleState
-        get() = CircleState(
-            id = "circle",
-            center = circleCenter,
-            radiusMeters = radiusMeters, // Initial radius
-            strokeColor = Color.Blue.copy(alpha = 0.5f),
-            strokeWidth = strokeWidth.dp,
-            fillColor = this.colors[0].copy(alpha = fillOpacity),
-        )
+        get() =
+            CircleState(
+                id = "circle",
+                center = circleCenter,
+                radiusMeters = radiusMeters, // Initial radius
+                strokeColor = Color.Blue.copy(alpha = 0.5f),
+                strokeWidth = strokeWidth.dp,
+                fillColor = this.colors[0].copy(alpha = fillOpacity),
+            )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
