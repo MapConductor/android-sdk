@@ -73,9 +73,9 @@ class StoreMapPageViewModelImpl :
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
-//        mapViewState.value?.cameraPosition?.value?.let {
-//            state.moveCameraTo(it)
-//        }★★★あとでなおす
+        mapViewState.cameraPosition.value.let {
+            mapViewState.moveCameraTo(it)
+        }
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
     }

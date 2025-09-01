@@ -55,6 +55,7 @@ import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineRenderer
 import com.mapconductor.settings.Settings
 import android.animation.Animator
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

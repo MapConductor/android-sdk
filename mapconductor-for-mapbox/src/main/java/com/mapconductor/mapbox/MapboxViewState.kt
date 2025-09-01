@@ -14,6 +14,7 @@ import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.mapbox.MapboxMapDesign.Standard
 import java.util.UUID
 import android.os.Bundle
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

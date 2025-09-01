@@ -144,6 +144,7 @@ fun DemoMapPageScaffold(
                                 .size(32.dp)
                                 .padding(end = 10.dp),
                     )
+
                     IconSelectMenu(
                         modifier = Modifier.weight(0.7f),
                         itemList = menuItems,

@@ -19,6 +19,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -70,7 +71,16 @@ class ArcGISMapViewState(
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        // Do nothing here
+        if (this.isInitialized.value != InitState.Initialized) {
+            val currCameraPosition = this.cameraPosition.value
+            val newPosition =
+                currCameraPosition.copy(
+                    position = position,
+                )
+
+            onCameraChange(newPosition)
+            listener?.onComplete(true)
+        }
     }
 
     internal fun onCameraChange(cameraPosition: MapCameraPosition) {
