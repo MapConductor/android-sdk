@@ -80,15 +80,17 @@ abstract class AbstractDefaultIcon(
             return it
         }
 
-        // 適応的スケーリング情報を使用してアイコンを描画
-        val canvasSize = ResourceProvider.dpToPx(iconSize.value)
-        val bitmap = createBitmap(canvasSize.toInt(), canvasSize.toInt())
+        // Calculate canvas size with scale applied
+        val baseCanvasSize = ResourceProvider.dpToPx(iconSize.value)
+        val canvasSize = (baseCanvasSize * scale).toInt()
+
+        val bitmap = createBitmap(canvasSize, canvasSize)
         val canvas = Canvas(bitmap)
 
-        // マーカーの描画（適応的スケール適用）
+        // Draw marker (scale is already applied in canvasSize)
         drawMarker(canvas, canvasSize.toFloat(), scale)
 
-        // ラベルの描画
+        // Draw label
         drawLabel(
             canvas = canvas,
             canvasSize = canvasSize.toFloat(),
@@ -137,11 +139,33 @@ abstract class AbstractDefaultIcon(
         iconScale: Float,
     ): Path {
         val originalSize = Size(23.5f, 25.6f)
-        val markerScale = minOf(canvasSize / originalSize.width, canvasSize / originalSize.height) * iconScale
+
+        // Since canvasSize is already scaled (baseCanvasSize * scale),
+        // we don't need to apply iconScale again to the markerScale calculation
+        val scaledStrokeWidth = ResourceProvider
+            .dpToPx(strokeWidth.value * iconScale)
+            .toFloat()
+
+        // Reserve space for stroke on sides and top, but not bottom (point should touch edge)
+        val epsilon = 0.75f
+        val padding = (scaledStrokeWidth / 2f - epsilon).coerceAtLeast(0f)
+        val availableWidth = canvasSize - (padding * 2f)
+        val availableHeight = canvasSize - padding  // Only top padding, bottom point touches edge
+
+        // Calculate scale to fit marker within available space
+        // DO NOT multiply by iconScale here as canvasSize already includes it
+        val markerScale = minOf(
+            availableWidth / originalSize.width,
+            availableHeight / originalSize.height
+        )
+
         val scaledWidth = originalSize.width * markerScale
         val scaledHeight = originalSize.height * markerScale
+
+        // Center horizontally, align bottom point to canvas edge
+        // The path's bottom point should touch the canvas bottom, the stroke will extend beyond
         val offsetX = (canvasSize - scaledWidth) / 2f
-        val offsetY = canvasSize - scaledHeight + ResourceProvider.dpToPx(strokeWidth.value).toFloat()
+        val offsetY = (canvasSize - scaledHeight + (strokeWidth.value * markerScale)) / 2f
 
         return Path().apply {
             moveTo(12f * markerScale + offsetX, 0f * markerScale + offsetY)
@@ -216,24 +240,13 @@ abstract class AbstractDefaultIcon(
         Paint().apply {
             color = strokeColor.toArgb()
             style = Paint.Style.STROKE
-            strokeWidth = ResourceProvider.dpToPx(this@AbstractDefaultIcon.strokeWidth.value * iconScale).toFloat()
+            strokeWidth = ResourceProvider.dpToPx(
+                this@AbstractDefaultIcon.strokeWidth.value * iconScale
+            ).toFloat()
             isAntiAlias = true
+            strokeJoin = Paint.Join.ROUND   // 追加
+            strokeCap  = Paint.Cap.ROUND    // 追加（尖り部のにじみ軽減）
         }
-
-    /**
-     * デバッグ用の枠描画
-     */
-    private fun drawDebugFrame(canvas: Canvas) {
-        Paint()
-            .apply {
-                isAntiAlias = true
-                strokeWidth = 1f
-                color = Color.Black.toArgb()
-                style = Paint.Style.STROKE
-            }.also {
-                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
-            }
-    }
 
     /**
      * ラベルテキストの描画

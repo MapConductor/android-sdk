@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.IGeoPoint
+import java.io.Serializable
 import android.os.Parcelable
 
 @Composable
@@ -19,7 +20,7 @@ fun MapViewScope.Marker(
     clickable: Boolean = true,
     draggable: Boolean = false,
     icon: MarkerIcon? = null,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val state =
         MarkerState(

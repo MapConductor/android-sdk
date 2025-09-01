@@ -77,10 +77,7 @@ class PolylinePageViewModelImpl :
                         label = label,
                     ),
                 draggable = true,
-                extra =
-                    Bundle().apply {
-                        putInt("index", index)
-                    },
+                extra = index,
             )
         }
 

@@ -26,16 +26,12 @@ fun FlyToMapComponent(
         ) {
             // Render polylines connecting all markers
             polylines.forEach { polyline ->
-                key(polyline.id) {
-                    Polyline(polyline)
-                }
+                Polyline(polyline)
             }
 
             // Render markers for fly to destinations
             markers.forEach { marker ->
-                key(marker.id) {
-                    Marker(marker)
-                }
+                Marker(marker)
             }
         }
     }

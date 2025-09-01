@@ -76,10 +76,7 @@ class PolygonMapPageViewModelImpl :
                     ),
                 id = "vertex_$index",
                 draggable = true,
-                extra =
-                    Bundle().apply {
-                        putInt("index", index)
-                    },
+                extra = index,
             )
         }
 
@@ -99,7 +96,7 @@ class PolygonMapPageViewModelImpl :
     }
 
     override fun onMarkerDrag(dragged: MarkerState) {
-        (dragged.extra as? Bundle)?.getInt("index")?.let { index ->
+        (dragged.extra as? Int)?.let { index ->
             if (index >= 0 && index < polygonVertices.size) {
                 polygonVertices[index] = GeoPoint.from(dragged.position)
             }

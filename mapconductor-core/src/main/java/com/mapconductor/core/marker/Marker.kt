@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.IGeoPoint
 import java.io.ByteArrayOutputStream
+import java.io.Serializable
 import android.graphics.Bitmap
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class MarkerState(
     position: IGeoPoint,
     id: String? = null,
-    var extra: Parcelable? = null,
+    var extra: Serializable? = null,
     icon: MarkerIcon? = null,
     animation: MarkerAnimation? = null,
     clickable: Boolean = true,
@@ -78,7 +79,7 @@ class MarkerState(
     fun copy(
         id: String? = this.id,
         position: IGeoPoint = this.position,
-        extra: Parcelable? = this.extra,
+        extra: Serializable? = this.extra,
         icon: MarkerIcon? = this.icon,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,

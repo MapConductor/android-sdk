@@ -18,7 +18,7 @@ fun MarkerBasicPage(onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
         remember {
             MapCameraPosition(
-                position = GeoPoint(0.0, 0.0),
+                position = GeoPoint(0.014, 0.008),
                 zoom = 15.0,
             )
         }

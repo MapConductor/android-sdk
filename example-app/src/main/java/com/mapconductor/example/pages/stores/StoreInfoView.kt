@@ -27,7 +27,7 @@ import android.os.Bundle
 
 @Composable
 fun StoreInfoView(
-    info: Bundle,
+    info: StoreInfo,
     onClick: () -> Unit = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
@@ -36,10 +36,10 @@ fun StoreInfoView(
     Column(
         modifier = Modifier.wrapContentSize(),
     ) {
-        val name = info.getString("name", "Starbucks")
-        val address = info.getString("address", "address")
-        val instore = info.getBoolean("instore", false)
-        val driveThrough = info.getBoolean("drive_through", false)
+        val name = info.name
+        val address = info.address
+        val instore = info.instore
+        val driveThrough = info.driveThrough
         Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
         Text(address, fontSize = 13.sp)
 
