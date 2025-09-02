@@ -36,7 +36,7 @@ class PolylineState(
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
-    var points by StateFlowDelegate<List<IGeoPoint>>(points)
+    var points by mutableStateOf<List<IGeoPoint>>(points)
     var extra by mutableStateOf(extra)
 
     private fun polylineId(hashCodes: List<Int>): Int =
