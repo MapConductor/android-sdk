@@ -121,6 +121,7 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
                 bearing = position.bearing,
                 tilt = position.tilt,
                 paddings = position.paddings,
+                visibleRegion = position.visibleRegion,
             )
         }
     }
@@ -160,4 +161,5 @@ fun Camera.toMapCameraPosition() =
         bearing = (360 - this.heading) % 360,
         tilt = this.pitch,
         paddings = MapPaddingsImpl.Zeros,
+        visibleRegion = null,
     )

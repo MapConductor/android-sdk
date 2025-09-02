@@ -6,10 +6,10 @@ import com.mapconductor.core.features.IGeoPoint
 data class VisibleRegion(
     val northEast: IGeoPoint,
     val southWest: IGeoPoint,
-    val nearLeft: IGeoPoint,
-    val nearRight: IGeoPoint,
-    val farLeft: IGeoPoint,
-    val farRight: IGeoPoint,
+    val nearLeft: IGeoPoint?,
+    val nearRight: IGeoPoint?,
+    val farLeft: IGeoPoint?,
+    val farRight: IGeoPoint?,
 )
 
 interface IMapCameraPosition {

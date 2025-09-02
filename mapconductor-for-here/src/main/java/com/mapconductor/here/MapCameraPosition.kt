@@ -37,6 +37,7 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
                 bearing = position.bearing,
                 tilt = position.tilt,
                 paddings = position.paddings,
+                visibleRegion = position.visibleRegion,
             )
     }
 
@@ -46,4 +47,5 @@ fun MapCamera.State.toMapCameraPosition() =
         zoom = zoomLevel,
         bearing = this.orientationAtTarget.bearing,
         tilt = this.orientationAtTarget.tilt,
+        visibleRegion = null,
     )

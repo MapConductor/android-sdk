@@ -32,6 +32,7 @@ import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRendererFactory
 import com.mapconductor.core.marker.MarkerState
@@ -251,19 +252,31 @@ internal class MapboxMapViewController(
 
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
-    override fun run(cameraChanged: CameraChanged) {
-        cameraMoveCallback?.let {
-            val mapCameraPosition =
-                CameraState(
-                    cameraChanged.cameraState.center,
-                    cameraChanged.cameraState.padding,
-                    cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
-                    cameraChanged.cameraState.bearing,
-                    cameraChanged.cameraState.pitch,
-                ).toMapCameraPosition()
-
-            it(mapCameraPosition)
+    private fun cameraCallbackImpl(){
+        cameraMoveCallback?.let { callBack ->
+            val options = CameraOptions.Builder()
+                .center(holder.map.cameraState.center)
+                .zoom(holder.map.cameraState.zoom)
+                .bearing(holder.map.cameraState.bearing)
+                .pitch(holder.map.cameraState.pitch)
+                .build()
+            val camera = holder.map.cameraState.toMapCameraPosition()
+            val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
+            val visibleRegion = VisibleRegion(
+                southWest = currentBox.southwest.toGeoPoint(),
+                northEast = currentBox.northeast.toGeoPoint(),
+                nearLeft = null,
+                nearRight = null,
+                farLeft = null,
+                farRight = null,
+            )
+            val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+            coroutine.launch { callBack(mapCameraPosition) }
         }
+    }
+
+    override fun run(cameraChanged: CameraChanged) {
+        cameraCallbackImpl()
     }
 
     override fun changeMapDesign(
