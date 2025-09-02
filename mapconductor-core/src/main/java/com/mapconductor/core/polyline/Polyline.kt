@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +36,7 @@ class PolylineState(
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
-    var points by mutableStateOf<List<IGeoPoint>>(points)
+    var points by StateFlowDelegate<List<IGeoPoint>>(points)
     var extra by mutableStateOf(extra)
 
     private fun polylineId(hashCodes: List<Int>): Int =
@@ -104,4 +105,9 @@ data class PolylineFingerPrint(
     val extra: Int,
 )
 
-typealias OnPolylineEventHandler = (PolylineState) -> Unit
+data class PolylineEvent(
+    val state: PolylineEvent,
+    val clicked: IGeoPoint?,
+)
+
+typealias OnPolylineEventHandler = (PolylineEvent) -> Unit

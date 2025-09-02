@@ -13,7 +13,7 @@ abstract class PolylineController<ActualPolyline>(
         ActualPolyline,
         PolylineState,
         PolylineEntity<ActualPolyline>,
-        PolylineState,
+        PolylineEvent,
     > {
     override val zIndex: Int = 5
     val semaphore = Semaphore(1)
@@ -128,6 +128,7 @@ abstract class PolylineController<ActualPolyline>(
                     )
                 polylineManager.registerEntity(entity)
             }
+            renderer.onPostProcess()
         }
     }
 
@@ -135,6 +136,7 @@ abstract class PolylineController<ActualPolyline>(
         semaphore.withPermit {
             val entities: List<PolylineEntity<ActualPolyline>> = polylineManager.allEntities()
             renderer.onRemove(entities)
+            renderer.onPostProcess()
             polylineManager.clear()
         }
     }

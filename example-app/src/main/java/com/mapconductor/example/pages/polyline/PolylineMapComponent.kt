@@ -22,7 +22,9 @@ fun PolylineMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = it,
+            onMarkerDragStart = onMarkerDrag,
             onMarkerDrag = onMarkerDrag,
+            onMarkerDragEnd = onMarkerDrag,
         ) {
             // Polyline
             Polyline(polylineState)

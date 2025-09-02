@@ -40,7 +40,6 @@ class PolygonState(
     var fillColor by mutableStateOf(fillColor)
     var geodesic by mutableStateOf(geodesic)
     var points by StateFlowDelegate<List<IGeoPoint>>(points)
-
     var extra by mutableStateOf(extra)
 
     private fun polygonId(hashCodes: List<Int>): Int =
