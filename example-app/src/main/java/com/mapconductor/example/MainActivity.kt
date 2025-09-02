@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DemoAppScreen(
-                initPage = "marker-basic",
+                initPage = "polyline",
             )
         }
     }

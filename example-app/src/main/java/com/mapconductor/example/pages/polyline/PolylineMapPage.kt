@@ -10,6 +10,7 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 fun PolylineMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { PolylinePageViewModelImpl() }
     DemoMapPageScaffold(
+        initSelect = 1,
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,

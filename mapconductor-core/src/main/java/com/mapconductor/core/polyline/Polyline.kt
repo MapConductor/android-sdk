@@ -17,7 +17,7 @@ class PolylineState(
     points: List<IGeoPoint>,
     id: String? = null,
     strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 2.dp,
+    strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
     extra: Parcelable? = null,
 ) {

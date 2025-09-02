@@ -1,6 +1,7 @@
 package com.mapconductor.example.pages.map.flyto
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -112,91 +113,91 @@ class FlyToPageViewModelImpl(
             ),
         )
 
-    override val polylines
-        get() =
-            listOf(
-                // Honolulu to NewYork
-                PolylineState(
-                    id = "honolulu_to_newyork",
-                    points = listOf(honoluluLocation, newYorkLocation),
-                    strokeColor = Color.Green.copy(alpha = 0.7f),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
+    override val polylines = mutableStateListOf(
+        // Honolulu to NewYork
+        PolylineState(
+            id = "honolulu_to_newyork",
+            points = listOf(honoluluLocation, newYorkLocation),
+            strokeColor = Color.Green.copy(alpha = 0.7f),
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+        // Honolulu to Sydney
+        PolylineState(
+            id = "honolulu_to_sydney",
+            points = listOf(honoluluLocation, sydneyLocation),
+            strokeColor =
+                Color( // lime
+                    red = 0.7f,
+                    green = 0f,
+                    blue = 0f,
+                    alpha = 0.7f,
                 ),
-                // Honolulu to Sydney
-                PolylineState(
-                    id = "honolulu_to_sydney",
-                    points = listOf(honoluluLocation, sydneyLocation),
-                    strokeColor =
-                        Color( // lime
-                            red = 0.7f,
-                            green = 0f,
-                            blue = 0f,
-                            alpha = 0.7f,
-                        ),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+        // Tokyo to London
+        PolylineState(
+            id = "tokyo_to_london",
+            points = listOf(tokyoLocation, londonLocation),
+            strokeColor =
+                Color( // Fuchsia
+                    red = 1.0f,
+                    green = 0f,
+                    blue = 1.0f,
+                    alpha = 0.7f,
                 ),
-                // Tokyo to London
-                PolylineState(
-                    id = "tokyo_to_london",
-                    points = listOf(tokyoLocation, londonLocation),
-                    strokeColor =
-                        Color( // Fuchsia
-                            red = 1.0f,
-                            green = 0f,
-                            blue = 1.0f,
-                            alpha = 0.7f,
-                        ),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+        // Tokyo to NewYork
+        PolylineState(
+            id = "tokyo_to_newyork",
+            points = listOf(tokyoLocation, newYorkLocation),
+            strokeColor = Color.Blue.copy(alpha = 0.7f),
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+        // Tokyo to Honolulu
+        PolylineState(
+            id = "tokyo_to_honolulu",
+            points = listOf(tokyoLocation, honoluluLocation),
+            strokeColor =
+                Color( // Neon orange
+                    red = 1.0f,
+                    green = 0.35f,
+                    blue = 0.12f,
+                    alpha = 0.7f,
                 ),
-                // Tokyo to NewYork
-                PolylineState(
-                    id = "tokyo_to_newyork",
-                    points = listOf(tokyoLocation, newYorkLocation),
-                    strokeColor = Color.Blue.copy(alpha = 0.7f),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+        // London to New York
+        PolylineState(
+            id = "london_to_newyork",
+            points = listOf(londonLocation, newYorkLocation),
+            strokeColor =
+                Color( // maroon
+                    red = 0.75f,
+                    green = 0f,
+                    blue = 0f,
+                    alpha = 0.7f,
                 ),
-                // Tokyo to Honolulu
-                PolylineState(
-                    id = "tokyo_to_honolulu",
-                    points = listOf(tokyoLocation, honoluluLocation),
-                    strokeColor =
-                        Color( // Neon orange
-                            red = 1.0f,
-                            green = 0.35f,
-                            blue = 0.12f,
-                            alpha = 0.7f,
-                        ),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
-                ),
-                // London to New York
-                PolylineState(
-                    id = "london_to_newyork",
-                    points = listOf(londonLocation, newYorkLocation),
-                    strokeColor =
-                        Color( // maroon
-                            red = 0.75f,
-                            green = 0f,
-                            blue = 0f,
-                            alpha = 0.7f,
-                        ),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
-                ),
-                // London to Sydney
-                PolylineState(
-                    id = "london_to_sydney",
-                    points = listOf(londonLocation, sydneyLocation),
-                    strokeColor =
-                        Color.Magenta.copy(alpha = 0.7f),
-                    strokeWidth = 3.dp,
-                    geodesic = geodesic,
-                ),
-            )
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+        // London to Sydney
+        PolylineState(
+            id = "london_to_sydney",
+            points = listOf(londonLocation, sydneyLocation),
+            strokeColor =
+                Color.Magenta.copy(alpha = 0.7f),
+            strokeWidth = 3.dp,
+            geodesic = geodesic,
+        ),
+    )
+//    override val polylines: List<PolylineState>
+//        get() = _polylines.toList()
 
     override fun onMapViewChanged(state: MapViewState<*>) {
         _mapViewState.value = state
