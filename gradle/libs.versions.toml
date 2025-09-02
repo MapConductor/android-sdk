@@ -22,7 +22,7 @@ compose = "1.8.1"
 composeBom = "2025.05.00"
 runner = "1.6.2"
 
-mapboxAndroid = "11.13.1"
+mapboxAndroid = "11.14.3"
 playServicesMaps = "19.2.0"
 
 secretsGradlePlugin = "2.0.1"
@@ -61,7 +61,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
 
 # Mapbox
-mapbox-android = { module = "com.mapbox.maps:android", version.ref = "mapboxAndroid" }
+mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
 
 # Google Maps
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
