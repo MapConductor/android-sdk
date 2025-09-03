@@ -1,5 +1,6 @@
 package com.mapconductor.here
 
+import HerePolygonOverlayRenderer
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
@@ -10,10 +11,11 @@ import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.here.circle.HereCircleController
+import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.marker.HereMarkerRenderer
 import com.mapconductor.here.polygon.HerePolygonController
-import com.mapconductor.here.polygon.HerePolygonOverlayRenderer
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import android.content.Context
@@ -93,6 +95,7 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
                 markerController = getMarkerController(holder),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
+                circleController = getHereCircleController(holder),
             )
         this.set(id, controller)
         return controller
@@ -127,6 +130,19 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         val controller =
             HereMarkerController(
                 markerManager = manager,
+                renderer = renderer,
+            )
+        return controller
+    }
+
+    private fun getHereCircleController(holder: HereViewHolder): HereCircleController {
+        val renderer =
+            HereCircleOverlayRenderer(
+                holder = holder,
+            )
+
+        val controller =
+            HereCircleController(
                 renderer = renderer,
             )
         return controller

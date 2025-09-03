@@ -3,11 +3,13 @@ package com.mapconductor.arcgis
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
+import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
+import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
-import com.mapconductor.arcgis.polygon.ArcGISPolygonController
+import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
-import com.mapconductor.arcgis.polyline.ArcGISPolylineController
+import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
@@ -42,12 +44,32 @@ object ArcGISViewControllerStore :
                 markerController = getMarkerController(holder),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
+                circleController = getCircleController(holder),
             )
         this.set(id, controller)
         return controller
     }
 
-    private fun getPolylineController(holder: ArcGISMapViewHolder): ArcGISPolylineController {
+    private fun getCircleController(holder: ArcGISMapViewHolder): ArcGISCircleOverlayController {
+        val circleLayer: GraphicsOverlay =
+            GraphicsOverlay().apply {
+                sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
+            }
+
+        val renderer =
+            ArcGISCircleOverlayRenderer(
+                circleLayer = circleLayer,
+                holder = holder,
+            )
+
+        val controller =
+            ArcGISCircleOverlayController(
+                renderer = renderer,
+            )
+        return controller
+    }
+
+    private fun getPolylineController(holder: ArcGISMapViewHolder): ArcGISPolylineOverlayController {
         val polylineLayer: GraphicsOverlay =
             GraphicsOverlay().apply {
                 sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
@@ -60,13 +82,13 @@ object ArcGISViewControllerStore :
             )
 
         val controller =
-            ArcGISPolylineController(
+            ArcGISPolylineOverlayController(
                 renderer = renderer,
             )
         return controller
     }
 
-    private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonController {
+    private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOverlayController {
         val polygonLayer: GraphicsOverlay =
             GraphicsOverlay().apply {
                 sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
@@ -79,7 +101,7 @@ object ArcGISViewControllerStore :
             )
 
         val controller =
-            ArcGISPolygonController(
+            ArcGISPolygonOverlayController(
                 renderer = renderer,
             )
         return controller

@@ -21,10 +21,10 @@ import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
-import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleOverlayManager
-import com.mapconductor.core.circle.CircleRendererFactory
+import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapCameraPosition
@@ -39,9 +39,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.mapbox.circle.DefaultMapboxCircleRenderer
-import com.mapconductor.mapbox.circle.MapboxCircleLayer
-import com.mapconductor.mapbox.circle.MapboxCircleRenderer
+import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
@@ -51,12 +49,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface MapboxMapViewController :
-    MapViewController<
-        MapboxActualCircle,
-    >,
+    MapViewController,
     MarkerCapable<MapboxActualMarker>,
     PolylineCapable,
-    PolygonCapable {
+    PolygonCapable,
+    CircleCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -74,17 +71,9 @@ internal class MapboxMapViewControllerImpl(
     private val markerController: MapboxMarkerController,
     private val polylineController: MapboxPolylineController,
     private val polygonController: MapboxPolygonConductor,
+    private val circleController: MapboxCircleController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-    private val circleLayer: MapboxCircleLayer =
-        MapboxCircleLayer(
-            sourceId = "circle-source",
-            layerId = "circle-layer",
-        ),
-    private val circleRendererFactory: CircleRendererFactory<MapboxActualCircle> =
-        DefaultMapboxCircleRenderer(),
-) : BaseMapViewController<
-        MapboxActualCircle,
-    >(),
+) : BaseMapViewController(),
     MapboxMapViewController,
     CameraChangedCallback,
     OnMapClickListener,
@@ -94,29 +83,11 @@ internal class MapboxMapViewControllerImpl(
         private const val ZOOM_ADJUST_VALUE = 1.0
     }
 
-    override fun createCircleOverlayManager(): CircleOverlayManager<MapboxActualCircle> =
-        circleRendererFactory.create(
-            onAdd = circleRenderer::addCircles,
-            onChange = circleRenderer::changeCircle,
-            onRemove = circleRenderer::removeCircles,
-            onPostProcess = circleRenderer::redraw,
-        )
-
-    override val circleRenderer: MapboxCircleRenderer =
-        MapboxCircleRenderer(
-            holder = holder,
-            coroutine = coroutine,
-            layer = circleLayer,
-        )
-
-    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<MapboxActualCircle>) {
-    }
-
     init {
         holder.map.getStyle { style ->
             // Circle
-            style.addSource(circleLayer.source)
-            style.addLayer(circleLayer.layer)
+            style.addSource(circleController.renderer.layer.source)
+            style.addLayer(circleController.renderer.layer.layer)
 
             // Polygon
             style.addSource(polygonController.polygonOverlay.layer.source)
@@ -137,7 +108,7 @@ internal class MapboxMapViewControllerImpl(
         setupListeners()
     }
 
-    override fun setupListeners() {
+    fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
@@ -167,9 +138,13 @@ internal class MapboxMapViewControllerImpl(
 
     override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
 
-    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
+    override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
 
-    override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
+    override suspend fun updateCircle(state: CircleState) = circleController.update(state)
+
+    override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
+        this.circleController.clickListener = listener
+    }
 
     override fun run(cameraChanged: CameraChanged) {
         cameraMoveCallback?.let {
@@ -277,14 +252,13 @@ internal class MapboxMapViewControllerImpl(
             return true
         }
 
-        val circleEntity = this.circleOverlayManager.find(touchPosition)
-        circleEntity?.let {
+        circleController.find(touchPosition)?.let { entity ->
             val event =
-                CircleClickEvent(
-                    state = circleEntity.state,
-                    position = touchPosition,
+                CircleEvent(
+                    state = entity.state,
+                    clicked = touchPosition,
                 )
-            circleClickCallback?.invoke(event)
+            circleController.clickListener?.invoke(event)
             return true
         }
 
@@ -294,21 +268,13 @@ internal class MapboxMapViewControllerImpl(
                     state = polygonEntity.state,
                     clicked = touchPosition,
                 )
-            polygonClickCallback?.invoke(event)
+            polygonController.clickListener?.invoke(event)
             return true
         }
 
         mapClickCallback?.invoke(touchPosition)
         return true
     }
-
-//    override fun drawPolyline(geoPoints: List<IGeoPoint>) {
-//        val points =
-//            geoPoints.map {
-//                GeoPoint.from(it).toPoint()
-//            }
-//        lineSource.geometry(LineString.fromLngLats(points))
-//    }
 
     override fun onMove(detector: MoveGestureDetector): Boolean {
         markerController.renderer.dragLayer.selected?.let { entity ->
@@ -378,6 +344,6 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
-        this.polygonClickCallback = listener
+        polygonController.clickListener = listener
     }
 }

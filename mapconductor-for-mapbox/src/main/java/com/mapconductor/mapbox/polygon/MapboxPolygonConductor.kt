@@ -15,7 +15,6 @@ class MapboxPolygonConductor(
     val polylineOverlay: MapboxPolylineOverlayRenderer,
 ) : OverlayController<
         PolygonState,
-        PolygonState,
         PolygonEntity<PolygonState>,
         PolygonEvent,
     > {

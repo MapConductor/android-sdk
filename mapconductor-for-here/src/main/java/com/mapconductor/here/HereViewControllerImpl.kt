@@ -11,14 +11,13 @@ import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
 import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
-import com.here.sdk.mapview.MapPolygon
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.circle.CircleClickEvent
-import com.mapconductor.core.circle.CircleOverlayManager
-import com.mapconductor.core.circle.CircleRendererFactory
+import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
@@ -35,8 +34,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.here.circle.DefaultHereMapCircleRenderer
-import com.mapconductor.here.circle.HereMapCircleRenderer
+import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
@@ -45,10 +43,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface HereMapViewController :
-    MapViewController<HereActualCircle>,
+    MapViewController,
     MarkerCapable<HereActualMarker>,
     PolygonCapable,
-    PolylineCapable {
+    PolylineCapable,
+    CircleCapable {
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MoveCameraCallback? = null,
@@ -65,10 +64,11 @@ class HereMapViewControllerImpl(
     private val markerController: HereMarkerController,
     private val polylineController: HerePolylineController,
     private val polygonController: HerePolygonController,
+    private val circleController: HereCircleController,
     override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
-    private val circleRendererFactory: CircleRendererFactory<HereActualCircle> = DefaultHereMapCircleRenderer(),
-) : BaseMapViewController<HereActualCircle>(),
+) : BaseMapViewController(),
+    CircleCapable,
     HereMapViewController,
     MapCameraListener,
     TapListener,
@@ -77,27 +77,11 @@ class HereMapViewControllerImpl(
         private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
 
-    override val circleRenderer =
-        HereMapCircleRenderer(
-            holder = holder,
-            coroutine = coroutine,
-        )
-
-    override fun onCircleOverlayManagerInitialized(overlayManager: CircleOverlayManager<HereActualCircle>) {
-    }
-
-    override fun createCircleOverlayManager(): CircleOverlayManager<MapPolygon> =
-        circleRendererFactory.create(
-            onAdd = circleRenderer::addCircles,
-            onChange = circleRenderer::changeCircle,
-            onRemove = circleRenderer::removeCircles,
-        )
-
     override suspend fun clearOverlays() {
         markerController.clear()
         polylineController.clear()
         polygonController.clear()
-        circleOverlayManager.clearOverlays()
+        circleController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
@@ -128,9 +112,13 @@ class HereMapViewControllerImpl(
         markerController.clickListener = listener
     }
 
-    override suspend fun addCircles(data: List<CircleState>) = circleOverlayManager.addCircles(data)
+    override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
 
-    override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
+    override suspend fun updateCircle(state: CircleState) = circleController.update(state)
+
+    override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
+        this.circleController.clickListener = listener
+    }
 
     override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
 
@@ -142,10 +130,9 @@ class HereMapViewControllerImpl(
 
     init {
         setupListeners()
-        circleRenderer.init(circleOverlayManager)
     }
 
-    override fun setupListeners() {
+    fun setupListeners() {
         holder.mapView.camera.removeListener(this)
         holder.mapView.camera.addListener(this)
         holder.mapView.gestures.tapListener = this
@@ -222,13 +209,13 @@ class HereMapViewControllerImpl(
             return
         }
 
-        circleOverlayManager.find(touchPosition)?.let { entity ->
+        circleController.find(touchPosition)?.let { entity ->
             val event =
-                CircleClickEvent(
+                CircleEvent(
                     state = entity.state,
-                    position = touchPosition,
+                    clicked = touchPosition,
                 )
-            circleClickCallback?.invoke(event)
+            circleController.clickListener?.invoke(event)
             return
         }
 

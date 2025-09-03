@@ -13,7 +13,6 @@ import com.mapconductor.core.features.IGeoPoint
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import android.graphics.Bitmap
-import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 

@@ -22,21 +22,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
-import com.mapconductor.core.LocalCircleCollector
-import com.mapconductor.core.LocalGroundImageCollector
-import com.mapconductor.core.LocalMarkerCollector
-import com.mapconductor.core.LocalPolygonCollector
-import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.LocalCircleCollector
 import com.mapconductor.core.controller.MapViewControllerAlias
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.GroundImageCapable
+import com.mapconductor.core.groundimage.LocalGroundImageCollector
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCapable
+import com.mapconductor.core.polygon.LocalPolygonCollector
 import com.mapconductor.core.polygon.PolygonCapable
+import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
 import android.view.View
@@ -129,7 +130,7 @@ fun <
         circles.value.forEach { circleState ->
             LaunchedEffect(circleState.id) {
                 circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updateCircle(circleState)
+                    (controller as? CircleCapable)?.updateCircle(circleState)
                 }
             }
         }

@@ -5,10 +5,7 @@ import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonManager
-import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.googlemaps.GoogleMapActualPolygon
 import com.mapconductor.googlemaps.GoogleMapViewHolder
@@ -18,11 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-class GoogleMapPolygonController(
-    polygonManager: PolygonManager<GoogleMapActualPolygon> = PolygonManagerImpl(),
-    renderer: GoogleMapPolygonOverlayRenderer,
-) : PolygonController<GoogleMapActualPolygon>(polygonManager, renderer)
 
 class GoogleMapPolygonOverlayRenderer(
     override val holder: GoogleMapViewHolder,

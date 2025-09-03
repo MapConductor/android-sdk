@@ -10,7 +10,6 @@ abstract class PolylineController<ActualPolyline>(
     open val renderer: PolylineOverlayRenderer<ActualPolyline>,
     override var clickListener: OnPolylineEventHandler? = null,
 ) : OverlayController<
-        ActualPolyline,
         PolylineState,
         PolylineEntity<ActualPolyline>,
         PolylineEvent,

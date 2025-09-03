@@ -3,15 +3,6 @@ package com.mapconductor.core.circle
 import com.mapconductor.core.map.MapViewHolder
 import kotlinx.coroutines.CoroutineScope
 
-interface CircleRendererFactory<ActualCircle> {
-    fun create(
-        onAdd: suspend (List<CircleState>) -> List<ActualCircle?>,
-        onChange: suspend (List<CircleRenderer.UpdateParams<ActualCircle>>) -> List<ActualCircle?>,
-        onRemove: suspend (List<CircleEntity<ActualCircle>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)? = null,
-    ): CircleOverlayManager<ActualCircle>
-}
-
 interface CircleRenderer<ActualCircle> {
     interface UpdateParams<ActualCircle> {
         val entity: CircleEntity<ActualCircle>

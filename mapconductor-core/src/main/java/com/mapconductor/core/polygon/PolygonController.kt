@@ -10,7 +10,6 @@ abstract class PolygonController<ActualPolygon>(
     open val renderer: PolygonOverlayRenderer<ActualPolygon>,
     override var clickListener: OnPolygonEventHandler? = null,
 ) : OverlayController<
-        ActualPolygon,
         PolygonState,
         PolygonEntity<ActualPolygon>,
         PolygonEvent,

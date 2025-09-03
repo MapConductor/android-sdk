@@ -7,7 +7,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.IGeoPoint
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
@@ -106,8 +105,8 @@ data class PolylineFingerPrint(
 )
 
 data class PolylineEvent(
-    val state: PolylineEvent,
-    val clicked: IGeoPoint?,
+    val state: PolylineState,
+    val clicked: IGeoPoint,
 )
 
 typealias OnPolylineEventHandler = (PolylineEvent) -> Unit

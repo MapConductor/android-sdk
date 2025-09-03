@@ -5,7 +5,6 @@ import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.IGeoPoint
 import java.io.Serializable
-import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {

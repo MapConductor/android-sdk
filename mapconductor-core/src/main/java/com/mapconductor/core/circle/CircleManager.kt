@@ -5,17 +5,31 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 
-class CircleManager<ActualCircle> {
+interface CircleManager<ActualCircle> {
+    fun registerEntity(entity: CircleEntity<ActualCircle>)
+
+    fun removeEntity(id: String): CircleEntity<ActualCircle>?
+
+    fun getEntity(id: String): CircleEntity<ActualCircle>?
+
+    fun allEntities(): List<CircleEntity<ActualCircle>>
+
+    fun clear()
+
+    fun find(position: IGeoPoint): CircleEntity<ActualCircle>?
+}
+
+class CircleManagerImpl<ActualCircle> : CircleManager<ActualCircle> {
     private val entities: ConcurrentHashMap<String, CircleEntity<ActualCircle>> = ConcurrentHashMap()
 
-    fun getEntity(id: String): CircleEntity<ActualCircle>? = entities.get(id)
+    override fun getEntity(id: String): CircleEntity<ActualCircle>? = entities.get(id)
 
-    fun removeEntity(id: String): CircleEntity<ActualCircle>? {
+    override fun removeEntity(id: String): CircleEntity<ActualCircle>? {
         val removed = entities.remove(id)
         return removed
     }
 
-    fun registerEntity(entity: CircleEntity<ActualCircle>) {
+    override fun registerEntity(entity: CircleEntity<ActualCircle>) {
         entities[entity.state.id] = entity
     }
 
@@ -23,13 +37,13 @@ class CircleManager<ActualCircle> {
         entities[entity.state.id] = entity
     }
 
-    fun allEntities(): List<CircleEntity<ActualCircle>> = entities.values.toList()
+    override fun allEntities(): List<CircleEntity<ActualCircle>> = entities.values.toList()
 
-    fun clear() {
+    override fun clear() {
         entities.clear()
     }
 
-    fun find(position: IGeoPoint): CircleEntity<ActualCircle>? {
+    override fun find(position: IGeoPoint): CircleEntity<ActualCircle>? {
         val filtered =
             allEntities().filter { entity ->
                 val centerPos = entity.state.center
@@ -53,36 +67,4 @@ class CircleManager<ActualCircle> {
         }
         return maxEntity
     }
-
-//    private fun isPolygonContains(path: MutableList<LatLng?>, point: LatLng?): Boolean {
-//        var wn = 0
-//        val visibleRegion: VisibleRegion = projection.getVisibleRegion()
-//        val bounds: LatLngBounds = visibleRegion.latLngBounds
-//        val sw: Point = projection.toScreenLocation(bounds.southwest)
-//
-//        val touchPoint: Point = projection.toScreenLocation(point)
-//        touchPoint.y = sw.y - touchPoint.y
-//        var vt: Double
-//
-//        for (i in 0..<path.size - 1) {
-//            val a: Point = projection.toScreenLocation(path.get(i))
-//            a.y = sw.y - a.y
-//            val b: Point = projection.toScreenLocation(path.get(i + 1))
-//            b.y = sw.y - b.y
-//
-//            if ((a.y <= touchPoint.y) && (b.y > touchPoint.y)) {
-//                vt = (touchPoint.y.toDouble() - a.y.toDouble()) / (b.y.toDouble() - a.y.toDouble())
-//                if (touchPoint.x < (a.x.toDouble() + (vt * (b.x.toDouble() - a.x.toDouble())))) {
-//                    wn++
-//                }
-//            } else if ((a.y > touchPoint.y) && (b.y <= touchPoint.y)) {
-//                vt = (touchPoint.y.toDouble() - a.y.toDouble()) / (b.y.toDouble() - a.y.toDouble())
-//                if (touchPoint.x < (a.x.toDouble() + (vt * (b.x.toDouble() - a.x.toDouble())))) {
-//                    wn--
-//                }
-//            }
-//        }
-//
-//        return (wn != 0)
-//    }
 }

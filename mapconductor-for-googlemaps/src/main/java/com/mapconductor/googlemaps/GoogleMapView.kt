@@ -87,7 +87,7 @@ fun GoogleMapsView(
             controller.setOnMarkerDragStart(onMarkerDragStart)
             controller.setOnMarkerDrag(onMarkerDrag)
             controller.setOnMarkerDragEnd(onMarkerDragEnd)
-            controller.setCircleClickListener(onCircleClick)
+            controller.setOnCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
             controller.setOnPolygonClickListener(onPolygonClick)
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)

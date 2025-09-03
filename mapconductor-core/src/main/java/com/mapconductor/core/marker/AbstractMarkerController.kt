@@ -53,7 +53,6 @@ abstract class AbstractMarkerController<ActualMarker>(
     open val renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
 ) : OverlayController<
-        ActualMarker,
         MarkerState,
         MarkerEntity<ActualMarker>,
         MarkerState,

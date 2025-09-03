@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
+import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewBase
@@ -17,8 +18,11 @@ import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.mapbox.circle.MapboxCircleController
+import com.mapconductor.mapbox.circle.MapboxCircleLayer
+import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
-import com.mapconductor.mapbox.marker.MapboxMarkerRenderer
+import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
@@ -82,13 +86,14 @@ fun MapboxMapView(
                     markerController = getMarkerController(holder),
                     polylineController = getPolylineController(holder),
                     polygonController = getPolygonController(holder),
+                    circleController = getCircleController(holder),
                 )
             (state as? MapboxViewStateImpl)?.let { mapViewState ->
                 mapViewState.controller = controller
                 controller.setCameraMoveListener(mapViewState::onCameraChange)
             }
             controller.setMapClickListener(onMapClick)
-            controller.setCircleClickListener(onCircleClick)
+            controller.setOnCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
             controller.setOnPolygonClickListener(onPolygonClick)
             controller.setOnMarkerClickListener(onMarkerClick)
@@ -144,6 +149,28 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
     return conductor
 }
 
+internal fun getCircleController(holder: MapboxMapViewHolder): MapboxCircleController {
+    val circleLayer: MapboxCircleLayer =
+        MapboxCircleLayer(
+            sourceId = "circle-source",
+            layerId = "circle-layer",
+        )
+    val circleManager = CircleManagerImpl<MapboxActualCircle>()
+
+    val renderer =
+        MapboxCircleOverlayRenderer(
+            layer = circleLayer,
+            circleManager = circleManager,
+            holder = holder,
+        )
+
+    val controller =
+        MapboxCircleController(
+            renderer = renderer,
+        )
+    return controller
+}
+
 internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineController {
     val polylineLayer: MapboxPolylineLayer =
         MapboxPolylineLayer(
@@ -175,7 +202,7 @@ internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerContr
     val manager = MarkerManager<MapboxActualMarker>(hexGeocell)
 
     val renderer =
-        MapboxMarkerRenderer(
+        MapboxMarkerOverlayRenderer(
             holder = holder,
             markerManager = manager,
         )

@@ -8,7 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.circle.CircleClickEvent
+import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
@@ -41,7 +41,7 @@ interface CirclePageViewModel {
 
     fun onMapClick(clicked: GeoPoint)
 
-    fun onCircleClick(event: CircleClickEvent)
+    fun onCircleClick(event: CircleEvent)
 
     fun onMarkerMove(dragged: MarkerState)
 
@@ -148,7 +148,7 @@ class CirclePageViewModelImpl :
         showToast("Map clicked at: ${clicked.toUrlValue()}")
     }
 
-    override fun onCircleClick(event: CircleClickEvent) {
+    override fun onCircleClick(event: CircleEvent) {
         this.tapIdx = (this.tapIdx + 1) % this.colors.size
         event.state.fillColor = this.colors[this.tapIdx].copy(alpha = fillOpacity)
         showToast("Circle clicked - Radius: ${radiusMeters.toInt()}m")

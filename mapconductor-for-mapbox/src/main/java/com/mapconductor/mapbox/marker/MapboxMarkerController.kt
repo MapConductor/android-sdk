@@ -10,7 +10,7 @@ import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.settings.Settings
 
 class MapboxMarkerController(
-    override val renderer: MapboxMarkerRenderer,
+    override val renderer: MapboxMarkerOverlayRenderer,
 ) : AbstractMarkerController<MapboxActualMarker>(
         markerManager = renderer.markerManager,
         renderer = renderer,

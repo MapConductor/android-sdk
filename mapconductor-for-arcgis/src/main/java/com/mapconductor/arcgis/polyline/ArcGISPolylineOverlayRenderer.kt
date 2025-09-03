@@ -13,21 +13,14 @@ import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
-import com.mapconductor.core.polyline.PolylineController
 import com.mapconductor.core.polyline.PolylineEntity
-import com.mapconductor.core.polyline.PolylineManager
-import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.Spherical
+import kotlin.collections.set
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-class ArcGISPolylineController(
-    polylineManager: PolylineManager<ArcGISActualPolyline> = PolylineManagerImpl(),
-    override val renderer: ArcGISPolylineOverlayRenderer,
-) : PolylineController<ArcGISActualPolyline>(polylineManager, renderer)
 
 class ArcGISPolylineOverlayRenderer(
     val polylineLayer: GraphicsOverlay,

@@ -21,7 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MapboxMarkerRenderer(
+class MapboxMarkerOverlayRenderer(
     holder: MapboxMapViewHolder,
     coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val markerManager: MarkerManager<MapboxActualMarker>,

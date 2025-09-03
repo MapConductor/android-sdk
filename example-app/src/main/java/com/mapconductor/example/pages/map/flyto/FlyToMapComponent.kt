@@ -2,7 +2,6 @@ package com.mapconductor.example.pages.map.flyto
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.map.MapViewState

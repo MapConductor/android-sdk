@@ -142,22 +142,24 @@ abstract class AbstractDefaultIcon(
 
         // Since canvasSize is already scaled (baseCanvasSize * scale),
         // we don't need to apply iconScale again to the markerScale calculation
-        val scaledStrokeWidth = ResourceProvider
-            .dpToPx(strokeWidth.value * iconScale)
-            .toFloat()
+        val scaledStrokeWidth =
+            ResourceProvider
+                .dpToPx(strokeWidth.value * iconScale)
+                .toFloat()
 
         // Reserve space for stroke on sides and top, but not bottom (point should touch edge)
         val epsilon = 0.75f
         val padding = (scaledStrokeWidth / 2f - epsilon).coerceAtLeast(0f)
         val availableWidth = canvasSize - (padding * 2f)
-        val availableHeight = canvasSize - padding  // Only top padding, bottom point touches edge
+        val availableHeight = canvasSize - padding // Only top padding, bottom point touches edge
 
         // Calculate scale to fit marker within available space
         // DO NOT multiply by iconScale here as canvasSize already includes it
-        val markerScale = minOf(
-            availableWidth / originalSize.width,
-            availableHeight / originalSize.height
-        )
+        val markerScale =
+            minOf(
+                availableWidth / originalSize.width,
+                availableHeight / originalSize.height,
+            )
 
         val scaledWidth = originalSize.width * markerScale
         val scaledHeight = originalSize.height * markerScale
@@ -240,12 +242,14 @@ abstract class AbstractDefaultIcon(
         Paint().apply {
             color = strokeColor.toArgb()
             style = Paint.Style.STROKE
-            strokeWidth = ResourceProvider.dpToPx(
-                this@AbstractDefaultIcon.strokeWidth.value * iconScale
-            ).toFloat()
+            strokeWidth =
+                ResourceProvider
+                    .dpToPx(
+                        this@AbstractDefaultIcon.strokeWidth.value * iconScale,
+                    ).toFloat()
             isAntiAlias = true
-            strokeJoin = Paint.Join.ROUND   // 追加
-            strokeCap  = Paint.Cap.ROUND    // 追加（尖り部のにじみ軽減）
+            strokeJoin = Paint.Join.ROUND // 追加
+            strokeCap = Paint.Cap.ROUND // 追加（尖り部のにじみ軽減）
         }
 
     /**

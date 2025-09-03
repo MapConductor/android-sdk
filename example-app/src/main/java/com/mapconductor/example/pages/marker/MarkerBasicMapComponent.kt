@@ -49,7 +49,6 @@ fun MarkerBasicMapComponent(
         onMarkerClick = { selected = it },
         onMapClick = { selected = null },
     ) {
-
         Marker(
             position = GeoPoint.fromLatLong(0.018, 0.004),
             icon =
@@ -58,63 +57,68 @@ fun MarkerBasicMapComponent(
                     label = "0.7",
                     debug = true,
                 ),
-            extra = """
-                    DefaultIcon(
-                        scale = 0.7f,
-                        label = "0.7",
-                        debug = true,
-                    ),
-                """.trimIndent()
+            extra =
+                """
+                DefaultIcon(
+                    scale = 0.7f,
+                    label = "0.7",
+                    debug = true,
+                ),
+                """.trimIndent(),
         )
 
         Marker(
             position = GeoPoint.fromLatLong(0.018, 0.006),
-            icon = DefaultIcon(
-                scale = 1.0f,
-                label = "1.0",
-                debug = true,
-            ),
-            extra = """
-                    DefaultIcon(
-                        scale = 1.0f,
-                        label = "1.0",
-                        debug = true,
-                    ),
-                """.trimIndent()
+            icon =
+                DefaultIcon(
+                    scale = 1.0f,
+                    label = "1.0",
+                    debug = true,
+                ),
+            extra =
+                """
+                DefaultIcon(
+                    scale = 1.0f,
+                    label = "1.0",
+                    debug = true,
+                ),
+                """.trimIndent(),
         )
         Marker(
             position = GeoPoint.fromLatLong(0.018, 0.009),
-            icon = DefaultIcon(
-                scale = 1.4f,
-                label = "1.4",
-                debug = true,
-            ),
-            extra = """
-                    DefaultIcon(
-                        scale = 1.4f,
-                        label = "1.4",
-                        debug = true,
-                    ),
-                """.trimIndent()
+            icon =
+                DefaultIcon(
+                    scale = 1.4f,
+                    label = "1.4",
+                    debug = true,
+                ),
+            extra =
+                """
+                DefaultIcon(
+                    scale = 1.4f,
+                    label = "1.4",
+                    debug = true,
+                ),
+                """.trimIndent(),
         )
 
         Marker(
             position = GeoPoint.fromLatLong(0.018, 0.013),
-            icon = DefaultIcon(
-                scale = 2.1f,
-                label = "2.1",
-                debug = true,
-            ),
-            extra = """
-                    DefaultIcon(
-                        scale = 2.1f,
-                        label = "2.1",
-                        debug = true,
-                    ),
-                """.trimIndent()
+            icon =
+                DefaultIcon(
+                    scale = 2.1f,
+                    label = "2.1",
+                    debug = true,
+                ),
+            extra =
+                """
+                DefaultIcon(
+                    scale = 2.1f,
+                    label = "2.1",
+                    debug = true,
+                ),
+                """.trimIndent(),
         )
-
-
 
         Marker(
             position = GeoPoint.fromLatLong(0.014, 0.004),
@@ -122,79 +126,88 @@ fun MarkerBasicMapComponent(
         )
         Marker(
             position = GeoPoint.fromLatLong(0.014, 0.008),
-            icon = DefaultIcon(
-                fillColor = Color.Yellow,
-                strokeColor = Color.Black,
-                strokeWidth = 2.dp,
-            ),
-            extra = """
-                    DefaultIcon(
-                        fillColor = Color.Yellow,
-                        strokeColor = Color.Black,
-                        strokeWidth = 2.dp,
-                    )
-                    """.trimIndent()
+            icon =
+                DefaultIcon(
+                    fillColor = Color.Yellow,
+                    strokeColor = Color.Black,
+                    strokeWidth = 2.dp,
+                ),
+            extra =
+                """
+                DefaultIcon(
+                    fillColor = Color.Yellow,
+                    strokeColor = Color.Black,
+                    strokeWidth = 2.dp,
+                )
+                """.trimIndent(),
         )
         Marker(
             position = GeoPoint.fromLatLong(0.014, 0.012),
-            icon = DefaultIcon(
-                fillColor = Color(
-                    red = 0x2E,
-                    green = 0xF5,
-                    blue = 0x27,
-                ),
-                strokeColor = Color(
-                    red = 0xFC,
-                    green = 0x22,
-                    blue = 0x5C,
-                ),
-                label = "AB",
-                labelTextColor = Color.White,
-                labelStrokeColor = Color.Black,
-            ),
-            extra = """
-                    DefaultIcon(
-                        fillColor = Color(
+            icon =
+                DefaultIcon(
+                    fillColor =
+                        Color(
                             red = 0x2E,
                             green = 0xF5,
                             blue = 0x27,
                         ),
-                        strokeColor = Color(
+                    strokeColor =
+                        Color(
                             red = 0xFC,
                             green = 0x22,
                             blue = 0x5C,
                         ),
-                        label = "AB",
-                        labelTextColor = Color.White,
-                        labelStrokeColor = Color.Black,
-                    )
-                    """.trimIndent()
+                    label = "AB",
+                    labelTextColor = Color.White,
+                    labelStrokeColor = Color.Black,
+                ),
+            extra =
+                """
+                DefaultIcon(
+                    fillColor = Color(
+                        red = 0x2E,
+                        green = 0xF5,
+                        blue = 0x27,
+                    ),
+                    strokeColor = Color(
+                        red = 0xFC,
+                        green = 0x22,
+                        blue = 0x5C,
+                    ),
+                    label = "AB",
+                    labelTextColor = Color.White,
+                    labelStrokeColor = Color.Black,
+                )
+                """.trimIndent(),
         )
-
 
         AppCompatResources.getDrawable(context, R.drawable.human)?.let { icon ->
             Marker(
                 position = GeoPoint.fromLatLong(0.01, 0.004),
-                icon = DrawableDefaultIcon(
-                    backgroundDrawable = icon,
-                ),
-                extra = """
+                icon =
+                    DrawableDefaultIcon(
+                        backgroundDrawable = icon,
+                    ),
+                extra =
+                    """
                     DrawableDefaultIcon(
                         backgroundDrawable = icon,
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
             )
         }
 
         AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)?.let { icon ->
             Marker(
                 position = GeoPoint.fromLatLong(0.01, 0.006),
-                icon = DrawableDefaultIcon(
-                    backgroundDrawable = icon,
-                    strokeColor = Color.Black,
-                    scale = 1.5f,
-                ),
-                extra ="""
+                icon =
+                    DrawableDefaultIcon(
+                        backgroundDrawable = icon,
+                        strokeColor = Color.Black,
+                        scale = 1.5f,
+                    ),
+                extra =
+                    """
                     DrawableDefaultIcon(
                         backgroundDrawable = icon,
                         strokeColor = Color.Black,
@@ -204,38 +217,41 @@ fun MarkerBasicMapComponent(
             )
         }
 
-
         AppCompatResources.getDrawable(context, R.drawable.wmo_00_clear)?.let { icon ->
             Marker(
                 position = GeoPoint.fromLatLong(0.01, 0.009),
-                icon = ImageIcon(
-                    drawable = icon,
-                    debug = true,
-                    anchor = Offset(0.5f, 1.0f),
-                ),
-                extra = """
+                icon =
+                    ImageIcon(
+                        drawable = icon,
+                        debug = true,
+                        anchor = Offset(0.5f, 1.0f),
+                    ),
+                extra =
+                    """
                     ImageIcon(
                         drawable = icon,
                         debug = true,
                         anchor = Offset(0.5f, 1.0f),
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
             )
         }
 
         createMarkerWithLabelIcon(context, "Label")?.let {
             Marker(
                 position = GeoPoint.fromLatLong(0.01, 0.012),
-                icon = ImageIcon(
-                    drawable = it,
-                    anchor = Offset(0.5f, 1.0f),
-                ),
-                extra = """
+                icon =
+                    ImageIcon(
+                        drawable = it,
+                        anchor = Offset(0.5f, 1.0f),
+                    ),
+                extra =
+                    """
                     ImageIcon(
                         drawable = createMarkerWithLabelIcon(label),
                         anchor = Offset(0.5f, 1.0f),
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
             )
         }
         (selected?.extra as? String)?.let { snippet ->
@@ -243,7 +259,6 @@ fun MarkerBasicMapComponent(
                 marker = selected!!,
                 bubbleColor = bubbleColor,
             ) {
-
                 Text(
                     text = snippet,
                     textAlign = TextAlign.Left,
@@ -253,7 +268,10 @@ fun MarkerBasicMapComponent(
     }
 }
 
-fun createMarkerWithLabelIcon(context: Context, label: String): BitmapDrawable? {
+fun createMarkerWithLabelIcon(
+    context: Context,
+    label: String,
+): BitmapDrawable? {
     val drawable = AppCompatResources.getDrawable(context, R.drawable.marker_with_label) ?: return null
 
     val iconBitmap = drawable.toBitmap()

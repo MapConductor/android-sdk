@@ -15,21 +15,13 @@ import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonManager
-import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polygon.PolygonState
 import kotlin.collections.set
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-class ArcGISPolygonController(
-    polygonManager: PolygonManager<ArcGISActualPolygon> = PolygonManagerImpl(),
-    override val renderer: ArcGISPolygonOverlayRenderer,
-) : PolygonController<ArcGISActualPolygon>(polygonManager, renderer)
 
 class ArcGISPolygonOverlayRenderer(
     val polygonLayer: GraphicsOverlay,

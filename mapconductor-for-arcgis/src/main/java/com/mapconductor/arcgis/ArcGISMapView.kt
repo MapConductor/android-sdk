@@ -65,7 +65,7 @@ fun ArcGISMapView(
             controller.holder.mapView.onResume(owner)
             controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
-            controller.setCircleClickListener(onCircleClick)
+            controller.setOnCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
             controller.setOnPolygonClickListener(onPolygonClick)
             controller.setOnMarkerClickListener(onMarkerClick)

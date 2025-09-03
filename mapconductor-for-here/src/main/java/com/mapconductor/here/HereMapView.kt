@@ -79,7 +79,7 @@ fun HereMapView(
             controller.setOnMarkerDragEnd(onMarkerDragEnd)
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-            controller.setCircleClickListener(onCircleClick)
+            controller.setOnCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
             controller.setOnPolygonClickListener(onPolygonClick)
 
