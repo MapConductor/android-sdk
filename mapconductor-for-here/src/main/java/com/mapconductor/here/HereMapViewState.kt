@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.here.sdk.mapview.MapScheme
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
@@ -38,9 +37,7 @@ class HereMapViewState(
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
 
-    override fun changeMapDesignType(
-        value: HereMapDesignType
-    ) {
+    override fun changeMapDesignType(value: HereMapDesignType) {
         this.mapDesignType = value
         this.controller?.changeMapDesign(value.getValue())
     }

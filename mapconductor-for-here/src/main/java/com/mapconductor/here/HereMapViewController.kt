@@ -56,9 +56,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline, MapPolygon> {
-    fun changeMapDesign(
-        value: MapScheme
-    )
+    fun changeMapDesign(value: MapScheme)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -200,11 +198,9 @@ class HereMapViewController(
         holder.mapView.gestures.longPressListener = this
     }
 
-    override fun changeMapDesign(
-        value: MapScheme
-    ){
+    override fun changeMapDesign(value: MapScheme) {
         coroutine.launch {
-            holder.mapView.mapScene.loadScene(value){}
+            holder.mapView.mapScene.loadScene(value) {}
         }
     }
 

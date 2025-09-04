@@ -56,9 +56,7 @@ import kotlinx.coroutines.launch
 interface IGoogleMapViewController :
     MapViewController<Marker, Circle, Polyline, Polygon>,
     GroundImageCapable<ActualGoogleMapGroundImage> {
-    fun changeMapDesign(
-        value: Int
-    )
+    fun changeMapDesign(value: Int)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -86,10 +84,10 @@ class GoogleMapViewController(
     private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
     private val groundImageController: GroundImageController<ActualGoogleMapGroundImage>,
 ) : BaseMapViewController<
-    ActualGoogleMapMarker,
-    ActualGoogleMapCircle,
-    ActualGoogleMapPolyline,
-    ActualGoogleMapPolygon,
+        ActualGoogleMapMarker,
+        ActualGoogleMapCircle,
+        ActualGoogleMapPolyline,
+        ActualGoogleMapPolygon,
     >(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
@@ -180,9 +178,7 @@ class GoogleMapViewController(
         holder.map.setOnMarkerDragListener(this)
     }
 
-    override fun changeMapDesign(
-        value: Int
-    ){
+    override fun changeMapDesign(value: Int) {
         coroutine.launch {
             holder.map.mapType = value
         }
