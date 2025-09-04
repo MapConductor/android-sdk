@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jlleitschuh.gradle.ktlint")
+    id("com.google.gms.google-services")
+    alias(libs.plugins.google.firebase.appdistribution)
 }
 
 ktlint {
@@ -81,6 +83,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
+    implementation(platform(libs.firebase.bom))
 
     // Google Maps SDK
     implementation(libs.play.services.maps)
