@@ -32,9 +32,7 @@ interface MapViewState<ActualMapDesignType> {
 
     fun resetInitState()
 
-    fun changeMapDesignType(
-        value: ActualMapDesignType
-    )
+    fun changeMapDesignType(value: ActualMapDesignType)
 
     fun moveCameraTo(
         cameraPosition: MapCameraPosition,

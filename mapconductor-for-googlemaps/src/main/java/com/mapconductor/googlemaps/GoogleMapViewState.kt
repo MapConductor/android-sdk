@@ -12,7 +12,6 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
-import com.mapconductor.core.state.StateOrValue
 import java.util.UUID
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,9 +36,7 @@ class GoogleMapViewState(
 
     internal var controller: IGoogleMapViewController? = null
 
-    override fun changeMapDesignType(
-        value: GoogleMapDesign,
-    ){
+    override fun changeMapDesignType(value: GoogleMapDesign) {
         this.mapDesignType = value
         this.controller?.changeMapDesign(value.getValue())
     }

@@ -226,7 +226,7 @@ abstract class AbstractMarkerRenderer<ActualMarker> : MarkerRenderer<ActualMarke
             }
         }.onEach { t ->
             val startLatLng = holder.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = target.longitude
+            val lng = t * target.longitude + (1f - t) * startLatLng.longitude
             val lat = t * target.latitude + (1f - t) * startLatLng.latitude
 
             // 現在の座標をマーカーに適用
