@@ -1,7 +1,6 @@
 package com.mapconductor.example.pages.animation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewState
@@ -30,9 +29,7 @@ fun AnimationMapComponent(
             onMarkerDrag = onMarkerDrag,
         ) {
             viewModel.allMarkers.forEach { marker ->
-                key(marker.id) {
-                    Marker(marker)
-                }
+                Marker(marker)
             }
         }
     }
