@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
+import com.mapconductor.example.pages.animation.AnimationMapPage
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
@@ -88,6 +90,12 @@ fun DemoAppScreen() {
                 route = "polyline",
             ),
             SidebarItem(
+                id = "animation",
+                title = "Animation ",
+                icon = Icons.Default.Place,
+                route = "animation",
+            ),
+            SidebarItem(
                 id = "mapDesign",
                 title = "MapDesign Demo",
                 icon = Icons.Default.Build,
@@ -130,6 +138,11 @@ fun DemoAppScreen() {
                     "flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "animation" -> {
+                        AnimationMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import com.arcgismaps.mapping.Basemap
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.LongPressEvent
@@ -44,7 +45,6 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.arcgismaps.mapping.Basemap
 
 interface IArcGISMapViewController :
     MapViewController<
@@ -53,9 +53,7 @@ interface IArcGISMapViewController :
         ArcGISActualPolyline,
         ArcGISActualPolygon,
     > {
-    fun changeMapDesign(
-        value: String
-    )
+    fun changeMapDesign(value: String)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -344,16 +342,14 @@ class ArcGISMapViewController(
 
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
-    override fun changeMapDesign(
-        value: String
-    ){
+    override fun changeMapDesign(value: String) {
         coroutine.launch {
             holder.map.scene!!.setBasemap(
                 Basemap(
                     ArcGISDesign.toBasemapStyle(
-                        ArcGISDesign(value)
-                    )
-                )
+                        ArcGISDesign(value),
+                    ),
+                ),
             )
         }
     }

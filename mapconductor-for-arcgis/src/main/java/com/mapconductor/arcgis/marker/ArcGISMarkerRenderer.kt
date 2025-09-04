@@ -50,7 +50,9 @@ class ArcGISMarkerRenderer(
         markerEntity: MarkerEntity<Graphic>,
         position: GeoPoint,
     ) {
-        markerEntity.marker.geometry = position.toPoint(holder.map.scene?.spatialReference)
+        coroutine.launch {
+            markerEntity.marker.geometry = position.toPoint(holder.map.scene?.spatialReference)
+        }
     }
 
     override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Graphic?> {
