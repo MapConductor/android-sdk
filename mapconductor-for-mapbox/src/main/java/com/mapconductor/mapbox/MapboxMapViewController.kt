@@ -66,6 +66,11 @@ interface IMapboxMapViewController :
         MapboxActualPolyline,
         MapboxActualPolygon,
     > {
+
+    fun changeMapDesign(
+        value: String
+    )
+
     fun moveCamera(
         dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
@@ -257,6 +262,14 @@ internal class MapboxMapViewController(
                 ).toMapCameraPosition()
 
             it(mapCameraPosition)
+        }
+    }
+
+    override fun changeMapDesign(
+        value: String
+    ){
+        coroutine.launch {
+            holder.mapView.mapboxMap.loadStyle(value) {}
         }
     }
 

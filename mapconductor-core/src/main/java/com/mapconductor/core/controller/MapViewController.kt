@@ -4,6 +4,7 @@ import com.mapconductor.core.circle.CircleOverlayManager
 import com.mapconductor.core.circle.CircleRenderer
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.OnCameraMoveHandler
@@ -66,6 +67,52 @@ interface MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPo
     fun setOnMarkerAnimationEnd(listener: OnMarkerEventHandler?)
 }
 typealias MapViewControllerAlias = MapViewController<*, *, *, *>
+
+interface OverlayRenderer<ActualType, StateType, EntityType> {
+    interface Changes<EntityType> {
+        val current: EntityType
+        val prev: EntityType
+    }
+
+    suspend fun onAdd(data: List<StateType>): List<ActualType?>
+
+    suspend fun onChange(data: List<Changes<EntityType>>): List<ActualType?>
+
+    suspend fun onRemove(data: List<EntityType>)
+
+    suspend fun onPostProcess()
+}
+
+interface OverlayController<ActualType, StateType, EntityType, EventType> {
+    val zIndex: Int
+
+    // val overlayManager: OverlayManager<StateType, EntityType>
+    val renderer: OverlayRenderer<ActualType, StateType, EntityType>
+
+    suspend fun add(data: List<StateType>)
+
+    suspend fun update(state: StateType)
+
+    suspend fun clear()
+
+    var clickListener: ((EventType) -> Unit)?
+
+    fun find(position: IGeoPoint): EntityType?
+}
+
+interface OverlayManager<StateType, EntityType> {
+    suspend fun add(states: List<StateType>)
+
+    suspend fun update(state: StateType)
+
+    suspend fun clear()
+
+    fun getById(id: String): StateType?
+
+    fun allEntities(): List<EntityType>
+
+    fun find(position: IGeoPoint): EntityType?
+}
 
 abstract class BaseMapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> :
     MapViewController<ActualMarker, ActualCircle, ActualPolyline, ActualPolygon> {
