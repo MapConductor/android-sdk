@@ -90,13 +90,15 @@ This project follows KtLint conventions:
 
 ## Feature Implementation Status
 
-|                 | Google Maps | Mapbox   | Here     | ArcGIS         |
-|-----------------|-------------|----------|----------|----------------|
-| Map             | &#x2611;    | &#x2611; | &#x2611; | &#x2611;       |
-| Marker          | &#x2611;    | &#x2611; | &#x2611; | &#x2611;       |
-| Circle          | &#x2611;    | &#x2611; | &#x2610; | &#x2610; (wip) |
-| Polyline        | &#x2611;    | &#x2611; | &#x2611; | &#x2611;       |
-| Polygon         | &#x2610;    | &#x2610; | &#x2610; | &#x2610;       |
-| GroundImage     | &#x2610;    | N/A      | N/A      | N/A            |
-| RasterTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610;       |
-| VectorTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610;       |
+|                 | Google Maps | Mapbox   | Here     | ArcGIS   |
+|-----------------|-------------|----------|----------|----------|
+| Map             | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
+| Marker          | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
+| Circle          | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
+| Polyline        | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
+| Polygon         | &#x2610;    | &#x2611; | &#x2611; | &#x2611; |
+| GroundImage     | &#x2610;    | N/A      | N/A      | N/A      |
+| RasterTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610; |
+| VectorTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610; |
+
+Note that the click functionality of Polyline and Polygon classes are not implemented yet.
