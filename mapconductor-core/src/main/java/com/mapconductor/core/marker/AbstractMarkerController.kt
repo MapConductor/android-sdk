@@ -4,7 +4,7 @@ import com.mapconductor.core.controller.OverlayController
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-interface MarkerCapable<ActualMarker> {
+interface MarkerCapable {
     suspend fun compositionMarkers(data: List<MarkerState>)
 
     suspend fun updateMarker(state: MarkerState)

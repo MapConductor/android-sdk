@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.google.gms.google-services")
-    alias(libs.plugins.google.firebase.appdistribution)
 }
 
 ktlint {

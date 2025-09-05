@@ -3,11 +3,13 @@ package com.mapconductor.arcgis
 import com.arcgismaps.mapping.BasemapStyle
 import com.mapconductor.core.map.MapDesignType
 
-interface ArcGISDesignType : MapDesignType<String>
+interface ArcGISDesignType : MapDesignType<String> {
+    val elevationSources: List<String>
+}
 
 data class ArcGISDesign(
     override val id: String,
-    val elevationSources: List<String> = emptyList<String>(),
+    override val elevationSources: List<String> = emptyList<String>(),
 ) : ArcGISDesignType {
     override fun getValue(): String = id
 
@@ -30,7 +32,7 @@ data class ArcGISDesign(
         val Navigation = ArcGISDesign("arc_gis_navigation")
         val NavigationNight = ArcGISDesign("arc_gis_navigation_night")
         val StreetsNight = ArcGISDesign("arc_gis_streets_night")
-        val StreetsRelief = ArcGISDesign("arc_gis_Streets_relief")
+        val StreetsRelief = ArcGISDesign("arc_gis_streets_relief")
         val Topographic = ArcGISDesign("arc_gis_topographic")
         val Oceans = ArcGISDesign("arc_gis_oceans")
         val OceansBase = ArcGISDesign("arc_gis_oceans_base")
@@ -53,7 +55,7 @@ data class ArcGISDesign(
         val ModernAntiqueBase = ArcGISDesign("arc_gis_modern_antique_base")
         val HumanGeography = ArcGISDesign("arc_gis_human_geography")
         val HumanGeographyBase = ArcGISDesign("arc_gis_human_geography_base")
-        val HumanGeographyDetail = ArcGISDesign("arc_gis_humanGeography_detail")
+        val HumanGeographyDetail = ArcGISDesign("arc_gis_human_geography_detail")
         val HumanGeographyLabels = ArcGISDesign("arc_gis_human_geography_labels")
         val HumanGeographyDark = ArcGISDesign("arc_gis_human_geography_dark")
         val HumanGeographyDarkBase = ArcGISDesign("arc_gis_human_geography_dark_base")

@@ -1,7 +1,7 @@
 package com.mapconductor.core.polygon
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ class PolygonOverlay(
 ) : MapOverlay<PolygonState> {
     override suspend fun render(
         data: List<PolygonState>,
-        controller: MapViewControllerAlias,
+        controller: MapViewController,
     ) {
         (controller as? PolygonCapable)?.compositionPolygons(data)
     }

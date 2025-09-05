@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.circle.CircleOverlay
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.groundimage.GroundImageOverlay
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
@@ -40,7 +40,7 @@ open class MapViewScope {
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewControllerAlias,
+    controller: MapViewController,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")

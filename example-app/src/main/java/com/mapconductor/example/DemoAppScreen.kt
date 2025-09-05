@@ -3,9 +3,11 @@ package com.mapconductor.example
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,11 +21,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
+import com.mapconductor.example.pages.animation.AnimationMapPage
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.mapDesign.MapDesignMapPage
 import com.mapconductor.example.pages.marker.MarkerBasicPage
 import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
@@ -114,6 +118,18 @@ fun DemoAppScreen(initPage: String = "map") {
                 icon = Icons.Default.PlayArrow,
                 route = "polygon",
             ),
+            SidebarItem(
+                id = "animation",
+                title = "Animation ",
+                icon = Icons.Default.Place,
+                route = "animation",
+            ),
+            SidebarItem(
+                id = "mapDesign",
+                title = "MapDesign Demo",
+                icon = Icons.Default.Build,
+                route = "mapDesign",
+            ),
 //            SidebarItem(
 //                id = "examples",
 //                title = "Map Examples",
@@ -167,6 +183,16 @@ fun DemoAppScreen(initPage: String = "map") {
                     "groundImage" -> {
                         GroundImageMapPage(
                             groundImageResources = groundImageResources,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "animation" -> {
+                        AnimationMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "mapDesign" -> {
+                        MapDesignMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

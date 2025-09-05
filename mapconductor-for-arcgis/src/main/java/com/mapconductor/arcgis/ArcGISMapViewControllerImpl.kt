@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import com.arcgismaps.mapping.Basemap
 import com.arcgismaps.mapping.view.LongPressEvent
 import com.arcgismaps.mapping.view.PanChangeEvent
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
@@ -10,23 +11,18 @@ import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.SelectedMarker
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
-import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.settings.Settings
@@ -34,24 +30,6 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-interface ArcGISMapViewController :
-    MapViewController,
-    MarkerCapable<ArcGISActualMarker>,
-    PolylineCapable,
-    PolygonCapable,
-    CircleCapable {
-    fun moveCamera(
-        dstPosition: MapCameraPosition,
-        listener: MapViewState.MoveCameraCallback? = null,
-    )
-
-    fun animateCamera(
-        dstPosition: MapCameraPosition,
-        duration: Int,
-        listener: MapViewState.MoveCameraCallback? = null,
-    )
-}
 
 class ArcGISMapViewControllerImpl(
     override val holder: ArcGISMapViewHolder,
@@ -249,12 +227,12 @@ class ArcGISMapViewControllerImpl(
         holder.map.setViewpointCamera(
             camera = dstCameraPosition,
         )
-        listener?.onComplete(true)
+        listener?.onComplete()
     }
 
     override fun animateCamera(
         dstPosition: MapCameraPosition,
-        duration: Int,
+        duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val dstCameraPosition = dstPosition.toCamera()
@@ -265,7 +243,7 @@ class ArcGISMapViewControllerImpl(
                     camera = dstCameraPosition,
                     duration = duration.toFloat() / 1000.0f,
                 )
-            listener?.onComplete(result.isSuccess)
+            listener?.onComplete()
         }
     }
 
@@ -299,5 +277,23 @@ class ArcGISMapViewControllerImpl(
 
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         this.polygonController.clickListener = listener
+    }
+
+    private var mapDesignType: ArcGISDesignType = ArcGISDesign.Streets
+    private var mapDesignTypeChangeListener: ArcGISDesignTypeChangeHandler? = null
+
+    override fun setMapDesignType(value: ArcGISDesignType) {
+        holder.map.scene?.let { scene ->
+            val baseMapStyle = ArcGISDesign.toBasemapStyle(value)
+            val baseMap = Basemap(baseMapStyle)
+            coroutine.launch {
+                scene.setBasemap(baseMap)
+            }
+        }
+    }
+
+    override fun setMapDesignTypeChangeListener(listener: ArcGISDesignTypeChangeHandler) {
+        mapDesignTypeChangeListener = listener
+        listener(mapDesignType)
     }
 }

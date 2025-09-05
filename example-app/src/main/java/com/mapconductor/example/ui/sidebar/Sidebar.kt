@@ -190,12 +190,12 @@ private fun SidebarItemView(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = if (isExpanded) null else item.title,
-                modifier = Modifier.size(20.dp),
-                tint = contentColor,
-            )
+//            Icon(
+//                imageVector = item.icon,
+//                contentDescription = if (isExpanded) null else item.title,
+//                modifier = Modifier.size(20.dp),
+//                tint = contentColor,
+//            )
 
             AnimatedVisibility(
                 visible = isExpanded,

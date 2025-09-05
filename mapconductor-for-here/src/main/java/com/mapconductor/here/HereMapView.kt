@@ -24,7 +24,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun HereMapView(
-    state: HereViewState,
+    state: HereViewStateImpl,
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -58,7 +58,7 @@ fun HereMapView(
 
             val mapInitOptions =
                 HereViewInitOptions(
-                    scheme = state.mapDesignType.id,
+                    scheme = state.mapDesignType.getValue(),
                 )
 
             val controller =
@@ -68,10 +68,8 @@ fun HereMapView(
                     options = mapInitOptions,
                 )
 
-            (state as? HereViewStateImpl)?.let { mapViewState ->
-                mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::onCameraChange)
-            }
+            controller.setCameraMoveListener(state::onCameraChange)
+            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
@@ -82,10 +80,10 @@ fun HereMapView(
             controller.setOnCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
             controller.setOnPolygonClickListener(onPolygonClick)
+            state.setController(controller)
+            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
 
-            (state as? HereViewStateImpl)?.controller = controller
-
-            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.id) { mapError ->
+            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
                 if (mapError != null) {
                     throw Throwable("Loading map failed: mapError: " + mapError.name)
                 }
@@ -95,13 +93,13 @@ fun HereMapView(
                 controllerRef.value = controller
 
                 return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
-                    val restoreCameraPosition = state.cameraPosition.value ?: state.initCameraPosition
+                    val restoreCameraPosition = state.cameraPosition.value
                     controller.moveCamera(
                         dstPosition = restoreCameraPosition,
                         listener =
                             object : MapViewState.MoveCameraCallback {
-                                override fun onComplete(result: Boolean) {
-                                    cont.resume(result) { }
+                                override fun onComplete() {
+                                    cont.resume(true) { }
                                 }
                             },
                     )

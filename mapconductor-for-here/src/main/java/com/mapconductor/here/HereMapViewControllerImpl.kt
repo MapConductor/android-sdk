@@ -1,5 +1,7 @@
 package com.mapconductor.here
 
+import HereMapDesignTypeChangeHandler
+import HereMapViewController
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.Point2D
@@ -19,20 +21,16 @@ import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
-import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.HereMarkerController
@@ -41,24 +39,6 @@ import com.mapconductor.here.polyline.HerePolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-interface HereMapViewController :
-    MapViewController,
-    MarkerCapable<HereActualMarker>,
-    PolygonCapable,
-    PolylineCapable,
-    CircleCapable {
-    fun moveCamera(
-        dstPosition: MapCameraPosition,
-        listener: MoveCameraCallback? = null,
-    )
-
-    fun animateCamera(
-        dstPosition: MapCameraPosition,
-        durationMs: Long,
-        listener: MoveCameraCallback? = null,
-    )
-}
 
 class HereMapViewControllerImpl(
     private val markerController: HereMarkerController,
@@ -152,7 +132,7 @@ class HereMapViewControllerImpl(
             )
 
         camera.applyUpdate(adjustCameraUpdate)
-        listener?.onComplete(true)
+        listener?.onComplete()
     }
 
     override fun animateCamera(
@@ -179,8 +159,8 @@ class HereMapViewControllerImpl(
                 when (animState) {
                     // Do nothing here
                     AnimationState.STARTED -> Unit
-                    AnimationState.COMPLETED -> listener?.onComplete(true)
-                    AnimationState.CANCELLED -> listener?.onComplete(false)
+                    AnimationState.COMPLETED -> listener?.onComplete()
+                    AnimationState.CANCELLED -> listener?.onComplete()
                 }
             }
         }
@@ -286,5 +266,23 @@ class HereMapViewControllerImpl(
 
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         polygonController.clickListener = listener
+    }
+
+    private var _mapDesignType: HereMapDesignType = HereMapDesign.NormalDay
+    private var _mapDesignTypeChangeListener: HereMapDesignTypeChangeHandler? = null
+
+    override fun setMapDesignType(value: HereMapDesignType) {
+        val scene = value.getValue()
+        coroutine.launch {
+            holder.mapView.mapScene.loadScene(scene) {
+                _mapDesignType = value
+                _mapDesignTypeChangeListener?.invoke(value)
+            }
+        }
+    }
+
+    override fun setMapDesignTypeChangeListener(listener: HereMapDesignTypeChangeHandler) {
+        _mapDesignTypeChangeListener = listener
+        listener(_mapDesignType)
     }
 }

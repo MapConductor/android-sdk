@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 
-interface MapViewHolder<out ActualMapViewType, out ActualMapType> {
+interface MapViewHolder<ActualMapViewType, ActualMapType> {
     val mapView: ActualMapViewType
     val map: ActualMapType
 

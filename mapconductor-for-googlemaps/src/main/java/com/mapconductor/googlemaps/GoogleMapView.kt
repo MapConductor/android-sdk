@@ -23,7 +23,7 @@ import android.view.ViewGroup
 
 @Composable
 fun GoogleMapsView(
-    state: GoogleMapViewState,
+    state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -69,7 +69,7 @@ fun GoogleMapsView(
 
             val mapInitOptions =
                 GoogleMapOptions()
-                    .mapType(state.mapDesignType.getValue())
+                    .mapType(state.mapDesignType?.getValue() ?: GoogleMapDesign.None.getValue())
                     .camera(cameraPosition)
 
             val controller =
@@ -78,10 +78,8 @@ fun GoogleMapsView(
                     id = state.id,
                     options = mapInitOptions,
                 )
-            (state as? GoogleMapViewStateImpl)?.let { mapViewState ->
-                mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::onCameraChange)
-            }
+            state.setController(controller)
+            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
@@ -93,6 +91,7 @@ fun GoogleMapsView(
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setOnGroundImageClickListener(onGroundImageClick)
+            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
 
             holderRef.value = controller.holder
             controllerRef.value = controller

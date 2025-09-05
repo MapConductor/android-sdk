@@ -26,7 +26,7 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.circle.LocalCircleCollector
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.groundimage.LocalGroundImageCollector
@@ -55,7 +55,7 @@ fun <
     SpecificState : MapViewState<*>,
     // Replace Any with a base MapViewController if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewControllerAlias,
+    SpecificController : MapViewController,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
@@ -138,7 +138,7 @@ fun <
         markers.value.forEach { markerState ->
             LaunchedEffect(markerState.id) {
                 markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? MarkerCapable<*>)?.updateMarker(markerState)
+                    (controller as? MarkerCapable)?.updateMarker(markerState)
                 }
             }
         }

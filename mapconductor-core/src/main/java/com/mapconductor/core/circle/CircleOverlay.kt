@@ -1,7 +1,7 @@
 package com.mapconductor.core.circle
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ class CircleOverlay(
 ) : MapOverlay<CircleState> {
     override suspend fun render(
         data: List<CircleState>,
-        controller: MapViewControllerAlias,
+        controller: MapViewController,
     ) {
         (controller as? CircleCapable)?.compositionCircles(data)
     }

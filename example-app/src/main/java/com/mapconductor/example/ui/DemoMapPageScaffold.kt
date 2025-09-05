@@ -195,21 +195,6 @@ fun DemoMapPageScaffold(
                     )
                 }
             }
-
-//            // Message Card
-//            MessageCard(
-//                modifier =
-//                    Modifier
-//                        .align(Alignment.BottomStart)
-//                        .padding(
-//                            bottom = paddingValues.calculateBottomPadding() + 16.dp,
-//                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
-//                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-//                        ),
-//                title = "Messages",
-//            ) {
-//                MapViewStatePanel(selectedMapViewState.mapCameraPosition.collectAsState().value)
-//            }
         }
     }
 }

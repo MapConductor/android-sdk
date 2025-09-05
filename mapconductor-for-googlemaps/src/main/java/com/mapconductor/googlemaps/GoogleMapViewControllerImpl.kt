@@ -1,6 +1,7 @@
 package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.CancelableCallback
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveCanceledListener
@@ -8,27 +9,21 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.model.LatLng
-import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
@@ -38,25 +33,6 @@ import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-interface GoogleMapViewController :
-    MapViewController,
-    GroundImageCapable,
-    PolygonCapable,
-    MarkerCapable<GoogleMapActualMarker>,
-    PolylineCapable,
-    CircleCapable {
-    fun moveCamera(
-        dstPosition: MapCameraPosition,
-        listener: MapViewState.MoveCameraCallback? = null,
-    )
-
-    fun animateCamera(
-        dstPosition: MapCameraPosition,
-        duration: Int,
-        listener: MapViewState.MoveCameraCallback? = null,
-    )
-}
 
 class GoogleMapViewControllerImpl(
     override val holder: GoogleMapViewHolder,
@@ -72,7 +48,8 @@ class GoogleMapViewControllerImpl(
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
     OnCameraIdleListener,
-    OnMapClickListener {
+    OnMapClickListener,
+    GoogleMap.OnMapLoadedCallback {
     init {
         setupListeners()
     }
@@ -83,38 +60,39 @@ class GoogleMapViewControllerImpl(
         holder.map.setOnCameraMoveListener(this)
         holder.map.setOnCameraIdleListener(this)
         holder.map.setOnMapClickListener(this)
+        holder.map.setOnMapLoadedCallback(this)
     }
 
     override fun moveCamera(
-        position: MapCameraPosition,
+        dstPosition: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         coroutine.launch {
-            val dstCameraPosition = position.toCameraPosition()
+            val dstCameraPosition = dstPosition.toCameraPosition()
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
             holder.map.moveCamera(cameraUpdate)
-            listener?.onComplete(true)
+            listener?.onComplete()
         }
     }
 
     override fun animateCamera(
-        position: MapCameraPosition,
-        duration: Int,
+        dstPosition: MapCameraPosition,
+        duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val dstCameraPosition = position.toCameraPosition()
+        val dstCameraPosition = dstPosition.toCameraPosition()
         coroutine.launch {
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
             holder.map.animateCamera(
                 cameraUpdate,
-                duration,
+                duration.toInt(),
                 object : CancelableCallback {
                     override fun onCancel() {
-                        listener?.onComplete(false)
+                        listener?.onComplete()
                     }
 
                     override fun onFinish() {
-                        listener?.onComplete(true)
+                        listener?.onComplete()
                     }
                 },
             )
@@ -259,5 +237,26 @@ class GoogleMapViewControllerImpl(
 
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         this.polygonController.clickListener = listener
+    }
+
+    private var _mapDesignType: GoogleMapDesignType = GoogleMapDesign.None
+    private var _mapDesignTypeChangeListener: GoogleMapDesignTypeChangeHandler? = null
+
+    override fun setMapDesignType(value: GoogleMapDesignType) {
+        coroutine.launch {
+            holder.map.mapType = value.getValue()
+        }
+        _mapDesignType = value
+        _mapDesignTypeChangeListener?.invoke(value)
+    }
+
+    override fun setMapDesignTypeChangeListener(listener: GoogleMapDesignTypeChangeHandler) {
+        _mapDesignTypeChangeListener = listener
+        listener(_mapDesignType)
+    }
+
+    override fun onMapLoaded() {
+        val mapDesignType = GoogleMapDesign.toMapDesignType(holder.map.mapType)
+        _mapDesignTypeChangeListener?.invoke(mapDesignType)
     }
 }

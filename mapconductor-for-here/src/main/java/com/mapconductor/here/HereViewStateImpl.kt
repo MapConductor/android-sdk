@@ -1,10 +1,10 @@
 package com.mapconductor.here
 
+import HereMapViewController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.here.sdk.mapview.MapScheme
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
@@ -24,19 +24,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface HereViewState : MapViewState<MapScheme>
+interface HereViewState : MapViewState<HereMapDesignType>
 
 class HereViewStateImpl(
     override val id: String,
-    override val mapDesignType: HereMapDesignType,
+    mapDesignType: HereMapDesignType,
     override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
-) : MapViewStateImpl<MapScheme>(),
+) : MapViewStateImpl<HereMapDesignType>(),
     HereViewState {
-    internal var controller: HereMapViewController? = null
+    private var controller: HereMapViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+    private var _mapDesignType: HereMapDesignType = mapDesignType
+
+    override var mapDesignType: HereMapDesignType
+        set(value) {
+            value?.let {
+                _mapDesignType = value
+                this.controller?.setMapDesignType(value)
+            }
+        }
+        get() = _mapDesignType
 
     override fun moveCameraTo(
         position: GeoPoint,
@@ -44,43 +54,58 @@ class HereViewStateImpl(
         listener: MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
+            _cameraPosition.value =
+                MapCameraPosition(
+                    position = position,
+                )
+            listener?.onComplete()
             return
         }
-        val currCameraPosition = this.cameraPosition.value
+        val currentPosition = this.cameraPosition.value
         val newPosition =
-            currCameraPosition.copy(
+            currentPosition.copy(
                 position = position,
             )
         this.moveCameraTo(newPosition, durationMs, listener)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun getMapViewHolder(): HereViewHolder? = controller?.holder as? HereViewHolder
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
-        if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
-            return
+        controller?.let { ctrl ->
+            if (this.isInitialized.value == InitState.Initialized) {
+                val dstCameraPosition = MapCameraPosition.from(cameraPosition)
+                if (durationMs == 0L) {
+                    ctrl.moveCamera(dstCameraPosition, listener)
+                } else {
+                    ctrl.animateCamera(dstCameraPosition, durationMs, listener)
+                }
+                return
+            }
         }
-
-        if (controller == null) {
-            listener?.onComplete(false)
-            return
-        }
-
-        if (durationMs == 0L) {
-            controller!!.moveCamera(cameraPosition, listener)
-        } else {
-            controller!!.animateCamera(cameraPosition, durationMs.toLong(), listener)
-        }
+        _cameraPosition.value = cameraPosition
+        listener?.onComplete()
     }
 
     internal fun onCameraChange(cameraState: MapCameraPosition) {
         this._cameraPosition.value = cameraState
+    }
+
+    internal fun setController(controller: HereMapViewController) {
+        this.controller = controller
+        _mapDesignType?.let {
+            controller.setMapDesignType(it)
+        }
+        controller.moveCamera(_cameraPosition.value)
+    }
+
+    internal fun onMapDesignTypeChange(value: HereMapDesignType) {
+        _mapDesignType = value
     }
 }
 

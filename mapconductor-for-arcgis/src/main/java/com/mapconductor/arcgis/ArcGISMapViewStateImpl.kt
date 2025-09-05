@@ -22,43 +22,64 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface ArcGISMapViewState : MapViewState<String>
+interface ArcGISMapViewState : MapViewState<ArcGISDesignType>
 
 class ArcGISMapViewStateImpl(
     override val id: String,
+    mapDesignType: ArcGISDesignType,
     override val initCameraPosition: MapCameraPosition,
-    override val mapDesignType: ArcGISDesign,
-) : MapViewStateImpl<String>(),
+) : MapViewStateImpl<ArcGISDesignType>(),
     ArcGISMapViewState {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
 
-    internal var controller: ArcGISMapViewController? = null
-
     // Camera position
     private val _cameraPosition = MutableStateFlow<MapCameraPosition>(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+
+    private var controller: ArcGISMapViewController? = null
+    private var _mapDesignType: ArcGISDesignType = mapDesignType
+
+    override var mapDesignType: ArcGISDesignType
+        set(value) {
+            value?.let {
+                _mapDesignType = value
+                this.controller?.setMapDesignType(value)
+            }
+        }
+        get() = _mapDesignType
+
+    internal fun setController(controller: ArcGISMapViewController) {
+        this.controller = controller
+        _mapDesignType?.let {
+            controller.setMapDesignType(it)
+        }
+        controller.moveCamera(_cameraPosition.value)
+    }
+
+    internal fun onMapDesignTypeChange(value: ArcGISDesignType) {
+        _mapDesignType = value
+    }
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPosition,
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        if (this.isInitialized.value != InitState.Initialized) {
-            this.warningLog("moveCameraTo() called before map is initialized.")
-            listener?.onComplete(false)
-            return
-        }
-
-        val dstCameraPosition = MapCameraPosition.from(cameraPosition)
-        controller?.let {
-            if (durationMs == 0L) {
-                it.moveCamera(dstCameraPosition, listener)
-            } else {
-                it.animateCamera(dstCameraPosition, durationMs.toInt(), listener)
+        controller?.let { ctrl ->
+            if (this.isInitialized.value == InitState.Initialized) {
+                val dstCameraPosition = MapCameraPosition.from(cameraPosition)
+                if (durationMs == 0L) {
+                    ctrl.moveCamera(dstCameraPosition, listener)
+                } else {
+                    ctrl.animateCamera(dstCameraPosition, durationMs, listener)
+                }
+                return
             }
-        } ?: listener?.onComplete(false)
+        }
+        _cameraPosition.value = cameraPosition
+        listener?.onComplete()
     }
 
     override fun moveCameraTo(
@@ -66,8 +87,24 @@ class ArcGISMapViewStateImpl(
         durationMs: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        // Do nothing here
+        if (this.isInitialized.value != InitState.Initialized) {
+            _cameraPosition.value =
+                MapCameraPosition(
+                    position = position,
+                )
+            listener?.onComplete()
+            return
+        }
+        val currentPosition = this.cameraPosition.value
+        val newPosition =
+            currentPosition.copy(
+                position = position,
+            )
+        this.moveCameraTo(newPosition, durationMs, listener)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun getMapViewHolder(): ArcGISMapViewHolder? = controller?.holder as? ArcGISMapViewHolder
 
     internal fun onCameraChange(cameraPosition: MapCameraPosition) {
         this._cameraPosition.value = cameraPosition
@@ -81,7 +118,7 @@ class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewStateImpl>() {
         state: ArcGISMapViewStateImpl,
         bundle: Bundle,
     ) {
-        bundle.putString("id", state.mapDesignType.id)
+        bundle.putString("id", state.mapDesignType?.id ?: ArcGISDesign.Streets.id)
     }
 
     override fun createState(

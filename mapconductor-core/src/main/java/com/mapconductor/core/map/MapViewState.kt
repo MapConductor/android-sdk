@@ -1,6 +1,6 @@
 package com.mapconductor.core.map
 
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -17,16 +17,16 @@ enum class InitState {
     Failed,
 }
 
-interface MapViewState<T> {
+interface MapViewState<ActualMapDesignType> {
     interface MoveCameraCallback {
-        fun onComplete(result: Boolean)
+        fun onComplete()
     }
 
     val id: String
     val initCameraPosition: MapCameraPosition
     val isInitialized: StateFlow<InitState>
     val cameraPosition: StateFlow<MapCameraPosition?>
-    val mapDesignType: MapDesignType<T>
+    var mapDesignType: ActualMapDesignType
 
     fun initAsync(init: suspend () -> Boolean)
 
@@ -43,12 +43,13 @@ interface MapViewState<T> {
         durationMs: Long = 0,
         listener: MoveCameraCallback? = null,
     )
+
+    fun getMapViewHolder(): MapViewHolder<*, *>?
 }
 
-abstract class MapViewStateImpl<T>(
-    protected val mainCoroutine: CoroutineScope =
-        CoroutineScope(Dispatchers.Main),
-) : MapViewState<T> {
+abstract class MapViewStateImpl<ActualMapDesignType>(
+    protected val mainCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+) : MapViewState<ActualMapDesignType> {
     private val tag = this.javaClass.name
 
     private val _isInitialized = MutableStateFlow(InitState.NotStarted)
@@ -87,7 +88,7 @@ interface MapOverlay<DataType> {
 
     suspend fun render(
         data: List<DataType>,
-        controller: MapViewControllerAlias,
+        controller: MapViewController,
     )
 }
 

@@ -35,7 +35,7 @@ import android.content.ContextWrapper
 
 @Composable
 fun MapboxMapView(
-    state: MapboxViewState,
+    state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -67,7 +67,7 @@ fun MapboxMapView(
             MapboxInitSDK(context)
 
             val cameraOptions =
-                state.cameraPosition.value?.toCameraOptions()
+                state.cameraPosition.value.toCameraOptions()
 
             val styleUri = state.mapDesignType.getValue()
             val mapInitOptions =
@@ -88,10 +88,7 @@ fun MapboxMapView(
                     polygonController = getPolygonController(holder),
                     circleController = getCircleController(holder),
                 )
-            (state as? MapboxViewStateImpl)?.let { mapViewState ->
-                mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::onCameraChange)
-            }
+            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnCircleClickListener(onCircleClick)
             controller.setOnPolylineClickListener(onPolylineClick)
@@ -102,6 +99,8 @@ fun MapboxMapView(
             controller.setOnMarkerDragEnd(onMarkerDragEnd)
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            state.setController(controller)
 
             holderRef.value = holder
             controllerRef.value = controller

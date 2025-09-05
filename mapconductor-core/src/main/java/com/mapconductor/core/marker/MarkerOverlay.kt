@@ -1,7 +1,7 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +16,8 @@ class MarkerOverlay(
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
         data: List<MarkerState>,
-        controller: MapViewControllerAlias,
+        controller: MapViewController,
     ) {
-        (controller as? MarkerCapable<*>)?.compositionMarkers(data)
+        (controller as? MarkerCapable)?.compositionMarkers(data)
     }
 }

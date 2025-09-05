@@ -1,7 +1,7 @@
 package com.mapconductor.core.groundimage
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ class GroundImageOverlay(
 ) : MapOverlay<GroundImageState> {
     override suspend fun render(
         data: List<GroundImageState>,
-        controller: MapViewControllerAlias,
+        controller: MapViewController,
     ) {
         (controller as? GroundImageCapable)?.compositionGroundImages(data)
     }

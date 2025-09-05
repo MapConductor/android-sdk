@@ -1,5 +1,6 @@
 package com.mapconductor.mapbox
 
+import MapboxMapViewController
 import androidx.compose.ui.geometry.Offset
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
@@ -8,6 +9,8 @@ import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
+import com.mapbox.maps.StyleLoaded
+import com.mapbox.maps.StyleLoadedCallback
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
@@ -21,23 +24,18 @@ import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
-import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
@@ -48,23 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-interface MapboxMapViewController :
-    MapViewController,
-    MarkerCapable<MapboxActualMarker>,
-    PolylineCapable,
-    PolygonCapable,
-    CircleCapable {
-    fun moveCamera(
-        dstPosition: MapCameraPosition,
-        listener: MapViewState.MoveCameraCallback? = null,
-    )
-
-    fun animateCamera(
-        dstPosition: MapCameraPosition,
-        duration: Long,
-        listener: MapViewState.MoveCameraCallback? = null,
-    )
-}
+typealias MapboxMapDesignTypeChangeHandler = (MapboxDesignType) -> Unit
 
 internal class MapboxMapViewControllerImpl(
     override val holder: MapboxMapViewHolder,
@@ -76,6 +58,7 @@ internal class MapboxMapViewControllerImpl(
 ) : BaseMapViewController(),
     MapboxMapViewController,
     CameraChangedCallback,
+    StyleLoadedCallback,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
@@ -110,6 +93,7 @@ internal class MapboxMapViewControllerImpl(
 
     fun setupListeners() {
         holder.map.subscribeCameraChanged(this)
+        holder.map.subscribeStyleLoaded(this)
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
 
@@ -177,7 +161,7 @@ internal class MapboxMapViewControllerImpl(
         coroutine.launch {
             holder.map.setCamera(cameraOptions)
         }
-        listener?.onComplete(true)
+        listener?.onComplete()
     }
 
     override fun animateCamera(
@@ -208,11 +192,11 @@ internal class MapboxMapViewControllerImpl(
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
-                    listener?.onComplete(true)
+                    listener?.onComplete()
                 }
 
                 override fun onAnimationCancel(animation: Animator) {
-                    listener?.onComplete(false)
+                    listener?.onComplete()
                 }
 
                 override fun onAnimationRepeat(animation: Animator) {
@@ -345,5 +329,27 @@ internal class MapboxMapViewControllerImpl(
 
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         polygonController.clickListener = listener
+    }
+
+    private var mapDesignType: MapboxDesignType = MapboxMapDesign.Standard
+
+    private var mapDesignTypeChangeListener: MapboxMapDesignTypeChangeHandler? = null
+
+    override fun setMapDesignType(value: MapboxDesignType) {
+        coroutine.launch {
+            holder.mapView.mapboxMap.loadStyle(value.getValue())
+        }
+    }
+
+    override fun setMapDesignTypeChangeListener(listener: MapboxMapDesignTypeChangeHandler) {
+        mapDesignTypeChangeListener = listener
+        listener(mapDesignType)
+    }
+
+    override fun run(styleLoaded: StyleLoaded) {
+        holder.map.style?.toMapDesignType()?.let { mapDesignType ->
+            this@MapboxMapViewControllerImpl.mapDesignType = mapDesignType
+            mapDesignTypeChangeListener?.invoke(mapDesignType)
+        }
     }
 }

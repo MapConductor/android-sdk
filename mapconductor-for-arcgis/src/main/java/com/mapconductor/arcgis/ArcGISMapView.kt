@@ -7,7 +7,6 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -60,7 +59,6 @@ fun ArcGISMapView(
                     id = state.id,
                     options = options,
                 )
-            state.controller = controller
             controller.holder.mapView.onCreate(owner)
             controller.holder.mapView.onResume(owner)
             controller.setCameraMoveListener(state::onCameraChange)
@@ -74,12 +72,10 @@ fun ArcGISMapView(
             controller.setOnMarkerDragEnd(onMarkerDragEnd)
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            state.setController(controller)
 
-            state.controller = controller
-
-            val restoreCameraPosition =
-                state.cameraPosition.value
-                    ?: MapCameraPosition.from(state.initCameraPosition)
+            val restoreCameraPosition = state.cameraPosition.value
             controller.moveCamera(restoreCameraPosition)
 
             controllerRef.value = controller
