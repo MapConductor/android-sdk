@@ -9,7 +9,6 @@ A unified mapping library that provides a common API for multiple map providers 
 - **⚡ High Performance**: Spatial indexing with hexagonal cells for efficient marker clustering
 - **🔄 Reactive State**: Built on Kotlin StateFlow for reactive UI updates
 - **🎨 Jetpack Compose**: Modern Android UI toolkit integration
-- **📱 Production Ready**: Used in real-world applications with comprehensive testing
 
 ## Architecture
 
@@ -68,7 +67,7 @@ GoogleMapView { /* ... */ }
 // Mapbox
 MapboxMapView { /* ... */ }
 
-// HERE Maps  
+// HERE Maps
 HereMapView { /* ... */ }
 
 // ArcGIS
