@@ -24,7 +24,7 @@ class CircleOverlayManagerImpl<ActualCircle>(
     val onChange: suspend (List<UpdateParams<ActualCircle>>) -> List<ActualCircle?>,
     val onRemove: suspend (List<CircleEntity<ActualCircle>>) -> Unit,
     val onPostProcess: (suspend () -> Unit)? = null,
-    val circleManager: CircleManager<ActualCircle> = CircleManager<ActualCircle>(),
+    val circleManager: CircleManagerImpl<ActualCircle> = CircleManagerImpl<ActualCircle>(),
 ) : CircleOverlayManager<ActualCircle> {
     val semaphore = Semaphore(1)
 

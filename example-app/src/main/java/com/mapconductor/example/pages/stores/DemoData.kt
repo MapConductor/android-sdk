@@ -6,13 +6,22 @@ import androidx.compose.ui.unit.sp
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
-import android.os.Bundle
+import java.io.Serializable
 
 /**
  * This example uses publicly available business addresses (e.g., Starbucks) and geocodes them
  * using the U.S. Census Bureau Geocoding API.
  * No personally identifiable information (PII) is used or inferred.
  */
+data class StoreInfo(
+    val name: String,
+    val address: String,
+    val instore: Boolean,
+    val driveThrough: Boolean,
+    val onlyReserved: Boolean,
+    val store: String,
+) : Serializable
+
 val StarbucksHI_list =
     listOf(
         MarkerState(
@@ -22,14 +31,14 @@ val StarbucksHI_list =
                     longitude = -158.062544988096,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Pupukea (North Shore)")
-                    putString("address", "59-720 Kamehameha Highway, Haleiwa, HI 96712")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_bean")
-                },
+                StoreInfo(
+                    name = "Pupukea (North Shore)",
+                    address = "59-720 Kamehameha Highway, Haleiwa, HI 96712",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_bean",
+                ),
             icon =
                 DefaultIcon(
                     label = "店",
@@ -47,14 +56,14 @@ val StarbucksHI_list =
                     longitude = -157.922371535818,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Honolulu Airport (HNL) – Main")
-                    putString("address", "300 Rogers Blvd, Honolulu, HI 96820")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_bean")
-                },
+                StoreInfo(
+                    name = "Honolulu Airport (HNL) – Main",
+                    address = "300 Rogers Blvd, Honolulu, HI 96820",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_bean",
+                ),
         ),
         MarkerState(
             position =
@@ -63,14 +72,14 @@ val StarbucksHI_list =
                     longitude = -157.930536387573,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Aiea Shopping Center")
-                    putString("address", "99-115 Aiea Heights Drive #125, Aiea, HI 96701")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Aiea Shopping Center",
+                    address = "99-115 Aiea Heights Drive #125, Aiea, HI 96701",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -79,21 +88,14 @@ val StarbucksHI_list =
                     longitude = -157.944839558127,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Pearlridge Center")
-                    putString("address", "98-125 Kaonohi Street, Aiea, HI 96701")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-//            icon =
-//                MarkerIcon.Companion.Triangle(
-//                    outsideColor = 0xFF008000.toInt(),
-//                    strokeWidth = 2f,
-//                    triangleHeight = 24f,
-//                    triangleWidth = 24f,
-//                ),
+                StoreInfo(
+                    name = "Pearlridge Center",
+                    address = "98-125 Kaonohi Street, Aiea, HI 96701",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -102,14 +104,14 @@ val StarbucksHI_list =
                     longitude = -157.928412704343,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Stadium Marketplace")
-                    putString("address", "4561 Salt Lake Boulevard, Aiea, HI 96818")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Stadium Marketplace",
+                    address = "4561 Salt Lake Boulevard, Aiea, HI 96818",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -118,14 +120,14 @@ val StarbucksHI_list =
                     longitude = -157.941897795274,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Pearlridge Mall")
-                    putString("address", "98-1005 Moanalua Road, Aiea, HI 96701")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
+                StoreInfo(
+                    name = "Pearlridge Mall",
+                    address = "98-1005 Moanalua Road, Aiea, HI 96701",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_extra",
+                ),
         ),
         MarkerState(
             position =
@@ -134,14 +136,14 @@ val StarbucksHI_list =
                     longitude = -155.067322812851,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Waiakea Center (Hilo)")
-                    putString("address", "315-325 Makaala Street, Hilo, HI 96720")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Waiakea Center (Hilo)",
+                    address = "315-325 Makaala Street, Hilo, HI 96720",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -150,14 +152,14 @@ val StarbucksHI_list =
                     longitude = -155.06690203818,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Prince Kuhio Plaza (Hilo)")
-                    putString("address", "111 East Puainako Street, Hilo, HI 96720")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Prince Kuhio Plaza (Hilo)",
+                    address = "111 East Puainako Street, Hilo, HI 96720",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -166,14 +168,14 @@ val StarbucksHI_list =
                     longitude = -155.082770375139,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Downtown Hilo (Kilauea Ave)")
-                    putString("address", "438 Kilauea Ave, Hilo, HI 96720")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", true)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Downtown Hilo (Kilauea Ave)",
+                    address = "438 Kilauea Ave, Hilo, HI 96720",
+                    instore = true,
+                    driveThrough = true,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -182,14 +184,14 @@ val StarbucksHI_list =
                     longitude = -157.91581,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Airport Trade Center")
-                    putString("address", "Airport Trade Center, 550 Paiea St, Honolulu, HI 96819")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Airport Trade Center",
+                    address = "Airport Trade Center, 550 Paiea St, Honolulu, HI 96819",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -198,14 +200,14 @@ val StarbucksHI_list =
                     longitude = -157.865194116049,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Aloha Tower")
-                    putString("address", "1 Aloha Tower Drive, Honolulu, HI 96813")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
+                StoreInfo(
+                    name = "Aloha Tower",
+                    address = "1 Aloha Tower Drive, Honolulu, HI 96813",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_extra",
+                ),
         ),
         MarkerState(
             position =
@@ -214,14 +216,14 @@ val StarbucksHI_list =
                     longitude = -157.8614898,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Bishop (Downtown)")
-                    putString("address", "1000 Bishop Street #104, Honolulu, HI 96813")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
+                StoreInfo(
+                    name = "Bishop (Downtown)",
+                    address = "1000 Bishop Street #104, Honolulu, HI 96813",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_extra",
+                ),
         ),
         MarkerState(
             position =
@@ -230,14 +232,14 @@ val StarbucksHI_list =
                     longitude = -157.860743724617,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Pickup – King & Alakea")
-                    putString("address", "220 South King Street, Honolulu, HI 96813")
-                    putBoolean("instore", false)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "honolulu_coffee")
-                },
+                StoreInfo(
+                    name = "Pickup – King & Alakea",
+                    address = "220 South King Street, Honolulu, HI 96813",
+                    instore = false,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "honolulu_coffee",
+                ),
         ),
         MarkerState(
             position =
@@ -246,14 +248,14 @@ val StarbucksHI_list =
                     longitude = -157.83841421971,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Discovery Bay Center")
-                    putString("address", "1778 Ala Moana Boulevard, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
+                StoreInfo(
+                    name = "Discovery Bay Center",
+                    address = "1778 Ala Moana Boulevard, Honolulu, HI 96815",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_extra",
+                ),
         ),
         MarkerState(
             position =
@@ -262,14 +264,14 @@ val StarbucksHI_list =
                     longitude = -158.023228524098,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Ewa Beach – Laulani Village")
-                    putString("address", "91-1401 Fort Weaver Road, Ewa Beach, HI 96706")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", true)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_bean")
-                },
+                StoreInfo(
+                    name = "Ewa Beach – Laulani Village",
+                    address = "91-1401 Fort Weaver Road, Ewa Beach, HI 96706",
+                    instore = true,
+                    driveThrough = true,
+                    onlyReserved = false,
+                    store = "coffee_bean",
+                ),
         ),
         MarkerState(
             position =
@@ -278,14 +280,14 @@ val StarbucksHI_list =
                     longitude = -157.828071689214,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "DFS (Duty Free) Waikiki")
-                    putString("address", "330 Royal Hawaiian Avenue, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
+                StoreInfo(
+                    name = "DFS (Duty Free) Waikiki",
+                    address = "330 Royal Hawaiian Avenue, Honolulu, HI 96815",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_extra",
+                ),
         ),
         MarkerState(
             position =
@@ -294,14 +296,14 @@ val StarbucksHI_list =
                     longitude = -157.862582769768,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Financial Plaza (Downtown)")
-                    putString("address", "130 Merchant Street #111, Honolulu, HI 96813")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "honolulu_coffee")
-                },
+                StoreInfo(
+                    name = "Financial Plaza (Downtown)",
+                    address = "130 Merchant Street #111, Honolulu, HI 96813",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "honolulu_coffee",
+                ),
         ),
         MarkerState(
             position =
@@ -310,14 +312,14 @@ val StarbucksHI_list =
                     longitude = -157.713041,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Hawaii Kai Town Center")
-                    putString("address", "6700 Kalanianaole Highway, Honolulu, HI 96825")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Hawaii Kai Town Center",
+                    address = "6700 Kalanianaole Highway, Honolulu, HI 96825",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -326,14 +328,14 @@ val StarbucksHI_list =
                     longitude = -157.849735879475,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Hokua (Ala Moana)")
-                    putString("address", "1288 Ala Moana Blvd, Honolulu, HI 96814")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_bean")
-                },
+                StoreInfo(
+                    name = "Hokua (Ala Moana)",
+                    address = "1288 Ala Moana Blvd, Honolulu, HI 96814",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_bean",
+                ),
         ),
         MarkerState(
             position =
@@ -342,14 +344,14 @@ val StarbucksHI_list =
                     longitude = -157.868748238078,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Kamehameha Shopping Center")
-                    putString("address", "1620 North School Street, Honolulu, HI 96817")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Kamehameha Shopping Center",
+                    address = "1620 North School Street, Honolulu, HI 96817",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -358,14 +360,14 @@ val StarbucksHI_list =
                     longitude = -157.7875773,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Kahala Mall")
-                    putString("address", "4211 Waialae Avenue, Honolulu, HI 96816")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Kahala Mall",
+                    address = "4211 Waialae Avenue, Honolulu, HI 96816",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -374,14 +376,14 @@ val StarbucksHI_list =
                     longitude = -157.813890137018,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Kapahulu Avenue")
-                    putString("address", "625 Kapahulu Avenue, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
+                StoreInfo(
+                    name = "Kapahulu Avenue",
+                    address = "625 Kapahulu Avenue, Honolulu, HI 96815",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "coffee_extra",
+                ),
         ),
         MarkerState(
             position =
@@ -390,14 +392,14 @@ val StarbucksHI_list =
                     longitude = -157.704922547261,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Koko Marina Center")
-                    putString("address", "7192 Kalanianaole Highway, Honolulu, HI 96825")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Koko Marina Center",
+                    address = "7192 Kalanianaole Highway, Honolulu, HI 96825",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -406,14 +408,14 @@ val StarbucksHI_list =
                     longitude = -157.810260198584,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Manoa Valley")
-                    putString("address", "2902 East Manoa Road, Honolulu, HI 96822")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
+                StoreInfo(
+                    name = "Manoa Valley",
+                    address = "2902 East Manoa Road, Honolulu, HI 96822",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "starbucks",
+                ),
         ),
         MarkerState(
             position =
@@ -422,493 +424,13 @@ val StarbucksHI_list =
                     longitude = -157.843910788044,
                 ),
             extra =
-                Bundle().apply {
-                    putString("name", "Macy’s Ala Moana Center")
-                    putString("address", "1450 Ala Moana Boulevard, Honolulu, HI 96814")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "honolulu_coffee")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.341260775481,
-                    longitude = -157.929507250967,
+                StoreInfo(
+                    name = "Macy’s Ala Moana Center",
+                    address = "1450 Ala Moana Boulevard, Honolulu, HI 96814",
+                    instore = true,
+                    driveThrough = false,
+                    onlyReserved = false,
+                    store = "honolulu_coffee",
                 ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Moanalua Shopping Center")
-                    putString("address", "930 Valkenburgh Street, Honolulu, HI 96818")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.279011840151,
-                    longitude = -157.825557564916,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Ohana Waikiki West")
-                    putString("address", "2330 Kuhio Avenue, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.2786604527,
-                    longitude = -157.828371626919,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Waikiki Shopping Plaza")
-                    putString("address", "2270 Kalakaua Avenue #1800, Honolulu, HI 96815")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.293774306726,
-                    longitude = -157.85297798269,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Ward Entertainment Center")
-                    putString("address", "310 Kamakee Street #6, Honolulu, HI 96814")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.406095,
-                    longitude = -157.800761,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Windward City Shopping Center")
-                    putString("address", "45-480 Kaneohe Bay Drive, Kaneohe, HI 96744")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.888659282451,
-                    longitude = -156.477197459052,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Queen Kaahumanu Center")
-                    putString("address", "275 West Kaahumanu Avenue #1200, Kahului, HI 96732")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.881960703032,
-                    longitude = -156.45511618549,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Maui Marketplace")
-                    putString("address", "270 Dairy Road, Kahului, HI 96732")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.393471214679,
-                    longitude = -157.740438744365,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kailua Village")
-                    putString("address", "539 Kailua Road, Kailua, HI 96734")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 19.65018280057,
-                    longitude = -155.987752998108,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kona Coast Shopping Center")
-                    putString("address", "74-5588 Palani Road, Kailua-Kona, HI 96740")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.020593379111,
-                    longitude = -155.668585540658,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Parker Ranch Center")
-                    putString("address", "67-1185 Mamalahoa Highway #D108, Kamuela, HI 96743")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.344027896932,
-                    longitude = -158.11830127628,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Halekuai Center")
-                    putString("address", "563 Farrington Highway #101, Kapolei, HI 96707")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.328579072139,
-                    longitude = -158.086506230214,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kapolei Parkway & Kamokila")
-                    putString("address", "338 Kamokila Boulevard #108, Kapolei, HI 96797")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", true)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.734513943855,
-                    longitude = -156.452970465534,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kukui Mall")
-                    putString("address", "1819 South Kihei Road, Kihei, HI 96738")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.750703062197,
-                    longitude = -156.451408824978,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Piilani Village Shopping Center")
-                    putString("address", "247 Piikea Avenue #106, Kihei, HI 96753")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 19.94001271876,
-                    longitude = -155.856842731652,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Mauna Lani (Kohala Coast)")
-                    putString("address", "68-1330 Mauna Lani Drive #H-101B, Kohala Coast, HI 96743")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.886244,
-                    longitude = -156.684697,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Lahaina Cannery Mall")
-                    putString("address", "1221 Honoapiilani Highway, Lahaina, HI 96761")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.877708110758,
-                    longitude = -156.679031878844,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Lahaina (Front Street)")
-                    putString("address", "845 Wainee Street, Lahaina, HI 96761")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_bean")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.969553724378,
-                    longitude = -159.388283368972,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kukui Grove Center")
-                    putString("address", "3-2600 Kaumualii Highway #A8, Lihue, HI 96766")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.889156401906,
-                    longitude = -156.449318101378,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kahului Airport (OGG)")
-                    putString("address", "1 Keolani Place, Kahului, HI 96732")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.458431746129,
-                    longitude = -158.015862355331,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Mililani Shopping Center")
-                    putString("address", "95-221 Kipapa Drive, Mililani, HI 96789")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 20.838230357792,
-                    longitude = -156.342698446307,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Pukalani Foodland Center")
-                    putString("address", "55 Pukalani Street, Pukalani, HI 96768")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.378675,
-                    longitude = -157.728499,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Enchanted Lake Center (Kailua)")
-                    putString("address", "1020 Keolu Drive, Kailua, HI 96734")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", true)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.389003512015,
-                    longitude = -158.033431400538,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kunia Shopping Center")
-                    putString("address", "94-673 Kupuohi Street, Waipahu, HI 96797")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.881002766882,
-                    longitude = -159.457726341723,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Poipu Shopping Village")
-                    putString("address", "2360 Kiahuna Plantation Drive #E70, Koloa, HI 96756")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.966834230955,
-                    longitude = -159.381526209527,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Safeway Lihue")
-                    putString("address", "4454 Nuhou Street, Lihue, HI 96766")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.970935289068,
-                    longitude = -159.375643172372,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Target Lihue (Kauai)")
-                    putString("address", "4303 Nawiliwili Road, Lihue, HI 96766")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 22.061786387888,
-                    longitude = -159.320539848567,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Kauai Village SC (Kapaa)")
-                    putString("address", "4-831 Kuhio Highway #208, Kapaa, HI 96746")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "starbucks")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.32874860701,
-                    longitude = -158.091318912219,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Target Kapolei")
-                    putString("address", "4450 Kapolei Parkway, Kapolei, HI 96707")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.340541119127,
-                    longitude = -158.124703887408,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Ko Olina Station")
-                    putString("address", "92-1047 Olani Street, Kapolei, HI 96707")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
-        ),
-        MarkerState(
-            position =
-                GeoPoint(
-                    latitude = 21.34213,
-                    longitude = -157.95157,
-                ),
-            extra =
-                Bundle().apply {
-                    putString("name", "Hickam AFB (Base Access)")
-                    putString("address", "Bldg B-1250, Hickam AFB, Honolulu, HI 96853")
-                    putBoolean("instore", true)
-                    putBoolean("drive_through", false)
-                    putBoolean("only_reserved", false)
-                    putString("store", "coffee_extra")
-                },
         ),
     )

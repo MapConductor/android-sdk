@@ -7,7 +7,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.MarkerState
 import android.os.Parcelable
@@ -134,9 +133,9 @@ data class CircleFingerPrint(
     val extra: Int,
 )
 
-data class CircleClickEvent(
+data class CircleEvent(
     val state: CircleState,
-    val position: GeoPoint,
+    val clicked: IGeoPoint,
 )
 
-typealias OnCircleEventHandler = (CircleClickEvent) -> Unit
+typealias OnCircleEventHandler = (CircleEvent) -> Unit

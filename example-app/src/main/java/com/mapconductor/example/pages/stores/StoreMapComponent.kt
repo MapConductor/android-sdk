@@ -19,7 +19,6 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.R
-import android.os.Bundle
 
 @Composable
 fun StoreMapComponent(
@@ -61,8 +60,8 @@ fun StoreMapComponent(
     val markerList =
         remember {
             markers.map { state ->
-                (state.extra as Bundle).let { info ->
-                    val storeIcon = info.getString("store") ?: "coffee_extra"
+                (state.extra as StoreInfo).let { info ->
+                    val storeIcon = info.store
                     state.copy(
                         icon = icons[storeIcon],
                     )
@@ -89,7 +88,7 @@ fun StoreMapComponent(
                         marker = it,
                     ) {
                         StoreInfoView(
-                            info = it.extra as Bundle,
+                            info = it.extra as StoreInfo,
                             onClick = {
                                 onDirectionButtonClick(it)
                             },

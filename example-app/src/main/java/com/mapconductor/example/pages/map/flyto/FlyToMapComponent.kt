@@ -2,7 +2,6 @@ package com.mapconductor.example.pages.map.flyto
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.map.MapViewState
@@ -26,16 +25,12 @@ fun FlyToMapComponent(
         ) {
             // Render polylines connecting all markers
             polylines.forEach { polyline ->
-                key(polyline.id) {
-                    Polyline(polyline)
-                }
+                Polyline(polyline)
             }
 
             // Render markers for fly to destinations
             markers.forEach { marker ->
-                key(marker.id) {
-                    Marker(marker)
-                }
+                Marker(marker)
             }
         }
     }

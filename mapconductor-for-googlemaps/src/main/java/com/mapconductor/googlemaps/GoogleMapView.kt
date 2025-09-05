@@ -17,27 +17,29 @@ import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.view.ViewGroup
 
 @Composable
 fun GoogleMapsView(
-    state: IGoogleMapViewState,
+    state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler? = {},
-    onMarkerClick: OnMarkerEventHandler? = {},
-    onMarkerDragStart: OnMarkerEventHandler? = {},
-    onMarkerDrag: OnMarkerEventHandler? = {},
-    onMarkerDragEnd: OnMarkerEventHandler? = {},
-    onMarkerAnimateStart: OnMarkerEventHandler? = {},
-    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
-    onCircleClick: OnCircleEventHandler? = {},
-    onPolylineClick: OnPolylineEventHandler? = {},
-    onGroundImageClick: OnGroundImageEventHandler? = {},
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
-    val controllerRef = remember { Ref<GoogleMapViewController>() }
+    val controllerRef = remember { Ref<GoogleMapViewControllerImpl>() }
     val scope = remember { GoogleMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
@@ -54,20 +56,20 @@ fun GoogleMapsView(
             // Specific Google Maps initialization logic
             // This lambda will be executed within state.initAsync by MapViewBase
             val cameraPosition =
-                state.cameraPosition.value.let {
+                state.cameraPosition.value?.let { camera ->
                     CameraPosition
                         .Builder()
                         .apply {
-                            target(GeoPoint.from(it.position).toLatLng())
-                            zoom(it.zoom.toFloat())
-                            bearing(it.bearing.toFloat())
-                            tilt(it.tilt.toFloat())
+                            target(GeoPoint.from(camera.position).toLatLng())
+                            zoom(camera.zoom.toFloat())
+                            bearing(camera.bearing.toFloat())
+                            tilt(camera.tilt.toFloat())
                         }.build()
                 }
 
             val mapInitOptions =
                 GoogleMapOptions()
-                    .mapType(state.mapDesignType.getValue())
+                    .mapType(state.mapDesignType?.getValue() ?: GoogleMapDesign.None.getValue())
                     .camera(cameraPosition)
 
             val controller =
@@ -76,20 +78,20 @@ fun GoogleMapsView(
                     id = state.id,
                     options = mapInitOptions,
                 )
-            (state as? GoogleMapViewState)?.let { mapViewState ->
-                mapViewState.controller = controller
-                controller.setCameraMoveListener(mapViewState::onCameraChange)
-            }
+            state.setController(controller)
+            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
-            controller.setMarkerClickListener(onMarkerClick)
-            controller.setMarkerDragStartListener(onMarkerDragStart)
-            controller.setMarkerDragListener(onMarkerDrag)
-            controller.setMarkerDragEndListener(onMarkerDragEnd)
-            controller.setCircleClickListener(onCircleClick)
-            controller.setPolylineClickListener(onPolylineClick)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
+            controller.setOnMarkerClickListener(onMarkerClick)
+            controller.setOnMarkerDragStart(onMarkerDragStart)
+            controller.setOnMarkerDrag(onMarkerDrag)
+            controller.setOnMarkerDragEnd(onMarkerDragEnd)
+            controller.setOnCircleClickListener(onCircleClick)
+            controller.setOnPolylineClickListener(onPolylineClick)
+            controller.setOnPolygonClickListener(onPolygonClick)
+            controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setOnGroundImageClickListener(onGroundImageClick)
+            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
 
             holderRef.value = controller.holder
             controllerRef.value = controller

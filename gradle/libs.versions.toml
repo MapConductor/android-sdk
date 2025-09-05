@@ -22,7 +22,7 @@ compose = "1.8.1"
 composeBom = "2025.05.00"
 runner = "1.6.2"
 
-mapboxAndroid = "11.13.1"
+mapboxAndroid = "11.14.3"
 playServicesMaps = "19.2.0"
 
 secretsGradlePlugin = "2.0.1"
@@ -30,6 +30,11 @@ secretsGradlePlugin = "2.0.1"
 arcgisMapsKotlin = "200.7.0"
 uiTooling = "1.8.1"
 vectordrawable = "1.2.0"
+roomRuntimeAndroid = "2.7.2"
+googleServices = "4.4.3"
+firebaseBom = "34.2.0"
+googleFirebaseAppdistribution = "5.1.1"
+ktLint = "13.1.0"
 
 [libraries]
 # Android 基本
@@ -60,7 +65,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
 
 # Mapbox
-mapbox-android = { module = "com.mapbox.maps:android", version.ref = "mapboxAndroid" }
+mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
 
 # Google Maps
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
@@ -77,9 +82,16 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
 androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "vectordrawable" }
+androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
+
+# Firebase
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices"}
+google-firebase-appdistribution = { id = "com.google.firebase.appdistribution", version.ref = "googleFirebaseAppdistribution" }
+jlleitschuh-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint"}

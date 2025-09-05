@@ -4,9 +4,9 @@ import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 
-interface MapViewHolder<out TMapView, out TMap> {
-    val mapView: TMapView
-    val map: TMap
+interface MapViewHolder<ActualMapViewType, ActualMapType> {
+    val mapView: ActualMapViewType
+    val map: ActualMapType
 
     fun toScreenOffset(position: IGeoPoint): Offset?
 

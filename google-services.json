@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "35981014220",
+    "project_id": "mapconductor",
+    "storage_bucket": "mapconductor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:35981014220:android:4265a83c3abbd61e8d7e69",
+        "android_client_info": {
+          "package_name": "com.mapconductor.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAplsr7yaYVUKq8Kiaw-C4tICkDdaSWO0U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

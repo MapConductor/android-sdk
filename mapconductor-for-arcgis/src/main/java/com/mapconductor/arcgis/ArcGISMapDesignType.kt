@@ -3,11 +3,13 @@ package com.mapconductor.arcgis
 import com.arcgismaps.mapping.BasemapStyle
 import com.mapconductor.core.map.MapDesignType
 
-interface ArcGISDesignType : MapDesignType<String>
+interface ArcGISDesignType : MapDesignType<String> {
+    val elevationSources: List<String>
+}
 
 data class ArcGISDesign(
     override val id: String,
-    val elevationSources: List<String> = emptyList<String>(),
+    override val elevationSources: List<String> = emptyList<String>(),
 ) : ArcGISDesignType {
     override fun getValue(): String = id
 

@@ -6,8 +6,8 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
 
-typealias ActualGoogleMapMarker = Marker
-typealias ActualGoogleMapCircle = Circle
-typealias ActualGoogleMapPolyline = Polyline
-typealias ActualGoogleMapPolygon = Polygon
-typealias ActualGoogleMapGroundImage = GroundOverlay
+typealias GoogleMapActualMarker = Marker
+typealias GoogleMapActualCircle = Circle
+typealias GoogleMapActualPolyline = Polyline
+typealias GoogleMapActualPolygon = Polygon
+typealias GoogleMapActualGroundImage = GroundOverlay

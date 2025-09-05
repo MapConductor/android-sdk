@@ -27,41 +27,72 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.ArcGISDesign
+import com.mapconductor.arcgis.ArcGISMapViewStateImpl
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.example.R
 import com.mapconductor.googlemaps.GoogleMapDesign
+import com.mapconductor.googlemaps.GoogleMapViewStateImpl
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
+import com.mapconductor.here.HereViewStateImpl
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
+import com.mapconductor.mapbox.MapboxViewStateImpl
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 
 @Composable
-fun DemoMapPageScaffold(
-    initCameraPosition: IMapCameraPosition,
-    initSelect: Int = 0,
-    onToggleSidebar: () -> Unit,
-    onMapViewStateChanged: (MapViewState<*>) -> Unit = {},
-    content: @Composable BoxScope.(PaddingValues) -> Unit = {},
-) {
-    // ---------- Map States ---------------
+fun GetGoogleMapViewItem(initCameraPosition: IMapCameraPosition): IconItem<GoogleMapViewStateImpl> {
     val googleMapState =
         rememberGoogleMapViewState(
             mapDesign = GoogleMapDesign.Normal,
             cameraPosition = initCameraPosition,
         )
+    return IconItem(
+        key = "googlemap",
+        label = "Google Map",
+        lightIconResId = R.drawable.google_maps_logo,
+        darkIconResId = R.drawable.google_maps_logo,
+        value = googleMapState,
+    )
+}
+
+@Composable
+fun GetMapboxViewItem(initCameraPosition: IMapCameraPosition): IconItem<MapboxViewStateImpl> {
     val mapboxMapState =
         rememberMapboxMapViewState(
             mapDesign = MapboxMapDesign.Standard,
             cameraPosition = initCameraPosition,
         )
+    return IconItem(
+        key = "mapbox",
+        label = "Mapbox",
+        lightIconResId = R.drawable.mapbox_logo_black,
+        darkIconResId = R.drawable.mapbox_logo_white,
+        value = mapboxMapState,
+    )
+}
+
+@Composable
+fun GetHereViewItem(initCameraPosition: IMapCameraPosition): IconItem<HereViewStateImpl> {
     val hereMapState =
         rememberHereMapViewState(
             mapDesign = HereMapDesign.NormalDay,
             cameraPosition = initCameraPosition,
         )
+    return IconItem(
+        key = "heremap",
+        label = "Here",
+        lightIconResId = R.drawable.here_logo_black,
+        darkIconResId = R.drawable.here_logo_white,
+        value = hereMapState,
+    )
+}
+
+@Composable
+fun GetArcGISViewItem(initCameraPosition: IMapCameraPosition): IconItem<ArcGISMapViewStateImpl> {
     val elevationSources =
         listOf(
             "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
@@ -71,39 +102,49 @@ fun DemoMapPageScaffold(
             mapDesign = ArcGISDesign.Streets.withElevationSources(elevationSources),
             cameraPosition = initCameraPosition,
         )
+    return IconItem(
+        key = "arcgis",
+        label = "ArcGIS",
+        lightIconResId = R.drawable.arcgis_logo_black,
+        darkIconResId = R.drawable.arcgis_logo_white,
+        value = arcGISMapState,
+    )
+}
 
-    val menuItems =
-        listOf(
-            IconItem(
-                key = "googlemap",
-                label = "Google Map",
-                lightIconResId = R.drawable.google_maps_logo,
-                darkIconResId = R.drawable.google_maps_logo,
-                value = googleMapState,
-            ),
-            IconItem(
-                key = "mapbox",
-                label = "Mapbox",
-                lightIconResId = R.drawable.mapbox_logo_black,
-                darkIconResId = R.drawable.mapbox_logo_white,
-                value = mapboxMapState,
-            ),
-            IconItem(
-                key = "heremap",
-                label = "Here",
-                lightIconResId = R.drawable.here_logo_black,
-                darkIconResId = R.drawable.here_logo_white,
-                value = hereMapState,
-            ),
-            IconItem(
-                key = "arcgis",
-                label = "ArcGIS",
-                lightIconResId = R.drawable.arcgis_logo_black,
-                darkIconResId = R.drawable.arcgis_logo_white,
-                value = arcGISMapState,
-            ),
-        )
+@Composable
+fun DefaultMapViewItems(initCameraPosition: IMapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
+    listOf(
+        GetGoogleMapViewItem(initCameraPosition),
+        GetMapboxViewItem(initCameraPosition),
+        GetHereViewItem(initCameraPosition),
+        GetArcGISViewItem(initCameraPosition),
+    )
 
+@Composable
+fun GroundImageCapableMapViewItems(
+    initCameraPosition: IMapCameraPosition,
+): List<IconItem<out MapViewStateImpl<out Any>>> =
+    listOf(
+        GetGoogleMapViewItem(initCameraPosition),
+    )
+
+@Composable
+fun PolygonCapableMapViewItems(initCameraPosition: IMapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
+    listOf(
+        GetGoogleMapViewItem(initCameraPosition),
+        GetMapboxViewItem(initCameraPosition),
+        GetHereViewItem(initCameraPosition),
+        GetArcGISViewItem(initCameraPosition),
+    )
+
+@Composable
+fun DemoMapPageScaffold(
+    menuItems: List<IconItem<out MapViewStateImpl<out Any>>>,
+    initSelect: Int = 0,
+    onToggleSidebar: () -> Unit,
+    onMapViewStateChanged: (MapViewState<*>) -> Unit = {},
+    content: @Composable (BoxScope.(PaddingValues) -> Unit) = {},
+) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(initSelect) }
     LaunchedEffect(selectedIndex) {
         onMapViewStateChanged(menuItems.elementAt(selectedIndex).value)
