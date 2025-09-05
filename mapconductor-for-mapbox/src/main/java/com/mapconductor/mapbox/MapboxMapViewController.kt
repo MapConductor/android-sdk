@@ -7,7 +7,6 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.sources.addSource
@@ -56,7 +55,6 @@ import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineRenderer
 import com.mapconductor.settings.Settings
 import android.animation.Animator
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,10 +66,7 @@ interface IMapboxMapViewController :
         MapboxActualPolyline,
         MapboxActualPolygon,
     > {
-
-    fun changeMapDesign(
-        value: String
-    )
+    fun changeMapDesign(value: String)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -252,36 +247,66 @@ internal class MapboxMapViewController(
 
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
-    private fun cameraCallbackImpl(){
+    override fun run(cameraChanged: CameraChanged) {
         cameraMoveCallback?.let { callBack ->
-            val options = CameraOptions.Builder()
-                .center(holder.map.cameraState.center)
-                .zoom(holder.map.cameraState.zoom)
-                .bearing(holder.map.cameraState.bearing)
-                .pitch(holder.map.cameraState.pitch)
-                .build()
+            val options =
+                CameraOptions
+                    .Builder()
+                    .center(holder.map.cameraState.center)
+                    .zoom(holder.map.cameraState.zoom)
+                    .bearing(holder.map.cameraState.bearing)
+                    .pitch(holder.map.cameraState.pitch)
+                    .build()
             val camera = holder.map.cameraState.toMapCameraPosition()
             val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
-            val visibleRegion = VisibleRegion(
-                southWest = currentBox.southwest.toGeoPoint(),
-                northEast = currentBox.northeast.toGeoPoint(),
-                nearLeft = null,
-                nearRight = null,
-                farLeft = null,
-                farRight = null,
-            )
+            val visibleRegion =
+                VisibleRegion(
+                    southWest = currentBox.southwest.toGeoPoint(),
+                    northEast = currentBox.northeast.toGeoPoint(),
+                    nearLeft =
+                        holder.map
+                            .coordinateForPixel(
+                                ScreenCoordinate(
+                                    0.0,
+                                    holder.map
+                                        .getSize()
+                                        .height
+                                        .toDouble(),
+                                ),
+                            ).toGeoPoint(),
+                    nearRight =
+                        holder.map
+                            .coordinateForPixel(
+                                ScreenCoordinate(
+                                    holder.map
+                                        .getSize()
+                                        .width
+                                        .toDouble(),
+                                    holder.map
+                                        .getSize()
+                                        .height
+                                        .toDouble(),
+                                ),
+                            ).toGeoPoint(),
+                    farLeft = holder.map.coordinateForPixel(ScreenCoordinate(0.0, 0.0)).toGeoPoint(),
+                    farRight =
+                        holder.map
+                            .coordinateForPixel(
+                                ScreenCoordinate(
+                                    holder.map
+                                        .getSize()
+                                        .width
+                                        .toDouble(),
+                                    0.0,
+                                ),
+                            ).toGeoPoint(),
+                )
             val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
             coroutine.launch { callBack(mapCameraPosition) }
         }
     }
 
-    override fun run(cameraChanged: CameraChanged) {
-        cameraCallbackImpl()
-    }
-
-    override fun changeMapDesign(
-        value: String
-    ){
+    override fun changeMapDesign(value: String) {
         coroutine.launch {
             holder.mapView.mapboxMap.loadStyle(value) {}
         }

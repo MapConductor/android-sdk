@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import com.arcgismaps.mapping.Basemap
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.LongPressEvent
@@ -27,6 +28,7 @@ import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
 import com.mapconductor.core.marker.MarkerRendererFactory
@@ -44,7 +46,6 @@ import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.arcgismaps.mapping.Basemap
 
 interface IArcGISMapViewController :
     MapViewController<
@@ -53,9 +54,7 @@ interface IArcGISMapViewController :
         ArcGISActualPolyline,
         ArcGISActualPolygon,
     > {
-    fun changeMapDesign(
-        value: String
-    )
+    fun changeMapDesign(value: String)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -212,9 +211,92 @@ class ArcGISMapViewController(
     }
 
     private fun onViewpointChange() {
-        this.cameraMoveCallback?.let {
-            val mapCamera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
-            it(mapCamera)
+        cameraMoveCallback?.let { callback ->
+            coroutine.launch {
+                val pts =
+                    listOfNotNull(
+                        holder.map
+                            .screenToLocation(
+                                com.arcgismaps.mapping.view.ScreenCoordinate(
+                                    0.0,
+                                    holder.map.height.toDouble(),
+                                ),
+                            ).getOrNull()
+                            ?.toGeoPoint(), // nearLeft
+                        holder.map
+                            .screenToLocation(
+                                com.arcgismaps.mapping.view.ScreenCoordinate(
+                                    holder.map.width.toDouble(),
+                                    holder.map.height.toDouble(),
+                                ),
+                            ).getOrNull()
+                            ?.toGeoPoint(), // nearRight
+                        holder.map
+                            .screenToLocation(
+                                com.arcgismaps.mapping.view
+                                    .ScreenCoordinate(0.0, 0.0),
+                            ).getOrNull()
+                            ?.toGeoPoint(), // farLeft
+                        holder.map
+                            .screenToLocation(
+                                com.arcgismaps.mapping.view.ScreenCoordinate(
+                                    holder.map.width.toDouble(),
+                                    0.0,
+                                ),
+                            ).getOrNull()
+                            ?.toGeoPoint(), // farRight
+                    )
+                if (pts.isEmpty()) return@launch
+                val visibleRegion =
+                    VisibleRegion(
+                        northEast =
+                            com.mapconductor.core.features.GeoPoint.fromLatLong(
+                                pts.maxOf { it.latitude }, pts.maxOf { it.longitude },
+                            ),
+                        southWest =
+                            com.mapconductor.core.features.GeoPoint.fromLatLong(
+                                pts.minOf { it.latitude }, pts.minOf { it.longitude },
+                            ),
+                        nearLeft =
+                            holder.map
+                                .screenToLocation(
+                                    com.arcgismaps.mapping.view.ScreenCoordinate(
+                                        0.0,
+                                        holder.map.height.toDouble(),
+                                    ),
+                                ).getOrNull()
+                                ?.toGeoPoint() ?: pts.first(),
+                        nearRight =
+                            holder.map
+                                .screenToLocation(
+                                    com.arcgismaps.mapping.view.ScreenCoordinate(
+                                        holder.map.width.toDouble(),
+                                        holder.map.height.toDouble(),
+                                    ),
+                                ).getOrNull()
+                                ?.toGeoPoint() ?: pts.first(),
+                        farLeft =
+                            holder.map
+                                .screenToLocation(
+                                    com.arcgismaps.mapping.view
+                                        .ScreenCoordinate(0.0, 0.0),
+                                ).getOrNull()
+                                ?.toGeoPoint() ?: pts.first(),
+                        farRight =
+                            holder.map
+                                .screenToLocation(
+                                    com.arcgismaps.mapping.view.ScreenCoordinate(
+                                        holder.map.width.toDouble(),
+                                        0.0,
+                                    ),
+                                ).getOrNull()
+                                ?.toGeoPoint() ?: pts.first(),
+                    )
+                val camera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
+                val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+
+                callback(mapCameraPosition)
+            }
         }
     }
 
@@ -344,16 +426,14 @@ class ArcGISMapViewController(
 
     override suspend fun updateCircle(state: CircleState) = circleOverlayManager.updateCircle(state)
 
-    override fun changeMapDesign(
-        value: String
-    ){
+    override fun changeMapDesign(value: String) {
         coroutine.launch {
             holder.map.scene!!.setBasemap(
                 Basemap(
                     ArcGISDesign.toBasemapStyle(
-                        ArcGISDesign(value)
-                    )
-                )
+                        ArcGISDesign(value),
+                    ),
+                ),
             )
         }
     }

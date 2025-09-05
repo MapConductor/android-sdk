@@ -1,4 +1,3 @@
 package com.mapconductor.example.camera
 
-class CameraSync {
-}
+class CameraSync

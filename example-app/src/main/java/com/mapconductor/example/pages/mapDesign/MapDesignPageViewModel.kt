@@ -182,10 +182,16 @@ class MapDesignPageViewModelImpl :
             MapDesignOptions(label = "HumanGeographyLabels", design = ArcGISDesign.Companion.HumanGeographyLabels),
             MapDesignOptions(label = "HumanGeographyDark", design = ArcGISDesign.Companion.HumanGeographyDark),
             MapDesignOptions(label = "HumanGeographyDarkBase", design = ArcGISDesign.Companion.HumanGeographyDarkBase),
-            MapDesignOptions(label = "HumanGeographyDarkDetail", design =
-                ArcGISDesign.Companion.HumanGeographyDarkDetail),
-            MapDesignOptions(label = "HumanGeographyDarkLabels", design =
-                ArcGISDesign.Companion.HumanGeographyDarkLabels),
+            MapDesignOptions(
+                label = "HumanGeographyDarkDetail",
+                design =
+                    ArcGISDesign.Companion.HumanGeographyDarkDetail,
+            ),
+            MapDesignOptions(
+                label = "HumanGeographyDarkLabels",
+                design =
+                    ArcGISDesign.Companion.HumanGeographyDarkLabels,
+            ),
             MapDesignOptions(label = "Outdoor", design = ArcGISDesign.Companion.Outdoor),
             MapDesignOptions(label = "OsmStandard", design = ArcGISDesign.Companion.OsmStandard),
             MapDesignOptions(label = "OsmStandardRelief", design = ArcGISDesign.Companion.OsmStandardRelief),

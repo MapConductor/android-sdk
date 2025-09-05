@@ -9,7 +9,6 @@ import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapDesignType
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
@@ -19,7 +18,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,8 +26,7 @@ class ArcGISMapViewState(
     override val id: String,
     override val initCameraPosition: MapCameraPosition,
     override var mapDesignType: ArcGISDesign,
-) : MapViewStateImpl<ArcGISDesign>()
-    {
+) : MapViewStateImpl<ArcGISDesign>() {
     // Map padding
     private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
     val padding: StateFlow<MapPaddings> = _padding.asStateFlow()

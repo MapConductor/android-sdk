@@ -30,6 +30,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayManager
 import com.mapconductor.core.marker.MarkerRenderer
@@ -56,9 +57,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 interface IHereMapViewController : MapViewController<MapMarker, MapPolygon, MapPolyline, MapPolygon> {
-    fun changeMapDesign(
-        value: MapScheme
-    )
+    fun changeMapDesign(value: MapScheme)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -200,11 +199,9 @@ class HereMapViewController(
         holder.mapView.gestures.longPressListener = this
     }
 
-    override fun changeMapDesign(
-        value: MapScheme
-    ){
+    override fun changeMapDesign(value: MapScheme) {
         coroutine.launch {
-            holder.mapView.mapScene.loadScene(value){}
+            holder.mapView.mapScene.loadScene(value) {}
         }
     }
 
@@ -256,17 +253,45 @@ class HereMapViewController(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        val correctCameraState =
-            MapCamera.State(
-                cameraState.targetCoordinates,
-                GeoOrientation(cameraState.orientationAtTarget.bearing, cameraState.orientationAtTarget.tilt),
-                0.0,
-                cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
-            )
-
-        cameraMoveCallback?.let {
-            val mapCameraPosition = correctCameraState.toMapCameraPosition()
-            it(mapCameraPosition)
+        cameraMoveCallback?.let { callback ->
+            holder.mapView.camera.boundingBox?.let { boundingBox ->
+                val camera =
+                    holder.mapView.camera.state
+                        .toMapCameraPosition()
+                val leftTop = Point2D(0.0, 0.0)
+                val rightTop = Point2D(holder.mapView.width.toDouble(), 0.0)
+                val leftBottom = Point2D(0.0, holder.mapView.height.toDouble())
+                val rightBottom =
+                    Point2D(
+                        holder.mapView.width.toDouble(),
+                        holder.mapView.height
+                            .toDouble(),
+                    )
+                val visibleRegion =
+                    VisibleRegion(
+                        southWest = boundingBox.southWestCorner.toGeoPoint(),
+                        northEast = boundingBox.northEastCorner.toGeoPoint(),
+                        nearLeft =
+                            holder.mapView
+                                .viewToGeoCoordinates(leftBottom)
+                                ?.toGeoPoint(),
+                        nearRight =
+                            holder.mapView
+                                .viewToGeoCoordinates(
+                                    rightBottom,
+                                )?.toGeoPoint(),
+                        farLeft =
+                            holder.mapView
+                                .viewToGeoCoordinates(leftTop)
+                                ?.toGeoPoint(),
+                        farRight =
+                            holder.mapView
+                                .viewToGeoCoordinates(rightTop)
+                                ?.toGeoPoint(),
+                    )
+                val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+                coroutine.launch { callback(mapCameraPosition) }
+            }
         }
     }
 

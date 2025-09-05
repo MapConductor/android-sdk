@@ -57,9 +57,7 @@ import kotlinx.coroutines.launch
 interface IGoogleMapViewController :
     MapViewController<Marker, Circle, Polyline, Polygon>,
     GroundImageCapable<ActualGoogleMapGroundImage> {
-    fun changeMapDesign(
-        value: Int
-    )
+    fun changeMapDesign(value: Int)
 
     fun moveCamera(
         dstPosition: MapCameraPosition,
@@ -87,10 +85,10 @@ class GoogleMapViewController(
     private val circleRendererFactory: CircleRendererFactory<Circle> = DefaultGoogleMapCircleRenderer(),
     private val groundImageController: GroundImageController<ActualGoogleMapGroundImage>,
 ) : BaseMapViewController<
-    ActualGoogleMapMarker,
-    ActualGoogleMapCircle,
-    ActualGoogleMapPolyline,
-    ActualGoogleMapPolygon,
+        ActualGoogleMapMarker,
+        ActualGoogleMapCircle,
+        ActualGoogleMapPolyline,
+        ActualGoogleMapPolygon,
     >(),
     IGoogleMapViewController,
     OnCameraMoveStartedListener,
@@ -181,9 +179,7 @@ class GoogleMapViewController(
         holder.map.setOnMarkerDragListener(this)
     }
 
-    override fun changeMapDesign(
-        value: Int
-    ){
+    override fun changeMapDesign(value: Int) {
         coroutine.launch {
             holder.map.mapType = value
         }
@@ -242,18 +238,19 @@ class GoogleMapViewController(
 
     override suspend fun updatePolyline(state: PolylineState) = polylineOverlayManager.updatePolyline(state)
 
-    private fun cameraCallbackImpl(){
+    private fun cameraCallbackImpl() {
         cameraMoveCallback?.let { callBack ->
             val camera = holder.map.cameraPosition.toMapCameraPosition()
             holder.map.projection.visibleRegion.let {
-                val visibleRegion = VisibleRegion(
-                    southWest = it.latLngBounds.southwest.toGeoPoint(),
-                    northEast = it.latLngBounds.northeast.toGeoPoint(),
-                    nearLeft = it.nearLeft.toGeoPoint(),
-                    nearRight = it.nearRight.toGeoPoint(),
-                    farLeft = it.farLeft.toGeoPoint(),
-                    farRight = it.farRight.toGeoPoint(),
-                )
+                val visibleRegion =
+                    VisibleRegion(
+                        southWest = it.latLngBounds.southwest.toGeoPoint(),
+                        northEast = it.latLngBounds.northeast.toGeoPoint(),
+                        nearLeft = it.nearLeft.toGeoPoint(),
+                        nearRight = it.nearRight.toGeoPoint(),
+                        farLeft = it.farLeft.toGeoPoint(),
+                        farRight = it.farRight.toGeoPoint(),
+                    )
                 val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
                 coroutine.launch { callBack(mapCameraPosition) }
             }

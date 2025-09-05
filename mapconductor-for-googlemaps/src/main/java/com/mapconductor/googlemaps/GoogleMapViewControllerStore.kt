@@ -4,14 +4,12 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
 import com.mapconductor.core.groundimage.GroundImageController
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.util.Log
 
 typealias GoogleMapViewHolder = MapViewHolder<MapView, GoogleMap>
 
@@ -27,7 +25,7 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewController>() {
             options.camera?.let { camera ->
                 existing.moveCamera(
                     position = camera.toMapCameraPosition(),
-                    listener = null
+                    listener = null,
                 )
             }
             return existing

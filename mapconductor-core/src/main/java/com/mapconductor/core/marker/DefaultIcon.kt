@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withClip
 import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.settings.Settings
@@ -456,40 +457,37 @@ class ImageDefaultIcon(
         canvasSize: Float,
         iconScale: Float,
     ) {
-        canvas.save()
+        canvas.withClip(path) {
+            // マーカー形状でクリッピング
 
-        // マーカー形状でクリッピング
-        canvas.clipPath(path)
+            // 背景画像をマーカーサイズにスケーリングして描画
+            // アスペクト比を保持してセンタークロップ
+            val bitmapWidth = backgroundBitmap.width.toFloat()
+            val bitmapHeight = backgroundBitmap.height.toFloat()
+            val bitmapRatio = bitmapWidth / bitmapHeight
+            val canvasRatio = 1f // 正方形のキャンバス
 
-        // 背景画像をマーカーサイズにスケーリングして描画
-        // アスペクト比を保持してセンタークロップ
-        val bitmapWidth = backgroundBitmap.width.toFloat()
-        val bitmapHeight = backgroundBitmap.height.toFloat()
-        val bitmapRatio = bitmapWidth / bitmapHeight
-        val canvasRatio = 1f // 正方形のキャンバス
+            val matrix = Matrix()
 
-        val matrix = Matrix()
+            if (bitmapRatio > canvasRatio) {
+                // ビットマップが横長の場合：高さを合わせてセンタリング
+                val scale = canvasSize / bitmapHeight
+                val scaledWidth = bitmapWidth * scale
+                val offsetX = (canvasSize - scaledWidth) / 2f
+                matrix.setScale(scale, scale)
+                matrix.postTranslate(offsetX, 0f)
+            } else {
+                // ビットマップが縦長または正方形の場合：幅を合わせてセンタリング
+                val scale = canvasSize / bitmapWidth
+                val scaledHeight = bitmapHeight * scale
+                val offsetY = (canvasSize - scaledHeight) / 2f
+                matrix.setScale(scale, scale)
+                matrix.postTranslate(0f, offsetY)
+            }
 
-        if (bitmapRatio > canvasRatio) {
-            // ビットマップが横長の場合：高さを合わせてセンタリング
-            val scale = canvasSize / bitmapHeight
-            val scaledWidth = bitmapWidth * scale
-            val offsetX = (canvasSize - scaledWidth) / 2f
-            matrix.setScale(scale, scale)
-            matrix.postTranslate(offsetX, 0f)
-        } else {
-            // ビットマップが縦長または正方形の場合：幅を合わせてセンタリング
-            val scale = canvasSize / bitmapWidth
-            val scaledHeight = bitmapHeight * scale
-            val offsetY = (canvasSize - scaledHeight) / 2f
-            matrix.setScale(scale, scale)
-            matrix.postTranslate(0f, offsetY)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+            drawBitmap(backgroundBitmap, matrix, paint)
         }
-
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
-        canvas.drawBitmap(backgroundBitmap, matrix, paint)
-
-        canvas.restore()
     }
 
     override fun getUniqueProperties(): Any {
@@ -580,45 +578,42 @@ class DrawableDefaultIcon(
         canvasSize: Float,
         iconScale: Float,
     ) {
-        canvas.save()
+        canvas.withClip(path) {
+            // マーカー形状でクリッピング
 
-        // マーカー形状でクリッピング
-        canvas.clipPath(path)
+            // Drawableのサイズを設定
+            val canvasInt = canvasSize.toInt()
 
-        // Drawableのサイズを設定
-        val canvasInt = canvasSize.toInt()
+            // Drawableの固有サイズを取得
+            val intrinsicWidth = backgroundDrawable.intrinsicWidth
+            val intrinsicHeight = backgroundDrawable.intrinsicHeight
 
-        // Drawableの固有サイズを取得
-        val intrinsicWidth = backgroundDrawable.intrinsicWidth
-        val intrinsicHeight = backgroundDrawable.intrinsicHeight
+            if (intrinsicWidth > 0 && intrinsicHeight > 0) {
+                // 固有サイズがある場合：アスペクト比を保持してセンタークロップ
+                val drawableRatio = intrinsicWidth.toFloat() / intrinsicHeight.toFloat()
+                val canvasRatio = 1f // 正方形のキャンバス
 
-        if (intrinsicWidth > 0 && intrinsicHeight > 0) {
-            // 固有サイズがある場合：アスペクト比を保持してセンタークロップ
-            val drawableRatio = intrinsicWidth.toFloat() / intrinsicHeight.toFloat()
-            val canvasRatio = 1f // 正方形のキャンバス
+                val bounds =
+                    if (drawableRatio > canvasRatio) {
+                        // Drawableが横長の場合：高さを合わせてセンタリング
+                        val scaledWidth = (canvasInt * drawableRatio).toInt()
+                        val offsetX = (canvasInt - scaledWidth) / 2
+                        Rect(offsetX, 0, offsetX + scaledWidth, canvasInt)
+                    } else {
+                        // Drawableが縦長または正方形の場合：幅を合わせてセンタリング
+                        val scaledHeight = (canvasInt / drawableRatio).toInt()
+                        val offsetY = (canvasInt - scaledHeight) / 2
+                        Rect(0, offsetY, canvasInt, offsetY + scaledHeight)
+                    }
 
-            val bounds =
-                if (drawableRatio > canvasRatio) {
-                    // Drawableが横長の場合：高さを合わせてセンタリング
-                    val scaledWidth = (canvasInt * drawableRatio).toInt()
-                    val offsetX = (canvasInt - scaledWidth) / 2
-                    Rect(offsetX, 0, offsetX + scaledWidth, canvasInt)
-                } else {
-                    // Drawableが縦長または正方形の場合：幅を合わせてセンタリング
-                    val scaledHeight = (canvasInt / drawableRatio).toInt()
-                    val offsetY = (canvasInt - scaledHeight) / 2
-                    Rect(0, offsetY, canvasInt, offsetY + scaledHeight)
-                }
+                backgroundDrawable.bounds = bounds
+            } else {
+                // 固有サイズがない場合：キャンバス全体に描画
+                backgroundDrawable.setBounds(0, 0, canvasInt, canvasInt)
+            }
 
-            backgroundDrawable.bounds = bounds
-        } else {
-            // 固有サイズがない場合：キャンバス全体に描画
-            backgroundDrawable.setBounds(0, 0, canvasInt, canvasInt)
+            backgroundDrawable.draw(this)
         }
-
-        backgroundDrawable.draw(canvas)
-
-        canvas.restore()
     }
 
     override fun getUniqueProperties(): Any {
