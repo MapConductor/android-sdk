@@ -112,26 +112,27 @@ data class GeoRectBounds(
         return withinLat && withinLng
     }
 
-    fun getCenter(): GeoPoint? {
-        if (isEmpty) return null
+    val center: GeoPoint?
+        get() {
+            if (isEmpty) return null
 
-        val sw = southWest!!
-        val ne = northEast!!
+            val sw = southWest!!
+            val ne = northEast!!
 
-        val centerLat = (sw.latitude + ne.latitude) / 2.0
+            val centerLat = (sw.latitude + ne.latitude) / 2.0
 
-        val lng1 = sw.longitude
-        val lng2 = ne.longitude
-        val centerLng =
-            if (lng1 <= lng2) {
-                (lng1 + lng2) / 2.0
-            } else {
-                val mid = (lng1 + (lng2 + 360)) / 2.0
-                if (mid > 180) mid - 360 else mid
-            }
+            val lng1 = sw.longitude
+            val lng2 = ne.longitude
+            val centerLng =
+                if (lng1 <= lng2) {
+                    (lng1 + lng2) / 2.0
+                } else {
+                    val mid = (lng1 + (lng2 + 360)) / 2.0
+                    if (mid > 180) mid - 360 else mid
+                }
 
-        return GeoPoint(centerLat, centerLng)
-    }
+            return GeoPoint(centerLat, centerLng)
+        }
 
     fun union(other: GeoRectBounds): GeoRectBounds {
         if (other.isEmpty) return this

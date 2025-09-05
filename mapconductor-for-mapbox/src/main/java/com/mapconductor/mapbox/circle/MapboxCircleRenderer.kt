@@ -7,10 +7,7 @@ import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
 import com.mapbox.maps.extension.style.sources.updateGeoJSONSourceFeatures
 import com.mapconductor.core.circle.AbstractCircleRenderer
 import com.mapconductor.core.circle.CircleEntity
-import com.mapconductor.core.circle.CircleOverlayManager
-import com.mapconductor.core.circle.CircleOverlayManagerImpl
 import com.mapconductor.core.circle.CircleRenderer.UpdateParams
-import com.mapconductor.core.circle.CircleRendererFactory
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.mapbox.MapboxActualCircle
@@ -20,21 +17,6 @@ import com.mapconductor.mapbox.toPoint
 import kotlin.math.cos
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-class DefaultMapboxCircleRenderer : CircleRendererFactory<MapboxActualCircle> {
-    override fun create(
-        onAdd: suspend (List<CircleState>) -> List<MapboxActualCircle?>,
-        onChange: suspend (List<UpdateParams<MapboxActualCircle>>) -> List<MapboxActualCircle?>,
-        onRemove: suspend (List<CircleEntity<MapboxActualCircle>>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): CircleOverlayManager<MapboxActualCircle> =
-        CircleOverlayManagerImpl(
-            onRemove = onRemove,
-            onAdd = onAdd,
-            onChange = onChange,
-            onPostProcess = onPostProcess,
-        )
-}
 
 class MapboxCircleRenderer(
     override val holder: MapboxMapViewHolder,

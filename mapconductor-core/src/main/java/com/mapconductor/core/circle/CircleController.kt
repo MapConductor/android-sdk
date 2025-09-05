@@ -1,0 +1,141 @@
+package com.mapconductor.core.circle
+
+import com.mapconductor.core.controller.OverlayController
+import com.mapconductor.core.features.IGeoPoint
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+
+abstract class CircleController<ActualCircle>(
+    val circleManager: CircleManager<ActualCircle>,
+    open val renderer: CircleOverlayRenderer<ActualCircle>,
+    override var clickListener: OnCircleEventHandler? = null,
+) : OverlayController<
+        CircleState,
+        CircleEntity<ActualCircle>,
+        CircleEvent,
+    > {
+    override val zIndex: Int = 3
+    val semaphore = Semaphore(1)
+
+    override suspend fun add(data: List<CircleState>) {
+        semaphore.withPermit {
+            val modifiedEntities = mutableListOf<CircleEntity<ActualCircle>>()
+            val previous = circleManager.allEntities().map { it.state.id }.toMutableSet()
+            val added = mutableListOf<CircleOverlayRenderer.AddParams>()
+            val updated = mutableListOf<CircleOverlayRenderer.ChangeParams<ActualCircle>>()
+            val removed = mutableListOf<CircleEntity<ActualCircle>>()
+
+            data.forEach { state ->
+                if (previous.contains(state.id)) {
+                    val prevEntity = circleManager.getEntity(state.id)!!
+                    updated.add(
+                        object : CircleOverlayRenderer.ChangeParams<ActualCircle> {
+                            override val current: CircleEntity<ActualCircle> =
+                                CircleEntityImpl(
+                                    state = state,
+                                    circle = prevEntity.circle,
+                                )
+                            override val prev: CircleEntity<ActualCircle> = prevEntity
+                        },
+                    )
+                    previous.remove(state.id)
+                } else {
+                    added.add(
+                        object : CircleOverlayRenderer.AddParams {
+                            override val state: CircleState = state
+                        },
+                    )
+                    previous.remove(state.id)
+                }
+            }
+
+            previous.forEach { remainId ->
+                circleManager.removeEntity(remainId)?.let { removedEntity ->
+                    removed.add(removedEntity)
+                }
+            }
+
+            // Remove circle
+            if (removed.isNotEmpty()) {
+                renderer.onRemove(removed)
+            }
+
+            // Add new circles
+            if (added.isNotEmpty()) {
+                val actualCircles: List<ActualCircle?> = renderer.onAdd(added)
+                actualCircles.forEachIndexed { index, circle ->
+                    circle?.let {
+                        val entity =
+                            CircleEntityImpl<ActualCircle>(
+                                circle = circle,
+                                state = added[index].state,
+                            )
+                        circleManager.registerEntity(entity)
+                        modifiedEntities.add(entity)
+                    }
+                }
+            }
+
+            // Update changed circles
+            if (updated.isNotEmpty()) {
+                val actualCircles: List<ActualCircle?> = renderer.onChange(updated)
+                actualCircles.forEachIndexed { index, circle ->
+                    circle?.let {
+                        val params = updated[index]
+                        val entity =
+                            CircleEntityImpl<ActualCircle>(
+                                state = params.current.state,
+                                circle = circle,
+                            )
+                        circleManager.registerEntity(entity)
+                    }
+                }
+            }
+
+            renderer.onPostProcess()
+        }
+    }
+
+    override suspend fun update(state: CircleState) {
+        semaphore.withPermit {
+            val prevEntity = circleManager.getEntity(state.id) ?: return
+            val currentFinger = state.fingerPrint()
+            val prevFinger = prevEntity.fingerPrint
+            if (currentFinger == prevFinger) {
+                return
+            }
+
+            val circle = prevEntity.circle
+            val entity =
+                CircleEntityImpl(
+                    circle = circle,
+                    state = state,
+                )
+            val circleParams =
+                object : CircleOverlayRenderer.ChangeParams<ActualCircle> {
+                    override val current: CircleEntity<ActualCircle> = entity
+                    override val prev: CircleEntity<ActualCircle> = prevEntity
+                }
+            val circles = renderer.onChange(listOf(circleParams))
+
+            circles[0]?.let {
+                val entity =
+                    CircleEntityImpl<ActualCircle>(
+                        circle = it,
+                        state = state,
+                    )
+                circleManager.registerEntity(entity)
+            }
+        }
+    }
+
+    override suspend fun clear() {
+        semaphore.withPermit {
+            val entities: List<CircleEntity<ActualCircle>> = circleManager.allEntities()
+            renderer.onRemove(entities)
+            circleManager.clear()
+        }
+    }
+
+    override fun find(position: IGeoPoint): CircleEntity<ActualCircle>? = circleManager.find(position)
+}

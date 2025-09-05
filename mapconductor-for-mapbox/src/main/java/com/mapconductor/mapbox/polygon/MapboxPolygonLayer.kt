@@ -12,8 +12,6 @@ class MapboxPolygonLayer(
     val layerId: String,
 ) {
     object Prop {
-        const val STROKE_COLOR = "strokeColor"
-        const val STROKE_WIDTH = "strokeWidth"
         const val FILL_COLOR = "fillColor"
     }
 
@@ -25,17 +23,12 @@ class MapboxPolygonLayer(
                     literal(Prop.FILL_COLOR)
                 },
             )
-            fillOutlineColor(
-                get {
-                    literal(Prop.STROKE_COLOR)
-                },
-            )
         }
 
     fun draw(entities: List<PolygonEntity<MapboxActualPolygon>>) {
         val features = entities.map { it.polygon }
         source.featureCollection(
-            FeatureCollection.fromFeatures(features),
+            FeatureCollection.fromFeatures(features.flatten()),
         )
     }
 }

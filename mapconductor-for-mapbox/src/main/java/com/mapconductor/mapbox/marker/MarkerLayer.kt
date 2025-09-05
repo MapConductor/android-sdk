@@ -17,16 +17,16 @@ open class MarkerLayer(
 ) {
     val layer =
         symbolLayer(layerId, sourceId) {
-            iconSize(Expression.get(MapboxMarkerRenderer.Prop.SCALE))
-            iconImage(Expression.get(MapboxMarkerRenderer.Prop.ICON_ID))
+//            iconSize(Expression.get(MapboxMarkerRenderer.Prop.SCALE))
+            iconImage(Expression.get(MapboxMarkerOverlayRenderer.Prop.ICON_ID))
             iconAllowOverlap(true)
             iconIgnorePlacement(true)
             iconAnchor(IconAnchor.TOP_LEFT)
             iconTranslateAnchor(IconTranslateAnchor.MAP)
             iconOffset(
                 switchCase {
-                    has(MapboxMarkerRenderer.Prop.ICON_ANCHOR)
-                    get(MapboxMarkerRenderer.Prop.ICON_ANCHOR)
+                    has(MapboxMarkerOverlayRenderer.Prop.ICON_ANCHOR)
+                    get(MapboxMarkerOverlayRenderer.Prop.ICON_ANCHOR)
                     literal(listOf(0.0, 0.0)) // center-middle
                 },
             )

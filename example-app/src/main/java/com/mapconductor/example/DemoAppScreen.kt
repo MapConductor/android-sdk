@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.animation.AnimationMapPage
@@ -26,6 +28,8 @@ import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.mapDesign.MapDesignMapPage
+import com.mapconductor.example.pages.marker.MarkerBasicPage
+import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.stores.StoreMapPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -33,8 +37,21 @@ import com.mapconductor.example.ui.sidebar.SidebarItem
 import com.mapconductor.example.ui.theme.AppTheme
 
 @Composable
-fun DemoAppScreen() {
-    val navigationViewModel: NavigationViewModel = viewModel()
+fun DemoAppScreen(initPage: String = "map") {
+    val navigationViewModel: NavigationViewModel =
+        viewModel<NavigationViewModel>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(NavigationViewModel::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return NavigationViewModel(initPage) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                },
+        )
+
     val currentPage by navigationViewModel.currentPage
     val isSidebarExpanded by navigationViewModel.isSidebarExpanded
     val context = LocalContext.current
@@ -66,6 +83,12 @@ fun DemoAppScreen() {
                 route = "map",
             ),
             SidebarItem(
+                id = "marker-basic",
+                title = "Marker",
+                icon = Icons.Default.Home,
+                route = "marker-basic",
+            ),
+            SidebarItem(
                 id = "flyTo",
                 title = "Move camera",
                 icon = Icons.Default.PlayArrow,
@@ -88,6 +111,12 @@ fun DemoAppScreen() {
                 title = "Polyline ",
                 icon = Icons.Default.PlayArrow,
                 route = "polyline",
+            ),
+            SidebarItem(
+                id = "polygon",
+                title = "polygon ",
+                icon = Icons.Default.PlayArrow,
+                route = "polygon",
             ),
             SidebarItem(
                 id = "animation",
@@ -125,6 +154,11 @@ fun DemoAppScreen() {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "marker-basic" -> {
+                        MarkerBasicPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "circle" -> {
                         CircleMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -135,20 +169,25 @@ fun DemoAppScreen() {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "polygon" -> {
+                        PolygonMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
-                    "animation" -> {
-                        AnimationMapPage(
-                            onToggleSidebar = navigationViewModel::toggleSidebar,
-                        )
-                    }
                     "groundImage" -> {
                         GroundImageMapPage(
                             groundImageResources = groundImageResources,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "animation" -> {
+                        AnimationMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

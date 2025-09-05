@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
+    implementation(platform(libs.firebase.bom))
 
     // Google Maps SDK
     implementation(libs.play.services.maps)
@@ -104,6 +105,7 @@ dependencies {
     implementation(project(":mapconductor-for-mapbox"))
     implementation(project(":mapconductor-for-arcgis"))
     implementation(libs.androidx.vectordrawable)
+    implementation(libs.androidx.room.runtime.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core)

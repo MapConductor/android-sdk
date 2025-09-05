@@ -102,6 +102,6 @@ class AnimationPageViewModelImpl :
         Log.i("AnimationPageViewModelImpl", "onMarkerClick: ${clicked.id}")
 
         val spot = exampleSpots.firstOrNull { it.id == clicked.id }
-        clicked.animation = spot?.animation
+        clicked.setAnimation(spot?.animation)
     }
 }

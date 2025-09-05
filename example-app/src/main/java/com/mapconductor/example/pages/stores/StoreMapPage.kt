@@ -2,18 +2,18 @@ package com.mapconductor.example.pages.stores
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
-fun StoreMapPage(
-    viewModel: StoreMapPageViewModel = StoreMapPageViewModelImpl(),
-    onToggleSidebar: () -> Unit = {},
-) {
+fun StoreMapPage(onToggleSidebar: () -> Unit = {}) {
+    val viewModel = remember { StoreMapPageViewModelImpl() }
     val context = LocalContext.current
 
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddings ->
