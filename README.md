@@ -96,8 +96,8 @@ This project follows KtLint conventions:
 | Marker          | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
 | Circle          | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
 | Polyline        | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
-| Polygon         | &#x2610;    | &#x2611; | &#x2611; | &#x2611; |
-| GroundImage     | &#x2610;    | N/A      | N/A      | N/A      |
+| Polygon         | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
+| GroundImage     | &#x2611;    | N/A      | N/A      | N/A      |
 | RasterTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610; |
 | VectorTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610; |
 
