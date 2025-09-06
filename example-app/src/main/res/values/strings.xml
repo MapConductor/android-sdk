@@ -2,4 +2,12 @@
     <string name="app_name">MapConductor</string>
     <string name="circle_example_description">Hold the marker labeled \'E\' for one sec, then drag it. The circle will expand and shrink followed by the marker. Also changes the circle color by tap on it.</string>
     <string name="flyto_example_description">Click the buttons below to animate the camera to different cities around the world using mapState.flyTo().</string>
+    <string name="demo_application">- Demo Application -</string>
+    <string name="startup_abstract">A unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, and ArcGIS. Write once, deploy across all major mapping platforms.</string>
+    <string name="feature">Feature</string>
+    <string name="feature_multi_provider">🗺️ Multi-Provider Support: Seamlessly switch between Google Maps, Mapbox, HERE, and ArcGIS with a single API</string>
+    <string name="feature_unigied_interface">🎯 Unified Interface: Common abstractions for markers, circles, polylines, polygons, and ground overlays</string>
+    <string name="feature_high_performance">⚡ High Performance: Spatial indexing with hexagonal cells for efficient marker clustering</string>
+    <string name="feature_reactive_state">🔄 Reactive State: Built on Kotlin StateFlow for reactive UI updates</string>
+    <string name="feature_jetpack_compose">🎨 Jetpack Compose: Modern Android UI toolkit integration</string>
 </resources>

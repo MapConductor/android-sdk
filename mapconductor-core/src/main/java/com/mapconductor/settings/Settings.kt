@@ -5,8 +5,8 @@ import androidx.compose.ui.unit.dp
 
 sealed class Settings(
     val tapTolerance: Dp,
-    val markerDropAnimateDuration: Int,
-    val markerBounceAnimateDuration: Int,
+    val markerDropAnimateDuration: Long,
+    val markerBounceAnimateDuration: Long,
     val iconSize: Dp,
     val iconStroke: Dp,
     val composeEventDebounce: Long,

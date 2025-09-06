@@ -3,7 +3,14 @@
     "allow": [
       "Bash(./gradlew:*)",
       "Bash(grep:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(echo:*)",
+      "Bash(for file in *.png)",
+      "Bash(do cwebp:*)",
+      "Bash(done)",
+      "Bash(for:*)"
     ],
     "deny": []
   }

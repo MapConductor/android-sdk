@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DemoAppScreen(
-                initPage = "map",
+                initPage = "startup",
             )
         }
     }
