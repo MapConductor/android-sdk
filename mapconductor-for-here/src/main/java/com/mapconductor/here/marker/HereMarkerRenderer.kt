@@ -31,7 +31,9 @@ class HereMarkerRenderer(
         markerEntity: MarkerEntity<HereActualMarker>,
         position: GeoPoint,
     ) {
-        markerEntity.marker.coordinates = position.toGeoCoordinates()
+        coroutine.launch {
+            markerEntity.marker.coordinates = position.toGeoCoordinates()
+        }
     }
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {

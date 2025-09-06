@@ -23,7 +23,6 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { PolygonMapPageViewModelImpl() }
 
     DemoMapPageScaffold(
-        initSelect = 1,
         menuItems = PolygonCapableMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
