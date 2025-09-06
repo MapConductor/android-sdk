@@ -26,7 +26,9 @@ class GoogleMapMarkerRenderer(
         markerEntity: MarkerEntity<GoogleMapActualMarker>,
         position: GeoPoint,
     ) {
-        markerEntity.marker.position = position.toLatLng()
+        coroutine.launch {
+            markerEntity.marker.position = position.toLatLng()
+        }
     }
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {

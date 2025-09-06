@@ -23,8 +23,8 @@ abstract class AbstractMarkerOverlayRenderer<
     val holder: MapViewHolderType,
     val coroutine: CoroutineScope,
     val tileSize: Int = 256,
-    val dropAnimateDuration: Int = Settings.Default.markerDropAnimateDuration,
-    val bounceAnimateDuration: Int = Settings.Default.markerBounceAnimateDuration,
+    val dropAnimateDuration: Long = Settings.Default.markerDropAnimateDuration,
+    val bounceAnimateDuration: Long = Settings.Default.markerBounceAnimateDuration,
 ) : MarkerOverlayRenderer<ActualMarker> {
     override var animateStartListener: OnMarkerEventHandler? = null
     override var animateEndListener: OnMarkerEventHandler? = null
@@ -58,7 +58,7 @@ abstract class AbstractMarkerOverlayRenderer<
 
     fun animateMarkerDrop(
         entity: MarkerEntity<ActualMarker>,
-        duration: Int,
+        duration: Long,
     ) {
         // アニメーションの最終的な目標地点(地理座標)
         val target = entity.state.position
@@ -100,16 +100,15 @@ abstract class AbstractMarkerOverlayRenderer<
 
     fun animateMarkerBounce(
         entity: MarkerEntity<ActualMarker>,
-        duration: Int,
+        duration: Long,
     ) {
-        val startTime = SystemClock.uptimeMillis()
-
         val target = entity.state.position
         val interpolator = BounceInterpolator()
         val startPoint = holder.toScreenOffset(target)?.let { Offset(it.x, 0f) } ?: return
 
         animateStartListener?.invoke(entity.state)
         flow {
+            val startTime = SystemClock.uptimeMillis()
             var t = 0f
             while (t < 1f) {
                 val elapsed = SystemClock.uptimeMillis() - startTime
