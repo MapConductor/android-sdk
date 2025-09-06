@@ -1,21 +1,40 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# MapConductor Core ProGuard Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line number information for debugging
+-keepattributes SourceFile,LineNumberTable
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep all public API classes and interfaces
+-keep public class com.mapconductor.core.** { public *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep all controller interfaces and their implementations
+-keep interface com.mapconductor.core.controller.** { *; }
+-keep class * implements com.mapconductor.core.controller.** { *; }
+
+# Keep all marker, circle, polyline, and overlay classes
+-keep class com.mapconductor.core.marker.** { *; }
+-keep class com.mapconductor.core.circle.** { *; }
+-keep class com.mapconductor.core.polyline.** { *; }
+-keep class com.mapconductor.core.polygon.** { *; }
+-keep class com.mapconductor.core.groundimage.** { *; }
+
+# Keep projection and geocell utilities
+-keep class com.mapconductor.core.projection.** { *; }
+-keep class com.mapconductor.core.geocell.** { *; }
+-keep class com.mapconductor.core.spherical.** { *; }
+
+# Keep map view components
+-keep class com.mapconductor.core.map.** { *; }
+
+# Keep features and state classes
+-keep class com.mapconductor.core.features.** { *; }
+-keep class com.mapconductor.core.state.** { *; }
+
+# Keep Compose-related classes
+-keep class * extends androidx.compose.runtime.** { *; }
+
+# Keep Kotlin coroutines
+-keep class kotlinx.coroutines.** { *; }
+
+# Fix for Java 11+ StringConcatFactory issue
+-dontwarn java.lang.invoke.StringConcatFactory
+-keep class java.lang.invoke.StringConcatFactory { *; }
