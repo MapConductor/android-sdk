@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
@@ -21,6 +21,7 @@ android {
     defaultConfig {
         minSdk = project.property("minSdk").toString().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
@@ -32,10 +33,17 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = project.property("isMinifyEnabled").toString().toBoolean()
+        debug {
+            isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro",
+            )
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro",
             )
         }

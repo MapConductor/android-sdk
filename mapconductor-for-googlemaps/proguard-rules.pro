@@ -1,21 +1,33 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# MapConductor Google Maps ProGuard Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line number information for debugging
+-keepattributes SourceFile,LineNumberTable
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep all public API classes
+-keep public class com.mapconductor.googlemaps.** { public *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Google Maps specific implementations
+-keep class com.mapconductor.googlemaps.GoogleMapViewController { *; }
+-keep class com.mapconductor.googlemaps.GoogleMapViewControllerImpl { *; }
+-keep class com.mapconductor.googlemaps.GoogleMapView { *; }
+
+# Keep marker, circle, polyline implementations
+-keep class com.mapconductor.googlemaps.marker.** { *; }
+-keep class com.mapconductor.googlemaps.circle.** { *; }
+-keep class com.mapconductor.googlemaps.polyline.** { *; }
+-keep class com.mapconductor.googlemaps.polygon.** { *; }
+-keep class com.mapconductor.googlemaps.groundimage.** { *; }
+
+# Keep Google Maps SDK classes
+-keep class com.google.android.gms.maps.** { *; }
+-keep class com.google.maps.android.** { *; }
+
+# Keep Google Maps model classes
+-keep class com.google.android.gms.maps.model.** { *; }
+
+# Compose integration
+-keep class * extends androidx.compose.runtime.** { *; }
+
+# Fix for Java 11+ StringConcatFactory issue
+-dontwarn java.lang.invoke.StringConcatFactory
+-keep class java.lang.invoke.StringConcatFactory { *; }
