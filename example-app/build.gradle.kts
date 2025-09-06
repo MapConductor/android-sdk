@@ -36,7 +36,9 @@ android {
         minSdk = project.property("minSdk").toString().toInt()
 
         targetSdk = project.property("targetSdk").toString().toInt()
-        ndk { abiFilters += listOf("arm64-v8a") }
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -68,17 +70,14 @@ android {
         }
 
         release {
-
             isMinifyEnabled = true
-
             isShrinkResources = true
+            isDebuggable = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-
-            // Force legacy ProGuard instead of R8
 
             buildConfigField("String", "BUILD_CONFIG_VERSION", "\"release\"")
             signingConfig = signingConfigs.getByName("debug")
@@ -86,15 +85,24 @@ android {
     }
 
     packaging {
-
         resources {
-
             excludes += "META-INF/versions/9/previous-compilation-data.bin"
             excludes += "META-INF/*.kotlin_module"
             excludes += "META-INF/AL2.0"
             excludes += "META-INF/LGPL2.1"
             excludes += "META-INF/androidx.*.version"
             excludes += "**/*.proto"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE*"
+            excludes += "META-INF/NOTICE*"
+            excludes += "META-INF/*.version"
+            excludes += "**/*.properties"
+            excludes += "kotlin/**"
+            excludes += "DebugProbesKt.bin"
+            excludes += "**/kotlin-tooling-metadata.json"
+            excludes += "**/*.txt"
+            excludes += "**/*.md"
+            excludes += "**/*.html"
         }
 
         jniLibs {
@@ -224,8 +232,6 @@ dependencies {
     implementation(project(":mapconductor-for-arcgis"))
 
     implementation(libs.androidx.vectordrawable)
-
-    implementation(libs.androidx.room.runtime.android)
 
     testImplementation(libs.junit)
 
