@@ -239,24 +239,24 @@ class GoogleMapViewControllerImpl(
         this.polygonController.clickListener = listener
     }
 
-    private var _mapDesignType: GoogleMapDesignType = GoogleMapDesign.None
-    private var _mapDesignTypeChangeListener: GoogleMapDesignTypeChangeHandler? = null
+    private var mapDesignType: GoogleMapDesignType = GoogleMapDesign.None
+    private var mapDesignTypeChangeListener: GoogleMapDesignTypeChangeHandler? = null
 
     override fun setMapDesignType(value: GoogleMapDesignType) {
         coroutine.launch {
             holder.map.mapType = value.getValue()
         }
-        _mapDesignType = value
-        _mapDesignTypeChangeListener?.invoke(value)
+        mapDesignType = value
+        mapDesignTypeChangeListener?.invoke(value)
     }
 
     override fun setMapDesignTypeChangeListener(listener: GoogleMapDesignTypeChangeHandler) {
-        _mapDesignTypeChangeListener = listener
-        listener(_mapDesignType)
+        mapDesignTypeChangeListener = listener
+        listener(mapDesignType)
     }
 
     override fun onMapLoaded() {
         val mapDesignType = GoogleMapDesign.toMapDesignType(holder.map.mapType)
-        _mapDesignTypeChangeListener?.invoke(mapDesignType)
+        mapDesignTypeChangeListener?.invoke(mapDesignType)
     }
 }
