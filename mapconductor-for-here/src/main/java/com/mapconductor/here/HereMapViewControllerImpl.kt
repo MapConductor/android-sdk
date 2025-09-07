@@ -268,21 +268,21 @@ class HereMapViewControllerImpl(
         polygonController.clickListener = listener
     }
 
-    private var _mapDesignType: HereMapDesignType = HereMapDesign.NormalDay
-    private var _mapDesignTypeChangeListener: HereMapDesignTypeChangeHandler? = null
+    private var mapDesignType: HereMapDesignType = HereMapDesign.NormalDay
+    private var mapDesignTypeChangeListener: HereMapDesignTypeChangeHandler? = null
 
     override fun setMapDesignType(value: HereMapDesignType) {
         val scene = value.getValue()
         coroutine.launch {
             holder.mapView.mapScene.loadScene(scene) {
-                _mapDesignType = value
-                _mapDesignTypeChangeListener?.invoke(value)
+                mapDesignType = value
+                mapDesignTypeChangeListener?.invoke(value)
             }
         }
     }
 
     override fun setMapDesignTypeChangeListener(listener: HereMapDesignTypeChangeHandler) {
-        _mapDesignTypeChangeListener = listener
-        listener(_mapDesignType)
+        mapDesignTypeChangeListener = listener
+        listener(mapDesignType)
     }
 }
