@@ -199,29 +199,31 @@ fun <
         }
     }
 
-    if (controller != null && bubbles.isNotEmpty() && cameraPosition != null) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .clipToBounds(),
-        ) {
-            bubbles.forEach { entry ->
-                val marker = entry.marker
-                val position = marker.position
-                val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
-                val icon = marker.icon ?: DefaultIcon()
-                val iconScale = icon.scale
-                val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
+    cameraPosition?.let {
+        if (controller != null && bubbles.isNotEmpty()) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .clipToBounds(),
+            ) {
+                bubbles.forEach { entry ->
+                    val marker = entry.marker
+                    val position = marker.position
+                    val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
+                    val icon = marker.icon ?: DefaultIcon()
+                    val iconScale = icon.scale
+                    val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
 
-                InfoBubbleOverlay(
-                    positionOffset = positionOffset,
-                    tailOffset = entry.tailOffset,
-                    content = entry.content,
-                    iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
-                    iconOffset = icon.anchor,
-                    infoAnchorOffset = icon.infoAnchor,
-                )
+                    InfoBubbleOverlay(
+                        positionOffset = positionOffset,
+                        tailOffset = entry.tailOffset,
+                        content = entry.content,
+                        iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
+                        iconOffset = icon.anchor,
+                        infoAnchorOffset = icon.infoAnchor,
+                    )
+                }
             }
         }
     }

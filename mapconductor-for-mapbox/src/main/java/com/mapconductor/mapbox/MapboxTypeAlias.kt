@@ -6,8 +6,3 @@ typealias MapboxActualMarker = Feature
 typealias MapboxActualCircle = Feature
 typealias MapboxActualPolyline = List<Feature>
 typealias MapboxActualPolygon = List<Feature>
-
-data class MapboxOutlineAndFill(
-    val outline: MapboxActualPolyline?,
-    val fill: MapboxActualPolygon?,
-)

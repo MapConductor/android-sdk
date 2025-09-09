@@ -32,6 +32,13 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
     ): GoogleMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) {
+            existing.setMapDesignType(GoogleMapDesign.toMapDesignType(options.mapType))
+            options.camera?.let { camera ->
+                existing.moveCamera(
+                    position = camera.toMapCameraPosition(),
+                    listener = null,
+                )
+            }
             return existing
         }
 

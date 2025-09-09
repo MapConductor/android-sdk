@@ -4,7 +4,6 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.spherical.Spherical
-import java.lang.Math.pow
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow

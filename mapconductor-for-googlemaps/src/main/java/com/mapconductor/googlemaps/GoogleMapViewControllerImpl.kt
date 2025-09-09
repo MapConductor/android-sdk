@@ -18,6 +18,7 @@ import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -64,11 +65,11 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         coroutine.launch {
-            val dstCameraPosition = dstPosition.toCameraPosition()
+            val dstCameraPosition = position.toCameraPosition()
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
             holder.map.moveCamera(cameraUpdate)
             listener?.onComplete()
@@ -76,11 +77,11 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val dstCameraPosition = dstPosition.toCameraPosition()
+        val dstCameraPosition = position.toCameraPosition()
         coroutine.launch {
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
             holder.map.animateCamera(
@@ -124,30 +125,37 @@ class GoogleMapViewControllerImpl(
     override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
     override fun onCameraMove() {
-        cameraMoveCallback?.let {
-            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
-            coroutine.launch { it(mapCameraPosition) }
-        }
+        cameraCallbackImpl()
     }
 
     override fun onCameraIdle() {
-        cameraMoveCallback?.let {
-            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
-            coroutine.launch { it(mapCameraPosition) }
-        }
+        cameraCallbackImpl()
     }
 
     override fun onCameraMoveStarted(p0: Int) {
-        cameraMoveCallback?.let {
-            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
-            coroutine.launch { it(mapCameraPosition) }
-        }
+        cameraCallbackImpl()
     }
 
     override fun onCameraMoveCanceled() {
-        cameraMoveCallback?.let {
-            val mapCameraPosition = holder.map.cameraPosition.toMapCameraPosition()
-            coroutine.launch { it(mapCameraPosition) }
+        cameraCallbackImpl()
+    }
+
+    private fun cameraCallbackImpl() {
+        cameraMoveCallback?.let { callBack ->
+            val camera = holder.map.cameraPosition.toMapCameraPosition()
+            holder.map.projection.visibleRegion.let {
+                val visibleRegion =
+                    VisibleRegion(
+                        southWest = it.latLngBounds.southwest.toGeoPoint(),
+                        northEast = it.latLngBounds.northeast.toGeoPoint(),
+                        nearLeft = it.nearLeft.toGeoPoint(),
+                        nearRight = it.nearRight.toGeoPoint(),
+                        farLeft = it.farLeft.toGeoPoint(),
+                        farRight = it.farRight.toGeoPoint(),
+                    )
+                val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+                coroutine.launch { callBack(mapCameraPosition) }
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.mapconductor.here
 
 import HereMapDesignTypeChangeHandler
 import HereMapViewController
+import androidx.compose.ui.geometry.Offset
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.Point2D
@@ -25,6 +26,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -120,15 +122,15 @@ class HereMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
         val adjustCameraUpdate =
             MapCameraUpdateFactory.lookAt(
-                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
-                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom + ZOOM_ADJUST_VALUE),
+                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(position.bearing, position.tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
             )
 
         camera.applyUpdate(adjustCameraUpdate)
@@ -136,7 +138,7 @@ class HereMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -148,9 +150,9 @@ class HereMapViewControllerImpl(
         val bowFactor = 1.0
         val animation =
             MapCameraAnimationFactory.flyTo(
-                GeoPoint.from(dstPosition.position).toGeoCoordinates().toUpdate(),
-                GeoOrientation(dstPosition.bearing, dstPosition.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, dstPosition.zoom + ZOOM_ADJUST_VALUE),
+                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
+                GeoOrientation(position.bearing, position.tilt).toUpdate(),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
                 Duration.ofMillis(durationMs),
             )
@@ -167,17 +169,41 @@ class HereMapViewControllerImpl(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        val correctCameraState =
-            MapCamera.State(
-                cameraState.targetCoordinates,
-                GeoOrientation(cameraState.orientationAtTarget.bearing, cameraState.orientationAtTarget.tilt),
-                0.0,
-                cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
-            )
+        cameraMoveCallback?.let { callback ->
+            holder.mapView.camera.boundingBox?.let { boundingBox ->
+                val mapWidth = holder.mapView.width.toFloat()
+                val mapHeight = holder.mapView.height.toFloat()
+                val leftTop = Offset(0.0f, 0.0f)
+                val rightTop = Offset(mapWidth, 0.0f)
+                val leftBottom = Offset(0.0f, holder.mapView.height.toFloat())
+                val rightBottom = Offset(mapWidth, mapHeight)
+                val visibleRegion =
+                    VisibleRegion(
+                        southWest = boundingBox.southWestCorner.toGeoPoint(),
+                        northEast = boundingBox.northEastCorner.toGeoPoint(),
+                        nearLeft = holder.fromScreenOffsetSync(leftBottom),
+                        nearRight = holder.fromScreenOffsetSync(rightBottom),
+                        farLeft = holder.fromScreenOffsetSync(leftTop),
+                        farRight = holder.fromScreenOffsetSync(rightTop),
+                    )
 
-        cameraMoveCallback?.let {
-            val mapCameraPosition = correctCameraState.toMapCameraPosition()
-            it(mapCameraPosition)
+                val distanceToTargetInMeters =
+                    GeoOrientation(
+                        cameraState.orientationAtTarget.bearing,
+                        cameraState.orientationAtTarget.tilt,
+                    )
+                val zoomLevel = 0.0
+                val correctCameraState =
+                    MapCamera.State(
+                        cameraState.targetCoordinates,
+                        distanceToTargetInMeters,
+                        zoomLevel,
+                        cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
+                    )
+                val adjustedMapCameraPosition = correctCameraState.toMapCameraPosition()
+                val mapCameraPosition = adjustedMapCameraPosition.copy(visibleRegion = visibleRegion)
+                coroutine.launch { callback(mapCameraPosition) }
+            }
         }
     }
 

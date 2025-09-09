@@ -1,8 +1,5 @@
 package com.mapconductor.core.circle
 
-import com.mapconductor.core.circle.CircleEntity
-import com.mapconductor.core.circle.CircleOverlayRenderer
-import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.map.MapViewHolder
 import kotlinx.coroutines.CoroutineScope
 

@@ -95,7 +95,7 @@ fun HereMapView(
                 return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
                     val restoreCameraPosition = state.cameraPosition.value
                     controller.moveCamera(
-                        dstPosition = restoreCameraPosition,
+                        position = restoreCameraPosition,
                         listener =
                             object : MapViewState.MoveCameraCallback {
                                 override fun onComplete() {

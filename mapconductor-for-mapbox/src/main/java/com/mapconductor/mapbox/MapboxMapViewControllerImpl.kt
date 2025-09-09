@@ -7,7 +7,6 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.CameraState
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.StyleLoaded
 import com.mapbox.maps.StyleLoadedCallback
@@ -30,6 +29,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -131,31 +131,64 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        cameraMoveCallback?.let {
-            val mapCameraPosition =
-                CameraState(
-                    cameraChanged.cameraState.center,
-                    cameraChanged.cameraState.padding,
-                    cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE,
-                    cameraChanged.cameraState.bearing,
-                    cameraChanged.cameraState.pitch,
-                ).toMapCameraPosition()
+        cameraMoveCallback?.let { callBack ->
+            val options =
+                CameraOptions
+                    .Builder()
+                    .padding(cameraChanged.cameraState.padding)
+                    .center(cameraChanged.cameraState.center)
+                    .zoom(cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE)
+                    .bearing(cameraChanged.cameraState.bearing)
+                    .pitch(cameraChanged.cameraState.pitch)
+                    .build()
+            val camera = holder.map.cameraState.toMapCameraPosition()
+            val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
 
-            it(mapCameraPosition)
+            val mapSize = holder.map.getSize()
+            val mapWidth = mapSize.width
+            val mapHeight = mapSize.height
+            val nearLeft =
+                holder.fromScreenOffsetSync(
+                    Offset(0.0f, mapHeight),
+                ) ?: return@let
+            val nearRight =
+                holder.fromScreenOffsetSync(
+                    Offset(mapWidth, mapHeight),
+                ) ?: return@let
+            val farLeft =
+                holder.fromScreenOffsetSync(
+                    Offset(0.0f, 0.0f),
+                ) ?: return@let
+            val farRight =
+                holder.fromScreenOffsetSync(
+                    Offset(mapWidth, 0.0f),
+                ) ?: return@let
+
+            val visibleRegion =
+                VisibleRegion(
+                    southWest = currentBox.southwest.toGeoPoint(),
+                    northEast = currentBox.northeast.toGeoPoint(),
+                    nearLeft = nearLeft,
+                    nearRight = nearRight,
+                    farLeft = farLeft,
+                    farRight = farRight,
+                )
+            val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+            coroutine.launch { callBack(mapCameraPosition) }
         }
     }
 
     override fun moveCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val cameraOptions =
             CameraOptions
                 .Builder()
-                .center(dstPosition.position.toPoint())
-                .zoom(dstPosition.zoom - ZOOM_ADJUST_VALUE)
-                .pitch(dstPosition.tilt)
-                .bearing(dstPosition.bearing)
+                .center(position.position.toPoint())
+                .zoom(position.zoom - ZOOM_ADJUST_VALUE)
+                .pitch(position.tilt)
+                .bearing(position.bearing)
                 .build()
 
         coroutine.launch {
@@ -165,11 +198,11 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val targetCamera = dstPosition.toCameraOptions()
+        val targetCamera = position.toCameraOptions()
         val adjustCamera =
             CameraOptions
                 .Builder()

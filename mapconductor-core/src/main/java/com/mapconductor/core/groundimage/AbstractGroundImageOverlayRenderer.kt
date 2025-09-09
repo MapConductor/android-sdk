@@ -1,7 +1,6 @@
 package com.mapconductor.core.groundimage
 
 import com.mapconductor.core.map.MapViewHolder
-import kotlin.collections.forEach
 import kotlinx.coroutines.CoroutineScope
 
 abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundImageOverlayRenderer<ActualGroundImage> {

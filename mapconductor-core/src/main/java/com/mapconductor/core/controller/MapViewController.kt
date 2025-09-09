@@ -20,12 +20,12 @@ interface MapViewController {
     fun setMapLongClickListener(listener: OnMapEventHandler?)
 
     fun moveCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback? = null,
     )
 
     fun animateCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         duration: Long,
         listener: MapViewState.MoveCameraCallback? = null,
     )
