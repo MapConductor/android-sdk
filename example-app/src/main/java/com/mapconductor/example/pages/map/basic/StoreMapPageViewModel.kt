@@ -8,7 +8,6 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,8 +54,8 @@ class StoreMapPageViewModelImpl :
 
     override fun onDirectionButtonClick(markerState: MarkerState): Intent {
         val query =
-            (markerState.extra as? Bundle)?.let {
-                Uri.encode(it.getString("address", ""))
+            (markerState.extra as? StoreInfo)?.let {
+                Uri.encode(it.address)
             } ?: GeoPoint.from(markerState.position).toUrlValue()
         val gmmIntentUri = "google.navigation:q=$query".toUri()
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)

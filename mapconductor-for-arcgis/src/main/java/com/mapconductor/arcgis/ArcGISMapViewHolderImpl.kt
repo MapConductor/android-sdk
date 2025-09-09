@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import kotlinx.coroutines.runBlocking
 
 class WrapSceneView : FrameLayout {
     lateinit var sceneView: SceneView
@@ -70,6 +71,11 @@ class ArcGISMapViewHolderImpl private constructor(
             )
         return result.getOrNull()?.toGeoPoint()
     }
+
+    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
+        runBlocking {
+            fromScreenOffset(offset)
+        }
 
     companion object {
         fun create(

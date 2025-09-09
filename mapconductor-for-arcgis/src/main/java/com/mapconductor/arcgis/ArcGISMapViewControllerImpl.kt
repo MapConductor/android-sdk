@@ -1,5 +1,6 @@
 package com.mapconductor.arcgis
 
+import androidx.compose.ui.geometry.Offset
 import com.arcgismaps.mapping.Basemap
 import com.arcgismaps.mapping.view.LongPressEvent
 import com.arcgismaps.mapping.view.PanChangeEvent
@@ -15,8 +16,10 @@ import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -68,9 +71,47 @@ class ArcGISMapViewControllerImpl(
     }
 
     private fun onViewpointChange() {
-        this.cameraMoveCallback?.let {
-            val mapCamera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
-            it(mapCamera)
+        cameraMoveCallback?.let { callback ->
+            coroutine.launch {
+                val mapWidth = holder.map.width.toFloat()
+                val mapHeight = holder.map.height.toFloat()
+                val nearLeft =
+                    holder.fromScreenOffset(
+                        Offset(0.0f, mapHeight),
+                    ) ?: return@launch
+
+                val nearRight =
+                    holder.fromScreenOffsetSync(
+                        Offset(mapWidth, mapHeight),
+                    ) ?: return@launch
+                val farLeft =
+                    holder.fromScreenOffsetSync(
+                        Offset(0.0f, 0.0f),
+                    ) ?: return@launch
+                val farRight =
+                    holder.fromScreenOffsetSync(
+                        Offset(mapWidth, 0.0f),
+                    ) ?: return@launch
+
+                val bounds = GeoRectBounds()
+                bounds.extend(nearLeft)
+                bounds.extend(nearRight)
+                bounds.extend(farLeft)
+                bounds.extend(farRight)
+
+                val visibleRegion =
+                    VisibleRegion(
+                        northEast = bounds.northEast!!,
+                        southWest = bounds.southWest!!,
+                        nearLeft = nearLeft,
+                        nearRight = nearRight,
+                        farLeft = farLeft,
+                        farRight = farRight,
+                    )
+                val camera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
+                val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+                callback(mapCameraPosition)
+            }
         }
     }
 
@@ -219,10 +260,10 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val dstCameraPosition = dstPosition.toCamera()
+        val dstCameraPosition = position.toCamera()
 
         holder.map.setViewpointCamera(
             camera = dstCameraPosition,
@@ -231,11 +272,11 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        dstPosition: MapCameraPosition,
+        position: MapCameraPosition,
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val dstCameraPosition = dstPosition.toCamera()
+        val dstCameraPosition = position.toCamera()
 
         coroutine.launch {
             val result =

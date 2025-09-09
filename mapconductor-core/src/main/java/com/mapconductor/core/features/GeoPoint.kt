@@ -1,7 +1,5 @@
 package com.mapconductor.core.features
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.toFixed
 import kotlin.math.abs

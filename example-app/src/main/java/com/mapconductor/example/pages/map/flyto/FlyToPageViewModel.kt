@@ -199,6 +199,9 @@ class FlyToPageViewModelImpl(
             )
 
     override fun onMapViewChanged(state: MapViewState<*>) {
+        mapViewState.value?.cameraPosition?.value?.let {
+            state.moveCameraTo(it)
+        }
         _mapViewState.value = state
     }
 
