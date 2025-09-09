@@ -22,14 +22,15 @@ compose = "1.8.1"
 composeBom = "2025.05.00"
 runner = "1.6.2"
 
-mapboxAndroid = "11.13.1"
+mapboxAndroid = "11.14.3"
 playServicesMaps = "19.2.0"
 
 secretsGradlePlugin = "2.0.1"
 
 arcgisMapsKotlin = "200.7.0"
-uiTooling = "1.8.1"
 vectordrawable = "1.2.0"
+firebaseBom = "34.2.0"
+ktLint = "13.1.0"
 
 [libraries]
 # Android 基本
@@ -38,9 +39,6 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" }
-androidx-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "compose" }
-androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose" }
 
 # Lifecycle / Activity Compose
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -50,7 +48,6 @@ androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "l
 
 # Jetpack Compose（with BOM）
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
@@ -60,7 +57,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
 
 # Mapbox
-mapbox-android = { module = "com.mapbox.maps:android", version.ref = "mapboxAndroid" }
+mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
 
 # Google Maps
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
@@ -78,8 +75,12 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
 androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "vectordrawable" }
 
+# Firebase
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+jlleitschuh-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint"}

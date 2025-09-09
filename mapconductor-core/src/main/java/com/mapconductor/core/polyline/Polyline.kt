@@ -16,7 +16,7 @@ class PolylineState(
     points: List<IGeoPoint>,
     id: String? = null,
     strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 2.dp,
+    strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
     extra: Parcelable? = null,
 ) {
@@ -104,4 +104,9 @@ data class PolylineFingerPrint(
     val extra: Int,
 )
 
-typealias OnPolylineEventHandler = (PolylineState) -> Unit
+data class PolylineEvent(
+    val state: PolylineState,
+    val clicked: IGeoPoint,
+)
+
+typealias OnPolylineEventHandler = (PolylineEvent) -> Unit

@@ -1,29 +1,29 @@
 package com.mapconductor.example.pages.circle
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.example.R
 import com.mapconductor.example.toast.ToastHost
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun CircleMapPage(
-    viewModel: CirclePageViewModel = CirclePageViewModelImpl(),
-    onToggleSidebar: () -> Unit = {},
-) {
+fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
+    val viewModel = remember { CirclePageViewModelImpl() }
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
@@ -31,15 +31,16 @@ fun CircleMapPage(
 
         CircleMapComponent(
             mapViewState = mapViewState.value,
-            viewModel = viewModel,
-            onMapClick = viewModel::onMapClick,
-            onMarkerClick = viewModel::onMarkerClick,
+            circleState = viewModel.circleState,
+            centerMarker = viewModel.centerMarker,
+            edgeMarker = viewModel.edgeMarker,
             onCircleClick = viewModel::onCircleClick,
-            onMarkerDrag = viewModel::onMarkerDrag,
+            onMarkerMove = viewModel::onMarkerMove,
         )
 
-        // Message Card
         MessageCard(
+            title = "Circle Example",
+            maxHeight = 250.dp,
             modifier =
                 Modifier
                     .align(Alignment.BottomStart)
@@ -48,12 +49,36 @@ fun CircleMapPage(
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
-            title = "Messages",
         ) {
-            Text(
-                text = stringResource(R.string.circle_example_description),
-                modifier = Modifier.fillMaxSize(),
-            )
+            // Fill Opacity Control
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("Fill Opacity: ${String.format("%.1f", viewModel.fillOpacity)}")
+                Slider(
+                    value = viewModel.fillOpacity,
+                    onValueChange = { viewModel.fillOpacity = it },
+                    valueRange = 0f..1f,
+                    colors =
+                        SliderDefaults.colors(),
+                )
+            }
+
+            // Stroke Width Control
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("Stroke Width: ${String.format("%.1f", viewModel.strokeWidth)}dp")
+                Slider(
+                    value = viewModel.strokeWidth,
+                    onValueChange = { viewModel.strokeWidth = it },
+                    valueRange = 0f..10f,
+                    colors =
+                        SliderDefaults.colors(),
+                )
+            }
         }
 
         ToastHost(

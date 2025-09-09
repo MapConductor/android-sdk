@@ -1,21 +1,33 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# MapConductor Mapbox ProGuard Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line number information for debugging
+-keepattributes SourceFile,LineNumberTable
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep all public API classes
+-keep public class com.mapconductor.mapbox.** { public *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Mapbox specific implementations
+-keep class com.mapconductor.mapbox.MapboxMapViewController { *; }
+-keep class com.mapconductor.mapbox.MapboxMapViewControllerImpl { *; }
+-keep class com.mapconductor.mapbox.MapboxMapView { *; }
+
+# Keep marker, circle, polyline implementations
+-keep class com.mapconductor.mapbox.marker.** { *; }
+-keep class com.mapconductor.mapbox.circle.** { *; }
+-keep class com.mapconductor.mapbox.polyline.** { *; }
+-keep class com.mapconductor.mapbox.polygon.** { *; }
+
+# Keep Mapbox SDK classes
+-keep class com.mapbox.maps.** { *; }
+-keep class com.mapbox.geojson.** { *; }
+-keep class com.mapbox.android.** { *; }
+
+# Keep Mapbox style classes
+-keep class com.mapbox.maps.extension.style.** { *; }
+
+# Compose integration
+-keep class * extends androidx.compose.runtime.** { *; }
+
+# Fix for Java 11+ StringConcatFactory issue
+-dontwarn java.lang.invoke.StringConcatFactory
+-keep class java.lang.invoke.StringConcatFactory { *; }

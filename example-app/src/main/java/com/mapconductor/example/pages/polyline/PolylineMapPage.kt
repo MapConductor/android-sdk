@@ -2,15 +2,15 @@ package com.mapconductor.example.pages.polyline
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
-fun PolylineMapPage(
-    viewModel: PolylinePageViewModel = PolylinePageViewModelImpl(),
-    onToggleSidebar: () -> Unit = {},
-) {
+fun PolylineMapPage(onToggleSidebar: () -> Unit = {}) {
+    val viewModel = remember { PolylinePageViewModelImpl() }
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
@@ -20,32 +20,7 @@ fun PolylineMapPage(
             polylineState = viewModel.polylineState,
             wayPointMarkers = viewModel.wayPointMarkers,
             mapViewState = mapViewState.value,
-            onPolylineClick = viewModel::onPolylineClick,
             onMarkerDrag = viewModel::onMarkerDrag,
         )
-
-//        MessageCard(
-//            modifier =
-//                Modifier
-//                    .align(Alignment.BottomStart)
-//                    .padding(
-//                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
-//                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
-//                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-//                    ),
-//            title = "Messages",
-//        ) {
-//            MapViewStatePanel(
-//                mapViewState.value
-//                    ?.mapCameraPosition
-//                    ?.collectAsState()
-//                    ?.value,
-//            )
-//        }
-//
-//        ToastHost(
-//            messages = viewModel.messages.collectAsState().value,
-//            onDismiss = { viewModel.removeToast(it) },
-//        )
     }
 }

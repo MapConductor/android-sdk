@@ -33,5 +33,14 @@ sealed class GoogleMapDesign(
                 Terrain.id -> Terrain
                 else -> None
             }
+
+        fun toMapDesignType(id: Int): GoogleMapDesignType =
+            when (id) {
+                MAP_TYPE_NORMAL -> Normal
+                MAP_TYPE_SATELLITE -> Satellite
+                MAP_TYPE_HYBRID -> Hybrid
+                MAP_TYPE_TERRAIN -> Terrain
+                else -> None
+            }
     }
 }

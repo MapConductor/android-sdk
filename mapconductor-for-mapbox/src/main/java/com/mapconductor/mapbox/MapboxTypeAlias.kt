@@ -5,4 +5,4 @@ import com.mapbox.geojson.Feature
 typealias MapboxActualMarker = Feature
 typealias MapboxActualCircle = Feature
 typealias MapboxActualPolyline = List<Feature>
-typealias MapboxActualPolygon = Feature
+typealias MapboxActualPolygon = List<Feature>

@@ -68,7 +68,7 @@ data class GroundImageFingerPrint(
 
 data class GroundImageEvent(
     val state: GroundImageState,
-    val position: GeoPoint?,
+    val clicked: GeoPoint?,
 )
 
 typealias OnGroundImageEventHandler = (GroundImageEvent) -> Unit

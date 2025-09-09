@@ -11,8 +11,8 @@ import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.IGeoPoint
 import java.io.ByteArrayOutputStream
+import java.io.Serializable
 import android.graphics.Bitmap
-import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class MarkerState(
     position: IGeoPoint,
     id: String? = null,
-    var extra: Parcelable? = null,
+    var extra: Serializable? = null,
     icon: MarkerIcon? = null,
     animation: MarkerAnimation? = null,
     clickable: Boolean = true,
@@ -35,6 +35,7 @@ class MarkerState(
                     icon?.hashCode() ?: 0,
                     clickable.hashCode(),
                     draggable.hashCode(),
+                    animation?.hashCode() ?: 0,
                 ),
             )
         ).toString()
@@ -60,7 +61,13 @@ class MarkerState(
             }
         }
 
-    var animation by mutableStateOf(animation)
+    private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
+
+    fun setAnimation(animation: MarkerAnimation?) {
+        internalAnimation = animation
+    }
+
+    internal fun getAnimation(): MarkerAnimation? = internalAnimation
 
     var position by mutableStateOf(position)
 
@@ -71,7 +78,7 @@ class MarkerState(
     fun copy(
         id: String? = this.id,
         position: IGeoPoint = this.position,
-        extra: Parcelable? = this.extra,
+        extra: Serializable? = this.extra,
         icon: MarkerIcon? = this.icon,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
@@ -96,7 +103,7 @@ class MarkerState(
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
-        result = 31 * result + (ResourceProvider.spToPx(1.0).hashCode() ?: 0)
+        result = 31 * result + ResourceProvider.spToPx(1.0).hashCode()
         return result
     }
 
@@ -108,7 +115,7 @@ class MarkerState(
             clickable.hashCode(),
             draggable.hashCode(),
             internalPosition.hashCode(),
-            animation.hashCode(),
+            internalAnimation.hashCode(),
         )
 
     fun asFlow(): Flow<MarkerFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()

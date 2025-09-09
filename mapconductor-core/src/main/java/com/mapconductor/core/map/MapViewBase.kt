@@ -22,18 +22,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
-import com.mapconductor.core.LocalCircleCollector
-import com.mapconductor.core.LocalGroundImageCollector
-import com.mapconductor.core.LocalMarkerCollector
-import com.mapconductor.core.LocalPolylineCollector
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.controller.MapViewControllerAlias
+import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.LocalCircleCollector
+import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.GroundImageCapable
+import com.mapconductor.core.groundimage.LocalGroundImageCollector
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.LocalMarkerCollector
+import com.mapconductor.core.marker.MarkerCapable
+import com.mapconductor.core.polygon.LocalPolygonCollector
+import com.mapconductor.core.polygon.PolygonCapable
+import com.mapconductor.core.polyline.LocalPolylineCollector
+import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
 import android.view.View
 import android.view.ViewGroup
@@ -50,7 +55,7 @@ fun <
     SpecificState : MapViewState<*>,
     // Replace Any with a base MapViewController if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewControllerAlias,
+    SpecificController : MapViewController,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
@@ -88,25 +93,28 @@ fun <
             LocalInfoBubbleCollector provides scope.bubbleFlow,
             LocalCircleCollector provides scope.circleFlow,
             LocalPolylineCollector provides scope.polylineFlow,
+            LocalPolygonCollector provides scope.polygonFlow,
             LocalGroundImageCollector provides scope.groundImageFlow,
         ) {
             with(scope) {
                 content?.invoke(this)
             }
         }
-        val markers = scope.markerFlow.collectAsState()
-        markers.value.forEach { markerState ->
-            LaunchedEffect(markerState.id) {
-                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updateMarker(markerState)
+        (controller as? GroundImageCapable)?.let {
+            val groundImage = scope.groundImageFlow.collectAsState()
+            groundImage.value.forEach { groundImageState ->
+                LaunchedEffect(groundImageState.id) {
+                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        controller.updateGroundImage(groundImageState)
+                    }
                 }
             }
         }
-        val circles = scope.circleFlow.collectAsState()
-        circles.value.forEach { circleState ->
-            LaunchedEffect(circleState.id) {
-                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updateCircle(circleState)
+        val polygons = scope.polygonFlow.collectAsState()
+        polygons.value.forEach { polygonState ->
+            LaunchedEffect(polygonState.id) {
+                polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    (controller as? PolygonCapable)?.updatePolygon(polygonState)
                 }
             }
         }
@@ -114,17 +122,23 @@ fun <
         polylines.value.forEach { polylineState ->
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    controller.updatePolyline(polylineState)
+                    (controller as? PolylineCapable)?.updatePolyline(polylineState)
                 }
             }
         }
-        (controller as? GroundImageCapable<*>)?.let {
-            val groundImage = scope.groundImageFlow.collectAsState()
-            groundImage.value.forEach { groundImageState ->
-                LaunchedEffect(groundImageState.id) {
-                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        controller.updateGroundImage(groundImageState)
-                    }
+        val circles = scope.circleFlow.collectAsState()
+        circles.value.forEach { circleState ->
+            LaunchedEffect(circleState.id) {
+                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    (controller as? CircleCapable)?.updateCircle(circleState)
+                }
+            }
+        }
+        val markers = scope.markerFlow.collectAsState()
+        markers.value.forEach { markerState ->
+            LaunchedEffect(markerState.id) {
+                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    (controller as? MarkerCapable)?.updateMarker(markerState)
                 }
             }
         }
@@ -185,29 +199,31 @@ fun <
         }
     }
 
-    if (controller != null && cameraPosition != null && bubbles.isNotEmpty()) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .clipToBounds(),
-        ) {
-            bubbles.forEach { entry ->
-                val marker = entry.marker
-                val position = marker.position
-                val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
-                val icon = marker.icon ?: DefaultIcon()
-                val iconScale = icon.scale
-                val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
+    cameraPosition?.let {
+        if (controller != null && bubbles.isNotEmpty()) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .clipToBounds(),
+            ) {
+                bubbles.forEach { entry ->
+                    val marker = entry.marker
+                    val position = marker.position
+                    val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
+                    val icon = marker.icon ?: DefaultIcon()
+                    val iconScale = icon.scale
+                    val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
 
-                InfoBubbleOverlay(
-                    positionOffset = positionOffset,
-                    tailOffset = entry.tailOffset,
-                    content = entry.content,
-                    iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
-                    iconOffset = icon.anchor,
-                    infoAnchorOffset = icon.infoAnchor,
-                )
+                    InfoBubbleOverlay(
+                        positionOffset = positionOffset,
+                        tailOffset = entry.tailOffset,
+                        content = entry.content,
+                        iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
+                        iconOffset = icon.anchor,
+                        infoAnchorOffset = icon.infoAnchor,
+                    )
+                }
             }
         }
     }

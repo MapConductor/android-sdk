@@ -1,21 +1,28 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# MapConductor ArcGIS ProGuard Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line number information for debugging
+-keepattributes SourceFile,LineNumberTable
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep all public API classes
+-keep public class com.mapconductor.arcgis.** { public *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep ArcGIS specific implementations
+-keep class com.mapconductor.arcgis.ArcGISMapViewController { *; }
+-keep class com.mapconductor.arcgis.ArcGISMapViewControllerImpl { *; }
+-keep class com.mapconductor.arcgis.ArcGISMapView { *; }
+
+# Keep marker, circle, polyline implementations
+-keep class com.mapconductor.arcgis.marker.** { *; }
+-keep class com.mapconductor.arcgis.circle.** { *; }
+-keep class com.mapconductor.arcgis.polyline.** { *; }
+-keep class com.mapconductor.arcgis.polygon.** { *; }
+
+# Keep ArcGIS SDK classes
+-keep class com.esri.arcgisruntime.** { *; }
+
+# Compose integration
+-keep class * extends androidx.compose.runtime.** { *; }
+
+# Fix for Java 11+ StringConcatFactory issue
+-dontwarn java.lang.invoke.StringConcatFactory
+-keep class java.lang.invoke.StringConcatFactory { *; }

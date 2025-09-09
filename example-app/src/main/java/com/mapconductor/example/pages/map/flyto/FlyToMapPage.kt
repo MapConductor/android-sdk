@@ -18,13 +18,12 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
@@ -33,22 +32,10 @@ fun FlyToMapPage(
     icons: FlyToMapIcons,
     onToggleSidebar: () -> Unit = {},
 ) {
-    val viewModel: FlyToPageViewModel =
-        viewModel<FlyToPageViewModelImpl>(
-            factory =
-                object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        if (modelClass.isAssignableFrom(FlyToPageViewModelImpl::class.java)) {
-                            @Suppress("UNCHECKED_CAST")
-                            return FlyToPageViewModelImpl(icons) as T
-                        }
-                        throw IllegalArgumentException("Unknown ViewModel class")
-                    }
-                },
-        )
+    val viewModel: FlyToPageViewModel = remember { FlyToPageViewModelImpl(icons) }
 
     DemoMapPageScaffold(
-        initCameraPosition = viewModel.initCameraPosition,
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->

@@ -1,80 +1,81 @@
 package com.mapconductor.core.groundimage
 
 import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.controller.OverlayRenderer
 import com.mapconductor.core.features.IGeoPoint
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
-interface GroundImageCapable<ActualGroundImage> {
-    suspend fun compositionGroundImages(data: List<GroundImageState>)
-
-    suspend fun updateGroundImage(state: GroundImageState)
-}
-
-class GroundImageController<ActualGroundImage>(
-    override val renderer: OverlayRenderer<ActualGroundImage, GroundImageState, GroundImageEntity<ActualGroundImage>>,
+abstract class GroundImageController<ActualGroundImage>(
+    val groundImageManager: GroundImageManager<ActualGroundImage>,
+    open val renderer: GroundImageOverlayRenderer<ActualGroundImage>,
     override var clickListener: OnGroundImageEventHandler? = null,
 ) : OverlayController<
-        ActualGroundImage,
         GroundImageState,
         GroundImageEntity<ActualGroundImage>,
         GroundImageEvent,
     > {
     override val zIndex: Int = 2
-    val entities = mutableMapOf<String, GroundImageEntity<ActualGroundImage>>()
     val semaphore = Semaphore(1)
 
     override suspend fun add(data: List<GroundImageState>) {
         semaphore.withPermit {
-            val previous = entities.keys.toMutableSet()
-            val added = mutableListOf<GroundImageState>()
-            val updated = mutableListOf<OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>>>()
+            val modifiedEntities = mutableListOf<GroundImageEntity<ActualGroundImage>>()
+            val previous = groundImageManager.allEntities().map { it.state.id }.toMutableSet()
+            val added = mutableListOf<GroundImageOverlayRenderer.AddParams>()
+            val updated = mutableListOf<GroundImageOverlayRenderer.ChangeParams<ActualGroundImage>>()
             val removed = mutableListOf<GroundImageEntity<ActualGroundImage>>()
 
-            data.forEach {
-                if (previous.contains(it.id)) {
-                    val prevEntity = entities[it.id]!!
+            data.forEach { state ->
+                if (previous.contains(state.id)) {
+                    val prevEntity = groundImageManager.getEntity(state.id)!!
                     updated.add(
-                        object : OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>> {
-                            override val current =
+                        object : GroundImageOverlayRenderer.ChangeParams<ActualGroundImage> {
+                            override val current: GroundImageEntity<ActualGroundImage> =
                                 GroundImageEntityImpl(
                                     groundImage = prevEntity.groundImage,
-                                    state = it,
+                                    state = state,
                                 )
-                            override val prev = prevEntity
+                            override val prev: GroundImageEntity<ActualGroundImage> = prevEntity
                         },
                     )
-                    previous.remove(it.id)
+                    previous.remove(state.id)
                 } else {
-                    added.add(it)
-                    previous.remove(it.id)
+                    added.add(
+                        object : GroundImageOverlayRenderer.AddParams {
+                            override val state: GroundImageState = state
+                        },
+                    )
+                    previous.remove(state.id)
                 }
             }
 
             previous.forEach { remainId ->
-                entities.remove(remainId)?.let { removedEntity ->
+                groundImageManager.removeEntity(remainId)?.let { removedEntity ->
                     removed.add(removedEntity)
                 }
+            }
+
+            if (removed.isNotEmpty()) {
+                renderer.onRemove(removed)
             }
 
             if (added.isNotEmpty()) {
                 val actualOverlays = renderer.onAdd(added)
                 actualOverlays.forEachIndexed { index, actualOverlay ->
                     actualOverlay?.let {
-                        val state = added[index]
                         val entity =
                             GroundImageEntityImpl<ActualGroundImage>(
                                 groundImage = it,
-                                state = state,
+                                state = added[index].state,
                             )
-                        entities[state.id] = entity
+                        groundImageManager.registerEntity(entity)
+                        modifiedEntities.add(entity)
                     }
                 }
             }
 
             if (updated.isNotEmpty()) {
-                val actualOverlays = renderer.onChange(updated.toList())
+                val actualOverlays: List<ActualGroundImage?> = renderer.onChange(updated)
                 actualOverlays.forEachIndexed { index, actualOverlay ->
                     actualOverlay?.let {
                         val state = updated[index].current.state
@@ -83,13 +84,9 @@ class GroundImageController<ActualGroundImage>(
                                 groundImage = it,
                                 state = state,
                             )
-                        entities[state.id] = entity
+                        groundImageManager.registerEntity(entity)
                     }
                 }
-            }
-
-            if (removed.isNotEmpty()) {
-                renderer.onRemove(removed)
             }
 
             renderer.onPostProcess()
@@ -98,44 +95,46 @@ class GroundImageController<ActualGroundImage>(
 
     override suspend fun update(state: GroundImageState) {
         semaphore.withPermit {
-            val updated = mutableListOf<OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>>>()
-            val prevEntity = entities[state.id]!!
-            updated.add(
-                object : OverlayRenderer.Changes<GroundImageEntity<ActualGroundImage>> {
-                    override val current: GroundImageEntity<ActualGroundImage> =
-                        GroundImageEntityImpl(
-                            groundImage = prevEntity.groundImage,
-                            state = state,
-                        )
-                    override val prev: GroundImageEntity<ActualGroundImage> = prevEntity
-                },
-            )
-
-            val actualOverlays: List<ActualGroundImage?> = renderer.onChange(updated)
-            actualOverlays.forEachIndexed { index, actualOverlay ->
-                actualOverlay?.let {
-                    val entity =
-                        GroundImageEntityImpl<ActualGroundImage>(
-                            groundImage = it,
-                            state = state,
-                        )
-                    entities[state.id] = entity
-                }
+            val prevEntity = groundImageManager.getEntity(state.id) ?: return
+            val currentFinger = state.fingerPrint()
+            val prevFinder = prevEntity.fingerPrint
+            if (currentFinger == prevFinder) {
+                return
             }
+
+            val groundImage = prevEntity.groundImage
+            val entity =
+                GroundImageEntityImpl(
+                    groundImage = groundImage,
+                    state = state,
+                )
+            val groundImageParams =
+                object : GroundImageOverlayRenderer.ChangeParams<ActualGroundImage> {
+                    override val current: GroundImageEntity<ActualGroundImage> = entity
+                    override val prev: GroundImageEntity<ActualGroundImage> = prevEntity
+                }
+            val groundImages = renderer.onChange(listOf(groundImageParams))
+
+            groundImages[0]?.let {
+                val entity =
+                    GroundImageEntityImpl<ActualGroundImage>(
+                        groundImage = it,
+                        state = state,
+                    )
+                groundImageManager.registerEntity(entity)
+            }
+            renderer.onPostProcess()
         }
     }
 
     override suspend fun clear() {
         semaphore.withPermit {
-            renderer.onRemove(entities.values.toList())
-            entities.clear()
+            val entities: List<GroundImageEntity<ActualGroundImage>> = groundImageManager.allEntities()
+            renderer.onRemove(entities)
+            renderer.onPostProcess()
+            groundImageManager.clear()
         }
     }
 
-    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? {
-        // TODO: Improve this implementation later
-        return entities.values.find { entity ->
-            entity.state.bounds.contains(position)
-        }
-    }
+    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? = groundImageManager.find(position)
 }

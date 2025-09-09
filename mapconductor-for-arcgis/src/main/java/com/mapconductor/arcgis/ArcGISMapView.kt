@@ -7,31 +7,30 @@ import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 
 @Composable
 fun ArcGISMapView(
-    state: ArcGISMapViewState,
+    state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
-    onMapClick: OnMapEventHandler? = {},
-    onMarkerClick: OnMarkerEventHandler? = {},
-    onMarkerDragStart: OnMarkerEventHandler? = {},
-    onMarkerDrag: OnMarkerEventHandler? = {},
-    onMarkerDragEnd: OnMarkerEventHandler? = {},
-    onMarkerAnimateStart: OnMarkerEventHandler? = {},
-    onMarkerAnimateEnd: OnMarkerEventHandler? = {},
-    onCircleClick: OnCircleEventHandler? = {},
-    onGroundImageClick: OnGroundImageEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = {},
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<ArcGISMapViewHolder>() }
-    val controllerRef = remember { Ref<ArcGISMapViewController>() }
+    val controllerRef = remember { Ref<ArcGISMapViewControllerImpl>() }
     val scope = remember { ArcGISMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
@@ -60,25 +59,23 @@ fun ArcGISMapView(
                     id = state.id,
                     options = options,
                 )
-            state.controller = controller
             controller.holder.mapView.onCreate(owner)
             controller.holder.mapView.onResume(owner)
             controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
-            controller.setMarkerClickListener(onMarkerClick)
-            controller.setMarkerDragStartListener(onMarkerDragStart)
-            controller.setMarkerDragListener(onMarkerDrag)
-            controller.setMarkerDragEndListener(onMarkerDragEnd)
-            controller.setCircleClickListener(onCircleClick)
-            controller.setPolylineClickListener(onPolylineClick)
-            controller.setOnMarkerAnimationStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimationEnd(onMarkerAnimateEnd)
+            controller.setOnCircleClickListener(onCircleClick)
+            controller.setOnPolylineClickListener(onPolylineClick)
+            controller.setOnPolygonClickListener(onPolygonClick)
+            controller.setOnMarkerClickListener(onMarkerClick)
+            controller.setOnMarkerDragStart(onMarkerDragStart)
+            controller.setOnMarkerDrag(onMarkerDrag)
+            controller.setOnMarkerDragEnd(onMarkerDragEnd)
+            controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+            controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            state.setController(controller)
 
-            state.controller = controller
-
-            val restoreCameraPosition =
-                state.cameraPosition.value
-                    ?: MapCameraPosition.from(state.initCameraPosition)
+            val restoreCameraPosition = state.cameraPosition.value
             controller.moveCamera(restoreCameraPosition)
 
             controllerRef.value = controller

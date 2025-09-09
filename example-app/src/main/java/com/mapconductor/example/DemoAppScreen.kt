@@ -2,37 +2,33 @@ package com.mapconductor.example
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
+import com.mapconductor.example.pages.map.basic.StoreMapPage
+import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
-import com.mapconductor.example.pages.mapDesign.MapDesignMapPage
+import com.mapconductor.example.pages.marker.animation.AnimationMapPage
+import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
+import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
-import com.mapconductor.example.pages.stores.StoreMapPage
+import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
 import com.mapconductor.example.ui.theme.AppTheme
 
 @Composable
-fun DemoAppScreen() {
-    val navigationViewModel: NavigationViewModel = viewModel()
+fun DemoAppScreen(initPage: String = "map") {
+    val navigationViewModel: NavigationViewModel = remember { NavigationViewModel(initPage) }
+
     val currentPage by navigationViewModel.currentPage
     val isSidebarExpanded by navigationViewModel.isSidebarExpanded
     val context = LocalContext.current
@@ -58,53 +54,41 @@ fun DemoAppScreen() {
     val sidebarItems =
         listOf(
             SidebarItem(
-                id = "map",
-                title = "Map Demo",
-                icon = Icons.Default.Home,
-                route = "map",
+                id = "map-basic",
+                title = "Map",
             ),
             SidebarItem(
-                id = "flyTo",
+                id = "map-flyTo",
                 title = "Move camera",
-                icon = Icons.Default.PlayArrow,
-                route = "flyTo",
+            ),
+            SidebarItem(
+                id = "map-design",
+                title = "Map design",
+            ),
+            SidebarItem(
+                id = "marker-basic",
+                title = "Marker",
+            ),
+            SidebarItem(
+                id = "marker-animation",
+                title = "Marker animation ",
             ),
             SidebarItem(
                 id = "circle",
                 title = "Circle ",
-                icon = Icons.Default.CheckCircle,
-                route = "circle",
             ),
             SidebarItem(
                 id = "groundImage",
                 title = "GroundImage",
-                icon = Icons.Default.Favorite,
-                route = "groundImage",
             ),
             SidebarItem(
                 id = "polyline",
                 title = "Polyline ",
-                icon = Icons.Default.PlayArrow,
-                route = "polyline",
             ),
             SidebarItem(
-                id = "mapDesign",
-                title = "MapDesign Demo",
-                icon = Icons.Default.Build,
-                route = "mapDesign",
+                id = "polygon",
+                title = "polygon ",
             ),
-//            SidebarItem(
-//                id = "examples",
-//                title = "Map Examples",
-//                icon = Icons.Default.LocationOn,
-//                route = "examples",
-//            ),
-//            SidebarItem(
-//                id = "settings",
-//                title = "Settings",
-//                icon = Icons.Default.Settings,
-//                route = "settings",
-//            ),
         )
 
     AppTheme {
@@ -112,8 +96,34 @@ fun DemoAppScreen() {
             // Main content
             Box(modifier = Modifier.fillMaxSize()) {
                 when (currentPage) {
-                    "map" -> {
+                    "startup" -> {
+                        StartUpPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "map-basic" -> {
                         StoreMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "map-design" -> {
+                        MapDesignMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "map-flyTo" -> {
+                        FlyToMapPage(
+                            icons = flyToMapPageIcons,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-basic" -> {
+                        MarkerBasicPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-animation" -> {
+                        AnimationMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -127,9 +137,8 @@ fun DemoAppScreen() {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
-                    "flyTo" -> {
-                        FlyToMapPage(
-                            icons = flyToMapPageIcons,
+                    "polygon" -> {
+                        PolygonMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -138,20 +147,6 @@ fun DemoAppScreen() {
                             groundImageResources = groundImageResources,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
-                    }
-                    "mapDesign" -> {
-                        MapDesignMapPage(
-                            onToggleSidebar = navigationViewModel::toggleSidebar,
-                        )
-                    }
-                    "settings" -> {
-                        // Placeholder for settings page
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text("Settings page coming soon...")
-                        }
                     }
                 }
             }

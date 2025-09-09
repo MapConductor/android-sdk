@@ -4,95 +4,82 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.marker.AbstractMarkerRenderer
-import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayManager
-import com.mapconductor.core.marker.MarkerOverlayManagerImpl
-import com.mapconductor.core.marker.MarkerRenderer.UpdateParams
-import com.mapconductor.core.marker.MarkerRendererFactory
-import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class DefaultGoogleMapMarkerRenderer : MarkerRendererFactory<Marker> {
-    override fun create(
-        hexGeocell: HexGeocell,
-        onIconAdd: suspend (List<Pair<MarkerState, BitmapIcon>>) -> List<Marker?>,
-        onIconRemove: suspend (List<MarkerEntity<Marker>>) -> Unit,
-        onIconChange: suspend (List<UpdateParams<Marker>>) -> List<Marker>,
-        onAnimate: suspend (MarkerEntity<Marker>) -> Unit,
-        onPostProcess: (suspend () -> Unit)?,
-    ): MarkerOverlayManager<Marker> =
-        MarkerOverlayManagerImpl(
-            markerManager = MarkerManager(hexGeocell),
-            onRemove = onIconRemove,
-            onAdd = onIconAdd,
-            onChange = onIconChange,
-            onPostProcess = onPostProcess,
-            onAnimate = onAnimate,
-        )
-}
-
 class GoogleMapMarkerRenderer(
-    override val holder: GoogleMapViewHolder,
-    override val coroutine: CoroutineScope,
-) : AbstractMarkerRenderer<Marker>() {
+    holder: GoogleMapViewHolder,
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+) : AbstractMarkerOverlayRenderer<GoogleMapViewHolder, GoogleMapActualMarker>(
+        holder = holder,
+        coroutine = coroutine,
+    ) {
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Marker>,
+        markerEntity: MarkerEntity<GoogleMapActualMarker>,
         position: GeoPoint,
     ) {
-        markerEntity.marker.position = position.toLatLng()
+        coroutine.launch {
+            markerEntity.marker.position = position.toLatLng()
+        }
     }
 
-    override suspend fun addIcons(newMarkers: List<Pair<MarkerState, BitmapIcon>>): List<Marker?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {
         return withContext(coroutine.coroutineContext) {
-            newMarkers.map { params ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.second.bitmap)
+            data.map { params ->
+                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
                 val options =
                     MarkerOptions()
-                        .position(GeoPoint.from(params.first.position).toLatLng())
+                        .position(GeoPoint.from(params.state.position).toLatLng())
                         .anchor(
-                            params.second.anchor.x,
-                            params.second.anchor.y,
+                            params.bitmapIcon.anchor.x,
+                            params.bitmapIcon.anchor.y,
                         ).icon(bitmapDescriptor)
-                        .draggable(params.first.draggable)
+                        .draggable(params.state.draggable)
                 val marker =
                     holder.map.addMarker(options)?.also {
-                        it.tag = params.first.id
+                        it.tag = params.state.id
                     }
                 return@map marker
             }
         }
     }
 
-    override suspend fun removeIcons(removeEntities: List<MarkerEntity<Marker>>) {
+    override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {
         coroutine.launch {
-            removeEntities.forEach { params -> params.marker.remove() }
+            data.forEach { params -> params.marker.remove() }
         }
     }
 
-    override suspend fun changeIcons(changes: List<UpdateParams<Marker>>): List<Marker> =
+    override suspend fun onPostProcess() {
+        // Do nothing here
+    }
+
+    override suspend fun onChange(
+        changes: List<MarkerOverlayRenderer.ChangeParams<GoogleMapActualMarker>>,
+    ): List<Marker> =
         withContext(coroutine.coroutineContext) {
             changes.map { params ->
-                val prevFinger = params.prevEntity.fingerPrint
-                val currentFinger = params.entity.fingerPrint
+                val prevFinger = params.prev.fingerPrint
+                val currentFinger = params.current.fingerPrint
                 if (prevFinger.icon != currentFinger.icon) {
                     val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
-                    params.entity.marker.setIcon(bitmapDescriptor)
+                    params.current.marker.setIcon(bitmapDescriptor)
                 }
-                if (params.entity.state.position != params.prevEntity.state.position) {
-                    params.entity.marker.position =
-                        GeoPoint.from(params.entity.state.position).toLatLng()
+                if (params.current.state.position != params.prev.state.position) {
+                    params.current.marker.position =
+                        GeoPoint.from(params.current.state.position).toLatLng()
                 }
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                params.entity.marker
+                params.current.marker
             }
         }
 }

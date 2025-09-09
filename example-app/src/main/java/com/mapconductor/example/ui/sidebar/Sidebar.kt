@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -190,13 +189,6 @@ private fun SidebarItemView(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = if (isExpanded) null else item.title,
-                modifier = Modifier.size(20.dp),
-                tint = contentColor,
-            )
-
             AnimatedVisibility(
                 visible = isExpanded,
                 enter =

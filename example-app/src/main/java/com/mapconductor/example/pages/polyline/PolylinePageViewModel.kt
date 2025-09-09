@@ -1,8 +1,6 @@
 package com.mapconductor.example.pages.polyline
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -24,8 +22,6 @@ interface PolylinePageViewModel {
     val polylineState: PolylineState
 
     fun onMapViewChanged(state: MapViewState<*>)
-
-    fun onPolylineClick(state: PolylineState)
 
     fun onMarkerDrag(dragged: MarkerState)
 }
@@ -56,51 +52,43 @@ class PolylinePageViewModelImpl :
             GeoPoint.fromLatLong(21.382314, -157.933097), // Back to center
         )
 
-    private val _wayPointMarkers: MutableState<List<MarkerState>> =
-        mutableStateOf(
-            polylinePoints.mapIndexed { index, point ->
-                val markerColor =
-                    when {
-                        index == 0 -> Color.Green
-                        index == polylinePoints.size - 1 -> Color.Green
-                        else -> Color.Yellow
-                    }
-                val label =
-                    when {
-                        index == 0 -> "S"
-                        index == polylinePoints.size - 1 -> "E"
-                        else -> "$index"
-                    }
-                MarkerState(
-                    id = "waypoint_$index",
-                    position = point,
-                    icon =
-                        DefaultIcon(
-                            fillColor = markerColor,
-                            strokeColor = Color.Black,
-                            label = label,
-                        ),
-                    draggable = true,
-                )
-            },
-        )
+    override val wayPointMarkers: List<MarkerState> =
+        polylinePoints.mapIndexed { index, point ->
+            val markerColor =
+                when {
+                    index == 0 -> Color.Green
+                    index == polylinePoints.size - 1 -> Color.Green
+                    else -> Color.Yellow
+                }
+            val label =
+                when {
+                    index == 0 -> "S"
+                    index == polylinePoints.size - 1 -> "E"
+                    else -> "$index"
+                }
+            MarkerState(
+                id = "waypoint_$index",
+                position = point,
+                icon =
+                    DefaultIcon(
+                        fillColor = markerColor,
+                        strokeColor = Color.Black,
+                        label = label,
+                    ),
+                draggable = true,
+                extra = index,
+            )
+        }
 
-    override val wayPointMarkers: List<MarkerState>
-        get() = _wayPointMarkers.value
-
-    private val _polylineState: MutableState<PolylineState> =
-        mutableStateOf(
+    override val polylineState: PolylineState
+        get() =
             PolylineState(
                 id = "example_polyline",
                 points = polylinePoints,
                 strokeColor = Color.Red,
                 strokeWidth = 4.dp,
                 geodesic = true,
-            ),
-        )
-
-    override val polylineState: PolylineState
-        get() = _polylineState.value
+            )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
@@ -112,17 +100,12 @@ class PolylinePageViewModelImpl :
         this._mapViewState.value = state
     }
 
-    override fun onPolylineClick(state: PolylineState) {
-        _polylineState.value.strokeColor = Color.Magenta
-    }
-
     override fun onMarkerDrag(dragged: MarkerState) {
-        val markerIndex = _wayPointMarkers.value.indexOfFirst { it.id == dragged.id }
-        if (markerIndex < 0) return
-
-        // 1. pointsを更新
-        polylinePoints[markerIndex].latitude = dragged.position.latitude
-        polylinePoints[markerIndex].longitude = dragged.position.longitude
+        (dragged.extra as? Int)?.let { index ->
+            if (index >= 0 && index < polylinePoints.size) {
+                polylinePoints[index] = GeoPoint.from(dragged.position)
+            }
+        }
     }
 
     override fun onCleared() {
