@@ -8,8 +8,12 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.spherical.expandBounds
 import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.settings.Settings
+import kotlinx.coroutines.launch
 
 class HereMarkerController(
     markerManager: MarkerManager<HereActualMarker>,
@@ -52,6 +56,53 @@ class HereMarkerController(
                 nearest
             } else {
                 null
+            }
+        }
+    }
+
+    override suspend fun onCameraChanged(cameraPosition: MapCameraPosition) {
+        val visibleRegion = cameraPosition.visibleRegion ?: return
+        val viewportBounds = expandBounds(visibleRegion.bounds, margin = 0.5)
+        
+        val currentlyRendered = markerManager.allEntities().filter { it.isRendered }
+        val shouldBeRendered = markerManager.allEntities().filter { entity ->
+            viewportBounds.contains(entity.state.position)
+        }
+
+        val toRemove = currentlyRendered.filter { entity ->
+            !viewportBounds.contains(entity.state.position)
+        }
+        
+        val toAdd = shouldBeRendered.filter { entity ->
+            !entity.isRendered && entity.marker == null
+        }
+
+        if (toRemove.isNotEmpty() || toAdd.isNotEmpty()) {
+            // Remove markers that are now outside viewport
+            if (toRemove.isNotEmpty()) {
+                renderer.onRemove(toRemove)
+                toRemove.forEach { entity ->
+                    entity.marker = null
+                    entity.isRendered = false
+                }
+            }
+
+            // Add markers that are now inside viewport
+            if (toAdd.isNotEmpty()) {
+                val addParams = toAdd.map { entity ->
+                    object : MarkerOverlayRenderer.AddParams {
+                        override val state = entity.state
+                        override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: DefaultIcon().toBitmapIcon()
+                    }
+                }
+                val newMarkers = renderer.onAdd(addParams)
+                
+                toAdd.forEachIndexed { index, entity ->
+                    if (index < newMarkers.size) {
+                        entity.marker = newMarkers[index]
+                        entity.isRendered = newMarkers[index] != null
+                    }
+                }
             }
         }
     }

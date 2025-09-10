@@ -161,6 +161,8 @@ class MapboxMarkerOverlayRenderer(
     }
 
     override suspend fun onPostProcess() {
+        // For Mapbox, we need to update the layer after add/remove operations
+        // but only redraw when there were actual changes
         redraw()
     }
 

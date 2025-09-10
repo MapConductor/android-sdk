@@ -65,7 +65,9 @@ class HereMarkerRenderer(
     override suspend fun onRemove(data: List<MarkerEntity<HereActualMarker>>) {
         coroutine.launch {
             val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
-            holder.map.removeMapMarkers(markers)
+            if (markers.isNotEmpty()) {
+                holder.map.removeMapMarkers(markers)
+            }
         }
     }
 
