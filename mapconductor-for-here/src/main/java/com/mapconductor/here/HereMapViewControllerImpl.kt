@@ -113,6 +113,7 @@ class HereMapViewControllerImpl(
 
     init {
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -170,12 +171,9 @@ class HereMapViewControllerImpl(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
-            backCoroutine.launch {
-                markerController.onCameraChanged(mapCameraPosition)
-            }
-            cameraMoveCallback?.let { callback ->
-                coroutine.launch { callback(mapCameraPosition) }
+        backCoroutine.launch {
+            getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
+                notifyMapCameraPosition(mapCameraPosition)
             }
         }
     }

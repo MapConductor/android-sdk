@@ -59,24 +59,4 @@ class MapboxMarkerController(
             }
         }
     }
-
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
-        mapCameraPosition.visibleRegion?.bounds?.let { bounds ->
-            // Expand bounds by 20% margin for better performance
-            val expandedBounds = expandBounds(bounds, 0.2)
-
-            // Get markers within expanded bounds
-            val visibleMarkers = markerManager.findMarkersInBounds(expandedBounds)
-            val allMarkers = markerManager.allEntities()
-
-            // Show markers in bounds, hide others
-            visibleMarkers.forEach { entity ->
-                entity.visible = true
-            }
-
-            allMarkers.filterNot { visibleMarkers.contains(it) }.forEach { entity ->
-                entity.visible = false
-            }
-        }
-    }
 }

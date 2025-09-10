@@ -90,6 +90,7 @@ internal class MapboxMapViewControllerImpl(
             style.addLayer(markerController.renderer.dragLayer.layer)
         }
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -132,12 +133,9 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
-            backCoroutine.launch {
-                markerController.onCameraChanged(mapCameraPosition)
-            }
-            cameraMoveCallback?.let { callBack ->
-                coroutine.launch { callBack(mapCameraPosition) }
+        backCoroutine.launch {
+            getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
+                notifyMapCameraPosition(mapCameraPosition)
             }
         }
     }

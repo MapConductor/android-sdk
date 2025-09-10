@@ -2,6 +2,7 @@ package com.mapconductor.core.circle
 
 import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -138,4 +139,5 @@ abstract class CircleController<ActualCircle>(
     }
 
     override fun find(position: IGeoPoint): CircleEntity<ActualCircle>? = circleManager.find(position)
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 }

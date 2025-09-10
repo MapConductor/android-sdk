@@ -54,6 +54,7 @@ class GoogleMapViewControllerImpl(
     GoogleMap.OnMapLoadedCallback {
     init {
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -128,10 +129,7 @@ class GoogleMapViewControllerImpl(
     override fun onCameraMove() {
         val mapCameraPosition = getMapCameraPosition()
         backCoroutine.launch {
-            markerController.onCameraChanged(mapCameraPosition)
-        }
-        cameraMoveCallback?.let { callBack ->
-            callBack(mapCameraPosition)
+            notifyMapCameraPosition(mapCameraPosition)
         }
     }
 

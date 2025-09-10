@@ -50,6 +50,7 @@ class ArcGISMapViewControllerImpl(
         holder.map.graphicsOverlays.add(polylineController.renderer.polylineLayer)
         holder.map.graphicsOverlays.add(markerController.renderer.markerLayer)
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -60,13 +61,10 @@ class ArcGISMapViewControllerImpl(
             holder.map.viewpointChanged.collect { onViewpointChange() }
         }
         coroutine.launch {
-            holder.map.onInteractiveZooming.collect { onInteractiveZooming() }
+            holder.map.onInteractiveZooming.collect { onViewpointChange() }
         }
         coroutine.launch {
-            holder.map.onRotate.collect { onInteractiveZooming() }
-        }
-        coroutine.launch {
-            holder.map.onDown.collect { onInteractiveZooming() }
+            holder.map.onRotate.collect { onViewpointChange() }
         }
         coroutine.launch {
             holder.map.onLongPress.collect { onMapLongPress(it) }
@@ -79,21 +77,12 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    private suspend fun onInteractiveZooming() {
-        cameraMoveCallback?.let { callback ->
-            getMapCameraPosition()?.let { mapCameraPosition ->
-                markerController.onCameraChanged(mapCameraPosition)
-                callback?.invoke(mapCameraPosition)
-            }
+    private suspend fun onViewpointChange() {
+        getMapCameraPosition()?.let { mapCameraPosition ->
+            notifyMapCameraPosition(mapCameraPosition)
         }
     }
 
-    private suspend fun onViewpointChange() {
-        getMapCameraPosition()?.let { mapCameraPosition ->
-            markerController.onCameraChanged(mapCameraPosition)
-            cameraMoveCallback?.invoke(mapCameraPosition)
-        }
-    }
     private suspend fun getMapCameraPosition(): MapCameraPosition? {
         val mapWidth = holder.map.width.toFloat() - 1.0f
         val mapHeight = holder.map.height.toFloat() - 1.0f

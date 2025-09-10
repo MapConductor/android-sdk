@@ -111,9 +111,9 @@ fun GoogleMapsView(
                         override fun onDestroy(owner: LifecycleOwner) {
                             val activity = context.findActivity()
                             if (activity?.isChangingConfigurations == true) {
-                                (_holderRef.value!!.mapView.parent as? ViewGroup)?.removeView(
-                                    _holderRef.value!!.mapView,
-                                )
+                                _holderRef.value?.mapView?.let {
+                                    (it.parent as? ViewGroup)?.removeView(it)
+                                }
                             } else {
                                 GoogleMapViewControllerStore.remove(stateId)
                             }

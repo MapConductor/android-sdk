@@ -2,6 +2,7 @@ package com.mapconductor.core.polygon
 
 import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -138,4 +139,5 @@ abstract class PolygonController<ActualPolygon>(
     }
 
     override fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>? = polygonManager.find(position)
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 }

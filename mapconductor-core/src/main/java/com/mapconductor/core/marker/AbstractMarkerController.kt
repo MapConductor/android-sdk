@@ -1,6 +1,7 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.controller.OverlayController
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.spherical.expandBounds
@@ -52,7 +53,7 @@ interface MarkerOverlayRenderer<ActualMarker> {
 }
 
 abstract class AbstractMarkerController<ActualMarker>(
-    val markerManager: MarkerManager<ActualMarker>,
+    val markerManager: MarkerManager<ActualMarker?>,
     open val renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
 ) : OverlayController<
@@ -66,6 +67,11 @@ abstract class AbstractMarkerController<ActualMarker>(
     var dragStartListener: ((MarkerState) -> Unit)? = null
     var dragListener: ((MarkerState) -> Unit)? = null
     var dragEndListener: ((MarkerState) -> Unit)? = null
+    private var mapCameraPosition: MapCameraPosition? = null
+    private val worldBounds = GeoRectBounds(
+        southWest = GeoPoint(90.0, 180.0),
+        northEast = GeoPoint(-90.0, -180.0),
+    )
 
     protected fun setDraggingState(
         markerState: MarkerState,
@@ -85,29 +91,46 @@ abstract class AbstractMarkerController<ActualMarker>(
             val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
             val updated = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
             val removed = mutableListOf<MarkerEntity<ActualMarker>>()
+            val viewportBounds = mapCameraPosition?.visibleRegion?.bounds ?: worldBounds
+
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     val prevEntity = markerManager.getEntity(state.id)!!
                     val markerIcon = state.icon ?: defaultIcon
-                    updated.add(
-                        object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                            override val current: MarkerEntity<ActualMarker> =
-                                MarkerEntityImpl(
-                                    state = state,
-                                    marker = prevEntity.marker,
-                                )
-                            override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
-                            override val prev: MarkerEntity<ActualMarker> = prevEntity
-                        },
-                    )
+                    if (viewportBounds.contains(state.position)) {
+
+                    } else {
+                        updated.add(
+                            object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
+                                override val current: MarkerEntity<ActualMarker> =
+                                    MarkerEntityImpl(
+                                        state = state,
+                                        marker = prevEntity.marker,
+                                    )
+                                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
+                                override val prev: MarkerEntity<ActualMarker> = prevEntity
+                            },
+                        )
+                    }
                     previous.remove(state.id)
                 } else {
-                    added.add(
-                        object : MarkerOverlayRenderer.AddParams {
-                            override val state: MarkerState = state
-                            override val bitmapIcon: BitmapIcon = state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
-                        },
-                    )
+                    if (viewportBounds.contains(state.position)) {
+                        added.add(
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state: MarkerState = state
+                                override val bitmapIcon: BitmapIcon = state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
+                            },
+                        )
+                    } else {
+                        val entity =
+                            MarkerEntityImpl<ActualMarker?>(
+                                marker = null,
+                                state = state,
+                            )
+                        markerManager.registerEntity(entity)
+                    }
+
+
                     previous.remove(state.id)
                 }
             }
@@ -216,5 +239,25 @@ abstract class AbstractMarkerController<ActualMarker>(
         }
     }
 
-    abstract suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition)
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
+        this.mapCameraPosition = mapCameraPosition
+
+        mapCameraPosition.visibleRegion?.bounds?.let { bounds ->
+            // Expand bounds by 20% margin for better performance
+            val expandedBounds = expandBounds(bounds, 0.2)
+
+            // Get markers within expanded bounds
+            val visibleMarkers = markerManager.findMarkersInBounds(expandedBounds)
+            val allMarkers = markerManager.allEntities()
+
+            // Show markers in bounds, hide others
+            visibleMarkers.forEach { entity ->
+                entity.visible = true
+            }
+
+            allMarkers.filterNot { visibleMarkers.contains(it) }.forEach { entity ->
+                entity.visible = false
+            }
+        }
+    }
 }
