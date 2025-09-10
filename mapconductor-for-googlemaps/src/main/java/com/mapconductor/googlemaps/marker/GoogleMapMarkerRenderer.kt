@@ -27,7 +27,7 @@ class GoogleMapMarkerRenderer(
         position: GeoPoint,
     ) {
         coroutine.launch {
-            markerEntity.marker.position = position.toLatLng()
+            markerEntity.marker?.position = position.toLatLng()
         }
     }
 
@@ -54,7 +54,7 @@ class GoogleMapMarkerRenderer(
 
     override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {
         coroutine.launch {
-            data.forEach { params -> params.marker.remove() }
+            data.forEach { params -> params.marker?.remove() }
         }
     }
 
@@ -66,21 +66,22 @@ class GoogleMapMarkerRenderer(
         changes: List<MarkerOverlayRenderer.ChangeParams<GoogleMapActualMarker>>,
     ): List<Marker> =
         withContext(coroutine.coroutineContext) {
-            changes.map { params ->
+            changes.mapNotNull { params ->
                 val prevFinger = params.prev.fingerPrint
                 val currentFinger = params.current.fingerPrint
+                val marker = params.current.marker ?: return@mapNotNull null
                 if (prevFinger.icon != currentFinger.icon) {
                     val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
-                    params.current.marker.setIcon(bitmapDescriptor)
+                    marker.setIcon(bitmapDescriptor)
                 }
                 if (params.current.state.position != params.prev.state.position) {
-                    params.current.marker.position =
+                    marker.position =
                         GeoPoint.from(params.current.state.position).toLatLng()
                 }
-                params.current.marker.isVisible = params.current.visible
+                marker.isVisible = params.current.visible
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                params.current.marker
+                marker
             }
         }
 }

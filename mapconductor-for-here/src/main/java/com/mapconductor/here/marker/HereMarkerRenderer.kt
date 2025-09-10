@@ -32,7 +32,7 @@ class HereMarkerRenderer(
         position: GeoPoint,
     ) {
         coroutine.launch {
-            markerEntity.marker.coordinates = position.toGeoCoordinates()
+            markerEntity.marker?.coordinates = position.toGeoCoordinates()
         }
     }
 
@@ -64,7 +64,7 @@ class HereMarkerRenderer(
 
     override suspend fun onRemove(data: List<MarkerEntity<HereActualMarker>>) {
         coroutine.launch {
-            val markers: List<HereActualMarker> = data.map { params -> params.marker }
+            val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
             holder.map.removeMapMarkers(markers)
         }
     }
@@ -76,21 +76,22 @@ class HereMarkerRenderer(
     override suspend fun onChange(
         changes: List<MarkerOverlayRenderer.ChangeParams<HereActualMarker>>,
     ): List<HereActualMarker?> =
-        changes.map { params ->
+        changes.mapNotNull { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint
-            if (!params.current.visible) return@map null
+            if (!params.current.visible) return@mapNotNull null
 
+            val marker = params.current.marker ?: return@mapNotNull null
             if (currFinger.icon != prevFinger.icon) {
-                params.current.marker.image = params.bitmapIcon.toMapImage()
-                params.current.marker.anchor = params.bitmapIcon.toAnchor2D()
+                marker.image = params.bitmapIcon.toMapImage()
+                marker.anchor = params.bitmapIcon.toAnchor2D()
             }
             if (params.current.state.position != params.prev.state.position) {
-                params.current.marker.coordinates =
+                marker.coordinates =
                     GeoPoint.from(params.current.state.position).toGeoCoordinates()
             }
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-            params.current.marker
+            marker
         }
 }

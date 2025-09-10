@@ -20,6 +20,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MapboxMarkerOverlayRenderer(
     holder: MapboxMapViewHolder,
@@ -79,7 +80,7 @@ class MapboxMarkerOverlayRenderer(
         val feature =
             Feature.fromGeometry(
                 position.toPoint(),
-                markerEntity.marker.properties(),
+                markerEntity.marker?.properties(),
                 "marker-${markerEntity.state.id}",
             )
         markerEntity.marker = feature
@@ -99,57 +100,61 @@ class MapboxMarkerOverlayRenderer(
     }
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Feature> {
-        val style =
-            suspendCoroutine { continuation ->
-                holder.map.getStyle { style ->
-                    continuation.resumeWith(Result.success(style))
-                }
-            }
-
-        data.forEach {
-            val iconKey =
-                it.state.icon
-                    .hashCode()
-                    .toString()
-            if (!iconRefCounter.contains(iconKey)) {
-                style.addImage(iconKey, it.bitmapIcon.bitmap)
-                iconRefCounter[iconKey] = 0
-            }
-        }
-
-        return data.map {
-            val featureId = "marker-${it.state.id}"
-            val position = GeoPoint.from(it.state.position).toPoint()
-            val properties =
-                JsonObject().apply {
-                    if (it.state.icon != null) {
-                        it.state.icon?.let { icon ->
-                            val iconKey = icon.hashCode().toString()
-                            iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
-                            addProperty(Prop.ICON_ID, iconKey)
-                            // icon offset property
-                            add(Prop.ICON_ANCHOR, createIconOffset(icon))
-                        }
-                    } else {
-                        addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
-                        add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
+        return withContext(Dispatchers.Main) {
+            val style =
+                suspendCoroutine { continuation ->
+                    holder.map.getStyle { style ->
+                        continuation.resumeWith(Result.success(style))
                     }
-                    addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
                 }
-            Feature.fromGeometry(position, properties, featureId)
+
+            data.forEach {
+                val iconKey =
+                    it.state.icon
+                        .hashCode()
+                        .toString()
+                if (!iconRefCounter.contains(iconKey)) {
+                    style.addImage(iconKey, it.bitmapIcon.bitmap)
+                    iconRefCounter[iconKey] = 0
+                }
+            }
+
+            data.map {
+                val featureId = "marker-${it.state.id}"
+                val position = GeoPoint.from(it.state.position).toPoint()
+                val properties =
+                    JsonObject().apply {
+                        if (it.state.icon != null) {
+                            it.state.icon?.let { icon ->
+                                val iconKey = icon.hashCode().toString()
+                                iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
+                                addProperty(Prop.ICON_ID, iconKey)
+                                // icon offset property
+                                add(Prop.ICON_ANCHOR, createIconOffset(icon))
+                            }
+                        } else {
+                            addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                            add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
+                        }
+                        addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
+                    }
+                Feature.fromGeometry(position, properties, featureId)
+            }
         }
     }
 
     override suspend fun onRemove(data: List<MarkerEntity<MapboxActualMarker>>) {
-        data.forEach { entity ->
-            entity.state.icon?.let { icon ->
-                val iconKey = icon.hashCode().toString()
-                val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
-                if (cnt == 0) {
-                    iconRefCounter.remove(iconKey)
-                    holder.map.style?.removeStyleImage(iconKey)
-                } else {
-                    iconRefCounter[iconKey] = cnt
+        withContext(Dispatchers.Main) {
+            data.forEach { entity ->
+                entity.state.icon?.let { icon ->
+                    val iconKey = icon.hashCode().toString()
+                    val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
+                    if (cnt == 0) {
+                        iconRefCounter.remove(iconKey)
+                        holder.map.style?.removeStyleImage(iconKey)
+                    } else {
+                        iconRefCounter[iconKey] = cnt
+                    }
                 }
             }
         }
@@ -165,7 +170,7 @@ class MapboxMarkerOverlayRenderer(
         data.map { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint
-            val prevProperties = params.prev.marker.properties()
+            val prevProperties = params.prev.marker?.properties()
 
             val properties =
                 JsonObject().apply {

@@ -22,14 +22,18 @@ class MarkerDragLayer(
     fun draw() {
         val features =
             selected?.let {
-                val feature =
-                    Feature.fromGeometry(
-                        GeoPoint.from(it.state.position).toPoint(),
-                        it.marker.properties(),
-                        it.state.id,
-                    )
-                it.marker = feature
-                listOf<MapboxActualMarker>(feature)
+                if (it.marker != null) {
+                    val feature =
+                        Feature.fromGeometry(
+                            GeoPoint.from(it.state.position).toPoint(),
+                            it.marker?.properties(),
+                            it.state.id,
+                        )
+                    it.marker = feature
+                    listOf<MapboxActualMarker>(feature)
+                } else {
+                    emptyList<MapboxActualMarker>()
+                }
             } ?: emptyList<MapboxActualMarker>()
 
         source.featureCollection(

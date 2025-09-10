@@ -133,9 +133,11 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        backCoroutine.launch {
+        coroutine.launch {
             getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
-                notifyMapCameraPosition(mapCameraPosition)
+                backCoroutine.launch {
+                    notifyMapCameraPosition(mapCameraPosition)
+                }
             }
         }
     }

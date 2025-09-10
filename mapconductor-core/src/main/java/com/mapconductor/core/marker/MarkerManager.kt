@@ -78,18 +78,18 @@ class MarkerManager<ActualMarker>(
 
         val center = bounds.center ?: return emptyList()
         val span = bounds.toSpan() ?: return emptyList()
-        
+
         // Calculate search radius based on bounding box diagonal
         val latRadius = span.latitude / 2.0
         val lngRadius = span.longitude / 2.0
         val searchRadius = kotlin.math.sqrt(latRadius * latRadius + lngRadius * lngRadius) * 111000 // rough meters per degree
-        
+
         // Find all cells within the search radius
         val cellsWithDistance = cellRegistry.findWithinRadiusWithDistance(center, searchRadius)
-        
+
         // Collect all entities from those cells and filter by actual bounds
         val markersInBounds = mutableListOf<MarkerEntity<ActualMarker>>()
-        
+
         cellsWithDistance.forEach { cellWithDistance ->
             val entryIDs = cellRegistry.getEntryIDsByHexCell(cellWithDistance.cell)
             entryIDs?.forEach { entryId ->
@@ -100,7 +100,7 @@ class MarkerManager<ActualMarker>(
                 }
             }
         }
-        
+
         return markersInBounds
     }
 }

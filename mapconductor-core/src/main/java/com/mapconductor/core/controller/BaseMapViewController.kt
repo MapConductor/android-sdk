@@ -21,6 +21,7 @@ abstract class BaseMapViewController : MapViewController {
     override fun setMapLongClickListener(listener: OnMapEventHandler?) {
         this.mapClickCallback = listener
     }
+
     protected fun registerController(controller: OverlayController<*, *, *>) {
         overlayControllers.add(controller)
     }

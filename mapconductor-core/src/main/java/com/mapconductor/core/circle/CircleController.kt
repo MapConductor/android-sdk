@@ -139,5 +139,6 @@ abstract class CircleController<ActualCircle>(
     }
 
     override fun find(position: IGeoPoint): CircleEntity<ActualCircle>? = circleManager.find(position)
+
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 }

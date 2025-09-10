@@ -142,5 +142,6 @@ abstract class PolylineController<ActualPolyline>(
     }
 
     override fun find(position: IGeoPoint): PolylineEntity<ActualPolyline>? = polylineManager.find(position)
+
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 }

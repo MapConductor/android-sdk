@@ -270,7 +270,7 @@ class HereMapViewControllerImpl(
             GestureState.UPDATE.value -> {
                 markerController.selectedMarker?.also { selected ->
                     holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
-                        selected.marker.coordinates = coordinates
+                        selected.marker?.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
                     markerController.dragListener?.invoke(selected.state)

@@ -11,9 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun PostOfficeInfoView(
-    info: PostOffice,
-) {
+fun PostOfficeInfoView(info: PostOffice) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     if (!darkTheme) Color.Black else Color.White
 
