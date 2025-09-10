@@ -71,6 +71,16 @@ class HereMapViewControllerImpl(
 
     override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
 
+    override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
+
+    override fun hasPolyline(state: PolylineState): Boolean =
+        this.polylineController.polylineManager
+            .hasEntity(state.id)
+
+    override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
+
+    override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerController.dragStartListener = listener
     }

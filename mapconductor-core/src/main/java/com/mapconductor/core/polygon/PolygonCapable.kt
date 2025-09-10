@@ -6,4 +6,6 @@ interface PolygonCapable {
     suspend fun updatePolygon(state: PolygonState)
 
     fun setOnPolygonClickListener(listener: OnPolygonEventHandler?)
+
+    fun hasPolygon(state: PolygonState): Boolean
 }

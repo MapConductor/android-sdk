@@ -6,4 +6,6 @@ interface GroundImageCapable {
     suspend fun updateGroundImage(state: GroundImageState)
 
     fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?)
+
+    fun hasGroundImage(state: GroundImageState): Boolean
 }

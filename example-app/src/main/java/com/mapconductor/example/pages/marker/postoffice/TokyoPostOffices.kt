@@ -111,12 +111,12 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.683153, 139.736685),
-            name = "海事BuildingPost Office",
+            name = "Kaiji BuildingPost Office",
             address = "Kojimachi4-5",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.684347, 139.733324),
-            name = "Kojimachi本通Post Office",
+            name = "Kojimachi Hondori Post Office",
             address = "Kojimachi5-3",
         ),
         PostOffice(
@@ -141,7 +141,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.696312, 139.764595),
-            name = "新御茶ノ水Station FrontPost Office",
+            name = "Shin-Ochanomizu Station FrontPost Office",
             address = "KandaSurugadai3-9",
         ),
         PostOffice(
@@ -181,7 +181,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.68382, 139.753823),
-            name = "宮庁Post Office",
+            name = "Kyu-cho Post Office",
             address = "Chiyoda1-1",
         ),
         PostOffice(
@@ -196,7 +196,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.687857, 139.764204),
-            name = "ＫＤＤＩOtemachi Building Post Office",
+            name = "KDDI Otemachi Building Post Office",
             address = "Otemachi1-8-1",
         ),
         PostOffice(
@@ -226,7 +226,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.671099, 139.757656),
-            name = "ＮＴＴHibiyaBuildingPost Office",
+            name = "NTT HibiyaBuildingPost Office",
             address = "Uchisaiwai-cho1-1-6",
         ),
         PostOffice(
@@ -236,7 +236,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.699346, 139.749322),
-            name = "KojimachiIidabashi通Post Office",
+            name = "KojimachiIidabashi Dori Post Office",
             address = "Iidabashi2-7-6",
         ),
         PostOffice(
@@ -246,7 +246,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.696678, 139.742598),
-            name = "Kojimachi Post OfficeHigashi京Teishin Hospital Branch",
+            name = "Kojimachi Post Office Higashi Kyo Teishin Hospital Branch",
             address = "Fujimi2-14-23",
         ),
         PostOffice(
@@ -276,7 +276,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.675488, 139.769822),
-            name = "Kyobashi通Post Office",
+            name = "Kyobashi-dori Post Office",
             address = "Kyobashi3-6-3",
         ),
         PostOffice(
@@ -286,7 +286,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.673349, 139.767572),
-            name = "Ginza通Post Office",
+            name = "Ginza-dori Post Office",
             address = "Ginza2-7-18",
         ),
         PostOffice(
@@ -296,7 +296,7 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.673266, 139.764989),
-            name = "Ginza並木通Post Office",
+            name = "Ginza Namiki-dori Post Office",
             address = "Ginza3-2-10",
         ),
         PostOffice(
@@ -306,12 +306,12 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.66935, 139.764461),
-            name = "GinzaRokuPost Office（ (Temporarily Closed)）",
+            name = "GinzaRokuPost Office(Temporarily Closed)",
             address = "Ginza6-11-7",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.670563, 139.763388),
-            name = "Ginzaみゆき通Post Office",
+            name = "Ginza Miyuki-dori Post Office",
             address = "Ginza6-8-3",
         ),
         PostOffice(
@@ -331,48 +331,48 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.661879, 139.781738),
-            name = "Kyobashi月島Post Office",
-            address = "月島4-1-14",
+            name = "Kyobashi Tuskisima Post Office",
+            address = "Tuskisima 4-1-14",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.659707, 139.777743),
-            name = "Central勝どきPost Office",
-            address = "勝どき1-7-1",
+            name = "Central Katsudoki Post Office",
+            address = "Katsudoki 1-7-1",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.659212, 139.773628),
-            name = "Central勝どきSanPost Office",
-            address = "勝どき3-13-1",
+            name = "Central Katsudoki SanPost Office",
+            address = "Katsudoki 3-13-1",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.677516, 139.782321),
-            name = "Central新川Post Office",
-            address = "新川1-9-11",
+            name = "Central Shinkawa Post Office",
+            address = "Shinkawa1-9-11",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.674669, 139.783734),
-            name = "Central新川NiPost Office",
-            address = "新川2-15-11",
+            name = "Central Shinkawa NiPost Office",
+            address = "Shinkawa2-15-11",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.673294, 139.775766),
-            name = "新富Post Office",
-            address = "新富1-19-1",
+            name = "Shintomi Post Office",
+            address = "Shintomi 1-19-1",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.671905, 139.773877),
-            name = "Central新富NiPost Office",
-            address = "新富2-5-1",
+            name = "Central Shintomi NiPost Office",
+            address = "Shintomi 2-5-1",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.656796, 139.78296),
-            name = "晴海トリトンスクエアPost Office",
-            address = "晴海1-8-16",
+            name = "Harumi Toriton-SquarePost Office",
+            address = "Harumi 1-8-16",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.653555, 139.779892),
-            name = "晴海Post Office",
-            address = "晴海4-6-26",
+            name = "Harumi Post Office",
+            address = "Harumi 4-6-26",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.667294, 139.769211),
@@ -381,43 +381,43 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.661823, 139.767461),
-            name = "CentralTsukijiPost Office",
+            name = "Central Tsukiji Post Office",
             address = "Tsukiji5-2-1",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.664656, 139.773322),
-            name = "CentralTsukijiRokuPost Office",
+            name = "Central Tsukij RokuPost Office",
             address = "Tsukiji6-8-6",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.668211, 139.785765),
-            name = "リバーシティ２１Post Office",
-            address = "佃2-2-6-101",
+            name = "RiverCity 21Post Office",
+            address = "Tsukuda 2-2-6-101",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.664629, 139.785599),
-            name = "Central佃Post Office",
-            address = "佃3-5-8",
+            name = "Central Tsukuda Post Office",
+            address = "Tsukuda 3-5-8",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.695486, 139.785654),
-            name = "両国Post Office",
-            address = "HigashiNihon橋2-27-12",
+            name = "Ryogoku Post Office",
+            address = "Higashi Nihon-hashi 2-27-12",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.691348, 139.78346),
-            name = "HigashiNihon橋SanPost Office",
-            address = "HigashiNihon橋3-4-10",
+            name = "Higashi Nihon-hashi SanPost Office",
+            address = "Higashi Nihon-hashi 3-4-10",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.683376, 139.777377),
-            name = "Nihon橋Post Office",
-            address = "Nihon橋1-18-1",
+            name = "Nihon-hashi Post Office",
+            address = "Nihon-hashi1-18-1",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.681702, 139.772696),
-            name = "Nihon橋MinamiPost Office",
-            address = "Nihon橋2-2-10",
+            name = "Nihon-hashi Minami Post Office",
+            address = "Nihon-hashi 2-2-10",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.680794, 139.7772),
@@ -1541,8 +1541,8 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.693126, 139.793988),
-            name = "墨田両国SanPost Office",
-            address = "両国3-7-3",
+            name = "墨田RyogokuSanPost Office",
+            address = "Ryogoku3-7-3",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.694348, 139.800237),
@@ -5871,18 +5871,18 @@ val TokyoPostOffices =
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.668067, 139.575338),
-            name = "San鷹新川IchiPost Office",
-            address = "新川1-11-15",
+            name = "San鷹ShinkawaIchiPost Office",
+            address = "Shinkawa1-11-15",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.67639, 139.571219),
-            name = "San鷹新川GoPost Office",
-            address = "新川5-3-12",
+            name = "San鷹ShinkawaGoPost Office",
+            address = "Shinkawa5-3-12",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.682913, 139.568467),
-            name = "San鷹新川Post Office",
-            address = "新川6-3-10",
+            name = "San鷹ShinkawaPost Office",
+            address = "Shinkawa6-3-10",
         ),
         PostOffice(
             position = GeoPoint.fromLatLong(35.690185, 139.538167),

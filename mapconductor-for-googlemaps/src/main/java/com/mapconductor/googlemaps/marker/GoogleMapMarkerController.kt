@@ -4,11 +4,9 @@ import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.spherical.expandBounds
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.toGeoPoint

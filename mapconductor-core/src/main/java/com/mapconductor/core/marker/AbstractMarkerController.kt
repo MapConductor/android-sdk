@@ -24,6 +24,8 @@ interface MarkerCapable {
     fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?)
 
     fun setOnMarkerClickListener(listener: OnMarkerEventHandler?)
+
+    fun hasMarker(state: MarkerState): Boolean
 }
 
 interface MarkerOverlayRenderer<ActualMarker> {
@@ -205,6 +207,9 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun update(state: MarkerState) {
+        // Fast path: Check entity existence without semaphore to avoid blocking during initial marker addition
+        if (!markerManager.hasEntity(state.id)) return
+
         semaphore.withPermit {
             val prevEntity = markerManager.getEntity(state.id) ?: return
             val currentFinger = state.fingerPrint()

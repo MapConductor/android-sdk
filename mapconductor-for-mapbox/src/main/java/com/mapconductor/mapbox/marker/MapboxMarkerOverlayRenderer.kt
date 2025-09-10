@@ -99,8 +99,8 @@ class MapboxMarkerOverlayRenderer(
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Feature> {
-        return withContext(Dispatchers.Main) {
+    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Feature> =
+        withContext(Dispatchers.Main) {
             val style =
                 suspendCoroutine { continuation ->
                     holder.map.getStyle { style ->
@@ -141,7 +141,6 @@ class MapboxMarkerOverlayRenderer(
                 Feature.fromGeometry(position, properties, featureId)
             }
         }
-    }
 
     override suspend fun onRemove(data: List<MarkerEntity<MapboxActualMarker>>) {
         withContext(Dispatchers.Main) {

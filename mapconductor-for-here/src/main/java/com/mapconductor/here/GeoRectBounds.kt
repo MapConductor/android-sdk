@@ -3,14 +3,13 @@ package com.mapconductor.here
 import com.here.sdk.core.GeoBox
 import com.mapconductor.core.features.GeoRectBounds
 
-
 fun GeoRectBounds.toGeoBox(): GeoBox? {
     val sw = southWest ?: return null
     val ne = northEast ?: return null
 
     return GeoBox(
         sw.toGeoCoordinates(),
-        ne.toGeoCoordinates()
+        ne.toGeoCoordinates(),
     )
 }
 
