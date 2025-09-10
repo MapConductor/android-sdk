@@ -64,46 +64,32 @@ class HereMarkerController(
         val visibleRegion = cameraPosition.visibleRegion ?: return
         val viewportBounds = expandBounds(visibleRegion.bounds, margin = 0.5)
         
-        val currentlyRendered = markerManager.allEntities().filter { it.isRendered }
-        val shouldBeRendered = markerManager.allEntities().filter { entity ->
-            viewportBounds.contains(entity.state.position)
+        // For HERE Maps optimization: Only add markers, never remove them once rendered
+        // This avoids expensive scene add/remove operations
+        val toAdd = markerManager.allEntities().filter { entity ->
+            viewportBounds.contains(entity.state.position) && !entity.isRendered && entity.marker == null
         }
 
-        val toRemove = currentlyRendered.filter { entity ->
-            !viewportBounds.contains(entity.state.position)
+        if (toAdd.isNotEmpty()) {
+            val addParams = toAdd.map { entity ->
+                object : MarkerOverlayRenderer.AddParams {
+                    override val state = entity.state
+                    override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: DefaultIcon().toBitmapIcon()
+                }
+            }
+            val newMarkers = renderer.onAdd(addParams)
+            
+            toAdd.forEachIndexed { index, entity ->
+                if (index < newMarkers.size) {
+                    entity.marker = newMarkers[index]
+                    entity.isRendered = newMarkers[index] != null
+                }
+            }
         }
         
-        val toAdd = shouldBeRendered.filter { entity ->
-            !entity.isRendered && entity.marker == null
-        }
-
-        if (toRemove.isNotEmpty() || toAdd.isNotEmpty()) {
-            // Remove markers that are now outside viewport
-            if (toRemove.isNotEmpty()) {
-                renderer.onRemove(toRemove)
-                toRemove.forEach { entity ->
-                    entity.marker = null
-                    entity.isRendered = false
-                }
-            }
-
-            // Add markers that are now inside viewport
-            if (toAdd.isNotEmpty()) {
-                val addParams = toAdd.map { entity ->
-                    object : MarkerOverlayRenderer.AddParams {
-                        override val state = entity.state
-                        override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: DefaultIcon().toBitmapIcon()
-                    }
-                }
-                val newMarkers = renderer.onAdd(addParams)
-                
-                toAdd.forEachIndexed { index, entity ->
-                    if (index < newMarkers.size) {
-                        entity.marker = newMarkers[index]
-                        entity.isRendered = newMarkers[index] != null
-                    }
-                }
-            }
+        // Update visibility flags for all entities based on viewport
+        markerManager.allEntities().forEach { entity ->
+            entity.visible = viewportBounds.contains(entity.state.position)
         }
     }
 }
