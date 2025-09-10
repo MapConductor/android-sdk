@@ -49,6 +49,7 @@ class HereMapViewControllerImpl(
     private val circleController: HereCircleController,
     override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     CircleCapable,
     HereMapViewController,
@@ -169,41 +170,49 @@ class HereMapViewControllerImpl(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        cameraMoveCallback?.let { callback ->
-            holder.mapView.camera.boundingBox?.let { boundingBox ->
-                val mapWidth = holder.mapView.width.toFloat()
-                val mapHeight = holder.mapView.height.toFloat()
-                val leftTop = Offset(0.0f, 0.0f)
-                val rightTop = Offset(mapWidth, 0.0f)
-                val leftBottom = Offset(0.0f, holder.mapView.height.toFloat())
-                val rightBottom = Offset(mapWidth, mapHeight)
-                val visibleRegion =
-                    VisibleRegion(
-                        southWest = boundingBox.southWestCorner.toGeoPoint(),
-                        northEast = boundingBox.northEastCorner.toGeoPoint(),
-                        nearLeft = holder.fromScreenOffsetSync(leftBottom),
-                        nearRight = holder.fromScreenOffsetSync(rightBottom),
-                        farLeft = holder.fromScreenOffsetSync(leftTop),
-                        farRight = holder.fromScreenOffsetSync(rightTop),
-                    )
-
-                val distanceToTargetInMeters =
-                    GeoOrientation(
-                        cameraState.orientationAtTarget.bearing,
-                        cameraState.orientationAtTarget.tilt,
-                    )
-                val zoomLevel = 0.0
-                val correctCameraState =
-                    MapCamera.State(
-                        cameraState.targetCoordinates,
-                        distanceToTargetInMeters,
-                        zoomLevel,
-                        cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
-                    )
-                val adjustedMapCameraPosition = correctCameraState.toMapCameraPosition()
-                val mapCameraPosition = adjustedMapCameraPosition.copy(visibleRegion = visibleRegion)
+        getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
+            backCoroutine.launch {
+                markerController.onCameraChanged(mapCameraPosition)
+            }
+            cameraMoveCallback?.let { callback ->
                 coroutine.launch { callback(mapCameraPosition) }
             }
+        }
+    }
+
+    private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {
+        return holder.mapView.camera.boundingBox?.let { boundingBox ->
+            val mapWidth = holder.mapView.width.toFloat()
+            val mapHeight = holder.mapView.height.toFloat()
+            val leftTop = Offset(0.0f, 0.0f)
+            val rightTop = Offset(mapWidth, 0.0f)
+            val leftBottom = Offset(0.0f, holder.mapView.height.toFloat())
+            val rightBottom = Offset(mapWidth, mapHeight)
+            val bounds = boundingBox.toGeoRectBounds()
+            val visibleRegion =
+                VisibleRegion(
+                    bounds = bounds,
+                    nearLeft = holder.fromScreenOffsetSync(leftBottom),
+                    nearRight = holder.fromScreenOffsetSync(rightBottom),
+                    farLeft = holder.fromScreenOffsetSync(leftTop),
+                    farRight = holder.fromScreenOffsetSync(rightTop),
+                )
+
+            val distanceToTargetInMeters =
+                GeoOrientation(
+                    cameraState.orientationAtTarget.bearing,
+                    cameraState.orientationAtTarget.tilt,
+                )
+            val zoomLevel = 0.0
+            val correctCameraState =
+                MapCamera.State(
+                    cameraState.targetCoordinates,
+                    distanceToTargetInMeters,
+                    zoomLevel,
+                    cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
+                )
+            val adjustedMapCameraPosition = correctCameraState.toMapCameraPosition()
+            return@let adjustedMapCameraPosition.copy(visibleRegion = visibleRegion)
         }
     }
 

@@ -24,7 +24,7 @@ object ArcGISViewControllerStore :
     StaticHolder<ArcGISMapViewControllerImpl>() {
     fun hasCache(id: String): Boolean = this.has(id)
 
-    fun getOrCreate(
+    suspend fun getOrCreate(
         context: Context,
         id: String,
         options: ArcGISMapViewInitOptions,

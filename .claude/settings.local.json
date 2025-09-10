@@ -10,7 +10,15 @@
       "Bash(for file in *.png)",
       "Bash(do cwebp:*)",
       "Bash(done)",
-      "Bash(for:*)"
+      "Bash(for:*)",
+      "Bash(python:*)",
+      "Bash(\"C:\\Users\\masashi\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" convert_geojson.py)",
+      "Bash(rg:*)",
+      "Bash(where python)",
+      "Bash(\"C:\\Users\\masashi\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" \"C:\\Users\\masashi\\Desktop\\android-sdk\\extract_post_offices.py\")",
+      "Bash(where node)",
+      "Bash(node:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

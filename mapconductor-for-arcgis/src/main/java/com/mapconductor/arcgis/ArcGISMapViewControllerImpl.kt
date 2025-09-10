@@ -60,6 +60,15 @@ class ArcGISMapViewControllerImpl(
             holder.map.viewpointChanged.collect { onViewpointChange() }
         }
         coroutine.launch {
+            holder.map.onInteractiveZooming.collect { onInteractiveZooming() }
+        }
+        coroutine.launch {
+            holder.map.onRotate.collect { onInteractiveZooming() }
+        }
+        coroutine.launch {
+            holder.map.onDown.collect { onInteractiveZooming() }
+        }
+        coroutine.launch {
             holder.map.onLongPress.collect { onMapLongPress(it) }
         }
         coroutine.launch {
@@ -70,49 +79,59 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    private fun onViewpointChange() {
+    private suspend fun onInteractiveZooming() {
         cameraMoveCallback?.let { callback ->
-            coroutine.launch {
-                val mapWidth = holder.map.width.toFloat()
-                val mapHeight = holder.map.height.toFloat()
-                val nearLeft =
-                    holder.fromScreenOffset(
-                        Offset(0.0f, mapHeight),
-                    ) ?: return@launch
-
-                val nearRight =
-                    holder.fromScreenOffsetSync(
-                        Offset(mapWidth, mapHeight),
-                    ) ?: return@launch
-                val farLeft =
-                    holder.fromScreenOffsetSync(
-                        Offset(0.0f, 0.0f),
-                    ) ?: return@launch
-                val farRight =
-                    holder.fromScreenOffsetSync(
-                        Offset(mapWidth, 0.0f),
-                    ) ?: return@launch
-
-                val bounds = GeoRectBounds()
-                bounds.extend(nearLeft)
-                bounds.extend(nearRight)
-                bounds.extend(farLeft)
-                bounds.extend(farRight)
-
-                val visibleRegion =
-                    VisibleRegion(
-                        northEast = bounds.northEast!!,
-                        southWest = bounds.southWest!!,
-                        nearLeft = nearLeft,
-                        nearRight = nearRight,
-                        farLeft = farLeft,
-                        farRight = farRight,
-                    )
-                val camera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
-                val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
-                callback(mapCameraPosition)
+            getMapCameraPosition()?.let { mapCameraPosition ->
+                markerController.onCameraChanged(mapCameraPosition)
+                callback?.invoke(mapCameraPosition)
             }
         }
+    }
+
+    private suspend fun onViewpointChange() {
+        getMapCameraPosition()?.let { mapCameraPosition ->
+            markerController.onCameraChanged(mapCameraPosition)
+            cameraMoveCallback?.invoke(mapCameraPosition)
+        }
+    }
+    private suspend fun getMapCameraPosition(): MapCameraPosition? {
+        val mapWidth = holder.map.width.toFloat() - 1.0f
+        val mapHeight = holder.map.height.toFloat() - 1.0f
+        val nearLeft =
+            holder.fromScreenOffset(
+                Offset(1.0f, mapHeight),
+            ) ?: return null
+
+        val nearRight =
+            holder.fromScreenOffsetSync(
+                Offset(mapWidth, mapHeight),
+            ) ?: return null
+        val farLeft =
+            holder.fromScreenOffsetSync(
+                Offset(1.0f, 1.0f),
+            ) ?: return null
+        val farRight =
+            holder.fromScreenOffsetSync(
+                Offset(mapWidth, 1.0f),
+            ) ?: return null
+
+        val bounds = GeoRectBounds()
+        bounds.extend(nearLeft)
+        bounds.extend(nearRight)
+        bounds.extend(farLeft)
+        bounds.extend(farRight)
+
+        val visibleRegion =
+            VisibleRegion(
+                bounds = bounds,
+                nearLeft = nearLeft,
+                nearRight = nearRight,
+                farLeft = farLeft,
+                farRight = farRight,
+            )
+        val camera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
+        val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+        return mapCameraPosition
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {

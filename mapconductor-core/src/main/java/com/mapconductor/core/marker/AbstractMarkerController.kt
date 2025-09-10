@@ -1,6 +1,9 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.controller.OverlayController
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -212,4 +215,6 @@ abstract class AbstractMarkerController<ActualMarker>(
             markerManager.clear()
         }
     }
+
+    abstract suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition)
 }

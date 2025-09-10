@@ -18,6 +18,7 @@ import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
+import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
 import com.mapconductor.example.pages.polygon.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
@@ -74,6 +75,10 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Marker animation ",
             ),
             SidebarItem(
+                id = "marker-postoffice",
+                title = "Bunch of Markers",
+            ),
+            SidebarItem(
                 id = "circle",
                 title = "Circle ",
             ),
@@ -124,6 +129,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "marker-animation" -> {
                         AnimationMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-postoffice" -> {
+                        PostOfficeMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
