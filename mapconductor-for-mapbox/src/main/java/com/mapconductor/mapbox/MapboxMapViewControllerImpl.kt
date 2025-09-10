@@ -55,6 +55,7 @@ internal class MapboxMapViewControllerImpl(
     private val polygonController: MapboxPolygonConductor,
     private val circleController: MapboxCircleController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapboxMapViewController,
     CameraChangedCallback,
@@ -131,51 +132,60 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        cameraMoveCallback?.let { callBack ->
-            val options =
-                CameraOptions
-                    .Builder()
-                    .padding(cameraChanged.cameraState.padding)
-                    .center(cameraChanged.cameraState.center)
-                    .zoom(cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE)
-                    .bearing(cameraChanged.cameraState.bearing)
-                    .pitch(cameraChanged.cameraState.pitch)
-                    .build()
-            val camera = holder.map.cameraState.toMapCameraPosition()
-            val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
-
-            val mapSize = holder.map.getSize()
-            val mapWidth = mapSize.width
-            val mapHeight = mapSize.height
-            val nearLeft =
-                holder.fromScreenOffsetSync(
-                    Offset(0.0f, mapHeight),
-                ) ?: return@let
-            val nearRight =
-                holder.fromScreenOffsetSync(
-                    Offset(mapWidth, mapHeight),
-                ) ?: return@let
-            val farLeft =
-                holder.fromScreenOffsetSync(
-                    Offset(0.0f, 0.0f),
-                ) ?: return@let
-            val farRight =
-                holder.fromScreenOffsetSync(
-                    Offset(mapWidth, 0.0f),
-                ) ?: return@let
-
-            val visibleRegion =
-                VisibleRegion(
-                    southWest = currentBox.southwest.toGeoPoint(),
-                    northEast = currentBox.northeast.toGeoPoint(),
-                    nearLeft = nearLeft,
-                    nearRight = nearRight,
-                    farLeft = farLeft,
-                    farRight = farRight,
-                )
-            val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
-            coroutine.launch { callBack(mapCameraPosition) }
+        getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
+            backCoroutine.launch {
+                markerController.onCameraChanged(mapCameraPosition)
+            }
+            cameraMoveCallback?.let { callBack ->
+                coroutine.launch { callBack(mapCameraPosition) }
+            }
         }
+    }
+
+    private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPosition? {
+        val options =
+            CameraOptions
+                .Builder()
+                .padding(cameraChanged.cameraState.padding)
+                .center(cameraChanged.cameraState.center)
+                .zoom(cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE)
+                .bearing(cameraChanged.cameraState.bearing)
+                .pitch(cameraChanged.cameraState.pitch)
+                .build()
+        val camera = holder.map.cameraState.toMapCameraPosition()
+        val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
+
+        val mapSize = holder.map.getSize()
+        val mapWidth = mapSize.width
+        val mapHeight = mapSize.height
+        val nearLeft =
+            holder.fromScreenOffsetSync(
+                Offset(0.0f, mapHeight),
+            ) ?: return null
+        val nearRight =
+            holder.fromScreenOffsetSync(
+                Offset(mapWidth, mapHeight),
+            ) ?: return null
+        val farLeft =
+            holder.fromScreenOffsetSync(
+                Offset(0.0f, 0.0f),
+            ) ?: return null
+        val farRight =
+            holder.fromScreenOffsetSync(
+                Offset(mapWidth, 0.0f),
+            ) ?: return null
+
+        val bounds = currentBox.toGeoRectBounds()
+        val visibleRegion =
+            VisibleRegion(
+                bounds = bounds,
+                nearLeft = nearLeft,
+                nearRight = nearRight,
+                farLeft = farLeft,
+                farRight = farRight,
+            )
+        val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+        return mapCameraPosition
     }
 
     override fun moveCamera(

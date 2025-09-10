@@ -38,7 +38,7 @@ open class MarkerLayer(
         }
 
     fun draw(entities: List<MarkerEntity<Feature>>) {
-        val features = entities.map { it.marker }
+        val features = entities.filter { it.visible }.map { it.marker }
         source.featureCollection(
             FeatureCollection.fromFeatures(features),
         )

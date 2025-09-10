@@ -79,6 +79,8 @@ class HereMarkerRenderer(
         changes.map { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint
+            if (!params.current.visible) return@map null
+
             if (currFinger.icon != prevFinger.icon) {
                 params.current.marker.image = params.bitmapIcon.toMapImage()
                 params.current.marker.anchor = params.bitmapIcon.toAnchor2D()

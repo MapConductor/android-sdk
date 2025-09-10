@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.LifecycleOwner
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
+import com.arcgismaps.LoadStatus
 import com.arcgismaps.mapping.ArcGISScene
 import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.SceneView
@@ -11,11 +12,16 @@ import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.MapViewHolder
+import kotlin.coroutines.resume
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class WrapSceneView : FrameLayout {
     lateinit var sceneView: SceneView
@@ -52,7 +58,7 @@ class ArcGISMapViewHolderImpl private constructor(
 
     override fun toScreenOffset(position: IGeoPoint): Offset? {
         val result =
-            map.locationToScreen(
+            mapView.sceneView.locationToScreen(
                 point = GeoPoint.from(position).toPoint(map.scene?.spatialReference),
             )
         return result?.let {
@@ -62,7 +68,7 @@ class ArcGISMapViewHolderImpl private constructor(
 
     override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
         val result =
-            map.screenToLocation(
+            mapView.sceneView.screenToLocation(
                 screenCoordinate =
                     ScreenCoordinate(
                         x = offset.x.toDouble(),
@@ -78,7 +84,7 @@ class ArcGISMapViewHolderImpl private constructor(
         }
 
     companion object {
-        fun create(
+        suspend fun create(
             context: Context,
             options: ArcGISMapViewInitOptions,
         ): MapViewHolder<WrapSceneView, SceneView> {
@@ -102,6 +108,24 @@ class ArcGISMapViewHolderImpl private constructor(
 
             holder.map = sceneView
             sceneView.scene = scene
+            val coroutine = CoroutineScope(Dispatchers.Default)
+
+            val result = suspendCancellableCoroutine<Boolean> { cont ->
+                coroutine.launch {
+                    scene.loadStatus.collect  {
+                        when (it) {
+                            is LoadStatus.Loaded -> cont.resume(true)
+                            is LoadStatus.FailedToLoad -> cont.resume(false)
+                            else -> {
+                                // Do nothing here
+                            }
+                        }
+                    }
+                }
+            }
+            if (!result) {
+                throw Exception("Can not load the scene")
+            }
 
             return holder
         }

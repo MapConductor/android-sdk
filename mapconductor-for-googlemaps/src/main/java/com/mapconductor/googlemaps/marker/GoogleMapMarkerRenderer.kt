@@ -77,6 +77,7 @@ class GoogleMapMarkerRenderer(
                     params.current.marker.position =
                         GeoPoint.from(params.current.state.position).toLatLng()
                 }
+                params.current.marker.isVisible = params.current.visible
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 params.current.marker

@@ -1,6 +1,7 @@
 package com.mapconductor.core
 
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.spherical.Spherical

@@ -87,19 +87,7 @@ fun <
             registry = registry, // This should come from the specific scope or be passed
             controller = controller,
         )
-        // 子コンポーネントを収集する
-        CompositionLocalProvider(
-            LocalMarkerCollector provides scope.markerFlow,
-            LocalInfoBubbleCollector provides scope.bubbleFlow,
-            LocalCircleCollector provides scope.circleFlow,
-            LocalPolylineCollector provides scope.polylineFlow,
-            LocalPolygonCollector provides scope.polygonFlow,
-            LocalGroundImageCollector provides scope.groundImageFlow,
-        ) {
-            with(scope) {
-                content?.invoke(this)
-            }
-        }
+
         (controller as? GroundImageCapable)?.let {
             val groundImage = scope.groundImageFlow.collectAsState()
             groundImage.value.forEach { groundImageState ->
@@ -140,6 +128,19 @@ fun <
                 markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? MarkerCapable)?.updateMarker(markerState)
                 }
+            }
+        }
+        // 子コンポーネントを収集する
+        CompositionLocalProvider(
+            LocalMarkerCollector provides scope.markerFlow,
+            LocalInfoBubbleCollector provides scope.bubbleFlow,
+            LocalCircleCollector provides scope.circleFlow,
+            LocalPolylineCollector provides scope.polylineFlow,
+            LocalPolygonCollector provides scope.polygonFlow,
+            LocalGroundImageCollector provides scope.groundImageFlow,
+        ) {
+            with(scope) {
+                content?.invoke(this)
             }
         }
     }

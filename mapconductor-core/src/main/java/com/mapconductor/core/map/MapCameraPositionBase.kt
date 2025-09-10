@@ -1,11 +1,11 @@
 package com.mapconductor.core.map
 
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.features.IGeoPoint
 
 data class VisibleRegion(
-    val northEast: IGeoPoint,
-    val southWest: IGeoPoint,
+    val bounds: GeoRectBounds,
     val nearLeft: IGeoPoint?,
     val nearRight: IGeoPoint?,
     val farLeft: IGeoPoint?,

@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 class ArcGISMarkerRenderer(
     val markerLayer: GraphicsOverlay,
     holder: ArcGISMapViewHolder,
-    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : AbstractMarkerOverlayRenderer<ArcGISMapViewHolder, ArcGISActualMarker>(
         holder = holder,
         coroutine = coroutine,
@@ -109,6 +109,7 @@ class ArcGISMarkerRenderer(
                     params.current.marker.geometry =
                         GeoPoint.from(params.current.state.position).toPoint()
                 }
+                params.current.marker.isVisible = params.current.visible
 
                 // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 params.current.marker

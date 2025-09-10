@@ -1,57 +1,67 @@
 package com.mapconductor.core.features
 
-data class GeoRectBounds(
-    var southWest: GeoPoint? = null,
-    var northEast: GeoPoint? = null,
+
+class GeoRectBounds(
+    southWest: GeoPoint? = null,
+    northEast: GeoPoint? = null,
 ) {
+    private var _southWest: GeoPoint? = southWest
+    private var _northEast: GeoPoint? = northEast
+
     val isEmpty: Boolean
-        get() = southWest == null || northEast == null
+        get() = _southWest == null || _northEast == null
+
+    val southWest: GeoPoint?
+        get() = _southWest
+
+    val northEast: GeoPoint?
+        get() = _northEast
 
     fun extend(point: IGeoPoint) {
         val position = GeoPoint.from(point)
 
         when {
             // まだ何もない：両方に同じ点を入れて初期化
-            southWest == null && northEast == null -> {
-                southWest = position
-                northEast = position
+            _southWest == null && _northEast == null -> {
+                _southWest = position
+                _northEast = position
                 return
             }
 
             // southWest だけある：既存点と position の2点から SW/NE を決める
-            southWest != null && northEast == null -> {
-                val sw = southWest!!
+            _southWest != null && _northEast == null -> {
+                val sw = _southWest!!
                 val south = minOf(sw.latitude, position.latitude)
                 val north = maxOf(sw.latitude, position.latitude)
                 // 1点ずつなので子午線跨ぎの判定は不要。単純に min/max でOK
                 val west = minOf(sw.longitude, position.longitude)
                 val east = maxOf(sw.longitude, position.longitude)
 
-                southWest = GeoPoint(south, west)
-                northEast = GeoPoint(north, east)
+                _southWest = GeoPoint(south, west)
+                _northEast = GeoPoint(north, east)
                 return
             }
 
             // northEast だけある：既存点と position の2点から SW/NE を決める
-            southWest == null && northEast != null -> {
-                val ne = northEast!!
+            _southWest == null && _northEast != null -> {
+                val ne = _northEast!!
                 val south = minOf(ne.latitude, position.latitude)
                 val north = maxOf(ne.latitude, position.latitude)
                 val west = minOf(ne.longitude, position.longitude)
                 val east = maxOf(ne.longitude, position.longitude)
 
-                southWest = GeoPoint(south, west)
-                northEast = GeoPoint(north, east)
+                _southWest = GeoPoint(south, west)
+                _northEast = GeoPoint(north, east)
                 return
             }
 
             else -> {
                 // どちらもある：従来ロジック（子午線跨ぎ考慮）＋ 緯度/経度の参照を修正
-                val south = minOf(position.latitude, southWest!!.latitude)
-                val north = maxOf(position.latitude, northEast!!.latitude)
+                val south = minOf(position.latitude, _southWest!!.latitude)
+                val north = maxOf(position.latitude, _northEast!!.latitude)
 
-                var west = southWest!!.longitude
-                var east = northEast!!.longitude
+                var west = _southWest!!.longitude
+                var east = _northEast!!.longitude
 
                 if (west > 0 && east < 0) {
                     // すでに経度が + と - に分かれている＝日付変更線跨ぎの矩形
@@ -62,12 +72,12 @@ data class GeoRectBounds(
                     }
                 } else {
                     // 通常ケース：単純に min/max
-                    west = minOf(position.longitude, southWest!!.longitude)
-                    east = maxOf(position.longitude, northEast!!.longitude)
+                    west = minOf(position.longitude, _southWest!!.longitude)
+                    east = maxOf(position.longitude, _northEast!!.longitude)
                 }
 
-                southWest = GeoPoint(south, west)
-                northEast = GeoPoint(north, east)
+                _southWest = GeoPoint(south, west)
+                _northEast = GeoPoint(north, east)
             }
         }
     }
@@ -103,8 +113,8 @@ data class GeoRectBounds(
         if (isEmpty) return false
 
         val p = GeoPoint.from(point)
-        val sw = southWest!!
-        val ne = northEast!!
+        val sw = _southWest!!
+        val ne = _northEast!!
 
         val withinLat = p.latitude in sw.latitude..ne.latitude
         val withinLng = containsLongitude(p.longitude, sw.longitude, ne.longitude)
@@ -116,8 +126,8 @@ data class GeoRectBounds(
         get() {
             if (isEmpty) return null
 
-            val sw = southWest!!
-            val ne = northEast!!
+            val sw = _southWest!!
+            val ne = _northEast!!
 
             val centerLat = (sw.latitude + ne.latitude) / 2.0
 
@@ -137,21 +147,21 @@ data class GeoRectBounds(
     fun union(other: GeoRectBounds): GeoRectBounds {
         if (other.isEmpty) return this
         if (this.isEmpty) {
-            this.southWest = other.southWest
-            this.northEast = other.northEast
+            this._southWest = other.southWest
+            this._northEast = other.northEast
             return this
         }
 
-        extend(other.southWest!!)
-        extend(other.northEast!!)
+        extend(other._southWest!!)
+        extend(other._northEast!!)
         return this
     }
 
     fun toSpan(): GeoPoint? {
         if (isEmpty) return null
 
-        val sw = southWest!!
-        val ne = northEast!!
+        val sw = _southWest!!
+        val ne = _northEast!!
 
         val latSpan = ne.latitude - sw.latitude
         val lngSpan = ((ne.longitude - sw.longitude + 360) % 360).takeIf { it != 0.0 } ?: 360.0
@@ -162,8 +172,8 @@ data class GeoRectBounds(
     fun toUrlValue(precision: Int = 6): String {
         if (isEmpty) return "1.0,180.0,-1.0,-180.0"
 
-        val sw = southWest!!
-        val ne = northEast!!
+        val sw = _southWest!!
+        val ne = _northEast!!
 
         fun Double.toFixed(p: Int): String = "%.${p}f".format(this)
 
@@ -178,10 +188,10 @@ data class GeoRectBounds(
     fun intersects(other: GeoRectBounds): Boolean {
         if (this.isEmpty || other.isEmpty) return false
 
-        val sw1 = this.southWest!!
-        val ne1 = this.northEast!!
-        val sw2 = other.southWest!!
-        val ne2 = other.northEast!!
+        val sw1 = this._southWest!!
+        val ne1 = this._northEast!!
+        val sw2 = other._southWest!!
+        val ne2 = other._northEast!!
 
         val latOverlap = sw1.latitude <= ne2.latitude && ne1.latitude >= sw2.latitude
 
@@ -196,7 +206,7 @@ data class GeoRectBounds(
         if (isEmpty) {
             "((1, 180), (-1, -180))"
         } else {
-            "((${southWest!!.latitude}, ${southWest!!.longitude}), (${northEast!!.latitude}, ${northEast!!.longitude}))"
+            "((${_southWest!!.latitude}, ${_southWest!!.longitude}), (${_northEast!!.latitude}, ${_northEast!!.longitude}))"
         }
 
     fun equalsTo(other: GeoRectBounds): Boolean = this.southWest == other.southWest && this.northEast == other.northEast
