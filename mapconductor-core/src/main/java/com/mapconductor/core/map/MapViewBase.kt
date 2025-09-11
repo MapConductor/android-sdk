@@ -190,18 +190,18 @@ fun <
             .collect { cameraTick.intValue = (cameraTick.intValue + 1) % 2 } // 変化時のみ
     }
 
-    SubcomposeLayout(modifier = modifier.clipToBounds()) { constraints ->
+    SubcomposeLayout(modifier = modifier.fillMaxSize().clipToBounds().background(Color.LightGray)) { constraints ->
         // 1) Map フェーズ：先に Map の AndroidView をレイアウト
         val mapPlaceables = subcompose("map") {
             when (initState) {
                 InitState.NotStarted -> BasicMessage("Not initialized yet")
-                InitState.Failed      -> BasicMessage("Failed to initialize")
+                InitState.Failed -> BasicMessage("Failed to initialize")
                 InitState.Initializing -> BasicMessage("Initializing")
                 InitState.Initialized -> {
-                    // holder が null ならリセット（元コード準拠）
+                    // Wait for holder instead of resetting - prevents black screen flash
                     if (holderRef.value == null) {
-                        LaunchedEffect(Unit) { state.resetInitState() }
-                        BasicMessage("Initializing")
+                        // Don't reset state, just wait with transparent content
+                        Box(modifier = Modifier.fillMaxSize())
                     } else {
                         AndroidView(factory = { _ ->
                             val v = viewProvider(holderRef.value!!)
