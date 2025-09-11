@@ -12,6 +12,8 @@ interface CircleManager<ActualCircle> {
 
     fun getEntity(id: String): CircleEntity<ActualCircle>?
 
+    fun hasEntity(id: String): Boolean
+
     fun allEntities(): List<CircleEntity<ActualCircle>>
 
     fun clear()
@@ -23,6 +25,8 @@ class CircleManagerImpl<ActualCircle> : CircleManager<ActualCircle> {
     private val entities: ConcurrentHashMap<String, CircleEntity<ActualCircle>> = ConcurrentHashMap()
 
     override fun getEntity(id: String): CircleEntity<ActualCircle>? = entities.get(id)
+
+    override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
     override fun removeEntity(id: String): CircleEntity<ActualCircle>? {
         val removed = entities.remove(id)

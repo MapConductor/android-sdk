@@ -2,6 +2,7 @@ package com.mapconductor.mapbox.polygon
 
 import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonEntityImpl
 import com.mapconductor.core.polygon.PolygonEvent
@@ -75,6 +76,8 @@ class MapboxPolygonConductor(
 
     override suspend fun clear() {
     }
+
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 }
 
 private fun PolygonState.toPolylineState(): PolylineState {

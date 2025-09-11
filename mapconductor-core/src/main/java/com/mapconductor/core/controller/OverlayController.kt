@@ -16,6 +16,5 @@ interface OverlayController<StateType, EntityType, EventType> {
 
     fun find(position: IGeoPoint): EntityType?
 
-//    fun onCamera(mapCameraPosition: MapCameraPosition)
-
+    suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition)
 }

@@ -110,19 +110,20 @@ class ArcGISMapViewHolderImpl private constructor(
             sceneView.scene = scene
             val coroutine = CoroutineScope(Dispatchers.Default)
 
-            val result = suspendCancellableCoroutine<Boolean> { cont ->
-                coroutine.launch {
-                    scene.loadStatus.collect  {
-                        when (it) {
-                            is LoadStatus.Loaded -> cont.resume(true)
-                            is LoadStatus.FailedToLoad -> cont.resume(false)
-                            else -> {
-                                // Do nothing here
+            val result =
+                suspendCancellableCoroutine<Boolean> { cont ->
+                    coroutine.launch {
+                        scene.loadStatus.collect {
+                            when (it) {
+                                is LoadStatus.Loaded -> cont.resume(true)
+                                is LoadStatus.FailedToLoad -> cont.resume(false)
+                                else -> {
+                                    // Do nothing here
+                                }
                             }
                         }
                     }
                 }
-            }
             if (!result) {
                 throw Exception("Can not load the scene")
             }

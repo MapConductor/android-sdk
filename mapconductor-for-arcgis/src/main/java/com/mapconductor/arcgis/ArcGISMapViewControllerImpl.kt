@@ -50,6 +50,7 @@ class ArcGISMapViewControllerImpl(
         holder.map.graphicsOverlays.add(polylineController.renderer.polylineLayer)
         holder.map.graphicsOverlays.add(markerController.renderer.markerLayer)
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -60,13 +61,10 @@ class ArcGISMapViewControllerImpl(
             holder.map.viewpointChanged.collect { onViewpointChange() }
         }
         coroutine.launch {
-            holder.map.onInteractiveZooming.collect { onInteractiveZooming() }
+            holder.map.onInteractiveZooming.collect { onViewpointChange() }
         }
         coroutine.launch {
-            holder.map.onRotate.collect { onInteractiveZooming() }
-        }
-        coroutine.launch {
-            holder.map.onDown.collect { onInteractiveZooming() }
+            holder.map.onRotate.collect { onViewpointChange() }
         }
         coroutine.launch {
             holder.map.onLongPress.collect { onMapLongPress(it) }
@@ -79,21 +77,22 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    private suspend fun onInteractiveZooming() {
-        cameraMoveCallback?.let { callback ->
-            getMapCameraPosition()?.let { mapCameraPosition ->
-                markerController.onCameraChanged(mapCameraPosition)
-                callback?.invoke(mapCameraPosition)
-            }
-        }
-    }
+    override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
+
+    override fun hasPolyline(state: PolylineState): Boolean =
+        this.polylineController.polylineManager
+            .hasEntity(state.id)
+
+    override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
+
+    override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
     private suspend fun onViewpointChange() {
         getMapCameraPosition()?.let { mapCameraPosition ->
-            markerController.onCameraChanged(mapCameraPosition)
-            cameraMoveCallback?.invoke(mapCameraPosition)
+            notifyMapCameraPosition(mapCameraPosition)
         }
     }
+
     private suspend fun getMapCameraPosition(): MapCameraPosition? {
         val mapWidth = holder.map.width.toFloat() - 1.0f
         val mapHeight = holder.map.height.toFloat() - 1.0f

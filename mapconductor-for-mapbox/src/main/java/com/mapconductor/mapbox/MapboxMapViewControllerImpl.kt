@@ -23,6 +23,7 @@ import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
@@ -90,6 +91,7 @@ internal class MapboxMapViewControllerImpl(
             style.addLayer(markerController.renderer.dragLayer.layer)
         }
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -132,15 +134,26 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(cameraChanged: CameraChanged) {
-        getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
-            backCoroutine.launch {
-                markerController.onCameraChanged(mapCameraPosition)
-            }
-            cameraMoveCallback?.let { callBack ->
-                coroutine.launch { callBack(mapCameraPosition) }
+        coroutine.launch {
+            getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
+                backCoroutine.launch {
+                    notifyMapCameraPosition(mapCameraPosition)
+                }
             }
         }
     }
+
+    override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
+
+    override fun hasPolyline(state: PolylineState): Boolean =
+        this.polylineController.polylineManager
+            .hasEntity(state.id)
+
+    override fun hasPolygon(state: PolygonState): Boolean =
+        this.polygonController.polygonOverlay.polygonManager
+            .hasEntity(state.id)
+
+    override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
     private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPosition? {
         val options =
@@ -156,8 +169,8 @@ internal class MapboxMapViewControllerImpl(
         val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
 
         val mapSize = holder.map.getSize()
-        val mapWidth = mapSize.width
-        val mapHeight = mapSize.height
+        val mapWidth = ResourceProvider.dpToPx(mapSize.width).toFloat()
+        val mapHeight = ResourceProvider.dpToPx(mapSize.height).toFloat()
         val nearLeft =
             holder.fromScreenOffsetSync(
                 Offset(0.0f, mapHeight),

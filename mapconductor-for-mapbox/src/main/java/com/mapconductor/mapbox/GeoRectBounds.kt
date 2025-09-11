@@ -3,14 +3,13 @@ package com.mapconductor.mapbox
 import com.mapbox.maps.CoordinateBounds
 import com.mapconductor.core.features.GeoRectBounds
 
-
 fun GeoRectBounds.toGeoBox(): CoordinateBounds? {
     val sw = southWest ?: return null
     val ne = northEast ?: return null
 
     return CoordinateBounds(
         sw.toPoint(),
-        ne.toPoint()
+        ne.toPoint(),
     )
 }
 

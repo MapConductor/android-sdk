@@ -6,4 +6,6 @@ interface CircleCapable {
     suspend fun updateCircle(state: CircleState)
 
     fun setOnCircleClickListener(listener: OnCircleEventHandler?)
+
+    fun hasCircle(state: CircleState): Boolean
 }

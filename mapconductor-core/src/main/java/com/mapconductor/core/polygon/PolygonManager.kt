@@ -9,6 +9,8 @@ interface PolygonManager<ActualPolygon> {
 
     fun getEntity(id: String): PolygonEntity<ActualPolygon>?
 
+    fun hasEntity(id: String): Boolean
+
     fun allEntities(): List<PolygonEntity<ActualPolygon>>
 
     fun clear()
@@ -26,6 +28,8 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
     override fun removeEntity(id: String): PolygonEntity<ActualPolygon>? = entities.remove(id)
 
     override fun getEntity(id: String): PolygonEntity<ActualPolygon>? = entities[id]
+
+    override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
     override fun allEntities(): List<PolygonEntity<ActualPolygon>> = entities.values.toList()
 

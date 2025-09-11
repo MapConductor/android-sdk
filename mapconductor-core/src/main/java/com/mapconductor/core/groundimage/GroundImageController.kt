@@ -2,6 +2,7 @@ package com.mapconductor.core.groundimage
 
 import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -137,4 +138,6 @@ abstract class GroundImageController<ActualGroundImage>(
     }
 
     override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? = groundImageManager.find(position)
+
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 }

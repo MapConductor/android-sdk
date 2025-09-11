@@ -1,9 +1,9 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.controller.OverlayController
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -23,6 +23,8 @@ interface MarkerCapable {
     fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?)
 
     fun setOnMarkerClickListener(listener: OnMarkerEventHandler?)
+
+    fun hasMarker(state: MarkerState): Boolean
 }
 
 interface MarkerOverlayRenderer<ActualMarker> {
@@ -55,6 +57,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
     open val renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
+    private val renderingStrategy: MarkerRenderingStrategy<ActualMarker>? = null,
 ) : OverlayController<
         MarkerState,
         MarkerEntity<ActualMarker>,
@@ -63,9 +66,20 @@ abstract class AbstractMarkerController<ActualMarker>(
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
 
+    // Lazy initialization of the default strategy to use the actual semaphore instance
+    protected open val actualRenderingStrategy: MarkerRenderingStrategy<ActualMarker> by lazy {
+        renderingStrategy ?: DefaultMarkerRenderingStrategy(semaphore = semaphore)
+    }
+
     var dragStartListener: ((MarkerState) -> Unit)? = null
     var dragListener: ((MarkerState) -> Unit)? = null
     var dragEndListener: ((MarkerState) -> Unit)? = null
+    private var mapCameraPosition: MapCameraPosition? = null
+    private val worldBounds =
+        GeoRectBounds(
+            southWest = GeoPoint(90.0, 180.0),
+            northEast = GeoPoint(-90.0, -180.0),
+        )
 
     protected fun setDraggingState(
         markerState: MarkerState,
@@ -85,29 +99,60 @@ abstract class AbstractMarkerController<ActualMarker>(
             val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
             val updated = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
             val removed = mutableListOf<MarkerEntity<ActualMarker>>()
+            val viewportBounds = mapCameraPosition?.visibleRegion?.bounds ?: worldBounds
+
             data.forEach { state ->
+                val isInViewport = viewportBounds.contains(state.position)
+
                 if (previous.contains(state.id)) {
                     val prevEntity = markerManager.getEntity(state.id)!!
                     val markerIcon = state.icon ?: defaultIcon
-                    updated.add(
-                        object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                            override val current: MarkerEntity<ActualMarker> =
-                                MarkerEntityImpl(
-                                    state = state,
-                                    marker = prevEntity.marker,
-                                )
-                            override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
-                            override val prev: MarkerEntity<ActualMarker> = prevEntity
-                        },
-                    )
+
+                    // Only add to update list if marker is in viewport
+                    if (isInViewport) {
+                        updated.add(
+                            object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
+                                override val current: MarkerEntity<ActualMarker> =
+                                    MarkerEntityImpl(
+                                        state = state,
+                                        marker = prevEntity.marker,
+                                        isRendered = true,
+                                    )
+                                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
+                                override val prev: MarkerEntity<ActualMarker> = prevEntity
+                            },
+                        )
+                    } else {
+                        // Register entity without rendering for markers outside viewport
+                        val entity =
+                            MarkerEntityImpl(
+                                state = state,
+                                marker = prevEntity.marker,
+                                isRendered = false,
+                            )
+                        markerManager.registerEntity(entity)
+                    }
                     previous.remove(state.id)
                 } else {
-                    added.add(
-                        object : MarkerOverlayRenderer.AddParams {
-                            override val state: MarkerState = state
-                            override val bitmapIcon: BitmapIcon = state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
-                        },
-                    )
+                    // Only add to render list if marker is in viewport
+                    if (isInViewport) {
+                        added.add(
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state: MarkerState = state
+                                override val bitmapIcon: BitmapIcon =
+                                    state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
+                            },
+                        )
+                    } else {
+                        // Register entity without rendering for new markers outside viewport
+                        val entity =
+                            MarkerEntityImpl<ActualMarker>(
+                                marker = null,
+                                state = state,
+                                isRendered = false,
+                            )
+                        markerManager.registerEntity(entity)
+                    }
                     previous.remove(state.id)
                 }
             }
@@ -132,6 +177,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                             MarkerEntityImpl<ActualMarker>(
                                 marker = actualMarker,
                                 state = added[index].state,
+                                isRendered = true,
                             )
                         markerManager.registerEntity(entity)
                         modifiedEntities.add(entity)
@@ -150,6 +196,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                             MarkerEntityImpl<ActualMarker>(
                                 state = params.current.state,
                                 marker = actualMarker,
+                                isRendered = true,
                             )
                         markerManager.registerEntity(entity)
                     }
@@ -165,6 +212,9 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun update(state: MarkerState) {
+        // Fast path: Check entity existence without semaphore to avoid blocking during initial marker addition
+        if (!markerManager.hasEntity(state.id)) return
+
         semaphore.withPermit {
             val prevEntity = markerManager.getEntity(state.id) ?: return
             val currentFinger = state.fingerPrint()
@@ -216,5 +266,8 @@ abstract class AbstractMarkerController<ActualMarker>(
         }
     }
 
-    abstract suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition)
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
+        this.mapCameraPosition = mapCameraPosition
+        actualRenderingStrategy.onCameraChanged(mapCameraPosition, markerManager, renderer)
+    }
 }
