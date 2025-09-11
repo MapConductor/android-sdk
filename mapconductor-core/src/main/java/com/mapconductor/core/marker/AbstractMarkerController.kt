@@ -4,7 +4,6 @@ import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -58,6 +57,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
     open val renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
+    private val renderingStrategy: MarkerRenderingStrategy<ActualMarker>? = null,
 ) : OverlayController<
         MarkerState,
         MarkerEntity<ActualMarker>,
@@ -65,6 +65,11 @@ abstract class AbstractMarkerController<ActualMarker>(
     > {
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
+
+    // Lazy initialization of the default strategy to use the actual semaphore instance
+    protected open val actualRenderingStrategy: MarkerRenderingStrategy<ActualMarker> by lazy {
+        renderingStrategy ?: DefaultMarkerRenderingStrategy(semaphore = semaphore)
+    }
 
     var dragStartListener: ((MarkerState) -> Unit)? = null
     var dragListener: ((MarkerState) -> Unit)? = null
@@ -262,72 +267,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
-        semaphore.withPermit {
-            this.mapCameraPosition = mapCameraPosition
-
-            mapCameraPosition.visibleRegion?.bounds?.let { bounds ->
-                // Expand bounds by 20% margin for better performance
-                val expandedBounds = expandBounds(bounds, 0.2)
-
-                // Get all entities and separate them by viewport status
-                val allMarkers = markerManager.allEntities()
-                val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
-                val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
-
-                allMarkers.forEach { entity ->
-                    val isInViewport = expandedBounds.contains(entity.state.position)
-
-                    if (isInViewport && !entity.isRendered) {
-                        // Marker entered viewport, need to render
-                        markersToRender.add(entity)
-                        entity.visible = true
-                    } else if (!isInViewport && entity.isRendered) {
-                        // Marker left viewport, need to remove from rendering
-                        markersToRemove.add(entity)
-                        entity.visible = false
-                    } else if (isInViewport) {
-                        // Marker is in viewport and already rendered
-                        entity.visible = true
-                    } else {
-                        // Marker is outside viewport and not rendered
-                        entity.visible = false
-                    }
-                }
-
-                // Remove markers that left the viewport
-                if (markersToRemove.isNotEmpty()) {
-                    renderer.onRemove(markersToRemove)
-                    markersToRemove.forEach { entity ->
-                        entity.isRendered = false
-                        entity.marker = null
-                    }
-                }
-
-                // Add markers that entered the viewport
-                if (markersToRender.isNotEmpty()) {
-                    val defaultIcon = DefaultIcon()
-                    val addParams =
-                        markersToRender.map { entity ->
-                            object : MarkerOverlayRenderer.AddParams {
-                                override val state: MarkerState = entity.state
-                                override val bitmapIcon: BitmapIcon =
-                                    entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
-                            }
-                        }
-
-                    val actualMarkers = renderer.onAdd(addParams)
-                    actualMarkers.forEachIndexed { index, actualMarker ->
-                        actualMarker?.let {
-                            markersToRender[index].marker = it
-                            markersToRender[index].isRendered = true
-                        }
-                    }
-                }
-
-                if (markersToRender.isNotEmpty() || markersToRemove.isNotEmpty()) {
-                    renderer.onPostProcess()
-                }
-            }
-        }
+        this.mapCameraPosition = mapCameraPosition
+        actualRenderingStrategy.onCameraChanged(mapCameraPosition, markerManager, renderer)
     }
 }
