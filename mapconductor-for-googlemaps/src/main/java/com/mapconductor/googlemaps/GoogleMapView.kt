@@ -36,6 +36,7 @@ fun GoogleMapsView(
     onPolylineClick: OnPolylineEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
+    shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -97,6 +98,7 @@ fun GoogleMapsView(
             controllerRef.value = controller
             true // Return success/failure of initialization
         },
+        shouldInitialize = shouldInitialize, // Pass through the deferred initialization parameter
         customDisposableEffect = { _state, _holderRef ->
             // Specific Google Maps DisposableEffect logic
             val lifecycle = LocalLifecycleOwner.current.lifecycle // Get lifecycle here

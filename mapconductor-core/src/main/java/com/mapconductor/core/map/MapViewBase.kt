@@ -54,7 +54,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
@@ -84,6 +83,7 @@ fun <
     onInitialize: suspend () -> Boolean,
     customDisposableEffect: (@Composable (SpecificState, Ref<SpecificViewHolder>) -> Unit)? = null,
     content: (@Composable SpecificScope.() -> Unit)? = null,
+    shouldInitialize: Boolean = true, // Allow deferring initialization
 ) {
     val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
     val initState by state.isInitialized.collectAsState()
@@ -102,15 +102,13 @@ fun <
 
 
         val groundImage = scope.groundImageFlow.collectAsState()
-        LaunchedEffect(groundImage) {
-            coroutine.launch {
-                (controller as? GroundImageCapable)?.let { groundImageCapable ->
-                    groundImage.value.forEach { groundImageState ->
-                            groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                                if (groundImageCapable.hasGroundImage(groundImageState)) {
-                                    groundImageCapable.updateGroundImage(groundImageState)
-                                }
-                        }
+        (controller as? GroundImageCapable)?.let { groundImageCapable ->
+            groundImage.value.forEach { groundImageState ->
+                LaunchedEffect(groundImageState.id) {
+                        groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                            if (groundImageCapable.hasGroundImage(groundImageState)) {
+                                groundImageCapable.updateGroundImage(groundImageState)
+                            }
                     }
                 }
             }
@@ -152,14 +150,12 @@ fun <
             }
         }
         val markers = scope.markerFlow.collectAsState()
-        LaunchedEffect(markers) {
-            coroutine.launch {
-                markers.value.forEach { markerState ->
-                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        (controller as? MarkerCapable)?.let { markerCapable ->
-                            if (markerCapable.hasMarker(markerState)) {
-                                markerCapable.updateMarker(markerState)
-                            }
+        markers.value.forEach { markerState ->
+            LaunchedEffect(markerState.id) {
+                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                    (controller as? MarkerCapable)?.let { markerCapable ->
+                        if (markerCapable.hasMarker(markerState)) {
+                            markerCapable.updateMarker(markerState)
                         }
                     }
                 }
@@ -285,107 +281,16 @@ fun <
         }
     }
 
-    LaunchedEffect(isResourceProviderReady, initState) {
+    LaunchedEffect(isResourceProviderReady, initState, shouldInitialize) {
         if (!isResourceProviderReady) return@LaunchedEffect
+        if (!shouldInitialize) return@LaunchedEffect // Don't initialize if deferred
         if (initState != InitState.NotStarted) return@LaunchedEffect
         state.initAsync(onInitialize)
     }
 
     customDisposableEffect?.invoke(state, holderRef)
 }
-//
-//    Box(
-//        modifier =
-//            modifier
-//                .background(color = Color.LightGray)
-//                .fillMaxSize()
-//                .clipToBounds(),
-//        contentAlignment = Alignment.Center,
-//    ) {
-//        when (initState) {
-//            InitState.NotStarted -> {
-//                BasicText(
-//                    text = "Not initialized yet",
-//                    modifier = Modifier.fillMaxWidth(),
-//                    style =
-//                        TextStyle.Default.merge(
-//                            fontSize = 13.sp,
-//                            textAlign = TextAlign.Center,
-//                        ),
-//                )
-//            }
-//
-//            InitState.Failed -> {
-//                BasicText(
-//                    text = "Failed to initialize",
-//                    modifier = Modifier.wrapContentSize(align = Alignment.Center),
-//                    style = TextStyle.Default.merge(fontSize = 13.sp),
-//                )
-//            }
-//
-//            InitState.Initializing -> {
-//                BasicText(
-//                    text = "Initializing",
-//                    modifier = Modifier.wrapContentSize(align = Alignment.Center),
-//                    style = TextStyle.Default.merge(fontSize = 13.sp),
-//                )
-//            }
-//
-//            InitState.Initialized -> {
-//                if (holderRef.value == null) {
-//                    state.resetInitState() // Or handle error appropriately
-//                } else {
-//                    AndroidView(factory = { _ ->
-//                        val view = viewProvider(holderRef.value!!)
-//                        (view as ViewGroup).layoutParams =
-//                            ViewGroup.LayoutParams(
-//                                ViewGroup.LayoutParams.MATCH_PARENT,
-//                                ViewGroup.LayoutParams.MATCH_PARENT,
-//                            )
-//                        view
-//                    })
-//                }
-//            }
-//        }
-//    }
-//
-//    cameraPosition?.let {
-//        if (controller != null && bubbles.isNotEmpty()) {
-//            Box(
-//                modifier =
-//                    Modifier
-//                        .fillMaxSize()
-//                        .clipToBounds(),
-//            ) {
-//                bubbles.forEach { entry ->
-//                    val marker = entry.marker
-//                    val position = marker.position
-//                    val positionOffset = holderRef.value?.toScreenOffset(position) ?: return@forEach
-//                    val icon = marker.icon ?: DefaultIcon()
-//                    val iconScale = icon.scale
-//                    val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
-//
-//                    InfoBubbleOverlay(
-//                        positionOffset = positionOffset,
-//                        tailOffset = entry.tailOffset,
-//                        content = entry.content,
-//                        iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
-//                        iconOffset = icon.anchor,
-//                        infoAnchorOffset = icon.infoAnchor,
-//                    )
-//                }
-//            }
-//        }
-//    }
-//
-//    LaunchedEffect(isResourceProviderReady, initState) {
-//        if (!isResourceProviderReady) return@LaunchedEffect
-//        if (initState != InitState.NotStarted) return@LaunchedEffect
-//        state.initAsync(onInitialize)
-//    }
-//
-//    customDisposableEffect?.invoke(state, holderRef)
-//}
+
 @Composable
 private fun BasicMessage(text: String) {
     Box(
