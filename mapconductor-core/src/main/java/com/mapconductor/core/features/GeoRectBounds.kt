@@ -1,6 +1,5 @@
 package com.mapconductor.core.features
 
-
 class GeoRectBounds(
     southWest: GeoPoint? = null,
     northEast: GeoPoint? = null,

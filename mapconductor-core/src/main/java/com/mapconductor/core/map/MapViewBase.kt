@@ -88,12 +88,14 @@ fun <
             controller = controller,
         )
 
-        (controller as? GroundImageCapable)?.let {
+        (controller as? GroundImageCapable)?.let { groundImageCapable ->
             val groundImage = scope.groundImageFlow.collectAsState()
             groundImage.value.forEach { groundImageState ->
                 LaunchedEffect(groundImageState.id) {
                     groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        controller.updateGroundImage(groundImageState)
+                        if (groundImageCapable.hasGroundImage(groundImageState)) {
+                            groundImageCapable.updateGroundImage(groundImageState)
+                        }
                     }
                 }
             }
@@ -102,7 +104,11 @@ fun <
         polygons.value.forEach { polygonState ->
             LaunchedEffect(polygonState.id) {
                 polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolygonCapable)?.updatePolygon(polygonState)
+                    (controller as? PolygonCapable)?.let { polygonCapable ->
+                        if (polygonCapable.hasPolygon(polygonState)) {
+                            polygonCapable.updatePolygon(polygonState)
+                        }
+                    }
                 }
             }
         }
@@ -110,7 +116,11 @@ fun <
         polylines.value.forEach { polylineState ->
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolylineCapable)?.updatePolyline(polylineState)
+                    (controller as? PolylineCapable)?.let { polylineCapable ->
+                        if (polylineCapable.hasPolyline(polylineState)) {
+                            polylineCapable.updatePolyline(polylineState)
+                        }
+                    }
                 }
             }
         }
@@ -118,7 +128,11 @@ fun <
         circles.value.forEach { circleState ->
             LaunchedEffect(circleState.id) {
                 circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? CircleCapable)?.updateCircle(circleState)
+                    (controller as? CircleCapable)?.let { circleCapable ->
+                        if (circleCapable.hasCircle(circleState)) {
+                            circleCapable.updateCircle(circleState)
+                        }
+                    }
                 }
             }
         }
@@ -126,7 +140,11 @@ fun <
         markers.value.forEach { markerState ->
             LaunchedEffect(markerState.id) {
                 markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? MarkerCapable)?.updateMarker(markerState)
+                    (controller as? MarkerCapable)?.let { markerCapable ->
+                        if (markerCapable.hasMarker(markerState)) {
+                            markerCapable.updateMarker(markerState)
+                        }
+                    }
                 }
             }
         }

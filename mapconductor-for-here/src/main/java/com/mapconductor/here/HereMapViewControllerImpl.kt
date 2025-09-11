@@ -71,6 +71,16 @@ class HereMapViewControllerImpl(
 
     override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
 
+    override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
+
+    override fun hasPolyline(state: PolylineState): Boolean =
+        this.polylineController.polylineManager
+            .hasEntity(state.id)
+
+    override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
+
+    override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerController.dragStartListener = listener
     }
@@ -113,6 +123,7 @@ class HereMapViewControllerImpl(
 
     init {
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -170,12 +181,9 @@ class HereMapViewControllerImpl(
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
-            backCoroutine.launch {
-                markerController.onCameraChanged(mapCameraPosition)
-            }
-            cameraMoveCallback?.let { callback ->
-                coroutine.launch { callback(mapCameraPosition) }
+        backCoroutine.launch {
+            getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
+                notifyMapCameraPosition(mapCameraPosition)
             }
         }
     }
@@ -272,7 +280,7 @@ class HereMapViewControllerImpl(
             GestureState.UPDATE.value -> {
                 markerController.selectedMarker?.also { selected ->
                     holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
-                        selected.marker.coordinates = coordinates
+                        selected.marker?.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
                     markerController.dragListener?.invoke(selected.state)

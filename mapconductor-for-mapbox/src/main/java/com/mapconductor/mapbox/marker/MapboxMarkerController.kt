@@ -4,9 +4,9 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
+import com.mapconductor.core.marker.AddOnlyMarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.spherical.expandBounds
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.settings.Settings
@@ -17,6 +17,12 @@ class MapboxMarkerController(
         markerManager = renderer.markerManager,
         renderer = renderer,
     ) {
+    override val actualRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker> by lazy {
+        AddOnlyMarkerRenderingStrategy<MapboxActualMarker>(
+            expandMargin = 1.1,
+            semaphore = semaphore, // Pass the semaphore from parent class
+        )
+    }
     private var internalSelectedMarker: MarkerEntity<MapboxActualMarker>? = null
 
     internal var selectedMarker: MarkerEntity<MapboxActualMarker>?
@@ -56,26 +62,6 @@ class MapboxMarkerController(
                 nearest
             } else {
                 null
-            }
-        }
-    }
-
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
-        mapCameraPosition.visibleRegion?.bounds?.let { bounds ->
-            // Expand bounds by 20% margin for better performance
-            val expandedBounds = expandBounds(bounds, 0.2)
-
-            // Get markers within expanded bounds
-            val visibleMarkers = markerManager.findMarkersInBounds(expandedBounds)
-            val allMarkers = markerManager.allEntities()
-
-            // Show markers in bounds, hide others
-            visibleMarkers.forEach { entity ->
-                entity.visible = true
-            }
-
-            allMarkers.filterNot { visibleMarkers.contains(it) }.forEach { entity ->
-                entity.visible = false
             }
         }
     }

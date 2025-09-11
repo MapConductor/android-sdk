@@ -69,7 +69,6 @@ fun HereMapView(
                 )
 
             controller.setCameraMoveListener(state::onCameraChange)
-            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)

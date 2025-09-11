@@ -4,11 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.AndroidDrawableIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.example.pages.map.basic.StarbucksHI_list
-import android.graphics.drawable.Drawable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,17 +15,19 @@ interface PostOfficeViewModel {
     val selectedMarker: StateFlow<MarkerState?>
     val markerList: List<MarkerState>
     val mapViewState: StateFlow<MapViewState<*>?>
+
     fun onMapViewChanged(mapViewState: MapViewState<*>)
+
     fun onMarkerClick(clicked: MarkerState)
+
     fun onMapClick(clicked: GeoPoint)
 }
 
-class PostOfficeViewModelImpl(icon: ImageIcon, postOffices: List<PostOffice>) :
-    ViewModel(),
+class PostOfficeViewModelImpl(
+    icon: ImageIcon,
+    postOffices: List<PostOffice>,
+) : ViewModel(),
     PostOfficeViewModel {
-
-
-
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -42,14 +41,15 @@ class PostOfficeViewModelImpl(icon: ImageIcon, postOffices: List<PostOffice>) :
             paddings = null,
         )
 
-    override val markerList = postOffices.map {
-        MarkerState(
-            position = it.position,
-            id = it.hashCode().toString(),
-            icon = icon,
-            extra = it,
-        )
-    }
+    override val markerList =
+        postOffices.map {
+            MarkerState(
+                position = it.position,
+                id = it.hashCode().toString(),
+                icon = icon,
+                extra = it,
+            )
+        }
 
     private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()

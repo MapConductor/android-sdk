@@ -9,6 +9,8 @@ interface GroundImageManager<ActualGroundImage> {
 
     fun getEntity(id: String): GroundImageEntity<ActualGroundImage>?
 
+    fun hasEntity(id: String): Boolean
+
     fun allEntities(): List<GroundImageEntity<ActualGroundImage>>
 
     fun clear()
@@ -26,6 +28,8 @@ class GroundImageManagerImpl<ActualGroundImage> : GroundImageManager<ActualGroun
     override fun removeEntity(id: String): GroundImageEntity<ActualGroundImage>? = entities.remove(id)
 
     override fun getEntity(id: String): GroundImageEntity<ActualGroundImage>? = entities[id]
+
+    override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
     override fun allEntities(): List<GroundImageEntity<ActualGroundImage>> = entities.values.toList()
 

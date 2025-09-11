@@ -6,4 +6,6 @@ interface PolylineCapable {
     suspend fun updatePolyline(state: PolylineState)
 
     fun setOnPolylineClickListener(listener: OnPolylineEventHandler?)
+
+    fun hasPolyline(state: PolylineState): Boolean
 }

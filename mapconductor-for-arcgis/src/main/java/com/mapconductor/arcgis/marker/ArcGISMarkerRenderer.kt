@@ -30,7 +30,7 @@ class ArcGISMarkerRenderer(
         position: GeoPoint,
     ) {
         coroutine.launch {
-            markerEntity.marker.geometry = position.toPoint(holder.map.scene?.spatialReference)
+            markerEntity.marker?.geometry = position.toPoint(holder.map.scene?.spatialReference)
         }
     }
 
@@ -102,14 +102,14 @@ class ArcGISMarkerRenderer(
                             it.offsetX = anchorX.toFloat()
                             it.offsetY = anchorY.toFloat()
                         }
-                    params.current.marker.symbol = pictureSymbolFuture
+                    params.current.marker?.symbol = pictureSymbolFuture
                 }
 
                 if (params.current.state.position != params.prev.state.position) {
-                    params.current.marker.geometry =
+                    params.current.marker?.geometry =
                         GeoPoint.from(params.current.state.position).toPoint()
                 }
-                params.current.marker.isVisible = params.current.visible
+                params.current.marker?.isVisible = params.current.visible
 
                 // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 params.current.marker

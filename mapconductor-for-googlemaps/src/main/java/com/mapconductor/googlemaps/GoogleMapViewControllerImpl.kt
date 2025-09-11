@@ -54,6 +54,7 @@ class GoogleMapViewControllerImpl(
     GoogleMap.OnMapLoadedCallback {
     init {
         setupListeners()
+        registerController(markerController)
     }
 
     fun setupListeners() {
@@ -128,10 +129,7 @@ class GoogleMapViewControllerImpl(
     override fun onCameraMove() {
         val mapCameraPosition = getMapCameraPosition()
         backCoroutine.launch {
-            markerController.onCameraChanged(mapCameraPosition)
-        }
-        cameraMoveCallback?.let { callBack ->
-            callBack(mapCameraPosition)
+            notifyMapCameraPosition(mapCameraPosition)
         }
     }
 
@@ -249,6 +247,20 @@ class GoogleMapViewControllerImpl(
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
         this.markerController.clickListener = listener
     }
+
+    override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
+
+    override fun hasPolyline(state: PolylineState): Boolean =
+        this.polylineController.polylineManager
+            .hasEntity(state.id)
+
+    override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
+
+    override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
+    override fun hasGroundImage(state: GroundImageState): Boolean =
+        this.groundImageController.groundImageManager
+            .hasEntity(state.id)
 
     override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
         this.groundImageController.clickListener = listener

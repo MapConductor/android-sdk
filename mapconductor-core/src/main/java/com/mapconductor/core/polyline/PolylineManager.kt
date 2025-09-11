@@ -9,6 +9,8 @@ interface PolylineManager<ActualPolyline> {
 
     fun getEntity(id: String): PolylineEntity<ActualPolyline>?
 
+    fun hasEntity(id: String): Boolean
+
     fun allEntities(): List<PolylineEntity<ActualPolyline>>
 
     fun clear()
@@ -26,6 +28,8 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
     override fun removeEntity(id: String): PolylineEntity<ActualPolyline>? = entities.remove(id)
 
     override fun getEntity(id: String): PolylineEntity<ActualPolyline>? = entities[id]
+
+    override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
     override fun allEntities(): List<PolylineEntity<ActualPolyline>> = entities.values.toList()
 
