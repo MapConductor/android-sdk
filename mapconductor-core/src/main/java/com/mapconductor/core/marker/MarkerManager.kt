@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 class MarkerManager<ActualMarker>(
     geocell: HexGeocell,
 ) {
-    private val entities: ConcurrentHashMap<String, MarkerEntity<ActualMarker>> = ConcurrentHashMap()
+    private val entities = mutableMapOf<String, MarkerEntity<ActualMarker>>()
     private val cellRegistry =
         HexCellRegistry<ActualMarker>(
             geocell = geocell,

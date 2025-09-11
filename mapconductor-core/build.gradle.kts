@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.ui)
     compileOnly(libs.androidx.core.ktx)
     compileOnly(libs.androidx.foundation)
 

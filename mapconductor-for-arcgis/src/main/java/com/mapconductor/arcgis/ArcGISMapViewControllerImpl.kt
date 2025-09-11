@@ -61,10 +61,10 @@ class ArcGISMapViewControllerImpl(
             holder.map.viewpointChanged.collect { onViewpointChange() }
         }
         coroutine.launch {
-            holder.map.onInteractiveZooming.collect { onViewpointChange() }
+            holder.map.onInteractiveZooming.collect { onlyCallback() }
         }
         coroutine.launch {
-            holder.map.onRotate.collect { onViewpointChange() }
+            holder.map.onRotate.collect { onlyCallback() }
         }
         coroutine.launch {
             holder.map.onLongPress.collect { onMapLongPress(it) }
@@ -87,6 +87,11 @@ class ArcGISMapViewControllerImpl(
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
+    private suspend fun onlyCallback() {
+        getMapCameraPosition()?.let { mapCameraPosition ->
+            cameraMoveCallback?.invoke(mapCameraPosition)
+        }
+    }
     private suspend fun onViewpointChange() {
         getMapCameraPosition()?.let { mapCameraPosition ->
             notifyMapCameraPosition(mapCameraPosition)
@@ -134,6 +139,7 @@ class ArcGISMapViewControllerImpl(
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {
+        onlyCallback()
         markerController.selectedMarker?.also {
             val screenPoint = event.screenCoordinate
             val point = holder.map.screenToLocation(screenPoint).getOrNull() ?: return

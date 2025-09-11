@@ -12,7 +12,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DemoAppScreen(
-                initPage = "marker-postoffice",
+//                initPage = "marker-postoffice",
+                initPage = "startup",
             )
         }
     }
