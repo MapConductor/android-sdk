@@ -36,6 +36,8 @@ android {
                         "-DANDROID_STL=c++_static",
                         "-DANDROID_PLATFORM=android-$minSdk",
                     )
+                // Add 16KB page alignment arguments for Android 15+ compatibility
+                arguments += listOf("-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384")
                 version = "3.22.1"
             }
         }
