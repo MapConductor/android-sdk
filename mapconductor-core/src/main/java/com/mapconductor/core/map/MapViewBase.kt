@@ -192,19 +192,16 @@ fun <
                     InitState.Failed -> BasicMessage("Failed to initialize")
                     InitState.Initializing -> BasicMessage("Initializing")
                     InitState.Initialized -> {
-                        // Wait for holder instead of resetting - prevents black screen flash
                         if (holderRef.value == null) {
-                            // Don't reset state, just wait with transparent content
-                            Box(modifier = Modifier.fillMaxSize())
+                            state.resetInitState() // Or handle error appropriately
                         } else {
                             AndroidView(factory = { _ ->
-                                val v = viewProvider(holderRef.value!!)
-                                (v as ViewGroup).layoutParams =
-                                    ViewGroup.LayoutParams(
+                                viewProvider(holderRef.value!!).also { view ->
+                                    (view as ViewGroup).layoutParams = ViewGroup.LayoutParams(
                                         ViewGroup.LayoutParams.MATCH_PARENT,
                                         ViewGroup.LayoutParams.MATCH_PARENT,
                                     )
-                                v
+                                }
                             })
                         }
                     }
