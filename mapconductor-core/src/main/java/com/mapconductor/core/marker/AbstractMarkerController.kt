@@ -270,4 +270,12 @@ abstract class AbstractMarkerController<ActualMarker>(
         this.mapCameraPosition = mapCameraPosition
         actualRenderingStrategy.onCameraChanged(mapCameraPosition, markerManager, renderer)
     }
+    
+    /**
+     * Properly cleanup native resources when disposing of the controller
+     * IMPORTANT: Call this when switching map providers or disposing the map
+     */
+    override fun destroy() {
+        markerManager.destroy()
+    }
 }

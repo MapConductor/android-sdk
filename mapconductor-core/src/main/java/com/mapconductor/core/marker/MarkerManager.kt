@@ -4,8 +4,6 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.spherical.haversineDistance
-import java.util.concurrent.ConcurrentHashMap
 
 class MarkerManager<ActualMarker>(
     geocell: HexGeocell,
@@ -18,14 +16,32 @@ class MarkerManager<ActualMarker>(
             zoom = 20.0,
         )
 
-    fun getEntity(id: String): MarkerEntity<ActualMarker>? = entities.get(id)
+    // Native index for performance-critical operations
+    private val nativeIndex =
+        NativeMarkerIndex.create(
+            baseHexSideLength = geocell.baseHexSideLength,
+            zoom = 20.0,
+        )
+    
+    @Volatile
+    private var isDestroyed = false
 
-    fun hasEntity(id: String): Boolean = entities.containsKey(id)
+    fun getEntity(id: String): MarkerEntity<ActualMarker>? {
+        checkNotDestroyed()
+        return entities.get(id)
+    }
+
+    fun hasEntity(id: String): Boolean {
+        checkNotDestroyed()
+        return nativeIndex.hasMarker(id)
+    }
 
     fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
+        checkNotDestroyed()
         val removed =
             entities.remove(id)?.also {
                 cellRegistry.removePoint(it)
+                nativeIndex.removeMarker(id)
             }
         return removed
     }
@@ -35,74 +51,76 @@ class MarkerManager<ActualMarker>(
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
-    ): Double = cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
-
-    fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
-        val cell = cellRegistry.findNearest(position) ?: return null
-        val entryIDs =
-            cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
-                entryIDs
-                    .filter { entryId ->
-                        entities[entryId]?.state?.clickable == true
-                    }.filterNotNull()
-                    .sortedBy { entryId ->
-                        entities[entryId]?.let { entity ->
-                            haversineDistance(position, entity.state.position)
-                        }
-                    }
-            } ?: return null
-
-        val entryId = entryIDs[0]
-        return entities[entryId]
+    ): Double {
+        checkNotDestroyed()
+        return nativeIndex.metersPerPixel(position, zoom, pixels, tileSize)
     }
 
-    fun findByIdPrefix(prefix: String): List<HexCell> = cellRegistry.findByIdPrefix(prefix)
+    fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
+        checkNotDestroyed()
+        val nearestId = nativeIndex.findNearest(position) ?: return null
+        return entities[nearestId]
+    }
+
+    fun findByIdPrefix(prefix: String): List<HexCell> {
+        checkNotDestroyed()
+        return cellRegistry.findByIdPrefix(prefix)
+    }
 
     fun registerEntity(entity: MarkerEntity<ActualMarker>) {
+        checkNotDestroyed()
         entities[entity.state.id] = entity
         cellRegistry.setPoint(entity)
+        nativeIndex.registerMarker(entity.state.id, entity.state.position, entity.state.clickable)
     }
 
     fun updateEntity(entity: MarkerEntity<ActualMarker>) {
+        checkNotDestroyed()
         entities[entity.state.id] = entity
         cellRegistry.setPoint(entity)
+        nativeIndex.updateMarker(entity.state.id, entity.state.position, entity.state.clickable)
     }
 
-    fun allEntities(): List<MarkerEntity<ActualMarker>> = entities.values.toList()
+    fun allEntities(): List<MarkerEntity<ActualMarker>> {
+        checkNotDestroyed()
+        return entities.values.toList()
+    }
 
     fun clear() {
+        checkNotDestroyed()
         entities.clear()
         cellRegistry.clear()
+        nativeIndex.clear()
     }
 
     fun findMarkersInBounds(bounds: com.mapconductor.core.features.GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+        checkNotDestroyed()
         if (bounds.isEmpty) return emptyList()
 
-        val center = bounds.center ?: return emptyList()
-        val span = bounds.toSpan() ?: return emptyList()
-
-        // Calculate search radius based on bounding box diagonal
-        val latRadius = span.latitude / 2.0
-        val lngRadius = span.longitude / 2.0
-        val searchRadius = kotlin.math.sqrt(latRadius * latRadius + lngRadius * lngRadius) * 111000
-
-        // Find all cells within the search radius
-        val cellsWithDistance = cellRegistry.findWithinRadiusWithDistance(center, searchRadius)
-
-        // Collect all entities from those cells and filter by actual bounds
-        val markersInBounds = mutableListOf<MarkerEntity<ActualMarker>>()
-
-        cellsWithDistance.forEach { cellWithDistance ->
-            val entryIDs = cellRegistry.getEntryIDsByHexCell(cellWithDistance.cell)
-            entryIDs?.forEach { entryId ->
-                entities[entryId]?.let { entity ->
-                    if (bounds.contains(entity.state.position)) {
-                        markersInBounds.add(entity)
-                    }
-                }
-            }
+        val markerIds = nativeIndex.findMarkersInBounds(bounds)
+        return markerIds.mapNotNull { id -> entities[id] }
+    }
+    
+    /**
+     * Properly destroy native resources when switching map providers
+     * IMPORTANT: Call this when disposing of the MarkerManager
+     */
+    fun destroy() {
+        if (!isDestroyed) {
+            isDestroyed = true
+            entities.clear()
+            cellRegistry.clear()
+            nativeIndex.destroy()
         }
-
-        return markersInBounds
+    }
+    
+    private fun checkNotDestroyed() {
+        if (isDestroyed) {
+            throw IllegalStateException("MarkerManager has been destroyed")
+        }
+    }
+    
+    protected fun finalize() {
+        destroy()
     }
 }

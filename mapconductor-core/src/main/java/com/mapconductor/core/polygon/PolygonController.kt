@@ -141,4 +141,8 @@ abstract class PolygonController<ActualPolygon>(
     override fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>? = polygonManager.find(position)
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
+    
+    override fun destroy() {
+        // No native resources to clean up for polygons
+    }
 }

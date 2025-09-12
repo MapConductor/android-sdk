@@ -90,7 +90,6 @@ fun <
     val cameraPosition by state.cameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
     val controller = controllerRef.value
-    val coroutine = rememberCoroutineScope { Dispatchers.Default }
     val cameraTick = remember { mutableIntStateOf(0) }
 
     if (initState == InitState.Initialized && controller != null) {
@@ -100,15 +99,14 @@ fun <
             controller = controller,
         )
 
-
         val groundImage = scope.groundImageFlow.collectAsState()
         (controller as? GroundImageCapable)?.let { groundImageCapable ->
             groundImage.value.forEach { groundImageState ->
                 LaunchedEffect(groundImageState.id) {
-                        groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                            if (groundImageCapable.hasGroundImage(groundImageState)) {
-                                groundImageCapable.updateGroundImage(groundImageState)
-                            }
+                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        if (groundImageCapable.hasGroundImage(groundImageState)) {
+                            groundImageCapable.updateGroundImage(groundImageState)
+                        }
                     }
                 }
             }
@@ -181,36 +179,37 @@ fun <
             .map { camera ->
                 // 丸めて比較キーに
                 cameraInvalidationKey(camera)
-            }
-            .distinctUntilChanged()
+            }.distinctUntilChanged()
             .collect { cameraTick.intValue = (cameraTick.intValue + 1) % 2 } // 変化時のみ
     }
 
     SubcomposeLayout(modifier = modifier.fillMaxSize().clipToBounds().background(Color.LightGray)) { constraints ->
         // 1) Map フェーズ：先に Map の AndroidView をレイアウト
-        val mapPlaceables = subcompose("map") {
-            when (initState) {
-                InitState.NotStarted -> BasicMessage("Not initialized yet")
-                InitState.Failed -> BasicMessage("Failed to initialize")
-                InitState.Initializing -> BasicMessage("Initializing")
-                InitState.Initialized -> {
-                    // Wait for holder instead of resetting - prevents black screen flash
-                    if (holderRef.value == null) {
-                        // Don't reset state, just wait with transparent content
-                        Box(modifier = Modifier.fillMaxSize())
-                    } else {
-                        AndroidView(factory = { _ ->
-                            val v = viewProvider(holderRef.value!!)
-                            (v as ViewGroup).layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                            )
-                            v
-                        })
+        val mapPlaceables =
+            subcompose("map") {
+                when (initState) {
+                    InitState.NotStarted -> BasicMessage("Not initialized yet")
+                    InitState.Failed -> BasicMessage("Failed to initialize")
+                    InitState.Initializing -> BasicMessage("Initializing")
+                    InitState.Initialized -> {
+                        // Wait for holder instead of resetting - prevents black screen flash
+                        if (holderRef.value == null) {
+                            // Don't reset state, just wait with transparent content
+                            Box(modifier = Modifier.fillMaxSize())
+                        } else {
+                            AndroidView(factory = { _ ->
+                                val v = viewProvider(holderRef.value!!)
+                                (v as ViewGroup).layoutParams =
+                                    ViewGroup.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                    )
+                                v
+                            })
+                        }
                     }
                 }
-            }
-        }.map { it.measure(constraints) }
+            }.map { it.measure(constraints) }
 
         val width = mapPlaceables.maxOfOrNull { it.width } ?: constraints.minWidth
         val height = mapPlaceables.maxOfOrNull { it.height } ?: constraints.minHeight
@@ -220,7 +219,8 @@ fun <
         val canOverlay =
             initState == InitState.Initialized &&
                 controller != null &&
-                mapSize.width > 0 && mapSize.height > 0 &&
+                mapSize.width > 0 &&
+                mapSize.height > 0 &&
                 holderRef.value != null
 
         val overlayPlaceables =
@@ -245,9 +245,10 @@ fun <
                     // を mapSize 確定後に描画
                     if (bubbles.isNotEmpty()) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clipToBounds()
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .clipToBounds(),
                         ) {
                             bubbles.forEach { entry ->
                                 val marker = entry.marker
@@ -273,7 +274,9 @@ fun <
                     // Map と同サイズで測定（全面オーバーレイ）
                     it.measure(Constraints.fixed(mapSize.width, mapSize.height))
                 }
-            } else emptyList()
+            } else {
+                emptyList()
+            }
 
         layout(mapSize.width, mapSize.height) {
             mapPlaceables.forEach { it.place(0, 0) }
@@ -294,10 +297,11 @@ fun <
 @Composable
 private fun BasicMessage(text: String) {
     Box(
-        modifier = Modifier
-            .background(Color.LightGray)
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .background(Color.LightGray)
+                .fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
         BasicText(
             text = text,
@@ -306,12 +310,13 @@ private fun BasicMessage(text: String) {
         )
     }
 }
+
 private fun cameraInvalidationKey(camera: MapCameraPosition?): Long {
     if (camera == null) return 0L
-    val latE5 = (camera.position.latitude  * 1e5).toInt()
+    val latE5 = (camera.position.latitude * 1e5).toInt()
     val lonE5 = (camera.position.longitude * 1e5).toInt()
-    val zoom100 = (camera.zoom * 100).toInt()       // 小数2桁まで
-    val bearing10 = (camera.bearing * 10).toInt()   // 小数1桁まで
+    val zoom100 = (camera.zoom * 100).toInt() // 小数2桁まで
+    val bearing10 = (camera.bearing * 10).toInt() // 小数1桁まで
     // 適当なハッシュ化
     return (((latE5 * 31 + lonE5) * 31 + zoom100) * 31 + bearing10).toLong()
 }

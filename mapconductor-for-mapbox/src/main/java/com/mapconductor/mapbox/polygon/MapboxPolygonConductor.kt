@@ -78,6 +78,10 @@ class MapboxPolygonConductor(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
+    
+    override fun destroy() {
+        // No native resources to clean up for polygons
+    }
 }
 
 private fun PolygonState.toPolylineState(): PolylineState {
