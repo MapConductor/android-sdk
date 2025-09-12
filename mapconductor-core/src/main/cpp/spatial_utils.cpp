@@ -61,3 +61,39 @@ std::vector<HexCoord> hexRange(const HexCoord& center, int radius) {
     
     return results;
 }
+
+std::vector<HexCoord> hexRing(const HexCoord& center, int radius) {
+    std::vector<HexCoord> results;
+    
+    if (radius == 0) {
+        results.push_back(center);
+        return results;
+    }
+    
+    // Reserve space for exactly 6 * radius cells
+    results.reserve(6 * radius);
+    
+    // Start at one corner of the ring
+    HexCoord current = HexCoord(center.q - radius, center.r + radius, center.depth);
+    
+    // The six directions in axial coordinates
+    const int directions[6][2] = {
+        {1, 0},   // E
+        {1, -1},  // SE  
+        {0, -1},  // SW
+        {-1, 0},  // W
+        {-1, 1},  // NW
+        {0, 1}    // NE
+    };
+    
+    // Walk around the ring
+    for (int direction = 0; direction < 6; ++direction) {
+        for (int step = 0; step < radius; ++step) {
+            results.push_back(current);
+            current.q += directions[direction][0];
+            current.r += directions[direction][1];
+        }
+    }
+    
+    return results;
+}

@@ -94,3 +94,4 @@ double haversineDistance(const GeoPoint& p1, const GeoPoint& p2);
 HexCoord cubeRound(double q, double r);
 int hexDistance(const HexCoord& a, const HexCoord& b);
 std::vector<HexCoord> hexRange(const HexCoord& center, int radius);
+std::vector<HexCoord> hexRing(const HexCoord& center, int radius);

@@ -27,6 +27,20 @@ void NativeMarkerIndex::addToCell(const std::string& markerId, const std::string
     cellToMarkers[cellId].insert(markerId);
 }
 
+void NativeMarkerIndex::addToClickableCell(const std::string& markerId, const std::string& cellId) {
+    clickableCellToMarkers[cellId].insert(markerId);
+}
+
+void NativeMarkerIndex::removeFromClickableCell(const std::string& markerId, const std::string& cellId) {
+    auto cellIt = clickableCellToMarkers.find(cellId);
+    if (cellIt != clickableCellToMarkers.end()) {
+        cellIt->second.erase(markerId);
+        if (cellIt->second.empty()) {
+            clickableCellToMarkers.erase(cellIt);
+        }
+    }
+}
+
 void NativeMarkerIndex::registerMarker(const std::string& id, const GeoPoint& position, bool clickable) {
     MarkerPoint marker(id, position, clickable);
     
@@ -34,6 +48,11 @@ void NativeMarkerIndex::registerMarker(const std::string& id, const GeoPoint& po
     auto oldCellIt = markerToCell.find(id);
     if (oldCellIt != markerToCell.end()) {
         removeFromCell(id, oldCellIt->second);
+        // Also remove from clickable cache if it was clickable
+        auto oldMarkerIt = markers.find(id);
+        if (oldMarkerIt != markers.end() && oldMarkerIt->second.clickable) {
+            removeFromClickableCell(id, oldCellIt->second);
+        }
     }
     
     // Add to new cell
@@ -41,6 +60,11 @@ void NativeMarkerIndex::registerMarker(const std::string& id, const GeoPoint& po
     addToCell(id, cell.id);
     markerToCell[id] = cell.id;
     markers[id] = marker;
+    
+    // Add to clickable cache if clickable
+    if (clickable) {
+        addToClickableCell(id, cell.id);
+    }
 }
 
 void NativeMarkerIndex::updateMarker(const std::string& id, const GeoPoint& position, bool clickable) {
@@ -56,6 +80,10 @@ bool NativeMarkerIndex::removeMarker(const std::string& id) {
     auto cellIt = markerToCell.find(id);
     if (cellIt != markerToCell.end()) {
         removeFromCell(id, cellIt->second);
+        // Also remove from clickable cache if it was clickable
+        if (markerIt->second.clickable) {
+            removeFromClickableCell(id, cellIt->second);
+        }
         markerToCell.erase(cellIt);
     }
     
@@ -102,33 +130,79 @@ HexCell NativeMarkerIndex::findNearest(const GeoPoint& position) const {
 }
 
 std::string NativeMarkerIndex::findNearestMarker(const GeoPoint& position) const {
-    // First try the optimized hex-based approach
-    HexCell cell = findNearest(position);
-    if (!cell.id.empty()) {
-        auto cellIt = cellToMarkers.find(cell.id);
-        if (cellIt != cellToMarkers.end() && !cellIt->second.empty()) {
-            // Find closest clickable marker in the cell
-            std::string bestMarkerId;
-            double bestDistance = std::numeric_limits<double>::max();
+    // Try optimized ring-by-ring search first
+    std::string result = findNearestOptimized(position);
+    if (!result.empty()) {
+        return result;
+    }
+    
+    // Fallback to original brute force method if optimized search fails
+    return findNearestBruteForce(position);
+}
+
+std::string NativeMarkerIndex::findNearestOptimized(const GeoPoint& position) const {
+    HexCoord targetCoord = geocell->latLngToHexCoord(position, zoom);
+    
+    std::string bestMarkerId;
+    double bestDistance = std::numeric_limits<double>::max();
+    bool foundAnyMarker = false;
+    
+    // Ring-by-ring search with improved early termination
+    for (int radius = 0; radius <= 30; ++radius) {
+        bool foundMarkersThisRadius = false;
+        
+        // Generate only the current ring
+        std::vector<HexCoord> ringCoords = hexRing(targetCoord, radius);
+        
+        for (const auto& coord : ringCoords) {
+            std::string cellId = geocell->hexToCellId(coord, zoom);
             
-            for (const std::string& markerId : cellIt->second) {
-                auto markerIt = markers.find(markerId);
-                if (markerIt != markers.end() && markerIt->second.clickable) {
-                    double distance = haversineDistance(position, markerIt->second.position);
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        bestMarkerId = markerId;
+            // Check both clickable cache and regular cache as backup
+            auto clickableCellIt = clickableCellToMarkers.find(cellId);
+            if (clickableCellIt != clickableCellToMarkers.end() && !clickableCellIt->second.empty()) {
+                foundMarkersThisRadius = true;
+                foundAnyMarker = true;
+                
+                for (const std::string& markerId : clickableCellIt->second) {
+                    auto markerIt = markers.find(markerId);
+                    if (markerIt != markers.end()) {
+                        double distance = haversineDistance(position, markerIt->second.position);
+                        if (distance < bestDistance) {
+                            bestDistance = distance;
+                            bestMarkerId = markerId;
+                        }
+                    }
+                }
+            } else {
+                // Backup: check regular cell cache if clickable cache misses
+                auto cellIt = cellToMarkers.find(cellId);
+                if (cellIt != cellToMarkers.end()) {
+                    for (const std::string& markerId : cellIt->second) {
+                        auto markerIt = markers.find(markerId);
+                        if (markerIt != markers.end() && markerIt->second.clickable) {
+                            foundMarkersThisRadius = true;
+                            foundAnyMarker = true;
+                            double distance = haversineDistance(position, markerIt->second.position);
+                            if (distance < bestDistance) {
+                                bestDistance = distance;
+                                bestMarkerId = markerId;
+                            }
+                        }
                     }
                 }
             }
-            
-            if (!bestMarkerId.empty()) {
-                return bestMarkerId;
-            }
+        }
+        
+        // Better early termination: if we found markers, search 2 more rings then stop
+        if (foundAnyMarker && radius >= 2) {
+            break;
         }
     }
     
-    // Fallback: brute force search through all markers if hex search fails
+    return bestMarkerId;
+}
+
+std::string NativeMarkerIndex::findNearestBruteForce(const GeoPoint& position) const {
     std::string bestMarkerId;
     double bestDistance = std::numeric_limits<double>::max();
     
@@ -219,6 +293,7 @@ void NativeMarkerIndex::clear() {
     markers.clear();
     cellToMarkers.clear();
     markerToCell.clear();
+    clickableCellToMarkers.clear();
 }
 
 size_t NativeMarkerIndex::markerCount() const {

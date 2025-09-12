@@ -20,7 +20,8 @@
       "Bash(node:*)",
       "Bash(git checkout:*)",
       "Bash(find:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
