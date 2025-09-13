@@ -1,6 +1,13 @@
-package com.mapconductor.core.marker
+package com.mapconductor.marker.nativestrategy
 
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.AbstractViewportStrategy
+import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -16,8 +23,8 @@ import kotlinx.coroutines.sync.withPermit
  */
 class DefaultMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.2,
-    private val semaphore: Semaphore,
-) : MarkerRenderingStrategy<ActualMarker> {
+    semaphore: Semaphore,
+) : AbstractViewportStrategy<ActualMarker>(semaphore) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,

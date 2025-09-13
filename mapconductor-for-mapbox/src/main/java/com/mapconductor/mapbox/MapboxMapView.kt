@@ -12,6 +12,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
@@ -37,6 +38,7 @@ import android.content.ContextWrapper
 fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -83,7 +85,11 @@ fun MapboxMapView(
             val controller =
                 MapboxMapViewControllerImpl(
                     holder = holder,
-                    markerController = getMarkerController(holder),
+                    markerController =
+                        getMarkerController(
+                            holder = holder,
+                            renderingStrategy = markerRenderingStrategy,
+                        ),
                     polylineController = getPolylineController(holder),
                     polygonController = getPolygonController(holder),
                     circleController = getCircleController(holder),
@@ -192,7 +198,10 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
     return controller
 }
 
-internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerController {
+internal fun getMarkerController(
+    holder: MapboxMapViewHolder,
+    renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+): MapboxMarkerController {
     val hexGeocell =
         HexGeocell(
             projection = WebMercator,
@@ -208,6 +217,7 @@ internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerContr
     val controller =
         MapboxMarkerController(
             renderer = renderer,
+            renderingStrategy = renderingStrategy,
         )
     return controller
 }

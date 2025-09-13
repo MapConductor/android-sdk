@@ -1,20 +1,34 @@
 package com.mapconductor.example.pages.marker.postoffice
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.mapconductor.arcgis.ArcGISActualMarker
+import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.here.HereActualMarker
+import com.mapconductor.here.HereViewState
+import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.mapbox.MapboxViewState
+import com.mapconductor.marker.nativestrategy.SimpleMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies
+import kotlinx.coroutines.sync.Semaphore
 
 interface PostOfficeViewModel {
     val initCameraPosition: MapCameraPosition
-    val selectedMarker: StateFlow<MarkerState?>
+    val selectedMarker: State<MarkerState?>
     val markerList: List<MarkerState>
-    val mapViewState: StateFlow<MapViewState<*>?>
+    val mapViewState: State<MapViewState<*>?>
+
+    val renderingStrategy: State<MarkerRenderingStrategy<*>?>
 
     fun onMapViewChanged(mapViewState: MapViewState<*>)
 
@@ -28,6 +42,8 @@ class PostOfficeViewModelImpl(
     postOffices: List<PostOffice>,
 ) : ViewModel(),
     PostOfficeViewModel {
+    private val semaphore = Semaphore(1)
+
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -51,11 +67,14 @@ class PostOfficeViewModelImpl(
             )
         }
 
-    private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    private var _mapViewState = mutableStateOf<MapViewState<*>?>(null)
+    override val mapViewState: State<MapViewState<*>?> = _mapViewState
 
-    private val _selectedMarker: MutableStateFlow<MarkerState?> = MutableStateFlow(null)
-    override val selectedMarker: StateFlow<MarkerState?> = _selectedMarker.asStateFlow()
+    private var _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
+    override val selectedMarker: State<MarkerState?> = _selectedMarker
+
+    private var _renderingStrategy: MutableState<MarkerRenderingStrategy<*>?> = mutableStateOf(null)
+    override val renderingStrategy: State<MarkerRenderingStrategy<*>?> = _renderingStrategy
 
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
@@ -68,5 +87,17 @@ class PostOfficeViewModelImpl(
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
+        _renderingStrategy.value =
+            when (mapViewState) {
+                is GoogleMapViewState ->
+                    SpatialMarkerRenderingStrategies
+                        .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
+                is MapboxViewState -> SpatialMarkerRenderingStrategies.withAddOnlyMode<MapboxActualMarker>(semaphore)
+                is HereViewState -> SpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
+                is ArcGISMapViewState ->
+                    SpatialMarkerRenderingStrategies
+                        .withAddRemoveMode<ArcGISActualMarker>(semaphore)
+                else -> SimpleMarkerRenderingStrategy(semaphore)
+            }
     }
 }

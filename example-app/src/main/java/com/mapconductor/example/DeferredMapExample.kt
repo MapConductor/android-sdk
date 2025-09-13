@@ -19,10 +19,10 @@ import com.mapconductor.core.map.MapViewState
 
 /**
  * Example demonstrating deferred MapView initialization.
- * 
+ *
  * This shows how to defer map initialization until after UI elements
  * like sidebars are closed or specific user interactions occur.
- * 
+ *
  * Benefits:
  * - Faster app startup (map initialization can be expensive)
  * - Better UX (no black screen flash during complex UI transitions)
@@ -35,59 +35,59 @@ fun DeferredMapExample(
 ) {
     var shouldInitializeMap by remember { mutableStateOf(false) }
     var isSidebarClosed by remember { mutableStateOf(false) }
-    
+
     Box(modifier = modifier.fillMaxSize()) {
         // Main map content - only initialize when ready
         mapViewState?.let { currentMapViewState ->
             MapViewContainer(
                 modifier = Modifier.fillMaxSize(),
                 state = currentMapViewState,
-                shouldInitialize = shouldInitializeMap, // Key parameter for deferred init
-                onMapClick = { /* Handle map clicks */ },
-            ) {
-                // Map content (markers, circles, etc.)
-            }
+                onMapClick = { /* Handle map clicks */ }, // Key parameter for deferred init
+                shouldInitialize = shouldInitializeMap,
+            )
         }
-        
+
         // Example sidebar or overlay UI
         if (!isSidebarClosed) {
             Card(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp),
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 ) {
                     Text("Sidebar Content")
                     Text("Map will initialize after closing this sidebar")
-                    
+
                     Button(
                         onClick = {
                             isSidebarClosed = true
                             shouldInitializeMap = true // Trigger map initialization
-                        }
+                        },
                     ) {
                         Text("Close Sidebar & Initialize Map")
                     }
                 }
             }
         }
-        
+
         // Alternative: Initialize map based on other conditions
         if (!shouldInitializeMap && isSidebarClosed) {
             Card(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text("Ready to load map!")
                     Button(
-                        onClick = { shouldInitializeMap = true }
+                        onClick = { shouldInitializeMap = true },
                     ) {
                         Text("Load Map Now")
                     }

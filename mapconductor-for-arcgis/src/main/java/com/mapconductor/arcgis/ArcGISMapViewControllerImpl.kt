@@ -92,6 +92,7 @@ class ArcGISMapViewControllerImpl(
             cameraMoveCallback?.invoke(mapCameraPosition)
         }
     }
+
     private suspend fun onViewpointChange() {
         getMapCameraPosition()?.let { mapCameraPosition ->
             notifyMapCameraPosition(mapCameraPosition)

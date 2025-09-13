@@ -1,6 +1,10 @@
-package com.mapconductor.core.marker
+package com.mapconductor.marker.nativestrategy
 
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.AbstractViewportStrategy
+import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -15,8 +19,8 @@ import kotlinx.coroutines.sync.withPermit
  */
 class AddOnlyMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.5,
-    private val semaphore: Semaphore? = null,
-) : MarkerRenderingStrategy<ActualMarker> {
+    semaphore: Semaphore,
+) : AbstractViewportStrategy<ActualMarker>(semaphore) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,
@@ -32,38 +36,27 @@ class AddOnlyMarkerRenderingStrategy<ActualMarker>(
             }
 
         if (toAdd.isNotEmpty()) {
-            val renderingOperation =
-                suspend {
-                    val addParams =
-                        toAdd.map { entity ->
-                            object : MarkerOverlayRenderer.AddParams {
-                                override val state = entity.state
-                                override val bitmapIcon =
-                                    entity.state.icon?.toBitmapIcon()
-                                        ?: DefaultIcon().toBitmapIcon()
-                            }
-                        }
-                    val newMarkers = renderer.onAdd(addParams)
-
-                    toAdd.forEachIndexed { index, entity ->
-                        if (index < newMarkers.size) {
-                            entity.marker = newMarkers[index]
-                            entity.isRendered = newMarkers[index] != null
+            semaphore.withPermit {
+                val addParams =
+                    toAdd.map { entity ->
+                        object : MarkerOverlayRenderer.AddParams {
+                            override val state = entity.state
+                            override val bitmapIcon =
+                                entity.state.icon?.toBitmapIcon()
+                                    ?: DefaultIcon().toBitmapIcon()
                         }
                     }
+                val newMarkers = renderer.onAdd(addParams)
 
-                    // Post-process for providers that need it (like Mapbox)
-                    renderer.onPostProcess()
+                toAdd.forEachIndexed { index, entity ->
+                    if (index < newMarkers.size) {
+                        entity.marker = newMarkers[index]
+                        entity.isRendered = newMarkers[index] != null
+                    }
                 }
 
-            if (semaphore != null) {
-                // For providers that need semaphore protection (like Mapbox)
-                semaphore.withPermit {
-                    renderingOperation()
-                }
-            } else {
-                // For providers that don't need semaphore protection (like HERE)
-                renderingOperation()
+                // Post-process for providers that need it (like Mapbox)
+                renderer.onPostProcess()
             }
         }
 

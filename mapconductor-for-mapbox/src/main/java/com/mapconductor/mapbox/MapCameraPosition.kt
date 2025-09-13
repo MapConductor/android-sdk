@@ -10,14 +10,16 @@ import com.mapconductor.core.map.MapCameraPosition
 
 internal const val MAPBOX_CAMERA_ZOOM_ADJUST_VALUE = 1.0
 
-fun CameraChanged.toMapCameraPosition() = CameraOptions
-    .Builder()
-    .padding(cameraState.padding)
-    .center(cameraState.center)
-    .zoom(cameraState.zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
-    .bearing(cameraState.bearing)
-    .pitch(cameraState.pitch)
-    .build()
+fun CameraChanged.toMapCameraPosition() =
+    CameraOptions
+        .Builder()
+        .padding(cameraState.padding)
+        .center(cameraState.center)
+        .zoom(cameraState.zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
+        .bearing(cameraState.bearing)
+        .pitch(cameraState.pitch)
+        .build()
+
 fun MapCameraPosition.toCameraOptions(): CameraOptions =
     CameraOptions
         .Builder()

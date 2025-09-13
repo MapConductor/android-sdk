@@ -10,6 +10,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
@@ -59,6 +60,7 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         context: Context,
         id: String,
         options: HereViewInitOptions,
+        markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     ): HereMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) {
@@ -92,7 +94,11 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         val controller =
             HereMapViewControllerImpl(
                 holder = holder,
-                markerController = getMarkerController(holder),
+                markerController =
+                    getMarkerController(
+                        holder = holder,
+                        renderingStrategy = markerRenderingStrategy,
+                    ),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
                 circleController = getHereCircleController(holder),
@@ -114,7 +120,10 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         return controller
     }
 
-    private fun getMarkerController(holder: HereViewHolder): HereMarkerController {
+    private fun getMarkerController(
+        holder: HereViewHolder,
+        renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
+    ): HereMarkerController {
         val hexGeocell =
             HexGeocell(
                 projection = WebMercator,
@@ -131,6 +140,7 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
             HereMarkerController(
                 markerManager = manager,
                 renderer = renderer,
+                renderingStrategy = renderingStrategy,
             )
         return controller
     }

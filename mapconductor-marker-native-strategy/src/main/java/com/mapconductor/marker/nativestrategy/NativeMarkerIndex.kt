@@ -1,4 +1,4 @@
-package com.mapconductor.core.marker
+package com.mapconductor.marker.nativestrategy
 
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.features.IGeoPoint

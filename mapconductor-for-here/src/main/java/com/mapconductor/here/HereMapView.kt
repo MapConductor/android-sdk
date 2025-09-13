@@ -13,6 +13,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -26,6 +27,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -66,6 +68,7 @@ fun HereMapView(
                     context = context,
                     id = state.id,
                     options = mapInitOptions,
+                    markerRenderingStrategy = markerRenderingStrategy,
                 )
 
             controller.setCameraMoveListener(state::onCameraChange)

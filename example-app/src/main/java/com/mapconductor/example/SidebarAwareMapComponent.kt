@@ -38,9 +38,9 @@ fun SidebarAwareMapComponent(
             modifier = modifier,
             state = currentMapViewState,
             // Only initialize map when sidebar is closed
-            shouldInitialize = !isSidebarExpanded,
             onMapClick = onMapClick,
             onMarkerClick = onMarkerClick,
+            shouldInitialize = !isSidebarExpanded,
         ) {
             content?.invoke()
         }
@@ -72,9 +72,9 @@ fun DelayedInitMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = currentMapViewState,
-            shouldInitialize = !isSidebarExpanded,
             onMapClick = onMapClick,
             onMarkerClick = onMarkerClick,
+            shouldInitialize = !isSidebarExpanded,
         ) {
             content?.invoke()
         }

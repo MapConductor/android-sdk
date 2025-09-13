@@ -63,7 +63,6 @@ internal class MapboxMapViewControllerImpl(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
-
     init {
         holder.map.getStyle { style ->
             // Circle
@@ -185,9 +184,10 @@ internal class MapboxMapViewControllerImpl(
                 farLeft = farLeft,
                 farRight = farRight,
             )
-        val mapCameraPosition = camera.copy(
-            visibleRegion = visibleRegion,
-        )
+        val mapCameraPosition =
+            camera.copy(
+                visibleRegion = visibleRegion,
+            )
         return mapCameraPosition
     }
 

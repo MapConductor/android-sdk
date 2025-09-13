@@ -2,6 +2,7 @@ package com.mapconductor.example
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.ArcGISMapViewStateImpl
 import com.mapconductor.core.MapViewScope
@@ -9,19 +10,24 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewStateImpl
 import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.HereViewStateImpl
+import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewStateImpl
 
 @Composable
 fun MapViewContainer(
     modifier: Modifier = Modifier,
+    renderingStrategy: MarkerRenderingStrategy<*>? = null,
     state: MapViewState<*>? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -35,12 +41,13 @@ fun MapViewContainer(
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
     shouldInitialize: Boolean = true, // Allow deferring initialization
-    content: @Composable MapViewScope.() -> Unit,
+    content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
     when (state) {
         is GoogleMapViewStateImpl ->
             GoogleMapsView(
                 modifier = modifier,
+                markerRenderingStrategy = renderingStrategy as MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -60,6 +67,7 @@ fun MapViewContainer(
         is HereViewStateImpl ->
             HereMapView(
                 modifier = modifier,
+                markerRenderingStrategy = renderingStrategy as MarkerRenderingStrategy<HereActualMarker>?,
                 state = state,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -77,6 +85,7 @@ fun MapViewContainer(
         is MapboxViewStateImpl ->
             MapboxMapView(
                 modifier = modifier,
+                markerRenderingStrategy = renderingStrategy as MarkerRenderingStrategy<MapboxActualMarker>?,
                 state = state,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -94,6 +103,7 @@ fun MapViewContainer(
         is ArcGISMapViewStateImpl ->
             ArcGISMapView(
                 modifier = modifier,
+                markerRenderingStrategy = renderingStrategy as MarkerRenderingStrategy<ArcGISActualMarker>?,
                 state = state,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,

@@ -12,7 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +47,6 @@ import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -82,8 +80,8 @@ fun <
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
     onInitialize: suspend () -> Boolean,
     customDisposableEffect: (@Composable (SpecificState, Ref<SpecificViewHolder>) -> Unit)? = null,
-    content: (@Composable SpecificScope.() -> Unit)? = null,
     shouldInitialize: Boolean = true, // Allow deferring initialization
+    content: (@Composable SpecificScope.() -> Unit)? = null,
 ) {
     val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
     val initState by state.isInitialized.collectAsState()
@@ -197,10 +195,11 @@ fun <
                         } else {
                             AndroidView(factory = { _ ->
                                 viewProvider(holderRef.value!!).also { view ->
-                                    (view as ViewGroup).layoutParams = ViewGroup.LayoutParams(
-                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                    )
+                                    (view as ViewGroup).layoutParams =
+                                        ViewGroup.LayoutParams(
+                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                        )
                                 }
                             })
                         }
@@ -223,7 +222,8 @@ fun <
         val overlayPlaceables =
             if (canOverlay) {
                 subcompose("slotid") {
-                    val _tick = cameraTick.intValue
+                    @Suppress("UNUSED_VARIABLE") // KtLint: backing property rule workaround
+                    val tick = cameraTick.intValue
 
                     // **ここで初めて CompositionLocalProvider を差し込む**
                     CompositionLocalProvider(

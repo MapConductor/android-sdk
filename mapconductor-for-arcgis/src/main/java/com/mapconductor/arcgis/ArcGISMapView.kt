@@ -9,6 +9,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -17,6 +18,7 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 fun ArcGISMapView(
     state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -58,6 +60,7 @@ fun ArcGISMapView(
                     context = context,
                     id = state.id,
                     options = options,
+                    markerRenderingStrategy = markerRenderingStrategy,
                 )
             controller.holder.mapView.onCreate(owner)
             controller.holder.mapView.onResume(owner)

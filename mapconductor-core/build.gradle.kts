@@ -17,30 +17,10 @@ ktlint {
 android {
     namespace = "com.mapconductor.core"
     compileSdk = project.property("compileSdk").toString().toInt()
-    ndkVersion = "27.0.12077973"
-
     defaultConfig {
         minSdk = project.property("minSdk").toString().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-        }
-
-        externalNativeBuild {
-            cmake {
-                cppFlags += listOf("-std=c++17")
-                arguments +=
-                    listOf(
-                        "-DANDROID_STL=c++_static",
-                        "-DANDROID_PLATFORM=android-$minSdk",
-                    )
-                // Add 16KB page alignment arguments for Android 15+ compatibility
-                arguments += listOf("-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,max-page-size=16384")
-                version = "3.22.1"
-            }
-        }
     }
 
     buildFeatures {
@@ -68,11 +48,6 @@ android {
         }
     }
 
-    packagingOptions {
-        pickFirst("**/libc++_shared.so")
-        pickFirst("**/libjsc.so")
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
@@ -81,40 +56,21 @@ android {
     kotlinOptions {
         jvmTarget = project.property("jvmTarget").toString()
     }
-
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-        }
-    }
-
-    // Configure NDK path for modern Gradle
-    if (project.hasProperty("android.ndkPath")) {
-        ndkPath = project.property("android.ndkPath").toString()
-    } else if (System.getenv("ANDROID_NDK_ROOT") != null) {
-        ndkPath = System.getenv("ANDROID_NDK_ROOT")
-    } else {
-        // Fallback to default SDK location
-        val androidSdkRoot =
-            System.getenv("ANDROID_SDK_ROOT")
-                ?: System.getenv("ANDROID_HOME")
-                ?: "C:\\Users\\masashi\\AppData\\Local\\Android\\Sdk"
-        ndkPath = "$androidSdkRoot\\ndk\\27.0.12077973"
-    }
 }
 
 dependencies {
-    implementation(libs.ui)
-    compileOnly(libs.androidx.core.ktx)
-    compileOnly(libs.androidx.foundation)
+    // Make Compose dependencies implementation instead of compileOnly for proper runtime support
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.foundation)
 
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.ui.graphics)
-    compileOnly(libs.androidx.ui.tooling.preview)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    // Core dependencies - use api to avoid version conflicts
+    api(libs.androidx.core.ktx)
     // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
+    api(libs.androidx.lifecycle.runtime.ktx)
+    api(libs.androidx.lifecycle.common.java8)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

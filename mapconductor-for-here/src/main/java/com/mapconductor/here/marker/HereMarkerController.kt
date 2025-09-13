@@ -3,9 +3,9 @@ package com.mapconductor.here.marker
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
-import com.mapconductor.core.marker.AddOnlyMarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.settings.Settings
@@ -13,14 +13,11 @@ import com.mapconductor.settings.Settings
 class HereMarkerController(
     markerManager: MarkerManager<HereActualMarker>,
     override val renderer: HereMarkerRenderer,
+    renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
 ) : AbstractMarkerController<HereActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
-        renderingStrategy =
-            AddOnlyMarkerRenderingStrategy<HereActualMarker>(
-                expandMargin = 1.1,
-                semaphore = null, // HERE doesn't need semaphore protection
-            ),
+        renderingStrategy = renderingStrategy,
     ) {
     private var internalSelectedMarker: MarkerEntity<HereActualMarker>? = null
 

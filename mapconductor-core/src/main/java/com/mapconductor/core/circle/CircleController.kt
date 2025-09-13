@@ -141,7 +141,7 @@ abstract class CircleController<ActualCircle>(
     override fun find(position: IGeoPoint): CircleEntity<ActualCircle>? = circleManager.find(position)
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
-    
+
     override fun destroy() {
         // No native resources to clean up for circles
     }

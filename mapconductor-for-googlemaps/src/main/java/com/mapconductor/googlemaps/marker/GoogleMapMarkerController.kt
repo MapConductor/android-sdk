@@ -7,6 +7,7 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.toGeoPoint
@@ -15,9 +16,11 @@ import com.mapconductor.settings.Settings
 class GoogleMapMarkerController(
     markerManager: MarkerManager<GoogleMapActualMarker>,
     override val renderer: GoogleMapMarkerRenderer,
+    renderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
 ) : AbstractMarkerController<GoogleMapActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
+        renderingStrategy = renderingStrategy,
     ),
     OnMarkerClickListener,
     OnMarkerDragListener {

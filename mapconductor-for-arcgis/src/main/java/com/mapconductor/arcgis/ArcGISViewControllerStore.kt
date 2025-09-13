@@ -15,6 +15,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.projection.WebMercator
 import android.content.Context
 
@@ -28,6 +29,7 @@ object ArcGISViewControllerStore :
         context: Context,
         id: String,
         options: ArcGISMapViewInitOptions,
+        markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     ): ArcGISMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) return existing
@@ -41,7 +43,11 @@ object ArcGISViewControllerStore :
         val controller =
             ArcGISMapViewControllerImpl(
                 holder = holder,
-                markerController = getMarkerController(holder),
+                markerController =
+                    getMarkerController(
+                        holder = holder,
+                        renderingStrategy = markerRenderingStrategy,
+                    ),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
                 circleController = getCircleController(holder),
@@ -107,7 +113,10 @@ object ArcGISViewControllerStore :
         return controller
     }
 
-    private fun getMarkerController(holder: ArcGISMapViewHolder): ArcGISMarkerController {
+    private fun getMarkerController(
+        holder: ArcGISMapViewHolder,
+        renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+    ): ArcGISMarkerController {
         val hexGeocell =
             HexGeocell(
                 projection = WebMercator,
@@ -130,6 +139,7 @@ object ArcGISViewControllerStore :
             ArcGISMarkerController(
                 markerManager = manager,
                 renderer = renderer,
+                renderingStrategy = renderingStrategy,
             )
         return controller
     }

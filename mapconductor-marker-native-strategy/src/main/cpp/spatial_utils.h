@@ -84,8 +84,18 @@ struct GeoRectBounds {
     }
     
     bool contains(const GeoPoint& point) const {
-        return point.latitude >= minLat && point.latitude <= maxLat &&
-               point.longitude >= minLng && point.longitude <= maxLng;
+        bool withinLat = point.latitude >= minLat && point.latitude <= maxLat;
+        bool withinLng = containsLongitude(point.longitude, minLng, maxLng);
+        return withinLat && withinLng;
+    }
+    
+private:
+    bool containsLongitude(double lon, double west, double east) const {
+        if (west <= east) {
+            return lon >= west && lon <= east;
+        } else {
+            return lon >= west || lon <= east;
+        }
     }
 };
 

@@ -16,6 +16,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -25,6 +26,7 @@ import android.view.ViewGroup
 fun GoogleMapsView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -78,6 +80,7 @@ fun GoogleMapsView(
                     context = context, // Use context from the outer scope
                     id = state.id,
                     options = mapInitOptions,
+                    markerRenderingStrategy = markerRenderingStrategy,
                 )
             state.setController(controller)
             controller.setCameraMoveListener(state::onCameraChange)

@@ -2,7 +2,6 @@ package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.core.marker.ImageIcon
@@ -23,21 +22,21 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                 )
             PostOfficeViewModelImpl(imageIcon, TokyoPostOffices)
         }
-    val mapViewState = viewModel.mapViewState.collectAsState()
-    val selectedMarker = viewModel.selectedMarker.collectAsState()
+    val selectedMarker = viewModel.selectedMarker
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) {
-        mapViewState.value?.let {
+        viewModel.mapViewState.value?.let { mapViewState ->
             PostOfficeMapComponent(
-                mapViewState = it,
+                mapViewState = mapViewState,
+                renderingStrategy = viewModel.renderingStrategy.value,
                 selectedMarker = selectedMarker.value,
                 markers = viewModel.markerList,
-                onMarkerClick = viewModel::onMarkerClick,
                 onMapClick = viewModel::onMapClick,
+                onMarkerClick = viewModel::onMarkerClick,
             )
         }
     }

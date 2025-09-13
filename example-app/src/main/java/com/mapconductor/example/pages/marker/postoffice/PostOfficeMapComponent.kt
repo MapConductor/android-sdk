@@ -11,6 +11,7 @@ import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
@@ -19,6 +20,7 @@ import com.mapconductor.example.MapViewContainer
 fun PostOfficeMapComponent(
     modifier: Modifier = Modifier,
     mapViewState: MapViewState<*>,
+    renderingStrategy: MarkerRenderingStrategy<*>?,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapClick: OnMapEventHandler = {},
@@ -31,6 +33,7 @@ fun PostOfficeMapComponent(
 
     MapViewContainer(
         modifier = modifier,
+        renderingStrategy = renderingStrategy,
         state = mapViewState,
         onMapClick = onMapClick,
         onMarkerClick = onMarkerClick,
