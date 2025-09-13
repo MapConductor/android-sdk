@@ -23,14 +23,6 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
 
-    buildFeatures {
-        compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = project.property("kotlinCompilerExtensionVersion").toString()
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -72,15 +64,15 @@ android {
 }
 
 dependencies {
-    api(project(":mapconductor-core"))
+    compileOnly(project(":mapconductor-core"))
 
     // Compose dependencies for BitmapIcon/DefaultIcon
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.foundation)
-    implementation(platform(libs.androidx.compose.bom))
+    compileOnly(libs.androidx.ui)
+    compileOnly(libs.androidx.foundation)
+    compileOnly(platform(libs.androidx.compose.bom))
 
     // Coroutines for Semaphore and withPermit
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
