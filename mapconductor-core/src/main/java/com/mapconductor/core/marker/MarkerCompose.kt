@@ -9,7 +9,7 @@ import java.io.Serializable
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {
     LaunchedEffect(state.fingerPrint()) {
-        markerFlow.value = markerFlow.value.filter { it.id != state.id } + state
+        updateMarker(state)
     }
 }
 

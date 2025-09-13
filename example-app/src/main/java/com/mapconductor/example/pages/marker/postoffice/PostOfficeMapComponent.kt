@@ -2,6 +2,8 @@ package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,10 +27,19 @@ fun PostOfficeMapComponent(
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapClick: OnMapEventHandler = {},
     onMarkerClick: OnMarkerEventHandler = {},
+    onCameraChanged: ((com.mapconductor.core.map.MapCameraPosition) -> Unit)? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
+    }
+    
+    // Observe camera position changes and notify the callback
+    val cameraPosition by mapViewState.cameraPosition.collectAsState()
+    LaunchedEffect(cameraPosition) {
+        cameraPosition?.let { position ->
+            onCameraChanged?.invoke(position)
+        }
     }
 
     MapViewContainer(

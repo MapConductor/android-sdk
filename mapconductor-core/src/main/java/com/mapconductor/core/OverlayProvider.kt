@@ -19,12 +19,43 @@ import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
 
 open class MapViewScope {
+    private val markerMapFlow = MutableStateFlow<Map<String, MarkerState>>(emptyMap())
     val markerFlow = MutableStateFlow<List<MarkerState>>(emptyList())
     val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
     val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
     val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
     val polygonFlow = MutableStateFlow<List<PolygonState>>(emptyList())
     val groundImageFlow = MutableStateFlow<List<GroundImageState>>(emptyList())
+
+    // Internal method to update marker map and sync to list
+    internal fun updateMarker(state: MarkerState) {
+        val currentMap = markerMapFlow.value
+        val newMap = currentMap + (state.id to state)
+        markerMapFlow.value = newMap
+        markerFlow.value = newMap.values.toList()
+    }
+
+    // Internal method to remove marker from map and sync to list
+    internal fun removeMarker(id: String) {
+        val currentMap = markerMapFlow.value
+        val newMap = currentMap - id
+        markerMapFlow.value = newMap
+        markerFlow.value = newMap.values.toList()
+    }
+
+    // Internal method to bulk update markers for better performance
+    internal fun updateMarkers(states: List<MarkerState>) {
+        val currentMap = markerMapFlow.value
+        val newMap = currentMap + states.associateBy { it.id }
+        markerMapFlow.value = newMap
+        markerFlow.value = newMap.values.toList()
+    }
+
+    // Internal method to clear all markers
+    internal fun clearMarkers() {
+        markerMapFlow.value = emptyMap()
+        markerFlow.value = emptyList()
+    }
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()

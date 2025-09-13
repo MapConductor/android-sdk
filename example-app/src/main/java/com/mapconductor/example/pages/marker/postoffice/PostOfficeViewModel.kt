@@ -18,8 +18,9 @@ import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.nativestrategy.NativeSimpleMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategies
+import com.mapconductor.marker.nativestrategy.SimpleMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies
+import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 
 interface PostOfficeViewModel {
@@ -35,14 +36,22 @@ interface PostOfficeViewModel {
     fun onMarkerClick(clicked: MarkerState)
 
     fun onMapClick(clicked: GeoPoint)
+
+    fun onCameraChanged(cameraPosition: MapCameraPosition)
 }
 
+data class PostOfficeIcons(
+    val tiny: ImageIcon,
+    val small: ImageIcon,
+    val regular: ImageIcon,
+)
 class PostOfficeViewModelImpl(
-    icon: ImageIcon,
-    postOffices: List<PostOffice>,
+    private val icons: List<ImageIcon>,
+    private val postOffices: List<PostOffice>,
 ) : ViewModel(),
     PostOfficeViewModel {
     private val semaphore = Semaphore(1)
+    private var prevIconIndex = -1
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -56,16 +65,31 @@ class PostOfficeViewModelImpl(
             tilt = 0.0,
             paddings = null,
         )
+    private val initIcon = getScaledIcon(initCameraPosition.zoom)
 
-    override val markerList =
-        postOffices.map {
-            MarkerState(
-                position = it.position,
-                id = it.hashCode().toString(),
-                icon = icon,
-                extra = it,
-            )
+    override val markerList: List<MarkerState> = postOffices.map {
+        MarkerState(
+            position = it.position,
+            id = it.hashCode().toString(),
+            icon = initIcon,
+            extra = it,
+        )
+    }
+
+    private fun getScaledIcon(zoomLevel: Double): ImageIcon? {
+        val iconIndex = when {
+            zoomLevel < 9.0 -> 0
+            zoomLevel <= 14.0 -> 1
+            else -> 2
         }
+        if (iconIndex == prevIconIndex) return null
+        return icons[iconIndex]
+    }
+
+    private fun updateMarkerList(zoomLevel: Double) {
+        val scaledIcon = getScaledIcon(zoomLevel) ?: return
+        markerList.forEach { it.icon = scaledIcon }
+    }
 
     private var _mapViewState = mutableStateOf<MapViewState<*>?>(null)
     override val mapViewState: State<MapViewState<*>?> = _mapViewState
@@ -84,22 +108,26 @@ class PostOfficeViewModelImpl(
         this._selectedMarker.value = null
     }
 
+    override fun onCameraChanged(cameraPosition: MapCameraPosition) {
+        updateMarkerList(cameraPosition.zoom)
+    }
+
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState ->
-                    NativeSpatialMarkerRenderingStrategies
+                    SpatialMarkerRenderingStrategies
                         .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
                 is MapboxViewState ->
-                    NativeSpatialMarkerRenderingStrategies
+                    SpatialMarkerRenderingStrategies
                         .withAddOnlyMode<MapboxActualMarker>(semaphore)
-                is HereViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
+                is HereViewState -> SpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
                 is ArcGISMapViewState ->
-                    NativeSpatialMarkerRenderingStrategies
+                    SpatialMarkerRenderingStrategies
                         .withAddRemoveMode<ArcGISActualMarker>(semaphore)
-                else -> NativeSimpleMarkerRenderingStrategy(semaphore)
+                else -> SimpleMarkerRenderingStrategy(semaphore)
             }
     }
 }

@@ -189,9 +189,6 @@ dependencies {
 
     implementation(libs.androidx.appcompat)
 
-    api(libs.androidx.ui.tooling.preview)
-
-
     // Google Maps SDK
 
     implementation(libs.play.services.maps)
@@ -230,8 +227,8 @@ dependencies {
 
     implementation(project(":mapconductor-for-arcgis"))
 
-    // implementation(project(":mapconductor-marker-strategy"))
-    implementation(project(":mapconductor-marker-native-strategy"))
+    implementation(project(":mapconductor-marker-strategy"))
+    // implementation(project(":mapconductor-marker-native-strategy"))
 
     implementation(libs.androidx.vectordrawable)
 
