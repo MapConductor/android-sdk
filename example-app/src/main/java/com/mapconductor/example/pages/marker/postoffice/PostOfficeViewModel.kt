@@ -18,8 +18,8 @@ import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.nativestrategy.SimpleMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies
+import com.mapconductor.marker.nativestrategy.NativeSimpleMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategies
 import kotlinx.coroutines.sync.Semaphore
 
 interface PostOfficeViewModel {
@@ -90,14 +90,14 @@ class PostOfficeViewModelImpl(
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState ->
-                    SpatialMarkerRenderingStrategies
+                    NativeSpatialMarkerRenderingStrategies
                         .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
-                is MapboxViewState -> SpatialMarkerRenderingStrategies.withAddOnlyMode<MapboxActualMarker>(semaphore)
-                is HereViewState -> SpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
+                is MapboxViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<MapboxActualMarker>(semaphore)
+                is HereViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
                 is ArcGISMapViewState ->
-                    SpatialMarkerRenderingStrategies
+                    NativeSpatialMarkerRenderingStrategies
                         .withAddRemoveMode<ArcGISActualMarker>(semaphore)
-                else -> SimpleMarkerRenderingStrategy(semaphore)
+                else -> NativeSimpleMarkerRenderingStrategy(semaphore)
             }
     }
 }

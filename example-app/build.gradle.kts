@@ -231,7 +231,8 @@ dependencies {
 
     implementation(project(":mapconductor-for-arcgis"))
 
-    implementation(project(":mapconductor-marker-strategy"))
+    // implementation(project(":mapconductor-marker-strategy"))
+    implementation(project(":mapconductor-marker-native-strategy"))
 
     implementation(libs.androidx.vectordrawable)
 

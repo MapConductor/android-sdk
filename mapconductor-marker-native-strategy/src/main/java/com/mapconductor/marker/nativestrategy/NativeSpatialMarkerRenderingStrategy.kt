@@ -33,7 +33,7 @@ import kotlinx.coroutines.sync.withPermit
  * @param addOnlyMode If true, markers are never removed once rendered (like AddOnlyMarkerRenderingStrategy)
  * @param semaphore Semaphore for synchronizing rendering operations
  */
-class SpatialMarkerRenderingStrategy<ActualMarker>(
+class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
     semaphore: Semaphore,
@@ -113,7 +113,7 @@ class SpatialMarkerRenderingStrategy<ActualMarker>(
 /**
  * Factory methods for creating commonly used spatial rendering strategies.
  */
-object SpatialMarkerRenderingStrategies {
+object NativeSpatialMarkerRenderingStrategies {
     /**
      * Creates a spatial rendering strategy with add/remove mode.
      * Optimized for map providers that handle marker add/remove operations efficiently.
@@ -122,8 +122,8 @@ object SpatialMarkerRenderingStrategies {
     fun <ActualMarker> withAddRemoveMode(
         semaphore: Semaphore,
         expandMargin: Double = 0.2,
-    ): SpatialMarkerRenderingStrategy<ActualMarker> =
-        SpatialMarkerRenderingStrategy(
+    ): NativeSpatialMarkerRenderingStrategy<ActualMarker> =
+        NativeSpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = false, // Support add/remove for optimal memory usage
             semaphore = semaphore,
@@ -137,8 +137,8 @@ object SpatialMarkerRenderingStrategies {
     fun <ActualMarker> withAddOnlyMode(
         semaphore: Semaphore,
         expandMargin: Double = 0.5,
-    ): SpatialMarkerRenderingStrategy<ActualMarker> =
-        SpatialMarkerRenderingStrategy(
+    ): NativeSpatialMarkerRenderingStrategy<ActualMarker> =
+        NativeSpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Add-only to avoid expensive remove operations
             semaphore = semaphore,
@@ -151,8 +151,8 @@ object SpatialMarkerRenderingStrategies {
     fun <ActualMarker> forLargeDatasets(
         semaphore: Semaphore,
         expandMargin: Double = 0.8,
-    ): SpatialMarkerRenderingStrategy<ActualMarker> =
-        SpatialMarkerRenderingStrategy(
+    ): NativeSpatialMarkerRenderingStrategy<ActualMarker> =
+        NativeSpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Maximize performance for large datasets
             semaphore = semaphore,

@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.withPermit
  * Simple fallback marker rendering strategy for when no advanced strategy is provided.
  * This basic strategy renders all markers without viewport-based optimizations.
  */
-class SimpleMarkerRenderingStrategy<ActualMarker>(
+class NativeSimpleMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore,
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
     override suspend fun onCameraChanged(

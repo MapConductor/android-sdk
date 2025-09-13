@@ -24,6 +24,8 @@ add_library(
     native_marker_index.cpp
     hex_geocell_native.cpp
     spatial_utils.cpp
+    spatial_utils_extended.cpp
+    marker_rendering_strategy.cpp
     jni_wrapper.cpp
 )
 

@@ -17,7 +17,7 @@ import kotlinx.coroutines.sync.withPermit
  * @param expandMargin The margin for expanding viewport bounds (default 0.5 = 50% expansion)
  * @param semaphore Optional semaphore for synchronizing rendering operations (required for Mapbox)
  */
-class AddOnlyMarkerRenderingStrategy<ActualMarker>(
+class NativeAddOnlyMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.5,
     semaphore: Semaphore,
 ) : AbstractViewportStrategy<ActualMarker>(semaphore) {
