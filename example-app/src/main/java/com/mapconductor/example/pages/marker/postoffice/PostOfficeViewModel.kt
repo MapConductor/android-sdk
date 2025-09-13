@@ -92,7 +92,9 @@ class PostOfficeViewModelImpl(
                 is GoogleMapViewState ->
                     NativeSpatialMarkerRenderingStrategies
                         .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
-                is MapboxViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<MapboxActualMarker>(semaphore)
+                is MapboxViewState ->
+                    NativeSpatialMarkerRenderingStrategies
+                        .withAddOnlyMode<MapboxActualMarker>(semaphore)
                 is HereViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
                 is ArcGISMapViewState ->
                     NativeSpatialMarkerRenderingStrategies

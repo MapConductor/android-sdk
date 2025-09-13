@@ -43,6 +43,7 @@ fun MapViewContainer(
     shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
+    @Suppress("UNCHECKED_CAST")
     when (state) {
         is GoogleMapViewStateImpl ->
             GoogleMapsView(
