@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalMarkerCollector =
-    compositionLocalOf<MutableStateFlow<List<MarkerState>>> {
+    compositionLocalOf<MutableStateFlow<MutableMap<String, MarkerState>>> {
         error("Marker must be under the <MapView />")
     }
 
 class MarkerOverlay(
-    override val flow: StateFlow<List<MarkerState>>,
+    override val flow: StateFlow<MutableMap<String, MarkerState>>,
 ) : MapOverlay<MarkerState> {
     override suspend fun render(
-        data: List<MarkerState>,
+        data: MutableMap<String, MarkerState>,
         controller: MapViewController,
     ) {
-        (controller as? MarkerCapable)?.compositionMarkers(data)
+        (controller as? MarkerCapable)?.compositionMarkers(data.values.toList())
     }
 }

@@ -11,6 +11,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -39,6 +40,7 @@ fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -112,6 +114,7 @@ fun MapboxMapView(
             controllerRef.value = controller
             true
         },
+        onMapViewInitialized = onMapViewInitialized,
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.

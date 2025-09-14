@@ -9,6 +9,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -19,6 +20,7 @@ fun ArcGISMapView(
     state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -85,6 +87,7 @@ fun ArcGISMapView(
             holderRef.value = controller.holder
             true
         },
+        onMapViewInitialized = onMapViewInitialized,
         customDisposableEffect = { _state, _holderRef ->
 
             // ArcGIS specific DisposableEffect logic

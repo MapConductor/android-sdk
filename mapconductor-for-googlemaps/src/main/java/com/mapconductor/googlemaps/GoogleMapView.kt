@@ -16,6 +16,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -27,6 +28,7 @@ fun GoogleMapsView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -101,6 +103,7 @@ fun GoogleMapsView(
             controllerRef.value = controller
             true // Return success/failure of initialization
         },
+        onMapViewInitialized = onMapViewInitialized,
         shouldInitialize = shouldInitialize, // Pass through the deferred initialization parameter
         customDisposableEffect = { _state, _holderRef ->
             // Specific Google Maps DisposableEffect logic

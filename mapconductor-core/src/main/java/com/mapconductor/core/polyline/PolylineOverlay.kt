@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalPolylineCollector =
-    compositionLocalOf<MutableStateFlow<List<PolylineState>>> {
+    compositionLocalOf<MutableStateFlow<MutableMap<String, PolylineState>>> {
         error("Polyline must be under the <MapView />")
     }
 
 class PolylineOverlay(
-    override val flow: StateFlow<List<PolylineState>>,
+    override val flow: StateFlow<MutableMap<String, PolylineState>>,
 ) : MapOverlay<PolylineState> {
     override suspend fun render(
-        data: List<PolylineState>,
+        data: MutableMap<String, PolylineState>,
         controller: MapViewController,
     ) {
-        (controller as? PolylineCapable)?.compositionPolylines(data)
+        (controller as? PolylineCapable)?.compositionPolylines(data.values.toList())
     }
 }

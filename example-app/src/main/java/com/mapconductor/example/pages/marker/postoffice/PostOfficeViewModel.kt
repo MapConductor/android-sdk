@@ -4,29 +4,22 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewState
-import com.mapconductor.here.HereActualMarker
-import com.mapconductor.here.HereViewState
-import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.nativestrategy.SimpleMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies
-import android.util.Log
+import kotlin.hashCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 
 interface PostOfficeViewModel {
     val initCameraPosition: MapCameraPosition
     val selectedMarker: State<MarkerState?>
-    val markerList: List<MarkerState>
+    val markerList: State<List<MarkerState>>
     val mapViewState: State<MapViewState<*>?>
 
     val renderingStrategy: State<MarkerRenderingStrategy<*>?>
@@ -38,6 +31,8 @@ interface PostOfficeViewModel {
     fun onMapClick(clicked: GeoPoint)
 
     fun onCameraChanged(cameraPosition: MapCameraPosition)
+
+    fun onMapViewInitialized(mapViewState: MapViewState<*>)
 }
 
 data class PostOfficeIcons(
@@ -47,7 +42,8 @@ data class PostOfficeIcons(
 )
 class PostOfficeViewModelImpl(
     private val icons: List<ImageIcon>,
-    private val postOffices: List<PostOffice>,
+    private val dataLoader: PostOfficeDataLoader,
+    private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
     PostOfficeViewModel {
     private val semaphore = Semaphore(1)
@@ -67,14 +63,8 @@ class PostOfficeViewModelImpl(
         )
     private val initIcon = getScaledIcon(initCameraPosition.zoom)
 
-    override val markerList: List<MarkerState> = postOffices.map {
-        MarkerState(
-            position = it.position,
-            id = it.hashCode().toString(),
-            icon = initIcon,
-            extra = it,
-        )
-    }
+    private val _markerList: MutableState<List<MarkerState>> = mutableStateOf(emptyList())
+    override val markerList: State<List<MarkerState>> = _markerList
 
     private fun getScaledIcon(zoomLevel: Double): ImageIcon? {
         val iconIndex = when {
@@ -85,11 +75,11 @@ class PostOfficeViewModelImpl(
         if (iconIndex == prevIconIndex) return null
         return icons[iconIndex]
     }
-
-    private fun updateMarkerList(zoomLevel: Double) {
-        val scaledIcon = getScaledIcon(zoomLevel) ?: return
-        markerList.forEach { it.icon = scaledIcon }
-    }
+//
+//    private fun updateMarkerList(zoomLevel: Double) {
+//        val scaledIcon = getScaledIcon(zoomLevel) ?: return
+//        markerList.forEach { it.icon = scaledIcon }
+//    }
 
     private var _mapViewState = mutableStateOf<MapViewState<*>?>(null)
     override val mapViewState: State<MapViewState<*>?> = _mapViewState
@@ -109,25 +99,40 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onCameraChanged(cameraPosition: MapCameraPosition) {
-        updateMarkerList(cameraPosition.zoom)
+//        updateMarkerList(cameraPosition.zoom)
+    }
+
+    override fun onMapViewInitialized(mapViewState: MapViewState<*>) {
+        coroutine.launch {
+            val postOffices = dataLoader.loadAllPostOffices()
+            val markerStates = postOffices.map {
+                MarkerState(
+                    position = it.position,
+                    id = it.hashCode().toString(),
+                    icon = initIcon,
+                    extra = it,
+                )
+            }
+            _markerList.value = markerStates
+        }
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
-        _renderingStrategy.value =
-            when (mapViewState) {
-                is GoogleMapViewState ->
-                    SpatialMarkerRenderingStrategies
-                        .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
-                is MapboxViewState ->
-                    SpatialMarkerRenderingStrategies
-                        .withAddOnlyMode<MapboxActualMarker>(semaphore)
-                is HereViewState -> SpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
-                is ArcGISMapViewState ->
-                    SpatialMarkerRenderingStrategies
-                        .withAddRemoveMode<ArcGISActualMarker>(semaphore)
-                else -> SimpleMarkerRenderingStrategy(semaphore)
-            }
+//        _renderingStrategy.value =
+//            when (mapViewState) {
+//                is GoogleMapViewState ->
+//                    NativeSpatialMarkerRenderingStrategies
+//                        .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
+//                is MapboxViewState ->
+//                    NativeSpatialMarkerRenderingStrategies
+//                        .withAddOnlyMode<MapboxActualMarker>(semaphore)
+//                is HereViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
+//                is ArcGISMapViewState ->
+//                    NativeSpatialMarkerRenderingStrategies
+//                        .withAddRemoveMode<ArcGISActualMarker>(semaphore)
+//                else -> NativeSimpleMarkerRenderingStrategy(semaphore)
+//            }
     }
 }

@@ -22,4 +22,6 @@ build/
 libs/*
 *.apk
 *.dm
-
+*.ps1
+compose-map-story/
+slides/

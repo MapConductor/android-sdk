@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
@@ -22,30 +23,31 @@ import com.mapconductor.example.MapViewContainer
 fun PostOfficeMapComponent(
     modifier: Modifier = Modifier,
     mapViewState: MapViewState<*>,
-    renderingStrategy: MarkerRenderingStrategy<*>?,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
-    onMapClick: OnMapEventHandler = {},
-    onMarkerClick: OnMarkerEventHandler = {},
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
     onCameraChanged: ((com.mapconductor.core.map.MapCameraPosition) -> Unit)? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
     }
-    
+
     // Observe camera position changes and notify the callback
-    val cameraPosition by mapViewState.cameraPosition.collectAsState()
-    LaunchedEffect(cameraPosition) {
-        cameraPosition?.let { position ->
-            onCameraChanged?.invoke(position)
-        }
-    }
+//    val cameraPosition by mapViewState.cameraPosition.collectAsState()
+//    LaunchedEffect(cameraPosition) {
+//        cameraPosition?.let { position ->
+//            onCameraChanged?.invoke(position)
+//        }
+//    }
 
     MapViewContainer(
         modifier = modifier,
-        renderingStrategy = renderingStrategy,
+//        renderingStrategy = renderingStrategy,
         state = mapViewState,
+        onMapViewInitialized = onMapViewInitialized,
         onMapClick = onMapClick,
         onMarkerClick = onMarkerClick,
     ) {

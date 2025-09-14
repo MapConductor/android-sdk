@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
+typealias OnMapViewInitializedHandler = (MapViewState<*>) -> Unit
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
 
@@ -79,6 +80,7 @@ fun <
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
     onInitialize: suspend () -> Boolean,
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     customDisposableEffect: (@Composable (SpecificState, Ref<SpecificViewHolder>) -> Unit)? = null,
     shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable SpecificScope.() -> Unit)? = null,
@@ -99,7 +101,7 @@ fun <
 
         val groundImage = scope.groundImageFlow.collectAsState()
         (controller as? GroundImageCapable)?.let { groundImageCapable ->
-            groundImage.value.forEach { groundImageState ->
+            groundImage.value.values.forEach { groundImageState ->
                 LaunchedEffect(groundImageState.id) {
                     groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                         if (groundImageCapable.hasGroundImage(groundImageState)) {
@@ -110,7 +112,7 @@ fun <
             }
         }
         val polygons = scope.polygonFlow.collectAsState()
-        polygons.value.forEach { polygonState ->
+        polygons.value.values.forEach { polygonState ->
             LaunchedEffect(polygonState.id) {
                 polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? PolygonCapable)?.let { polygonCapable ->
@@ -122,7 +124,7 @@ fun <
             }
         }
         val polylines = scope.polylineFlow.collectAsState()
-        polylines.value.forEach { polylineState ->
+        polylines.value.values.forEach { polylineState ->
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? PolylineCapable)?.let { polylineCapable ->
@@ -134,7 +136,7 @@ fun <
             }
         }
         val circles = scope.circleFlow.collectAsState()
-        circles.value.forEach { circleState ->
+        circles.value.values.forEach { circleState ->
             LaunchedEffect(circleState.id) {
                 circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? CircleCapable)?.let { circleCapable ->
@@ -146,7 +148,7 @@ fun <
             }
         }
         val markers = scope.markerFlow.collectAsState()
-        markers.value.forEach { markerState ->
+        markers.value.values.forEach { markerState ->
             LaunchedEffect(markerState.id) {
                 markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? MarkerCapable)?.let { markerCapable ->
@@ -247,7 +249,8 @@ fun <
                                     .fillMaxSize()
                                     .clipToBounds(),
                         ) {
-                            bubbles.forEach { entry ->
+                            bubbles.forEach { mapEntry ->
+                                val entry = mapEntry.value
                                 val marker = entry.marker
                                 val position = marker.position
                                 val posOffset = holderRef.value?.toScreenOffset(position)
@@ -286,6 +289,7 @@ fun <
         if (!shouldInitialize) return@LaunchedEffect // Don't initialize if deferred
         if (initState != InitState.NotStarted) return@LaunchedEffect
         state.initAsync(onInitialize)
+        onMapViewInitialized?.invoke(state)
     }
 
     customDisposableEffect?.invoke(state, holderRef)

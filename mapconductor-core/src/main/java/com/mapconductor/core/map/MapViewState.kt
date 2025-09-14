@@ -84,10 +84,10 @@ abstract class MapViewStateImpl<ActualMapDesignType>(
 }
 
 interface MapOverlay<DataType> {
-    val flow: StateFlow<List<DataType>>
+    val flow: StateFlow<MutableMap<String, DataType>>
 
     suspend fun render(
-        data: List<DataType>,
+        data: MutableMap<String, DataType>,
         controller: MapViewController,
     )
 }

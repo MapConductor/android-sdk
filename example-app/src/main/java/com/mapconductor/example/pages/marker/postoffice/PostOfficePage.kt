@@ -19,30 +19,9 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 @Composable
 fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
     val context = LocalContext.current
-    val postOfficesState = remember { mutableStateOf<List<PostOffice>?>(null) }
+//    val postOfficesState = remember { mutableStateOf<List<PostOffice>?>(null) }
     val dataLoader = remember { PostOfficeDataLoader(context) }
-
-    // Load post office data asynchronously
-    LaunchedEffect(Unit) {
-        val postOffices = dataLoader.loadAllPostOffices()
-        postOfficesState.value = postOffices
-    }
-
-    val postOffices = postOfficesState.value
-
-    if (postOffices == null || postOffices.isEmpty()) {
-        // Show loading indicator while data is being loaded
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-        return
-    }
-
-    val viewModel =
-        remember(postOffices) {
+    val viewModel = remember {
             val icon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
             val tinyIcon =
                 ImageIcon(
@@ -60,7 +39,7 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                     scale = 0.6f,
                 )
             val icons = listOf(tinyIcon, smallIcon, regularIcon)
-            PostOfficeViewModelImpl(icons, postOffices)
+            PostOfficeViewModelImpl(icons, dataLoader)
         }
     val selectedMarker = viewModel.selectedMarker
 
@@ -72,13 +51,27 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
         viewModel.mapViewState.value?.let { mapViewState ->
             PostOfficeMapComponent(
                 mapViewState = mapViewState,
-                renderingStrategy = viewModel.renderingStrategy.value,
                 selectedMarker = selectedMarker.value,
-                markers = viewModel.markerList,
+                markers = viewModel.markerList.value,
+                onMapViewInitialized = viewModel::onMapViewInitialized,
                 onMapClick = viewModel::onMapClick,
                 onMarkerClick = viewModel::onMarkerClick,
                 onCameraChanged = viewModel::onCameraChanged,
             )
         }
     }
+
+
+//    if (postOffices == null || postOffices.isEmpty()) {
+//        // Show loading indicator while data is being loaded
+//        Box(
+//            modifier = Modifier.fillMaxSize(),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            CircularProgressIndicator()
+//        }
+//        return
+//    }
+
+
 }

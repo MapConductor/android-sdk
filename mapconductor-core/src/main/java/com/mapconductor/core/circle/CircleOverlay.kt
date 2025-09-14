@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalCircleCollector =
-    compositionLocalOf<MutableStateFlow<List<CircleState>>> {
+    compositionLocalOf<MutableStateFlow<MutableMap<String, CircleState>>> {
         error("Circle must be under the <MapView />")
     }
 
 class CircleOverlay(
-    override val flow: StateFlow<List<CircleState>>,
+    override val flow: StateFlow<MutableMap<String, CircleState>>,
 ) : MapOverlay<CircleState> {
     override suspend fun render(
-        data: List<CircleState>,
+        data: MutableMap<String, CircleState>,
         controller: MapViewController,
     ) {
-        (controller as? CircleCapable)?.compositionCircles(data)
+        (controller as? CircleCapable)?.compositionCircles(data.values.toList())
     }
 }
