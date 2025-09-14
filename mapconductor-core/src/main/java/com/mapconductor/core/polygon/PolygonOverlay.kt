@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalPolygonCollector =
-    compositionLocalOf<MutableStateFlow<List<PolygonState>>> {
+    compositionLocalOf<MutableStateFlow<MutableMap<String, PolygonState>>> {
         error("Polygon must be under the <MapView />")
     }
 
 class PolygonOverlay(
-    override val flow: StateFlow<List<PolygonState>>,
+    override val flow: StateFlow<MutableMap<String, PolygonState>>,
 ) : MapOverlay<PolygonState> {
     override suspend fun render(
-        data: List<PolygonState>,
+        data: MutableMap<String, PolygonState>,
         controller: MapViewController,
     ) {
-        (controller as? PolygonCapable)?.compositionPolygons(data)
+        (controller as? PolygonCapable)?.compositionPolygons(data.values.toList())
     }
 }

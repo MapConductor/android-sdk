@@ -16,15 +16,35 @@ import com.mapconductor.core.polygon.PolygonOverlay
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineOverlay
 import com.mapconductor.core.polyline.PolylineState
+import kotlin.time.Duration.Companion.milliseconds
+import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 open class MapViewScope {
-    val markerFlow = MutableStateFlow<List<MarkerState>>(emptyList())
-    val bubbleFlow = MutableStateFlow<List<InfoBubbleEntry>>(emptyList())
-    val polylineFlow = MutableStateFlow<List<PolylineState>>(emptyList())
-    val circleFlow = MutableStateFlow<List<CircleState>>(emptyList())
-    val polygonFlow = MutableStateFlow<List<PolygonState>>(emptyList())
-    val groundImageFlow = MutableStateFlow<List<GroundImageState>>(emptyList())
+    val overflowScope = CoroutineScope(Dispatchers.IO)
+    val markerAddSharedFlow = MutableSharedFlow<MarkerState>(1000)
+    val markerFlow = MutableStateFlow<MutableMap<String, MarkerState>>(mutableMapOf())
+    val bubbleFlow = MutableStateFlow<MutableMap<String, InfoBubbleEntry>>(mutableMapOf())
+    val polylineFlow = MutableStateFlow<MutableMap<String, PolylineState>>(mutableMapOf())
+    val circleFlow = MutableStateFlow<MutableMap<String, CircleState>>(mutableMapOf())
+    val polygonFlow = MutableStateFlow<MutableMap<String, PolygonState>>(mutableMapOf())
+    val groundImageFlow = MutableStateFlow<MutableMap<String, GroundImageState>>(mutableMapOf())
+
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            markerAddSharedFlow.debounceBatch(1.milliseconds, 500).collect { states ->
+                val newMap = markerFlow.value.toMutableMap()
+                states.forEach { state ->
+                    newMap.set(state.id, state)
+                }
+                markerFlow.value = newMap
+            }
+        }
+    }
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()

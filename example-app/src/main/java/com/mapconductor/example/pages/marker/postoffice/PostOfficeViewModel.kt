@@ -87,19 +87,19 @@ class PostOfficeViewModelImpl(
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
-        _renderingStrategy.value =
-            when (mapViewState) {
-                is GoogleMapViewState ->
-                    NativeSpatialMarkerRenderingStrategies
-                        .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
-                is MapboxViewState ->
-                    NativeSpatialMarkerRenderingStrategies
-                        .withAddOnlyMode<MapboxActualMarker>(semaphore)
-                is HereViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
-                is ArcGISMapViewState ->
-                    NativeSpatialMarkerRenderingStrategies
-                        .withAddRemoveMode<ArcGISActualMarker>(semaphore)
-                else -> NativeSimpleMarkerRenderingStrategy(semaphore)
-            }
+//        _renderingStrategy.value =
+//            when (mapViewState) {
+//                is GoogleMapViewState ->
+//                    NativeSpatialMarkerRenderingStrategies
+//                        .withAddRemoveMode<GoogleMapActualMarker>(semaphore)
+//                is MapboxViewState ->
+//                    NativeSpatialMarkerRenderingStrategies
+//                        .withAddOnlyMode<MapboxActualMarker>(semaphore)
+//                is HereViewState -> NativeSpatialMarkerRenderingStrategies.withAddOnlyMode<HereActualMarker>(semaphore)
+//                is ArcGISMapViewState ->
+//                    NativeSpatialMarkerRenderingStrategies
+//                        .withAddRemoveMode<ArcGISActualMarker>(semaphore)
+//                else -> NativeSimpleMarkerRenderingStrategy(semaphore)
+//            }
     }
 }

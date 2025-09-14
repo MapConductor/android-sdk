@@ -10,7 +10,9 @@ import android.os.Parcelable
 @Composable
 fun MapViewScope.GroundImage(state: GroundImageState) {
     LaunchedEffect(state.fingerPrint()) {
-        groundImageFlow.value = groundImageFlow.value.filter { it.id != state.id } + state
+        val newMap = groundImageFlow.value.toMutableMap()
+        newMap.set(state.id, state)
+        groundImageFlow.value = newMap
     }
 }
 

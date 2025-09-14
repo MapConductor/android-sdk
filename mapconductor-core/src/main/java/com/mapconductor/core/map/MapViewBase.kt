@@ -99,7 +99,7 @@ fun <
 
         val groundImage = scope.groundImageFlow.collectAsState()
         (controller as? GroundImageCapable)?.let { groundImageCapable ->
-            groundImage.value.forEach { groundImageState ->
+            groundImage.value.values.forEach { groundImageState ->
                 LaunchedEffect(groundImageState.id) {
                     groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                         if (groundImageCapable.hasGroundImage(groundImageState)) {
@@ -110,7 +110,7 @@ fun <
             }
         }
         val polygons = scope.polygonFlow.collectAsState()
-        polygons.value.forEach { polygonState ->
+        polygons.value.values.forEach { polygonState ->
             LaunchedEffect(polygonState.id) {
                 polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? PolygonCapable)?.let { polygonCapable ->
@@ -122,7 +122,7 @@ fun <
             }
         }
         val polylines = scope.polylineFlow.collectAsState()
-        polylines.value.forEach { polylineState ->
+        polylines.value.values.forEach { polylineState ->
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? PolylineCapable)?.let { polylineCapable ->
@@ -134,7 +134,7 @@ fun <
             }
         }
         val circles = scope.circleFlow.collectAsState()
-        circles.value.forEach { circleState ->
+        circles.value.values.forEach { circleState ->
             LaunchedEffect(circleState.id) {
                 circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? CircleCapable)?.let { circleCapable ->
@@ -146,7 +146,7 @@ fun <
             }
         }
         val markers = scope.markerFlow.collectAsState()
-        markers.value.forEach { markerState ->
+        markers.value.values.forEach { markerState ->
             LaunchedEffect(markerState.id) {
                 markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                     (controller as? MarkerCapable)?.let { markerCapable ->
@@ -247,7 +247,8 @@ fun <
                                     .fillMaxSize()
                                     .clipToBounds(),
                         ) {
-                            bubbles.forEach { entry ->
+                            bubbles.forEach { mapEntry ->
+                                val entry = mapEntry.value
                                 val marker = entry.marker
                                 val position = marker.position
                                 val posOffset = holderRef.value?.toScreenOffset(position)

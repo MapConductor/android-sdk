@@ -2,6 +2,7 @@ package com.mapconductor.core.info
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -50,13 +51,14 @@ fun MapViewScope.InfoBubble(
         )
 
     DisposableEffect(marker) {
-        bubbleFlow.value = bubbleFlow.value + entry
+        val newMap = bubbleFlow.value.toMutableMap()
+        newMap.set(entry.marker.id, entry)
+        bubbleFlow.value = newMap
 
         onDispose {
-            bubbleFlow.value =
-                bubbleFlow.value.filter {
-                    it.marker.id != entry.marker.id
-                }
+            val newMap = bubbleFlow.value.toMutableMap()
+            newMap.remove(entry.marker.id)
+            bubbleFlow.value = newMap
         }
     }
 }

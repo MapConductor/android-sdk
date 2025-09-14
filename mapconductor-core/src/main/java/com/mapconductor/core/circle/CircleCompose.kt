@@ -12,7 +12,9 @@ import android.os.Parcelable
 @Composable
 fun MapViewScope.Circle(state: CircleState) {
     LaunchedEffect(state.fingerPrint()) {
-        circleFlow.value = circleFlow.value.filter { it.id != state.id } + state
+        val newMap = circleFlow.value.toMutableMap()
+        newMap.set(state.id, state)
+        circleFlow.value = newMap
     }
 }
 
