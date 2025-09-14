@@ -8,9 +8,10 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.here.HereActualMarker
+import com.mapconductor.here.HereViewHolder
 import com.mapconductor.settings.Settings
 
-class HereMarkerController(
+class HereMarkerController private constructor(
     markerManager: MarkerManager<HereActualMarker>,
     override val renderer: HereMarkerRenderer,
     renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
@@ -36,9 +37,6 @@ class HereMarkerController(
         }
         get() = internalSelectedMarker
 
-    companion object {
-        private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
-    }
 
     override fun find(position: IGeoPoint): MarkerEntity<HereActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
@@ -54,6 +52,29 @@ class HereMarkerController(
             } else {
                 null
             }
+        }
+    }
+
+    companion object {
+        private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
+
+        fun create(
+            holder: HereViewHolder,
+            renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
+        ): HereMarkerController {
+
+            val renderer =
+                HereMarkerRenderer(
+                    holder = holder,
+                )
+            val markerManager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+
+            val controller = HereMarkerController(
+                markerManager = markerManager,
+                renderer = renderer,
+                renderingStrategy = renderingStrategy,
+            )
+            return controller
         }
     }
 }

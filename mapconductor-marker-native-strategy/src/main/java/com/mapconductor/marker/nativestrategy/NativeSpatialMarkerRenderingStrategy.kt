@@ -1,9 +1,8 @@
-package com.mapconductor.marker.nativestrategy
+﻿package com.mapconductor.marker.nativestrategy
 
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
@@ -34,14 +33,13 @@ import kotlinx.coroutines.sync.withPermit
  * @param semaphore Semaphore for synchronizing rendering operations
  */
 class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
+    semaphore: Semaphore = Semaphore(1),
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
-    semaphore: Semaphore,
-    geocell: HexGeocell,
+    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
@@ -49,14 +47,14 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
             // Expand bounds for better performance and smoother experience
             val expandedBounds = expandBounds(visibleRegion.bounds, expandMargin)
 
-            // Use native spatial query from our markerManager (which is NativeMarkerManager)
-            val markerIdsInBounds = this.markerManager.findMarkersInBounds(expandedBounds).map { it.state.id }
+            // Use native spatial query from the provided manager (keep consistent with onAdd/onUpdate)
+            val markerIdsInBounds = markerManager.findMarkersInBounds(expandedBounds).map { it.state.id }
             val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
             val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
 
             // Get markers in viewport from native index
             markerIdsInBounds.forEach { markerId ->
-                this.markerManager.getEntity(markerId)?.let { entity ->
+                markerManager.getEntity(markerId)?.let { entity ->
                     if (!entity.isRendered) {
                         markersToRender.add(entity)
                         entity.visible = true
@@ -68,7 +66,7 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
 
             // Handle markers that left viewport (only in add/remove mode)
             if (!addOnlyMode) {
-                this.markerManager.allEntities().forEach { entity ->
+                markerManager.allEntities().forEach { entity ->
                     if (entity.isRendered && !markerIdsInBounds.contains(entity.state.id)) {
                         markersToRemove.add(entity)
                         entity.visible = false
@@ -166,3 +164,4 @@ object NativeSpatialMarkerRenderingStrategies {
             geocell = geocell,
         )
 }
+

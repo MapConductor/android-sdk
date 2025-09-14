@@ -1,7 +1,10 @@
 package com.mapconductor.arcgis.marker
 
 import com.arcgismaps.mapping.view.Graphic
+import com.arcgismaps.mapping.view.GraphicsOverlay
+import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.ArcGISActualMarker
+import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.getZoomLevel
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.IGeoPoint
@@ -18,7 +21,7 @@ internal data class SelectedMarker(
     val graphic: Graphic,
 )
 
-class ArcGISMarkerController(
+class ArcGISMarkerController private constructor(
     markerManager: MarkerManager<ArcGISActualMarker>,
     override val renderer: ArcGISMarkerRenderer,
     renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
@@ -61,6 +64,35 @@ class ArcGISMarkerController(
             } else {
                 null
             }
+        }
+    }
+
+    companion object {
+        fun create(
+            holder: ArcGISMapViewHolder,
+            renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+        ) : ArcGISMarkerController {
+
+            val markerLayer: GraphicsOverlay =
+                GraphicsOverlay().apply {
+                    sceneProperties.surfacePlacement = SurfacePlacement.Relative
+                }
+
+            val renderer =
+                ArcGISMarkerRenderer(
+                    markerLayer = markerLayer,
+                    holder = holder,
+                )
+
+            val markerManager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+
+            val controller =
+                ArcGISMarkerController(
+                    markerManager = markerManager,
+                    renderer = renderer,
+                    renderingStrategy = renderingStrategy,
+                )
+            return controller
         }
     }
 }

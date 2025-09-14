@@ -4,29 +4,27 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
+import com.mapconductor.core.projection.WebMercator
+
+/**
+ * Memory usage statistics for MarkerManager optimization
+ */
+data class MarkerManagerStats(
+    val entityCount: Int,
+    val hasSpatialIndex: Boolean,
+    val spatialIndexInitialized: Boolean,
+    val estimatedMemoryKB: Long
+)
 
 open class MarkerManager<ActualMarker>(
-    geocell: HexGeocell,
+    protected val geocell: HexGeocell,
 ) {
+    // Primary storage - single source of truth
     private val entities = mutableMapOf<String, MarkerEntity<ActualMarker>>()
-    private val cellRegistry =
-        HexCellRegistry<ActualMarker>(
-            geocell = geocell,
-            // Maximum zoom level
-            zoom = 20.0,
-        )
 
-    // Native index for performance-critical operations (optional)
-    // Uses reflection to load NativeMarkerIndex if the strategy module is available
-    private val nativeIndex: Any? =
-        try {
-            val nativeMarkerIndexClass = Class.forName("com.mapconductor.marker.strategy.NativeMarkerIndex")
-            val createMethod = nativeMarkerIndexClass.getDeclaredMethod("create", Int::class.java, Double::class.java)
-            createMethod.invoke(null, geocell.baseHexSideLength, 20.0)
-        } catch (e: Exception) {
-            // NativeMarkerIndex not available (strategy module not included)
-            null
-        }
+    // Lazy-initialized spatial index only when needed
+    private var cellRegistry: HexCellRegistry<ActualMarker>? = null
 
     @Volatile
     private var isDestroyed = false
@@ -38,34 +36,16 @@ open class MarkerManager<ActualMarker>(
 
     open fun hasEntity(id: String): Boolean {
         checkNotDestroyed()
-        return if (nativeIndex != null) {
-            try {
-                val hasMarkerMethod = nativeIndex.javaClass.getDeclaredMethod("hasMarker", String::class.java)
-                hasMarkerMethod.invoke(nativeIndex, id) as Boolean
-            } catch (e: Exception) {
-                entities.containsKey(id)
-            }
-        } else {
-            entities.containsKey(id)
-        }
+        return entities.containsKey(id)
     }
 
     open fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
-        val removed =
-            entities.remove(id)?.also {
-                cellRegistry.removePoint(it)
-                if (nativeIndex != null) {
-                    try {
-                        val removeMarkerMethod =
-                            nativeIndex.javaClass
-                                .getDeclaredMethod("removeMarker", String::class.java)
-                        removeMarkerMethod.invoke(nativeIndex, id)
-                    } catch (e: Exception) {
-                        // Fallback: native index not available
-                    }
-                }
-            }
+        val removed = entities.remove(id)
+        if (removed != null) {
+            // Only update spatial index if it exists
+            cellRegistry?.removePoint(removed)
+        }
         return removed
     }
 
@@ -76,106 +56,72 @@ open class MarkerManager<ActualMarker>(
         tileSize: Int = 256,
     ): Double {
         checkNotDestroyed()
-        return if (nativeIndex != null) {
-            try {
-                val metersPerPixelMethod =
-                    nativeIndex.javaClass.getDeclaredMethod(
-                        "metersPerPixel",
-                        com.mapconductor.core.features.IGeoPoint::class.java,
-                        Double::class.java,
-                        Double::class.java,
-                        Int::class.java,
-                    )
-                metersPerPixelMethod.invoke(nativeIndex, position, zoom, pixels, tileSize) as Double
-            } catch (e: Exception) {
-                // Fallback calculation when native index is not available
-                val earthCircumference = 40075017.0 // meters
-                val pixelsAtZoom = tileSize * Math.pow(2.0, zoom)
-                earthCircumference / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
-            }
-        } else {
-            // Fallback calculation when native index is not available
-            val earthCircumference = 40075017.0 // meters
-            val pixelsAtZoom = tileSize * Math.pow(2.0, zoom)
-            earthCircumference / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
-        }
+        // Optimized calculation without native reflection calls
+        val earthCircumference = 40075017.0 // meters
+        val pixelsAtZoom = tileSize * Math.pow(2.0, zoom)
+        return earthCircumference / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
     }
 
     open fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
-        val nearestId =
-            if (nativeIndex != null) {
-                try {
-                    val findNearestMethod =
-                        nativeIndex.javaClass
-                            .getDeclaredMethod("findNearest", com.mapconductor.core.features.IGeoPoint::class.java)
-                    findNearestMethod.invoke(nativeIndex, position) as String?
-                } catch (e: Exception) {
-                    // Fallback: find nearest using brute force
-                    entities.values
-                        .minByOrNull { entity ->
-                            val dx = entity.state.position.latitude - position.latitude
-                            val dy = entity.state.position.longitude - position.longitude
-                            dx * dx + dy * dy
-                        }?.state
-                        ?.id
-                }
-            } else {
-                // Fallback: find nearest using brute force
-                entities.values
-                    .minByOrNull { entity ->
+        return if (entities.size > 50) { // Use spatial index for larger datasets
+            val registry = ensureCellRegistry()
+            val nearestCell = registry.findNearest(position)
+            nearestCell?.let { cell ->
+                // Find the nearest entity within the nearest cell
+                registry.getEntryIDsByHexCell(cell)?.mapNotNull { id -> entities[id] }
+                    ?.minByOrNull { entity ->
                         val dx = entity.state.position.latitude - position.latitude
                         val dy = entity.state.position.longitude - position.longitude
                         dx * dx + dy * dy
-                    }?.state
-                    ?.id
-            } ?: return null
-        return entities[nearestId]
+                    }
+            } ?: bruteForceNearest(position) // Fallback if no cell found
+        } else {
+            // Brute force search for small datasets
+            bruteForceNearest(position)
+        }
+    }
+
+    private fun bruteForceNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
+        return entities.values.minByOrNull { entity ->
+            val dx = entity.state.position.latitude - position.latitude
+            val dy = entity.state.position.longitude - position.longitude
+            dx * dx + dy * dy
+        }
     }
 
     open fun findByIdPrefix(prefix: String): List<HexCell> {
         checkNotDestroyed()
-        return cellRegistry.findByIdPrefix(prefix)
+        return cellRegistry?.findByIdPrefix(prefix) ?: emptyList()
     }
 
     open fun registerEntity(entity: MarkerEntity<ActualMarker>) {
         checkNotDestroyed()
         entities[entity.state.id] = entity
-        cellRegistry.setPoint(entity)
-        if (nativeIndex != null) {
-            try {
-                val registerMarkerMethod =
-                    nativeIndex.javaClass.getDeclaredMethod(
-                        "registerMarker",
-                        String::class.java,
-                        com.mapconductor.core.features.IGeoPoint::class.java,
-                        Boolean::class.java,
-                    )
-                registerMarkerMethod.invoke(nativeIndex, entity.state.id, entity.state.position, entity.state.clickable)
-            } catch (e: Exception) {
-                // Fallback: native index not available
+        // Only update spatial index if it exists
+        cellRegistry?.setPoint(entity)
+    }
+
+    /**
+     * Lazy-initialize the spatial index only when spatial operations are needed.
+     * This saves memory for simple use cases that don't require spatial queries.
+     */
+    private fun ensureCellRegistry(): HexCellRegistry<ActualMarker> {
+        if (cellRegistry == null) {
+            cellRegistry = HexCellRegistry(geocell = geocell, zoom = 20.0)
+            // Re-index all existing entities
+            entities.values.forEach { entity ->
+                cellRegistry!!.setPoint(entity)
             }
         }
+        return cellRegistry!!
     }
 
     open fun updateEntity(entity: MarkerEntity<ActualMarker>) {
         checkNotDestroyed()
         entities[entity.state.id] = entity
-        cellRegistry.setPoint(entity)
-        if (nativeIndex != null) {
-            try {
-                val updateMarkerMethod =
-                    nativeIndex.javaClass.getDeclaredMethod(
-                        "updateMarker",
-                        String::class.java,
-                        com.mapconductor.core.features.IGeoPoint::class.java,
-                        Boolean::class.java,
-                    )
-                updateMarkerMethod.invoke(nativeIndex, entity.state.id, entity.state.position, entity.state.clickable)
-            } catch (e: Exception) {
-                // Fallback: native index not available
-            }
-        }
+        // Only update spatial index if it exists
+        cellRegistry?.setPoint(entity)
     }
 
     open fun allEntities(): List<MarkerEntity<ActualMarker>> {
@@ -183,68 +129,61 @@ open class MarkerManager<ActualMarker>(
         return entities.values.toList()
     }
 
+    /**
+     * Get memory usage statistics for debugging and optimization
+     */
+    fun getMemoryStats(): MarkerManagerStats {
+        checkNotDestroyed()
+        return MarkerManagerStats(
+            entityCount = entities.size,
+            hasSpatialIndex = cellRegistry != null,
+            spatialIndexInitialized = cellRegistry != null,
+            estimatedMemoryKB = estimateMemoryUsage() / 1024
+        )
+    }
+
+    private fun estimateMemoryUsage(): Long {
+        // Rough estimation in bytes
+        val entityMapOverhead = entities.size * 64L // Map entry overhead + string key
+        val entityObjects = entities.size * 200L // Rough entity size
+        val spatialIndexSize = if (cellRegistry != null) entities.size * 100L else 0L // Cell registry overhead
+        return entityMapOverhead + entityObjects + spatialIndexSize
+    }
+
     open fun clear() {
         checkNotDestroyed()
         entities.clear()
-        cellRegistry.clear()
-        if (nativeIndex != null) {
-            try {
-                val clearMethod = nativeIndex.javaClass.getDeclaredMethod("clear")
-                clearMethod.invoke(nativeIndex)
-            } catch (e: Exception) {
-                // Fallback: native index not available
-            }
-        }
+        cellRegistry?.clear()
     }
 
     open fun findMarkersInBounds(bounds: com.mapconductor.core.features.GeoRectBounds): List<MarkerEntity<ActualMarker>> {
         checkNotDestroyed()
         if (bounds.isEmpty) return emptyList()
 
-        val markerIds =
-            if (nativeIndex != null) {
-                try {
-                    val findMarkersInBoundsMethod =
-                        nativeIndex.javaClass.getDeclaredMethod(
-                            "findMarkersInBounds",
-                            com.mapconductor.core.features.GeoRectBounds::class.java,
-                        )
-                    @Suppress("UNCHECKED_CAST")
-                    findMarkersInBoundsMethod.invoke(nativeIndex, bounds) as List<String>
-                } catch (e: Exception) {
-                    // Fallback: filter all entities by bounds
-                    entities.values
-                        .filter { entity ->
-                            bounds.contains(entity.state.position)
-                        }.map { it.state.id }
-                }
-            } else {
-                // Fallback: filter all entities by bounds
-                entities.values
-                    .filter { entity ->
-                        bounds.contains(entity.state.position)
-                    }.map { it.state.id }
-            }
-        return markerIds.mapNotNull { id -> entities[id] }
+        // For spatial queries, ensure the cell registry is initialized
+        if (entities.size > 100) { // Only use spatial index for larger datasets
+            val registry = ensureCellRegistry()
+            // Use spatial index for better performance on larger datasets
+            // TODO: Implement bounds-based cell query in HexCellRegistry
+            // For now, fall back to brute force but with spatial index initialized
+        }
+
+        // Brute force filtering - simple and efficient for small to medium datasets
+        return entities.values.filter { entity ->
+            bounds.contains(entity.state.position)
+        }
     }
 
     /**
-     * Properly destroy native resources when switching map providers
+     * Properly destroy resources when switching map providers
      * IMPORTANT: Call this when disposing of the MarkerManager
      */
     open fun destroy() {
         if (!isDestroyed) {
             isDestroyed = true
             entities.clear()
-            cellRegistry.clear()
-            if (nativeIndex != null) {
-                try {
-                    val destroyMethod = nativeIndex.javaClass.getDeclaredMethod("destroy")
-                    destroyMethod.invoke(nativeIndex)
-                } catch (e: Exception) {
-                    // Fallback: native index not available
-                }
-            }
+            cellRegistry?.clear()
+            cellRegistry = null
         }
     }
 
@@ -256,5 +195,15 @@ open class MarkerManager<ActualMarker>(
 
     protected open fun finalize() {
         destroy()
+    }
+
+    companion object {
+        fun <ActualMarker>defaultManager(
+            geocell: HexGeocell? = null,
+        ): MarkerManager<ActualMarker> {
+            return MarkerManager<ActualMarker>(
+                geocell = geocell ?: HexGeocellImpl.defaultGeocell(),
+            )
+        }
     }
 }

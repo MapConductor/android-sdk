@@ -96,7 +96,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                     strategy.onAdd(
                         data = data,
                         viewport = bounds,
-                        markerManager = markerManager,
                         renderer = renderer,
                     )
                 val afterOnAddTime = System.currentTimeMillis()
@@ -213,7 +212,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                     strategy.onUpdate(
                         state = state,
                         viewport = bounds,
-                        markerManager = markerManager,
                         renderer = renderer,
                     )
                 if (processed) {
@@ -276,7 +274,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         this.mapCameraPosition = mapCameraPosition
-        renderingStrategy?.onCameraChanged(mapCameraPosition, markerManager, renderer)
+        renderingStrategy?.onCameraChanged(mapCameraPosition,  renderer)
     }
 
     /**

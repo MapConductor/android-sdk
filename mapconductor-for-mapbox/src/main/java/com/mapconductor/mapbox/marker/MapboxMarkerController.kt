@@ -5,12 +5,14 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.settings.Settings
 
-class MapboxMarkerController(
+class MapboxMarkerController private constructor(
     override val renderer: MapboxMarkerOverlayRenderer,
     renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
 ) : AbstractMarkerController<MapboxActualMarker>(
@@ -58,6 +60,23 @@ class MapboxMarkerController(
             } else {
                 null
             }
+        }
+    }
+
+    companion object {
+        fun create(
+            holder: MapboxMapViewHolder,
+            renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+        ): MapboxMarkerController {
+            val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+            val renderer = MapboxMarkerOverlayRenderer(
+                holder = holder,
+                markerManager = manager,
+            )
+            val controller = MapboxMarkerController(
+                renderer = renderer,
+            )
+            return controller
         }
     }
 }

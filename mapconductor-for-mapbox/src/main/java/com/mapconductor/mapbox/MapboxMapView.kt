@@ -1,4 +1,4 @@
-package com.mapconductor.mapbox
+﻿package com.mapconductor.mapbox
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -8,7 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
@@ -209,26 +209,10 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
 internal fun getMarkerController(
     holder: MapboxMapViewHolder,
     renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-): MapboxMarkerController {
-    val hexGeocell =
-        HexGeocell(
-            projection = WebMercator,
-            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-        )
-    val manager = MarkerManager<MapboxActualMarker>(hexGeocell)
-
-    val renderer =
-        MapboxMarkerOverlayRenderer(
-            holder = holder,
-            markerManager = manager,
-        )
-    val controller =
-        MapboxMarkerController(
-            renderer = renderer,
-            renderingStrategy = renderingStrategy,
-        )
-    return controller
-}
+) = MapboxMarkerController.create(
+    holder = holder,
+    renderingStrategy = renderingStrategy,
+)
 
 internal fun Context.findActivity(): Activity? =
     when (this) {
@@ -236,3 +220,7 @@ internal fun Context.findActivity(): Activity? =
         is ContextWrapper -> baseContext.findActivity()
         else -> null
     }
+
+
+
+

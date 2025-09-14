@@ -19,12 +19,11 @@ import kotlinx.coroutines.sync.withPermit
  */
 class NativeAddOnlyMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.5,
-    semaphore: Semaphore,
-    geocell: HexGeocell,
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return

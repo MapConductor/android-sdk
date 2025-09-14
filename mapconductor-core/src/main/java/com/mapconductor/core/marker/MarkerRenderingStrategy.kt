@@ -8,17 +8,19 @@ import com.mapconductor.core.map.MapCameraPosition
  * Different map providers may have different optimal strategies for marker management.
  */
 interface MarkerRenderingStrategy<ActualMarker> {
+    val markerManager: MarkerManager<ActualMarker>
+
     suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        markerManager: MarkerManager<ActualMarker>,
+//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean
 
     suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        markerManager: MarkerManager<ActualMarker>,
+//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean
 
@@ -31,7 +33,7 @@ interface MarkerRenderingStrategy<ActualMarker> {
      */
     suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
+//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     )
 }

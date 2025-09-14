@@ -10,12 +10,13 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toGeoPoint
 import com.mapconductor.settings.Settings
 
-class GoogleMapMarkerController(
-    markerManager: MarkerManager<GoogleMapActualMarker>,
+class GoogleMapMarkerController private constructor(
     override val renderer: GoogleMapMarkerRenderer,
+    markerManager: MarkerManager<GoogleMapActualMarker>,
     renderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
 ) : AbstractMarkerController<GoogleMapActualMarker>(
         markerManager = markerManager,
@@ -86,6 +87,23 @@ class GoogleMapMarkerController(
             } else {
                 null
             }
+        }
+    }
+
+    companion object {
+        fun create(
+            holder: GoogleMapViewHolder,
+            renderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+        ): GoogleMapMarkerController {
+            val markerManager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+            val renderer = GoogleMapMarkerRenderer(
+                holder = holder,
+            )
+            val controller = GoogleMapMarkerController(
+                renderer = renderer,
+                markerManager = markerManager,
+            )
+            return controller
         }
     }
 }

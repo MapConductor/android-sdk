@@ -37,14 +37,14 @@ class GoogleMapMarkerRenderer(
         val startTime = System.currentTimeMillis()
         val markerOptions =
             data.map { params ->
-//                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
+                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
                 val options = MarkerOptions()
                     .position(GeoPoint.from(params.state.position).toLatLng())
-//                    .anchor(
-//                        params.bitmapIcon.anchor.x,
-//                        params.bitmapIcon.anchor.y,
-//                    )
-//                    .icon(bitmapDescriptor)
+                    .anchor(
+                        params.bitmapIcon.anchor.x,
+                        params.bitmapIcon.anchor.y,
+                    )
+                    .icon(bitmapDescriptor)
                     .draggable(params.state.draggable)
                 Pair(params.state.id, options)
             }

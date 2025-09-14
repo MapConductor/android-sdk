@@ -29,12 +29,11 @@ import kotlinx.coroutines.sync.withPermit
  */
 class NativeDefaultMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.2,
-    semaphore: Semaphore,
-    geocell: HexGeocell,
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
@@ -42,14 +41,14 @@ class NativeDefaultMarkerRenderingStrategy<ActualMarker>(
             // Expand bounds by the specified margin for better performance
             val expandedBounds = expandBounds(visibleRegion.bounds, expandMargin)
 
-            // Use native spatial query from our markerManager (which is NativeMarkerManager)
-            val markerIdsInBounds = this.markerManager.findMarkersInBounds(expandedBounds).map { it.state.id }
+            // Use native spatial query from provided markerManager (consistent data source)
+            val markerIdsInBounds = markerManager.findMarkersInBounds(expandedBounds).map { it.state.id }
             val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
             val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
 
             // Get markers in viewport from native index
             markerIdsInBounds.forEach { markerId ->
-                this.markerManager.getEntity(markerId)?.let { entity ->
+                markerManager.getEntity(markerId)?.let { entity ->
                     if (!entity.isRendered) {
                         // Marker entered viewport, need to render
                         markersToRender.add(entity)
@@ -62,7 +61,7 @@ class NativeDefaultMarkerRenderingStrategy<ActualMarker>(
             }
 
             // Find markers that left the viewport (previously rendered but not in current bounds)
-            this.markerManager.allEntities().forEach { entity ->
+            markerManager.allEntities().forEach { entity ->
                 if (entity.isRendered && !markerIdsInBounds.contains(entity.state.id)) {
                     // Marker left viewport, need to remove from rendering
                     markersToRemove.add(entity)

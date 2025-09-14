@@ -38,7 +38,6 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         val startTime = System.currentTimeMillis()
@@ -176,7 +175,6 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         // Fast path: Check entity existence without semaphore to avoid blocking during initial marker addition

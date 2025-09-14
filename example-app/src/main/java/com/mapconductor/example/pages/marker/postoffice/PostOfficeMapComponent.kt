@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
@@ -15,7 +16,6 @@ import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
-import android.util.Log
 
 @Composable
 fun PostOfficeMapComponent(
@@ -50,21 +50,17 @@ fun PostOfficeMapComponent(
         onMapClick = onMapClick,
         onMarkerClick = onMarkerClick,
     ) {
-        val startTime = System.currentTimeMillis()
         markers.forEach { markerState -> Marker(markerState) }
-        val endTime = System.currentTimeMillis()
-        val elapsedTime = endTime - startTime // 処理時間を計算
-        Log.d("debug", "PostOfficeMapComponent: $elapsedTime ms")
 
-//        selectedMarker?.let {
-//            InfoBubble(
-//                bubbleColor = bubbleColor,
-//                marker = it,
-//            ) {
-//                PostOfficeInfoView(
-//                    info = it.extra as PostOffice,
-//                )
-//            }
-//        }
+        selectedMarker?.let {
+            InfoBubble(
+                bubbleColor = bubbleColor,
+                marker = it,
+            ) {
+                PostOfficeInfoView(
+                    info = it.extra as PostOffice,
+                )
+            }
+        }
     }
 }

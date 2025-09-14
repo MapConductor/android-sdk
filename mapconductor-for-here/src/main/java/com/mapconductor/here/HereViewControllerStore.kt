@@ -1,4 +1,4 @@
-package com.mapconductor.here
+﻿package com.mapconductor.here
 
 import HerePolygonOverlayRenderer
 import com.here.sdk.core.engine.AuthenticationMode
@@ -6,7 +6,7 @@ import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
-import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
@@ -123,27 +123,10 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
     private fun getMarkerController(
         holder: HereViewHolder,
         renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
-    ): HereMarkerController {
-        val hexGeocell =
-            HexGeocell(
-                projection = WebMercator,
-                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-            )
-        val manager = MarkerManager<HereActualMarker>(hexGeocell)
-
-        val renderer =
-            HereMarkerRenderer(
-                holder = holder,
-            )
-
-        val controller =
-            HereMarkerController(
-                markerManager = manager,
-                renderer = renderer,
-                renderingStrategy = renderingStrategy,
-            )
-        return controller
-    }
+    ) = HereMarkerController.create(
+        holder = holder,
+        renderingStrategy = renderingStrategy,
+    )
 
     private fun getHereCircleController(holder: HereViewHolder): HereCircleController {
         val renderer =
@@ -192,3 +175,7 @@ internal fun Context.getHereAccessKeySecret(): String? =
         .getApplicationInfo(packageName, PackageManager.GET_META_DATA)
         .metaData
         ?.getString("HERE_ACCESS_KEY_SECRET")
+
+
+
+

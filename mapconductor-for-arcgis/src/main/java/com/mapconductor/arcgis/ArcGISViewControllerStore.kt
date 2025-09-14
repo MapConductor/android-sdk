@@ -1,4 +1,4 @@
-package com.mapconductor.arcgis
+﻿package com.mapconductor.arcgis
 
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
@@ -11,7 +11,7 @@ import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
-import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
@@ -116,31 +116,8 @@ object ArcGISViewControllerStore :
     private fun getMarkerController(
         holder: ArcGISMapViewHolder,
         renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
-    ): ArcGISMarkerController {
-        val hexGeocell =
-            HexGeocell(
-                projection = WebMercator,
-                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-            )
-        val manager = MarkerManager<ArcGISActualMarker>(hexGeocell)
-
-        val markerLayer: GraphicsOverlay =
-            GraphicsOverlay().apply {
-                sceneProperties.surfacePlacement = SurfacePlacement.Relative
-            }
-
-        val renderer =
-            ArcGISMarkerRenderer(
-                markerLayer = markerLayer,
-                holder = holder,
-            )
-
-        val controller =
-            ArcGISMarkerController(
-                markerManager = manager,
-                renderer = renderer,
-                renderingStrategy = renderingStrategy,
-            )
-        return controller
-    }
+    ) = ArcGISMarkerController.create(
+        holder = holder,
+        renderingStrategy = renderingStrategy,
+    )
 }

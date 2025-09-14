@@ -1,5 +1,7 @@
 package com.mapconductor.marker.nativestrategy
 
+import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
@@ -37,12 +39,11 @@ import kotlinx.coroutines.sync.withPermit
 class SpatialMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
-    semaphore: Semaphore,
-    geocell: com.mapconductor.core.geocell.HexGeocell,
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
@@ -122,8 +123,8 @@ object SpatialMarkerRenderingStrategies {
      * Uses moderate viewport expansion for balanced performance.
      */
     fun <ActualMarker> withAddRemoveMode(
-        semaphore: Semaphore,
-        geocell: com.mapconductor.core.geocell.HexGeocell,
+        semaphore: Semaphore = Semaphore(1),
+        geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
         expandMargin: Double = 0.2,
     ): SpatialMarkerRenderingStrategy<ActualMarker> =
         SpatialMarkerRenderingStrategy(
@@ -139,8 +140,8 @@ object SpatialMarkerRenderingStrategies {
      * Uses larger viewport expansion for smoother experience.
      */
     fun <ActualMarker> withAddOnlyMode(
-        semaphore: Semaphore,
-        geocell: com.mapconductor.core.geocell.HexGeocell,
+        semaphore: Semaphore = Semaphore(1),
+        geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
         expandMargin: Double = 0.5,
     ): SpatialMarkerRenderingStrategy<ActualMarker> =
         SpatialMarkerRenderingStrategy(
@@ -155,8 +156,8 @@ object SpatialMarkerRenderingStrategies {
      * Uses aggressive viewport expansion and add-only mode for maximum performance.
      */
     fun <ActualMarker> forLargeDatasets(
-        semaphore: Semaphore,
-        geocell: com.mapconductor.core.geocell.HexGeocell,
+        semaphore: Semaphore = Semaphore(1),
+        geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
         expandMargin: Double = 0.8,
     ): SpatialMarkerRenderingStrategy<ActualMarker> =
         SpatialMarkerRenderingStrategy(

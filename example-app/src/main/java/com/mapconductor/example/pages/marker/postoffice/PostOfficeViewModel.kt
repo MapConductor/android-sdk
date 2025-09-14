@@ -1,15 +1,21 @@
-package com.mapconductor.example.pages.marker.postoffice
+﻿package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.marker.nativestrategy.NativeDefaultMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.NativeHexGeocellImpl
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
@@ -87,10 +93,15 @@ class PostOfficeViewModelImpl(
     private var _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
     override val selectedMarker: State<MarkerState?> = _selectedMarker
 
-    override val renderingStrategy: MarkerRenderingStrategy<Any>? = null
-//        NativeSpatialMarkerRenderingStrategy<Any>(
+    override val renderingStrategy: MarkerRenderingStrategy<Any>? =
+//        SpatialMarkerRenderingStrategies.withAddRemoveMode(
 //            semaphore = semaphore,
+//            geocell = HexGeocellImpl(
+//                projection = WebMercator,
+//                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+//            )
 //        )
+        NativeDefaultMarkerRenderingStrategy<Any>()
 
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
@@ -113,3 +124,6 @@ class PostOfficeViewModelImpl(
         _mapViewState.value = mapViewState
     }
 }
+
+
+

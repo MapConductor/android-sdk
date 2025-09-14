@@ -1,9 +1,9 @@
-package com.mapconductor.googlemaps
+﻿package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
-import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerManager
@@ -123,28 +123,10 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
     private fun getMarkerController(
         holder: GoogleMapViewHolder,
         markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
-    ): GoogleMapMarkerController {
-        val hexGeocell =
-            HexGeocell(
-                projection = WebMercator,
-                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-            )
-        val manager = MarkerManager<GoogleMapActualMarker>(hexGeocell)
-
-        val renderer =
-            GoogleMapMarkerRenderer(
-                holder = holder,
-            )
-
-        val markerController =
-            GoogleMapMarkerController(
-                markerManager = manager,
-                renderer = renderer,
-                renderingStrategy = markerRenderingStrategy,
-            )
-
-        return markerController
-    }
+    ) = GoogleMapMarkerController.create(
+        holder = holder,
+        renderingStrategy =  markerRenderingStrategy,
+    )
 }
 
 internal fun Context.findActivity(): Activity? =
@@ -153,3 +135,5 @@ internal fun Context.findActivity(): Activity? =
         is ContextWrapper -> baseContext.findActivity()
         else -> null
     }
+
+

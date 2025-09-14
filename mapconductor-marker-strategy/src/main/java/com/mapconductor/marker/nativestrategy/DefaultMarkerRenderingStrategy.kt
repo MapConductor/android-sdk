@@ -1,6 +1,8 @@
 package com.mapconductor.marker.nativestrategy
 
 import androidx.compose.ui.graphics.Color
+import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
@@ -25,13 +27,12 @@ import kotlinx.coroutines.sync.withPermit
  */
 class DefaultMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.2,
-    semaphore: Semaphore,
-    geocell: com.mapconductor.core.geocell.HexGeocell,
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
 
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         semaphore.withPermit {

@@ -35,8 +35,8 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                 MarkerState(
                     position = it.position,
                     id = it.hashCode().toString(),
-//                icon = icon,
-//                extra = it,
+                    icon = icon,
+                    extra = it,
                 )
             }
         postOfficesState.value = markerStates

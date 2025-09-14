@@ -1,6 +1,7 @@
 package com.mapconductor.marker.nativestrategy
 
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.BitmapIcon
@@ -16,8 +17,8 @@ import kotlinx.coroutines.sync.withPermit
  * This basic strategy renders all markers without viewport-based optimizations.
  */
 class SimpleMarkerRenderingStrategy<ActualMarker>(
-    semaphore: Semaphore,
-    geocell: HexGeocell,
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
 
     /**
@@ -26,7 +27,6 @@ class SimpleMarkerRenderingStrategy<ActualMarker>(
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         semaphore.withPermit {

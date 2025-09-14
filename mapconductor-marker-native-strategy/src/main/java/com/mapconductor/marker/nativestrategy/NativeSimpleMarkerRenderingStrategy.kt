@@ -15,12 +15,11 @@ import kotlinx.coroutines.sync.withPermit
  * This basic strategy renders all markers without viewport-based optimizations but uses native indexing.
  */
 class NativeSimpleMarkerRenderingStrategy<ActualMarker>(
-    semaphore: Semaphore,
-    geocell: HexGeocell,
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         semaphore.withPermit {
