@@ -1,6 +1,8 @@
 package com.mapconductor.core.marker
 
+import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.geocell.HexGeocell
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -11,7 +13,14 @@ import kotlinx.coroutines.sync.withPermit
  */
 abstract class AbstractViewportStrategy<ActualMarker>(
     semaphore: Semaphore,
+    geocell: HexGeocell,
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
+
+    /**
+     * Default MarkerManager instance provided by dependency injection.
+     */
+    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
+
     /**
      * Handle adding markers with viewport optimization.
      * Only renders markers that are within the current viewport.
@@ -24,7 +33,6 @@ abstract class AbstractViewportStrategy<ActualMarker>(
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         semaphore.withPermit {
-            val defaultIcon = ColorDefaultIcon()
             val defaultIconBitmapIcon = defaultIcon.toBitmapIcon()
             val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
@@ -60,7 +68,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                             MarkerEntityImpl(
                                 state = state,
                                 marker = prevEntity.marker,
-                                isRendered = false,
+                                isRendered = true,
                             )
                         markerManager.registerEntity(entity)
                     }
@@ -81,7 +89,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                             MarkerEntityImpl<ActualMarker>(
                                 marker = null,
                                 state = state,
-                                isRendered = false,
+                                isRendered = true,
                             )
                         markerManager.registerEntity(entity)
                     }
@@ -175,7 +183,6 @@ abstract class AbstractViewportStrategy<ActualMarker>(
             val isInViewport = viewport.contains(state.position)
             if (isInViewport) {
                 val marker = prevEntity.marker
-                val defaultIcon = ColorDefaultIcon()
                 val markerIcon = state.icon ?: defaultIcon
 
                 val renderEntity =

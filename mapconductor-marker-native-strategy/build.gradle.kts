@@ -66,7 +66,7 @@ android {
 dependencies {
     compileOnly(project(":mapconductor-core"))
 
-    // Compose dependencies for BitmapIcon/DefaultIcon
+    // Compose dependencies for BitmapIcon/DefaultIcon  
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.foundation)
     compileOnly(platform(libs.androidx.compose.bom))

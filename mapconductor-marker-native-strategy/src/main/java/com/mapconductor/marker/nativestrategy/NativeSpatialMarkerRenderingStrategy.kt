@@ -1,7 +1,7 @@
 package com.mapconductor.marker.nativestrategy
 
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerEntity
@@ -37,7 +37,8 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
     semaphore: Semaphore,
-) : AbstractViewportStrategy<ActualMarker>(semaphore) {
+    geocell: HexGeocell,
+) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,
@@ -48,28 +49,30 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
             // Expand bounds for better performance and smoother experience
             val expandedBounds = expandBounds(visibleRegion.bounds, expandMargin)
 
-            // Get all entities and separate them by viewport status (similar to DefaultMarkerRenderingStrategy)
-            val allMarkers = markerManager.allEntities()
+            // Use native spatial query from our markerManager (which is NativeMarkerManager)
+            val markerIdsInBounds = this.markerManager.findMarkersInBounds(expandedBounds).map { it.state.id }
             val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
             val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
 
-            allMarkers.forEach { entity ->
-                val isInViewport = expandedBounds.contains(entity.state.position)
+            // Get markers in viewport from native index
+            markerIdsInBounds.forEach { markerId ->
+                this.markerManager.getEntity(markerId)?.let { entity ->
+                    if (!entity.isRendered) {
+                        markersToRender.add(entity)
+                        entity.visible = true
+                    } else {
+                        entity.visible = true
+                    }
+                }
+            }
 
-                if (isInViewport && !entity.isRendered) {
-                    // Marker entered viewport, need to render
-                    markersToRender.add(entity)
-                    entity.visible = true
-                } else if (!isInViewport && entity.isRendered && !addOnlyMode) {
-                    // Marker left viewport, need to remove from rendering (only in add/remove mode)
-                    markersToRemove.add(entity)
-                    entity.visible = false
-                } else if (isInViewport) {
-                    // Marker is in viewport and already rendered
-                    entity.visible = true
-                } else {
-                    // Marker is outside viewport and not rendered
-                    entity.visible = false
+            // Handle markers that left viewport (only in add/remove mode)
+            if (!addOnlyMode) {
+                this.markerManager.allEntities().forEach { entity ->
+                    if (entity.isRendered && !markerIdsInBounds.contains(entity.state.id)) {
+                        markersToRemove.add(entity)
+                        entity.visible = false
+                    }
                 }
             }
 
@@ -84,7 +87,6 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
 
             // Add markers that entered the viewport
             if (markersToRender.isNotEmpty()) {
-                val defaultIcon = DefaultIcon()
                 val addParams =
                     markersToRender.map { entity ->
                         object : MarkerOverlayRenderer.AddParams {
@@ -121,12 +123,14 @@ object NativeSpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> withAddRemoveMode(
         semaphore: Semaphore,
+        geocell: HexGeocell,
         expandMargin: Double = 0.2,
     ): NativeSpatialMarkerRenderingStrategy<ActualMarker> =
         NativeSpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = false, // Support add/remove for optimal memory usage
             semaphore = semaphore,
+            geocell = geocell,
         )
 
     /**
@@ -136,12 +140,14 @@ object NativeSpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> withAddOnlyMode(
         semaphore: Semaphore,
+        geocell: HexGeocell,
         expandMargin: Double = 0.5,
     ): NativeSpatialMarkerRenderingStrategy<ActualMarker> =
         NativeSpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Add-only to avoid expensive remove operations
             semaphore = semaphore,
+            geocell = geocell,
         )
 
     /**
@@ -150,11 +156,13 @@ object NativeSpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> forLargeDatasets(
         semaphore: Semaphore,
+        geocell: HexGeocell,
         expandMargin: Double = 0.8,
     ): NativeSpatialMarkerRenderingStrategy<ActualMarker> =
         NativeSpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Maximize performance for large datasets
             semaphore = semaphore,
+            geocell = geocell,
         )
 }

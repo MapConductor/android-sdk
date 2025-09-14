@@ -1,63 +1,64 @@
 package com.mapconductor.example.pages.marker.postoffice
 
-import android.content.Context
 import com.mapconductor.core.features.GeoPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.zip.ZipInputStream
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Utility class for loading post office data from zip files in assets.
  * Handles extraction of GeoJSON files and parsing them into PostOffice objects.
  */
-class PostOfficeDataLoader(private val context: Context) {
-
+class PostOfficeDataLoader(
+    private val context: Context,
+) {
     /**
      * Load all post offices from zip files in the assets folder.
      * This method extracts each zip file and parses the contained GeoJSON data.
      */
-    suspend fun loadAllPostOffices(): List<PostOffice> = withContext(Dispatchers.IO) {
-        val postOffices = mutableListOf<PostOffice>()
-        
-        try {
-            val assetManager = context.assets
-            val assetFiles = assetManager.list("") ?: emptyArray()
-            
-            // Filter for zip files matching the pattern P30-13_*.zip
-            val zipFiles = assetFiles.filter { it.startsWith("P30-13_") && it.endsWith(".zip") }
-            
-            zipFiles.forEach { zipFileName ->
-                try {
-                    val zipPostOffices = loadPostOfficesFromZip(zipFileName)
-                    postOffices.addAll(zipPostOffices)
-                } catch (e: Exception) {
-                    // Log error but continue with other files
-                    println("Error loading $zipFileName: ${e.message}")
+    suspend fun loadAllPostOffices(): List<PostOffice> =
+        withContext(Dispatchers.IO) {
+            val postOffices = mutableListOf<PostOffice>()
+
+            try {
+                val assetManager = context.assets
+                val assetFiles = assetManager.list("") ?: emptyArray()
+
+                // Filter for zip files matching the pattern P30-13_*.zip
+                val zipFiles = assetFiles.filter { it.startsWith("P30-13_") && it.endsWith(".zip") }
+
+                zipFiles.forEach { zipFileName ->
+                    try {
+                        val zipPostOffices = loadPostOfficesFromZip(zipFileName)
+                        postOffices.addAll(zipPostOffices)
+                    } catch (e: Exception) {
+                        // Log error but continue with other files
+                        println("Error loading $zipFileName: ${e.message}")
+                    }
                 }
+            } catch (e: Exception) {
+                println("Error accessing assets: ${e.message}")
             }
-            
-        } catch (e: Exception) {
-            println("Error accessing assets: ${e.message}")
+
+            postOffices
         }
-        
-        postOffices
-    }
 
     /**
      * Load post offices from a specific zip file.
      */
-    private suspend fun loadPostOfficesFromZip(zipFileName: String): List<PostOffice> = 
+    private suspend fun loadPostOfficesFromZip(zipFileName: String): List<PostOffice> =
         withContext(Dispatchers.IO) {
             val postOffices = mutableListOf<PostOffice>()
-            
+
             context.assets.open(zipFileName).use { inputStream ->
                 ZipInputStream(inputStream).use { zipStream ->
                     var entry = zipStream.nextEntry
-                    
+
                     while (entry != null) {
                         if (!entry.isDirectory && entry.name.endsWith(".geojson")) {
                             try {
@@ -73,7 +74,7 @@ class PostOfficeDataLoader(private val context: Context) {
                     }
                 }
             }
-            
+
             postOffices
         }
 
@@ -90,11 +91,11 @@ class PostOfficeDataLoader(private val context: Context) {
      */
     private fun parseGeoJsonToPostOffices(geoJsonContent: String): List<PostOffice> {
         val postOffices = mutableListOf<PostOffice>()
-        
+
         try {
             val jsonObject = JSONObject(geoJsonContent)
             val features = jsonObject.optJSONArray("features") ?: JSONArray()
-            
+
             for (i in 0 until features.length()) {
                 try {
                     val feature = features.getJSONObject(i)
@@ -105,11 +106,10 @@ class PostOfficeDataLoader(private val context: Context) {
                     println("Error parsing feature: ${e.message}")
                 }
             }
-            
         } catch (e: Exception) {
             println("Error parsing GeoJSON: ${e.message}")
         }
-        
+
         return postOffices
     }
 
@@ -121,22 +121,22 @@ class PostOfficeDataLoader(private val context: Context) {
             // Extract geometry
             val geometry = feature.optJSONObject("geometry") ?: return null
             val coordinates = geometry.optJSONArray("coordinates") ?: return null
-            
+
             if (coordinates.length() < 2) return null
-            
+
             val longitude = coordinates.getDouble(0)
             val latitude = coordinates.getDouble(1)
             val position = GeoPoint(latitude, longitude)
-            
+
             // Extract properties
             val properties = feature.optJSONObject("properties") ?: return null
             val name = properties.optString("name", "")
             val address = properties.optString("address", "")
-            
+
             PostOffice(
                 position = position,
                 name = name,
-                address = address
+                address = address,
             )
         } catch (e: Exception) {
             println("Error parsing feature to PostOffice: ${e.message}")
@@ -148,7 +148,7 @@ class PostOfficeDataLoader(private val context: Context) {
      * Load post offices from a specific zip file by name.
      * Useful for loading data from individual regions.
      */
-    suspend fun loadPostOfficesFromSpecificZip(zipFileName: String): List<PostOffice> = 
+    suspend fun loadPostOfficesFromSpecificZip(zipFileName: String): List<PostOffice> =
         withContext(Dispatchers.IO) {
             try {
                 loadPostOfficesFromZip(zipFileName)
@@ -161,14 +161,15 @@ class PostOfficeDataLoader(private val context: Context) {
     /**
      * Get the list of available zip files in assets.
      */
-    suspend fun getAvailableZipFiles(): List<String> = withContext(Dispatchers.IO) {
-        try {
-            val assetManager = context.assets
-            val assetFiles = assetManager.list("") ?: emptyArray()
-            assetFiles.filter { it.startsWith("P30-13_") && it.endsWith(".zip") }.sorted()
-        } catch (e: Exception) {
-            println("Error getting zip files: ${e.message}")
-            emptyList()
+    suspend fun getAvailableZipFiles(): List<String> =
+        withContext(Dispatchers.IO) {
+            try {
+                val assetManager = context.assets
+                val assetFiles = assetManager.list("") ?: emptyArray()
+                assetFiles.filter { it.startsWith("P30-13_") && it.endsWith(".zip") }.sorted()
+            } catch (e: Exception) {
+                println("Error getting zip files: ${e.message}")
+                emptyList()
+            }
         }
-    }
 }

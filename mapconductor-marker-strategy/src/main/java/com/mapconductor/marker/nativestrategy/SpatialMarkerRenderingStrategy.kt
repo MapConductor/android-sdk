@@ -14,12 +14,12 @@ import kotlinx.coroutines.sync.withPermit
 /**
  * Advanced marker rendering strategy that leverages spatial indexing for optimal performance.
  *
- * This strategy uses the native spatial index (NativeMarkerIndex) to efficiently find markers
+ * This strategy uses spatial indexing to efficiently find markers
  * within viewport bounds instead of iterating through all markers. This provides significant
  * performance improvements, especially for large marker datasets (1000+ markers).
  *
  * Key optimizations:
- * - Uses O(log n + k) spatial queries instead of O(n) full iteration
+ * - Uses spatial queries instead of O(n) full iteration
  * - Leverages existing hex-based spatial index infrastructure
  * - Reduces memory allocation and GC pressure
  * - Supports both add/remove and add-only rendering modes
@@ -32,12 +32,14 @@ import kotlinx.coroutines.sync.withPermit
  * @param expandMargin The margin for expanding viewport bounds (default 0.3 = 30% expansion)
  * @param addOnlyMode If true, markers are never removed once rendered (like AddOnlyMarkerRenderingStrategy)
  * @param semaphore Semaphore for synchronizing rendering operations
+ * @param geocell Hex geocell for spatial indexing
  */
 class SpatialMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
     semaphore: Semaphore,
-) : AbstractViewportStrategy<ActualMarker>(semaphore) {
+    geocell: com.mapconductor.core.geocell.HexGeocell,
+) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,
@@ -121,12 +123,14 @@ object SpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> withAddRemoveMode(
         semaphore: Semaphore,
+        geocell: com.mapconductor.core.geocell.HexGeocell,
         expandMargin: Double = 0.2,
     ): SpatialMarkerRenderingStrategy<ActualMarker> =
         SpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = false, // Support add/remove for optimal memory usage
             semaphore = semaphore,
+            geocell = geocell,
         )
 
     /**
@@ -136,12 +140,14 @@ object SpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> withAddOnlyMode(
         semaphore: Semaphore,
+        geocell: com.mapconductor.core.geocell.HexGeocell,
         expandMargin: Double = 0.5,
     ): SpatialMarkerRenderingStrategy<ActualMarker> =
         SpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Add-only to avoid expensive remove operations
             semaphore = semaphore,
+            geocell = geocell,
         )
 
     /**
@@ -150,11 +156,13 @@ object SpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> forLargeDatasets(
         semaphore: Semaphore,
+        geocell: com.mapconductor.core.geocell.HexGeocell,
         expandMargin: Double = 0.8,
     ): SpatialMarkerRenderingStrategy<ActualMarker> =
         SpatialMarkerRenderingStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Maximize performance for large datasets
             semaphore = semaphore,
+            geocell = geocell,
         )
 }

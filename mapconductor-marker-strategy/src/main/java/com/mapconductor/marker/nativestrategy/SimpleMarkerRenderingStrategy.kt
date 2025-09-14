@@ -1,5 +1,6 @@
 package com.mapconductor.marker.nativestrategy
 
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.BitmapIcon
@@ -16,7 +17,13 @@ import kotlinx.coroutines.sync.withPermit
  */
 class SimpleMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore,
+    geocell: HexGeocell,
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
+
+    /**
+     * Default MarkerManager instance provided by dependency injection.
+     */
+    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,

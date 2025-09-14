@@ -33,6 +33,7 @@ import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class GoogleMapViewControllerImpl(
@@ -291,6 +292,9 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun onMapLoaded() {
+        mapLoadedCallback?.invoke()
+        mapLoadedCallback = null
+
         val mapDesignType = GoogleMapDesign.toMapDesignType(holder.map.mapType)
         mapDesignTypeChangeListener?.invoke(mapDesignType)
     }

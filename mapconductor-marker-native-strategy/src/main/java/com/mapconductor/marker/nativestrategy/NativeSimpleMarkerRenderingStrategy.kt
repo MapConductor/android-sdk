@@ -1,7 +1,7 @@
 package com.mapconductor.marker.nativestrategy
 
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerManager
@@ -11,12 +11,13 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 /**
- * Simple fallback marker rendering strategy for when no advanced strategy is provided.
- * This basic strategy renders all markers without viewport-based optimizations.
+ * Simple native marker rendering strategy for when no advanced strategy is provided.
+ * This basic strategy renders all markers without viewport-based optimizations but uses native indexing.
  */
 class NativeSimpleMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore,
-) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
+    geocell: HexGeocell,
+) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,

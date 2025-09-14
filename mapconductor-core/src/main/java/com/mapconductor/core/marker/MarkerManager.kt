@@ -5,7 +5,7 @@ import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 
-class MarkerManager<ActualMarker>(
+open class MarkerManager<ActualMarker>(
     geocell: HexGeocell,
 ) {
     private val entities = mutableMapOf<String, MarkerEntity<ActualMarker>>()
@@ -31,12 +31,12 @@ class MarkerManager<ActualMarker>(
     @Volatile
     private var isDestroyed = false
 
-    fun getEntity(id: String): MarkerEntity<ActualMarker>? {
+    open fun getEntity(id: String): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
         return entities.get(id)
     }
 
-    fun hasEntity(id: String): Boolean {
+    open fun hasEntity(id: String): Boolean {
         checkNotDestroyed()
         return if (nativeIndex != null) {
             try {
@@ -50,7 +50,7 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
+    open fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
         val removed =
             entities.remove(id)?.also {
@@ -69,7 +69,7 @@ class MarkerManager<ActualMarker>(
         return removed
     }
 
-    fun metersPerPixel(
+    open fun metersPerPixel(
         position: IGeoPoint,
         zoom: Double,
         pixels: Double,
@@ -101,7 +101,7 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
+    open fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
         val nearestId =
             if (nativeIndex != null) {
@@ -133,12 +133,12 @@ class MarkerManager<ActualMarker>(
         return entities[nearestId]
     }
 
-    fun findByIdPrefix(prefix: String): List<HexCell> {
+    open fun findByIdPrefix(prefix: String): List<HexCell> {
         checkNotDestroyed()
         return cellRegistry.findByIdPrefix(prefix)
     }
 
-    fun registerEntity(entity: MarkerEntity<ActualMarker>) {
+    open fun registerEntity(entity: MarkerEntity<ActualMarker>) {
         checkNotDestroyed()
         entities[entity.state.id] = entity
         cellRegistry.setPoint(entity)
@@ -158,7 +158,7 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    fun updateEntity(entity: MarkerEntity<ActualMarker>) {
+    open fun updateEntity(entity: MarkerEntity<ActualMarker>) {
         checkNotDestroyed()
         entities[entity.state.id] = entity
         cellRegistry.setPoint(entity)
@@ -178,12 +178,12 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    fun allEntities(): List<MarkerEntity<ActualMarker>> {
+    open fun allEntities(): List<MarkerEntity<ActualMarker>> {
         checkNotDestroyed()
         return entities.values.toList()
     }
 
-    fun clear() {
+    open fun clear() {
         checkNotDestroyed()
         entities.clear()
         cellRegistry.clear()
@@ -197,7 +197,7 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    fun findMarkersInBounds(bounds: com.mapconductor.core.features.GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+    open fun findMarkersInBounds(bounds: com.mapconductor.core.features.GeoRectBounds): List<MarkerEntity<ActualMarker>> {
         checkNotDestroyed()
         if (bounds.isEmpty) return emptyList()
 
@@ -232,7 +232,7 @@ class MarkerManager<ActualMarker>(
      * Properly destroy native resources when switching map providers
      * IMPORTANT: Call this when disposing of the MarkerManager
      */
-    fun destroy() {
+    open fun destroy() {
         if (!isDestroyed) {
             isDestroyed = true
             entities.clear()
@@ -254,7 +254,7 @@ class MarkerManager<ActualMarker>(
         }
     }
 
-    protected fun finalize() {
+    protected open fun finalize() {
         destroy()
     }
 }

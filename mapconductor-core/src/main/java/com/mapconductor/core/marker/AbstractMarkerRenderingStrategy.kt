@@ -6,6 +6,14 @@ import kotlinx.coroutines.sync.Semaphore
 abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
     protected val semaphore: Semaphore,
 ) : MarkerRenderingStrategy<ActualMarker> {
+    protected val defaultIcon = DefaultIcon()
+    
+    /**
+     * MarkerManager instance provided by dependency injection.
+     * Each strategy can provide its own optimized MarkerManager implementation.
+     */
+    abstract val markerManager: MarkerManager<ActualMarker>
+
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,

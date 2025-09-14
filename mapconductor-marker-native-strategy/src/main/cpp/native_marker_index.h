@@ -15,13 +15,8 @@ private:
     std::unordered_map<std::string, std::string> markerToCell;
     double zoom;
     
-    // Clickable marker cache for faster nearest neighbor searches
-    std::unordered_map<std::string, std::unordered_set<std::string>> clickableCellToMarkers;
-    
     void removeFromCell(const std::string& markerId, const std::string& cellId);
     void addToCell(const std::string& markerId, const std::string& cellId);
-    void addToClickableCell(const std::string& markerId, const std::string& cellId);
-    void removeFromClickableCell(const std::string& markerId, const std::string& cellId);
     std::vector<HexCellWithDistance> findWithinRadiusWithDistance(const GeoPoint& center, double radiusMeters) const;
     HexCell findNearest(const GeoPoint& position) const;
     std::string findNearestOptimized(const GeoPoint& position) const;

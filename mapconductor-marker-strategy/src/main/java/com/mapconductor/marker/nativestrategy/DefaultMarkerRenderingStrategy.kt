@@ -1,5 +1,6 @@
 package com.mapconductor.marker.nativestrategy
 
+import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
@@ -20,11 +21,14 @@ import kotlinx.coroutines.sync.withPermit
  *
  * @param expandMargin The margin for expanding viewport bounds (default 0.2 = 20% expansion)
  * @param semaphore The semaphore for synchronizing rendering operations
+ * @param geocell Hex geocell for spatial indexing
  */
 class DefaultMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.2,
     semaphore: Semaphore,
-) : AbstractViewportStrategy<ActualMarker>(semaphore) {
+    geocell: com.mapconductor.core.geocell.HexGeocell,
+) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
+
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,
@@ -73,7 +77,6 @@ class DefaultMarkerRenderingStrategy<ActualMarker>(
 
                 // Add markers that entered the viewport
                 if (markersToRender.isNotEmpty()) {
-                    val defaultIcon = DefaultIcon()
                     val addParams =
                         markersToRender.map { entity ->
                             object : MarkerOverlayRenderer.AddParams {

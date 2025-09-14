@@ -4,6 +4,7 @@ import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
+import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -65,6 +66,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     > {
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
+    private val defaultIcon = DefaultIcon()
 
     var dragStartListener: ((MarkerState) -> Unit)? = null
     var dragListener: ((MarkerState) -> Unit)? = null
@@ -86,59 +88,63 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun add(data: List<MarkerState>) {
-        // Register all markers to the manager first
-        val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
+        val startTime = System.currentTimeMillis()
 
-        data.forEach { state ->
-            if (previous.contains(state.id)) {
-                // Update existing entity
-                val prevEntity = markerManager.getEntity(state.id)!!
-                val entity =
-                    MarkerEntityImpl(
-                        state = state,
-                        marker = prevEntity.marker,
-                        isRendered = prevEntity.isRendered,
+        renderingStrategy?.let { strategy ->
+            mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
+                val processed =
+                    strategy.onAdd(
+                        data = data,
+                        viewport = bounds,
+                        markerManager = markerManager,
+                        renderer = renderer,
                     )
-                markerManager.updateEntity(entity)
-                previous.remove(state.id)
-            } else {
-                // Register new entity without rendering
-                val entity =
-                    MarkerEntityImpl<ActualMarker>(
-                        marker = null,
-                        state = state,
-                        isRendered = false,
-                    )
-                markerManager.registerEntity(entity)
+                val afterOnAddTime = System.currentTimeMillis()
+                Log.d("debug", "AbstractMarkerController.renderingStrategy: ${(afterOnAddTime - startTime)} ms")
             }
-        }
-
-        // Remove entities that are no longer in the data
-        previous.forEach { remainId ->
-            markerManager.removeEntity(remainId)
+            return
         }
 
         semaphore.withPermit {
-            renderingStrategy?.let { strategy ->
-                mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
-                    val processed =
-                        strategy.onAdd(
-                            data = data,
-                            viewport = bounds,
-                            markerManager = markerManager,
-                            renderer = renderer,
+            // Register all markers to the manager first
+            val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
+
+            data.forEach { state ->
+                if (previous.contains(state.id)) {
+                    // Update existing entity
+                    val prevEntity = markerManager.getEntity(state.id)!!
+                    val entity =
+                        MarkerEntityImpl(
+                            state = state,
+                            marker = prevEntity.marker,
+                            isRendered = prevEntity.isRendered,
                         )
-                    if (processed) {
-                        return
-                    }
-                } ?: return
+                    markerManager.updateEntity(entity)
+                    previous.remove(state.id)
+                } else {
+                    // Register new entity without rendering
+                    val entity =
+                        MarkerEntityImpl<ActualMarker>(
+                            marker = null,
+                            state = state,
+                            isRendered = false,
+                        )
+                    markerManager.registerEntity(entity)
+                }
             }
+
+            // Remove entities that are no longer in the data
+            previous.forEach { remainId ->
+                markerManager.removeEntity(remainId)
+            }
+
+            val halfTime = System.currentTimeMillis()
+            Log.d("debug", "AbstractMarkerController.add(half): ${(halfTime - startTime)} ms")
 
             val allEntities = markerManager.allEntities()
             val markersToRender = allEntities.filter { !it.isRendered }
 
             if (markersToRender.isNotEmpty()) {
-                val defaultIcon = DefaultIcon()
                 val addParams =
                     markersToRender.map { entity ->
                         object : MarkerOverlayRenderer.AddParams {
@@ -148,7 +154,15 @@ abstract class AbstractMarkerController<ActualMarker>(
                         }
                     }
 
+                val beforeOnAddTime = System.currentTimeMillis()
+                Log.d("debug", "AbstractMarkerController.beforeOnAdd(half): ${(beforeOnAddTime - halfTime)} ms, addParams = ${addParams.count()}")
+
                 val actualMarkers = renderer.onAdd(addParams)
+
+                val afterOnAddTime = System.currentTimeMillis()
+                Log.d("debug", "AbstractMarkerController.afterOnAdd(half): ${(afterOnAddTime - beforeOnAddTime)} ms")
+
+
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
                         markersToRender[index].marker = it
@@ -163,6 +177,10 @@ abstract class AbstractMarkerController<ActualMarker>(
                     }
                 }
                 renderer.onPostProcess()
+
+                val endTime = System.currentTimeMillis()
+                val elapsedTime = endTime - afterOnAddTime // 処理時間を計算
+                Log.d("debug", "AbstractMarkerController.add: $elapsedTime ms")
             }
         }
     }
@@ -178,6 +196,7 @@ abstract class AbstractMarkerController<ActualMarker>(
         if (currentFinger == prevFinger) {
             return
         }
+        val startTime = System.currentTimeMillis()
 
         // Update the entity in manager
         val entity =
@@ -242,6 +261,9 @@ abstract class AbstractMarkerController<ActualMarker>(
                 }
             }
         }
+        val endTime = System.currentTimeMillis()
+        val elapsedTime = endTime - startTime // 処理時間を計算
+        Log.d("debug", "AbstractMarkerController.update: $elapsedTime ms")
     }
 
     override suspend fun clear() {

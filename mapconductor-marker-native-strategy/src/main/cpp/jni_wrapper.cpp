@@ -15,7 +15,7 @@ static jlong g_nextHandle = 1;
 extern "C" {
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeCreate(JNIEnv *env, jclass clazz, jint baseHexSideLength, jdouble zoom) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeCreate(JNIEnv *env, jclass clazz, jint baseHexSideLength, jdouble zoom) {
     try {
         auto instance = std::make_unique<NativeMarkerIndex>(baseHexSideLength, zoom);
         jlong handle = g_nextHandle++;
@@ -29,7 +29,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeCreate(JNIEnv *env, jc
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeDestroy(JNIEnv *env, jclass clazz, jlong handle) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeDestroy(JNIEnv *env, jclass clazz, jlong handle) {
     auto it = g_nativeInstances.find(handle);
     if (it != g_nativeInstances.end()) {
         g_nativeInstances.erase(it);
@@ -38,7 +38,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeDestroy(JNIEnv *env, j
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeRegisterMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId, jdouble latitude, jdouble longitude, jboolean clickable) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeRegisterMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId, jdouble latitude, jdouble longitude, jboolean clickable) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -54,7 +54,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeRegisterMarker(JNIEnv 
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeUpdateMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId, jdouble latitude, jdouble longitude, jboolean clickable) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeUpdateMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId, jdouble latitude, jdouble longitude, jboolean clickable) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -70,7 +70,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeUpdateMarker(JNIEnv *e
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeRemoveMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeRemoveMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -86,7 +86,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeRemoveMarker(JNIEnv *e
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeHasMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeHasMarker(JNIEnv *env, jclass clazz, jlong handle, jstring jId) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -102,7 +102,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeHasMarker(JNIEnv *env,
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeFindNearest(JNIEnv *env, jclass clazz, jlong handle, jdouble latitude, jdouble longitude) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeFindNearest(JNIEnv *env, jclass clazz, jlong handle, jdouble latitude, jdouble longitude) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -120,7 +120,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeFindNearest(JNIEnv *en
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeFindMarkersInBounds(JNIEnv *env, jclass clazz, jlong handle, jdouble minLat, jdouble maxLat, jdouble minLng, jdouble maxLng) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeFindMarkersInBounds(JNIEnv *env, jclass clazz, jlong handle, jdouble minLat, jdouble maxLat, jdouble minLng, jdouble maxLng) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -143,7 +143,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeFindMarkersInBounds(JN
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeFindByIdPrefix(JNIEnv *env, jclass clazz, jlong handle, jstring jPrefix) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeFindByIdPrefix(JNIEnv *env, jclass clazz, jlong handle, jstring jPrefix) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -169,7 +169,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeFindByIdPrefix(JNIEnv 
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeClear(JNIEnv *env, jclass clazz, jlong handle) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeClear(JNIEnv *env, jclass clazz, jlong handle) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -180,7 +180,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeClear(JNIEnv *env, jcl
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeMarkerCount(JNIEnv *env, jclass clazz, jlong handle) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeMarkerCount(JNIEnv *env, jclass clazz, jlong handle) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);
@@ -191,7 +191,7 @@ Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeMarkerCount(JNIEnv *en
 }
 
 JNIEXPORT jdouble JNICALL
-Java_com_mapconductor_core_marker_NativeMarkerIndex_nativeMetersPerPixel(JNIEnv *env, jclass clazz, jlong handle, jdouble latitude, jdouble longitude, jdouble zoom, jdouble pixels, jint tileSize) {
+Java_com_mapconductor_marker_nativestrategy_NativeMarkerIndex_nativeMetersPerPixel(JNIEnv *env, jclass clazz, jlong handle, jdouble latitude, jdouble longitude, jdouble zoom, jdouble pixels, jint tileSize) {
     auto it = g_nativeInstances.find(handle);
     if (it == g_nativeInstances.end()) {
         LOGE("Invalid handle: %lld", handle);

@@ -9,6 +9,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -21,6 +22,7 @@ fun ArcGISMapView(
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -78,6 +80,9 @@ fun ArcGISMapView(
             controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            controller.setMapLoadedListener {
+                onMapLoaded?.invoke(state)
+            }
             state.setController(controller)
 
             val restoreCameraPosition = state.cameraPosition.value

@@ -377,6 +377,9 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(styleLoaded: StyleLoaded) {
+        mapLoadedCallback?.invoke()
+        mapLoadedCallback = null
+
         holder.map.style?.toMapDesignType()?.let { mapDesignType ->
             this@MapboxMapViewControllerImpl.mapDesignType = mapDesignType
             mapDesignTypeChangeListener?.invoke(mapDesignType)

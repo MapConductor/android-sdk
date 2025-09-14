@@ -16,12 +16,14 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.view.ViewGroup
+import kotlinx.coroutines.delay
 
 @Composable
 fun GoogleMapsView(
@@ -29,6 +31,7 @@ fun GoogleMapsView(
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -98,6 +101,9 @@ fun GoogleMapsView(
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setOnGroundImageClickListener(onGroundImageClick)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            controller.setMapLoadedListener {
+                onMapLoaded?.invoke(state)
+            }
 
             holderRef.value = controller.holder
             controllerRef.value = controller

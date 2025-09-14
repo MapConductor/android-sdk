@@ -45,6 +45,7 @@ import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview
@@ -54,6 +55,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 typealias OnMapViewInitializedHandler = (MapViewState<*>) -> Unit
+typealias OnMapLoadedHandler = (MapViewState<*>) -> Unit
+internal typealias InternalOnMapLoadedHandler = () -> Unit
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
 
@@ -159,19 +162,6 @@ fun <
                 }
             }
         }
-        // 子コンポーネントを収集する
-//        CompositionLocalProvider(
-//            LocalMarkerCollector provides scope.markerFlow,
-//            LocalInfoBubbleCollector provides scope.bubbleFlow,
-//            LocalCircleCollector provides scope.circleFlow,
-//            LocalPolylineCollector provides scope.polylineFlow,
-//            LocalPolygonCollector provides scope.polygonFlow,
-//            LocalGroundImageCollector provides scope.groundImageFlow,
-//        ) {
-//            with(scope) {
-//                content?.invoke(this)
-//            }
-//        }
     }
 
     LaunchedEffect(Unit) {
@@ -227,6 +217,7 @@ fun <
                     @Suppress("UNUSED_VARIABLE") // KtLint: backing property rule workaround
                     val tick = cameraTick.intValue
 
+                    // 子コンポーネントを収集する
                     // **ここで初めて CompositionLocalProvider を差し込む**
                     CompositionLocalProvider(
                         LocalMarkerCollector provides scope.markerFlow,

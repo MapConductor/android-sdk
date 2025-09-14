@@ -27,19 +27,6 @@ void NativeMarkerIndex::addToCell(const std::string& markerId, const std::string
     cellToMarkers[cellId].insert(markerId);
 }
 
-void NativeMarkerIndex::addToClickableCell(const std::string& markerId, const std::string& cellId) {
-    clickableCellToMarkers[cellId].insert(markerId);
-}
-
-void NativeMarkerIndex::removeFromClickableCell(const std::string& markerId, const std::string& cellId) {
-    auto cellIt = clickableCellToMarkers.find(cellId);
-    if (cellIt != clickableCellToMarkers.end()) {
-        cellIt->second.erase(markerId);
-        if (cellIt->second.empty()) {
-            clickableCellToMarkers.erase(cellIt);
-        }
-    }
-}
 
 void NativeMarkerIndex::registerMarker(const std::string& id, const GeoPoint& position, bool clickable) {
     MarkerPoint marker(id, position, clickable);
@@ -48,11 +35,6 @@ void NativeMarkerIndex::registerMarker(const std::string& id, const GeoPoint& po
     auto oldCellIt = markerToCell.find(id);
     if (oldCellIt != markerToCell.end()) {
         removeFromCell(id, oldCellIt->second);
-        // Also remove from clickable cache if it was clickable
-        auto oldMarkerIt = markers.find(id);
-        if (oldMarkerIt != markers.end() && oldMarkerIt->second.clickable) {
-            removeFromClickableCell(id, oldCellIt->second);
-        }
     }
     
     // Add to new cell
@@ -60,11 +42,6 @@ void NativeMarkerIndex::registerMarker(const std::string& id, const GeoPoint& po
     addToCell(id, cell.id);
     markerToCell[id] = cell.id;
     markers[id] = marker;
-    
-    // Add to clickable cache if clickable
-    if (clickable) {
-        addToClickableCell(id, cell.id);
-    }
 }
 
 void NativeMarkerIndex::updateMarker(const std::string& id, const GeoPoint& position, bool clickable) {
@@ -80,10 +57,6 @@ bool NativeMarkerIndex::removeMarker(const std::string& id) {
     auto cellIt = markerToCell.find(id);
     if (cellIt != markerToCell.end()) {
         removeFromCell(id, cellIt->second);
-        // Also remove from clickable cache if it was clickable
-        if (markerIt->second.clickable) {
-            removeFromClickableCell(id, cellIt->second);
-        }
         markerToCell.erase(cellIt);
     }
     
@@ -148,7 +121,7 @@ std::string NativeMarkerIndex::findNearestOptimized(const GeoPoint& position) co
     bool foundAnyMarker = false;
     
     // Ring-by-ring search with improved early termination
-    for (int radius = 0; radius <= 30; ++radius) {
+    for (int radius = 0; radius <= 15; ++radius) { // Reduced max radius
         bool foundMarkersThisRadius = false;
         
         // Generate only the current ring
@@ -157,36 +130,17 @@ std::string NativeMarkerIndex::findNearestOptimized(const GeoPoint& position) co
         for (const auto& coord : ringCoords) {
             std::string cellId = geocell->hexToCellId(coord, zoom);
             
-            // Check both clickable cache and regular cache as backup
-            auto clickableCellIt = clickableCellToMarkers.find(cellId);
-            if (clickableCellIt != clickableCellToMarkers.end() && !clickableCellIt->second.empty()) {
-                foundMarkersThisRadius = true;
-                foundAnyMarker = true;
-                
-                for (const std::string& markerId : clickableCellIt->second) {
+            auto cellIt = cellToMarkers.find(cellId);
+            if (cellIt != cellToMarkers.end()) {
+                for (const std::string& markerId : cellIt->second) {
                     auto markerIt = markers.find(markerId);
-                    if (markerIt != markers.end()) {
+                    if (markerIt != markers.end() && markerIt->second.clickable) {
+                        foundMarkersThisRadius = true;
+                        foundAnyMarker = true;
                         double distance = haversineDistance(position, markerIt->second.position);
                         if (distance < bestDistance) {
                             bestDistance = distance;
                             bestMarkerId = markerId;
-                        }
-                    }
-                }
-            } else {
-                // Backup: check regular cell cache if clickable cache misses
-                auto cellIt = cellToMarkers.find(cellId);
-                if (cellIt != cellToMarkers.end()) {
-                    for (const std::string& markerId : cellIt->second) {
-                        auto markerIt = markers.find(markerId);
-                        if (markerIt != markers.end() && markerIt->second.clickable) {
-                            foundMarkersThisRadius = true;
-                            foundAnyMarker = true;
-                            double distance = haversineDistance(position, markerIt->second.position);
-                            if (distance < bestDistance) {
-                                bestDistance = distance;
-                                bestMarkerId = markerId;
-                            }
                         }
                     }
                 }
@@ -221,24 +175,32 @@ std::string NativeMarkerIndex::findNearestBruteForce(const GeoPoint& position) c
 
 std::vector<HexCellWithDistance> NativeMarkerIndex::findWithinRadiusWithDistance(const GeoPoint& center, double radiusMeters) const {
     std::vector<HexCellWithDistance> result;
+    result.reserve(50); // Pre-allocate reasonable capacity
     
     HexCoord centerCoord = geocell->latLngToHexCoord(center, zoom);
     
-    // Estimate hex radius needed
-    int hexRadius = static_cast<int>(std::ceil(radiusMeters / 1000.0)) + 1;
-    std::vector<HexCoord> coords = hexRange(centerCoord, hexRadius);
+    // Limit radius to prevent memory explosion
+    int hexRadius = std::min(20, static_cast<int>(std::ceil(radiusMeters / 1000.0)) + 1);
     
-    for (const auto& coord : coords) {
-        std::string cellId = geocell->hexToCellId(coord, zoom);
-        auto cellIt = cellToMarkers.find(cellId);
-        if (cellIt != cellToMarkers.end() && !cellIt->second.empty()) {
-            GeoPoint cellCenter = geocell->hexToLatLngCenter(coord, center.latitude, zoom);
-            double distance = haversineDistance(center, cellCenter);
+    // Direct iteration instead of generating all coordinates at once
+    for (int dq = -hexRadius; dq <= hexRadius; ++dq) {
+        int minR = std::max(-hexRadius, -dq - hexRadius);
+        int maxR = std::min(hexRadius, -dq + hexRadius);
+        
+        for (int dr = minR; dr <= maxR; ++dr) {
+            HexCoord coord(centerCoord.q + dq, centerCoord.r + dr, centerCoord.depth);
+            std::string cellId = geocell->hexToCellId(coord, zoom);
             
-            if (distance <= radiusMeters) {
-                Offset centerXY(cellCenter.longitude, cellCenter.latitude);
-                HexCell cell(coord, cellCenter, centerXY, cellId);
-                result.emplace_back(cell, distance);
+            auto cellIt = cellToMarkers.find(cellId);
+            if (cellIt != cellToMarkers.end() && !cellIt->second.empty()) {
+                GeoPoint cellCenter = geocell->hexToLatLngCenter(coord, center.latitude, zoom);
+                double distance = haversineDistance(center, cellCenter);
+                
+                if (distance <= radiusMeters) {
+                    Offset centerXY(cellCenter.longitude, cellCenter.latitude);
+                    HexCell cell(coord, cellCenter, centerXY, cellId);
+                    result.emplace_back(cell, distance);
+                }
             }
         }
     }
@@ -251,21 +213,40 @@ std::vector<std::string> NativeMarkerIndex::findMarkersInBounds(const GeoRectBou
         return {};
     }
     
-    GeoPoint center = bounds.center();
-    double latRadius = (bounds.maxLat - bounds.minLat) / 2.0;
-    double lngRadius = (bounds.maxLng - bounds.minLng) / 2.0;
-    double searchRadius = std::sqrt(latRadius * latRadius + lngRadius * lngRadius) * 111000.0; // rough conversion to meters
-    
-    std::vector<HexCellWithDistance> cellsWithDistance = findWithinRadiusWithDistance(center, searchRadius);
-    
     std::vector<std::string> result;
-    for (const auto& cellWithDistance : cellsWithDistance) {
-        auto cellIt = cellToMarkers.find(cellWithDistance.cell.id);
-        if (cellIt != cellToMarkers.end()) {
-            for (const std::string& markerId : cellIt->second) {
-                auto markerIt = markers.find(markerId);
-                if (markerIt != markers.end() && bounds.contains(markerIt->second.position)) {
-                    result.push_back(markerId);
+    result.reserve(100); // Pre-allocate reasonable capacity
+    
+    // More precise search radius calculation
+    GeoPoint center = bounds.center();
+    double latRadiusMeters = (bounds.maxLat - bounds.minLat) * 111000.0 / 2.0;
+    double lngRadiusMeters = (bounds.maxLng - bounds.minLng) * 111000.0 * std::cos(center.latitude * PI / 180.0) / 2.0;
+    double searchRadiusMeters = std::sqrt(latRadiusMeters * latRadiusMeters + lngRadiusMeters * lngRadiusMeters);
+    
+    // Limit search radius to prevent excessive hex cell generation
+    searchRadiusMeters = std::min(searchRadiusMeters, 50000.0); // Max 50km search
+    
+    HexCoord centerCoord = geocell->latLngToHexCoord(center, zoom);
+    
+    // More efficient hex radius calculation  
+    int hexRadius = std::max(1, static_cast<int>(std::ceil(searchRadiusMeters / 1000.0)));
+    hexRadius = std::min(hexRadius, 20); // Limit to 20 hex cells radius to prevent memory explosion
+    
+    // Direct iteration instead of generating all cells at once
+    for (int dq = -hexRadius; dq <= hexRadius; ++dq) {
+        int minR = std::max(-hexRadius, -dq - hexRadius);
+        int maxR = std::min(hexRadius, -dq + hexRadius);
+        
+        for (int dr = minR; dr <= maxR; ++dr) {
+            HexCoord coord(centerCoord.q + dq, centerCoord.r + dr, centerCoord.depth);
+            std::string cellId = geocell->hexToCellId(coord, zoom);
+            
+            auto cellIt = cellToMarkers.find(cellId);
+            if (cellIt != cellToMarkers.end()) {
+                for (const std::string& markerId : cellIt->second) {
+                    auto markerIt = markers.find(markerId);
+                    if (markerIt != markers.end() && bounds.contains(markerIt->second.position)) {
+                        result.push_back(markerId);
+                    }
                 }
             }
         }
@@ -293,7 +274,6 @@ void NativeMarkerIndex::clear() {
     markers.clear();
     cellToMarkers.clear();
     markerToCell.clear();
-    clickableCellToMarkers.clear();
 }
 
 size_t NativeMarkerIndex::markerCount() const {

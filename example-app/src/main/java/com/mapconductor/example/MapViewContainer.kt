@@ -10,6 +10,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -31,6 +32,7 @@ fun MapViewContainer(
     renderingStrategy: MarkerRenderingStrategy<*>? = null,
     state: MapViewState<*>? = null,
     onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -53,6 +55,7 @@ fun MapViewContainer(
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,
                 onMapViewInitialized = onMapViewInitialized,
+                onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
@@ -74,6 +77,7 @@ fun MapViewContainer(
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<HereActualMarker>?,
                 state = state,
                 onMapViewInitialized = onMapViewInitialized,
+                onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
@@ -93,6 +97,7 @@ fun MapViewContainer(
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapboxActualMarker>?,
                 state = state,
                 onMapViewInitialized = onMapViewInitialized,
+                onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
@@ -112,6 +117,7 @@ fun MapViewContainer(
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<ArcGISActualMarker>?,
                 state = state,
                 onMapViewInitialized = onMapViewInitialized,
+                onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,

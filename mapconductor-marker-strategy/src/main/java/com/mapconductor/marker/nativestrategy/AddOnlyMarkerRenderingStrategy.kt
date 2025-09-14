@@ -16,11 +16,13 @@ import kotlinx.coroutines.sync.withPermit
  *
  * @param expandMargin The margin for expanding viewport bounds (default 0.5 = 50% expansion)
  * @param semaphore Optional semaphore for synchronizing rendering operations (required for Mapbox)
+ * @param geocell Hex geocell for spatial indexing
  */
 class AddOnlyMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.5,
     semaphore: Semaphore,
-) : AbstractViewportStrategy<ActualMarker>(semaphore) {
+    geocell: com.mapconductor.core.geocell.HexGeocell,
+) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,

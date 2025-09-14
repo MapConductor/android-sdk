@@ -1,5 +1,6 @@
 package com.mapconductor.googlemaps.marker
 
+import androidx.compose.ui.util.fastMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -10,6 +11,7 @@ import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,24 +34,35 @@ class GoogleMapMarkerRenderer(
     }
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {
-        return withContext(coroutine.coroutineContext) {
+        val startTime = System.currentTimeMillis()
+        val markerOptions =
             data.map { params ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
-                val options =
-                    MarkerOptions()
-                        .position(GeoPoint.from(params.state.position).toLatLng())
-                        .anchor(
-                            params.bitmapIcon.anchor.x,
-                            params.bitmapIcon.anchor.y,
-                        ).icon(bitmapDescriptor)
-                        .draggable(params.state.draggable)
+//                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
+                val options = MarkerOptions()
+                    .position(GeoPoint.from(params.state.position).toLatLng())
+//                    .anchor(
+//                        params.bitmapIcon.anchor.x,
+//                        params.bitmapIcon.anchor.y,
+//                    )
+//                    .icon(bitmapDescriptor)
+                    .draggable(params.state.draggable)
+                Pair(params.state.id, options)
+            }
+
+        val halfTime = System.currentTimeMillis()
+        Log.d("debug", "--->GoogleMapRenderer.onAdd : ${halfTime - startTime}ms ${markerOptions.count()}")
+        val results = withContext(coroutine.coroutineContext) {
+            markerOptions.fastMap { options ->
                 val marker =
-                    holder.map.addMarker(options)?.also {
-                        it.tag = params.state.id
+                    holder.map.addMarker(options.second)?.also {
+                        it.tag = options.first
                     }
-                return@map marker
+                return@fastMap marker
             }
         }
+        val endTime = System.currentTimeMillis()
+        Log.d("debug", "--->GoogleMapRenderer.onAdd : ${endTime - halfTime}ms")
+        return results
     }
 
     override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {

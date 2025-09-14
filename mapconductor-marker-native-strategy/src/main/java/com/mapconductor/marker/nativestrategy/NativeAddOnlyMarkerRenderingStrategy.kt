@@ -1,8 +1,7 @@
 package com.mapconductor.marker.nativestrategy
 
+import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.marker.AbstractViewportStrategy
-import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.spherical.expandBounds
@@ -10,17 +9,19 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 /**
- * Marker rendering strategy optimized for HERE and Mapbox providers.
+ * Native-optimized marker rendering strategy for HERE and Mapbox providers.
  * This strategy only adds markers when they enter the viewport and never removes them
  * once rendered, avoiding expensive add/remove operations on the map.
  *
  * @param expandMargin The margin for expanding viewport bounds (default 0.5 = 50% expansion)
  * @param semaphore Optional semaphore for synchronizing rendering operations (required for Mapbox)
+ * @param geocell Hex geocell for native spatial indexing
  */
 class NativeAddOnlyMarkerRenderingStrategy<ActualMarker>(
     private val expandMargin: Double = 0.5,
     semaphore: Semaphore,
-) : AbstractViewportStrategy<ActualMarker>(semaphore) {
+    geocell: HexGeocell,
+) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         markerManager: MarkerManager<ActualMarker>,
@@ -43,7 +44,7 @@ class NativeAddOnlyMarkerRenderingStrategy<ActualMarker>(
                             override val state = entity.state
                             override val bitmapIcon =
                                 entity.state.icon?.toBitmapIcon()
-                                    ?: DefaultIcon().toBitmapIcon()
+                                    ?: defaultIcon.toBitmapIcon()
                         }
                     }
                 val newMarkers = renderer.onAdd(addParams)

@@ -13,6 +13,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -30,6 +31,7 @@ fun HereMapView(
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -86,6 +88,9 @@ fun HereMapView(
             controller.setOnPolygonClickListener(onPolygonClick)
             state.setController(controller)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            controller.setMapLoadedListener {
+                onMapLoaded?.invoke(state)
+            }
 
             controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
                 if (mapError != null) {

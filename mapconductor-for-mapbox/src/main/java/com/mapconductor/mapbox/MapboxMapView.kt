@@ -11,6 +11,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
@@ -41,6 +42,7 @@ fun MapboxMapView(
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
     onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -109,6 +111,9 @@ fun MapboxMapView(
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
             state.setController(controller)
+            controller.setMapLoadedListener {
+                onMapLoaded?.invoke(state)
+            }
 
             holderRef.value = holder
             controllerRef.value = controller

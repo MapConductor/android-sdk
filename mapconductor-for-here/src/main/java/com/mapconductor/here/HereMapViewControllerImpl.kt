@@ -319,6 +319,10 @@ class HereMapViewControllerImpl(
         coroutine.launch {
             holder.mapView.mapScene.loadScene(scene) {
                 mapDesignType = value
+
+                mapLoadedCallback?.invoke()
+                mapLoadedCallback = null
+
                 mapDesignTypeChangeListener?.invoke(value)
             }
         }
