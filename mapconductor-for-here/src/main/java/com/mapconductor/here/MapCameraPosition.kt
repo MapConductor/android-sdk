@@ -9,6 +9,10 @@ import com.here.sdk.mapview.MapMeasure
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import com.mapconductor.here.zoom.ZoomAltitudeConverter
+
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
 @Keep
 fun MapCameraPosition.toMapCameraUpdate(): MapCameraUpdate =

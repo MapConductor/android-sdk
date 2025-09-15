@@ -7,6 +7,10 @@ import com.mapbox.maps.EdgeInsets
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import com.mapconductor.mapbox.zoom.ZoomAltitudeConverter
+
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
 internal const val MAPBOX_CAMERA_ZOOM_ADJUST_VALUE = 1.0
 

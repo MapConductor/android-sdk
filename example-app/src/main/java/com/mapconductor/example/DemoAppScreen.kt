@@ -16,6 +16,8 @@ import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
+import com.mapconductor.example.pages.map.visibleregion.ZoomCalibrationPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
@@ -67,6 +69,10 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Map design",
             ),
             SidebarItem(
+                id = "map-visibleregion",
+                title = "VisibleRegion",
+            ),
+            SidebarItem(
                 id = "marker-basic",
                 title = "Marker",
             ),
@@ -115,6 +121,14 @@ fun DemoAppScreen(initPage: String = "map") {
                         MapDesignMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
+                    }
+                    "map-visibleregion" -> {
+                        VisibleRegionPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+//                        ZoomCalibrationPage(
+//                            onToggleSidebar = navigationViewModel::toggleSidebar,
+//                        )
                     }
                     "map-flyTo" -> {
                         FlyToMapPage(

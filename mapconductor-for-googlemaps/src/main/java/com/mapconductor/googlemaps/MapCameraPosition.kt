@@ -6,6 +6,9 @@ import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
 fun MapCameraPosition.toCameraPosition(): CameraPosition =
     CameraPosition

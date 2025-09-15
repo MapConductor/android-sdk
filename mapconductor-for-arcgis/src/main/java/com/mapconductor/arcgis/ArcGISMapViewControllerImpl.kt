@@ -12,6 +12,7 @@ import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.SelectedMarker
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
+import com.mapconductor.arcgis.zoom.ZoomAltitudeConverter
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
@@ -137,9 +138,27 @@ class ArcGISMapViewControllerImpl(
                 farLeft = farLeft,
                 farRight = farRight,
             )
-        val camera = holder.map.getCurrentViewpointCamera().toMapCameraPosition()
-        val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
-        return mapCameraPosition
+
+        val arcCamera = holder.map.getCurrentViewpointCamera()
+        val lat = arcCamera.location.y
+        val lon = arcCamera.location.x
+        val alt = arcCamera.location.z ?: 0.0
+        val tilt = arcCamera.pitch
+        val bearing = (360 - arcCamera.heading) % 360
+
+        // Use calibrated constant instead of dynamic calculation
+        val conv = ZoomAltitudeConverter()
+        val zoom = conv.altitudeToZoomLevel(alt, lat, tilt)
+
+        val camera = MapCameraPosition(
+            position = com.mapconductor.core.features.GeoPoint.fromLongLat(lon, lat, alt),
+            zoom = zoom,
+            bearing = bearing,
+            tilt = tilt,
+            paddings = com.mapconductor.core.map.MapPaddingsImpl.Zeros,
+            visibleRegion = visibleRegion,
+        )
+        return camera
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {
@@ -291,7 +310,7 @@ class ArcGISMapViewControllerImpl(
         position: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val dstCameraPosition = position.toCamera()
+        val dstCameraPosition = toCameraWithView(position)
 
         holder.map.setViewpointCamera(
             camera = dstCameraPosition,
@@ -304,7 +323,7 @@ class ArcGISMapViewControllerImpl(
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val dstCameraPosition = position.toCamera()
+        val dstCameraPosition = toCameraWithView(position)
 
         coroutine.launch {
             val result =
@@ -316,7 +335,29 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
+
+    private fun computeZoom0DistanceForCurrentView(): Double {
+        val view = holder.map
+        val w = view.width.coerceAtLeast(1)
+        val h = view.height.coerceAtLeast(1)
+        val aspect = w.toDouble() / h.toDouble()
+        val fovHorizontalDegrees = 55.0 // default assumption
+        val fovVerticalDegrees = ZoomAltitudeConverter.verticalFovFromHorizontal(fovHorizontalDegrees, aspect)
+        return ZoomAltitudeConverter.computeZoom0DistanceForView(h, fovVerticalDegrees)
+    }
+
+    private fun toCameraWithView(position: MapCameraPosition): com.arcgismaps.mapping.view.Camera {
+        val targetPoint = com.mapconductor.core.features.GeoPoint.from(position.position).toPoint()
+        // Use calibrated constant instead of dynamic calculation
+        val conv = ZoomAltitudeConverter()
+        val distance = conv.zoomLevelToDistance(position.zoom, position.position.latitude)
+        return calculateCameraForOrbitParameters(
+            targetPoint = targetPoint,
+            distance = distance,
+            cameraHeadingOffset = 360 - (position.bearing + 180),
+            cameraPitchOffset = position.tilt,
+        )
+    }override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         this.markerController.dragStartListener = listener
     }
 
