@@ -45,7 +45,6 @@ import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview

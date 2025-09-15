@@ -1,6 +1,5 @@
 package com.mapconductor.core.marker
 
-import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.geocell.HexGeocell
 import kotlinx.coroutines.sync.Semaphore
@@ -15,7 +14,6 @@ abstract class AbstractViewportStrategy<ActualMarker>(
     semaphore: Semaphore,
     geocell: HexGeocell,
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
-
     /**
      * Default MarkerManager instance provided by dependency injection.
      */

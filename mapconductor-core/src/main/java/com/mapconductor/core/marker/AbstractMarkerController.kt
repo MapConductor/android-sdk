@@ -154,13 +154,13 @@ abstract class AbstractMarkerController<ActualMarker>(
                     }
 
                 val beforeOnAddTime = System.currentTimeMillis()
-                Log.d("debug", "AbstractMarkerController.beforeOnAdd(half): ${(beforeOnAddTime - halfTime)} ms, addParams = ${addParams.count()}")
+                Log
+                    .d("debug", "AbstractMarkerController.beforeOnAdd(half): ${(beforeOnAddTime - halfTime)} ms, addParams = ${addParams.count()}")
 
                 val actualMarkers = renderer.onAdd(addParams)
 
                 val afterOnAddTime = System.currentTimeMillis()
                 Log.d("debug", "AbstractMarkerController.afterOnAdd(half): ${(afterOnAddTime - beforeOnAddTime)} ms")
-
 
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
@@ -274,7 +274,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         this.mapCameraPosition = mapCameraPosition
-        renderingStrategy?.onCameraChanged(mapCameraPosition,  renderer)
+        renderingStrategy?.onCameraChanged(mapCameraPosition, renderer)
     }
 
     /**

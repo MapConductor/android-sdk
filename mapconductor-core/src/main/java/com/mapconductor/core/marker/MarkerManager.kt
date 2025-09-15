@@ -5,7 +5,6 @@ import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.projection.WebMercator
 
 /**
  * Memory usage statistics for MarkerManager optimization
@@ -14,7 +13,7 @@ data class MarkerManagerStats(
     val entityCount: Int,
     val hasSpatialIndex: Boolean,
     val spatialIndexInitialized: Boolean,
-    val estimatedMemoryKB: Long
+    val estimatedMemoryKB: Long,
 )
 
 open class MarkerManager<ActualMarker>(
@@ -69,7 +68,9 @@ open class MarkerManager<ActualMarker>(
             val nearestCell = registry.findNearest(position)
             nearestCell?.let { cell ->
                 // Find the nearest entity within the nearest cell
-                registry.getEntryIDsByHexCell(cell)?.mapNotNull { id -> entities[id] }
+                registry
+                    .getEntryIDsByHexCell(cell)
+                    ?.mapNotNull { id -> entities[id] }
                     ?.minByOrNull { entity ->
                         val dx = entity.state.position.latitude - position.latitude
                         val dy = entity.state.position.longitude - position.longitude
@@ -82,13 +83,12 @@ open class MarkerManager<ActualMarker>(
         }
     }
 
-    private fun bruteForceNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
-        return entities.values.minByOrNull { entity ->
+    private fun bruteForceNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? =
+        entities.values.minByOrNull { entity ->
             val dx = entity.state.position.latitude - position.latitude
             val dy = entity.state.position.longitude - position.longitude
             dx * dx + dy * dy
         }
-    }
 
     open fun findByIdPrefix(prefix: String): List<HexCell> {
         checkNotDestroyed()
@@ -138,7 +138,7 @@ open class MarkerManager<ActualMarker>(
             entityCount = entities.size,
             hasSpatialIndex = cellRegistry != null,
             spatialIndexInitialized = cellRegistry != null,
-            estimatedMemoryKB = estimateMemoryUsage() / 1024
+            estimatedMemoryKB = estimateMemoryUsage() / 1024,
         )
     }
 
@@ -156,7 +156,9 @@ open class MarkerManager<ActualMarker>(
         cellRegistry?.clear()
     }
 
-    open fun findMarkersInBounds(bounds: com.mapconductor.core.features.GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+    open fun findMarkersInBounds(
+        bounds: com.mapconductor.core.features.GeoRectBounds,
+    ): List<MarkerEntity<ActualMarker>> {
         checkNotDestroyed()
         if (bounds.isEmpty) return emptyList()
 
@@ -198,12 +200,9 @@ open class MarkerManager<ActualMarker>(
     }
 
     companion object {
-        fun <ActualMarker>defaultManager(
-            geocell: HexGeocell? = null,
-        ): MarkerManager<ActualMarker> {
-            return MarkerManager<ActualMarker>(
+        fun <ActualMarker> defaultManager(geocell: HexGeocell? = null): MarkerManager<ActualMarker> =
+            MarkerManager<ActualMarker>(
                 geocell = geocell ?: HexGeocellImpl.defaultGeocell(),
             )
-        }
     }
 }

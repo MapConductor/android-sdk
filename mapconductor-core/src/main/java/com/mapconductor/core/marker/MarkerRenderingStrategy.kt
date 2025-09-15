@@ -13,14 +13,12 @@ interface MarkerRenderingStrategy<ActualMarker> {
     suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean
 
     suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean
 
@@ -28,12 +26,10 @@ interface MarkerRenderingStrategy<ActualMarker> {
      * Handle camera position changes and update marker rendering accordingly.
      *
      * @param cameraPosition The new camera position
-     * @param markerManager The marker manager containing all markers
      * @param renderer The marker overlay renderer
      */
     suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
-//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     )
 }

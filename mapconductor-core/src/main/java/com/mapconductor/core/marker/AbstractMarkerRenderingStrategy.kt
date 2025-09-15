@@ -12,12 +12,11 @@ abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
      * MarkerManager instance provided by dependency injection.
      * Each strategy can provide its own optimized MarkerManager implementation.
      */
-//    abstract override val markerManager: MarkerManager<ActualMarker>
+    abstract override val markerManager: MarkerManager<ActualMarker>
 
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         // Do nothing here
@@ -27,7 +26,6 @@ abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-//        markerManager: MarkerManager<ActualMarker>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         // Do nothing here

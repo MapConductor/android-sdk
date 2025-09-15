@@ -4,18 +4,18 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.here.HereViewState
+import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.marker.nativestrategy.NativeDefaultMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.NativeHexGeocellImpl
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
@@ -26,7 +26,7 @@ interface PostOfficeViewModel {
     val markerList: State<List<MarkerState>>
     val mapViewState: State<MapViewState<*>?>
 
-    val renderingStrategy: MarkerRenderingStrategy<Any>?
+    val renderingStrategy: State<MarkerRenderingStrategy<Any>?>
 
     fun onMapViewChanged(mapViewState: MapViewState<*>)
 
@@ -93,7 +93,8 @@ class PostOfficeViewModelImpl(
     private var _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
     override val selectedMarker: State<MarkerState?> = _selectedMarker
 
-    override val renderingStrategy: MarkerRenderingStrategy<Any>? =
+    private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> = mutableStateOf(null)
+    override val renderingStrategy: State<MarkerRenderingStrategy<Any>?> = _renderingStrategy
 //        SpatialMarkerRenderingStrategies.withAddRemoveMode(
 //            semaphore = semaphore,
 //            geocell = HexGeocellImpl(
@@ -101,7 +102,6 @@ class PostOfficeViewModelImpl(
 //                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
 //            )
 //        )
-        NativeDefaultMarkerRenderingStrategy<Any>()
 
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
@@ -122,8 +122,13 @@ class PostOfficeViewModelImpl(
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
+        _renderingStrategy.value =
+            when (mapViewState) {
+                is GoogleMapViewState -> NativeSpatialMarkerRenderingStrategy()
+                is MapboxViewState -> NativeSpatialMarkerRenderingStrategy(addOnlyMode = true)
+                is HereViewState -> NativeSpatialMarkerRenderingStrategy()
+                is ArcGISMapViewState -> NativeSpatialMarkerRenderingStrategy()
+                else -> NativeDefaultMarkerRenderingStrategy()
+            }
     }
 }
-
-
-

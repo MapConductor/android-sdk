@@ -34,7 +34,6 @@ class GoogleMapMarkerRenderer(
     }
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {
-        val startTime = System.currentTimeMillis()
         val markerOptions =
             data.map { params ->
                 val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
@@ -49,8 +48,6 @@ class GoogleMapMarkerRenderer(
                 Pair(params.state.id, options)
             }
 
-        val halfTime = System.currentTimeMillis()
-        Log.d("debug", "--->GoogleMapRenderer.onAdd : ${halfTime - startTime}ms ${markerOptions.count()}")
         val results = withContext(coroutine.coroutineContext) {
             markerOptions.fastMap { options ->
                 val marker =
@@ -60,8 +57,6 @@ class GoogleMapMarkerRenderer(
                 return@fastMap marker
             }
         }
-        val endTime = System.currentTimeMillis()
-        Log.d("debug", "--->GoogleMapRenderer.onAdd : ${endTime - halfTime}ms")
         return results
     }
 

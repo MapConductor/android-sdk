@@ -24,7 +24,9 @@
       "Bash(git add:*)",
       "Bash(touch:*)",
       "Bash(mv:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "WebFetch(*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

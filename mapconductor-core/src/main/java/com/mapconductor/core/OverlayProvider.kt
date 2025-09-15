@@ -17,7 +17,6 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineOverlay
 import com.mapconductor.core.polyline.PolylineState
 import kotlin.time.Duration.Companion.milliseconds
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

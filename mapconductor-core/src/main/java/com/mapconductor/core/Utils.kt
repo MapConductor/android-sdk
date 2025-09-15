@@ -8,14 +8,12 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Duration
 import android.util.Log
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.launch
 
 fun calculateZIndex(geoPointBase: IGeoPoint): Int {
     // 南→北で奥行きを出す
@@ -294,63 +292,66 @@ private fun createOppositeMeridianPoint(point: IGeoPoint): GeoPoint {
     )
 }
 
-
 /**
  * 指定時間の無入力でバーストを確定し、まとめて List で流す。
  * 例: window=300ms の間に来た値を 1 バッチとして emit。
  */
 internal fun <T> Flow<T>.debounceBatch(
     window: Duration,
-    maxSize: Int
-): Flow<List<T>> = channelFlow {
-    require(maxSize > 0) { "maxSize must be > 0" }
+    maxSize: Int,
+): Flow<List<T>> =
+    channelFlow {
+        require(maxSize > 0) { "maxSize must be > 0" }
 
-    val acc = ArrayList<T>(maxSize)
-    val lock = Mutex()
+        val acc = ArrayList<T>(maxSize)
+        val lock = Mutex()
 
-    // イベント発生通知用（タイマ用）ホットストリーム
-    val activity = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 1)
+        // イベント発生通知用（タイマ用）ホットストリーム
+        val activity = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 1)
 
-    suspend fun flushIfNotEmpty() {
-        val batch: List<T>? = lock.withLock {
-            if (acc.isEmpty()) null else acc.toList().also { acc.clear() }
-        }
-        if (batch != null) send(batch)
-    }
-
-    // 上流の値を取り込み、maxSize 到達なら即フラッシュ
-    val collectorJob = launch {
-        try {
-            this@debounceBatch.collect { v ->
-                var shouldFlushNow = false
+        suspend fun flushIfNotEmpty() {
+            val batch: List<T>? =
                 lock.withLock {
-                    acc.add(v)
-                    if (acc.size >= maxSize) {
-                        shouldFlushNow = true
-                    }
+                    if (acc.isEmpty()) null else acc.toList().also { acc.clear() }
                 }
-                if (shouldFlushNow) {
-                    // 最大件数に達したので即フラッシュ
+            if (batch != null) send(batch)
+        }
+
+        // 上流の値を取り込み、maxSize 到達なら即フラッシュ
+        val collectorJob =
+            launch {
+                try {
+                    this@debounceBatch.collect { v ->
+                        var shouldFlushNow = false
+                        lock.withLock {
+                            acc.add(v)
+                            if (acc.size >= maxSize) {
+                                shouldFlushNow = true
+                            }
+                        }
+                        if (shouldFlushNow) {
+                            // 最大件数に達したので即フラッシュ
+                            flushIfNotEmpty()
+                        } else {
+                            // タイマ更新用の「活動通知」
+                            activity.tryEmit(Unit)
+                        }
+                    }
+                } finally {
+                    // 上流が完了したら残りを流して終了
                     flushIfNotEmpty()
-                } else {
-                    // タイマ更新用の「活動通知」
-                    activity.tryEmit(Unit)
                 }
             }
-        } finally {
-            // 上流が完了したら残りを流して終了
-            flushIfNotEmpty()
-        }
-    }
 
-    // 「静寂境界」：window の間新規通知が来なければフラッシュ
-    val timerJob = launch {
-        activity
-            .debounce(window)
-            .collect { flushIfNotEmpty() }
-    }
+        // 「静寂境界」：window の間新規通知が来なければフラッシュ
+        val timerJob =
+            launch {
+                activity
+                    .debounce(window)
+                    .collect { flushIfNotEmpty() }
+            }
 
-    // channelFlow は子 Job の完了まで開いている
-    collectorJob.join()
-    timerJob.cancel()
-}
+        // channelFlow は子 Job の完了まで開いている
+        collectorJob.join()
+        timerJob.cancel()
+    }

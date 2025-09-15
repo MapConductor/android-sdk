@@ -4,7 +4,6 @@ import com.mapconductor.core.map.InternalOnMapLoadedHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.map.OnMapLoadedHandler
 
 abstract class BaseMapViewController : MapViewController {
     private var overlayControllers = mutableListOf<OverlayController<*, *, *>>()

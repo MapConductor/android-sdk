@@ -304,10 +304,11 @@ class HexGeocellImpl(
     }
 
     companion object {
-        fun defaultGeocell(): HexGeocell = HexGeocellImpl(
-            projection = WebMercator,
-            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-        )
+        fun defaultGeocell(): HexGeocell =
+            HexGeocellImpl(
+                projection = WebMercator,
+                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+            )
     }
 }
 
@@ -315,4 +316,3 @@ data class IdentifiedHexCell(
     val id: String,
     val cell: HexCell,
 )
-

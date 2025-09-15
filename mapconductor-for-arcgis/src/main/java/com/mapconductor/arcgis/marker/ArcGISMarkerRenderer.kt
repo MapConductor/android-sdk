@@ -12,6 +12,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,7 +37,8 @@ class ArcGISMarkerRenderer(
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
-            data
+            val startTime = System.currentTimeMillis()
+            val results = data
                 .map { params ->
                     val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.getDensity()
@@ -66,6 +68,9 @@ class ArcGISMarkerRenderer(
                 }.also {
                     markerLayer.graphics.addAll(it)
                 }
+            val halfTime = System.currentTimeMillis()
+            Log.d("debug", "--->ArcGISRenderer.onAdd : ${halfTime - startTime}ms ${data.count()}")
+            results
         }
     }
 
@@ -84,7 +89,9 @@ class ArcGISMarkerRenderer(
         data: List<MarkerOverlayRenderer.ChangeParams<ArcGISActualMarker>>,
     ): List<ArcGISActualMarker?> =
         withContext(coroutine.coroutineContext) {
-            data.map { params ->
+
+            val startTime = System.currentTimeMillis()
+            val results = data.map { params ->
                 val prevFinger = params.prev.fingerPrint
                 val currFinger = params.current.fingerPrint
                 if (currFinger.icon != prevFinger.icon) {
@@ -116,5 +123,8 @@ class ArcGISMarkerRenderer(
                 // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 params.current.marker
             }
+            val halfTime = System.currentTimeMillis()
+            Log.d("debug", "--->ArcGISRenderer.onChange : ${halfTime - startTime}ms ${data.count()}")
+            results
         }
 }

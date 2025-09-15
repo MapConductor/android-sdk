@@ -77,6 +77,7 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
     val selectedMarker = viewModel.selectedMarker
 
     DemoMapPageScaffold(
+        initSelect = 3,
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
@@ -84,7 +85,7 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
         viewModel.mapViewState.value?.let { mapViewState ->
             PostOfficeMapComponent(
                 mapViewState = mapViewState,
-                renderingStrategy = viewModel.renderingStrategy,
+                renderingStrategy = viewModel.renderingStrategy.value,
                 selectedMarker = selectedMarker.value,
                 markers = viewModel.markerList.value,
                 onMapLoaded = viewModel::onMapLoaded,

@@ -8,13 +8,50 @@ interface HexGeocell {
     val projection: Projection
     val baseHexSideLength: Int
 
-    fun latLngToHexCoord(position: IGeoPoint, zoom: Double): HexCoord
-    fun latLngToHexCell(position: IGeoPoint, zoom: Double): HexCell
-    fun hexToLatLngCenter(coord: HexCoord, latHint: Double, zoom: Double): IGeoPoint
-    fun hexToCellId(coord: HexCoord, zoom: Double): String
-    fun hexToPolygonLatLng(coord: HexCoord, latHint: Double, zoom: Double): List<IGeoPoint>
-    fun enclosingCellOf(points: List<MarkerState>, zoom: Double): HexCell
-    fun hexCellsForPointsWithId(points: List<MarkerState>, zoom: Double): Set<IdentifiedHexCell>
-    fun hexDistance(a: HexCoord, b: HexCoord): Int
-    fun hexRange(center: HexCoord, radius: Int): List<HexCoord>
+    fun latLngToHexCoord(
+        position: IGeoPoint,
+        zoom: Double,
+    ): HexCoord
+
+    fun latLngToHexCell(
+        position: IGeoPoint,
+        zoom: Double,
+    ): HexCell
+
+    fun hexToLatLngCenter(
+        coord: HexCoord,
+        latHint: Double,
+        zoom: Double,
+    ): IGeoPoint
+
+    fun hexToCellId(
+        coord: HexCoord,
+        zoom: Double,
+    ): String
+
+    fun hexToPolygonLatLng(
+        coord: HexCoord,
+        latHint: Double,
+        zoom: Double,
+    ): List<IGeoPoint>
+
+    fun enclosingCellOf(
+        points: List<MarkerState>,
+        zoom: Double,
+    ): HexCell
+
+    fun hexCellsForPointsWithId(
+        points: List<MarkerState>,
+        zoom: Double,
+    ): Set<IdentifiedHexCell>
+
+    fun hexDistance(
+        a: HexCoord,
+        b: HexCoord,
+    ): Int
+
+    fun hexRange(
+        center: HexCoord,
+        radius: Int,
+    ): List<HexCoord>
 }
