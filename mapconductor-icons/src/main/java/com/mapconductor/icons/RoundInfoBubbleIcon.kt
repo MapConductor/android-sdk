@@ -6,7 +6,7 @@ import androidx.compose.ui.unit.Dp
 import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.settings.Settings
+import com.mapconductor.settings.MarkerIconSize
 import android.graphics.drawable.Drawable
 
 class RoundInfoBubbleIcon(
@@ -26,7 +26,7 @@ class RoundInfoBubbleIcon(
         label: String,
         fillColor: Color = Color.White,
         scale: Float = 1f,
-        iconSize: Dp = Settings.Default.iconSize,
+        iconSize: Dp = MarkerIconSize.Small,
         debug: Boolean = false,
     ) : this(
         IconProperties(iconDrawable, label, fillColor, scale, iconSize, debug)
