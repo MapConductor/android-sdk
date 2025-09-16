@@ -47,6 +47,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Background marker spatial service running in separate process -->
+        <service
+            android:name="com.mapconductor.example.ipc.MarkerSpatialService"
+            android:process=":marker_controller"
+            android:exported="false" />
     </application>
 
 </manifest>

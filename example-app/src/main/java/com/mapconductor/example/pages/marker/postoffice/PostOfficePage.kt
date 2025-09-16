@@ -72,12 +72,12 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                     scale = 0.6f,
                 )
             val icons = listOf(tinyIcon, smallIcon, regularIcon)
-            PostOfficeViewModelImpl(icons, postOfficesState.value!!)
+            PostOfficeViewModelImpl(context, icons, postOfficesState.value!!)
         }
     val selectedMarker = viewModel.selectedMarker
 
     DemoMapPageScaffold(
-        initSelect = 3,
+        initSelect = 2,
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,

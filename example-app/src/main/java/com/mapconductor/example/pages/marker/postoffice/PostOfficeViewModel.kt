@@ -16,6 +16,8 @@ import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
 import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategy
+import com.mapconductor.example.ipc.RemoteSpatialMarkerRenderingStrategy
+import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
@@ -46,6 +48,7 @@ data class PostOfficeIcons(
 )
 
 class PostOfficeViewModelImpl(
+    private val context: Context,
     private val icons: List<ImageIcon>? = null,
 //    private val dataLoader: PostOfficeDataLoader,
     private val postOffices: List<MarkerState>,
@@ -126,22 +129,26 @@ class PostOfficeViewModelImpl(
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState ->
-                    NativeSpatialMarkerRenderingStrategy(
+                    RemoteSpatialMarkerRenderingStrategy(
+                        context = context,
                         expandMargin = 0.4,
                         addOnlyMode = false,
                     )
                 is MapboxViewState ->
-                    NativeSpatialMarkerRenderingStrategy(
+                    RemoteSpatialMarkerRenderingStrategy(
+                        context = context,
                         expandMargin = 0.5,
                         addOnlyMode = true,
                     )
                 is HereViewState ->
-                    NativeSpatialMarkerRenderingStrategy(
+                    RemoteSpatialMarkerRenderingStrategy(
+                        context = context,
                         expandMargin = 0.4,
-                        addOnlyMode = true,
+                        addOnlyMode = false,
                     )
                 is ArcGISMapViewState ->
-                    NativeSpatialMarkerRenderingStrategy(
+                    RemoteSpatialMarkerRenderingStrategy(
+                        context = context,
                         expandMargin = 0.4,
                         addOnlyMode = false,
                     )
@@ -151,5 +158,11 @@ class PostOfficeViewModelImpl(
                         addOnlyMode = true,
                     )
             }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Clean up remote strategy if it's being used
+        (_renderingStrategy.value as? RemoteSpatialMarkerRenderingStrategy<*>)?.destroy()
     }
 }
