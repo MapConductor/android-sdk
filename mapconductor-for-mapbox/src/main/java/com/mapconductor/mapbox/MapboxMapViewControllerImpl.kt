@@ -2,6 +2,7 @@ package com.mapconductor.mapbox
 
 import MapboxMapViewController
 import androidx.compose.ui.geometry.Offset
+import androidx.core.view.size
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
@@ -27,6 +28,7 @@ import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
@@ -153,11 +155,9 @@ internal class MapboxMapViewControllerImpl(
     private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPosition? {
         val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
-        val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
 
-        val mapSize = holder.map.getSize()
-        val mapWidth = ResourceProvider.dpToPx(mapSize.width).toFloat()
-        val mapHeight = ResourceProvider.dpToPx(mapSize.height).toFloat()
+        val mapWidth = holder.mapView.width.toFloat()
+        val mapHeight = holder.mapView.height.toFloat()
         val nearLeft =
             holder.fromScreenOffsetSync(
                 Offset(0.0f, mapHeight),
@@ -175,7 +175,11 @@ internal class MapboxMapViewControllerImpl(
                 Offset(mapWidth, 0.0f),
             ) ?: return null
 
-        val bounds = currentBox.toGeoRectBounds()
+        val bounds = GeoRectBounds()
+        bounds.extend(nearLeft)
+        bounds.extend(nearRight)
+        bounds.extend(farLeft)
+        bounds.extend(farRight)
         val visibleRegion =
             VisibleRegion(
                 bounds = bounds,
