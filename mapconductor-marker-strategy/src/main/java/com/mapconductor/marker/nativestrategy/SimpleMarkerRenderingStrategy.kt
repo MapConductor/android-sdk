@@ -20,11 +20,11 @@ class SimpleMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
     geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
-
     /**
      * Default MarkerManager instance provided by dependency injection.
      */
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
+
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         renderer: MarkerOverlayRenderer<ActualMarker>,

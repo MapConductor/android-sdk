@@ -7,7 +7,6 @@ import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore

@@ -38,6 +38,8 @@ interface PostOfficeViewModel {
     fun onCameraChanged(cameraPosition: MapCameraPosition)
 
     fun onMapLoaded(mapViewState: MapViewState<*>)
+
+    fun addMarkersProgressively(markers: List<MarkerState>)
 }
 
 data class PostOfficeIcons(
@@ -119,7 +121,13 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
-        _markerList.value = postOffices
+        // Don't load all markers at once - use progressive loading instead
+    }
+
+    override fun addMarkersProgressively(markers: List<MarkerState>) {
+        val currentMarkers = _markerList.value.toMutableList()
+        currentMarkers.addAll(markers)
+        _markerList.value = currentMarkers
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {

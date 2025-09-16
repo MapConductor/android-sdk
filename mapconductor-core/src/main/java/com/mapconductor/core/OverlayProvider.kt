@@ -21,7 +21,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import kotlinx.coroutines.FlowPreview
 
 open class MapViewScope {
     val overflowScope = CoroutineScope(Dispatchers.IO)
@@ -56,6 +59,7 @@ open class MapViewScope {
     }
 }
 
+@OptIn(FlowPreview::class)
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
@@ -66,11 +70,34 @@ fun CollectAndRenderOverlays(
         val typedOverlay = overlay as MapOverlay<Any>
 
         LaunchedEffect(Unit) {
-            typedOverlay.flow.collect {
-                if (it.isNotEmpty()) {
-                    typedOverlay.render(it, controller)
+            typedOverlay.flow
+                .debounce(100) // Debounce updates for 100ms to prevent excessive rendering
+                .collect { items ->
+                    if (items.isNotEmpty()) {
+                        // Process items in chunks to prevent main thread blocking
+                        val chunks = items.values.chunked(50) // Process 50 items at a time
+
+                        chunks.forEach { chunk ->
+                            val chunkMap =
+                                chunk
+                                    .associateBy {
+                                        when (it) {
+                                            is MarkerState -> it.id
+                                            is CircleState -> it.id
+                                            is PolylineState -> it.id
+                                            is PolygonState -> it.id
+                                            is GroundImageState -> it.id
+                                            else -> it.toString()
+                                        }
+                                    }.toMutableMap()
+
+                            typedOverlay.render(chunkMap, controller)
+
+                            // Yield to allow other coroutines and UI updates
+                            yield()
+                        }
+                    }
                 }
-            }
         }
 
 //        val flowState = typedOverlay.flow.collectAsState()

@@ -22,6 +22,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 /**
  * Marker rendering strategy that offloads spatial calculations to a background service.
@@ -306,77 +308,111 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         Log.d(TAG, "onAdd called with ${data.size} markers, viewport: $viewport")
-        return try {
-            val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
+        return withContext(Dispatchers.Default) {
+            try {
+                val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
+                val markersToRegister = mutableListOf<MarkerEntityImpl<ActualMarker>>()
 
-            // Process each marker: check if in viewport and handle accordingly
-            data.forEach { state ->
-                val isInViewport = viewport.contains(state.position)
-                Log.d(TAG, "Marker ${state.id} at ${state.position} - inViewport: $isInViewport")
+                // Process markers in chunks to prevent ANR
+                val chunks = data.chunked(100) // Process 100 markers at a time
 
-                if (isInViewport) {
-                    // Marker is in viewport - add to render list
-                    markersToRender.add(
-                        object : MarkerOverlayRenderer.AddParams {
-                            override val state = state
-                            override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
-                        },
-                    )
-                } else {
-                    // Marker outside viewport - just register without rendering
-                    val entity =
-                        MarkerEntityImpl<ActualMarker>(
-                            state = state,
-                            marker = null,
-                            isRendered = false,
-                        )
+                chunks.forEach { chunk ->
+                    chunk.forEach { state ->
+                        val isInViewport = viewport.contains(state.position)
+                        Log.d(TAG, "Marker ${state.id} at ${state.position} - inViewport: $isInViewport")
+
+                        if (isInViewport) {
+                            // Marker is in viewport - add to render list
+                            markersToRender.add(
+                                object : MarkerOverlayRenderer.AddParams {
+                                    override val state = state
+                                    override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                                },
+                            )
+                        } else {
+                            // Marker outside viewport - just register without rendering
+                            val entity =
+                                MarkerEntityImpl<ActualMarker>(
+                                    state = state,
+                                    marker = null,
+                                    isRendered = false,
+                                )
+                            markersToRegister.add(entity)
+                        }
+                    }
+
+                    // Yield after processing each chunk to allow other coroutines
+                    yield()
+                }
+
+                // Register markers without rendering (done in background)
+                markersToRegister.forEach { entity ->
                     markerManager.registerEntity(entity)
                 }
-            }
 
-            // Render markers that are in viewport
-            if (markersToRender.isNotEmpty()) {
-                Log.d(TAG, "Rendering ${markersToRender.size} markers immediately")
-                val actualMarkers = renderer.onAdd(markersToRender)
-                Log.d(TAG, "Renderer.onAdd returned ${actualMarkers.size} actual markers")
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    Log.d(TAG, "Processing actual marker $index: $actualMarker")
-                    actualMarker?.let {
-                        val entity =
-                            MarkerEntityImpl<ActualMarker>(
-                                state = markersToRender[index].state,
-                                marker = actualMarker,
-                                isRendered = true,
-                            )
-                        markerManager.registerEntity(entity)
+                // Render markers that are in viewport (switch to main thread)
+                withContext(Dispatchers.Main) {
+                    if (markersToRender.isNotEmpty()) {
+                        Log.d(TAG, "Rendering ${markersToRender.size} markers immediately")
+
+                        // Process rendering in smaller chunks to prevent blocking main thread
+                        val renderChunks = markersToRender.chunked(50)
+
+                        renderChunks.forEach { renderChunk ->
+                            val actualMarkers = renderer.onAdd(renderChunk)
+                            Log.d(TAG, "Renderer.onAdd returned ${actualMarkers.size} actual markers")
+
+                            actualMarkers.forEachIndexed { index, actualMarker ->
+                                Log.d(TAG, "Processing actual marker $index: $actualMarker")
+                                actualMarker?.let {
+                                    val entity =
+                                        MarkerEntityImpl<ActualMarker>(
+                                            state = renderChunk[index].state,
+                                            marker = actualMarker,
+                                            isRendered = true,
+                                        )
+                                    markerManager.registerEntity(entity)
+                                }
+                            }
+
+                            // Small delay between chunks to allow UI updates
+                            if (renderChunks.size > 1) {
+                                kotlinx.coroutines.delay(1)
+                            }
+                        }
+
+                        renderer.onPostProcess()
+                        Log.d(TAG, "Completed immediate rendering")
+                    } else {
+                        Log.d(TAG, "No markers to render immediately (all outside viewport)")
                     }
                 }
-                renderer.onPostProcess()
-                Log.d(TAG, "Completed immediate rendering")
-            } else {
-                Log.d(TAG, "No markers to render immediately (all outside viewport)")
-            }
 
-            // Send marker data to background service for spatial indexing (batched)
-            val markerDTOs =
-                data.map { state ->
-                    MarkerDataDTO(
-                        id = state.id,
-                        latitude = state.position.latitude,
-                        longitude = state.position.longitude,
-                        clickable = state.clickable,
-                    )
+                // Send marker data to background service for spatial indexing (batched)
+                withContext(Dispatchers.IO) {
+                    val markerDTOs =
+                        data.map { state ->
+                            MarkerDataDTO(
+                                id = state.id,
+                                latitude = state.position.latitude,
+                                longitude = state.position.longitude,
+                                clickable = state.clickable,
+                            )
+                        }
+
+                    // Add to batch queue for background processing
+                    markerDTOs.forEach { addToBatch(it) }
                 }
 
-            // Add to batch queue for background processing
-            markerDTOs.forEach { addToBatch(it) }
-
-            Log
-                .d(TAG, "Added ${data.size} markers (${markersToRender.size} rendered immediately) to session $sessionId")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to add markers", e)
-            false
+                Log.d(
+                    TAG,
+                    "Added ${data.size} markers (${markersToRender.size} rendered immediately) to session $sessionId",
+                )
+                true
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to add markers", e)
+                false
+            }
         }
     }
 

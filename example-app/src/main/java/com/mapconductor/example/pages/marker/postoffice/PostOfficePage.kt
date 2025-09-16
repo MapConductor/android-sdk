@@ -16,6 +16,8 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.R
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 
 @Composable
 fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
@@ -30,16 +32,32 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                 scale = 0.3f,
             )
         val postOffices = dataLoader.loadAllPostOffices()
-        val markerStates =
-            postOffices.map {
-                MarkerState(
-                    position = it.position,
-                    id = it.hashCode().toString(),
-                    icon = icon,
-                    extra = it,
-                )
-            }
-        postOfficesState.value = markerStates
+
+        // Progressive loading: process markers in chunks to prevent ANR
+        val allMarkerStates = mutableListOf<MarkerState>()
+        val chunks = postOffices.chunked(50) // Process 50 markers at a time
+
+        chunks.forEach { chunk ->
+            val chunkMarkerStates =
+                chunk.map {
+                    MarkerState(
+                        position = it.position,
+                        id = it.hashCode().toString(),
+                        icon = icon,
+                        extra = it,
+                    )
+                }
+            allMarkerStates.addAll(chunkMarkerStates)
+
+            // Update state progressively
+            postOfficesState.value = allMarkerStates.toList()
+
+            // Yield to allow other coroutines and UI updates
+            yield()
+
+            // Small delay to prevent overwhelming the UI thread
+            delay(16) // One frame delay (60fps = 16ms per frame)
+        }
     }
 
     if ((postOfficesState.value ?: emptyList()).isEmpty()) {
