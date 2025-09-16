@@ -15,7 +15,15 @@ abstract class AbstractZoomAltitudeConverter(
         const val WEB_MERCATOR_INITIAL_MPP_256 = 156_543.033_928
     }
 
-    abstract fun zoomLevelToAltitude(zoomLevel: Double, latitude: Double, tilt: Double): Double
+    abstract fun zoomLevelToAltitude(
+        zoomLevel: Double,
+        latitude: Double,
+        tilt: Double,
+    ): Double
 
-    abstract fun altitudeToZoomLevel(altitude: Double, latitude: Double, tilt: Double): Double
+    abstract fun altitudeToZoomLevel(
+        altitude: Double,
+        latitude: Double,
+        tilt: Double,
+    ): Double
 }

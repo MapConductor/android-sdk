@@ -1,14 +1,11 @@
 package com.mapconductor.example.pages.map.visibleregion
 
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -25,7 +22,8 @@ import kotlin.math.*
 @Composable
 fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
     val testLocation = GeoPoint.fromLongLat(139.6917, 35.6895) // Tokyo Station
-    val testZoomLevels = listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 10.0, 20.0)
+    val testZoomLevels =
+        listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 10.0, 20.0)
 
     var currentZoomLevel by rememberSaveable { mutableStateOf(0.0) }
     var googleMapResults by rememberSaveable { mutableStateOf<Map<Double, VisibleRegionInfo>>(emptyMap()) }
@@ -33,28 +31,32 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
     var measurementInProgress by remember { mutableStateOf(false) }
     var measurementMessage by remember { mutableStateOf("") }
     // Map view states with initial camera position
-    val initialCameraPosition = MapCameraPosition(
-        position = testLocation,
-        zoom = currentZoomLevel,
-        bearing = 0.0,
-        tilt = 0.0
-    )
-
-    val googleMapViewState = rememberGoogleMapViewState(
-        cameraPosition = initialCameraPosition
-    )
-    val arcGisMapViewState = rememberArcGISMapViewState(
-        cameraPosition = initialCameraPosition
-    )
-
-    // Update camera positions when zoom level changes
-    LaunchedEffect(currentZoomLevel) {
-        val newCameraPosition = MapCameraPosition(
+    val initialCameraPosition =
+        MapCameraPosition(
             position = testLocation,
             zoom = currentZoomLevel,
             bearing = 0.0,
-            tilt = 0.0
+            tilt = 0.0,
         )
+
+    val googleMapViewState =
+        rememberGoogleMapViewState(
+            cameraPosition = initialCameraPosition,
+        )
+    val arcGisMapViewState =
+        rememberArcGISMapViewState(
+            cameraPosition = initialCameraPosition,
+        )
+
+    // Update camera positions when zoom level changes
+    LaunchedEffect(currentZoomLevel) {
+        val newCameraPosition =
+            MapCameraPosition(
+                position = testLocation,
+                zoom = currentZoomLevel,
+                bearing = 0.0,
+                tilt = 0.0,
+            )
         googleMapViewState.moveCameraTo(newCameraPosition)
         arcGisMapViewState.moveCameraTo(newCameraPosition)
     }
@@ -112,42 +114,44 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
             text = "Live Map Comparison (Zoom: ${String.format("%.1f", currentZoomLevel)})",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth()
-                .height(280.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(280.dp),
         ) {
             Column(
-                modifier = Modifier.weight(1.5f)
+                modifier = Modifier.weight(1.5f),
             ) {
                 Text(
                     text = "Google Maps",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp),
                 )
                 GoogleMapsView(
                     state = googleMapViewState,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(
-                modifier = Modifier.weight(1.5f)
+                modifier = Modifier.weight(1.5f),
             ) {
                 Text(
                     text = "ArcGIS",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp),
                 )
                 ArcGISMapView(
                     state = arcGisMapViewState,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
@@ -164,10 +168,12 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
                     googleMapViewState.cameraPosition.value?.visibleRegion?.let { visibleRegion ->
                         val info = createVisibleRegionInfo(visibleRegion)
                         googleMapResults = googleMapResults + (currentZoomLevel to info)
-                        measurementMessage = "Google Maps data captured: ${String.format("%.2f", info.widthKm)} × ${String.format("%.2f", info.heightKm)} km"
+                        measurementMessage =
+                            "Google Maps data captured: ${String.format("%.2f", info.widthKm)} × ${String.format("%.2f", info.heightKm)} km"
                         measurementInProgress = true
                     } ?: run {
-                        measurementMessage = "Google Maps visible region not available yet. Please wait for map to load."
+                        measurementMessage =
+                            "Google Maps visible region not available yet. Please wait for map to load."
                         measurementInProgress = true
                     }
                 },
@@ -183,7 +189,8 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
                     arcGisMapViewState.cameraPosition.value?.visibleRegion?.let { visibleRegion ->
                         val info = createVisibleRegionInfo(visibleRegion)
                         arcgisResults = arcgisResults + (currentZoomLevel to info)
-                        measurementMessage = "ArcGIS data captured: ${String.format("%.2f", info.widthKm)} × ${String.format("%.2f", info.heightKm)} km"
+                        measurementMessage =
+                            "ArcGIS data captured: ${String.format("%.2f", info.widthKm)} × ${String.format("%.2f", info.heightKm)} km"
                         measurementInProgress = true
                     } ?: run {
                         measurementMessage = "ArcGIS visible region not available yet. Please wait for map to load."
@@ -218,7 +225,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 OutlinedButton(
                     onClick = {
@@ -226,7 +233,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
                         arcgisResults = emptyMap()
                         measurementMessage = "All calibration data cleared"
                         measurementInProgress = true
-                    }
+                    },
                 ) {
                     Text("Clear All Data")
                 }
@@ -237,31 +244,33 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
             ) {
                 Text(
                     text = "Calibration Instructions",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "• Adjust zoom level with the slider above\n" +
-                          "• Wait for both maps to load completely\n" +
-                          "• Tap 'Capture' buttons to automatically extract visible region data\n" +
-                          "• Collect data for multiple zoom levels to improve accuracy\n" +
-                          "• Compare the results in the table below",
+                    text =
+                        "• Adjust zoom level with the slider above\n" +
+                            "• Wait for both maps to load completely\n" +
+                            "• Tap 'Capture' buttons to automatically extract visible region data\n" +
+                            "• Collect data for multiple zoom levels to improve accuracy\n" +
+                            "• Compare the results in the table below",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 20.sp
+                    lineHeight = 20.sp,
                 )
             }
         }
@@ -269,28 +278,32 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
         if (measurementInProgress && measurementMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (measurementMessage.contains("captured")) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.errorContainer
-                    }
-                ),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            if (measurementMessage.contains("captured")) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.errorContainer
+                            },
+                    ),
             ) {
                 Text(
                     text = measurementMessage,
                     modifier = Modifier.padding(16.dp),
-                    color = if (measurementMessage.contains("captured")) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onErrorContainer
-                    },
+                    color =
+                        if (measurementMessage.contains("captured")) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onErrorContainer
+                        },
                 )
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.End,
                 ) {
                     TextButton(
@@ -408,8 +421,8 @@ fun CalibrationRecommendations(
     if (googleMapResults.isEmpty() || arcgisResults.isEmpty()) return
 
     val averageRatio = calculateAverageRatio(googleMapResults, arcgisResults)
-    val currentZoom0Altitude = 198_506_928.2  // Use current value from ZoomAltitudeConverter
-    val recommendedZoom0Altitude = currentZoom0Altitude / averageRatio  // Invert the ratio!
+    val currentZoom0Altitude = 198_506_928.2 // Use current value from ZoomAltitudeConverter
+    val recommendedZoom0Altitude = currentZoom0Altitude / averageRatio // Invert the ratio!
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -436,13 +449,14 @@ fun CalibrationRecommendations(
             )
 
             Text(
-                text = if (averageRatio > 1.0) {
-                    "ArcGIS shows ${String.format("%.1f", (averageRatio - 1.0) * 100)}% larger area (zoom too low)"
-                } else {
-                    "ArcGIS shows ${String.format("%.1f", (1.0 - averageRatio) * 100)}% smaller area (zoom too high)"
-                },
+                text =
+                    if (averageRatio > 1.0) {
+                        "ArcGIS shows ${String.format("%.1f", (averageRatio - 1.0) * 100)}% larger area (zoom too low)"
+                    } else {
+                        "ArcGIS shows ${String.format("%.1f", (1.0 - averageRatio) * 100)}% smaller area (zoom too high)"
+                    },
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
             Text(
@@ -502,7 +516,6 @@ fun CalibrationRecommendations(
         }
     }
 }
-
 
 private fun calculateAverageRatio(
     googleMapResults: Map<Double, VisibleRegionInfo>,

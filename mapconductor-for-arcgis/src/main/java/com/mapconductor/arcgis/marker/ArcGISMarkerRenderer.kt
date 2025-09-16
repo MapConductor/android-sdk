@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 class ArcGISMarkerRenderer(
     val markerLayer: GraphicsOverlay,
     holder: ArcGISMapViewHolder,
-    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractMarkerOverlayRenderer<ArcGISMapViewHolder, ArcGISActualMarker>(
         holder = holder,
         coroutine = coroutine,
@@ -42,8 +42,6 @@ class ArcGISMarkerRenderer(
                 .map { params ->
                     val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
                     val density = ResourceProvider.getDensity()
-//                    val width = ((params.bitmapIcon.size.width * (params.state.icon?.scale ?: 1.0f)) / density)
-//                    val height = ((params.bitmapIcon.size.height * (params.state.icon?.scale ?: 1.0f)) / density)
                     val width = params.bitmapIcon.size.width / density
                     val height = params.bitmapIcon.size.height / density
                     val anchorX = (0.5 - params.bitmapIcon.anchor.x) * width

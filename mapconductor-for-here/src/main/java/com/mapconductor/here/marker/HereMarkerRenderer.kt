@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 
 class HereMarkerRenderer(
     holder: HereViewHolder,
-    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : AbstractMarkerOverlayRenderer<
         HereViewHolder,
         HereActualMarker,
@@ -66,7 +66,7 @@ class HereMarkerRenderer(
         coroutine.launch {
             val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
             if (markers.isNotEmpty()) {
-                holder.map.removeMapMarkers(markers)
+                holder.mapView.mapScene.removeMapMarkers(markers)
             }
         }
     }

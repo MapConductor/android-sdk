@@ -55,24 +55,24 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
 
     val viewModel =
         remember {
-//            val icon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
-//            val tinyIcon =
-//                ImageIcon(
-//                    drawable = icon,
-//                    scale = 0.15f,
-//                )
-//            val smallIcon =
-//                ImageIcon(
-//                    drawable = icon,
-//                    scale = 0.3f,
-//                )
-//            val regularIcon =
-//                ImageIcon(
-//                    drawable = icon,
-//                    scale = 0.6f,
-//                )
-//            val icons = listOf(tinyIcon, smallIcon, regularIcon)
-            PostOfficeViewModelImpl(postOfficesState.value!!)
+            val icon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
+            val tinyIcon =
+                ImageIcon(
+                    drawable = icon,
+                    scale = 0.15f,
+                )
+            val smallIcon =
+                ImageIcon(
+                    drawable = icon,
+                    scale = 0.3f,
+                )
+            val regularIcon =
+                ImageIcon(
+                    drawable = icon,
+                    scale = 0.6f,
+                )
+            val icons = listOf(tinyIcon, smallIcon, regularIcon)
+            PostOfficeViewModelImpl(icons, postOfficesState.value!!)
         }
     val selectedMarker = viewModel.selectedMarker
 

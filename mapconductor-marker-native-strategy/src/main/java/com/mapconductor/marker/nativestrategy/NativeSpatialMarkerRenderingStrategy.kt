@@ -48,28 +48,50 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
             val expandedBounds = expandBounds(visibleRegion.bounds, expandMargin)
 
             // Use native spatial query from the provided manager (keep consistent with onAdd/onUpdate)
-            val markerIdsInBounds = markerManager.findMarkersInBounds(expandedBounds).map { it.state.id }
+            val markersInBounds = markerManager.findMarkersInBounds(expandedBounds)
+            val markerIdsInBounds = markersInBounds.map { it.state.id }
             val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
             val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
 
-            // Get markers in viewport from native index
-            markerIdsInBounds.forEach { markerId ->
-                markerManager.getEntity(markerId)?.let { entity ->
-                    if (!entity.isRendered) {
+            // Fallback to iterating all entities if native spatial query fails (returns empty when it should return results)
+            val allEntities = markerManager.allEntities()
+            if (markersInBounds.isEmpty() && allEntities.isNotEmpty()) {
+                // Native spatial query likely failed, use fallback approach like SpatialMarkerRenderingStrategy
+                allEntities.forEach { entity ->
+                    val isInViewport = expandedBounds.contains(entity.state.position)
+                    
+                    if (isInViewport && !entity.isRendered) {
                         markersToRender.add(entity)
                         entity.visible = true
-                    } else {
-                        entity.visible = true
-                    }
-                }
-            }
-
-            // Handle markers that left viewport (only in add/remove mode)
-            if (!addOnlyMode) {
-                markerManager.allEntities().forEach { entity ->
-                    if (entity.isRendered && !markerIdsInBounds.contains(entity.state.id)) {
+                    } else if (!isInViewport && entity.isRendered && !addOnlyMode) {
                         markersToRemove.add(entity)
                         entity.visible = false
+                    } else if (isInViewport) {
+                        entity.visible = true
+                    } else {
+                        entity.visible = false
+                    }
+                }
+            } else {
+                // Native spatial query worked, use the optimized path
+                markerIdsInBounds.forEach { markerId ->
+                    markerManager.getEntity(markerId)?.let { entity ->
+                        if (!entity.isRendered) {
+                            markersToRender.add(entity)
+                            entity.visible = true
+                        } else {
+                            entity.visible = true
+                        }
+                    }
+                }
+                
+                // Handle markers that left viewport (only in add/remove mode)
+                if (!addOnlyMode) {
+                    allEntities.forEach { entity ->
+                        if (entity.isRendered && !markerIdsInBounds.contains(entity.state.id)) {
+                            markersToRemove.add(entity)
+                            entity.visible = false
+                        }
                     }
                 }
             }

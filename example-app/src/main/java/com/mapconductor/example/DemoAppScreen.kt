@@ -17,7 +17,6 @@ import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
-import com.mapconductor.example.pages.map.visibleregion.ZoomCalibrationPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
