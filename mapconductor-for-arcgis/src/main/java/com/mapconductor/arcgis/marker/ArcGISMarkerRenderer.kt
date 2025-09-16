@@ -114,9 +114,8 @@ class ArcGISMarkerRenderer(
                     params.current.marker?.geometry =
                         GeoPoint.from(params.current.state.position).toPoint()
                 }
-                if (params.current.marker?.isVisible != params.current.visible) {
-                    params.current.marker?.isVisible = params.current.visible
-                }
+                // Always set visibility explicitly like Google Maps (remove conditional check)
+                params.current.marker?.isVisible = params.current.visible
 
                 // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 params.current.marker
