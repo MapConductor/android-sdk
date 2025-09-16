@@ -175,6 +175,7 @@ fun VisibleRegionInfoPanel(
                 cameraPosition?.let { camera ->
                     appendLine("Camera:")
                     appendLine("  Zoom: ${String.format("%.2f", camera.zoom)}")
+                    appendLine("  Altitude: ${String.format("%.2f", camera.position.altitude ?: 0.0)}")
                     appendLine("  Bearing: ${String.format("%.2f°", camera.bearing)}")
                     appendLine("  Tilt: ${String.format("%.2f°", camera.tilt)}")
                     appendLine("  Position: ${formatLatLng(camera.position)}")
@@ -282,6 +283,7 @@ fun VisibleRegionInfoPanel(
                 ) {
                     cameraPosition?.let { camera ->
                         InfoRow("Zoom", String.format("%.2f", camera.zoom))
+                        InfoRow("Altitude", String.format("%.2f", camera.position.altitude ?: 0.0))
                         InfoRow("Bearing", String.format("%.2f°", camera.bearing))
                         InfoRow("Tilt", String.format("%.2f°", camera.tilt))
                         InfoRow("Position", formatLatLng(camera.position))

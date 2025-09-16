@@ -33,12 +33,19 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
             )
     }
 
-fun CameraPosition.toMapCameraPosition(paddings: MapPaddings = MapPaddingsImpl.Zeros) =
-    MapCameraPosition(
-        position = target.toGeoPoint(),
+fun CameraPosition.toMapCameraPosition(paddings: MapPaddings = MapPaddingsImpl.Zeros): MapCameraPosition {
+    val altitude = converter.zoomLevelToAltitude(
+        zoomLevel = zoom.toDouble(),
+        latitude = target.latitude,
+        tilt = tilt.toDouble(),
+    )
+    val position = target.toGeoPoint().copy(altitude = altitude)
+    return MapCameraPosition(
+        position = position,
         zoom = zoom.toDouble(),
         bearing = bearing.toDouble(),
         tilt = tilt.toDouble(),
         paddings = paddings,
         visibleRegion = null,
     )
+}

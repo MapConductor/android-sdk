@@ -7,7 +7,7 @@ import kotlin.math.log2
 import kotlin.math.pow
 
 class ZoomAltitudeConverter(
-    zoom0Altitude: Double = HERE_OPTIMIZED_ZOOM0_ALTITUDE,
+    zoom0Altitude: Double = AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE,
 ) : AbstractZoomAltitudeConverter(zoom0Altitude) {
 
     companion object {
