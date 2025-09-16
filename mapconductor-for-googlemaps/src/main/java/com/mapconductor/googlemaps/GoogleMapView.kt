@@ -23,7 +23,6 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import android.view.ViewGroup
-import kotlinx.coroutines.delay
 
 @Composable
 fun GoogleMapsView(

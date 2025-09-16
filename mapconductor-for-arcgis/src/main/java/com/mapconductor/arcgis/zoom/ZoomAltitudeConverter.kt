@@ -1,21 +1,23 @@
 package com.mapconductor.arcgis.zoom
 
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import kotlin.math.cos
 import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.pow
-import kotlin.math.cos
 import kotlin.math.tan
 
 class ZoomAltitudeConverter(
     zoom0Altitude: Double = ARCGIS_OPTIMIZED_ZOOM0_ALTITUDE,
 ) : AbstractZoomAltitudeConverter(zoom0Altitude) {
-
     companion object {
         // ArcGIS-specific optimized zoom0 altitude to match Google Maps visible regions
         const val ARCGIS_OPTIMIZED_ZOOM0_ALTITUDE = 161920111.449375
 
-        fun verticalFovFromHorizontal(horizontalFovDeg: Double, aspectRatio: Double): Double {
+        fun verticalFovFromHorizontal(
+            horizontalFovDeg: Double,
+            aspectRatio: Double,
+        ): Double {
             val hRad = Math.toRadians(horizontalFovDeg)
             val vRad = 2.0 * kotlin.math.atan(kotlin.math.tan(hRad / 2.0) / aspectRatio)
             return Math.toDegrees(vRad)
@@ -42,7 +44,11 @@ class ZoomAltitudeConverter(
         return max(MIN_COS_TILT, cos(tiltRad))
     }
 
-    override fun zoomLevelToAltitude(zoomLevel: Double, latitude: Double, tilt: Double): Double {
+    override fun zoomLevelToAltitude(
+        zoomLevel: Double,
+        latitude: Double,
+        tilt: Double,
+    ): Double {
         val clampedZoom = zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
         val cosLat = cosLatitudeFactor(latitude)
         val cosTilt = cosTiltFactor(tilt)
@@ -51,7 +57,11 @@ class ZoomAltitudeConverter(
         return altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
     }
 
-    override fun altitudeToZoomLevel(altitude: Double, latitude: Double, tilt: Double): Double {
+    override fun altitudeToZoomLevel(
+        altitude: Double,
+        latitude: Double,
+        tilt: Double,
+    ): Double {
         val clampedAltitude = altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
         val cosLat = cosLatitudeFactor(latitude)
         val cosTilt = cosTiltFactor(tilt)
@@ -67,14 +77,20 @@ class ZoomAltitudeConverter(
         return altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
     }
 
-    fun zoomLevelToAltitude(zoomLevel: Double, latitude: Double): Double {
+    fun zoomLevelToAltitude(
+        zoomLevel: Double,
+        latitude: Double,
+    ): Double {
         val clampedZoom = zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
         val cosLat = cosLatitudeFactor(latitude)
         val altitude = (zoom0Altitude * cosLat) / ZOOM_FACTOR.pow(clampedZoom)
         return altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
     }
 
-    fun zoomLevelToDistance(zoomLevel: Double, latitude: Double): Double {
+    fun zoomLevelToDistance(
+        zoomLevel: Double,
+        latitude: Double,
+    ): Double {
         val clampedZoom = zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
         val cosLat = cosLatitudeFactor(latitude)
         val distance = (zoom0Altitude * cosLat) / ZOOM_FACTOR.pow(clampedZoom)
@@ -87,7 +103,10 @@ class ZoomAltitudeConverter(
         return zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
     }
 
-    fun altitudeToZoomLevel(altitude: Double, latitude: Double): Double {
+    fun altitudeToZoomLevel(
+        altitude: Double,
+        latitude: Double,
+    ): Double {
         val clampedAltitude = altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
         val cosLat = cosLatitudeFactor(latitude)
         val zoomLevel = log2((zoom0Altitude * cosLat) / clampedAltitude)

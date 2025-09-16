@@ -46,11 +46,12 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
     }
 
 fun MapCamera.State.toMapCameraPosition(): MapCameraPosition {
-    val altitude = converter.zoomLevelToAltitude(
-        zoomLevel = zoomLevel,
-        latitude = targetCoordinates.latitude,
-        tilt = orientationAtTarget.tilt,
-    )
+    val altitude =
+        converter.zoomLevelToAltitude(
+            zoomLevel = zoomLevel,
+            latitude = targetCoordinates.latitude,
+            tilt = orientationAtTarget.tilt,
+        )
     val position = targetCoordinates.toGeoPoint().copy(altitude = altitude)
     return MapCameraPosition(
         position = position,

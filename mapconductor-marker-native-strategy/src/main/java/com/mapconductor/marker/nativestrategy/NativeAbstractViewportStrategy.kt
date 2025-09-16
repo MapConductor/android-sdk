@@ -22,7 +22,6 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
     semaphore: Semaphore,
     geocell: HexGeocell,
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
-
     /**
      * Native-optimized MarkerManager that eliminates Java-based redundant storage
      */

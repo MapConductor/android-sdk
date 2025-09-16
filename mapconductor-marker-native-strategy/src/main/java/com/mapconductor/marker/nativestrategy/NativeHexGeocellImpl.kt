@@ -4,9 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
-import com.mapconductor.core.geocell.IdentifiedHexCell
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
+import com.mapconductor.core.geocell.IdentifiedHexCell
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Projection
 import com.mapconductor.core.projection.WebMercator
@@ -95,14 +94,15 @@ class NativeHexGeocellImpl(
         points: List<MarkerState>,
         zoom: Double,
     ): Set<IdentifiedHexCell> =
-        points.map {
-            val coord = latLngToHexCoord(it.position, zoom)
-            val centerLatLng = hexToLatLngCenter(coord, it.position.latitude, zoom)
-            val centerXY = projection.project(centerLatLng)
-            val cellId = hexToCellId(coord, zoom)
-            val cell = HexCell(coord, centerLatLng, centerXY, cellId)
-            IdentifiedHexCell(it.id, cell)
-        }.toSet()
+        points
+            .map {
+                val coord = latLngToHexCoord(it.position, zoom)
+                val centerLatLng = hexToLatLngCenter(coord, it.position.latitude, zoom)
+                val centerXY = projection.project(centerLatLng)
+                val cellId = hexToCellId(coord, zoom)
+                val cell = HexCell(coord, centerLatLng, centerXY, cellId)
+                IdentifiedHexCell(it.id, cell)
+            }.toSet()
 
     private fun computeGeographicCentroid(points: List<IGeoPoint>): IGeoPoint {
         if (points.size == 1) return points[0]
@@ -194,10 +194,12 @@ class NativeHexGeocellImpl(
         }
         return results
     }
+
     companion object {
-        fun defaultGeocell(): HexGeocell = NativeHexGeocellImpl(
-            projection = WebMercator,
-            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-        )
+        fun defaultGeocell(): HexGeocell =
+            NativeHexGeocellImpl(
+                projection = WebMercator,
+                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+            )
     }
 }

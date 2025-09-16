@@ -1,8 +1,7 @@
-package com.mapconductor.example.ipc
+package com.mapconductor.core.marker.spatial
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.mapconductor.core.features.GeoPoint
 
 /**
  * Data transfer object for passing marker information between processes.
@@ -12,16 +11,19 @@ data class MarkerDataDTO(
     val id: String,
     val latitude: Double,
     val longitude: Double,
-    val clickable: Boolean = true
+    val clickable: Boolean = true,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readDouble(),
         parcel.readDouble(),
-        parcel.readByte() != 0.toByte()
+        parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(id)
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)
@@ -32,6 +34,7 @@ data class MarkerDataDTO(
 
     companion object CREATOR : Parcelable.Creator<MarkerDataDTO> {
         override fun createFromParcel(parcel: Parcel): MarkerDataDTO = MarkerDataDTO(parcel)
+
         override fun newArray(size: Int): Array<MarkerDataDTO?> = arrayOfNulls(size)
     }
 }
@@ -48,7 +51,7 @@ data class CameraPositionDTO(
     val boundsMinLat: Double,
     val boundsMaxLat: Double,
     val boundsMinLng: Double,
-    val boundsMaxLng: Double
+    val boundsMaxLng: Double,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readDouble(),
@@ -59,10 +62,13 @@ data class CameraPositionDTO(
         parcel.readDouble(),
         parcel.readDouble(),
         parcel.readDouble(),
-        parcel.readDouble()
+        parcel.readDouble(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeDouble(centerLatitude)
         parcel.writeDouble(centerLongitude)
         parcel.writeDouble(zoom)
@@ -78,6 +84,7 @@ data class CameraPositionDTO(
 
     companion object CREATOR : Parcelable.Creator<CameraPositionDTO> {
         override fun createFromParcel(parcel: Parcel): CameraPositionDTO = CameraPositionDTO(parcel)
+
         override fun newArray(size: Int): Array<CameraPositionDTO?> = arrayOfNulls(size)
     }
 }
@@ -88,15 +95,18 @@ data class CameraPositionDTO(
 data class SpatialResultDTO(
     val markersToAdd: List<String>,
     val markersToRemove: List<String>,
-    val markersToUpdate: List<String>
+    val markersToUpdate: List<String>,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.createStringArrayList() ?: emptyList(),
         parcel.createStringArrayList() ?: emptyList(),
-        parcel.createStringArrayList() ?: emptyList()
+        parcel.createStringArrayList() ?: emptyList(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeStringList(markersToAdd)
         parcel.writeStringList(markersToRemove)
         parcel.writeStringList(markersToUpdate)
@@ -106,6 +116,7 @@ data class SpatialResultDTO(
 
     companion object CREATOR : Parcelable.Creator<SpatialResultDTO> {
         override fun createFromParcel(parcel: Parcel): SpatialResultDTO = SpatialResultDTO(parcel)
+
         override fun newArray(size: Int): Array<SpatialResultDTO?> = arrayOfNulls(size)
     }
 }
@@ -116,15 +127,18 @@ data class SpatialResultDTO(
 data class SpatialConfigDTO(
     val expandMargin: Double,
     val addOnlyMode: Boolean,
-    val baseHexSideLength: Int = 1000
+    val baseHexSideLength: Int = 1000,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readDouble(),
         parcel.readByte() != 0.toByte(),
-        parcel.readInt()
+        parcel.readInt(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeDouble(expandMargin)
         parcel.writeByte(if (addOnlyMode) 1 else 0)
         parcel.writeInt(baseHexSideLength)
@@ -134,6 +148,7 @@ data class SpatialConfigDTO(
 
     companion object CREATOR : Parcelable.Creator<SpatialConfigDTO> {
         override fun createFromParcel(parcel: Parcel): SpatialConfigDTO = SpatialConfigDTO(parcel)
+
         override fun newArray(size: Int): Array<SpatialConfigDTO?> = arrayOfNulls(size)
     }
 }

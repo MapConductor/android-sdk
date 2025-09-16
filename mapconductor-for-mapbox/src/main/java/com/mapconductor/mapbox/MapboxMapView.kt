@@ -8,24 +8,20 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
-import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
-import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
@@ -220,7 +216,3 @@ internal fun Context.findActivity(): Activity? =
         is ContextWrapper -> baseContext.findActivity()
         else -> null
     }
-
-
-
-

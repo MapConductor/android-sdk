@@ -73,7 +73,8 @@ class ArcGISMapViewHolderImpl private constructor(
 //                x = offset.x.toDouble(),
 //                y = offset.y.toDouble(),
 //            ))
-        val result = mapView.sceneView.screenToLocation(
+        val result =
+            mapView.sceneView.screenToLocation(
                 screenCoordinate =
                     ScreenCoordinate(
                         x = offset.x.toDouble(),

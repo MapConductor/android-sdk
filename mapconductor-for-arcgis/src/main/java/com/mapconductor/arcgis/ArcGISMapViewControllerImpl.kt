@@ -150,14 +150,17 @@ class ArcGISMapViewControllerImpl(
         val conv = ZoomAltitudeConverter()
         val zoom = conv.altitudeToZoomLevel(alt, lat, tilt)
 
-        val camera = MapCameraPosition(
-            position = com.mapconductor.core.features.GeoPoint.fromLongLat(lon, lat, alt),
-            zoom = zoom,
-            bearing = bearing,
-            tilt = tilt,
-            paddings = com.mapconductor.core.map.MapPaddingsImpl.Zeros,
-            visibleRegion = visibleRegion,
-        )
+        val camera =
+            MapCameraPosition(
+                position =
+                    com.mapconductor.core.features.GeoPoint
+                        .fromLongLat(lon, lat, alt),
+                zoom = zoom,
+                bearing = bearing,
+                tilt = tilt,
+                paddings = com.mapconductor.core.map.MapPaddingsImpl.Zeros,
+                visibleRegion = visibleRegion,
+            )
         return camera
     }
 
@@ -335,7 +338,6 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-
     private fun computeZoom0DistanceForCurrentView(): Double {
         val view = holder.map
         val w = view.width.coerceAtLeast(1)
@@ -347,7 +349,10 @@ class ArcGISMapViewControllerImpl(
     }
 
     private fun toCameraWithView(position: MapCameraPosition): com.arcgismaps.mapping.view.Camera {
-        val targetPoint = com.mapconductor.core.features.GeoPoint.from(position.position).toPoint()
+        val targetPoint =
+            com.mapconductor.core.features.GeoPoint
+                .from(position.position)
+                .toPoint()
         // Use calibrated constant instead of dynamic calculation
         val conv = ZoomAltitudeConverter()
         val distance = conv.zoomLevelToDistance(position.zoom, position.position.latitude)
@@ -357,7 +362,9 @@ class ArcGISMapViewControllerImpl(
             cameraHeadingOffset = 360 - (position.bearing + 180),
             cameraPitchOffset = position.tilt,
         )
-    }override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
+    }
+
+    override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         this.markerController.dragStartListener = listener
     }
 

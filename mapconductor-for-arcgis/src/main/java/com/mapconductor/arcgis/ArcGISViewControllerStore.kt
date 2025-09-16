@@ -6,17 +6,13 @@ import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
-import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
-import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.projection.WebMercator
 import android.content.Context
 
 typealias ArcGISMapViewHolder = MapViewHolder<WrapSceneView, SceneView>

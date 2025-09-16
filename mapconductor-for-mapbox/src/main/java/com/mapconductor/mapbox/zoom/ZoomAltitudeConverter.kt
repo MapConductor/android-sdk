@@ -7,8 +7,11 @@ import kotlin.math.pow
 class ZoomAltitudeConverter(
     zoom0Altitude: Double = DEFAULT_ZOOM0_ALTITUDE,
 ) : AbstractZoomAltitudeConverter(zoom0Altitude) {
-
-    override fun zoomLevelToAltitude(zoomLevel: Double, latitude: Double, tilt: Double): Double {
+    override fun zoomLevelToAltitude(
+        zoomLevel: Double,
+        latitude: Double,
+        tilt: Double,
+    ): Double {
         // Mapbox uses direct zoom levels similar to Google Maps
         // For compatibility with the unified system, we simulate altitude
         val clampedZoom = zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
@@ -16,7 +19,11 @@ class ZoomAltitudeConverter(
         return altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
     }
 
-    override fun altitudeToZoomLevel(altitude: Double, latitude: Double, tilt: Double): Double {
+    override fun altitudeToZoomLevel(
+        altitude: Double,
+        latitude: Double,
+        tilt: Double,
+    ): Double {
         // Mapbox uses direct zoom levels similar to Google Maps
         // For compatibility with the unified system, we simulate zoom from altitude
         val clampedAltitude = altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)

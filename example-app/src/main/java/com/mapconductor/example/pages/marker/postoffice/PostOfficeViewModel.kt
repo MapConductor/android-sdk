@@ -1,4 +1,4 @@
-﻿package com.mapconductor.example.pages.marker.postoffice
+package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -11,12 +11,11 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.spatial.RemoteSpatialMarkerRenderingStrategy
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategy
-import com.mapconductor.example.ipc.RemoteSpatialMarkerRenderingStrategy
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -71,8 +71,7 @@ class ArcGISMarkerController private constructor(
         fun create(
             holder: ArcGISMapViewHolder,
             renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
-        ) : ArcGISMarkerController {
-
+        ): ArcGISMarkerController {
             val markerLayer: GraphicsOverlay =
                 GraphicsOverlay().apply {
                     sceneProperties.surfacePlacement = SurfacePlacement.Relative

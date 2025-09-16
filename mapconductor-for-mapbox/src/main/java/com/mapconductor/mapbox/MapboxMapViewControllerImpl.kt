@@ -2,7 +2,6 @@ package com.mapconductor.mapbox
 
 import MapboxMapViewController
 import androidx.compose.ui.geometry.Offset
-import androidx.core.view.size
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
@@ -23,7 +22,6 @@ import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler

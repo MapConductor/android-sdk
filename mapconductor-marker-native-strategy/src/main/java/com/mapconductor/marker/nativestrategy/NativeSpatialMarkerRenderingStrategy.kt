@@ -4,7 +4,6 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
@@ -59,7 +58,7 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
                 // Native spatial query likely failed, use fallback approach like SpatialMarkerRenderingStrategy
                 allEntities.forEach { entity ->
                     val isInViewport = expandedBounds.contains(entity.state.position)
-                    
+
                     if (isInViewport && !entity.isRendered) {
                         markersToRender.add(entity)
                         entity.visible = true
@@ -84,7 +83,7 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
                         }
                     }
                 }
-                
+
                 // Handle markers that left viewport (only in add/remove mode)
                 if (!addOnlyMode) {
                     allEntities.forEach { entity ->
@@ -186,4 +185,3 @@ object NativeSpatialMarkerRenderingStrategies {
             geocell = geocell,
         )
 }
-

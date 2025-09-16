@@ -37,7 +37,6 @@ class HereMarkerController private constructor(
         }
         get() = internalSelectedMarker
 
-
     override fun find(position: IGeoPoint): MarkerEntity<HereActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom = renderer.holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
@@ -62,18 +61,18 @@ class HereMarkerController private constructor(
             holder: HereViewHolder,
             renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
         ): HereMarkerController {
-
             val renderer =
                 HereMarkerRenderer(
                     holder = holder,
                 )
             val markerManager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
 
-            val controller = HereMarkerController(
-                markerManager = markerManager,
-                renderer = renderer,
-                renderingStrategy = renderingStrategy,
-            )
+            val controller =
+                HereMarkerController(
+                    markerManager = markerManager,
+                    renderer = renderer,
+                    renderingStrategy = renderingStrategy,
+                )
             return controller
         }
     }

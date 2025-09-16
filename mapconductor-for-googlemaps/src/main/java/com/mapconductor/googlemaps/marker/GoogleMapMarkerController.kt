@@ -96,13 +96,15 @@ class GoogleMapMarkerController private constructor(
             renderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
         ): GoogleMapMarkerController {
             val markerManager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
-            val renderer = GoogleMapMarkerRenderer(
-                holder = holder,
-            )
-            val controller = GoogleMapMarkerController(
-                renderer = renderer,
-                markerManager = markerManager,
-            )
+            val renderer =
+                GoogleMapMarkerRenderer(
+                    holder = holder,
+                )
+            val controller =
+                GoogleMapMarkerController(
+                    renderer = renderer,
+                    markerManager = markerManager,
+                )
             return controller
         }
     }

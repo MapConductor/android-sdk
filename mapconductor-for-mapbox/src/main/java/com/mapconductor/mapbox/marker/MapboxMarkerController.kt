@@ -69,13 +69,15 @@ class MapboxMarkerController private constructor(
             renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
         ): MapboxMarkerController {
             val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
-            val renderer = MapboxMarkerOverlayRenderer(
-                holder = holder,
-                markerManager = manager,
-            )
-            val controller = MapboxMarkerController(
-                renderer = renderer,
-            )
+            val renderer =
+                MapboxMarkerOverlayRenderer(
+                    holder = holder,
+                    markerManager = manager,
+                )
+            val controller =
+                MapboxMarkerController(
+                    renderer = renderer,
+                )
             return controller
         }
     }

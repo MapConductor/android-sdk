@@ -11,7 +11,6 @@ import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,26 +36,27 @@ class GoogleMapMarkerRenderer(
         val markerOptions =
             data.map { params ->
                 val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
-                val options = MarkerOptions()
-                    .position(GeoPoint.from(params.state.position).toLatLng())
-                    .anchor(
-                        params.bitmapIcon.anchor.x,
-                        params.bitmapIcon.anchor.y,
-                    )
-                    .icon(bitmapDescriptor)
-                    .draggable(params.state.draggable)
+                val options =
+                    MarkerOptions()
+                        .position(GeoPoint.from(params.state.position).toLatLng())
+                        .anchor(
+                            params.bitmapIcon.anchor.x,
+                            params.bitmapIcon.anchor.y,
+                        ).icon(bitmapDescriptor)
+                        .draggable(params.state.draggable)
                 Pair(params.state.id, options)
             }
 
-        val results = withContext(coroutine.coroutineContext) {
-            markerOptions.fastMap { options ->
-                val marker =
-                    holder.map.addMarker(options.second)?.also {
-                        it.tag = options.first
-                    }
-                return@fastMap marker
+        val results =
+            withContext(coroutine.coroutineContext) {
+                markerOptions.fastMap { options ->
+                    val marker =
+                        holder.map.addMarker(options.second)?.also {
+                            it.tag = options.first
+                        }
+                    return@fastMap marker
+                }
             }
-        }
         return results
     }
 

@@ -33,7 +33,6 @@ import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class GoogleMapViewControllerImpl(

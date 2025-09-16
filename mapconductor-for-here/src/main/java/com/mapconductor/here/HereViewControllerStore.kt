@@ -6,16 +6,12 @@ import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
-import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
-import com.mapconductor.here.marker.HereMarkerRenderer
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
@@ -175,7 +171,3 @@ internal fun Context.getHereAccessKeySecret(): String? =
         .getApplicationInfo(packageName, PackageManager.GET_META_DATA)
         .metaData
         ?.getString("HERE_ACCESS_KEY_SECRET")
-
-
-
-

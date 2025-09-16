@@ -4,7 +4,6 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.ColorDefaultIcon
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.sync.Semaphore

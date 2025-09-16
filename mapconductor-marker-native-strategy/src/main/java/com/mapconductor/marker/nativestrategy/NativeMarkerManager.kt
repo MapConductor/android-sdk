@@ -15,7 +15,7 @@ data class NativeMarkerManagerStats(
     val nativeIndexCount: Long,
     val hasSpatialIndex: Boolean,
     val usesPureNativeIndex: Boolean,
-    val estimatedMemoryKB: Long
+    val estimatedMemoryKB: Long,
 )
 
 /**
@@ -25,7 +25,7 @@ data class NativeMarkerManagerStats(
  *
  * Key optimizations:
  * - Native C++ index as single source of truth
- * - No Java-based HexCellRegistry overhead  
+ * - No Java-based HexCellRegistry overhead
  * - No duplicate entity storage
  * - Minimal Java object allocation
  * - Direct native spatial queries
@@ -34,15 +34,15 @@ data class NativeMarkerManagerStats(
 class NativeMarkerManager<ActualMarker>(
     geocell: HexGeocell,
 ) : MarkerManager<ActualMarker>(geocell) {
-    
     // Native index is the ONLY storage - no Java entity duplication
-    private val nativeIndex: NativeMarkerIndex = NativeMarkerIndex.create(
-        baseHexSideLength = geocell.baseHexSideLength,
-        zoom = 20.0
-    )
-    
+    private val nativeIndex: NativeMarkerIndex =
+        NativeMarkerIndex.create(
+            baseHexSideLength = geocell.baseHexSideLength,
+            zoom = 20.0,
+        )
+
     // No duplicate storage - use parent's optimized storage + native spatial index
-    
+
     @Volatile
     private var isDestroyed = false
 
@@ -50,7 +50,7 @@ class NativeMarkerManager<ActualMarker>(
     override fun getEntity(id: String): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
         // Use parent's entity storage but with native consistency check
-        val entity = super.getEntity(id) 
+        val entity = super.getEntity(id)
         // Verify consistency: if native doesn't have it, remove from Java
         return if (entity != null && nativeIndex.hasMarker(id)) {
             entity
@@ -110,7 +110,7 @@ class NativeMarkerManager<ActualMarker>(
         nativeIndex.registerMarker(
             id = entity.state.id,
             position = entity.state.position,
-            clickable = entity.state.clickable
+            clickable = entity.state.clickable,
         )
         // Then store entity details in Java (avoids parent's spatial index)
         super.registerEntity(entity)
@@ -122,7 +122,7 @@ class NativeMarkerManager<ActualMarker>(
         nativeIndex.updateMarker(
             id = entity.state.id,
             position = entity.state.position,
-            clickable = entity.state.clickable
+            clickable = entity.state.clickable,
         )
         // Then update Java storage
         super.updateEntity(entity)
@@ -159,7 +159,7 @@ class NativeMarkerManager<ActualMarker>(
             super.destroy() // Then parent cleanup
         }
     }
-    
+
     /**
      * Get native-specific memory usage statistics
      */
@@ -171,10 +171,10 @@ class NativeMarkerManager<ActualMarker>(
             nativeIndexCount = nativeIndex.markerCount(),
             hasSpatialIndex = false, // We bypass parent's spatial index
             usesPureNativeIndex = true,
-            estimatedMemoryKB = estimateNativeMemoryUsage() / 1024
+            estimatedMemoryKB = estimateNativeMemoryUsage() / 1024,
         )
     }
-    
+
     private fun estimateNativeMemoryUsage(): Long {
         val baseEntityStorage = super.getMemoryStats().estimatedMemoryKB * 1024L
         val nativeIndexSize = nativeIndex.markerCount() * 50L // Native index is very efficient
@@ -187,7 +187,7 @@ class NativeMarkerManager<ActualMarker>(
         }
     }
 
-    override protected fun finalize() {
+    protected override fun finalize() {
         destroy()
     }
 }
