@@ -1,4 +1,4 @@
-package com.mapconductor.marker.strategy
+package com.mapconductor.marker.strategy.strategy
 
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition

@@ -15,7 +15,7 @@ import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStra
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.strategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.strategy.NativeSpatialMarkerRenderingStrategy
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
