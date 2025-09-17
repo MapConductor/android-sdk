@@ -1,7 +1,11 @@
 package com.mapconductor.icons
 
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.marker.AbstractMarkerIcon
@@ -77,4 +81,28 @@ class RoundInfoBubbleIcon(
 
         return TODO("BitMapを返却")
     }
+}
+
+@Preview
+@Composable
+fun RoundInfoBubbleIconPreview() {
+    val context = LocalContext.current
+
+    val icon = RoundInfoBubbleIcon(
+        properties = RoundInfoBubbleIcon.IconProperties(
+            iconDrawable = ContextCompat.getDrawable(context, com.mapconductor.core.R.drawable.default_marker)!!,
+            label = "aaa",
+            fillColor = Color.White,
+            scale = 1f,
+            iconSize = MarkerIconSize.Small,
+            debug = false,
+        )
+    )
+    val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
+    val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
+
+    Image(
+        bitmap = imageBitmap,
+        contentDescription = null,
+    )
 }
