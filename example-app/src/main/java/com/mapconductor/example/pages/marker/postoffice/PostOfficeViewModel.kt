@@ -1,5 +1,6 @@
 package com.mapconductor.example.pages.marker.postoffice
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -16,16 +17,22 @@ import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import kotlin.coroutines.coroutineContext
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 interface PostOfficeViewModel {
     val initCameraPosition: MapCameraPosition
     val selectedMarker: State<MarkerState?>
     val markerList: State<List<MarkerState>>
     val mapViewState: State<MapViewState<*>?>
+    val isMapLoaded: State<Boolean>
 
     val renderingStrategy: State<MarkerRenderingStrategy<Any>?>
 
@@ -35,13 +42,7 @@ interface PostOfficeViewModel {
 
     fun onMapClick(clicked: GeoPoint)
 
-    fun onCameraChanged(cameraPosition: MapCameraPosition)
-
     fun onMapLoaded(mapViewState: MapViewState<*>)
-
-    fun addMarkersProgressively(markers: List<MarkerState>)
-
-    fun updateMarkerList(markers: List<MarkerState>)
 
     fun onInfoClick(postOffice: PostOffice)
 }
@@ -54,14 +55,10 @@ data class PostOfficeIcons(
 
 class PostOfficeViewModelImpl(
     private val context: Context,
-    private val icons: List<ImageIcon>? = null,
-//    private val dataLoader: PostOfficeDataLoader,
-    private val postOffices: List<MarkerState>,
-    private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    private val postOfficeIcon: ImageIcon,
+    private val dataLoader: PostOfficeDataLoader,
 ) : ViewModel(),
     PostOfficeViewModel {
-    private val semaphore = Semaphore(1)
-    private var prevIconIndex = -1
 
     override val initCameraPosition =
         MapCameraPosition(
@@ -78,23 +75,8 @@ class PostOfficeViewModelImpl(
     private val _markerList: MutableState<List<MarkerState>> = mutableStateOf(emptyList())
     override val markerList: State<List<MarkerState>> = _markerList
 
-    private fun getScaledIcon(zoomLevel: Double): ImageIcon? {
-        if (icons == null || icons.isEmpty()) return null
-        val iconIndex =
-            when {
-                zoomLevel < 9.0 -> 0
-                zoomLevel <= 14.0 -> 1
-                else -> 2
-            }
-        if (iconIndex == prevIconIndex) return null
-        prevIconIndex = iconIndex
-        return icons.getOrNull(iconIndex)
-    }
-
-    private fun updateMarkerList(zoomLevel: Double) {
-        val scaledIcon = getScaledIcon(zoomLevel) ?: return
-        _markerList.value.forEach { it.icon = scaledIcon }
-    }
+    private val _isMapLoaded: MutableState<Boolean> = mutableStateOf(false)
+    override val isMapLoaded: State<Boolean> = _isMapLoaded
 
     private var _mapViewState = mutableStateOf<MapViewState<*>?>(null)
     override val mapViewState: State<MapViewState<*>?> = _mapViewState
@@ -104,13 +86,26 @@ class PostOfficeViewModelImpl(
 
     private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> = mutableStateOf(null)
     override val renderingStrategy: State<MarkerRenderingStrategy<Any>?> = _renderingStrategy
-//        SpatialMarkerRenderingStrategies.withAddRemoveMode(
-//            semaphore = semaphore,
-//            geocell = HexGeocellImpl(
-//                projection = WebMercator,
-//                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-//            )
-//        )
+
+    suspend fun loadPostOfficeData() {
+        if (_markerList.value.isNotEmpty()) return
+
+        val chunks = dataLoader.loadAllPostOffices().chunked(50)
+        val markerStates = mutableListOf<MarkerState>()
+        chunks.forEach { chunk ->
+            val states = chunk.map {
+                MarkerState(
+                    position = it.position,
+                    id = it.hashCode().toString(),
+                    icon = postOfficeIcon,
+                    extra = it,
+                )
+            }
+            markerStates.addAll(states)
+            delay(16)
+        }
+        _markerList.value = markerStates
+    }
 
     override fun onMarkerClick(clicked: MarkerState) {
         this._selectedMarker.value = clicked
@@ -120,22 +115,11 @@ class PostOfficeViewModelImpl(
         this._selectedMarker.value = null
     }
 
-    override fun onCameraChanged(cameraPosition: MapCameraPosition) {
-//        updateMarkerList(cameraPosition.zoom)
-    }
-
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
-        // Don't load all markers at once - use progressive loading instead
-    }
-
-    override fun addMarkersProgressively(markers: List<MarkerState>) {
-        val currentMarkers = _markerList.value.toMutableList()
-        currentMarkers.addAll(markers)
-        _markerList.value = currentMarkers
-    }
-
-    override fun updateMarkerList(markers: List<MarkerState>) {
-        _markerList.value = markers
+        CoroutineScope(Dispatchers.Default).launch {
+            delay(1000)
+            _isMapLoaded.value = true
+        }
     }
 
     override fun onInfoClick(postOffice: PostOffice) {
@@ -150,6 +134,7 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
+        _isMapLoaded.value = false
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _renderingStrategy.value =
@@ -164,7 +149,7 @@ class PostOfficeViewModelImpl(
                     RemoteSpatialMarkerRenderingStrategy(
                         context = context,
                         expandMargin = 0.5,
-                        addOnlyMode = false,
+                        addOnlyMode = true,
                     )
                 is HereViewState ->
                     RemoteSpatialMarkerRenderingStrategy(
