@@ -1,9 +1,10 @@
-package com.mapconductor.core
+package com.mapconductor.marker.strategy.spatial
 
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
+import com.mapconductor.core.ResourceProvider
 
 class InitProvider : ContentProvider() {
     override fun onCreate(): Boolean {

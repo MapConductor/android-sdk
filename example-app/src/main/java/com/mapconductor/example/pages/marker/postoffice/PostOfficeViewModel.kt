@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.marker.postoffice
 
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -12,20 +11,16 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.spatial.RemoteSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
-import kotlin.coroutines.coroutineContext
+import com.mapconductor.marker.strategy.NativeSpatialMarkerRenderingStrategy
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 interface PostOfficeViewModel {
     val initCameraPosition: MapCameraPosition

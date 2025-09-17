@@ -1,4 +1,4 @@
-package com.mapconductor.core.marker.spatial
+package com.mapconductor.marker.strategy.spatial
 
 import android.os.Parcel
 import android.os.Parcelable

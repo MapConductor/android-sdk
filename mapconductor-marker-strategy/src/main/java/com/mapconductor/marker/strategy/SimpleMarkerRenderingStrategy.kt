@@ -1,22 +1,30 @@
-package com.mapconductor.marker.nativestrategy
+package com.mapconductor.marker.strategy
 
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.ColorDefaultIcon
+import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 /**
- * Simple native marker rendering strategy for when no advanced strategy is provided.
- * This basic strategy renders all markers without viewport-based optimizations but uses native indexing.
+ * Simple fallback marker rendering strategy for when no advanced strategy is provided.
+ * This basic strategy renders all markers without viewport-based optimizations.
  */
-class NativeSimpleMarkerRenderingStrategy<ActualMarker>(
+class SimpleMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
-) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
+    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
+    /**
+     * Default MarkerManager instance provided by dependency injection.
+     */
+    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
+
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPosition,
         renderer: MarkerOverlayRenderer<ActualMarker>,

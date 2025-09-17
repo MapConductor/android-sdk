@@ -26,7 +26,8 @@
       "Bash(mv:*)",
       "Bash(cp:*)",
       "WebFetch(*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(.gradlew:*)"
     ],
     "deny": []
   }

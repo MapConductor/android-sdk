@@ -1,4 +1,4 @@
-package com.mapconductor.core.marker.spatial
+package com.mapconductor.marker.strategy.spatial
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
@@ -9,7 +9,9 @@ import com.mapconductor.core.spherical.expandBounds
 import java.util.concurrent.ConcurrentHashMap
 import android.app.Service
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
+import android.os.Process
 import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -41,7 +43,7 @@ open class SpatialMarkerService : Service() {
     private val sessions = ConcurrentHashMap<String, SpatialSession>()
 
     private val binder =
-        object : android.os.Binder() { // Temporarily disabled: ISpatialMarkerService.Stub() {
+        object : Binder() { // Temporarily disabled: ISpatialMarkerService.Stub() {
 
             fun initializeSession(
                 sessionId: String,
@@ -252,7 +254,7 @@ open class SpatialMarkerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "SpatialMarkerService created in process: ${android.os.Process.myPid()}")
+        Log.d(TAG, "SpatialMarkerService created in process: ${Process.myPid()}")
     }
 
     override fun onDestroy() {

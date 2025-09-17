@@ -1,4 +1,4 @@
-﻿package com.mapconductor.marker.nativestrategy
+﻿package com.mapconductor.marker.strategy
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.IGeoPoint

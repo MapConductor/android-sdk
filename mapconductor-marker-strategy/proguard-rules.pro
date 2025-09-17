@@ -4,13 +4,13 @@
 -keepattributes SourceFile,LineNumberTable
 
 # Keep all public strategy classes
--keep public class com.mapconductor.marker.nativestrategy.** { public *; }
+-keep public class com.mapconductor.marker.strategy.** { public *; }
 
 # Keep all strategy implementations
--keep class com.mapconductor.marker.nativestrategy.*Strategy { *; }
+-keep class com.mapconductor.marker.strategy.*Strategy { *; }
 
 # Keep factory classes
--keep class com.mapconductor.marker.nativestrategy.SpatialMarkerRenderingStrategies { *; }
+-keep class com.mapconductor.marker.strategy.SpatialMarkerRenderingStrategies { *; }
 
 # Coroutines support
 -keep class kotlinx.coroutines.** { *; }
