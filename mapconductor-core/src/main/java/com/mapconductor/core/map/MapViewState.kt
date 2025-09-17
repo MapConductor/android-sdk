@@ -34,13 +34,13 @@ interface MapViewState<ActualMapDesignType> {
 
     fun moveCameraTo(
         cameraPosition: MapCameraPosition,
-        durationMs: Long = 0,
+        durationMs: Long? = 0,
         listener: MoveCameraCallback? = null,
     )
 
     fun moveCameraTo(
         position: GeoPoint,
-        durationMs: Long = 0,
+        durationMs: Long? = 0,
         listener: MoveCameraCallback? = null,
     )
 

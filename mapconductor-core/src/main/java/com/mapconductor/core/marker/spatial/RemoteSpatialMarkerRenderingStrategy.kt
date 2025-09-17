@@ -66,18 +66,15 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 name: ComponentName?,
                 service: IBinder?,
             ) {
-                Log.d(TAG, "Service connected - ComponentName: $name, IBinder: $service")
                 try {
                     // Fallback to local processing since AIDL generation has issues
                     spatialService = null
-                    Log.w(TAG, "Using fallback to local processing instead of IPC service")
-                    Log.d(TAG, "Cast result - spatialService: $spatialService")
 
                     // If cast fails, log the actual type for debugging
-                    if (spatialService == null && service != null) {
-                        Log.w(TAG, "Service cast failed. Actual service type: ${service.javaClass.name}")
-                        Log.w(TAG, "Service interfaces: ${service.javaClass.interfaces.contentToString()}")
-                    }
+//                    if (spatialService == null && service != null) {
+//                        Log.w(TAG, "Service cast failed. Actual service type: ${service.javaClass.name}")
+//                        Log.w(TAG, "Service interfaces: ${service.javaClass.interfaces.contentToString()}")
+//                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Exception during service cast", e)
                     spatialService = null
@@ -85,7 +82,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
                 synchronized(serviceConnectionLock) {
                     isServiceConnected = (spatialService != null)
-                    Log.d(TAG, "Service connection status: $isServiceConnected")
                     serviceConnectionLock.notifyAll()
 
                     // Initialize session in background service
@@ -94,20 +90,17 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                             val config = SpatialConfigDTO(expandMargin, addOnlyMode)
                             // val result = spatialService!!.initializeSession(sessionId, config)
                             val result = true // Using local fallback
-                            Log.d(TAG, "Session initialization result: $result for session $sessionId")
                         } catch (e: Exception) {
                             Log.e(TAG, "Failed to initialize session in background service", e)
                             isServiceConnected = false
                         }
                     } else {
-                        Log.e(TAG, "spatialService is null after casting - falling back to local processing")
                         isServiceConnected = false
                     }
                 }
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
-                Log.d(TAG, "Disconnected from MarkerSpatialService")
                 synchronized(serviceConnectionLock) {
                     spatialService = null
                     isServiceConnected = false
@@ -118,7 +111,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
     init {
         // Register with service manager and start service if needed
         strategyId = SpatialMarkerServiceManager.registerStrategy(context, this)
-        connectToService()
+//        connectToService()
         startBatchProcessor()
     }
 
@@ -144,16 +137,15 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 batch.add(update)
             }
 
-            if (batch.isNotEmpty()) {
-                try {
-                    // spatialService?.updateMarkers(sessionId, batch) - Using local fallback
-                    Log.d(TAG, "Processed batch of ${batch.size} marker updates")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to process batch update", e)
-                    // Re-add failed updates to queue for retry
-                    batch.forEach { pendingUpdates.offer(it) }
-                }
-            }
+//            if (batch.isNotEmpty()) {
+//                try {
+//                    // spatialService?.updateMarkers(sessionId, batch) - Using local fallback
+//                } catch (e: Exception) {
+//                    Log.e(TAG, "Failed to process batch update", e)
+//                    // Re-add failed updates to queue for retry
+//                    batch.forEach { pendingUpdates.offer(it) }
+//                }
+//            }
         }
     }
 
@@ -192,7 +184,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
         semaphore.withPermit {
             try {
-                Log.d(TAG, "Processing camera change for viewport: ${visibleRegion.bounds}")
 
                 // Use local spatial calculation as fallback
                 val expandedBounds =
@@ -229,8 +220,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                         }
                     }
                 }
-
-                Log.d(TAG, "Local spatial calculation: +${markersToAdd.size} -${markersToRemove.size}")
 
                 // Create result DTO for processing
                 val result = SpatialResultDTO(markersToAdd, markersToRemove, emptyList())
@@ -299,7 +288,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
             renderer.onPostProcess()
         }
 
-        Log.d(TAG, "Processed rendering changes: +${markersToAdd.size} -${markersToRemove.size}")
     }
 
     override suspend fun onAdd(
@@ -307,7 +295,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
-        Log.d(TAG, "onAdd called with ${data.size} markers, viewport: $viewport")
         return withContext(Dispatchers.Default) {
             try {
                 val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
@@ -319,7 +306,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 chunks.forEach { chunk ->
                     chunk.forEach { state ->
                         val isInViewport = viewport.contains(state.position)
-                        Log.d(TAG, "Marker ${state.id} at ${state.position} - inViewport: $isInViewport")
 
                         if (isInViewport) {
                             // Marker is in viewport - add to render list
@@ -353,23 +339,20 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 // Render markers that are in viewport (switch to main thread)
                 withContext(Dispatchers.Main) {
                     if (markersToRender.isNotEmpty()) {
-                        Log.d(TAG, "Rendering ${markersToRender.size} markers immediately")
 
                         // Process rendering in smaller chunks to prevent blocking main thread
                         val renderChunks = markersToRender.chunked(50)
 
                         renderChunks.forEach { renderChunk ->
                             val actualMarkers = renderer.onAdd(renderChunk)
-                            Log.d(TAG, "Renderer.onAdd returned ${actualMarkers.size} actual markers")
-
                             actualMarkers.forEachIndexed { index, actualMarker ->
-                                Log.d(TAG, "Processing actual marker $index: $actualMarker")
                                 actualMarker?.let {
                                     val entity =
                                         MarkerEntityImpl<ActualMarker>(
                                             state = renderChunk[index].state,
                                             marker = actualMarker,
                                             isRendered = true,
+                                            visible = true,
                                         )
                                     markerManager.registerEntity(entity)
                                 }
@@ -382,9 +365,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                         }
 
                         renderer.onPostProcess()
-                        Log.d(TAG, "Completed immediate rendering")
-                    } else {
-                        Log.d(TAG, "No markers to render immediately (all outside viewport)")
                     }
                 }
 
@@ -403,11 +383,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                     // Add to batch queue for background processing
                     markerDTOs.forEach { addToBatch(it) }
                 }
-
-                Log.d(
-                    TAG,
-                    "Added ${data.size} markers (${markersToRender.size} rendered immediately) to session $sessionId",
-                )
                 true
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to add markers", e)
@@ -546,8 +521,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
             // Unregister from service manager (may stop service if this was the last strategy)
             SpatialMarkerServiceManager.unregisterStrategy(context, strategyId)
-
-            Log.d(TAG, "RemoteSpatialMarkerRenderingStrategy destroyed")
         } catch (e: Exception) {
             Log.e(TAG, "Error during cleanup", e)
         }

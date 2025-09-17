@@ -77,6 +77,7 @@ class MapboxMarkerController private constructor(
             val controller =
                 MapboxMarkerController(
                     renderer = renderer,
+                    renderingStrategy = renderingStrategy,
                 )
             return controller
         }

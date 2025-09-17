@@ -50,7 +50,7 @@ class HereViewStateImpl(
 
     override fun moveCameraTo(
         position: GeoPoint,
-        durationMs: Long,
+        durationMs: Long?,
         listener: MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
@@ -74,13 +74,13 @@ class HereViewStateImpl(
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPosition,
-        durationMs: Long,
+        durationMs: Long?,
         listener: MoveCameraCallback?,
     ) {
         controller?.let { ctrl ->
             if (this.isInitialized.value == InitState.Initialized) {
                 val dstCameraPosition = MapCameraPosition.from(cameraPosition)
-                if (durationMs == 0L) {
+                if (durationMs == null || durationMs == 0L) {
                     ctrl.moveCamera(dstCameraPosition, listener)
                 } else {
                     ctrl.animateCamera(dstCameraPosition, durationMs, listener)

@@ -90,12 +90,19 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                     scale = 0.6f,
                 )
             val icons = listOf(tinyIcon, smallIcon, regularIcon)
-            PostOfficeViewModelImpl(context, icons, postOfficesState.value!!)
+            PostOfficeViewModelImpl(context, icons, emptyList())
         }
+
+    // Update ViewModel with progressively loaded markers
+    LaunchedEffect(postOfficesState.value) {
+        postOfficesState.value?.let { markers ->
+            viewModel.updateMarkerList(markers)
+        }
+    }
     val selectedMarker = viewModel.selectedMarker
 
     DemoMapPageScaffold(
-        initSelect = 2,
+        initSelect = 0,
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
@@ -110,6 +117,7 @@ fun PostOfficeMapPage(onToggleSidebar: () -> Unit = {}) {
                 onMapClick = viewModel::onMapClick,
                 onMarkerClick = viewModel::onMarkerClick,
                 onCameraChanged = viewModel::onCameraChanged,
+                onInfoWndClick = viewModel::onInfoClick,
             )
         }
     }

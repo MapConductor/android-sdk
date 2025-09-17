@@ -88,8 +88,6 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun add(data: List<MarkerState>) {
-        val startTime = System.currentTimeMillis()
-
         renderingStrategy?.let { strategy ->
             mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
                 val processed =
@@ -98,8 +96,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                         viewport = bounds,
                         renderer = renderer,
                     )
-                val afterOnAddTime = System.currentTimeMillis()
-                Log.d("debug", "AbstractMarkerController.renderingStrategy: ${(afterOnAddTime - startTime)} ms")
             }
             return
         }
@@ -137,9 +133,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                 markerManager.removeEntity(remainId)
             }
 
-            val halfTime = System.currentTimeMillis()
-            Log.d("debug", "AbstractMarkerController.add(half): ${(halfTime - startTime)} ms")
-
             val allEntities = markerManager.allEntities()
             val markersToRender = allEntities.filter { !it.isRendered }
 
@@ -153,15 +146,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                         }
                     }
 
-                val beforeOnAddTime = System.currentTimeMillis()
-                Log
-                    .d("debug", "AbstractMarkerController.beforeOnAdd(half): ${(beforeOnAddTime - halfTime)} ms, addParams = ${addParams.count()}")
-
                 val actualMarkers = renderer.onAdd(addParams)
-
-                val afterOnAddTime = System.currentTimeMillis()
-                Log.d("debug", "AbstractMarkerController.afterOnAdd(half): ${(afterOnAddTime - beforeOnAddTime)} ms")
-
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
                         markersToRender[index].marker = it
@@ -176,10 +161,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                     }
                 }
                 renderer.onPostProcess()
-
-                val endTime = System.currentTimeMillis()
-                val elapsedTime = endTime - afterOnAddTime // 処理時間を計算
-                Log.d("debug", "AbstractMarkerController.add: $elapsedTime ms")
             }
         }
     }
@@ -195,7 +176,6 @@ abstract class AbstractMarkerController<ActualMarker>(
         if (currentFinger == prevFinger) {
             return
         }
-        val startTime = System.currentTimeMillis()
 
         // Update the entity in manager
         val entity =
@@ -259,9 +239,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                 }
             }
         }
-        val endTime = System.currentTimeMillis()
-        val elapsedTime = endTime - startTime // 処理時間を計算
-        Log.d("debug", "AbstractMarkerController.update: $elapsedTime ms")
     }
 
     override suspend fun clear() {

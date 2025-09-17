@@ -27,6 +27,7 @@ fun PostOfficeMapComponent(
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
+    onInfoWndClick: ((PostOffice) -> Unit)? = null,
     onCameraChanged: ((com.mapconductor.core.map.MapCameraPosition) -> Unit)? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
@@ -59,6 +60,7 @@ fun PostOfficeMapComponent(
             ) {
                 PostOfficeInfoView(
                     info = it.extra as PostOffice,
+                    onClick = onInfoWndClick,
                 )
             }
         }

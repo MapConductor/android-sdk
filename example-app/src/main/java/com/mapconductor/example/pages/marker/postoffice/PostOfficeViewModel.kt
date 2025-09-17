@@ -40,6 +40,10 @@ interface PostOfficeViewModel {
     fun onMapLoaded(mapViewState: MapViewState<*>)
 
     fun addMarkersProgressively(markers: List<MarkerState>)
+
+    fun updateMarkerList(markers: List<MarkerState>)
+
+    fun onInfoClick(postOffice: PostOffice)
 }
 
 data class PostOfficeIcons(
@@ -66,7 +70,7 @@ class PostOfficeViewModelImpl(
                     latitude = 35.68049,
                     longitude = 139.76669,
                 ),
-            zoom = 16.0,
+            zoom = 10.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -117,7 +121,7 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onCameraChanged(cameraPosition: MapCameraPosition) {
-        updateMarkerList(cameraPosition.zoom)
+//        updateMarkerList(cameraPosition.zoom)
     }
 
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
@@ -128,6 +132,21 @@ class PostOfficeViewModelImpl(
         val currentMarkers = _markerList.value.toMutableList()
         currentMarkers.addAll(markers)
         _markerList.value = currentMarkers
+    }
+
+    override fun updateMarkerList(markers: List<MarkerState>) {
+        _markerList.value = markers
+    }
+
+    override fun onInfoClick(postOffice: PostOffice) {
+        _mapViewState.value?.moveCameraTo(
+            cameraPosition = MapCameraPosition(
+                position = postOffice.position,
+                zoom = 18.0,
+                tilt = 30.0,
+            ),
+            durationMs = 2000,
+        )
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
@@ -145,13 +164,13 @@ class PostOfficeViewModelImpl(
                     RemoteSpatialMarkerRenderingStrategy(
                         context = context,
                         expandMargin = 0.5,
-                        addOnlyMode = true,
+                        addOnlyMode = false,
                     )
                 is HereViewState ->
                     RemoteSpatialMarkerRenderingStrategy(
                         context = context,
                         expandMargin = 0.4,
-                        addOnlyMode = false,
+                        addOnlyMode = true,
                     )
                 is ArcGISMapViewState ->
                     RemoteSpatialMarkerRenderingStrategy(
