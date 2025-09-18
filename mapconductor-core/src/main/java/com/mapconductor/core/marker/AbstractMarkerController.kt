@@ -4,7 +4,6 @@ import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
-import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 

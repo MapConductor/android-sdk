@@ -3,9 +3,14 @@ package com.mapconductor.core.marker
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
+import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.settings.Settings
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.util.Log
 
 class ImageIcon(
     drawable: Drawable,
@@ -17,7 +22,68 @@ class ImageIcon(
 ) : AndroidDrawableIcon(
         drawable = drawable,
     ) {
+    private fun getDrawableIdentity(): Any =
+        when (drawable) {
+            is BitmapDrawable -> {
+                drawable.bitmap?.let { bitmap ->
+                    if (bitmap.isRecycled) {
+                        drawable.hashCode()
+                    } else {
+                        try {
+                            // Sample a small portion for efficient hashing
+                            val sampleWidth = minOf(bitmap.width, 32)
+                            val sampleHeight = minOf(bitmap.height, 32)
+                            val buffer = IntArray(sampleWidth * sampleHeight)
+                            bitmap.getPixels(
+                                buffer,
+                                0,
+                                sampleWidth,
+                                0,
+                                0,
+                                sampleWidth,
+                                sampleHeight,
+                            )
+                            buffer.contentHashCode()
+                        } catch (e: Exception) {
+                            drawable.hashCode()
+                        }
+                    }
+                } ?: drawable.hashCode()
+            }
+            is ColorDrawable -> drawable.color
+            is GradientDrawable -> drawable.hashCode()
+            else -> "${drawable::class.java.name}_${drawable.hashCode()}"
+        }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+        other as ImageIcon
+        return getDrawableIdentity() == other.getDrawableIdentity() &&
+            iconSize == other.iconSize &&
+            scale == other.scale &&
+            anchor == other.anchor &&
+            infoAnchor == other.infoAnchor &&
+            debug == other.debug
+    }
+
+    override fun hashCode(): Int {
+        var result = getDrawableIdentity().hashCode()
+        result = 31 * result + iconSize.hashCode()
+        result = 31 * result + scale.hashCode()
+        result = 31 * result + anchor.hashCode()
+        result = 31 * result + infoAnchor.hashCode()
+        result = 31 * result + debug.hashCode()
+        return result
+    }
+
     override fun toBitmapIcon(): BitmapIcon {
+        val id = hashCode()
+        BitmapIconCache.get(id)?.let {
+            Log.d("debug", "ImageIcon ${id}")
+            return it
+        }
+
         val scaledSize = ResourceProvider.dpToPx(iconSize.value) * scale
 
         val bitmap =
@@ -27,10 +93,13 @@ class ImageIcon(
                 height = scaledSize.toInt(),
             )
 
-        return BitmapIcon(
-            bitmap = bitmap,
-            anchor = anchor,
-            size = Size(scaledSize.toFloat(), scaledSize.toFloat()),
-        )
+        val result =
+            BitmapIcon(
+                bitmap = bitmap,
+                anchor = anchor,
+                size = Size(scaledSize.toFloat(), scaledSize.toFloat()),
+            )
+        BitmapIconCache.put(id, result)
+        return result
     }
 }

@@ -19,12 +19,12 @@ import com.mapconductor.core.polyline.PolylineState
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import kotlinx.coroutines.FlowPreview
 
 open class MapViewScope {
     val overflowScope = CoroutineScope(Dispatchers.IO)

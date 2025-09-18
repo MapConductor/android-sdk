@@ -11,11 +11,11 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.marker.strategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +54,6 @@ class PostOfficeViewModelImpl(
     private val dataLoader: PostOfficeDataLoader,
 ) : ViewModel(),
     PostOfficeViewModel {
-
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -85,19 +84,26 @@ class PostOfficeViewModelImpl(
     suspend fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
-        val chunks = dataLoader.loadAllPostOffices().chunked(50)
+        val chunks = dataLoader.loadAllPostOffices().subList(0, 200)
         val markerStates = mutableListOf<MarkerState>()
-        chunks.forEach { chunk ->
-            val states = chunk.map {
-                MarkerState(
-                    position = it.position,
-                    id = it.hashCode().toString(),
-                    icon = postOfficeIcon,
-                    extra = it,
-                )
-            }
-            markerStates.addAll(states)
-            delay(16)
+        chunks.forEach { it ->
+            markerStates.add(MarkerState(
+                position = it.position,
+                id = it.hashCode().toString(),
+                icon = postOfficeIcon,
+                extra = it,
+            ))
+//            val states =
+//                chunk.map {
+//                    MarkerState(
+//                        position = it.position,
+//                        id = it.hashCode().toString(),
+//                        icon = postOfficeIcon,
+//                        extra = it,
+//                    )
+//                }
+//            markerStates.addAll(states)
+//            delay(100)
         }
         _markerList.value = markerStates
     }
@@ -119,11 +125,12 @@ class PostOfficeViewModelImpl(
 
     override fun onInfoClick(postOffice: PostOffice) {
         _mapViewState.value?.moveCameraTo(
-            cameraPosition = MapCameraPosition(
-                position = postOffice.position,
-                zoom = 18.0,
-                tilt = 30.0,
-            ),
+            cameraPosition =
+                MapCameraPosition(
+                    position = postOffice.position,
+                    zoom = 18.0,
+                    tilt = 30.0,
+                ),
             durationMs = 2000,
         )
     }

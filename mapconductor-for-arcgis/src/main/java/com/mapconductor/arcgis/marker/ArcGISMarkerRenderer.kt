@@ -12,7 +12,6 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -3,7 +3,6 @@ package com.mapconductor.core.marker
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -19,7 +18,6 @@ class MarkerOverlay(
         data: MutableMap<String, MarkerState>,
         controller: MapViewController,
     ) {
-
         (controller as? MarkerCapable)?.let { markerController ->
             markerController.compositionMarkers(data.values.toList())
         }
