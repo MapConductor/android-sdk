@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -13,11 +12,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import kotlinx.coroutines.delay
 
 @Composable
 fun PostOfficeMapPage(
@@ -46,20 +43,22 @@ fun PostOfficeMapPage(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        val selectedMarker = viewModel.selectedMarker
-        val markers = viewModel.markerList.collectAsState()
+        val selectedMarker = viewModel.selectedMarker.collectAsState().value
+        val markers = viewModel.markerList.collectAsState().value
+        val mapViewState = viewModel.mapViewState.collectAsState().value
+        val isMapLoaded = viewModel.isMapLoaded.collectAsState().value
 
         DemoMapPageScaffold(
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = viewModel::onMapViewChanged,
         ) {
-            viewModel.mapViewState.value?.let { mapViewState ->
+            mapViewState?.let { mapViewState ->
                 PostOfficeMapComponent(
                     mapViewState = mapViewState,
                     renderingStrategy = viewModel.renderingStrategy.value,
-                    selectedMarker = selectedMarker.value,
-                    markers = markers.value,
+                    selectedMarker = selectedMarker,
+                    markers = markers,
                     onMapLoaded = viewModel::onMapLoaded,
                     onMapClick = viewModel::onMapClick,
                     onMarkerClick = viewModel::onMarkerClick,
@@ -68,7 +67,7 @@ fun PostOfficeMapPage(
             }
         }
 
-        if (!viewModel.isMapLoaded.value) {
+        if (!isMapLoaded) {
             viewModel.loadPostOfficeData()
             CircularProgressIndicator()
         }

@@ -37,9 +37,9 @@ object SpatialMarkerServiceManager {
 //            val count = activeStrategyCount.incrementAndGet()
 
             // For now, we skip starting the actual service since we're using local fallback
-             if (!isServiceStarted) {
-                 startService(context, SpatialMarkerService.javaClass)
-             }
+            if (!isServiceStarted) {
+                startService(context, SpatialMarkerService.javaClass)
+            }
         }
 
         return strategyId
@@ -59,9 +59,9 @@ object SpatialMarkerServiceManager {
                 Log.d(TAG, "Unregistered strategy $strategyId. Active strategies: $count")
 
                 // For now, we skip stopping the service since we're using local fallback
-                 if (count == 0 && isServiceStarted) {
-                     stopService(context, SpatialMarkerService.javaClass)
-                 }
+                if (count == 0 && isServiceStarted) {
+                    stopService(context, SpatialMarkerService.javaClass)
+                }
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.mapconductor.marker.nativestrategy.spatial
 
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerEntity
@@ -7,14 +9,12 @@ import com.mapconductor.core.marker.MarkerEntityImpl
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.spherical.expandBounds
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import android.content.Context
 import android.util.Log
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -1,8 +1,5 @@
 package com.mapconductor.example.pages.marker.postoffice
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
@@ -27,12 +24,12 @@ import kotlinx.coroutines.launch
 
 interface PostOfficeViewModel {
     val initCameraPosition: MapCameraPosition
-    val selectedMarker: State<MarkerState?>
+    val selectedMarker: StateFlow<MarkerState?>
     val markerList: StateFlow<List<MarkerState>>
-    val mapViewState: State<MapViewState<*>?>
-    val isMapLoaded: State<Boolean>
+    val mapViewState: StateFlow<MapViewState<*>?>
+    val isMapLoaded: StateFlow<Boolean>
 
-    val renderingStrategy: State<MarkerRenderingStrategy<Any>?>
+    val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?>
 
     fun onMapViewChanged(mapViewState: MapViewState<*>)
 
@@ -43,6 +40,7 @@ interface PostOfficeViewModel {
     fun onMapLoaded(mapViewState: MapViewState<*>)
 
     fun onInfoClick(postOffice: PostOffice)
+
     fun loadPostOfficeData()
 }
 
@@ -59,7 +57,6 @@ class PostOfficeViewModelImpl(
     private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
     PostOfficeViewModel {
-
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -75,24 +72,24 @@ class PostOfficeViewModelImpl(
     private val _markerList: MutableStateFlow<List<MarkerState>> = MutableStateFlow(emptyList())
     override val markerList: StateFlow<List<MarkerState>> = _markerList.asStateFlow()
 
-    private val _isMapLoaded: MutableState<Boolean> = mutableStateOf(false)
-    override val isMapLoaded: State<Boolean> = _isMapLoaded
+    private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()
 
-    private var _mapViewState = mutableStateOf<MapViewState<*>?>(null)
-    override val mapViewState: State<MapViewState<*>?> = _mapViewState
+    private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
+    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
-    private var _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
-    override val selectedMarker: State<MarkerState?> = _selectedMarker
+    private var _selectedMarker: MutableStateFlow<MarkerState?> = MutableStateFlow(null)
+    override val selectedMarker: StateFlow<MarkerState?> = _selectedMarker.asStateFlow()
 
-    private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> =
-        mutableStateOf(
+    private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategy<Any>?> =
+        MutableStateFlow(
             RemoteSpatialMarkerRenderingStrategy(
                 context = context,
                 expandMargin = 0.4,
                 addOnlyMode = false,
             ),
         )
-    override val renderingStrategy: State<MarkerRenderingStrategy<Any>?> = _renderingStrategy
+    override val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?> = _renderingStrategy.asStateFlow()
 
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
