@@ -78,33 +78,30 @@ class PostOfficeViewModelImpl(
     private var _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
     override val selectedMarker: State<MarkerState?> = _selectedMarker
 
-    private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> = mutableStateOf(null)
+    private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> =
+        mutableStateOf(
+            RemoteSpatialMarkerRenderingStrategy(
+                context = context,
+                expandMargin = 0.4,
+                addOnlyMode = false,
+            ),
+        )
     override val renderingStrategy: State<MarkerRenderingStrategy<Any>?> = _renderingStrategy
 
     suspend fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
-        val chunks = dataLoader.loadAllPostOffices().subList(0, 200)
-        val markerStates = mutableListOf<MarkerState>()
-        chunks.forEach { it ->
-            markerStates.add(MarkerState(
-                position = it.position,
-                id = it.hashCode().toString(),
-                icon = postOfficeIcon,
-                extra = it,
-            ))
-//            val states =
-//                chunk.map {
-//                    MarkerState(
-//                        position = it.position,
-//                        id = it.hashCode().toString(),
-//                        icon = postOfficeIcon,
-//                        extra = it,
-//                    )
-//                }
-//            markerStates.addAll(states)
-//            delay(100)
-        }
+        val postOffices = dataLoader.loadAllPostOffices()
+
+        val markerStates =
+            postOffices.map { it ->
+                MarkerState(
+                    position = it.position,
+                    id = it.hashCode().toString(),
+                    icon = postOfficeIcon,
+                    extra = it,
+                )
+            }
         _markerList.value = markerStates
     }
 

@@ -90,7 +90,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                             val config =
                                 _root_ide_package_.com.mapconductor.marker.strategy.spatial.SpatialConfigDTO(
                                     expandMargin,
-                                    addOnlyMode
+                                    addOnlyMode,
                                 )
                             // val result = spatialService!!.initializeSession(sessionId, config)
                             val result = true // Using local fallback
@@ -114,8 +114,10 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
     init {
         // Register with service manager and start service if needed
-        strategyId = _root_ide_package_.com.mapconductor.marker.strategy.SpatialMarkerServiceManager.registerStrategy(context, this)
-//        connectToService()
+        strategyId =
+            _root_ide_package_.com.mapconductor.marker.strategy.SpatialMarkerServiceManager
+                .registerStrategy(context, this)
+        connectToService()
         startBatchProcessor()
     }
 
@@ -188,7 +190,6 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
         semaphore.withPermit {
             try {
-
                 // Use local spatial calculation as fallback
                 val expandedBounds =
                     com.mapconductor.core.spherical
@@ -230,7 +231,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                     _root_ide_package_.com.mapconductor.marker.strategy.spatial.SpatialResultDTO(
                         markersToAdd,
                         markersToRemove,
-                        emptyList()
+                        emptyList(),
                     )
 
                 // Process results in main process
@@ -296,48 +297,42 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
         if (markersToRemove.isNotEmpty() || markersToAdd.isNotEmpty()) {
             renderer.onPostProcess()
         }
-
     }
 
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRenderer<ActualMarker>,
-    ): Boolean {
-        return withContext(Dispatchers.Default) {
+    ): Boolean =
+        withContext(Dispatchers.Default) {
             try {
+                // Yield after processing each chunk to allow other coroutines
+                yield()
+
                 val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
                 val markersToRegister = mutableListOf<MarkerEntityImpl<ActualMarker>>()
 
-                // Process markers in chunks to prevent ANR
-                val chunks = data.chunked(100) // Process 100 markers at a time
+                data.forEach { state ->
+                    val isInViewport = viewport.contains(state.position)
 
-                chunks.forEach { chunk ->
-                    chunk.forEach { state ->
-                        val isInViewport = viewport.contains(state.position)
-
-                        if (isInViewport) {
-                            // Marker is in viewport - add to render list
-                            markersToRender.add(
-                                object : MarkerOverlayRenderer.AddParams {
-                                    override val state = state
-                                    override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
-                                },
+                    if (isInViewport) {
+                        // Marker is in viewport - add to render list
+                        markersToRender.add(
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state = state
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                            },
+                        )
+                    } else {
+                        // Marker outside viewport - just register without rendering
+                        val entity =
+                            MarkerEntityImpl<ActualMarker>(
+                                state = state,
+                                marker = null,
+                                isRendered = false,
                             )
-                        } else {
-                            // Marker outside viewport - just register without rendering
-                            val entity =
-                                MarkerEntityImpl<ActualMarker>(
-                                    state = state,
-                                    marker = null,
-                                    isRendered = false,
-                                )
-                            markersToRegister.add(entity)
-                        }
+                        markersToRegister.add(entity)
                     }
-
-                    // Yield after processing each chunk to allow other coroutines
-                    yield()
                 }
 
                 // Register markers without rendering (done in background)
@@ -345,60 +340,44 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                     markerManager.registerEntity(entity)
                 }
 
-                // Render markers that are in viewport (switch to main thread)
-                withContext(Dispatchers.Main) {
-                    if (markersToRender.isNotEmpty()) {
-
-                        // Process rendering in smaller chunks to prevent blocking main thread
-                        val renderChunks = markersToRender.chunked(50)
-
-                        renderChunks.forEach { renderChunk ->
-                            val actualMarkers = renderer.onAdd(renderChunk)
-                            actualMarkers.forEachIndexed { index, actualMarker ->
-                                actualMarker?.let {
-                                    val entity =
-                                        MarkerEntityImpl<ActualMarker>(
-                                            state = renderChunk[index].state,
-                                            marker = actualMarker,
-                                            isRendered = true,
-                                            visible = true,
-                                        )
-                                    markerManager.registerEntity(entity)
-                                }
-                            }
-
-                            // Small delay between chunks to allow UI updates
-                            if (renderChunks.size > 1) {
-                                kotlinx.coroutines.delay(1)
-                            }
+                if (markersToRender.isNotEmpty()) {
+                    // Process rendering in smaller chunks to prevent blocking main thread
+                    val actualMarkers = renderer.onAdd(markersToRender)
+                    actualMarkers.forEachIndexed { index, actualMarker ->
+                        actualMarker?.let {
+                            val entity =
+                                MarkerEntityImpl<ActualMarker>(
+                                    state = markersToRender[index].state,
+                                    marker = actualMarker,
+                                    isRendered = true,
+                                    visible = true,
+                                )
+                            markerManager.registerEntity(entity)
                         }
-
-                        renderer.onPostProcess()
                     }
+
+                    renderer.onPostProcess()
                 }
 
                 // Send marker data to background service for spatial indexing (batched)
-                withContext(Dispatchers.IO) {
-                    val markerDTOs =
-                        data.map { state ->
-                            _root_ide_package_.com.mapconductor.marker.strategy.spatial.MarkerDataDTO(
-                                id = state.id,
-                                latitude = state.position.latitude,
-                                longitude = state.position.longitude,
-                                clickable = state.clickable,
-                            )
-                        }
+                val markerDTOs =
+                    data.map { state ->
+                        _root_ide_package_.com.mapconductor.marker.strategy.spatial.MarkerDataDTO(
+                            id = state.id,
+                            latitude = state.position.latitude,
+                            longitude = state.position.longitude,
+                            clickable = state.clickable,
+                        )
+                    }
 
-                    // Add to batch queue for background processing
-                    markerDTOs.forEach { addToBatch(it) }
-                }
+                // Add to batch queue for background processing
+                markerDTOs.forEach { addToBatch(it) }
                 true
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to add markers", e)
                 false
             }
         }
-    }
 
     override suspend fun onUpdate(
         state: MarkerState,
@@ -529,7 +508,8 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
             context.unbindService(serviceConnection)
 
             // Unregister from service manager (may stop service if this was the last strategy)
-            _root_ide_package_.com.mapconductor.marker.strategy.SpatialMarkerServiceManager.unregisterStrategy(context, strategyId)
+            _root_ide_package_.com.mapconductor.marker.strategy.SpatialMarkerServiceManager
+                .unregisterStrategy(context, strategyId)
         } catch (e: Exception) {
             Log.e(TAG, "Error during cleanup", e)
         }

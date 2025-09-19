@@ -65,7 +65,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     > {
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
-    private val defaultIcon = DefaultIcon()
+    private val defaultIcon = DefaultIcon().toBitmapIcon()
 
     var dragStartListener: ((MarkerState) -> Unit)? = null
     var dragListener: ((MarkerState) -> Unit)? = null
@@ -102,18 +102,20 @@ abstract class AbstractMarkerController<ActualMarker>(
         semaphore.withPermit {
             // Register all markers to the manager first
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
+            val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
 
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     // Update existing entity
-                    val prevEntity = markerManager.getEntity(state.id)!!
-                    val entity =
-                        MarkerEntityImpl(
-                            state = state,
-                            marker = prevEntity.marker,
-                            isRendered = prevEntity.isRendered,
-                        )
-                    markerManager.updateEntity(entity)
+//                    val prevEntity = markerManager.getEntity(state.id)!!
+//                    val entity =
+//                        MarkerEntityImpl(
+//                            state = state,
+//                            marker = prevEntity.marker,
+//                            isRendered = prevEntity.isRendered,
+//                        )
+//                    markerManager.updateEntity(entity)
+//                    markersToRender.add(entity)
                     previous.remove(state.id)
                 } else {
                     // Register new entity without rendering
@@ -124,16 +126,9 @@ abstract class AbstractMarkerController<ActualMarker>(
                             isRendered = false,
                         )
                     markerManager.registerEntity(entity)
+                    markersToRender.add(entity)
                 }
             }
-
-            // Remove entities that are no longer in the data
-            previous.forEach { remainId ->
-                markerManager.removeEntity(remainId)
-            }
-
-            val allEntities = markerManager.allEntities()
-            val markersToRender = allEntities.filter { !it.isRendered }
 
             if (markersToRender.isNotEmpty()) {
                 val addParams =
@@ -141,7 +136,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                         object : MarkerOverlayRenderer.AddParams {
                             override val state: MarkerState = entity.state
                             override val bitmapIcon: BitmapIcon =
-                                entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                                entity.state.icon?.toBitmapIcon() ?: defaultIcon
                         }
                     }
 

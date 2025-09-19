@@ -150,12 +150,14 @@ fun <
             }
         }
         val markers = scope.markerFlow.collectAsState()
-        markers.value.values.forEach { markerState ->
-            LaunchedEffect(markerState.id) {
-                markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? MarkerCapable)?.let { markerCapable ->
-                        if (markerCapable.hasMarker(markerState)) {
-                            markerCapable.updateMarker(markerState)
+        if (markers.value.isNotEmpty()) {
+            markers.value.values.forEach { markerState ->
+                LaunchedEffect(markerState.id) {
+                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        (controller as? MarkerCapable)?.let { markerCapable ->
+                            if (markerCapable.hasMarker(markerState)) {
+                                markerCapable.updateMarker(markerState)
+                            }
                         }
                     }
                 }

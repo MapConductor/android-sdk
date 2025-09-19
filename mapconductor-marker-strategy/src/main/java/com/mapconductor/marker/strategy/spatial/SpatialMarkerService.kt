@@ -181,8 +181,10 @@ open class SpatialMarkerService : Service() {
                         }
                     }
 
-                    Log
-                        .d(TAG, "Spatial calculation for $sessionId: +${markersToAdd.size} -${markersToRemove.size} ~${markersToUpdate.size}")
+                    Log.d(
+                        TAG,
+                        "Spatial calculation for $sessionId: +${markersToAdd.size} -${markersToRemove.size} ~${markersToUpdate.size}",
+                    )
 
                     SpatialResultDTO(markersToAdd, markersToRemove, markersToUpdate)
                 } catch (e: Exception) {

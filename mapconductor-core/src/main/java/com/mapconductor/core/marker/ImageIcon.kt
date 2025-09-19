@@ -10,7 +10,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.util.Log
 
 class ImageIcon(
     drawable: Drawable,
@@ -80,7 +79,6 @@ class ImageIcon(
     override fun toBitmapIcon(): BitmapIcon {
         val id = hashCode()
         BitmapIconCache.get(id)?.let {
-            Log.d("debug", "ImageIcon ${id}")
             return it
         }
 
