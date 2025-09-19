@@ -27,7 +27,8 @@
       "Bash(cp:*)",
       "WebFetch(*)",
       "Bash(sed:*)",
-      "Bash(.gradlew:*)"
+      "Bash(.gradlew:*)",
+      "WebFetch(domain:docs.mapbox.com)"
     ],
     "deny": []
   }

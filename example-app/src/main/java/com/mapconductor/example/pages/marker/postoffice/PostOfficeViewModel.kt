@@ -144,9 +144,8 @@ class PostOfficeViewModelImpl(
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState ->
-                    RemoteSpatialMarkerRenderingStrategy(
-                        context = context,
-                        expandMargin = 0.4,
+                    NativeSpatialMarkerRenderingStrategy(
+                        expandMargin = 0.3,
                         addOnlyMode = false,
                     )
                 is MapboxViewState ->
@@ -155,7 +154,10 @@ class PostOfficeViewModelImpl(
                         expandMargin = 0.5,
                         addOnlyMode = true,
                     )
-                is HereViewState -> null
+                is HereViewState -> NativeSpatialMarkerRenderingStrategy(
+                    expandMargin = 0.3,
+                    addOnlyMode = false,
+                )
                 is ArcGISMapViewState ->
                     RemoteSpatialMarkerRenderingStrategy(
                         context = context,
