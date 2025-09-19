@@ -29,11 +29,12 @@ fun AnimationMapPage(
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
-        val mapViewState = viewModel.mapViewState.collectAsState()
+        val mapViewState = viewModel.mapViewState.collectAsState().value
+        val allMarkers = viewModel.allMarkers.collectAsState().value
 
         AnimationMapComponent(
-            mapViewState = mapViewState.value,
-            viewModel = viewModel,
+            mapViewState = mapViewState,
+            allMarkers = allMarkers,
             onMarkerClick = viewModel::onMarkerClick,
         )
 
@@ -53,7 +54,7 @@ fun AnimationMapPage(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                viewModel.allMarkers.forEach { marker ->
+                allMarkers.forEach { marker ->
                     Row {
                         Button(
                             modifier = Modifier.weight(1f),

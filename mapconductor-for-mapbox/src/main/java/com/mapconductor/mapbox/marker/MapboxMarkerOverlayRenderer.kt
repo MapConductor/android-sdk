@@ -5,7 +5,7 @@ import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultIcon
@@ -24,18 +24,10 @@ import kotlinx.coroutines.withContext
 
 class MapboxMarkerOverlayRenderer(
     holder: MapboxMapViewHolder,
-    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val markerManager: MarkerManager<MapboxActualMarker>,
-    val markerLayer: MarkerLayer =
-        MarkerLayer(
-            sourceId = "markers-source",
-            layerId = "markers-layer",
-        ),
-    val dragLayer: MarkerDragLayer =
-        MarkerDragLayer(
-            sourceId = "marker-drag-source",
-            layerId = "marker-drag-layer",
-        ),
+    val markerLayer: MarkerLayer,
+    val dragLayer: MarkerDragLayer,
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractMarkerOverlayRenderer<
         MapboxMapViewHolder,
         MapboxActualMarker,
@@ -74,7 +66,7 @@ class MapboxMarkerOverlayRenderer(
 
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<Feature>,
-        position: GeoPoint,
+        position: GeoPointImpl,
     ) {
         val entities = markerManager.allEntities()
         val feature =
@@ -121,7 +113,7 @@ class MapboxMarkerOverlayRenderer(
 
             data.map {
                 val featureId = "marker-${it.state.id}"
-                val position = GeoPoint.from(it.state.position).toPoint()
+                val position = GeoPointImpl.from(it.state.position).toPoint()
                 val properties =
                     JsonObject().apply {
                         if (it.state.icon != null) {
@@ -221,7 +213,7 @@ class MapboxMarkerOverlayRenderer(
                 }
 
             val position =
-                GeoPoint.from(params.current.state.position).toPoint()
+                GeoPointImpl.from(params.current.state.position).toPoint()
             val featureId = "marker-${params.current.state.id}"
             Feature.fromGeometry(position, properties, featureId)
         }

@@ -1,6 +1,6 @@
 package com.mapconductor.core.controller
 
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnCameraMoveHandler
@@ -20,12 +20,12 @@ interface MapViewController {
     fun setMapLongClickListener(listener: OnMapEventHandler?)
 
     fun moveCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         listener: MapViewState.MoveCameraCallback? = null,
     )
 
     fun animateCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         duration: Long,
         listener: MapViewState.MoveCameraCallback? = null,
     )

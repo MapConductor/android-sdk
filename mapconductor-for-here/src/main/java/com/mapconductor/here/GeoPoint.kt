@@ -4,14 +4,14 @@ import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoCoordinatesUpdate
 import com.here.sdk.core.GeoOrientation
 import com.here.sdk.core.GeoOrientationUpdate
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 
-fun GeoPoint.toGeoCoordinates(): GeoCoordinates = GeoCoordinates(latitude, longitude)
+fun GeoPointImpl.toGeoCoordinates(): GeoCoordinates = GeoCoordinates(latitude, longitude)
 
-fun GeoPoint.Companion.from(geoCoordinates: GeoCoordinates) =
-    GeoPoint(geoCoordinates.latitude, geoCoordinates.longitude)
+fun GeoPointImpl.Companion.from(geoCoordinates: GeoCoordinates) =
+    GeoPointImpl(geoCoordinates.latitude, geoCoordinates.longitude)
 
-fun GeoCoordinates.toGeoPoint() = GeoPoint.fromLatLong(latitude, longitude)
+fun GeoCoordinates.toGeoPoint() = GeoPointImpl.fromLatLong(latitude, longitude)
 
 fun GeoCoordinates.toUpdate() = GeoCoordinatesUpdate(this)
 

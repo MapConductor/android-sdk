@@ -18,7 +18,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
@@ -103,7 +103,7 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    private suspend fun getMapCameraPosition(): MapCameraPosition? {
+    private suspend fun getMapCameraPosition(): MapCameraPositionImpl? {
         val mapWidth = holder.map.width.toFloat() - 1.0f
         val mapHeight = holder.map.height.toFloat() - 1.0f
         val nearLeft =
@@ -151,9 +151,9 @@ class ArcGISMapViewControllerImpl(
         val zoom = conv.altitudeToZoomLevel(alt, lat, tilt)
 
         val camera =
-            MapCameraPosition(
+            MapCameraPositionImpl(
                 position =
-                    com.mapconductor.core.features.GeoPoint
+                    com.mapconductor.core.features.GeoPointImpl
                         .fromLongLat(lon, lat, alt),
                 zoom = zoom,
                 bearing = bearing,
@@ -310,7 +310,7 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val dstCameraPosition = toCameraWithView(position)
@@ -322,7 +322,7 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -348,9 +348,9 @@ class ArcGISMapViewControllerImpl(
         return ZoomAltitudeConverter.computeZoom0DistanceForView(h, fovVerticalDegrees)
     }
 
-    private fun toCameraWithView(position: MapCameraPosition): com.arcgismaps.mapping.view.Camera {
+    private fun toCameraWithView(position: MapCameraPositionImpl): com.arcgismaps.mapping.view.Camera {
         val targetPoint =
-            com.mapconductor.core.features.GeoPoint
+            com.mapconductor.core.features.GeoPointImpl
                 .from(position.position)
                 .toPoint()
         // Use calibrated constant instead of dynamic calculation

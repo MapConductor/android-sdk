@@ -1,30 +1,32 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import java.io.Serializable
-import kotlinx.coroutines.launch
 
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {
-    DisposableEffect(state.fingerPrint()) {
-        overflowScope.launch {
-            markerAddSharedFlow.emit(state)
-        }
-
-        onDispose {
-            val newMap = bubbleFlow.value.toMutableMap()
-            newMap.remove(state.id)
-            bubbleFlow.value = newMap
-        }
+    LaunchedEffect(state) {
+        markerAddSharedFlow.emit(state)
     }
+//    DisposableEffect(Unit) {
+//        overflowScope.launch {
+//            markerAddSharedFlow.emit(state)
+//        }
+//
+//        onDispose {
+//            val newMap = bubbleFlow.value.toMutableMap()
+//            newMap.remove(state.id)
+//            bubbleFlow.value = newMap
+//        }
+//    }
 }
 
 @Composable
 fun MapViewScope.Marker(
-    position: IGeoPoint,
+    position: GeoPoint,
     clickable: Boolean = true,
     draggable: Boolean = false,
     icon: MarkerIcon? = null,

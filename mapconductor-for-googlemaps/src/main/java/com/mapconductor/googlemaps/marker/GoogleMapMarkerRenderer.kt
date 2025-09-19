@@ -2,19 +2,15 @@ package com.mapconductor.googlemaps.marker
 
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,48 +23,32 @@ class GoogleMapMarkerRenderer(
     ) {
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<GoogleMapActualMarker>,
-        position: GeoPoint,
+        position: GeoPointImpl,
     ) {
         coroutine.launch {
             markerEntity.marker?.position = position.toLatLng()
         }
     }
 
-    private val background = CoroutineScope(Dispatchers.Default)
-
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {
-        val results = mutableListOf<Marker>()
-        val deferred = CompletableDeferred<Unit>()
-
-        flow {
-            data.forEach { params ->
+        return withContext(coroutine.coroutineContext) {
+            data.map { params ->
                 val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                 val options =
                     MarkerOptions()
-                        .position(GeoPoint.from(params.state.position).toLatLng())
+                        .position(GeoPointImpl.from(params.state.position).toLatLng())
                         .anchor(
                             params.bitmapIcon.anchor.x,
                             params.bitmapIcon.anchor.y,
                         ).icon(bitmapDescriptor)
                         .draggable(params.state.draggable)
-
-                emit(Pair(params.state.id, options))
-            }
-        }.onEach { options ->
-            coroutine.launch {
                 val marker =
-                    holder.map.addMarker(options.second)!!.apply {
-                        tag = options.first
+                    holder.map.addMarker(options)?.also {
+                        it.tag = params.state.id
                     }
-                results.add(marker)
-                if (results.size == data.size) {
-                    deferred.complete(Unit) // 完了シグナル
-                }
+                return@map marker
             }
-        }.launchIn(background)
-
-        deferred.await() // 全部揃うまで待機
-        return results
+        }
     }
 
     override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {
@@ -88,14 +68,33 @@ class GoogleMapMarkerRenderer(
             changes.mapNotNull { params ->
                 val prevFinger = params.prev.fingerPrint
                 val currentFinger = params.current.fingerPrint
-                val marker = params.current.marker ?: return@mapNotNull null
+                val marker =
+                    if (params.prev.marker != null) {
+                        params.prev.marker!!
+                    } else {
+                        val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
+                        val options =
+                            MarkerOptions()
+                                .position(GeoPointImpl.from(params.current.state.position).toLatLng())
+                                .anchor(
+                                    params.bitmapIcon.anchor.x,
+                                    params.bitmapIcon.anchor.y,
+                                ).icon(bitmapDescriptor)
+                                .draggable(params.current.state.draggable)
+
+                        holder.map.addMarker(options)?.apply {
+                            tag = params.current.state.id
+                        }
+                    }
+                if (marker == null) return@mapNotNull null
+
                 if (prevFinger.icon != currentFinger.icon) {
                     val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                     marker.setIcon(bitmapDescriptor)
                 }
                 if (params.current.state.position != params.prev.state.position) {
                     marker.position =
-                        GeoPoint.from(params.current.state.position).toLatLng()
+                        GeoPointImpl.from(params.current.state.position).toLatLng()
                 }
                 marker.isVisible = params.current.visible
 

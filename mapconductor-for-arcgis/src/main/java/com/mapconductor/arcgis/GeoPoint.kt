@@ -2,25 +2,25 @@ package com.mapconductor.arcgis
 
 import com.arcgismaps.geometry.Point
 import com.arcgismaps.geometry.SpatialReference
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 
 /**
  * GeoPoint を ArcGIS の Point に変換
  */
-fun GeoPoint.toPoint(spatialReference: SpatialReference? = null): Point =
+fun GeoPointImpl.toPoint(spatialReference: SpatialReference? = null): Point =
     Point(x = longitude, y = latitude, z = altitude, spatialReference = spatialReference)
 
-fun GeoPoint.Companion.fromLatLongAltitude(
+fun GeoPointImpl.Companion.fromLatLongAltitude(
     latitude: Double,
     longitude: Double,
     altitude: Double,
-) = GeoPoint(latitude = latitude, longitude = longitude, altitude = altitude)
+) = GeoPointImpl(latitude = latitude, longitude = longitude, altitude = altitude)
 
-fun GeoPoint.Companion.fromLongLat(
+fun GeoPointImpl.Companion.fromLongLat(
     longitude: Double,
     latitude: Double,
     altitude: Double,
-) = GeoPoint(latitude = latitude, longitude = longitude, altitude = altitude)
+) = GeoPointImpl(latitude = latitude, longitude = longitude, altitude = altitude)
 
 // fun GeoPoint.Companion.from(point: Point): GeoPoint {
 //    val wgs84Point =
@@ -37,7 +37,7 @@ fun GeoPoint.Companion.fromLongLat(
 //    )
 // }
 
-fun Point.toGeoPoint(): GeoPoint {
+fun Point.toGeoPoint(): GeoPointImpl {
 //    val wgs84Point =
 //        if (this.spatialReference != SpatialReference.wgs84()) {
 //            GeometryEngine.projectOrNull(this, SpatialReference.wgs84())
@@ -46,7 +46,7 @@ fun Point.toGeoPoint(): GeoPoint {
 //            this
 //        }
 
-    return GeoPoint(
+    return GeoPointImpl(
         longitude = this.x,
         latitude = this.y,
         altitude = this.z ?: 0.0,

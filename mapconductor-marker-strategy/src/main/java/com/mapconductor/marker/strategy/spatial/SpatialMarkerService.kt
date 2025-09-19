@@ -1,6 +1,6 @@
 package com.mapconductor.marker.strategy.spatial
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.marker.MarkerEntityImpl
 import com.mapconductor.core.marker.MarkerManager
@@ -91,7 +91,7 @@ open class SpatialMarkerService : Service() {
                         limitedMarkers.map { dto ->
                             MarkerState(
                                 id = dto.id,
-                                position = GeoPoint.fromLatLong(dto.latitude, dto.longitude),
+                                position = GeoPointImpl.fromLatLong(dto.latitude, dto.longitude),
                                 clickable = dto.clickable,
                             )
                         }
@@ -147,8 +147,8 @@ open class SpatialMarkerService : Service() {
 
                     val bounds =
                         GeoRectBounds(
-                            southWest = GeoPoint.fromLatLong(camera.boundsMinLat, camera.boundsMinLng),
-                            northEast = GeoPoint.fromLatLong(camera.boundsMaxLat, camera.boundsMaxLng),
+                            southWest = GeoPointImpl.fromLatLong(camera.boundsMinLat, camera.boundsMinLng),
+                            northEast = GeoPointImpl.fromLatLong(camera.boundsMaxLat, camera.boundsMaxLng),
                         )
 
                     val expandedBounds = expandBounds(bounds, session.config.expandMargin)
@@ -194,7 +194,7 @@ open class SpatialMarkerService : Service() {
             ): String? {
                 return try {
                     val session = sessions[sessionId] ?: return null
-                    val position = GeoPoint.fromLatLong(latitude, longitude)
+                    val position = GeoPointImpl.fromLatLong(latitude, longitude)
 
                     val nearestEntity = session.markerManager.findNearest(position)
                     nearestEntity?.state?.id
