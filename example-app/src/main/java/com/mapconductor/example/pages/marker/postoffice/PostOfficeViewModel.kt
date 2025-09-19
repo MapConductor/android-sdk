@@ -160,12 +160,12 @@ class PostOfficeViewModelImpl(
                     RemoteSpatialMarkerRenderingStrategy(
                         context = context,
                         expandMargin = 0.4,
-                        addOnlyMode = false,
+                        addOnlyMode = true,
                     )
                 else ->
                     NativeSpatialMarkerRenderingStrategy(
                         expandMargin = 0.3,
-                        addOnlyMode = true,
+                        addOnlyMode = false,
                     )
             }
     }
