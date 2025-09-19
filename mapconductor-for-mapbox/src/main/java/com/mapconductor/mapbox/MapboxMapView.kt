@@ -12,6 +12,7 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.map.OnMapViewInitializedHandler
+import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -22,6 +23,9 @@ import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
+import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
+import com.mapconductor.mapbox.marker.MarkerDragLayer
+import com.mapconductor.mapbox.marker.MarkerLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
@@ -205,10 +209,33 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
 internal fun getMarkerController(
     holder: MapboxMapViewHolder,
     renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-) = MapboxMarkerController.create(
-    holder = holder,
-    renderingStrategy = renderingStrategy,
-)
+): MapboxMarkerController {
+    val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+    val markerLayer: MarkerLayer =
+        MarkerLayer(
+            sourceId = "markers-source",
+            layerId = "markers-layer",
+        )
+    val dragLayer: MarkerDragLayer =
+        MarkerDragLayer(
+            sourceId = "marker-drag-source",
+            layerId = "marker-drag-layer",
+        )
+    val renderer =
+        MapboxMarkerOverlayRenderer(
+            holder = holder,
+            markerLayer = markerLayer,
+            dragLayer = dragLayer,
+            markerManager = manager,
+        )
+
+    val controller =
+        MapboxMarkerController(
+            renderer = renderer,
+            renderingStrategy = renderingStrategy,
+        )
+    return controller
+}
 
 internal fun Context.findActivity(): Activity? =
     when (this) {

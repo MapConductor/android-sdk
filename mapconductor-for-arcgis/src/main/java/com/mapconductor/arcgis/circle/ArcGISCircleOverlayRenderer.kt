@@ -17,7 +17,7 @@ import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntity
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +33,7 @@ class ArcGISCircleOverlayRenderer(
             val spec =
                 holder.mapView.sceneView.scene
                     ?.spatialReference
-            val centerPoint = GeoPoint.from(state.center).toPoint(spec)
+            val centerPoint = GeoPointImpl.from(state.center).toPoint(spec)
             val circleGeometry =
                 GeometryEngine.bufferGeodeticOrNull(
                     geometry = centerPoint,
@@ -81,7 +81,7 @@ class ArcGISCircleOverlayRenderer(
             val graphic = current.circle
 
             if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
-                val centerPoint = GeoPoint.from(current.state.center).toPoint(spec)
+                val centerPoint = GeoPointImpl.from(current.state.center).toPoint(spec)
 
                 val newGeometry =
                     GeometryEngine.bufferGeodeticOrNull(

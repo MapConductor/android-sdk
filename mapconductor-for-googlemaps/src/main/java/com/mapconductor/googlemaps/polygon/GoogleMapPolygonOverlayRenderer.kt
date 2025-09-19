@@ -3,7 +3,7 @@ package com.mapconductor.googlemaps.polygon
 import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonState
@@ -28,7 +28,7 @@ class GoogleMapPolygonOverlayRenderer(
 
     override suspend fun createPolygon(state: PolygonState) =
         withContext(coroutine.coroutineContext) {
-            val points = state.points.map { GeoPoint.from(it).toLatLng() }
+            val points = state.points.map { GeoPointImpl.from(it).toLatLng() }
             val options =
                 PolygonOptions()
                     .addAll(points)
@@ -54,7 +54,7 @@ class GoogleMapPolygonOverlayRenderer(
             if (finger.points != prevFinger.points) {
                 val points =
                     current.state.points
-                        .map { GeoPoint.from(it).toLatLng() }
+                        .map { GeoPointImpl.from(it).toLatLng() }
                 polygon.points = points
             }
             polygon.strokeWidth = ResourceProvider.dpToPx(current.state.strokeWidth).toFloat()

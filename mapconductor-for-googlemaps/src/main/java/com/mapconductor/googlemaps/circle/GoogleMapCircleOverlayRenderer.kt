@@ -6,7 +6,7 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntity
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.googlemaps.GoogleMapActualCircle
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
@@ -21,7 +21,7 @@ class GoogleMapCircleOverlayRenderer(
 ) : AbstractCircleOverlayRenderer<GoogleMapActualCircle>() {
     override suspend fun createCircle(state: CircleState): GoogleMapActualCircle? =
         withContext(coroutine.coroutineContext) {
-            val center = GeoPoint.from(state.center).toLatLng()
+            val center = GeoPointImpl.from(state.center).toLatLng()
             val options =
                 CircleOptions()
                     .center(center)
@@ -51,7 +51,7 @@ class GoogleMapCircleOverlayRenderer(
             val prevFinger = prev.fingerPrint
 
             if (finger.center != prevFinger.center) {
-                circle.center = GeoPoint.from(current.state.center).toLatLng()
+                circle.center = GeoPointImpl.from(current.state.center).toLatLng()
             }
             if (finger.radiusMeters != prevFinger.radiusMeters) {
                 circle.radius = current.state.radiusMeters

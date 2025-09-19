@@ -1,6 +1,6 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -9,8 +9,8 @@ import kotlin.math.sqrt
 
 // Calculate distance between two GeoPoints using Haversine formula
 fun haversineDistance(
-    p1: IGeoPoint,
-    p2: IGeoPoint,
+    p1: GeoPoint,
+    p2: GeoPoint,
 ): Double {
     val earthR = 6371000.0 // 地球の半径（m）
     val lat1 = Math.toRadians(p1.latitude)

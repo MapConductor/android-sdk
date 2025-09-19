@@ -12,7 +12,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
@@ -67,7 +67,7 @@ fun GoogleMapsView(
                     CameraPosition
                         .Builder()
                         .apply {
-                            target(GeoPoint.from(camera.position).toLatLng())
+                            target(GeoPointImpl.from(camera.position).toLatLng())
                             zoom(camera.zoom.toFloat())
                             bearing(camera.bearing.toFloat())
                             tilt(camera.tilt.toFloat())

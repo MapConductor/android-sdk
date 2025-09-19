@@ -8,7 +8,7 @@ import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntity
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.mapbox.MapboxActualCircle
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toMapboxColorString
@@ -34,7 +34,7 @@ class MapboxCircleOverlayRenderer(
     }
 
     override suspend fun createCircle(state: CircleState): MapboxActualCircle? {
-        val centerPoint = GeoPoint.from(state.center).toPoint()
+        val centerPoint = GeoPointImpl.from(state.center).toPoint()
         return Feature.fromGeometry(
             Point.fromLngLat(centerPoint.longitude(), centerPoint.latitude()),
             JsonObject().apply {
@@ -55,7 +55,7 @@ class MapboxCircleOverlayRenderer(
         prev: CircleEntity<MapboxActualCircle>,
     ): MapboxActualCircle? {
         val state = current.state
-        val centerPoint = GeoPoint.from(state.center).toPoint()
+        val centerPoint = GeoPointImpl.from(state.center).toPoint()
         return Feature.fromGeometry(
             Point.fromLngLat(centerPoint.longitude(), centerPoint.latitude()),
             JsonObject().apply {

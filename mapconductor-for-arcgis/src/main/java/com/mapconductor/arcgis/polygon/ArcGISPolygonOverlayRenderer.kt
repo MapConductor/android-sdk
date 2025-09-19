@@ -13,7 +13,7 @@ import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonState
@@ -96,7 +96,7 @@ class ArcGISPolygonOverlayRenderer(
         val polygonBuilder =
             PolygonBuilder().also { builder ->
                 state.points.forEach {
-                    builder.addPoint(GeoPoint.from(it).toPoint())
+                    builder.addPoint(GeoPointImpl.from(it).toPoint())
                 }
             }
         return polygonBuilder.toGeometry()

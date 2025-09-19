@@ -8,8 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import android.graphics.Bitmap
@@ -18,7 +17,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-    position: IGeoPoint,
+    position: GeoPoint,
     id: String? = null,
     var extra: Serializable? = null,
     icon: MarkerIcon? = null,
@@ -49,7 +48,7 @@ class MarkerState(
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
 
-    private var dragPosition: IGeoPoint = position
+    private var dragPosition: GeoPoint = position
     private var _isDragging by mutableStateOf(false)
     var isDragging: Boolean
         get() = _isDragging
@@ -77,7 +76,7 @@ class MarkerState(
 
     fun copy(
         id: String? = this.id,
-        position: IGeoPoint = this.position,
+        position: GeoPoint = this.position,
         extra: Serializable? = this.extra,
         icon: MarkerIcon? = this.icon,
         clickable: Boolean? = this.clickable,
@@ -103,19 +102,17 @@ class MarkerState(
         result = 31 * result + draggable.hashCode()
         result = 31 * result + position.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
-        result = 31 * result + ResourceProvider.spToPx(1.0).hashCode()
         return result
     }
 
     fun fingerPrint(): MarkerFingerPrint =
         MarkerFingerPrint(
             this.id.hashCode(),
-            ResourceProvider.spToPx(1.0).hashCode(),
             icon.hashCode(),
             clickable.hashCode(),
             draggable.hashCode(),
             internalPosition.hashCode(),
-            internalAnimation.hashCode(),
+            internalAnimation?.hashCode() ?: 1,
         )
 
     fun asFlow(): Flow<MarkerFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
@@ -123,7 +120,6 @@ class MarkerState(
 
 data class MarkerFingerPrint(
     val id: Int,
-    val displayMetrics: Int,
     val icon: Int?,
     val clickable: Int,
     val draggable: Int,

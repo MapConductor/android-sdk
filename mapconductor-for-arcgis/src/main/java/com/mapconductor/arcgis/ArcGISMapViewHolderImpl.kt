@@ -10,7 +10,7 @@ import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
 import kotlin.coroutines.resume
 import android.content.Context
@@ -56,17 +56,17 @@ class ArcGISMapViewHolderImpl private constructor(
 ) : MapViewHolder<WrapSceneView, SceneView> {
     override lateinit var map: SceneView
 
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
+    override fun toScreenOffset(position: GeoPoint): Offset? {
         val result =
             mapView.sceneView.locationToScreen(
-                point = GeoPoint.from(position).toPoint(map.scene?.spatialReference),
+                point = GeoPointImpl.from(position).toPoint(map.scene?.spatialReference),
             )
         return result?.let {
             Offset(it.screenPoint.x.toFloat(), it.screenPoint.y.toFloat())
         }
     }
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? {
+    override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? {
 //        val result = mapView.sceneView
 //        .screenToBaseSurface(
 //            ScreenCoordinate(
@@ -84,7 +84,7 @@ class ArcGISMapViewHolderImpl private constructor(
         return result.getOrNull()?.toGeoPoint()
     }
 
-    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
+    override fun fromScreenOffsetSync(offset: Offset): GeoPointImpl? =
         runBlocking {
             fromScreenOffset(offset)
         }

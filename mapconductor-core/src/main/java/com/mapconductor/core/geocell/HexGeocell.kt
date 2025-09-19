@@ -1,6 +1,6 @@
 ﻿package com.mapconductor.core.geocell
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Projection
 
@@ -9,12 +9,12 @@ interface HexGeocell {
     val baseHexSideLength: Int
 
     fun latLngToHexCoord(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
     ): HexCoord
 
     fun latLngToHexCell(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
     ): HexCell
 
@@ -22,7 +22,7 @@ interface HexGeocell {
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): IGeoPoint
+    ): GeoPoint
 
     fun hexToCellId(
         coord: HexCoord,
@@ -33,7 +33,7 @@ interface HexGeocell {
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): List<IGeoPoint>
+    ): List<GeoPoint>
 
     fun enclosingCellOf(
         points: List<MarkerState>,
