@@ -11,11 +11,11 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.strategy.strategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -79,16 +79,23 @@ class PostOfficeViewModelImpl(
     private var _selectedMarker: MutableState<MarkerState?> = mutableStateOf(null)
     override val selectedMarker: State<MarkerState?> = _selectedMarker
 
-    private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> = mutableStateOf(null)
+    private val _renderingStrategy: MutableState<MarkerRenderingStrategy<Any>?> =
+        mutableStateOf(
+            RemoteSpatialMarkerRenderingStrategy(
+                context = context,
+                expandMargin = 0.4,
+                addOnlyMode = false,
+            ),
+        )
     override val renderingStrategy: State<MarkerRenderingStrategy<Any>?> = _renderingStrategy
 
     suspend fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
-        val chunks = dataLoader.loadAllPostOffices().chunked(50)
-        val markerStates = mutableListOf<MarkerState>()
-        chunks.forEach { chunk ->
-            val states = chunk.map {
+        val postOffices = dataLoader.loadAllPostOffices()
+
+        val markerStates =
+            postOffices.map { it ->
                 MarkerState(
                     position = it.position,
                     id = it.hashCode().toString(),
@@ -96,9 +103,6 @@ class PostOfficeViewModelImpl(
                     extra = it,
                 )
             }
-            markerStates.addAll(states)
-            delay(16)
-        }
         _markerList.value = markerStates
     }
 
@@ -119,11 +123,12 @@ class PostOfficeViewModelImpl(
 
     override fun onInfoClick(postOffice: PostOffice) {
         _mapViewState.value?.moveCameraTo(
-            cameraPosition = MapCameraPosition(
-                position = postOffice.position,
-                zoom = 18.0,
-                tilt = 30.0,
-            ),
+            cameraPosition =
+                MapCameraPosition(
+                    position = postOffice.position,
+                    zoom = 18.0,
+                    tilt = 30.0,
+                ),
             durationMs = 2000,
         )
     }
@@ -146,12 +151,7 @@ class PostOfficeViewModelImpl(
                         expandMargin = 0.5,
                         addOnlyMode = true,
                     )
-                is HereViewState ->
-                    RemoteSpatialMarkerRenderingStrategy(
-                        context = context,
-                        expandMargin = 0.4,
-                        addOnlyMode = true,
-                    )
+                is HereViewState -> null
                 is ArcGISMapViewState ->
                     RemoteSpatialMarkerRenderingStrategy(
                         context = context,

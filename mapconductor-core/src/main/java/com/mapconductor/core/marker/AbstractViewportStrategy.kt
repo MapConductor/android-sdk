@@ -30,7 +30,6 @@ abstract class AbstractViewportStrategy<ActualMarker>(
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
         semaphore.withPermit {
-            val defaultIconBitmapIcon = defaultIcon.toBitmapIcon()
             val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
             val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
@@ -43,7 +42,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
 
                 if (previous.contains(state.id)) {
                     val prevEntity = markerManager.getEntity(state.id)!!
-                    val markerIcon = state.icon ?: defaultIcon
+                    val markerIcon = state.icon?.toBitmapIcon() ?: defaultIcon
 
                     // Only add to update list if marker is in viewport
                     if (isInViewport) {
@@ -55,7 +54,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                                         marker = prevEntity.marker,
                                         isRendered = true,
                                     )
-                                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
+                                override val bitmapIcon: BitmapIcon = markerIcon
                                 override val prev: MarkerEntity<ActualMarker> = prevEntity
                             },
                         )
@@ -77,7 +76,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state: MarkerState = state
                                 override val bitmapIcon: BitmapIcon =
-                                    state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
+                                    state.icon?.toBitmapIcon() ?: defaultIcon
                             },
                         )
                     } else {
@@ -179,7 +178,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
             val isInViewport = viewport.contains(state.position)
             if (isInViewport) {
                 val marker = prevEntity.marker
-                val markerIcon = state.icon ?: defaultIcon
+                val markerIcon = state.icon?.toBitmapIcon() ?: defaultIcon
 
                 val renderEntity =
                     MarkerEntityImpl(
@@ -189,7 +188,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                 val markerParams =
                     object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
                         override val current: MarkerEntity<ActualMarker> = renderEntity
-                        override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
+                        override val bitmapIcon: BitmapIcon = markerIcon
                         override val prev: MarkerEntity<ActualMarker> = prevEntity
                     }
                 val markers = renderer.onChange(listOf(markerParams))

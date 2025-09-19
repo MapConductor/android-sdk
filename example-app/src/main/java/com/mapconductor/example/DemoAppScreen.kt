@@ -54,13 +54,14 @@ fun DemoAppScreen(initPage: String = "map") {
                 clickedImage = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
             )
         }
-    val postOfficeIcon = remember {
-        val baseicon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
-        ImageIcon(
-            drawable = baseicon,
-            scale = 0.3f,
-        )
-    }
+    val postOfficeIcon =
+        remember {
+            val baseicon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
+            ImageIcon(
+                drawable = baseicon,
+                scale = 0.3f,
+            )
+        }
 
     val sidebarItems =
         listOf(

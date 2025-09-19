@@ -1,4 +1,4 @@
-package com.mapconductor.marker.strategy.strategy.spatial
+package com.mapconductor.marker.nativestrategy.spatial
 
 import java.util.UUID
 import android.util.Log

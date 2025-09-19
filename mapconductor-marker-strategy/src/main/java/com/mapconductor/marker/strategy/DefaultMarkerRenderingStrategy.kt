@@ -79,7 +79,7 @@ class DefaultMarkerRenderingStrategy<ActualMarker>(
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state: MarkerState = entity.state
                                 override val bitmapIcon: BitmapIcon =
-                                    entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                                    entity.state.icon?.toBitmapIcon() ?: defaultIcon
                             }
                         }
 

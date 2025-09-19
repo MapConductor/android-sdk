@@ -1,4 +1,4 @@
-package com.mapconductor.marker.strategy.strategy.spatial
+package com.mapconductor.marker.nativestrategy.spatial
 
 /**
  * Data transfer objects for communication between Kotlin and native C++ code.

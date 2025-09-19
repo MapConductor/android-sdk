@@ -20,10 +20,12 @@ fun PostOfficeInfoView(
     if (!darkTheme) Color.Black else Color.White
 
     Column(
-        modifier = Modifier.wrapContentSize()
-            .clickable(true) {
-                onClick?.invoke(info)
-            },
+        modifier =
+            Modifier
+                .wrapContentSize()
+                .clickable(true) {
+                    onClick?.invoke(info)
+                },
     ) {
         val name = info.name
         val address = info.address

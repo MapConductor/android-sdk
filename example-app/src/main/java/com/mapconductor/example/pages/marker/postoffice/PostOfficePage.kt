@@ -1,23 +1,18 @@
 package com.mapconductor.example.pages.marker.postoffice
 
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.core.marker.ImageIcon
-import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.example.R
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
 
 @Composable
 fun PostOfficeMapPage(
@@ -36,7 +31,7 @@ fun PostOfficeMapPage(
         val selectedMarker = viewModel.selectedMarker
 
         DemoMapPageScaffold(
-            initSelect = 0,
+            initSelect = 2,
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = viewModel::onMapViewChanged,
@@ -57,6 +52,7 @@ fun PostOfficeMapPage(
 
         if (!viewModel.isMapLoaded.value) {
             LaunchedEffect(Unit) {
+                delay(3000)
                 viewModel.loadPostOfficeData()
             }
             CircularProgressIndicator()

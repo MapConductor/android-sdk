@@ -14,7 +14,7 @@ ktlint {
 }
 
 android {
-    namespace = "com.mapconductor.marker.native.strategy"
+    namespace = "com.mapconductor.marker.nativestrategy"
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {

@@ -16,10 +16,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.util.Log
 
 class HereMarkerRenderer(
     holder: HereViewHolder,
-    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractMarkerOverlayRenderer<
         HereViewHolder,
         HereActualMarker,
@@ -38,22 +39,20 @@ class HereMarkerRenderer(
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {
         val markers =
-            withContext(coroutine.coroutineContext) {
-                data.map { params ->
-                    val marker =
-                        MapMarker(
-                            GeoPoint.from(params.state.position).toGeoCoordinates(),
-                            params.bitmapIcon.toMapImage(),
-                            params.bitmapIcon.toAnchor2D(),
-                        ).apply {
-                            drawOrder = calculateZIndex(params.state.position).toInt()
-                            metadata =
-                                Metadata().apply {
-                                    setString("id", params.state.id)
-                                }
-                        }
-                    return@map marker
-                }
+            data.map { params ->
+                val marker =
+                    MapMarker(
+                        GeoPoint.from(params.state.position).toGeoCoordinates(),
+                        params.bitmapIcon.toMapImage(),
+                        params.bitmapIcon.toAnchor2D(),
+                    ).apply {
+                        drawOrder = calculateZIndex(params.state.position).toInt()
+                        metadata =
+                            Metadata().apply {
+                                setString("id", params.state.id)
+                            }
+                    }
+                return@map marker
             }
 
         coroutine.launch {

@@ -1,6 +1,7 @@
 package com.mapconductor.marker.strategy
 
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.spatial.SpatialMarkerService
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import android.content.Context
@@ -33,14 +34,12 @@ object SpatialMarkerServiceManager {
 
         synchronized(serviceLock) {
             activeStrategies[strategyId] = strategy
-            val count = activeStrategyCount.incrementAndGet()
-
-            Log.d(TAG, "Registered strategy $strategyId. Active strategies: $count")
+//            val count = activeStrategyCount.incrementAndGet()
 
             // For now, we skip starting the actual service since we're using local fallback
-            // if (!isServiceStarted) {
-            //     startService(context)
-            // }
+             if (!isServiceStarted) {
+                 startService(context, SpatialMarkerService.javaClass)
+             }
         }
 
         return strategyId
@@ -60,9 +59,9 @@ object SpatialMarkerServiceManager {
                 Log.d(TAG, "Unregistered strategy $strategyId. Active strategies: $count")
 
                 // For now, we skip stopping the service since we're using local fallback
-                // if (count == 0 && isServiceStarted) {
-                //     stopService(context)
-                // }
+                 if (count == 0 && isServiceStarted) {
+                     stopService(context, SpatialMarkerService.javaClass)
+                 }
             }
         }
     }

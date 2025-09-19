@@ -1,4 +1,4 @@
-package com.mapconductor.marker.strategy.strategy.spatial
+package com.mapconductor.marker.nativestrategy.spatial
 
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
@@ -230,7 +230,7 @@ class NativeRemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                     markersToAdd.add(
                         object : MarkerOverlayRenderer.AddParams {
                             override val state = entity.state
-                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
                         },
                     )
                 }
@@ -300,7 +300,7 @@ class NativeRemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                             markersToRender.add(
                                 object : MarkerOverlayRenderer.AddParams {
                                     override val state = state
-                                    override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                                    override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
                                 },
                             )
                         } else {
@@ -384,7 +384,7 @@ class NativeRemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 val addParams =
                     object : MarkerOverlayRenderer.AddParams {
                         override val state = state
-                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
                     }
 
                 val actualMarkers = renderer.onAdd(listOf(addParams))
@@ -418,7 +418,7 @@ class NativeRemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                                 isRendered = true,
                             )
                         override val prev = entity
-                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
                     }
 
                 val actualMarkers = renderer.onChange(listOf(changeParams))

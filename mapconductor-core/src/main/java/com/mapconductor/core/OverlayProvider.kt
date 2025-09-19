@@ -2,6 +2,7 @@ package com.mapconductor.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import com.mapconductor.core.circle.CircleOverlay
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewController
@@ -19,12 +20,10 @@ import com.mapconductor.core.polyline.PolylineState
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
-import kotlinx.coroutines.FlowPreview
 
 open class MapViewScope {
     val overflowScope = CoroutineScope(Dispatchers.IO)
@@ -69,41 +68,45 @@ fun CollectAndRenderOverlays(
         @Suppress("UNCHECKED_CAST")
         val typedOverlay = overlay as MapOverlay<Any>
 
-        LaunchedEffect(Unit) {
-            typedOverlay.flow
-                .debounce(100) // Debounce updates for 100ms to prevent excessive rendering
-                .collect { items ->
-                    if (items.isNotEmpty()) {
-                        // Process items in chunks to prevent main thread blocking
-                        val chunks = items.values.chunked(50) // Process 50 items at a time
-
-                        chunks.forEach { chunk ->
-                            val chunkMap =
-                                chunk
-                                    .associateBy {
-                                        when (it) {
-                                            is MarkerState -> it.id
-                                            is CircleState -> it.id
-                                            is PolylineState -> it.id
-                                            is PolygonState -> it.id
-                                            is GroundImageState -> it.id
-                                            else -> it.toString()
-                                        }
-                                    }.toMutableMap()
-
-                            typedOverlay.render(chunkMap, controller)
-
-                            // Yield to allow other coroutines and UI updates
-                            yield()
-                        }
-                    }
-                }
-        }
-
-//        val flowState = typedOverlay.flow.collectAsState()
+//        LaunchedEffect(Unit) {
+//            typedOverlay.flow
+//                .debounce(100) // Debounce updates for 100ms to prevent excessive rendering
+//                .collect { items ->
+// //                    typedOverlay.render(items, controller)
 //
-//        LaunchedEffect(flowState.value) {
-//            typedOverlay.render(flowState.value.toSet().toList(), controller)
+//                    if (items.isNotEmpty()) {
+//                        return@collect
+//                    }
+//
+//                    // Process items in chunks to prevent main thread blocking
+//                    val chunks = items.values.chunked(500) // Process 50 items at a time
+//
+//                    chunks.forEach { chunk ->
+//                        val chunkMap =
+//                            chunk
+//                                .associateBy {
+//                                    when (it) {
+//                                        is MarkerState -> it.id
+//                                        is CircleState -> it.id
+//                                        is PolylineState -> it.id
+//                                        is PolygonState -> it.id
+//                                        is GroundImageState -> it.id
+//                                        else -> it.toString()
+//                                    }
+//                                }.toMutableMap()
+//
+//                        typedOverlay.render(chunkMap, controller)
+//
+//                        // Yield to allow other coroutines and UI updates
+//                        yield()
+//                    }
+//                }
 //        }
+
+        val flowState = typedOverlay.flow.collectAsState()
+
+        LaunchedEffect(flowState.value) {
+            typedOverlay.render(flowState.value, controller)
+        }
     }
 }

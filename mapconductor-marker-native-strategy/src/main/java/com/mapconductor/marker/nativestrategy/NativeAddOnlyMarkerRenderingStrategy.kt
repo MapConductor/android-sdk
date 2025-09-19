@@ -1,4 +1,4 @@
-package com.mapconductor.marker.strategy.strategy
+package com.mapconductor.marker.nativestrategy
 
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapCameraPosition
@@ -42,7 +42,7 @@ class NativeAddOnlyMarkerRenderingStrategy<ActualMarker>(
                             override val state = entity.state
                             override val bitmapIcon =
                                 entity.state.icon?.toBitmapIcon()
-                                    ?: defaultIcon.toBitmapIcon()
+                                    ?: defaultIcon
                         }
                     }
                 val newMarkers = renderer.onAdd(addParams)

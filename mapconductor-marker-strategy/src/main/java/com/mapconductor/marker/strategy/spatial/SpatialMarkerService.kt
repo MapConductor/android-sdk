@@ -180,10 +180,6 @@ open class SpatialMarkerService : Service() {
                             session.renderedMarkers.remove(id)
                         }
                     }
-
-                    Log
-                        .d(TAG, "Spatial calculation for $sessionId: +${markersToAdd.size} -${markersToRemove.size} ~${markersToUpdate.size}")
-
                     SpatialResultDTO(markersToAdd, markersToRemove, markersToUpdate)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to calculate spatial changes for session $sessionId", e)
