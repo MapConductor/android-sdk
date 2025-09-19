@@ -1,9 +1,10 @@
 ﻿plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("maven-publish")
-    alias(libs.plugins.kotlin.compose) // ← 任意（配布したい場合）
+    alias(libs.plugins.kotlin.compose)
     id("org.jlleitschuh.gradle.ktlint")
+    id("maven-publish")
+    id("signing")
 }
 
 ktlint {
@@ -75,4 +76,103 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+// Publishing configuration
+val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
+val libraryArtifactId = "mapconductor-for-mapbox"
+val libraryVersion = project.findProperty("libraryVersion") as String? ?: project.property("versionName") as String
+val libraryName = "MapConductor for Mapbox"
+val libraryDescription = "Mapbox implementation for MapConductor unified mapping library"
+
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(
+        android.sourceSets
+            .getByName("main")
+            .java.srcDirs,
+    )
+}
+
+val javadocJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+
+                groupId = libraryGroupId
+                artifactId = libraryArtifactId
+                version = libraryVersion
+
+                artifact(javadocJar.get())
+                artifact(sourcesJar.get())
+
+                pom {
+                    name.set(libraryName)
+                    description.set(libraryDescription)
+                    url.set(
+                        project.findProperty("libraryUrl") as String?
+                            ?: "https://github.com/your-organization/mapconductor-android-sdk",
+                    )
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set(project.findProperty("developerId") as String? ?: "mapconductor")
+                            name.set(project.findProperty("developerName") as String? ?: "MapConductor Team")
+                            email.set(project.findProperty("developerEmail") as String? ?: "dev@mapconductor.com")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git://github.com/your-organization/mapconductor-android-sdk.git")
+                        developerConnection
+                            .set("scm:git:ssh://github.com:your-organization/mapconductor-android-sdk.git")
+                        url.set(
+                            project.findProperty("scmUrl") as String?
+                                ?: "https://github.com/your-organization/mapconductor-android-sdk.git",
+                        )
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                setUrl("https://maven.pkg.github.com/your-organization/mapconductor-android-sdk")
+                credentials {
+                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+
+            maven {
+                name = "OSSRH"
+                val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                setUrl(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                credentials {
+                    username = project.findProperty("ossrh.username") as String? ?: System.getenv("OSSRH_USERNAME")
+                    password = project.findProperty("ossrh.password") as String? ?: System.getenv("OSSRH_PASSWORD")
+                }
+            }
+        }
+    }
+
+    if (project.hasProperty("signing.keyId")) {
+        signing {
+            sign(publishing.publications["release"])
+        }
+    }
 }
