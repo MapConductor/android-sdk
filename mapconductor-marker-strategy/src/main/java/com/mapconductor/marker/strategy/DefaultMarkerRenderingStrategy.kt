@@ -2,7 +2,7 @@ package com.mapconductor.marker.strategy
 
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.MarkerEntity
@@ -28,7 +28,7 @@ class DefaultMarkerRenderingStrategy<ActualMarker>(
     geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         semaphore.withPermit {

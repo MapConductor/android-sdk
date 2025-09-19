@@ -9,7 +9,7 @@ import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.plugin.lifecycle.lifecycle
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 
@@ -25,10 +25,10 @@ class MapboxMapViewHolderImpl private constructor(
         this.mapView.lifecycle.registerLifecycleObserver(this.mapView, this)
     }
 
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
+    override fun toScreenOffset(position: GeoPoint): Offset? {
         val pixel =
             map.pixelForCoordinate(
-                coordinate = GeoPoint.from(position).toPoint(),
+                coordinate = GeoPointImpl.from(position).toPoint(),
             )
         return Offset(
             x = pixel.x.toFloat(),
@@ -36,12 +36,12 @@ class MapboxMapViewHolderImpl private constructor(
         )
     }
 
-    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
+    override fun fromScreenOffsetSync(offset: Offset): GeoPointImpl? =
         map.coordinateForPixel(ScreenCoordinate(offset.x.toDouble(), offset.y.toDouble())).toGeoPoint()
 
-    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? = map.coordinateForPixel(coordinate).toGeoPoint()
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPointImpl? = map.coordinateForPixel(coordinate).toGeoPoint()
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+    override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? =
         fromScreenOffset(
             ScreenCoordinate(
                 offset.x.toDouble(),

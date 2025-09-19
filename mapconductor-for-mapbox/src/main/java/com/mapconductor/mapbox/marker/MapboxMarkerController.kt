@@ -2,17 +2,15 @@ package com.mapconductor.mapbox.marker
 
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.settings.Settings
 
-class MapboxMarkerController private constructor(
+class MapboxMarkerController(
     override val renderer: MapboxMarkerOverlayRenderer,
     renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
 ) : AbstractMarkerController<MapboxActualMarker>(
@@ -26,7 +24,7 @@ class MapboxMarkerController private constructor(
         set(value) {
             if (value == null) {
                 internalSelectedMarker?.let {
-                    renderer.dragLayer.updatePosition(GeoPoint.from(it.state.position))
+                    renderer.dragLayer.updatePosition(GeoPointImpl.from(it.state.position))
                     // Restore the recomposition for the position property
                     setDraggingState(it.state, false)
                     renderer.drawDragLayer()
@@ -40,13 +38,13 @@ class MapboxMarkerController private constructor(
             // Suppress the recomposition for the position property
             setDraggingState(value.state, true)
             renderer.dragLayer.selected = value
-            renderer.dragLayer.updatePosition(GeoPoint.from(value.state.position))
+            renderer.dragLayer.updatePosition(GeoPointImpl.from(value.state.position))
             renderer.redraw()
             renderer.drawDragLayer()
         }
         get() = internalSelectedMarker
 
-    override fun find(position: IGeoPoint): MarkerEntity<MapboxActualMarker>? {
+    override fun find(position: GeoPoint): MarkerEntity<MapboxActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom = renderer.holder.map.cameraState.zoom
             val tolerance =
@@ -60,26 +58,6 @@ class MapboxMarkerController private constructor(
             } else {
                 null
             }
-        }
-    }
-
-    companion object {
-        fun create(
-            holder: MapboxMapViewHolder,
-            renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-        ): MapboxMarkerController {
-            val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
-            val renderer =
-                MapboxMarkerOverlayRenderer(
-                    holder = holder,
-                    markerManager = manager,
-                )
-            val controller =
-                MapboxMarkerController(
-                    renderer = renderer,
-                    renderingStrategy = renderingStrategy,
-                )
-            return controller
         }
     }
 }

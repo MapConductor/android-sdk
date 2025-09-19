@@ -1,7 +1,7 @@
 package com.mapconductor.core.circle
 
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.spherical.haversineDistance
 import java.util.concurrent.ConcurrentHashMap
 
@@ -18,7 +18,7 @@ interface CircleManager<ActualCircle> {
 
     fun clear()
 
-    fun find(position: IGeoPoint): CircleEntity<ActualCircle>?
+    fun find(position: GeoPoint): CircleEntity<ActualCircle>?
 }
 
 class CircleManagerImpl<ActualCircle> : CircleManager<ActualCircle> {
@@ -47,7 +47,7 @@ class CircleManagerImpl<ActualCircle> : CircleManager<ActualCircle> {
         entities.clear()
     }
 
-    override fun find(position: IGeoPoint): CircleEntity<ActualCircle>? {
+    override fun find(position: GeoPoint): CircleEntity<ActualCircle>? {
         val filtered =
             allEntities().filter { entity ->
                 val centerPos = entity.state.center

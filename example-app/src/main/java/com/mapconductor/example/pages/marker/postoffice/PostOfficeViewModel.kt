@@ -1,16 +1,12 @@
 package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.ArcGISMapViewState
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.googlemaps.GoogleMapViewState
-import com.mapconductor.here.HereViewState
-import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import android.content.Context
@@ -23,7 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 interface PostOfficeViewModel {
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val selectedMarker: StateFlow<MarkerState?>
     val markerList: StateFlow<List<MarkerState>>
     val mapViewState: StateFlow<MapViewState<*>?>
@@ -35,7 +31,7 @@ interface PostOfficeViewModel {
 
     fun onMarkerClick(clicked: MarkerState)
 
-    fun onMapClick(clicked: GeoPoint)
+    fun onMapClick(clicked: GeoPointImpl)
 
     fun onMapLoaded(mapViewState: MapViewState<*>)
 
@@ -58,9 +54,9 @@ class PostOfficeViewModelImpl(
 ) : ViewModel(),
     PostOfficeViewModel {
     override val initCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position =
-                GeoPoint.fromLatLong(
+                GeoPointImpl.fromLatLong(
                     latitude = 35.68049,
                     longitude = 139.76669,
                 ),
@@ -113,7 +109,7 @@ class PostOfficeViewModelImpl(
         this._selectedMarker.value = clicked
     }
 
-    override fun onMapClick(clicked: GeoPoint) {
+    override fun onMapClick(clicked: GeoPointImpl) {
         this._selectedMarker.value = null
     }
 
@@ -128,7 +124,7 @@ class PostOfficeViewModelImpl(
     override fun onInfoClick(postOffice: PostOffice) {
         _mapViewState.value?.moveCameraTo(
             cameraPosition =
-                MapCameraPosition(
+                MapCameraPositionImpl(
                     position = postOffice.position,
                     zoom = 18.0,
                     tilt = 30.0,
@@ -142,32 +138,9 @@ class PostOfficeViewModelImpl(
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _renderingStrategy.value =
-            when (mapViewState) {
-                is GoogleMapViewState ->
-                    RemoteSpatialMarkerRenderingStrategy(
-                        context = context,
-                        expandMargin = 0.4,
-                        addOnlyMode = false,
-                    )
-                is MapboxViewState ->
-                    RemoteSpatialMarkerRenderingStrategy(
-                        context = context,
-                        expandMargin = 0.5,
-                        addOnlyMode = true,
-                    )
-                is HereViewState -> null
-                is ArcGISMapViewState ->
-                    RemoteSpatialMarkerRenderingStrategy(
-                        context = context,
-                        expandMargin = 0.4,
-                        addOnlyMode = true,
-                    )
-                else ->
-                    NativeSpatialMarkerRenderingStrategy(
-                        expandMargin = 0.3,
-                        addOnlyMode = false,
-                    )
-            }
+            NativeSpatialMarkerRenderingStrategy(
+                expandMargin = 0.4,
+            )
     }
 
     override fun onCleared() {

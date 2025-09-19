@@ -3,7 +3,7 @@ package com.mapconductor.here.marker
 import com.here.sdk.core.Metadata
 import com.here.sdk.mapview.MapMarker
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
@@ -28,7 +28,7 @@ class HereMarkerRenderer(
     ) {
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<HereActualMarker>,
-        position: GeoPoint,
+        position: GeoPointImpl,
     ) {
         coroutine.launch {
             markerEntity.marker?.coordinates = position.toGeoCoordinates()
@@ -40,7 +40,7 @@ class HereMarkerRenderer(
             data.map { params ->
                 val marker =
                     MapMarker(
-                        GeoPoint.from(params.state.position).toGeoCoordinates(),
+                        GeoPointImpl.from(params.state.position).toGeoCoordinates(),
                         params.bitmapIcon.toMapImage(),
                         params.bitmapIcon.toAnchor2D(),
                     ).apply {
@@ -87,7 +87,7 @@ class HereMarkerRenderer(
             }
             if (params.current.state.position != params.prev.state.position) {
                 marker.coordinates =
-                    GeoPoint.from(params.current.state.position).toGeoCoordinates()
+                    GeoPointImpl.from(params.current.state.position).toGeoCoordinates()
             }
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

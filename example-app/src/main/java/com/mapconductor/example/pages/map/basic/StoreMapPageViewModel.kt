@@ -2,8 +2,8 @@ package com.mapconductor.example.pages.map.basic
 
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.MarkerState
 import android.content.Intent
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface StoreMapPageViewModel {
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val selectedMarker: StateFlow<MarkerState?>
     val markerList: List<MarkerState>
     val mapViewState: StateFlow<MapViewState<*>?>
@@ -22,7 +22,7 @@ interface StoreMapPageViewModel {
 
     fun onMarkerClick(clicked: MarkerState)
 
-    fun onMapClick(clicked: GeoPoint)
+    fun onMapClick(clicked: GeoPointImpl)
 
     fun onDirectionButtonClick(markerState: MarkerState): Intent
 }
@@ -32,9 +32,9 @@ class StoreMapPageViewModelImpl :
     StoreMapPageViewModel {
     // カメラの初期位置
     override val initCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position =
-                GeoPoint.fromLatLong(
+                GeoPointImpl.fromLatLong(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
@@ -56,7 +56,7 @@ class StoreMapPageViewModelImpl :
         val query =
             (markerState.extra as? StoreInfo)?.let {
                 Uri.encode(it.address)
-            } ?: GeoPoint.from(markerState.position).toUrlValue()
+            } ?: GeoPointImpl.from(markerState.position).toUrlValue()
         val gmmIntentUri = "google.navigation:q=$query".toUri()
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
         mapIntent.setPackage("com.google.android.apps.maps")
@@ -67,7 +67,7 @@ class StoreMapPageViewModelImpl :
         this._selectedMarker.value = clicked
     }
 
-    override fun onMapClick(clicked: GeoPoint) {
+    override fun onMapClick(clicked: GeoPointImpl) {
         this._selectedMarker.value = null
     }
 

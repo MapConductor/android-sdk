@@ -27,7 +27,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
@@ -150,7 +150,7 @@ internal class MapboxMapViewControllerImpl(
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
-    private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPosition? {
+    private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPositionImpl? {
         val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
 
@@ -194,7 +194,7 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val cameraOptions = position.toCameraOptions()
@@ -205,7 +205,7 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {

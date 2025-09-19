@@ -1,7 +1,7 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.settings.Settings
 import kotlin.math.min
@@ -10,6 +10,7 @@ import android.os.SystemClock
 import android.view.animation.BounceInterpolator
 import android.view.animation.LinearInterpolator
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
@@ -31,7 +32,7 @@ abstract class AbstractMarkerOverlayRenderer<
 
     abstract fun setMarkerPosition(
         markerEntity: MarkerEntity<ActualMarker>,
-        position: GeoPoint,
+        position: GeoPointImpl,
     )
 
     override suspend fun onAnimate(entity: MarkerEntity<ActualMarker>) {
@@ -89,13 +90,13 @@ abstract class AbstractMarkerOverlayRenderer<
             val lng = t * target.longitude + (1f - t) * startLatLng.longitude
 
             // 現在の座標をマーカーに適用
-            val newPosition = GeoPoint.fromLatLong(lat, lng)
+            val newPosition = GeoPointImpl.fromLatLong(lat, lng)
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             entity.state.position = target
             entity.state.setAnimation(null)
             animateEndListener?.invoke(entity.state)
-        }.launchIn(coroutine)
+        }.launchIn(CoroutineScope(Dispatchers.Main))
     }
 
     fun animateMarkerBounce(
@@ -122,7 +123,7 @@ abstract class AbstractMarkerOverlayRenderer<
             val lat = t * target.latitude + (1f - t) * startLatLng.latitude
 
             // 現在の座標をマーカーに適用
-            val newPosition = GeoPoint.fromLatLong(lat, lng)
+            val newPosition = GeoPointImpl.fromLatLong(lat, lng)
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）

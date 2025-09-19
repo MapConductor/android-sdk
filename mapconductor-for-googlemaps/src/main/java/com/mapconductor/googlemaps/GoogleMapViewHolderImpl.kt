@@ -5,7 +5,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 import android.graphics.Point
@@ -17,10 +17,10 @@ internal class GoogleMapViewHolderImpl private constructor(
 ) : MapViewHolder<MapView, GoogleMap> {
     override lateinit var map: GoogleMap
 
-    override fun toScreenOffset(position: IGeoPoint): Offset? {
+    override fun toScreenOffset(position: GeoPoint): Offset? {
         val point =
             map.projection.toScreenLocation(
-                GeoPoint.from(position).toLatLng(),
+                GeoPointImpl.from(position).toLatLng(),
             )
         return Offset(
             x = point.x.toFloat(),
@@ -28,7 +28,7 @@ internal class GoogleMapViewHolderImpl private constructor(
         )
     }
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
+    override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? =
         map.projection
             .fromScreenLocation(
                 Point(

@@ -1,7 +1,7 @@
 ﻿package com.mapconductor.core.geocell
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Projection
 import com.mapconductor.core.projection.WebMercator
@@ -45,7 +45,7 @@ enum class Direction6(
 
 data class HexCell(
     val coord: HexCoord,
-    val centerLatLng: IGeoPoint,
+    val centerLatLng: GeoPoint,
     val centerXY: Offset,
     val id: String,
 ) {
@@ -77,7 +77,7 @@ class HexGeocellImpl(
      * Convert lat/lng to hexagonal coordinate
      */
     override fun latLngToHexCoord(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
     ): HexCoord {
         val hexSideLength = adjustedHexSideLength(position.latitude, zoom)
@@ -89,7 +89,7 @@ class HexGeocellImpl(
      * Convert lat/lng to hex cell with all computed properties
      */
     override fun latLngToHexCell(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
     ): HexCell {
         val coord = latLngToHexCoord(position, zoom)
@@ -106,7 +106,7 @@ class HexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): IGeoPoint {
+    ): GeoPoint {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
         return projection.unproject(center)
@@ -127,7 +127,7 @@ class HexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): List<IGeoPoint> {
+    ): List<GeoPoint> {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
 
@@ -179,7 +179,7 @@ class HexGeocellImpl(
     /**
      * Compute geographic centroid considering Earth's curvature (improved version)
      */
-    private fun computeGeographicCentroid(points: List<IGeoPoint>): IGeoPoint {
+    private fun computeGeographicCentroid(points: List<GeoPoint>): GeoPoint {
         if (points.size == 1) return points[0]
 
         // Use spherical coordinates for better accuracy
@@ -204,7 +204,7 @@ class HexGeocellImpl(
         val centralSquareRoot = sqrt(x * x + y * y)
         val centralLat = atan2(z, centralSquareRoot) * 180 / PI
 
-        return object : IGeoPoint {
+        return object : GeoPoint {
             override val latitude: Double = centralLat
             override val longitude: Double = centralLng
             override val altitude: Double? = null

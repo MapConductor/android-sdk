@@ -1,7 +1,7 @@
 package com.mapconductor.here.marker
 
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
@@ -37,7 +37,7 @@ class HereMarkerController private constructor(
         }
         get() = internalSelectedMarker
 
-    override fun find(position: IGeoPoint): MarkerEntity<HereActualMarker>? {
+    override fun find(position: GeoPoint): MarkerEntity<HereActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom = renderer.holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
             val tolerance =

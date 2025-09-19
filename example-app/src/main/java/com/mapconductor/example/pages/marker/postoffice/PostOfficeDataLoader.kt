@@ -1,6 +1,6 @@
 package com.mapconductor.example.pages.marker.postoffice
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -126,7 +126,7 @@ class PostOfficeDataLoader(
 
             val longitude = coordinates.getDouble(0)
             val latitude = coordinates.getDouble(1)
-            val position = GeoPoint(latitude, longitude)
+            val position = GeoPointImpl(latitude, longitude)
 
             // Extract properties
             val properties = feature.optJSONObject("properties") ?: return null

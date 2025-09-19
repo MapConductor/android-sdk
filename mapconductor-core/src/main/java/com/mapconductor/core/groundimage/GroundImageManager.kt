@@ -1,6 +1,6 @@
 package com.mapconductor.core.groundimage
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 
 interface GroundImageManager<ActualGroundImage> {
     fun registerEntity(entity: GroundImageEntity<ActualGroundImage>)
@@ -15,7 +15,7 @@ interface GroundImageManager<ActualGroundImage> {
 
     fun clear()
 
-    fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>?
+    fun find(position: GeoPoint): GroundImageEntity<ActualGroundImage>?
 }
 
 class GroundImageManagerImpl<ActualGroundImage> : GroundImageManager<ActualGroundImage> {
@@ -37,5 +37,5 @@ class GroundImageManagerImpl<ActualGroundImage> : GroundImageManager<ActualGroun
         entities.clear()
     }
 
-    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? = entities.values.firstOrNull()
+    override fun find(position: GeoPoint): GroundImageEntity<ActualGroundImage>? = entities.values.firstOrNull()
 }

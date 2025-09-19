@@ -1,7 +1,7 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 
 /**
  * Strategy interface for handling marker rendering during camera changes.
@@ -29,7 +29,7 @@ interface MarkerRenderingStrategy<ActualMarker> {
      * @param renderer The marker overlay renderer
      */
     suspend fun onCameraChanged(
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     )
 }
