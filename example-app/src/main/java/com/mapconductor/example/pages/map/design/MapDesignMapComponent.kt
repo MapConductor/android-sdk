@@ -15,6 +15,6 @@ fun MapDesignMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = state,
-        ) {}
+        )
     }
 }

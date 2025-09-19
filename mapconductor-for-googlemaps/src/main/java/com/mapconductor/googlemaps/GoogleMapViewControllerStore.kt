@@ -1,19 +1,16 @@
-package com.mapconductor.googlemaps
+﻿package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
-import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.circle.GoogleMapCircleOverlayRenderer
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageOverlayRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
-import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonOverlayRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
@@ -29,6 +26,7 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
         context: Context,
         id: String,
         options: GoogleMapOptions,
+        markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     ): GoogleMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) {
@@ -50,7 +48,11 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
 
         val controller =
             GoogleMapViewControllerImpl(
-                markerController = getMarkerController(holder),
+                markerController =
+                    getMarkerController(
+                        holder = holder,
+                        markerRenderingStrategy = markerRenderingStrategy,
+                    ),
                 groundImageController = getGroundImageController(holder),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
@@ -114,27 +116,13 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
         return controller
     }
 
-    private fun getMarkerController(holder: GoogleMapViewHolder): GoogleMapMarkerController {
-        val hexGeocell =
-            HexGeocell(
-                projection = WebMercator,
-                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-            )
-        val manager = MarkerManager<GoogleMapActualMarker>(hexGeocell)
-
-        val renderer =
-            GoogleMapMarkerRenderer(
-                holder = holder,
-            )
-
-        val markerController =
-            GoogleMapMarkerController(
-                markerManager = manager,
-                renderer = renderer,
-            )
-
-        return markerController
-    }
+    private fun getMarkerController(
+        holder: GoogleMapViewHolder,
+        markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+    ) = GoogleMapMarkerController.create(
+        holder = holder,
+        renderingStrategy = markerRenderingStrategy,
+    )
 }
 
 internal fun Context.findActivity(): Activity? =

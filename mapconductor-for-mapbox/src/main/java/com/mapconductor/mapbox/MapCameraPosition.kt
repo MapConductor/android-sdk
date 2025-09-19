@@ -1,17 +1,34 @@
 package com.mapconductor.mapbox
 
+import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.EdgeInsets
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import com.mapconductor.mapbox.zoom.ZoomAltitudeConverter
+
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
+
+internal const val MAPBOX_CAMERA_ZOOM_ADJUST_VALUE = 1.0
+
+fun CameraChanged.toMapCameraPosition() =
+    CameraOptions
+        .Builder()
+        .padding(cameraState.padding)
+        .center(cameraState.center)
+        .zoom(cameraState.zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
+        .bearing(cameraState.bearing)
+        .pitch(cameraState.pitch)
+        .build()
 
 fun MapCameraPosition.toCameraOptions(): CameraOptions =
     CameraOptions
         .Builder()
         .center(GeoPoint.from(position).toPoint())
-        .zoom(zoom)
+        .zoom(zoom - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
         .pitch(tilt)
         .bearing(bearing)
         // TODO:
@@ -22,7 +39,7 @@ fun MapCameraPosition.toCameraState(): CameraState =
     CameraState(
         GeoPoint.from(position).toPoint(),
         EdgeInsets(0.0, 0.0, 0.0, 0.0),
-        zoom,
+        zoom - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
         bearing,
         tilt,
     )
@@ -44,7 +61,7 @@ fun MapCameraPosition.Companion.from(cameraPosition: IMapCameraPosition) =
 fun CameraOptions.toMapCameraPosition() =
     MapCameraPosition(
         position = center?.toGeoPoint() ?: GeoPoint.fromLongLat(0.0, 0.0),
-        zoom = zoom ?: 2.0,
+        zoom = (zoom ?: 2.0) + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
         bearing = bearing ?: 0.0,
         tilt = pitch ?: 0.0,
         paddings = padding?.toPaddings(),
@@ -54,7 +71,7 @@ fun CameraOptions.toMapCameraPosition() =
 fun CameraState.toMapCameraPosition() =
     MapCameraPosition(
         position = center.toGeoPoint(),
-        zoom = zoom,
+        zoom = zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
         bearing = bearing,
         tilt = pitch,
         visibleRegion = null,

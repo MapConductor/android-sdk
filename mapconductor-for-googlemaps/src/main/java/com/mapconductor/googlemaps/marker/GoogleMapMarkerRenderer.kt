@@ -1,6 +1,5 @@
 package com.mapconductor.googlemaps.marker
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mapconductor.core.features.GeoPoint
@@ -10,8 +9,12 @@ import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,10 +34,15 @@ class GoogleMapMarkerRenderer(
         }
     }
 
+    private val background = CoroutineScope(Dispatchers.Default)
+
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {
-        return withContext(coroutine.coroutineContext) {
-            data.map { params ->
-                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
+        val results = mutableListOf<Marker>()
+        val deferred = CompletableDeferred<Unit>()
+
+        flow {
+            data.forEach { params ->
+                val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                 val options =
                     MarkerOptions()
                         .position(GeoPoint.from(params.state.position).toLatLng())
@@ -43,13 +51,24 @@ class GoogleMapMarkerRenderer(
                             params.bitmapIcon.anchor.y,
                         ).icon(bitmapDescriptor)
                         .draggable(params.state.draggable)
-                val marker =
-                    holder.map.addMarker(options)?.also {
-                        it.tag = params.state.id
-                    }
-                return@map marker
+
+                emit(Pair(params.state.id, options))
             }
-        }
+        }.onEach { options ->
+            coroutine.launch {
+                val marker =
+                    holder.map.addMarker(options.second)!!.apply {
+                        tag = options.first
+                    }
+                results.add(marker)
+                if (results.size == data.size) {
+                    deferred.complete(Unit) // 完了シグナル
+                }
+            }
+        }.launchIn(background)
+
+        deferred.await() // 全部揃うまで待機
+        return results
     }
 
     override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {
@@ -71,7 +90,7 @@ class GoogleMapMarkerRenderer(
                 val currentFinger = params.current.fingerPrint
                 val marker = params.current.marker ?: return@mapNotNull null
                 if (prevFinger.icon != currentFinger.icon) {
-                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(params.bitmapIcon.bitmap)
+                    val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                     marker.setIcon(bitmapDescriptor)
                 }
                 if (params.current.state.position != params.prev.state.position) {

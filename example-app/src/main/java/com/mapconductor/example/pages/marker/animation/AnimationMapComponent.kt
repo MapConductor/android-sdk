@@ -25,8 +25,8 @@ fun AnimationMapComponent(
             state = it,
             onMapClick = onMapClick,
             onMarkerClick = onMarkerClick,
-            onCircleClick = onCircleClick,
             onMarkerDrag = onMarkerDrag,
+            onCircleClick = onCircleClick,
         ) {
             viewModel.allMarkers.forEach { marker ->
                 Marker(marker)

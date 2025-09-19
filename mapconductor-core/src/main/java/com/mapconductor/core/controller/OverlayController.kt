@@ -17,4 +17,10 @@ interface OverlayController<StateType, EntityType, EventType> {
     fun find(position: IGeoPoint): EntityType?
 
     suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition)
+
+    /**
+     * Cleanup resources when the controller is no longer needed.
+     * IMPORTANT: Call this when switching map providers or disposing the map.
+     */
+    fun destroy()
 }

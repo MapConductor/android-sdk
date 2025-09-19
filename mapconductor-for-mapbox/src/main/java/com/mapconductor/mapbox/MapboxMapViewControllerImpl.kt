@@ -6,7 +6,6 @@ import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraChangedCallback
-import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.StyleLoaded
 import com.mapbox.maps.StyleLoadedCallback
@@ -23,11 +22,11 @@ import com.mapbox.maps.plugin.gestures.addOnMoveListener
 import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMapLongClickListener
 import com.mapbox.maps.plugin.gestures.removeOnMoveListener
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
+import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
@@ -64,10 +63,6 @@ internal class MapboxMapViewControllerImpl(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
-    companion object {
-        private const val ZOOM_ADJUST_VALUE = 1.0
-    }
-
     init {
         holder.map.getStyle { style ->
             // Circle
@@ -156,21 +151,11 @@ internal class MapboxMapViewControllerImpl(
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
     private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPosition? {
-        val options =
-            CameraOptions
-                .Builder()
-                .padding(cameraChanged.cameraState.padding)
-                .center(cameraChanged.cameraState.center)
-                .zoom(cameraChanged.cameraState.zoom + ZOOM_ADJUST_VALUE)
-                .bearing(cameraChanged.cameraState.bearing)
-                .pitch(cameraChanged.cameraState.pitch)
-                .build()
+        val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
-        val currentBox = holder.map.coordinateBoundsForCameraUnwrapped(options)
 
-        val mapSize = holder.map.getSize()
-        val mapWidth = ResourceProvider.dpToPx(mapSize.width).toFloat()
-        val mapHeight = ResourceProvider.dpToPx(mapSize.height).toFloat()
+        val mapWidth = holder.mapView.width.toFloat()
+        val mapHeight = holder.mapView.height.toFloat()
         val nearLeft =
             holder.fromScreenOffsetSync(
                 Offset(0.0f, mapHeight),
@@ -188,7 +173,11 @@ internal class MapboxMapViewControllerImpl(
                 Offset(mapWidth, 0.0f),
             ) ?: return null
 
-        val bounds = currentBox.toGeoRectBounds()
+        val bounds = GeoRectBounds()
+        bounds.extend(nearLeft)
+        bounds.extend(nearRight)
+        bounds.extend(farLeft)
+        bounds.extend(farRight)
         val visibleRegion =
             VisibleRegion(
                 bounds = bounds,
@@ -197,7 +186,10 @@ internal class MapboxMapViewControllerImpl(
                 farLeft = farLeft,
                 farRight = farRight,
             )
-        val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+        val mapCameraPosition =
+            camera.copy(
+                visibleRegion = visibleRegion,
+            )
         return mapCameraPosition
     }
 
@@ -205,15 +197,7 @@ internal class MapboxMapViewControllerImpl(
         position: MapCameraPosition,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        val cameraOptions =
-            CameraOptions
-                .Builder()
-                .center(position.position.toPoint())
-                .zoom(position.zoom - ZOOM_ADJUST_VALUE)
-                .pitch(position.tilt)
-                .bearing(position.bearing)
-                .build()
-
+        val cameraOptions = position.toCameraOptions()
         coroutine.launch {
             holder.map.setCamera(cameraOptions)
         }
@@ -226,14 +210,6 @@ internal class MapboxMapViewControllerImpl(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         val targetCamera = position.toCameraOptions()
-        val adjustCamera =
-            CameraOptions
-                .Builder()
-                .center(targetCamera.center)
-                .zoom(targetCamera.zoom!! + ZOOM_ADJUST_VALUE)
-                .pitch(targetCamera.pitch)
-                .bearing(targetCamera.pitch)
-                .build()
 
         val animationOptions =
             MapAnimationOptions
@@ -262,7 +238,7 @@ internal class MapboxMapViewControllerImpl(
 
         coroutine.launch {
             holder.map.flyTo(
-                cameraOptions = adjustCamera,
+                cameraOptions = targetCamera,
                 animationOptions = animationOptions,
                 animatorListener = animatorListener,
             )
@@ -403,6 +379,9 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun run(styleLoaded: StyleLoaded) {
+        mapLoadedCallback?.invoke()
+        mapLoadedCallback = null
+
         holder.map.style?.toMapDesignType()?.let { mapDesignType ->
             this@MapboxMapViewControllerImpl.mapDesignType = mapDesignType
             mapDesignTypeChangeListener?.invoke(mapDesignType)

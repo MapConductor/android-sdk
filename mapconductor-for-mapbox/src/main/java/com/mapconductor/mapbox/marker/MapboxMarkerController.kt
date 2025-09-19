@@ -4,25 +4,22 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
-import com.mapconductor.core.marker.AddOnlyMarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.settings.Settings
 
-class MapboxMarkerController(
+class MapboxMarkerController private constructor(
     override val renderer: MapboxMarkerOverlayRenderer,
+    renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
 ) : AbstractMarkerController<MapboxActualMarker>(
         markerManager = renderer.markerManager,
         renderer = renderer,
+        renderingStrategy = renderingStrategy,
     ) {
-    override val actualRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker> by lazy {
-        AddOnlyMarkerRenderingStrategy<MapboxActualMarker>(
-            expandMargin = 1.1,
-            semaphore = semaphore, // Pass the semaphore from parent class
-        )
-    }
     private var internalSelectedMarker: MarkerEntity<MapboxActualMarker>? = null
 
     internal var selectedMarker: MarkerEntity<MapboxActualMarker>?
@@ -63,6 +60,26 @@ class MapboxMarkerController(
             } else {
                 null
             }
+        }
+    }
+
+    companion object {
+        fun create(
+            holder: MapboxMapViewHolder,
+            renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+        ): MapboxMarkerController {
+            val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+            val renderer =
+                MapboxMarkerOverlayRenderer(
+                    holder = holder,
+                    markerManager = manager,
+                )
+            val controller =
+                MapboxMarkerController(
+                    renderer = renderer,
+                    renderingStrategy = renderingStrategy,
+                )
+            return controller
         }
     }
 }

@@ -291,6 +291,9 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun onMapLoaded() {
+        mapLoadedCallback?.invoke()
+        mapLoadedCallback = null
+
         val mapDesignType = GoogleMapDesign.toMapDesignType(holder.map.mapType)
         mapDesignTypeChangeListener?.invoke(mapDesignType)
     }

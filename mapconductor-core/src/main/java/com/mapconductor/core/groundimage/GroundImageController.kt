@@ -140,4 +140,8 @@ abstract class GroundImageController<ActualGroundImage>(
     override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? = groundImageManager.find(position)
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
+
+    override fun destroy() {
+        // No native resources to clean up
+    }
 }

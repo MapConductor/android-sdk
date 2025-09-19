@@ -57,7 +57,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
     open val renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
-    private val renderingStrategy: MarkerRenderingStrategy<ActualMarker>? = null,
+    open val renderingStrategy: MarkerRenderingStrategy<ActualMarker>? = null,
 ) : OverlayController<
         MarkerState,
         MarkerEntity<ActualMarker>,
@@ -65,11 +65,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     > {
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
-
-    // Lazy initialization of the default strategy to use the actual semaphore instance
-    protected open val actualRenderingStrategy: MarkerRenderingStrategy<ActualMarker> by lazy {
-        renderingStrategy ?: DefaultMarkerRenderingStrategy(semaphore = semaphore)
-    }
+    private val defaultIcon = DefaultIcon().toBitmapIcon()
 
     var dragStartListener: ((MarkerState) -> Unit)? = null
     var dragListener: ((MarkerState) -> Unit)? = null
@@ -91,123 +87,75 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun add(data: List<MarkerState>) {
+        renderingStrategy?.let { strategy ->
+            mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
+                val processed =
+                    strategy.onAdd(
+                        data = data,
+                        viewport = bounds,
+                        renderer = renderer,
+                    )
+            }
+            return
+        }
+
         semaphore.withPermit {
-            val defaultIcon = DefaultIcon()
-            val defaultIconBitmapIcon = defaultIcon.toBitmapIcon()
-            val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
+            // Register all markers to the manager first
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
-            val updated = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
-            val removed = mutableListOf<MarkerEntity<ActualMarker>>()
-            val viewportBounds = mapCameraPosition?.visibleRegion?.bounds ?: worldBounds
+            val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
 
             data.forEach { state ->
-                val isInViewport = viewportBounds.contains(state.position)
-
                 if (previous.contains(state.id)) {
-                    val prevEntity = markerManager.getEntity(state.id)!!
-                    val markerIcon = state.icon ?: defaultIcon
-
-                    // Only add to update list if marker is in viewport
-                    if (isInViewport) {
-                        updated.add(
-                            object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                                override val current: MarkerEntity<ActualMarker> =
-                                    MarkerEntityImpl(
-                                        state = state,
-                                        marker = prevEntity.marker,
-                                        isRendered = true,
-                                    )
-                                override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
-                                override val prev: MarkerEntity<ActualMarker> = prevEntity
-                            },
-                        )
-                    } else {
-                        // Register entity without rendering for markers outside viewport
-                        val entity =
-                            MarkerEntityImpl(
-                                state = state,
-                                marker = prevEntity.marker,
-                                isRendered = false,
-                            )
-                        markerManager.registerEntity(entity)
-                    }
+                    // Update existing entity
+//                    val prevEntity = markerManager.getEntity(state.id)!!
+//                    val entity =
+//                        MarkerEntityImpl(
+//                            state = state,
+//                            marker = prevEntity.marker,
+//                            isRendered = prevEntity.isRendered,
+//                        )
+//                    markerManager.updateEntity(entity)
+//                    markersToRender.add(entity)
                     previous.remove(state.id)
                 } else {
-                    // Only add to render list if marker is in viewport
-                    if (isInViewport) {
-                        added.add(
-                            object : MarkerOverlayRenderer.AddParams {
-                                override val state: MarkerState = state
-                                override val bitmapIcon: BitmapIcon =
-                                    state.icon?.toBitmapIcon() ?: defaultIconBitmapIcon
-                            },
+                    // Register new entity without rendering
+                    val entity =
+                        MarkerEntityImpl<ActualMarker>(
+                            marker = null,
+                            state = state,
+                            isRendered = false,
                         )
-                    } else {
-                        // Register entity without rendering for new markers outside viewport
-                        val entity =
-                            MarkerEntityImpl<ActualMarker>(
-                                marker = null,
-                                state = state,
-                                isRendered = false,
-                            )
-                        markerManager.registerEntity(entity)
+                    markerManager.registerEntity(entity)
+                    markersToRender.add(entity)
+                }
+            }
+
+            if (markersToRender.isNotEmpty()) {
+                val addParams =
+                    markersToRender.map { entity ->
+                        object : MarkerOverlayRenderer.AddParams {
+                            override val state: MarkerState = entity.state
+                            override val bitmapIcon: BitmapIcon =
+                                entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                        }
                     }
-                    previous.remove(state.id)
-                }
-            }
 
-            previous.forEach { remainId ->
-                markerManager.removeEntity(remainId)?.let { removedEntity ->
-                    removed.add(removedEntity)
-                }
-            }
-
-            // Remove markers
-            if (removed.isNotEmpty()) {
-                renderer.onRemove(removed)
-            }
-
-            // Add new markers
-            if (added.isNotEmpty()) {
-                val actualMarkers: List<ActualMarker?> = renderer.onAdd(added)
+                val actualMarkers = renderer.onAdd(addParams)
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
-                        val entity =
-                            MarkerEntityImpl<ActualMarker>(
-                                marker = actualMarker,
-                                state = added[index].state,
-                                isRendered = true,
-                            )
-                        markerManager.registerEntity(entity)
-                        modifiedEntities.add(entity)
+                        markersToRender[index].marker = it
+                        markersToRender[index].isRendered = true
+                        markersToRender[index].visible = true
                     }
                 }
-            }
 
-            // Update changed markers
-            if (updated.isNotEmpty()) {
-                val actualMarkers: List<ActualMarker?> = renderer.onChange(updated)
-
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    actualMarker?.let {
-                        val params = updated[index]
-                        val entity =
-                            MarkerEntityImpl<ActualMarker>(
-                                state = params.current.state,
-                                marker = actualMarker,
-                                isRendered = true,
-                            )
-                        markerManager.registerEntity(entity)
+                markersToRender.forEach { entity ->
+                    entity.state.getAnimation()?.let {
+                        renderer.onAnimate(entity)
                     }
                 }
+                renderer.onPostProcess()
             }
-            modifiedEntities.forEach { entity ->
-                entity.state.getAnimation()?.let {
-                    renderer.onAnimate(entity)
-                }
-            }
-            renderer.onPostProcess()
         }
     }
 
@@ -215,43 +163,72 @@ abstract class AbstractMarkerController<ActualMarker>(
         // Fast path: Check entity existence without semaphore to avoid blocking during initial marker addition
         if (!markerManager.hasEntity(state.id)) return
 
-        semaphore.withPermit {
-            val prevEntity = markerManager.getEntity(state.id) ?: return
-            val currentFinger = state.fingerPrint()
-            val prevFinger = prevEntity.fingerPrint
-            if (currentFinger == prevFinger) {
-                return
-            }
+        // Always update the entity in the manager
+        val prevEntity = markerManager.getEntity(state.id) ?: return
+        val currentFinger = state.fingerPrint()
+        val prevFinger = prevEntity.fingerPrint
+        if (currentFinger == prevFinger) {
+            return
+        }
 
-            val marker = prevEntity.marker
-            val defaultIcon = DefaultIcon()
-            val markerIcon = state.icon ?: defaultIcon
+        // Update the entity in manager
+        val entity =
+            MarkerEntityImpl(
+                marker = prevEntity.marker,
+                state = state,
+                isRendered = prevEntity.isRendered,
+            )
+        markerManager.updateEntity(entity)
 
-            val entity =
-                MarkerEntityImpl(
-                    marker = marker,
-                    state = state,
-                )
-            val markerParams =
-                object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                    override val current: MarkerEntity<ActualMarker> = entity
-                    override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
-                    override val prev: MarkerEntity<ActualMarker> = prevEntity
-                }
-            val markers = renderer.onChange(listOf(markerParams))
-
-            markers[0]?.let {
-                val entity =
-                    MarkerEntityImpl<ActualMarker>(
-                        marker = it,
+        renderingStrategy?.let { strategy ->
+            mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
+                val processed =
+                    strategy.onUpdate(
                         state = state,
+                        viewport = bounds,
+                        renderer = renderer,
                     )
-                markerManager.registerEntity(entity)
+                if (processed) {
+                    return
+                }
+            } ?: return
+        }
 
-                // Execute the animation property
-                if (prevFinger.animation != currentFinger.animation) {
-                    state.getAnimation()?.let {
-                        renderer.onAnimate(entity)
+        // Simple fallback: update marker immediately if it's already rendered
+        if (prevEntity.isRendered) {
+            semaphore.withPermit {
+                val marker = prevEntity.marker
+                val defaultIcon = DefaultIcon()
+                val markerIcon = state.icon ?: defaultIcon
+
+                val renderEntity =
+                    MarkerEntityImpl(
+                        marker = marker,
+                        state = state,
+                        isRendered = true,
+                    )
+                val markerParams =
+                    object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
+                        override val current: MarkerEntity<ActualMarker> = renderEntity
+                        override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
+                        override val prev: MarkerEntity<ActualMarker> = prevEntity
+                    }
+                val markers = renderer.onChange(listOf(markerParams))
+
+                markers[0]?.let {
+                    val finalEntity =
+                        MarkerEntityImpl<ActualMarker>(
+                            marker = it,
+                            state = state,
+                            isRendered = true,
+                        )
+                    markerManager.updateEntity(finalEntity)
+
+                    // Execute the animation property
+                    if (prevFinger.animation != currentFinger.animation) {
+                        state.getAnimation()?.let {
+                            renderer.onAnimate(finalEntity)
+                        }
                     }
                 }
             }
@@ -268,6 +245,14 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         this.mapCameraPosition = mapCameraPosition
-        actualRenderingStrategy.onCameraChanged(mapCameraPosition, markerManager, renderer)
+        renderingStrategy?.onCameraChanged(mapCameraPosition, renderer)
+    }
+
+    /**
+     * Properly cleanup native resources when disposing of the controller
+     * IMPORTANT: Call this when switching map providers or disposing the map
+     */
+    override fun destroy() {
+        markerManager.destroy()
     }
 }

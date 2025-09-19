@@ -44,10 +44,10 @@ fun MarkerBasicMapComponent(
     val bubbleColor = if (darkTheme) Color.Black else Color.White
 
     MapViewContainer(
-        state = mapViewState,
         modifier = modifier,
-        onMarkerClick = { selected = it },
+        state = mapViewState,
         onMapClick = { selected = null },
+        onMarkerClick = { selected = it },
     ) {
         Marker(
             position = GeoPoint.fromLatLong(0.018, 0.004),

@@ -34,6 +34,12 @@ internal class HereViewHolderImpl private constructor(
                 Point2D(offset.x.toDouble(), offset.y.toDouble()),
             )?.toGeoPoint()
 
+    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
+        mapView
+            .viewToGeoCoordinates(
+                Point2D(offset.x.toDouble(), offset.y.toDouble()),
+            )?.toGeoPoint()
+
     companion object {
         fun create(context: Context): MapViewHolder<MapView, MapScene> {
             // TEXTUREモードにしないとデバイスが回転したときに再描画を適切に行わない
