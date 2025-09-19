@@ -14,18 +14,21 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 interface PostOfficeViewModel {
     val initCameraPosition: MapCameraPosition
     val selectedMarker: State<MarkerState?>
-    val markerList: State<List<MarkerState>>
+    val markerList: StateFlow<List<MarkerState>>
     val mapViewState: State<MapViewState<*>?>
     val isMapLoaded: State<Boolean>
 
@@ -40,6 +43,7 @@ interface PostOfficeViewModel {
     fun onMapLoaded(mapViewState: MapViewState<*>)
 
     fun onInfoClick(postOffice: PostOffice)
+    fun loadPostOfficeData()
 }
 
 data class PostOfficeIcons(
@@ -52,6 +56,7 @@ class PostOfficeViewModelImpl(
     private val context: Context,
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
+    private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
     PostOfficeViewModel {
 
@@ -67,8 +72,8 @@ class PostOfficeViewModelImpl(
             tilt = 0.0,
             paddings = null,
         )
-    private val _markerList: MutableState<List<MarkerState>> = mutableStateOf(emptyList())
-    override val markerList: State<List<MarkerState>> = _markerList
+    private val _markerList: MutableStateFlow<List<MarkerState>> = MutableStateFlow(emptyList())
+    override val markerList: StateFlow<List<MarkerState>> = _markerList.asStateFlow()
 
     private val _isMapLoaded: MutableState<Boolean> = mutableStateOf(false)
     override val isMapLoaded: State<Boolean> = _isMapLoaded
@@ -89,21 +94,22 @@ class PostOfficeViewModelImpl(
         )
     override val renderingStrategy: State<MarkerRenderingStrategy<Any>?> = _renderingStrategy
 
-    suspend fun loadPostOfficeData() {
+    override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
+        coroutine.launch {
+            val postOffices = dataLoader.loadAllPostOffices()
 
-        val postOffices = dataLoader.loadAllPostOffices()
-
-        val markerStates =
-            postOffices.map { it ->
-                MarkerState(
-                    position = it.position,
-                    id = it.hashCode().toString(),
-                    icon = postOfficeIcon,
-                    extra = it,
-                )
-            }
-        _markerList.value = markerStates
+            val markerStates =
+                postOffices.map { it ->
+                    MarkerState(
+                        position = it.position,
+                        id = it.hashCode().toString(),
+                        icon = postOfficeIcon,
+                        extra = it,
+                    )
+                }
+            _markerList.value = markerStates
+        }
     }
 
     override fun onMarkerClick(clicked: MarkerState) {
@@ -115,8 +121,9 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
-        CoroutineScope(Dispatchers.Default).launch {
-            delay(1000)
+        coroutine.launch {
+            // Wait until map tiles are rendered.
+            delay(3000)
             _isMapLoaded.value = true
         }
     }
