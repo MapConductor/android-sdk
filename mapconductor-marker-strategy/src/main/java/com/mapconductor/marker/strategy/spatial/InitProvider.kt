@@ -1,5 +1,6 @@
-package com.mapconductor.core
+package com.mapconductor.marker.strategy.spatial
 
+import com.mapconductor.core.ResourceProvider
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.database.Cursor

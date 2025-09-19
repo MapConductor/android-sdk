@@ -1,8 +1,7 @@
 package com.mapconductor.core.polygon
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -12,9 +11,10 @@ import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Polygon(state: PolygonState) {
-    val rememberState = remember(state.fingerPrint()) { state }
-    SideEffect {
-        polygonFlow.value = polygonFlow.value.filter { it.id != rememberState.id } + rememberState
+    LaunchedEffect(state.fingerPrint()) {
+        val newMap = polygonFlow.value.toMutableMap()
+        newMap.set(state.id, state)
+        polygonFlow.value = newMap
     }
 }
 

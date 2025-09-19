@@ -1,4 +1,4 @@
-package com.mapconductor.here
+﻿package com.mapconductor.here
 
 import HerePolygonOverlayRenderer
 import com.here.sdk.core.engine.AuthenticationMode
@@ -6,15 +6,12 @@ import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
-import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
-import com.mapconductor.here.marker.HereMarkerRenderer
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
@@ -59,6 +56,7 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         context: Context,
         id: String,
         options: HereViewInitOptions,
+        markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     ): HereMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) {
@@ -92,7 +90,11 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         val controller =
             HereMapViewControllerImpl(
                 holder = holder,
-                markerController = getMarkerController(holder),
+                markerController =
+                    getMarkerController(
+                        holder = holder,
+                        renderingStrategy = markerRenderingStrategy,
+                    ),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
                 circleController = getHereCircleController(holder),
@@ -114,26 +116,13 @@ object HereMapViewControllerStore : StaticHolder<HereMapViewControllerImpl>() {
         return controller
     }
 
-    private fun getMarkerController(holder: HereViewHolder): HereMarkerController {
-        val hexGeocell =
-            HexGeocell(
-                projection = WebMercator,
-                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-            )
-        val manager = MarkerManager<HereActualMarker>(hexGeocell)
-
-        val renderer =
-            HereMarkerRenderer(
-                holder = holder,
-            )
-
-        val controller =
-            HereMarkerController(
-                markerManager = manager,
-                renderer = renderer,
-            )
-        return controller
-    }
+    private fun getMarkerController(
+        holder: HereViewHolder,
+        renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
+    ) = HereMarkerController.create(
+        holder = holder,
+        renderingStrategy = renderingStrategy,
+    )
 
     private fun getHereCircleController(holder: HereViewHolder): HereCircleController {
         val renderer =

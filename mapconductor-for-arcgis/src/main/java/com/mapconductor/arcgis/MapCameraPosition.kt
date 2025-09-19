@@ -1,11 +1,13 @@
 package com.mapconductor.arcgis
 
 import com.arcgismaps.mapping.view.Camera
+import com.mapconductor.arcgis.zoom.ZoomAltitudeConverter
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.PI
 import kotlin.math.asin
 import kotlin.math.atan2
@@ -14,15 +16,15 @@ import kotlin.math.sin
 
 const val ZOOM0_ALTITUDE = 5_000_000.0
 
-private val converter = ZoomAltitudeConverter(ZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
-fun MapCameraPosition.getAltitudeForArcGIS(): Double = ZoomAltitudeConverter().zoomLevelToAltitude(zoom)
+fun MapCameraPosition.getAltitudeForArcGIS(): Double = converter.zoomLevelToAltitude(zoom, position.latitude, tilt)
 
 fun MapCameraPosition.toCamera(): Camera {
     val targetPoint = GeoPoint.from(position).toPoint()
     return calculateCameraForOrbitParameters(
         targetPoint = targetPoint,
-        distance = converter.zoomLevelToAltitude(zoom),
+        distance = converter.zoomLevelToDistance(zoom, position.latitude),
         cameraHeadingOffset = 360 - (bearing + 180),
         cameraPitchOffset = tilt,
     )
@@ -109,7 +111,7 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
     when (position) {
         is MapCameraPosition -> position
         else -> {
-            val altitude = converter.zoomLevelToAltitude(position.zoom)
+            val altitude = converter.zoomLevelToAltitude(position.zoom, position.position.latitude, position.tilt)
             MapCameraPosition(
                 position =
                     GeoPoint.fromLongLat(
@@ -129,13 +131,13 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
 /**
  * 現在のカメラの zoom レベルを取得
  */
-fun Camera.getZoomLevel(): Double = converter.altitudeToZoomLevel(this.location.z ?: 0.0)
+fun Camera.getZoomLevel(): Double = converter.altitudeToZoomLevel(this.location.z ?: 0.0, this.location.y, this.pitch)
 
 /**
  * zoom レベルを指定してカメラの距離を変更
  */
 fun Camera.withZoomLevel(zoomLevel: Double): Camera {
-    val altitude = converter.zoomLevelToAltitude(zoomLevel)
+    val altitude = converter.zoomLevelToAltitude(zoomLevel, this.location.y, this.pitch)
     return Camera(
         latitude = this.location.y,
         longitude = this.location.x,
@@ -155,9 +157,8 @@ fun Camera.toMapCameraPosition() =
                 altitude = this.location.z ?: 0.0,
             ),
         zoom =
-            converter.altitudeToZoomLevel(
-                altitude = this.location.z ?: 0.0,
-            ),
+            converter
+                .altitudeToZoomLevel(altitude = this.location.z ?: 0.0, latitude = this.location.y, tilt = this.pitch),
         bearing = (360 - this.heading) % 360,
         tilt = this.pitch,
         paddings = MapPaddingsImpl.Zeros,

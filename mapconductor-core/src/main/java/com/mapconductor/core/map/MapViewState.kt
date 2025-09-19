@@ -34,13 +34,13 @@ interface MapViewState<ActualMapDesignType> {
 
     fun moveCameraTo(
         cameraPosition: MapCameraPosition,
-        durationMs: Long = 0,
+        durationMs: Long? = 0,
         listener: MoveCameraCallback? = null,
     )
 
     fun moveCameraTo(
         position: GeoPoint,
-        durationMs: Long = 0,
+        durationMs: Long? = 0,
         listener: MoveCameraCallback? = null,
     )
 
@@ -84,10 +84,10 @@ abstract class MapViewStateImpl<ActualMapDesignType>(
 }
 
 interface MapOverlay<DataType> {
-    val flow: StateFlow<List<DataType>>
+    val flow: StateFlow<MutableMap<String, DataType>>
 
     suspend fun render(
-        data: List<DataType>,
+        data: MutableMap<String, DataType>,
         controller: MapViewController,
     )
 }

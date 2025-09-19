@@ -25,10 +25,10 @@ fun CircleMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onCircleClick = onCircleClick,
             onMarkerDragStart = onMarkerMove,
             onMarkerDrag = onMarkerMove,
             onMarkerDragEnd = onMarkerMove,
+            onCircleClick = onCircleClick,
         ) {
             // Circle
             Circle(circleState)

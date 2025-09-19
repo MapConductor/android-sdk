@@ -9,6 +9,10 @@ import com.here.sdk.mapview.MapMeasure
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import com.mapconductor.here.zoom.ZoomAltitudeConverter
+
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
 @Keep
 fun MapCameraPosition.toMapCameraUpdate(): MapCameraUpdate =
@@ -41,11 +45,19 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
             )
     }
 
-fun MapCamera.State.toMapCameraPosition() =
-    MapCameraPosition(
-        position = targetCoordinates.toGeoPoint(),
+fun MapCamera.State.toMapCameraPosition(): MapCameraPosition {
+    val altitude =
+        converter.zoomLevelToAltitude(
+            zoomLevel = zoomLevel,
+            latitude = targetCoordinates.latitude,
+            tilt = orientationAtTarget.tilt,
+        )
+    val position = targetCoordinates.toGeoPoint().copy(altitude = altitude)
+    return MapCameraPosition(
+        position = position,
         zoom = zoomLevel,
         bearing = this.orientationAtTarget.bearing,
         tilt = this.orientationAtTarget.tilt,
         visibleRegion = null,
     )
+}

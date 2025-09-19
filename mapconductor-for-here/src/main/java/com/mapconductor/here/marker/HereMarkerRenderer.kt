@@ -15,7 +15,6 @@ import com.mapconductor.here.toMapImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class HereMarkerRenderer(
     holder: HereViewHolder,
@@ -38,22 +37,20 @@ class HereMarkerRenderer(
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {
         val markers =
-            withContext(coroutine.coroutineContext) {
-                data.map { params ->
-                    val marker =
-                        MapMarker(
-                            GeoPoint.from(params.state.position).toGeoCoordinates(),
-                            params.bitmapIcon.toMapImage(),
-                            params.bitmapIcon.toAnchor2D(),
-                        ).apply {
-                            drawOrder = calculateZIndex(params.state.position).toInt()
-                            metadata =
-                                Metadata().apply {
-                                    setString("id", params.state.id)
-                                }
-                        }
-                    return@map marker
-                }
+            data.map { params ->
+                val marker =
+                    MapMarker(
+                        GeoPoint.from(params.state.position).toGeoCoordinates(),
+                        params.bitmapIcon.toMapImage(),
+                        params.bitmapIcon.toAnchor2D(),
+                    ).apply {
+                        drawOrder = calculateZIndex(params.state.position).toInt()
+                        metadata =
+                            Metadata().apply {
+                                setString("id", params.state.id)
+                            }
+                    }
+                return@map marker
             }
 
         coroutine.launch {
@@ -66,7 +63,7 @@ class HereMarkerRenderer(
         coroutine.launch {
             val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
             if (markers.isNotEmpty()) {
-                holder.map.removeMapMarkers(markers)
+                holder.mapView.mapScene.removeMapMarkers(markers)
             }
         }
     }

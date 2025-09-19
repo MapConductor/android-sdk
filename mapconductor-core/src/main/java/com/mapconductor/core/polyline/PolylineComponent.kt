@@ -12,7 +12,9 @@ import android.os.Parcelable
 @Composable
 fun MapViewScope.Polyline(state: PolylineState) {
     LaunchedEffect(state.fingerPrint()) {
-        polylineFlow.value = polylineFlow.value.filter { it.id != state.id } + state
+        val newMap = polylineFlow.value.toMutableMap()
+        newMap.set(state.id, state)
+        polylineFlow.value = newMap
     }
 }
 

@@ -4,105 +4,205 @@ import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.spherical.haversineDistance
-import java.util.concurrent.ConcurrentHashMap
+import com.mapconductor.core.geocell.HexGeocellImpl
 
-class MarkerManager<ActualMarker>(
-    geocell: HexGeocell,
+/**
+ * Memory usage statistics for MarkerManager optimization
+ */
+data class MarkerManagerStats(
+    val entityCount: Int,
+    val hasSpatialIndex: Boolean,
+    val spatialIndexInitialized: Boolean,
+    val estimatedMemoryKB: Long,
+)
+
+open class MarkerManager<ActualMarker>(
+    protected val geocell: HexGeocell,
 ) {
-    private val entities: ConcurrentHashMap<String, MarkerEntity<ActualMarker>> = ConcurrentHashMap()
-    private val cellRegistry =
-        HexCellRegistry<ActualMarker>(
-            geocell = geocell,
-            // Maximum zoom level
-            zoom = 20.0,
-        )
+    // Primary storage - single source of truth
+    private val entities = mutableMapOf<String, MarkerEntity<ActualMarker>>()
 
-    fun getEntity(id: String): MarkerEntity<ActualMarker>? = entities.get(id)
+    // Lazy-initialized spatial index only when needed
+    private var cellRegistry: HexCellRegistry<ActualMarker>? = null
 
-    fun hasEntity(id: String): Boolean = entities.containsKey(id)
+    @Volatile
+    private var isDestroyed = false
 
-    fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
-        val removed =
-            entities.remove(id)?.also {
-                cellRegistry.removePoint(it)
-            }
+    open fun getEntity(id: String): MarkerEntity<ActualMarker>? {
+        checkNotDestroyed()
+        return entities.get(id)
+    }
+
+    open fun hasEntity(id: String): Boolean {
+        checkNotDestroyed()
+        return entities.containsKey(id)
+    }
+
+    open fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
+        checkNotDestroyed()
+        val removed = entities.remove(id)
+        if (removed != null) {
+            // Only update spatial index if it exists
+            cellRegistry?.removePoint(removed)
+        }
         return removed
     }
 
-    fun metersPerPixel(
+    open fun metersPerPixel(
         position: IGeoPoint,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
-    ): Double = cellRegistry.metersPerPixel(position, zoom, pixels, tileSize)
+    ): Double {
+        checkNotDestroyed()
+        // Optimized calculation without native reflection calls
+        val earthCircumference = 40075017.0 // meters
+        val pixelsAtZoom = tileSize * Math.pow(2.0, zoom)
+        return earthCircumference / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
+    }
 
-    fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
-        val cell = cellRegistry.findNearest(position) ?: return null
-        val entryIDs =
-            cellRegistry.getEntryIDsByHexCell(cell)?.let { entryIDs ->
-                entryIDs
-                    .filter { entryId ->
-                        entities[entryId]?.state?.clickable == true
-                    }.filterNotNull()
-                    .sortedBy { entryId ->
-                        entities[entryId]?.let { entity ->
-                            haversineDistance(position, entity.state.position)
-                        }
+    open fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
+        checkNotDestroyed()
+        return if (entities.size > 50) { // Use spatial index for larger datasets
+            val registry = ensureCellRegistry()
+            val nearestCell = registry.findNearest(position)
+            nearestCell?.let { cell ->
+                // Find the nearest entity within the nearest cell
+                registry
+                    .getEntryIDsByHexCell(cell)
+                    ?.mapNotNull { id -> entities[id] }
+                    ?.minByOrNull { entity ->
+                        val dx = entity.state.position.latitude - position.latitude
+                        val dy = entity.state.position.longitude - position.longitude
+                        dx * dx + dy * dy
                     }
-            } ?: return null
-
-        val entryId = entryIDs[0]
-        return entities[entryId]
+            } ?: bruteForceNearest(position) // Fallback if no cell found
+        } else {
+            // Brute force search for small datasets
+            bruteForceNearest(position)
+        }
     }
 
-    fun findByIdPrefix(prefix: String): List<HexCell> = cellRegistry.findByIdPrefix(prefix)
-
-    fun registerEntity(entity: MarkerEntity<ActualMarker>) {
-        entities[entity.state.id] = entity
-        cellRegistry.setPoint(entity)
-    }
-
-    fun updateEntity(entity: MarkerEntity<ActualMarker>) {
-        entities[entity.state.id] = entity
-        cellRegistry.setPoint(entity)
-    }
-
-    fun allEntities(): List<MarkerEntity<ActualMarker>> = entities.values.toList()
-
-    fun clear() {
-        entities.clear()
-        cellRegistry.clear()
-    }
-
-    fun findMarkersInBounds(bounds: com.mapconductor.core.features.GeoRectBounds): List<MarkerEntity<ActualMarker>> {
-        if (bounds.isEmpty) return emptyList()
-
-        val center = bounds.center ?: return emptyList()
-        val span = bounds.toSpan() ?: return emptyList()
-
-        // Calculate search radius based on bounding box diagonal
-        val latRadius = span.latitude / 2.0
-        val lngRadius = span.longitude / 2.0
-        val searchRadius = kotlin.math.sqrt(latRadius * latRadius + lngRadius * lngRadius) * 111000
-
-        // Find all cells within the search radius
-        val cellsWithDistance = cellRegistry.findWithinRadiusWithDistance(center, searchRadius)
-
-        // Collect all entities from those cells and filter by actual bounds
-        val markersInBounds = mutableListOf<MarkerEntity<ActualMarker>>()
-
-        cellsWithDistance.forEach { cellWithDistance ->
-            val entryIDs = cellRegistry.getEntryIDsByHexCell(cellWithDistance.cell)
-            entryIDs?.forEach { entryId ->
-                entities[entryId]?.let { entity ->
-                    if (bounds.contains(entity.state.position)) {
-                        markersInBounds.add(entity)
-                    }
-                }
-            }
+    private fun bruteForceNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? =
+        entities.values.minByOrNull { entity ->
+            val dx = entity.state.position.latitude - position.latitude
+            val dy = entity.state.position.longitude - position.longitude
+            dx * dx + dy * dy
         }
 
-        return markersInBounds
+    open fun findByIdPrefix(prefix: String): List<HexCell> {
+        checkNotDestroyed()
+        return cellRegistry?.findByIdPrefix(prefix) ?: emptyList()
+    }
+
+    open fun registerEntity(entity: MarkerEntity<ActualMarker>) {
+        checkNotDestroyed()
+        entities[entity.state.id] = entity
+        // Only update spatial index if it exists
+        cellRegistry?.setPoint(entity)
+    }
+
+    /**
+     * Lazy-initialize the spatial index only when spatial operations are needed.
+     * This saves memory for simple use cases that don't require spatial queries.
+     */
+    private fun ensureCellRegistry(): HexCellRegistry<ActualMarker> {
+        if (cellRegistry == null) {
+            cellRegistry = HexCellRegistry(geocell = geocell, zoom = 20.0)
+            // Re-index all existing entities
+            entities.values.forEach { entity ->
+                cellRegistry!!.setPoint(entity)
+            }
+        }
+        return cellRegistry!!
+    }
+
+    open fun updateEntity(entity: MarkerEntity<ActualMarker>) {
+        checkNotDestroyed()
+        entities[entity.state.id] = entity
+        // Only update spatial index if it exists
+        cellRegistry?.setPoint(entity)
+    }
+
+    open fun allEntities(): List<MarkerEntity<ActualMarker>> {
+        checkNotDestroyed()
+        return entities.values.toList()
+    }
+
+    /**
+     * Get memory usage statistics for debugging and optimization
+     */
+    fun getMemoryStats(): MarkerManagerStats {
+        checkNotDestroyed()
+        return MarkerManagerStats(
+            entityCount = entities.size,
+            hasSpatialIndex = cellRegistry != null,
+            spatialIndexInitialized = cellRegistry != null,
+            estimatedMemoryKB = estimateMemoryUsage() / 1024,
+        )
+    }
+
+    private fun estimateMemoryUsage(): Long {
+        // Rough estimation in bytes
+        val entityMapOverhead = entities.size * 64L // Map entry overhead + string key
+        val entityObjects = entities.size * 200L // Rough entity size
+        val spatialIndexSize = if (cellRegistry != null) entities.size * 100L else 0L // Cell registry overhead
+        return entityMapOverhead + entityObjects + spatialIndexSize
+    }
+
+    open fun clear() {
+        checkNotDestroyed()
+        entities.clear()
+        cellRegistry?.clear()
+    }
+
+    open fun findMarkersInBounds(
+        bounds: com.mapconductor.core.features.GeoRectBounds,
+    ): List<MarkerEntity<ActualMarker>> {
+        checkNotDestroyed()
+        if (bounds.isEmpty) return emptyList()
+
+        // For spatial queries, ensure the cell registry is initialized
+        if (entities.size > 100) { // Only use spatial index for larger datasets
+            val registry = ensureCellRegistry()
+            // Use spatial index for better performance on larger datasets
+            // TODO: Implement bounds-based cell query in HexCellRegistry
+            // For now, fall back to brute force but with spatial index initialized
+        }
+
+        // Brute force filtering - simple and efficient for small to medium datasets
+        return entities.values.filter { entity ->
+            bounds.contains(entity.state.position)
+        }
+    }
+
+    /**
+     * Properly destroy resources when switching map providers
+     * IMPORTANT: Call this when disposing of the MarkerManager
+     */
+    open fun destroy() {
+        if (!isDestroyed) {
+            isDestroyed = true
+            entities.clear()
+            cellRegistry?.clear()
+            cellRegistry = null
+        }
+    }
+
+    private fun checkNotDestroyed() {
+        if (isDestroyed) {
+            throw IllegalStateException("MarkerManager has been destroyed")
+        }
+    }
+
+    protected open fun finalize() {
+        destroy()
+    }
+
+    companion object {
+        fun <ActualMarker> defaultManager(geocell: HexGeocell? = null): MarkerManager<ActualMarker> =
+            MarkerManager<ActualMarker>(
+                geocell = geocell ?: HexGeocellImpl.defaultGeocell(),
+            )
     }
 }

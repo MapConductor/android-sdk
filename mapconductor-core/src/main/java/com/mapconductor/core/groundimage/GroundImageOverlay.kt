@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalGroundImageCollector =
-    compositionLocalOf<MutableStateFlow<List<GroundImageState>>> {
+    compositionLocalOf<MutableStateFlow<MutableMap<String, GroundImageState>>> {
         error("GroundImage must be under the <MapView />")
     }
 
 class GroundImageOverlay(
-    override val flow: StateFlow<List<GroundImageState>>,
+    override val flow: StateFlow<MutableMap<String, GroundImageState>>,
 ) : MapOverlay<GroundImageState> {
     override suspend fun render(
-        data: List<GroundImageState>,
+        data: MutableMap<String, GroundImageState>,
         controller: MapViewController,
     ) {
-        (controller as? GroundImageCapable)?.compositionGroundImages(data)
+        (controller as? GroundImageCapable)?.compositionGroundImages(data.values.toList())
     }
 }
