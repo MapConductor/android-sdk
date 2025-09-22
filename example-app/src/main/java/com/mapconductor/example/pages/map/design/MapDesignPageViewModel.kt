@@ -3,8 +3,8 @@ package com.mapconductor.example.pages.map.design
 import androidx.lifecycle.ViewModel
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.ArcGISMapViewState
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapDesignType
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.googlemaps.GoogleMapDesign
@@ -23,7 +23,7 @@ data class MapDesignOption(
 )
 
 interface MapDesignPageViewModel {
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val mapViewState: StateFlow<MapViewState<*>?>
 
     val mapDesignOptions: StateFlow<List<MapDesignOption>>
@@ -35,9 +35,9 @@ class MapDesignPageViewModelImpl :
     ViewModel(),
     MapDesignPageViewModel {
     override val initCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position =
-                GeoPoint.fromLatLong(
+                GeoPointImpl.fromLatLong(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),

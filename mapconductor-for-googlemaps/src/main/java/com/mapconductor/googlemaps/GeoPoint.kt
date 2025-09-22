@@ -1,10 +1,10 @@
 package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.model.LatLng
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 
-fun GeoPoint.toLatLng(): LatLng = LatLng(latitude, longitude)
+fun GeoPointImpl.toLatLng(): LatLng = LatLng(latitude, longitude)
 
-fun GeoPoint.Companion.from(latLng: LatLng) = GeoPoint(latLng.latitude, latLng.longitude)
+fun GeoPointImpl.Companion.from(latLng: LatLng) = GeoPointImpl(latLng.latitude, latLng.longitude)
 
-fun LatLng.toGeoPoint() = GeoPoint.fromLatLong(latitude, longitude)
+fun LatLng.toGeoPoint() = GeoPointImpl.fromLatLong(latitude, longitude)

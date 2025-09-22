@@ -1,7 +1,7 @@
 package com.mapconductor.core.map
 
 import androidx.compose.runtime.saveable.Saver
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import android.os.Bundle
 
 /**
@@ -12,7 +12,7 @@ abstract class BaseMapViewSaver<T : Any> {
     /**
      * Extract camera position from the state, handling null cases
      */
-    protected abstract fun extractCameraPosition(state: T): MapCameraPosition?
+    protected abstract fun extractCameraPosition(state: T): MapCameraPositionImpl?
 
     /**
      * Save map design type to bundle
@@ -28,13 +28,13 @@ abstract class BaseMapViewSaver<T : Any> {
     protected abstract fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
     ): T
 
     /**
      * Get default camera position for fallback
      */
-    protected open fun getDefaultCameraPosition(): MapCameraPosition = MapCameraPosition.Default
+    protected open fun getDefaultCameraPosition(): MapCameraPositionImpl = MapCameraPositionImpl.Default
 
     /**
      * Get paddings for restored camera position (can be overridden by subclasses)
@@ -96,10 +96,10 @@ abstract class BaseMapViewSaver<T : Any> {
         }
     }
 
-    private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPosition =
-        MapCameraPosition(
+    private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPositionImpl =
+        MapCameraPositionImpl(
             position =
-                GeoPoint.fromLatLong(
+                GeoPointImpl.fromLatLong(
                     latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
                     longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
                 ),

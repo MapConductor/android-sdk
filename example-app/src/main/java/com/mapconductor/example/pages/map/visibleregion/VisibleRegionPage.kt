@@ -1,18 +1,17 @@
 package com.mapconductor.example.pages.map.visibleregion
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
 fun VisibleRegionPage(onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
-        MapCameraPosition(
-            position = GeoPoint(latitude = 35.6762, longitude = 139.6503),
+        MapCameraPositionImpl(
+            position = GeoPointImpl(latitude = 35.6762, longitude = 139.6503),
             zoom = 10.0,
         )
 

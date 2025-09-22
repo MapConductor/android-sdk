@@ -1,6 +1,6 @@
 package com.mapconductor.core.polyline
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 
 interface PolylineManager<ActualPolyline> {
     fun registerEntity(entity: PolylineEntity<ActualPolyline>)
@@ -15,7 +15,7 @@ interface PolylineManager<ActualPolyline> {
 
     fun clear()
 
-    fun find(position: IGeoPoint): PolylineEntity<ActualPolyline>?
+    fun find(position: GeoPoint): PolylineEntity<ActualPolyline>?
 }
 
 class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
@@ -37,5 +37,5 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         entities.clear()
     }
 
-    override fun find(position: IGeoPoint): PolylineEntity<ActualPolyline>? = entities.values.firstOrNull()
+    override fun find(position: GeoPoint): PolylineEntity<ActualPolyline>? = entities.values.firstOrNull()
 }

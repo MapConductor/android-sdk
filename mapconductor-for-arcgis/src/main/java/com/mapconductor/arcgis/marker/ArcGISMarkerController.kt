@@ -7,7 +7,7 @@ import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.getZoomLevel
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
@@ -47,7 +47,7 @@ class ArcGISMarkerController private constructor(
         }
         get() = internalSelectedMarker
 
-    override fun find(position: IGeoPoint): MarkerEntity<ArcGISActualMarker>? {
+    override fun find(position: GeoPoint): MarkerEntity<ArcGISActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val tolerance =
                 Settings.Default.tapTolerance.value

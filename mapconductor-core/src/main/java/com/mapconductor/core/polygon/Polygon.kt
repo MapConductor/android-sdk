@@ -8,13 +8,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.StateFlowDelegate
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class PolygonState(
-    points: List<IGeoPoint>,
+    points: List<GeoPoint>,
     id: String? = null,
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 2.dp,
@@ -39,7 +39,7 @@ class PolygonState(
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
     var geodesic by mutableStateOf(geodesic)
-    var points by StateFlowDelegate<List<IGeoPoint>>(points)
+    var points by StateFlowDelegate<List<GeoPoint>>(points)
     var extra by mutableStateOf(extra)
 
     private fun polygonId(hashCodes: List<Int>): Int =
@@ -96,7 +96,7 @@ data class PolygonFingerPrint(
 
 data class PolygonEvent(
     val state: PolygonState,
-    val clicked: IGeoPoint?,
+    val clicked: GeoPoint?,
 )
 
 typealias OnPolygonEventHandler = (PolygonEvent) -> Unit

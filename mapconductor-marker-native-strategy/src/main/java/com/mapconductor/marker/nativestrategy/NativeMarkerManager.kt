@@ -1,7 +1,7 @@
 package com.mapconductor.marker.nativestrategy
 
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.features.IGeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.marker.MarkerEntity
@@ -81,7 +81,7 @@ class NativeMarkerManager<ActualMarker>(
     }
 
     override fun metersPerPixel(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
         pixels: Double,
         tileSize: Int,
@@ -90,7 +90,7 @@ class NativeMarkerManager<ActualMarker>(
         return nativeIndex.metersPerPixel(position, zoom, pixels, tileSize)
     }
 
-    override fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
+    override fun findNearest(position: GeoPoint): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
         // Use native spatial query for performance - bypasses parent's threshold logic
         val nearestId = nativeIndex.findNearest(position) ?: return null

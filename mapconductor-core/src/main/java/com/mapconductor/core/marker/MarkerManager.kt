@@ -1,6 +1,6 @@
 package com.mapconductor.core.marker
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
@@ -49,7 +49,7 @@ open class MarkerManager<ActualMarker>(
     }
 
     open fun metersPerPixel(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
@@ -61,7 +61,7 @@ open class MarkerManager<ActualMarker>(
         return earthCircumference / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
     }
 
-    open fun findNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? {
+    open fun findNearest(position: GeoPoint): MarkerEntity<ActualMarker>? {
         checkNotDestroyed()
         return if (entities.size > 50) { // Use spatial index for larger datasets
             val registry = ensureCellRegistry()
@@ -83,7 +83,7 @@ open class MarkerManager<ActualMarker>(
         }
     }
 
-    private fun bruteForceNearest(position: IGeoPoint): MarkerEntity<ActualMarker>? =
+    private fun bruteForceNearest(position: GeoPoint): MarkerEntity<ActualMarker>? =
         entities.values.minByOrNull { entity ->
             val dx = entity.state.position.latitude - position.latitude
             val dy = entity.state.position.longitude - position.longitude

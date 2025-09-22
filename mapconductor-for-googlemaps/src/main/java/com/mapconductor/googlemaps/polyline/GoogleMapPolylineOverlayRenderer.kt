@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineState
@@ -22,7 +22,7 @@ class GoogleMapPolylineOverlayRenderer(
 ) : AbstractPolylineOverlayRenderer<GoogleMapActualPolyline>() {
     override suspend fun createPolyline(state: PolylineState): GoogleMapActualPolyline? =
         withContext(coroutine.coroutineContext) {
-            val points = state.points.map { GeoPoint.from(it).toLatLng() }
+            val points = state.points.map { GeoPointImpl.from(it).toLatLng() }
             val options =
                 PolylineOptions()
                     .addAll(points)
@@ -46,7 +46,7 @@ class GoogleMapPolylineOverlayRenderer(
             val prevFinger = prev.fingerPrint
 
             if (finger.points != prevFinger.points) {
-                val points = current.state.points.map { GeoPoint.from(it).toLatLng() }
+                val points = current.state.points.map { GeoPointImpl.from(it).toLatLng() }
                 polyline.points = points
             }
 

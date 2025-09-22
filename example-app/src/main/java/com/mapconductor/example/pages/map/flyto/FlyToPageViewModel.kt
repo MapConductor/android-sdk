@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerState
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 interface FlyToPageViewModel {
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
     val markers: List<MarkerState>
@@ -51,16 +51,16 @@ class FlyToPageViewModelImpl(
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
     // Define destination locations
-    private val honoluluLocation = GeoPoint.fromLatLong(21.3099, -157.8581)
-    private val tokyoLocation = GeoPoint.fromLatLong(35.6762, 139.6503)
-    private val londonLocation = GeoPoint.fromLatLong(51.5074, -0.1278)
-    private val newYorkLocation = GeoPoint.fromLatLong(40.7128, -74.0060)
-    private val sydneyLocation = GeoPoint.fromLatLong(-33.9506, 151.1815)
+    private val honoluluLocation = GeoPointImpl.fromLatLong(21.3099, -157.8581)
+    private val tokyoLocation = GeoPointImpl.fromLatLong(35.6762, 139.6503)
+    private val londonLocation = GeoPointImpl.fromLatLong(51.5074, -0.1278)
+    private val newYorkLocation = GeoPointImpl.fromLatLong(40.7128, -74.0060)
+    private val sydneyLocation = GeoPointImpl.fromLatLong(-33.9506, 151.1815)
 
     override var geodesic by mutableStateOf(false)
 
     override val initCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position = tokyoLocation,
             zoom = 0.0,
             bearing = 0.0,
@@ -226,13 +226,13 @@ class FlyToPageViewModelImpl(
     }
 
     private fun flyToLocation(
-        location: GeoPoint,
+        location: GeoPointImpl,
         zoom: Double,
     ) {
         viewModelScope.launch {
             _mapViewState.value?.let { mapState ->
                 val newCameraPosition =
-                    MapCameraPosition(
+                    MapCameraPositionImpl(
                         position = location,
                         zoom = zoom,
                         bearing = 0.0,

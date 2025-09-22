@@ -11,7 +11,7 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineState
@@ -79,12 +79,12 @@ class HerePolylineOverlayRenderer(
     }
 
     private fun createGeoPolyline(state: PolylineState): GeoPolyline {
-        val geoPoints: List<IGeoPoint> =
+        val geoPoints: List<GeoPoint> =
             when (state.geodesic) {
                 true -> createInterpolatePoints(state.points)
                 false -> createLinearInterpolatePoints(state.points)
             }
-        val points = geoPoints.map { GeoPoint.from(it).toGeoCoordinates() }
+        val points = geoPoints.map { GeoPointImpl.from(it).toGeoCoordinates() }
         return GeoPolyline(points)
     }
 
