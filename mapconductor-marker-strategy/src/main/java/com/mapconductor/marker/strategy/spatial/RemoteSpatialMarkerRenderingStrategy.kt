@@ -53,6 +53,9 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
     // Local marker manager for main process operations
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager.defaultManager()
+    override fun clear() {
+        markerManager.clear()
+    }
 
     // Batching for marker updates
     private val pendingUpdates = ConcurrentLinkedQueue<MarkerDataDTO>()

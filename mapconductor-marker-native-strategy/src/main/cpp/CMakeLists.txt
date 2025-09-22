@@ -27,6 +27,8 @@ add_library(
     spatial_utils_extended.cpp
     marker_rendering_strategy.cpp
     jni_wrapper.cpp
+    remote_spatial_jni_wrapper.cpp
+    remote_spatial_marker_strategy.cpp
 )
 
 # Include header directories

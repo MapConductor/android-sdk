@@ -21,6 +21,7 @@ class NativeAddOnlyMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
     geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
+
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,

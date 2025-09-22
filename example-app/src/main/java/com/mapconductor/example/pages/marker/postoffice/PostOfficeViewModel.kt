@@ -1,15 +1,22 @@
 package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.lifecycle.ViewModel
+import com.mapconductor.arcgis.ArcGISActualMarker
+import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.here.HereActualMarker
+import com.mapconductor.here.HereViewState
+import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.mapbox.MapboxViewState
+import com.mapconductor.marker.strategy.SimpleMarkerRenderingStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
-import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -40,14 +47,15 @@ interface PostOfficeViewModel {
     fun loadPostOfficeData()
 }
 
-data class PostOfficeIcons(
-    val tiny: ImageIcon,
-    val small: ImageIcon,
-    val regular: ImageIcon,
+data class Strategies(
+    val google: MarkerRenderingStrategy<GoogleMapActualMarker>,
+    val mapbox: MarkerRenderingStrategy<MapboxActualMarker>,
+    val here: MarkerRenderingStrategy<HereActualMarker>,
+    val arcgis: MarkerRenderingStrategy<ArcGISActualMarker>,
 )
 
 class PostOfficeViewModelImpl(
-    private val context: Context,
+    private val strategies: Strategies,
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
     private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
@@ -78,13 +86,7 @@ class PostOfficeViewModelImpl(
     override val selectedMarker: StateFlow<MarkerState?> = _selectedMarker.asStateFlow()
 
     private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategy<Any>?> =
-        MutableStateFlow(
-            RemoteSpatialMarkerRenderingStrategy(
-                context = context,
-                expandMargin = 0.4,
-                addOnlyMode = false,
-            ),
-        )
+        MutableStateFlow(null)
     override val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?> = _renderingStrategy.asStateFlow()
 
     override fun loadPostOfficeData() {
@@ -134,18 +136,23 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
+        renderingStrategy.value?.clear()
         _isMapLoaded.value = false
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _renderingStrategy.value =
-            NativeSpatialMarkerRenderingStrategy(
-                expandMargin = 0.4,
-            )
+            when (mapViewState) {
+                is GoogleMapViewState -> strategies.google
+                is MapboxViewState -> strategies.mapbox
+                is HereViewState -> strategies.here
+                is ArcGISMapViewState -> strategies.arcgis
+                else -> SimpleMarkerRenderingStrategy<Any>()
+            } as MarkerRenderingStrategy<Any>?
     }
 
     override fun onCleared() {
         super.onCleared()
         // Clean up remote strategy if it's being used
-        (_renderingStrategy.value as? RemoteSpatialMarkerRenderingStrategy<*>)?.destroy()
+        (renderingStrategy as? RemoteSpatialMarkerRenderingStrategy<*>)?.destroy()
     }
 }
