@@ -21,8 +21,8 @@ fun GroundImageMapComponent(
         MapViewContainer(
             modifier = modifier,
             state = mapViewState,
-            onGroundImageClick = onGroundImageClick,
             onMarkerDrag = onMarkerDrag,
+            onGroundImageClick = onGroundImageClick,
         ) {
             // GroundImage
             GroundImage(viewModel.groundImageState)

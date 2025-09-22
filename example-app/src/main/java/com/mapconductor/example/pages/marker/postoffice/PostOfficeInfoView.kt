@@ -1,5 +1,6 @@
 package com.mapconductor.example.pages.marker.postoffice
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.wrapContentSize
@@ -11,12 +12,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun PostOfficeInfoView(info: PostOffice) {
+fun PostOfficeInfoView(
+    info: PostOffice,
+    onClick: ((PostOffice) -> Unit)? = null,
+) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     if (!darkTheme) Color.Black else Color.White
 
     Column(
-        modifier = Modifier.wrapContentSize(),
+        modifier =
+            Modifier
+                .wrapContentSize()
+                .clickable(true) {
+                    onClick?.invoke(info)
+                },
     ) {
         val name = info.name
         val address = info.address

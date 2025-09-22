@@ -22,8 +22,8 @@ import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.VisibleRegion
@@ -134,13 +134,13 @@ class HereMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
         val adjustCameraUpdate =
             MapCameraUpdateFactory.lookAt(
-                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
+                GeoPointImpl.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
             )
@@ -150,7 +150,7 @@ class HereMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         durationMs: Long,
         listener: MoveCameraCallback?,
     ) {
@@ -162,7 +162,7 @@ class HereMapViewControllerImpl(
         val bowFactor = 1.0
         val animation =
             MapCameraAnimationFactory.flyTo(
-                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
+                GeoPointImpl.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
@@ -188,7 +188,7 @@ class HereMapViewControllerImpl(
         }
     }
 
-    private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {
+    private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPositionImpl? {
         return holder.mapView.camera.boundingBox?.let { boundingBox ->
             val mapWidth = holder.mapView.width.toFloat()
             val mapHeight = holder.mapView.height.toFloat()
@@ -298,7 +298,7 @@ class HereMapViewControllerImpl(
         }
     }
 
-    private fun getGeoPointFromPoint(point: Point2D): GeoPoint? =
+    private fun getGeoPointFromPoint(point: Point2D): GeoPointImpl? =
         holder.mapView
             .viewToGeoCoordinates(point)
             ?.toGeoPoint()
@@ -319,6 +319,10 @@ class HereMapViewControllerImpl(
         coroutine.launch {
             holder.mapView.mapScene.loadScene(scene) {
                 mapDesignType = value
+
+                mapLoadedCallback?.invoke()
+                mapLoadedCallback = null
+
                 mapDesignTypeChangeListener?.invoke(value)
             }
         }

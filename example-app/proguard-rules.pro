@@ -5,7 +5,7 @@
 
 # Optimization settings
 -optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
--optimizationpasses 5
+-optimizationpasses 10
 -allowaccessmodification
 -dontpreverify
 

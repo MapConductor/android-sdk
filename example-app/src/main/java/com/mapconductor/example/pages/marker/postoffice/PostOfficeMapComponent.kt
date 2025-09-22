@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
@@ -19,10 +21,13 @@ import com.mapconductor.example.MapViewContainer
 fun PostOfficeMapComponent(
     modifier: Modifier = Modifier,
     mapViewState: MapViewState<*>,
+    renderingStrategy: MarkerRenderingStrategy<*>?,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
-    onMapClick: OnMapEventHandler = {},
-    onMarkerClick: OnMarkerEventHandler = {},
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onInfoWndClick: ((PostOffice) -> Unit)? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
@@ -31,7 +36,9 @@ fun PostOfficeMapComponent(
 
     MapViewContainer(
         modifier = modifier,
+        renderingStrategy = renderingStrategy,
         state = mapViewState,
+        onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
         onMarkerClick = onMarkerClick,
     ) {
@@ -44,6 +51,7 @@ fun PostOfficeMapComponent(
             ) {
                 PostOfficeInfoView(
                     info = it.extra as PostOffice,
+                    onClick = onInfoWndClick,
                 )
             }
         }

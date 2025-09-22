@@ -1,5 +1,6 @@
 package com.mapconductor.example
 
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
@@ -16,6 +18,7 @@ import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
@@ -51,6 +54,14 @@ fun DemoAppScreen(initPage: String = "map") {
                 clickedImage = ContextCompat.getDrawable(context, R.drawable.newark_nj_1922_1)!!,
             )
         }
+    val postOfficeIcon =
+        remember {
+            val baseicon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
+            ImageIcon(
+                drawable = baseicon,
+                scale = 0.3f,
+            )
+        }
 
     val sidebarItems =
         listOf(
@@ -65,6 +76,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "map-design",
                 title = "Map design",
+            ),
+            SidebarItem(
+                id = "map-visibleregion",
+                title = "VisibleRegion",
             ),
             SidebarItem(
                 id = "marker-basic",
@@ -116,6 +131,14 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "map-visibleregion" -> {
+                        VisibleRegionPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+//                        ZoomCalibrationPage(
+//                            onToggleSidebar = navigationViewModel::toggleSidebar,
+//                        )
+                    }
                     "map-flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
@@ -134,6 +157,7 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "marker-postoffice" -> {
                         PostOfficeMapPage(
+                            postOfficeIcon = postOfficeIcon,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

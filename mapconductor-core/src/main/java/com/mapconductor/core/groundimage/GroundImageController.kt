@@ -1,8 +1,8 @@
 package com.mapconductor.core.groundimage
 
 import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionImpl
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -137,7 +137,11 @@ abstract class GroundImageController<ActualGroundImage>(
         }
     }
 
-    override fun find(position: IGeoPoint): GroundImageEntity<ActualGroundImage>? = groundImageManager.find(position)
+    override fun find(position: GeoPoint): GroundImageEntity<ActualGroundImage>? = groundImageManager.find(position)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+
+    override fun destroy() {
+        // No native resources to clean up
+    }
 }

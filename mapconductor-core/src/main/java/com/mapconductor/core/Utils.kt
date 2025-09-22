@@ -1,16 +1,25 @@
 package com.mapconductor.core
 
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.spherical.Spherical
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Duration
 import android.util.Log
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
-fun calculateZIndex(geoPointBase: IGeoPoint): Int {
+fun calculateZIndex(geoPointBase: GeoPoint): Int {
     // 南→北で奥行きを出す
     // 同じ緯度内では西が上（前）に来る
     return (-geoPointBase.latitude * 1_000_000 - geoPointBase.longitude).roundToInt()
@@ -29,18 +38,18 @@ fun meterToPixel(
 
 fun printPoints(
     tag: String,
-    points: List<IGeoPoint>,
+    points: List<GeoPoint>,
 ) {
     Log.d(tag, "-----------")
     points.forEach { point ->
-        Log.d(tag, GeoPoint.from(point).toUrlValue())
+        Log.d(tag, GeoPointImpl.from(point).toUrlValue())
     }
 }
 
-fun normalize(points: List<IGeoPoint>): List<IGeoPoint> = points.map { it.normalize() }
+fun normalize(points: List<GeoPoint>): List<GeoPoint> = points.map { it.normalize() }
 
-fun createInterpolatePoints(points: List<IGeoPoint>): List<IGeoPoint> {
-    val results = mutableListOf<IGeoPoint>()
+fun createInterpolatePoints(points: List<GeoPoint>): List<GeoPoint> {
+    val results = mutableListOf<GeoPoint>()
     val fractionStep = 0.01
     results.add(points[0])
     for (i in 1 until points.size) {
@@ -60,8 +69,8 @@ fun createInterpolatePoints(points: List<IGeoPoint>): List<IGeoPoint> {
     return results
 }
 
-fun createLinearInterpolatePoints(points: List<IGeoPoint>): List<IGeoPoint> {
-    val results = mutableListOf<IGeoPoint>()
+fun createLinearInterpolatePoints(points: List<GeoPoint>): List<GeoPoint> {
+    val results = mutableListOf<GeoPoint>()
     val fractionStep = 0.01
     results.add(points[0])
     for (i in 1 until points.size) {
@@ -90,13 +99,13 @@ fun createLinearInterpolatePoints(points: List<IGeoPoint>): List<IGeoPoint> {
  * @return List of point groups, each representing a continuous segment without meridian crossings
  */
 fun splitByMeridian(
-    points: List<IGeoPoint>,
+    points: List<GeoPoint>,
     geodesic: Boolean,
-): List<List<IGeoPoint>> {
+): List<List<GeoPoint>> {
     if (points.isEmpty()) return emptyList()
 
-    val results = mutableListOf<List<IGeoPoint>>()
-    var fragment = mutableListOf<IGeoPoint>()
+    val results = mutableListOf<List<GeoPoint>>()
+    var fragment = mutableListOf<GeoPoint>()
 
     for (i in points.indices) {
         val currentPoint = points[i]
@@ -126,7 +135,7 @@ fun splitByMeridian(
 
             // Close current fragment and start new one
             results.add(fragment.toList())
-            fragment = mutableListOf<IGeoPoint>()
+            fragment = mutableListOf<GeoPoint>()
 
             // Add the opposite meridian point to start the new fragment
             val oppositeMeridianPoint = createOppositeMeridianPoint(meridianPoint)
@@ -151,10 +160,10 @@ fun splitByMeridian(
  * @return Point at the meridian crossing
  */
 private fun interpolateAtMeridian(
-    from: IGeoPoint,
-    to: IGeoPoint,
+    from: GeoPoint,
+    to: GeoPoint,
     geodesic: Boolean,
-): GeoPoint {
+): GeoPointImpl {
     if (geodesic) {
         // Use geodesic interpolation (great circle path)
         return interpolateAtMeridianGeodesic(from, to)
@@ -168,9 +177,9 @@ private fun interpolateAtMeridian(
  * Performs linear interpolation to find the meridian crossing point.
  */
 private fun interpolateAtMeridianLinear(
-    from: IGeoPoint,
-    to: IGeoPoint,
-): GeoPoint {
+    from: GeoPoint,
+    to: GeoPoint,
+): GeoPointImpl {
     val fromLng = from.longitude
     val toLng = to.longitude
 
@@ -193,7 +202,7 @@ private fun interpolateAtMeridianLinear(
             else -> 0.0
         }
 
-    return GeoPoint(
+    return GeoPointImpl(
         latitude = interpolatedLatitude,
         longitude = targetMeridian,
         altitude = interpolatedAltitude!!,
@@ -205,9 +214,9 @@ private fun interpolateAtMeridianLinear(
  * Uses iterative method to find where the great circle path crosses the meridian.
  */
 private fun interpolateAtMeridianGeodesic(
-    from: IGeoPoint,
-    to: IGeoPoint,
-): GeoPoint {
+    from: GeoPoint,
+    to: GeoPoint,
+): GeoPointImpl {
     val fromLng = from.longitude
 
     // Determine target meridian
@@ -264,7 +273,7 @@ private fun interpolateAtMeridianGeodesic(
     val crossingPoint = Spherical.interpolate(from, to, finalFraction)
 
     // Ensure the longitude is exactly at the target meridian
-    return GeoPoint(
+    return GeoPointImpl(
         latitude = crossingPoint.latitude,
         longitude = targetMeridian,
         altitude = crossingPoint.altitude,
@@ -277,12 +286,77 @@ private fun interpolateAtMeridianGeodesic(
  * @param point Point at one meridian
  * @return Point at the opposite meridian
  */
-private fun createOppositeMeridianPoint(point: IGeoPoint): GeoPoint {
+private fun createOppositeMeridianPoint(point: GeoPoint): GeoPointImpl {
     val oppositeLongitude = if (point.longitude >= 0) -180.0 else 180.0
 
-    return GeoPoint(
+    return GeoPointImpl(
         latitude = point.latitude,
         longitude = oppositeLongitude,
         altitude = point.altitude ?: 0.0,
     )
 }
+
+/**
+ * 指定時間の無入力でバーストを確定し、まとめて List で流す。
+ * 例: window=300ms の間に来た値を 1 バッチとして emit。
+ */
+@OptIn(FlowPreview::class)
+internal fun <T> Flow<T>.debounceBatch(
+    window: Duration,
+    maxSize: Int,
+): Flow<List<T>> =
+    channelFlow {
+        require(maxSize > 0) { "maxSize must be > 0" }
+
+        val acc = ArrayList<T>(maxSize)
+        val lock = Mutex()
+
+        // イベント発生通知用（タイマ用）ホットストリーム
+        val activity = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 1)
+
+        suspend fun flushIfNotEmpty() {
+            val batch: List<T>? =
+                lock.withLock {
+                    if (acc.isEmpty()) null else acc.toList().also { acc.clear() }
+                }
+            if (batch != null) send(batch)
+        }
+
+        // 上流の値を取り込み、maxSize 到達なら即フラッシュ
+        val collectorJob =
+            launch {
+                try {
+                    this@debounceBatch.collect { v ->
+                        var shouldFlushNow = false
+                        lock.withLock {
+                            acc.add(v)
+                            if (acc.size >= maxSize) {
+                                shouldFlushNow = true
+                            }
+                        }
+                        if (shouldFlushNow) {
+                            // 最大件数に達したので即フラッシュ
+                            flushIfNotEmpty()
+                        } else {
+                            // タイマ更新用の「活動通知」
+                            activity.tryEmit(Unit)
+                        }
+                    }
+                } finally {
+                    // 上流が完了したら残りを流して終了
+                    flushIfNotEmpty()
+                }
+            }
+
+        // 「静寂境界」：window の間新規通知が来なければフラッシュ
+        val timerJob =
+            launch {
+                activity
+                    .debounce(window)
+                    .collect { flushIfNotEmpty() }
+            }
+
+        // channelFlow は子 Job の完了まで開いている
+        collectorJob.join()
+        timerJob.cancel()
+    }

@@ -1,8 +1,8 @@
 package com.mapconductor.core.polyline
 
 import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionImpl
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -141,7 +141,11 @@ abstract class PolylineController<ActualPolyline>(
         }
     }
 
-    override fun find(position: IGeoPoint): PolylineEntity<ActualPolyline>? = polylineManager.find(position)
+    override fun find(position: GeoPoint): PolylineEntity<ActualPolyline>? = polylineManager.find(position)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+
+    override fun destroy() {
+        // No native resources to clean up for polylines
+    }
 }

@@ -18,7 +18,17 @@
       "Bash(\"C:\\Users\\masashi\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" \"C:\\Users\\masashi\\Desktop\\android-sdk\\extract_post_offices.py\")",
       "Bash(where node)",
       "Bash(node:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(git add:*)",
+      "Bash(touch:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "WebFetch(*)",
+      "Bash(sed:*)",
+      "Bash(.gradlew:*)",
+      "WebFetch(domain:docs.mapbox.com)"
     ],
     "deny": []
   }

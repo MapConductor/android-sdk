@@ -61,6 +61,6 @@ data class InfoBubbleEntry(
 )
 
 val LocalInfoBubbleCollector =
-    compositionLocalOf<MutableStateFlow<List<InfoBubbleEntry>>> {
+    compositionLocalOf<MutableStateFlow<MutableMap<String, InfoBubbleEntry>>> {
         error("InfoBubble must be under <MapView />")
     }

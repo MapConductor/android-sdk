@@ -1,7 +1,7 @@
 package com.mapconductor.core.controller
 
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionImpl
 
 interface OverlayController<StateType, EntityType, EventType> {
     val zIndex: Int
@@ -14,7 +14,13 @@ interface OverlayController<StateType, EntityType, EventType> {
 
     var clickListener: ((EventType) -> Unit)?
 
-    fun find(position: IGeoPoint): EntityType?
+    fun find(position: GeoPoint): EntityType?
 
-    suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition)
+    suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl)
+
+    /**
+     * Cleanup resources when the controller is no longer needed.
+     * IMPORTANT: Call this when switching map providers or disposing the map.
+     */
+    fun destroy()
 }

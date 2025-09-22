@@ -3,7 +3,7 @@ package com.mapconductor.here.marker
 import com.here.sdk.core.Metadata
 import com.here.sdk.mapview.MapMarker
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
@@ -15,7 +15,6 @@ import com.mapconductor.here.toMapImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class HereMarkerRenderer(
     holder: HereViewHolder,
@@ -29,7 +28,7 @@ class HereMarkerRenderer(
     ) {
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<HereActualMarker>,
-        position: GeoPoint,
+        position: GeoPointImpl,
     ) {
         coroutine.launch {
             markerEntity.marker?.coordinates = position.toGeoCoordinates()
@@ -38,22 +37,20 @@ class HereMarkerRenderer(
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {
         val markers =
-            withContext(coroutine.coroutineContext) {
-                data.map { params ->
-                    val marker =
-                        MapMarker(
-                            GeoPoint.from(params.state.position).toGeoCoordinates(),
-                            params.bitmapIcon.toMapImage(),
-                            params.bitmapIcon.toAnchor2D(),
-                        ).apply {
-                            drawOrder = calculateZIndex(params.state.position).toInt()
-                            metadata =
-                                Metadata().apply {
-                                    setString("id", params.state.id)
-                                }
-                        }
-                    return@map marker
-                }
+            data.map { params ->
+                val marker =
+                    MapMarker(
+                        GeoPointImpl.from(params.state.position).toGeoCoordinates(),
+                        params.bitmapIcon.toMapImage(),
+                        params.bitmapIcon.toAnchor2D(),
+                    ).apply {
+                        drawOrder = calculateZIndex(params.state.position).toInt()
+                        metadata =
+                            Metadata().apply {
+                                setString("id", params.state.id)
+                            }
+                    }
+                return@map marker
             }
 
         coroutine.launch {
@@ -66,7 +63,7 @@ class HereMarkerRenderer(
         coroutine.launch {
             val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
             if (markers.isNotEmpty()) {
-                holder.map.removeMapMarkers(markers)
+                holder.mapView.mapScene.removeMapMarkers(markers)
             }
         }
     }
@@ -90,7 +87,7 @@ class HereMarkerRenderer(
             }
             if (params.current.state.position != params.prev.state.position) {
                 marker.coordinates =
-                    GeoPoint.from(params.current.state.position).toGeoCoordinates()
+                    GeoPointImpl.from(params.current.state.position).toGeoCoordinates()
             }
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

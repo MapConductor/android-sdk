@@ -17,7 +17,6 @@ ktlint {
 android {
     namespace = "com.mapconductor.core"
     compileSdk = project.property("compileSdk").toString().toInt()
-
     defaultConfig {
         minSdk = project.property("minSdk").toString().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -60,16 +59,18 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.androidx.core.ktx)
-    compileOnly(libs.androidx.foundation)
+    // Make Compose dependencies implementation instead of compileOnly for proper runtime support
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.foundation)
 
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.ui.graphics)
-    compileOnly(libs.androidx.ui.tooling.preview)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    // Core dependencies - use api to avoid version conflicts
+    api(libs.androidx.core.ktx)
     // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
+    api(libs.androidx.lifecycle.runtime.ktx)
+    api(libs.androidx.lifecycle.common.java8)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

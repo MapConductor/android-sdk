@@ -1,6 +1,6 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 
 fun expandBounds(
@@ -17,13 +17,13 @@ fun expandBounds(
 
     val expandedBounds = GeoRectBounds()
     expandedBounds.extend(
-        GeoPoint(
+        GeoPointImpl(
             center.latitude - span.latitude / 2.0 - latMargin,
             center.longitude - span.longitude / 2.0 - lngMargin,
         ),
     )
     expandedBounds.extend(
-        GeoPoint(
+        GeoPointImpl(
             center.latitude + span.latitude / 2.0 + latMargin,
             center.longitude + span.longitude / 2.0 + lngMargin,
         ),

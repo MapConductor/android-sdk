@@ -1,27 +1,30 @@
 package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.model.CameraPosition
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.IMapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 
-fun MapCameraPosition.toCameraPosition(): CameraPosition =
+private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
+
+fun MapCameraPositionImpl.toCameraPosition(): CameraPosition =
     CameraPosition
         .builder()
-        .target(GeoPoint.from(position).toLatLng())
+        .target(GeoPointImpl.from(position).toLatLng())
         .zoom(zoom.toFloat())
         .tilt(tilt.toFloat())
         .bearing(bearing.toFloat())
         .build()
 
-fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPosition =
+fun MapCameraPositionImpl.Companion.from(position: MapCameraPosition): MapCameraPositionImpl =
     when (position) {
-        is MapCameraPosition -> position
+        is MapCameraPositionImpl -> position
         else ->
-            MapCameraPosition(
-                position = GeoPoint.from(position.position),
+            MapCameraPositionImpl(
+                position = GeoPointImpl.from(position.position),
                 zoom = position.zoom,
                 bearing = position.bearing,
                 tilt = position.tilt,
@@ -30,12 +33,20 @@ fun MapCameraPosition.Companion.from(position: IMapCameraPosition): MapCameraPos
             )
     }
 
-fun CameraPosition.toMapCameraPosition(paddings: MapPaddings = MapPaddingsImpl.Zeros) =
-    MapCameraPosition(
-        position = target.toGeoPoint(),
+fun CameraPosition.toMapCameraPosition(paddings: MapPaddings = MapPaddingsImpl.Zeros): MapCameraPositionImpl {
+    val altitude =
+        converter.zoomLevelToAltitude(
+            zoomLevel = zoom.toDouble(),
+            latitude = target.latitude,
+            tilt = tilt.toDouble(),
+        )
+    val position = target.toGeoPoint().copy(altitude = altitude)
+    return MapCameraPositionImpl(
+        position = position,
         zoom = zoom.toDouble(),
         bearing = bearing.toDouble(),
         tilt = tilt.toDouble(),
         paddings = paddings,
         visibleRegion = null,
     )
+}

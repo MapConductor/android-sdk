@@ -43,9 +43,9 @@ android {
             useSupportLibrary = true
         }
 
-        versionCode = 2
+        versionCode = 5
 
-        versionName = "1.0.1"
+        versionName = "1.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -185,13 +185,9 @@ dependencies {
 
     implementation(libs.androidx.ui.graphics)
 
-    implementation(libs.androidx.ui.tooling.preview)
-
     implementation(libs.androidx.material3)
 
     implementation(libs.androidx.appcompat)
-
-    implementation(platform(libs.firebase.bom))
 
     // Google Maps SDK
 
@@ -230,6 +226,9 @@ dependencies {
     implementation(project(":mapconductor-for-mapbox"))
 
     implementation(project(":mapconductor-for-arcgis"))
+
+    implementation(project(":mapconductor-marker-strategy"))
+    implementation(project(":mapconductor-marker-native-strategy"))
 
     implementation(libs.androidx.vectordrawable)
 

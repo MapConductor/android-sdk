@@ -1,4 +1,4 @@
-package com.mapconductor.arcgis
+﻿package com.mapconductor.arcgis
 
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
@@ -6,16 +6,13 @@ import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
-import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
-import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
-import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.projection.WebMercator
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import android.content.Context
 
 typealias ArcGISMapViewHolder = MapViewHolder<WrapSceneView, SceneView>
@@ -28,6 +25,7 @@ object ArcGISViewControllerStore :
         context: Context,
         id: String,
         options: ArcGISMapViewInitOptions,
+        markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     ): ArcGISMapViewControllerImpl {
         val existing = this.get(id)
         if (existing != null) return existing
@@ -41,7 +39,11 @@ object ArcGISViewControllerStore :
         val controller =
             ArcGISMapViewControllerImpl(
                 holder = holder,
-                markerController = getMarkerController(holder),
+                markerController =
+                    getMarkerController(
+                        holder = holder,
+                        renderingStrategy = markerRenderingStrategy,
+                    ),
                 polylineController = getPolylineController(holder),
                 polygonController = getPolygonController(holder),
                 circleController = getCircleController(holder),
@@ -107,30 +109,11 @@ object ArcGISViewControllerStore :
         return controller
     }
 
-    private fun getMarkerController(holder: ArcGISMapViewHolder): ArcGISMarkerController {
-        val hexGeocell =
-            HexGeocell(
-                projection = WebMercator,
-                baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
-            )
-        val manager = MarkerManager<ArcGISActualMarker>(hexGeocell)
-
-        val markerLayer: GraphicsOverlay =
-            GraphicsOverlay().apply {
-                sceneProperties.surfacePlacement = SurfacePlacement.Relative
-            }
-
-        val renderer =
-            ArcGISMarkerRenderer(
-                markerLayer = markerLayer,
-                holder = holder,
-            )
-
-        val controller =
-            ArcGISMarkerController(
-                markerManager = manager,
-                renderer = renderer,
-            )
-        return controller
-    }
+    private fun getMarkerController(
+        holder: ArcGISMapViewHolder,
+        renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+    ) = ArcGISMarkerController.create(
+        holder = holder,
+        renderingStrategy = renderingStrategy,
+    )
 }

@@ -16,7 +16,7 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
@@ -67,7 +67,7 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun moveCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         coroutine.launch {
@@ -79,7 +79,7 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPosition,
+        position: MapCameraPositionImpl,
         duration: Long,
         listener: MapViewState.MoveCameraCallback?,
     ) {
@@ -157,7 +157,7 @@ class GoogleMapViewControllerImpl(
         }
     }
 
-    private fun getMapCameraPosition(): MapCameraPosition {
+    private fun getMapCameraPosition(): MapCameraPositionImpl {
         val camera = holder.map.cameraPosition.toMapCameraPosition()
         holder.map.projection.visibleRegion.let {
             val visibleRegion =
@@ -291,6 +291,9 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun onMapLoaded() {
+        mapLoadedCallback?.invoke()
+        mapLoadedCallback = null
+
         val mapDesignType = GoogleMapDesign.toMapDesignType(holder.map.mapType)
         mapDesignTypeChangeListener?.invoke(mapDesignType)
     }

@@ -6,13 +6,14 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 
 @Composable
 fun AnimationMapComponent(
     mapViewState: MapViewState<*>?,
-    viewModel: AnimationPageViewModel,
+    allMarkers: List<MarkerState>,
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler = {},
     onMarkerClick: OnMarkerEventHandler = {},
@@ -25,10 +26,10 @@ fun AnimationMapComponent(
             state = it,
             onMapClick = onMapClick,
             onMarkerClick = onMarkerClick,
-            onCircleClick = onCircleClick,
             onMarkerDrag = onMarkerDrag,
+            onCircleClick = onCircleClick,
         ) {
-            viewModel.allMarkers.forEach { marker ->
+            allMarkers.forEach { marker ->
                 Marker(marker)
             }
         }

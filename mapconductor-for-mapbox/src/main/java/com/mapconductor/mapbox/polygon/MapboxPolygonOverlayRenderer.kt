@@ -3,7 +3,7 @@ package com.mapconductor.mapbox.polygon
 import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Polygon
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
@@ -43,7 +43,7 @@ class MapboxPolygonOverlayRenderer(
     }
 
     override suspend fun createPolygon(state: PolygonState): MapboxActualPolygon? {
-        val points = state.points.map { GeoPoint.from(it).toPoint() }
+        val points = state.points.map { GeoPointImpl.from(it).toPoint() }
         // Close the polygon by adding the first point at the end if not already closed
         val closedPoints =
             if (points.first() != points.last()) {

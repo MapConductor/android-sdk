@@ -1,4 +1,4 @@
-package com.mapconductor.mapbox
+﻿package com.mapconductor.mapbox
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -8,21 +8,24 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapbox.maps.MapInitOptions
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
-import com.mapconductor.core.projection.WebMercator
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
+import com.mapconductor.mapbox.marker.MarkerDragLayer
+import com.mapconductor.mapbox.marker.MarkerLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
@@ -37,6 +40,9 @@ import android.content.ContextWrapper
 fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -83,7 +89,11 @@ fun MapboxMapView(
             val controller =
                 MapboxMapViewControllerImpl(
                     holder = holder,
-                    markerController = getMarkerController(holder),
+                    markerController =
+                        getMarkerController(
+                            holder = holder,
+                            renderingStrategy = markerRenderingStrategy,
+                        ),
                     polylineController = getPolylineController(holder),
                     polygonController = getPolygonController(holder),
                     circleController = getCircleController(holder),
@@ -101,11 +111,15 @@ fun MapboxMapView(
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
             state.setController(controller)
+            controller.setMapLoadedListener {
+                onMapLoaded?.invoke(state)
+            }
 
             holderRef.value = holder
             controllerRef.value = controller
             true
         },
+        onMapViewInitialized = onMapViewInitialized,
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
@@ -192,22 +206,33 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
     return controller
 }
 
-internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerController {
-    val hexGeocell =
-        HexGeocell(
-            projection = WebMercator,
-            baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
+internal fun getMarkerController(
+    holder: MapboxMapViewHolder,
+    renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+): MapboxMarkerController {
+    val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+    val markerLayer: MarkerLayer =
+        MarkerLayer(
+            sourceId = "markers-source",
+            layerId = "markers-layer",
         )
-    val manager = MarkerManager<MapboxActualMarker>(hexGeocell)
-
+    val dragLayer: MarkerDragLayer =
+        MarkerDragLayer(
+            sourceId = "marker-drag-source",
+            layerId = "marker-drag-layer",
+        )
     val renderer =
         MapboxMarkerOverlayRenderer(
             holder = holder,
+            markerLayer = markerLayer,
+            dragLayer = dragLayer,
             markerManager = manager,
         )
+
     val controller =
         MapboxMarkerController(
             renderer = renderer,
+            renderingStrategy = renderingStrategy,
         )
     return controller
 }

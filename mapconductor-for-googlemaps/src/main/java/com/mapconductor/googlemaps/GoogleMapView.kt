@@ -12,10 +12,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
+import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.map.OnMapViewInitializedHandler
+import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -25,6 +28,9 @@ import android.view.ViewGroup
 fun GoogleMapsView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+    onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -36,6 +42,7 @@ fun GoogleMapsView(
     onPolylineClick: OnPolylineEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
+    shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
 ) {
     val holderRef = remember { Ref<GoogleMapViewHolder>() }
@@ -60,7 +67,7 @@ fun GoogleMapsView(
                     CameraPosition
                         .Builder()
                         .apply {
-                            target(GeoPoint.from(camera.position).toLatLng())
+                            target(GeoPointImpl.from(camera.position).toLatLng())
                             zoom(camera.zoom.toFloat())
                             bearing(camera.bearing.toFloat())
                             tilt(camera.tilt.toFloat())
@@ -77,6 +84,7 @@ fun GoogleMapsView(
                     context = context, // Use context from the outer scope
                     id = state.id,
                     options = mapInitOptions,
+                    markerRenderingStrategy = markerRenderingStrategy,
                 )
             state.setController(controller)
             controller.setCameraMoveListener(state::onCameraChange)
@@ -92,11 +100,16 @@ fun GoogleMapsView(
             controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
             controller.setOnGroundImageClickListener(onGroundImageClick)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+            controller.setMapLoadedListener {
+                onMapLoaded?.invoke(state)
+            }
 
             holderRef.value = controller.holder
             controllerRef.value = controller
             true // Return success/failure of initialization
         },
+        onMapViewInitialized = onMapViewInitialized,
+        shouldInitialize = shouldInitialize, // Pass through the deferred initialization parameter
         customDisposableEffect = { _state, _holderRef ->
             // Specific Google Maps DisposableEffect logic
             val lifecycle = LocalLifecycleOwner.current.lifecycle // Get lifecycle here

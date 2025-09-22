@@ -1,16 +1,16 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
 // Calculate a position at a specific distance and bearing from a center point
 fun calculatePositionAtDistance(
-    center: GeoPoint,
+    center: GeoPointImpl,
     distanceMeters: Double,
     bearingDegrees: Double,
-): GeoPoint {
+): GeoPointImpl {
     val earthRadiusKm = 6371.0
     val distanceKm = distanceMeters / 1000.0
     val bearingRad = Math.toRadians(bearingDegrees)
@@ -31,7 +31,7 @@ fun calculatePositionAtDistance(
                 cos(distanceKm / earthRadiusKm) - sin(lat1Rad) * sin(lat2Rad),
             )
 
-    return GeoPoint.fromLatLong(
+    return GeoPointImpl.fromLatLong(
         latitude = Math.toDegrees(lat2Rad),
         longitude = Math.toDegrees(lng2Rad),
     )

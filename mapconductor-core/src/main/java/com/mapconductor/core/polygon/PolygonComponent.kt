@@ -1,26 +1,26 @@
 package com.mapconductor.core.polygon
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import android.os.Parcelable
 
 @Composable
 fun MapViewScope.Polygon(state: PolygonState) {
-    val rememberState = remember(state.fingerPrint()) { state }
-    SideEffect {
-        polygonFlow.value = polygonFlow.value.filter { it.id != rememberState.id } + rememberState
+    LaunchedEffect(state.fingerPrint()) {
+        val newMap = polygonFlow.value.toMutableMap()
+        newMap.set(state.id, state)
+        polygonFlow.value = newMap
     }
 }
 
 @Composable
 fun MapViewScope.Polygon(
-    points: List<IGeoPoint>,
+    points: List<GeoPoint>,
     id: String? = null,
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,

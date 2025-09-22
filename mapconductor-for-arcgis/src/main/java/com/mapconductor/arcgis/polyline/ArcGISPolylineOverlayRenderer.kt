@@ -11,7 +11,7 @@ import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineState
@@ -83,12 +83,12 @@ class ArcGISPolylineOverlayRenderer(
             PolylineBuilder().also { builder ->
                 if (state.geodesic) {
                     state.points.forEach {
-                        builder.addPoint(GeoPoint.from(it).toPoint())
+                        builder.addPoint(GeoPointImpl.from(it).toPoint())
                     }
                     return@also
                 }
 
-                builder.addPoint(GeoPoint.from(state.points[0]).toPoint())
+                builder.addPoint(GeoPointImpl.from(state.points[0]).toPoint())
                 for (i in 1 until state.points.size) {
                     var fraction = 0.0
                     while (fraction <= 1.0) {
@@ -101,7 +101,7 @@ class ArcGISPolylineOverlayRenderer(
                         builder.addPoint(point.toPoint())
                         fraction += 0.01
                     }
-                    builder.addPoint(GeoPoint.from(state.points[i]).toPoint())
+                    builder.addPoint(GeoPointImpl.from(state.points[i]).toPoint())
                 }
             }
         return polylineBuilder.toGeometry()
