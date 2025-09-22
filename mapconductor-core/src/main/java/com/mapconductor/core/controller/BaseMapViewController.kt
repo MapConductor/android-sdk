@@ -1,7 +1,7 @@
 package com.mapconductor.core.controller
 
 import com.mapconductor.core.map.InternalOnMapLoadedHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 
@@ -33,7 +33,7 @@ abstract class BaseMapViewController : MapViewController {
         this.mapLoadedCallback = listener
     }
 
-    protected suspend fun notifyMapCameraPosition(mapCameraPosition: MapCameraPosition) {
+    protected suspend fun notifyMapCameraPosition(mapCameraPosition: MapCameraPositionImpl) {
         overlayControllers.forEach {
             it.onCameraChanged(mapCameraPosition)
         }

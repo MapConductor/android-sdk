@@ -1,6 +1,6 @@
 package com.mapconductor.core.geocell
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerEntity
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -149,7 +149,7 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Find the nearest hex cell to a point
      */
-    fun findNearest(point: IGeoPoint): HexCell? =
+    fun findNearest(point: GeoPoint): HexCell? =
         lock.read {
             rebuildIfNeeded()
             return kdTree?.nearest(geocell.projection.project(point))
@@ -158,7 +158,7 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Find the nearest hex cell with distance
      */
-    fun findNearestWithDistance(point: IGeoPoint): HexCellWithDistance? =
+    fun findNearestWithDistance(point: GeoPoint): HexCellWithDistance? =
         lock.read {
             rebuildIfNeeded()
             return kdTree?.nearestWithDistance(geocell.projection.project(point))
@@ -168,7 +168,7 @@ class HexCellRegistry<ActualMarker>(
      * Find k nearest hex cells with distances
      */
     fun findNearestKWithDistance(
-        point: IGeoPoint,
+        point: GeoPoint,
         k: Int,
     ): List<HexCellWithDistance> =
         lock.read {
@@ -180,7 +180,7 @@ class HexCellRegistry<ActualMarker>(
      * Find all hex cells within a radius with distances
      */
     fun findWithinRadiusWithDistance(
-        point: IGeoPoint,
+        point: GeoPoint,
         radius: Double,
     ): List<HexCellWithDistance> =
         lock.read {
@@ -206,7 +206,7 @@ class HexCellRegistry<ActualMarker>(
      * Verify that your projection implementation meets this requirement.
      */
     fun metersPerPixel(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
@@ -229,7 +229,7 @@ class HexCellRegistry<ActualMarker>(
         val p1 = geocell.projection.project(position)
         val p2 =
             geocell.projection.project(
-                object : IGeoPoint {
+                object : GeoPoint {
                     override val latitude = position.latitude
                     override val longitude = newLng
                     override val altitude = position.altitude
@@ -245,7 +245,7 @@ class HexCellRegistry<ActualMarker>(
      * Find hex cells within a pixel radius
      */
     fun findWithinPixelRadius(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,

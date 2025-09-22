@@ -1,7 +1,7 @@
 package com.mapconductor.marker.strategy.spatial
 
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityImpl
@@ -183,7 +183,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
@@ -484,7 +484,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
             // Using local fallback for nearest marker
             markerManager.findNearest(
-                com.mapconductor.core.features.GeoPoint
+                com.mapconductor.core.features.GeoPointImpl
                     .fromLatLong(latitude, longitude),
             )
         } catch (e: Exception) {

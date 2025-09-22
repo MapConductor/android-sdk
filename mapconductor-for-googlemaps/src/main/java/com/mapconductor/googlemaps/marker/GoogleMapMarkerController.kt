@@ -3,7 +3,7 @@ package com.mapconductor.googlemaps.marker
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
@@ -71,7 +71,7 @@ class GoogleMapMarkerController private constructor(
         }
     }
 
-    override fun find(position: IGeoPoint): MarkerEntity<GoogleMapActualMarker>? {
+    override fun find(position: GeoPoint): MarkerEntity<GoogleMapActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom =
                 renderer.holder.map.cameraPosition.zoom

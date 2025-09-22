@@ -5,11 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.BaseMapViewSaver
-import com.mapconductor.core.map.IMapCameraPosition
 import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.mapbox.MapboxMapDesign.Standard
@@ -24,14 +24,14 @@ interface MapboxViewState : MapViewState<MapboxDesignType>
 class MapboxViewStateImpl(
     mapDesignType: MapboxDesignType,
     override val id: String,
-    override val initCameraPosition: MapCameraPosition = MapCameraPosition.Default,
+    override val initCameraPosition: MapCameraPositionImpl = MapCameraPositionImpl.Default,
 ) : MapViewStateImpl<MapboxDesignType>(),
     MapboxViewState {
     private var controller: MapboxMapViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow(initCameraPosition)
-    override val cameraPosition: StateFlow<MapCameraPosition> = _cameraPosition.asStateFlow()
+    override val cameraPosition: StateFlow<MapCameraPositionImpl> = _cameraPosition.asStateFlow()
 
     private var _mapDesignType: MapboxDesignType = mapDesignType
 
@@ -57,13 +57,13 @@ class MapboxViewStateImpl(
     }
 
     override fun moveCameraTo(
-        position: GeoPoint,
+        position: GeoPointImpl,
         durationMs: Long?,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         if (this.isInitialized.value != InitState.Initialized) {
             _cameraPosition.value =
-                MapCameraPosition(
+                MapCameraPositionImpl(
                     position = position,
                 )
             listener?.onComplete()
@@ -81,13 +81,13 @@ class MapboxViewStateImpl(
     override fun getMapViewHolder(): MapboxMapViewHolder? = controller?.holder as? MapboxMapViewHolder
 
     override fun moveCameraTo(
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
         durationMs: Long?,
         listener: MapViewState.MoveCameraCallback?,
     ) {
         controller?.let { ctrl ->
             if (this.isInitialized.value == InitState.Initialized) {
-                val dstCameraPosition = MapCameraPosition.from(cameraPosition)
+                val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
                 if (durationMs == null || durationMs == 0L) {
                     ctrl.moveCamera(dstCameraPosition, listener)
                 } else {
@@ -100,13 +100,13 @@ class MapboxViewStateImpl(
         listener?.onComplete()
     }
 
-    internal fun onCameraChange(cameraPosition: MapCameraPosition) {
+    internal fun onCameraChange(cameraPosition: MapCameraPositionImpl) {
         _cameraPosition.value = cameraPosition
     }
 }
 
 class MapboxMapViewSaver : BaseMapViewSaver<MapboxViewStateImpl>() {
-    override fun extractCameraPosition(state: MapboxViewStateImpl): MapCameraPosition? = state.cameraPosition.value
+    override fun extractCameraPosition(state: MapboxViewStateImpl): MapCameraPositionImpl? = state.cameraPosition.value
 
     override fun saveMapDesign(
         state: MapboxViewStateImpl,
@@ -118,7 +118,7 @@ class MapboxMapViewSaver : BaseMapViewSaver<MapboxViewStateImpl>() {
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
     ): MapboxViewStateImpl =
         MapboxViewStateImpl(
             id = stateId,
@@ -135,7 +135,7 @@ class MapboxMapViewSaver : BaseMapViewSaver<MapboxViewStateImpl>() {
 @Composable
 fun rememberMapboxMapViewState(
     mapDesign: MapboxDesignType = Standard,
-    cameraPosition: IMapCameraPosition = MapCameraPosition.Default,
+    cameraPosition: MapCameraPosition = MapCameraPositionImpl.Default,
 ): MapboxViewStateImpl {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()
@@ -149,7 +149,7 @@ fun rememberMapboxMapViewState(
                 MapboxViewStateImpl(
                     id = stateId,
                     mapDesignType = mapDesign,
-                    initCameraPosition = MapCameraPosition.from(cameraPosition),
+                    initCameraPosition = MapCameraPositionImpl.from(cameraPosition),
                 ),
             )
         }

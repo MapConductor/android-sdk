@@ -1,7 +1,7 @@
 ﻿package com.mapconductor.marker.nativestrategy
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
 import com.mapconductor.core.geocell.HexGeocell
@@ -27,7 +27,7 @@ class NativeHexGeocellImpl(
     override val baseHexSideLength: Int = 1000,
 ) : HexGeocell {
     override fun latLngToHexCoord(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
     ): HexCoord {
         val hexSideLength = adjustedHexSideLength(position.latitude, zoom)
@@ -36,7 +36,7 @@ class NativeHexGeocellImpl(
     }
 
     override fun latLngToHexCell(
-        position: IGeoPoint,
+        position: GeoPoint,
         zoom: Double,
     ): HexCell {
         val coord = latLngToHexCoord(position, zoom)
@@ -50,7 +50,7 @@ class NativeHexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): IGeoPoint {
+    ): GeoPoint {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
         return projection.unproject(center)
@@ -65,7 +65,7 @@ class NativeHexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): List<IGeoPoint> {
+    ): List<GeoPoint> {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
         val circumRadius = hexSideLength * 2.0 / sqrt(3.0)
@@ -104,7 +104,7 @@ class NativeHexGeocellImpl(
                 IdentifiedHexCell(it.id, cell)
             }.toSet()
 
-    private fun computeGeographicCentroid(points: List<IGeoPoint>): IGeoPoint {
+    private fun computeGeographicCentroid(points: List<GeoPoint>): GeoPoint {
         if (points.size == 1) return points[0]
         var x = 0.0
         var y = 0.0
@@ -122,7 +122,7 @@ class NativeHexGeocellImpl(
         val centralLng = atan2(y, x) * 180 / PI
         val centralSquareRoot = sqrt(x * x + y * y)
         val centralLat = atan2(z, centralSquareRoot) * 180 / PI
-        return object : IGeoPoint {
+        return object : GeoPoint {
             override val latitude: Double = centralLat
             override val longitude: Double = centralLng
             override val altitude: Double? = null

@@ -3,7 +3,7 @@ import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonState
@@ -78,7 +78,7 @@ class HerePolygonOverlayRenderer(
         }
 
     private fun createGeoPolygon(state: PolygonState): GeoPolygon {
-        val points = state.points.map { GeoPoint.from(it).toGeoCoordinates() }
+        val points = state.points.map { GeoPointImpl.from(it).toGeoCoordinates() }
         // Ensure the polygon is closed by adding the first point at the end if not already closed
         val closedPoints =
             if (points.first() != points.last()) {

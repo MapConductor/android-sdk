@@ -1,6 +1,6 @@
 package com.mapconductor.marker.nativestrategy
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 
 /**
  * Simple test utility to verify NativeMarkerIndex functionality
@@ -11,12 +11,12 @@ object NativeMarkerIndexTest {
             val nativeIndex = NativeMarkerIndex.create(baseHexSideLength = 1000, zoom = 15.0)
 
             // Add some test markers
-            nativeIndex.registerMarker("marker1", GeoPoint(37.7749, -122.4194), true) // San Francisco
-            nativeIndex.registerMarker("marker2", GeoPoint(40.7128, -74.0060), true) // New York
-            nativeIndex.registerMarker("marker3", GeoPoint(34.0522, -118.2437), true) // Los Angeles
+            nativeIndex.registerMarker("marker1", GeoPointImpl(37.7749, -122.4194), true) // San Francisco
+            nativeIndex.registerMarker("marker2", GeoPointImpl(40.7128, -74.0060), true) // New York
+            nativeIndex.registerMarker("marker3", GeoPointImpl(34.0522, -118.2437), true) // Los Angeles
 
             // Test findNearest
-            val queryPoint = GeoPoint(37.7849, -122.4094) // Close to San Francisco
+            val queryPoint = GeoPointImpl(37.7849, -122.4094) // Close to San Francisco
             val nearestId = nativeIndex.findNearest(queryPoint)
 
             val result =

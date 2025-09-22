@@ -32,7 +32,7 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.circle.LocalCircleCollector
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.groundimage.LocalGroundImageCollector
 import com.mapconductor.core.info.InfoBubbleOverlay
@@ -56,8 +56,8 @@ import kotlinx.coroutines.flow.map
 typealias OnMapViewInitializedHandler = (MapViewState<*>) -> Unit
 typealias OnMapLoadedHandler = (MapViewState<*>) -> Unit
 internal typealias InternalOnMapLoadedHandler = () -> Unit
-typealias OnMapEventHandler = (GeoPoint) -> Unit
-typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
+typealias OnMapEventHandler = (GeoPointImpl) -> Unit
+typealias OnCameraMoveHandler = (MapCameraPositionImpl) -> Unit
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -304,7 +304,7 @@ private fun BasicMessage(text: String) {
     }
 }
 
-private fun cameraInvalidationKey(camera: MapCameraPosition?): Long {
+private fun cameraInvalidationKey(camera: MapCameraPositionImpl?): Long {
     if (camera == null) return 0L
     val latE5 = (camera.position.latitude * 1e5).toInt()
     val lonE5 = (camera.position.longitude * 1e5).toInt()

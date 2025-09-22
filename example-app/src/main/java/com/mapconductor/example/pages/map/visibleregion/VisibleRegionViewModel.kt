@@ -3,13 +3,13 @@ package com.mapconductor.example.pages.map.visibleregion
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.map.IMapCameraPosition
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 
 interface VisibleRegionViewModel {
     val mapViewState: State<MapViewState<*>?>
-    val currentCameraPosition: State<IMapCameraPosition?>
+    val currentCameraPosition: State<MapCameraPosition?>
     val currentVisibleRegion: State<VisibleRegion?>
     val visibleRegionInfo: State<VisibleRegionInfo?>
 
@@ -17,7 +17,7 @@ interface VisibleRegionViewModel {
 
     fun onMapLoaded(mapViewState: MapViewState<*>)
 
-    fun onCameraChanged(cameraPosition: IMapCameraPosition)
+    fun onCameraChanged(cameraPosition: MapCameraPosition)
 }
 
 data class VisibleRegionInfo(
@@ -34,8 +34,8 @@ class VisibleRegionViewModelImpl :
     private val _mapViewState = mutableStateOf<MapViewState<*>?>(null)
     override val mapViewState: State<MapViewState<*>?> = _mapViewState
 
-    private val _currentCameraPosition = mutableStateOf<IMapCameraPosition?>(null)
-    override val currentCameraPosition: State<IMapCameraPosition?> = _currentCameraPosition
+    private val _currentCameraPosition = mutableStateOf<MapCameraPosition?>(null)
+    override val currentCameraPosition: State<MapCameraPosition?> = _currentCameraPosition
 
     private val _currentVisibleRegion = mutableStateOf<VisibleRegion?>(null)
     override val currentVisibleRegion: State<VisibleRegion?> = _currentVisibleRegion
@@ -51,7 +51,7 @@ class VisibleRegionViewModelImpl :
         // Map is loaded
     }
 
-    override fun onCameraChanged(cameraPosition: IMapCameraPosition) {
+    override fun onCameraChanged(cameraPosition: MapCameraPosition) {
         _currentCameraPosition.value = cameraPosition
         _currentVisibleRegion.value = cameraPosition.visibleRegion
 

@@ -1,6 +1,6 @@
 package com.mapconductor.core.polygon
 
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 
 interface PolygonManager<ActualPolygon> {
     fun registerEntity(entity: PolygonEntity<ActualPolygon>)
@@ -15,7 +15,7 @@ interface PolygonManager<ActualPolygon> {
 
     fun clear()
 
-    fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>?
+    fun find(position: GeoPoint): PolygonEntity<ActualPolygon>?
 }
 
 class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
@@ -37,5 +37,5 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
         entities.clear()
     }
 
-    override fun find(position: IGeoPoint): PolygonEntity<ActualPolygon>? = entities.values.firstOrNull()
+    override fun find(position: GeoPoint): PolygonEntity<ActualPolygon>? = entities.values.firstOrNull()
 }

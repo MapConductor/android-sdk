@@ -5,11 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface GroundImageMapPageViewModel {
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
@@ -46,9 +46,9 @@ class GroundImageMapPageViewModelImpl(
 ) : ViewModel(),
     GroundImageMapPageViewModel {
     override val initCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position =
-                GeoPoint.fromLatLong(
+                GeoPointImpl.fromLatLong(
                     latitude = 40.7430785,
                     longitude = -74.175995,
                 ),
@@ -72,14 +72,14 @@ class GroundImageMapPageViewModelImpl(
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
     private var southWestPosition by mutableStateOf(
-        GeoPoint(
+        GeoPointImpl(
             latitude = 40.712216,
             longitude = -74.22655,
         ),
     )
 
     private var northEastPosition by mutableStateOf(
-        GeoPoint(
+        GeoPointImpl(
             latitude = 40.773941,
             longitude = -74.12544,
         ),
@@ -147,8 +147,8 @@ class GroundImageMapPageViewModelImpl(
 
     private var bounds by mutableStateOf(
         GeoRectBounds(
-            southWest = GeoPoint.from(southWestPosition),
-            northEast = GeoPoint.from(northEastPosition),
+            southWest = GeoPointImpl.from(southWestPosition),
+            northEast = GeoPointImpl.from(northEastPosition),
         ),
     )
 
@@ -174,8 +174,8 @@ class GroundImageMapPageViewModelImpl(
     override fun onMarkerDrag(dragged: MarkerState) {
         // Update the internal position based on which marker was dragged
         when (dragged.id) {
-            "south_west" -> southWestPosition = GeoPoint.from(dragged.position)
-            "north_east" -> northEastPosition = GeoPoint.from(dragged.position)
+            "south_west" -> southWestPosition = GeoPointImpl.from(dragged.position)
+            "north_east" -> northEastPosition = GeoPointImpl.from(dragged.position)
         }
 
         // Update bounds using the new positions

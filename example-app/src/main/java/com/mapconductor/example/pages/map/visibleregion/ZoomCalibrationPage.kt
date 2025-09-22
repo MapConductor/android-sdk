@@ -1,11 +1,32 @@
 package com.mapconductor.example.pages.map.visibleregion
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -13,17 +34,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
-import kotlin.math.*
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+import android.annotation.SuppressLint
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
-    val testLocation = GeoPoint.fromLongLat(139.6917, 35.6895) // Tokyo Station
+    val testLocation = GeoPointImpl.fromLongLat(139.6917, 35.6895) // Tokyo Station
     val testZoomLevels =
-        listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 10.0, 20.0)
+        listOf(
+            0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0,
+            8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0,
+            15.0, 16.0, 17.0, 18.0, 10.0, 20.0,
+        )
 
     var currentZoomLevel by rememberSaveable { mutableStateOf(0.0) }
     var googleMapResults by rememberSaveable { mutableStateOf<Map<Double, VisibleRegionInfo>>(emptyMap()) }
@@ -32,7 +62,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
     var measurementMessage by remember { mutableStateOf("") }
     // Map view states with initial camera position
     val initialCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position = testLocation,
             zoom = currentZoomLevel,
             bearing = 0.0,
@@ -51,7 +81,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
     // Update camera positions when zoom level changes
     LaunchedEffect(currentZoomLevel) {
         val newCameraPosition =
-            MapCameraPosition(
+            MapCameraPositionImpl(
                 position = testLocation,
                 zoom = currentZoomLevel,
                 bearing = 0.0,
@@ -165,11 +195,11 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
             Button(
                 onClick = {
                     // Extract visible region data from Google Maps view
-                    googleMapViewState.cameraPosition.value?.visibleRegion?.let { visibleRegion ->
+                    googleMapViewState.cameraPosition.value.visibleRegion?.let { visibleRegion ->
                         val info = createVisibleRegionInfo(visibleRegion)
                         googleMapResults = googleMapResults + (currentZoomLevel to info)
                         measurementMessage =
-                            "Google Maps data captured: ${String.format("%.2f", info.widthKm)} × ${String.format("%.2f", info.heightKm)} km"
+                            String.format("Google Maps data captured: %.2f, %.2f km", info.widthKm, info.heightKm)
                         measurementInProgress = true
                     } ?: run {
                         measurementMessage =

@@ -8,7 +8,7 @@ import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
@@ -27,7 +27,7 @@ class ArcGISMarkerRenderer(
     ) {
     override fun setMarkerPosition(
         markerEntity: MarkerEntity<Graphic>,
-        position: GeoPoint,
+        position: GeoPointImpl,
     ) {
         coroutine.launch {
             markerEntity.marker?.geometry = position.toPoint(holder.map.scene?.spatialReference)
@@ -57,7 +57,7 @@ class ArcGISMarkerRenderer(
                         val marker =
                             Graphic(
                                 geometry =
-                                    GeoPoint
+                                    GeoPointImpl
                                         .from(params.state.position)
                                         .toPoint(holder.map.scene?.spatialReference),
                                 symbol = pictureSymbolFuture,
@@ -91,6 +91,36 @@ class ArcGISMarkerRenderer(
                 data.map { params ->
                     val prevFinger = params.prev.fingerPrint
                     val currFinger = params.current.fingerPrint
+
+                    val marker =
+                        if (params.prev.marker == null) {
+                            val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
+                            val density = ResourceProvider.getDensity()
+                            val width = params.bitmapIcon.size.width / density
+                            val height = params.bitmapIcon.size.height / density
+                            val anchorX = (0.5 - params.bitmapIcon.anchor.x) * width
+                            val anchorY = (params.bitmapIcon.anchor.y - 0.5) * height
+
+                            val pictureSymbolFuture =
+                                PictureMarkerSymbol.createWithImage(bitmapDrawable).also {
+                                    it.width = width.toFloat()
+                                    it.height = height.toFloat()
+                                    it.offsetX = anchorX.toFloat()
+                                    it.offsetY = anchorY.toFloat()
+                                }
+                            Graphic(
+                                geometry =
+                                    GeoPointImpl
+                                        .from(params.current.state.position)
+                                        .toPoint(holder.map.scene?.spatialReference),
+                                symbol = pictureSymbolFuture,
+                            ).also {
+                                it.attributes.set("id", params.current.state.id)
+                            }
+                        } else {
+                            params.prev.marker!!
+                        }
+
                     if (currFinger.icon != prevFinger.icon) {
                         val bitmapDrawable = params.bitmapIcon.bitmap.toDrawable(holder.mapView.context.resources)
                         val density = ResourceProvider.getDensity()
@@ -106,18 +136,18 @@ class ArcGISMarkerRenderer(
                                 it.offsetX = anchorX.toFloat()
                                 it.offsetY = anchorY.toFloat()
                             }
-                        params.current.marker?.symbol = pictureSymbolFuture
+                        marker.symbol = pictureSymbolFuture
                     }
 
                     if (params.current.state.position != params.prev.state.position) {
-                        params.current.marker?.geometry =
-                            GeoPoint.from(params.current.state.position).toPoint()
+                        marker.geometry =
+                            GeoPointImpl.from(params.current.state.position).toPoint()
                     }
                     // Always set visibility explicitly like Google Maps (remove conditional check)
-                    params.current.marker?.isVisible = params.current.visible
+                    marker.isVisible = params.current.visible
 
                     // ArcGISはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
-                    params.current.marker
+                    marker
                 }
             results
         }

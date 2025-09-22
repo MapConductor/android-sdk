@@ -1,8 +1,8 @@
 package com.mapconductor.mapbox.polygon
 
 import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.IGeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonEntityImpl
 import com.mapconductor.core.polygon.PolygonEvent
@@ -72,12 +72,12 @@ class MapboxPolygonConductor(
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null
 
-    override fun find(position: IGeoPoint): PolygonEntity<PolygonState>? = null
+    override fun find(position: GeoPoint): PolygonEntity<PolygonState>? = null
 
     override suspend fun clear() {
     }
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
 
     override fun destroy() {
         // No native resources to clean up for polygons

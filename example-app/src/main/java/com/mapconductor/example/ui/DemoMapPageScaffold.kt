@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.ArcGISDesign
 import com.mapconductor.arcgis.ArcGISMapViewStateImpl
 import com.mapconductor.arcgis.rememberArcGISMapViewState
-import com.mapconductor.core.map.IMapCameraPosition
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.example.R
@@ -44,7 +44,7 @@ import com.mapconductor.mapbox.MapboxViewStateImpl
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 
 @Composable
-fun GetGoogleMapViewItem(initCameraPosition: IMapCameraPosition): IconItem<GoogleMapViewStateImpl> {
+fun GetGoogleMapViewItem(initCameraPosition: MapCameraPosition): IconItem<GoogleMapViewStateImpl> {
     val googleMapState =
         rememberGoogleMapViewState(
             mapDesign = GoogleMapDesign.Normal,
@@ -60,7 +60,7 @@ fun GetGoogleMapViewItem(initCameraPosition: IMapCameraPosition): IconItem<Googl
 }
 
 @Composable
-fun GetMapboxViewItem(initCameraPosition: IMapCameraPosition): IconItem<MapboxViewStateImpl> {
+fun GetMapboxViewItem(initCameraPosition: MapCameraPosition): IconItem<MapboxViewStateImpl> {
     val mapboxMapState =
         rememberMapboxMapViewState(
             mapDesign = MapboxMapDesign.Standard,
@@ -76,7 +76,7 @@ fun GetMapboxViewItem(initCameraPosition: IMapCameraPosition): IconItem<MapboxVi
 }
 
 @Composable
-fun GetHereViewItem(initCameraPosition: IMapCameraPosition): IconItem<HereViewStateImpl> {
+fun GetHereViewItem(initCameraPosition: MapCameraPosition): IconItem<HereViewStateImpl> {
     val hereMapState =
         rememberHereMapViewState(
             mapDesign = HereMapDesign.NormalDay,
@@ -92,7 +92,7 @@ fun GetHereViewItem(initCameraPosition: IMapCameraPosition): IconItem<HereViewSt
 }
 
 @Composable
-fun GetArcGISViewItem(initCameraPosition: IMapCameraPosition): IconItem<ArcGISMapViewStateImpl> {
+fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMapViewStateImpl> {
     val elevationSources =
         listOf(
             "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
@@ -112,7 +112,7 @@ fun GetArcGISViewItem(initCameraPosition: IMapCameraPosition): IconItem<ArcGISMa
 }
 
 @Composable
-fun DefaultMapViewItems(initCameraPosition: IMapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
+fun DefaultMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
         GetMapboxViewItem(initCameraPosition),
@@ -122,14 +122,14 @@ fun DefaultMapViewItems(initCameraPosition: IMapCameraPosition): List<IconItem<o
 
 @Composable
 fun GroundImageCapableMapViewItems(
-    initCameraPosition: IMapCameraPosition,
+    initCameraPosition: MapCameraPosition,
 ): List<IconItem<out MapViewStateImpl<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
     )
 
 @Composable
-fun PolygonCapableMapViewItems(initCameraPosition: IMapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
+fun PolygonCapableMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
         GetMapboxViewItem(initCameraPosition),

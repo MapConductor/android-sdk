@@ -10,8 +10,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
@@ -23,11 +23,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface CirclePageViewModel {
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val mapViewState: StateFlow<MapViewState<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
-    val circleCenter: GeoPoint
+    val circleCenter: GeoPointImpl
     val radiusMeters: Double
     val centerMarker: MarkerState
     val edgeMarker: MarkerState
@@ -39,7 +39,7 @@ interface CirclePageViewModel {
 
     fun onMarkerClick(clicked: MarkerState)
 
-    fun onMapClick(clicked: GeoPoint)
+    fun onMapClick(clicked: GeoPointImpl)
 
     fun onCircleClick(event: CircleEvent)
 
@@ -69,9 +69,9 @@ class CirclePageViewModelImpl :
     override var strokeWidth by mutableStateOf(3.0f)
 
     override val initCameraPosition =
-        MapCameraPosition(
+        MapCameraPositionImpl(
             position =
-                GeoPoint.fromLatLong(
+                GeoPointImpl.fromLatLong(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
@@ -81,7 +81,7 @@ class CirclePageViewModelImpl :
             paddings = null,
         )
 
-    override val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
+    override val circleCenter = GeoPointImpl.fromLatLong(21.382314, -157.933097)
 
     override val centerMarker =
         MarkerState(
@@ -147,7 +147,7 @@ class CirclePageViewModelImpl :
         showToast("${clicked.icon?.let { (it as? DefaultIcon)?.label } ?: "Marker"} clicked")
     }
 
-    override fun onMapClick(clicked: GeoPoint) {
+    override fun onMapClick(clicked: GeoPointImpl) {
         showToast("Map clicked at: ${clicked.toUrlValue()}")
     }
 

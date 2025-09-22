@@ -1,23 +1,23 @@
 package com.mapconductor.core.features
 
 class GeoRectBounds(
-    southWest: GeoPoint? = null,
-    northEast: GeoPoint? = null,
+    southWest: GeoPointImpl? = null,
+    northEast: GeoPointImpl? = null,
 ) {
-    private var _southWest: GeoPoint? = southWest
-    private var _northEast: GeoPoint? = northEast
+    private var _southWest: GeoPointImpl? = southWest
+    private var _northEast: GeoPointImpl? = northEast
 
     val isEmpty: Boolean
         get() = _southWest == null || _northEast == null
 
-    val southWest: GeoPoint?
+    val southWest: GeoPointImpl?
         get() = _southWest
 
-    val northEast: GeoPoint?
+    val northEast: GeoPointImpl?
         get() = _northEast
 
-    fun extend(point: IGeoPoint) {
-        val position = GeoPoint.from(point)
+    fun extend(point: GeoPoint) {
+        val position = GeoPointImpl.from(point)
 
         when {
             // まだ何もない：両方に同じ点を入れて初期化
@@ -36,8 +36,8 @@ class GeoRectBounds(
                 val west = minOf(sw.longitude, position.longitude)
                 val east = maxOf(sw.longitude, position.longitude)
 
-                _southWest = GeoPoint(south, west)
-                _northEast = GeoPoint(north, east)
+                _southWest = GeoPointImpl(south, west)
+                _northEast = GeoPointImpl(north, east)
                 return
             }
 
@@ -49,8 +49,8 @@ class GeoRectBounds(
                 val west = minOf(ne.longitude, position.longitude)
                 val east = maxOf(ne.longitude, position.longitude)
 
-                _southWest = GeoPoint(south, west)
-                _northEast = GeoPoint(north, east)
+                _southWest = GeoPointImpl(south, west)
+                _northEast = GeoPointImpl(north, east)
                 return
             }
 
@@ -75,8 +75,8 @@ class GeoRectBounds(
                     east = maxOf(position.longitude, _northEast!!.longitude)
                 }
 
-                _southWest = GeoPoint(south, west)
-                _northEast = GeoPoint(north, east)
+                _southWest = GeoPointImpl(south, west)
+                _northEast = GeoPointImpl(north, east)
             }
         }
     }
@@ -108,10 +108,10 @@ class GeoRectBounds(
             lon >= west || lon <= east
         }
 
-    fun contains(point: IGeoPoint): Boolean {
+    fun contains(point: GeoPoint): Boolean {
         if (isEmpty) return false
 
-        val p = GeoPoint.from(point)
+        val p = GeoPointImpl.from(point)
         val sw = _southWest!!
         val ne = _northEast!!
 
@@ -121,7 +121,7 @@ class GeoRectBounds(
         return withinLat && withinLng
     }
 
-    val center: GeoPoint?
+    val center: GeoPointImpl?
         get() {
             if (isEmpty) return null
 
@@ -140,7 +140,7 @@ class GeoRectBounds(
                     if (mid > 180) mid - 360 else mid
                 }
 
-            return GeoPoint(centerLat, centerLng)
+            return GeoPointImpl(centerLat, centerLng)
         }
 
     fun union(other: GeoRectBounds): GeoRectBounds {
@@ -156,7 +156,7 @@ class GeoRectBounds(
         return this
     }
 
-    fun toSpan(): GeoPoint? {
+    fun toSpan(): GeoPointImpl? {
         if (isEmpty) return null
 
         val sw = _southWest!!
@@ -165,7 +165,7 @@ class GeoRectBounds(
         val latSpan = ne.latitude - sw.latitude
         val lngSpan = ((ne.longitude - sw.longitude + 360) % 360).takeIf { it != 0.0 } ?: 360.0
 
-        return GeoPoint(latSpan, lngSpan)
+        return GeoPointImpl(latSpan, lngSpan)
     }
 
     fun toUrlValue(precision: Int = 6): String {

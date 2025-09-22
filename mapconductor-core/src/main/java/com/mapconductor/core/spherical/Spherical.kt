@@ -1,7 +1,7 @@
 package com.mapconductor.core.spherical
 
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.atan2
@@ -34,8 +34,8 @@ object Spherical {
      * @return Distance in meters
      */
     fun computeDistanceBetween(
-        from: IGeoPoint,
-        to: IGeoPoint,
+        from: GeoPoint,
+        to: GeoPoint,
     ): Double {
         val lat1Rad = from.latitude * DEG_TO_RAD
         val lat2Rad = to.latitude * DEG_TO_RAD
@@ -61,8 +61,8 @@ object Spherical {
      * @return Heading in degrees
      */
     fun computeHeading(
-        from: IGeoPoint,
-        to: IGeoPoint,
+        from: GeoPoint,
+        to: GeoPoint,
     ): Double {
         val lat1Rad = from.latitude * DEG_TO_RAD
         val lat2Rad = to.latitude * DEG_TO_RAD
@@ -90,10 +90,10 @@ object Spherical {
      * @return New GeoPoint position
      */
     fun computeOffset(
-        origin: IGeoPoint,
+        origin: GeoPoint,
         distance: Double,
         heading: Double,
-    ): GeoPoint {
+    ): GeoPointImpl {
         val distanceRad = distance / EARTH_RADIUS
         val headingRad = heading * DEG_TO_RAD
         val lat1Rad = origin.latitude * DEG_TO_RAD
@@ -112,7 +112,7 @@ object Spherical {
                     cos(distanceRad) - sin(lat1Rad) * sin(lat2Rad),
                 )
 
-        return GeoPoint(
+        return GeoPointImpl(
             latitude = lat2Rad * RAD_TO_DEG,
             longitude = lng2Rad * RAD_TO_DEG,
             altitude = origin.altitude ?: 0.0,
@@ -130,10 +130,10 @@ object Spherical {
      * @return Origin GeoPoint position, or null if no solution is available
      */
     fun computeOffsetOrigin(
-        to: IGeoPoint,
+        to: GeoPoint,
         distance: Double,
         heading: Double,
-    ): GeoPoint? {
+    ): GeoPointImpl? {
         // Calculate the reverse heading
         val reverseHeading = (heading + 180) % 360
 
@@ -150,7 +150,7 @@ object Spherical {
      * @param path List of GeoPoint locations defining the path
      * @return Length in meters
      */
-    fun computeLength(path: List<IGeoPoint>): Double {
+    fun computeLength(path: List<GeoPoint>): Double {
         if (path.size < 2) return 0.0
 
         var length = 0.0
@@ -168,7 +168,7 @@ object Spherical {
      * @param path List of GeoPoint locations defining the closed path
      * @return Area in square meters
      */
-    fun computeArea(path: List<IGeoPoint>): Double = abs(computeSignedArea(path))
+    fun computeArea(path: List<GeoPoint>): Double = abs(computeSignedArea(path))
 
     /**
      * Returns the signed area of a closed path in square meters.
@@ -179,7 +179,7 @@ object Spherical {
      * @param path List of GeoPoint locations defining the closed path
      * @return Signed area in square meters
      */
-    fun computeSignedArea(path: List<IGeoPoint>): Double {
+    fun computeSignedArea(path: List<GeoPoint>): Double {
         if (path.size < 3) return 0.0
 
         var area = 0.0
@@ -206,10 +206,10 @@ object Spherical {
      * @return Interpolated GeoPoint position
      */
     fun interpolate(
-        from: IGeoPoint,
-        to: IGeoPoint,
+        from: GeoPoint,
+        to: GeoPoint,
         fraction: Double,
-    ): GeoPoint {
+    ): GeoPointImpl {
         val lat1Rad = from.latitude * DEG_TO_RAD
         val lng1Rad = from.longitude * DEG_TO_RAD
         val lat2Rad = to.latitude * DEG_TO_RAD
@@ -229,7 +229,7 @@ object Spherical {
                     else -> 0.0
                 }
 
-            return GeoPoint(
+            return GeoPointImpl(
                 latitude = from.latitude + fraction * (to.latitude - from.latitude),
                 longitude = from.longitude + fraction * (to.longitude - from.longitude),
                 altitude = interpolatedAltitude!!,
@@ -262,10 +262,10 @@ object Spherical {
      * @return Linearly interpolated GeoPoint position
      */
     fun linearInterpolate(
-        from: IGeoPoint,
-        to: IGeoPoint,
+        from: GeoPoint,
+        to: GeoPoint,
         fraction: Double,
-    ): GeoPoint {
+    ): GeoPointImpl {
         val interpolatedAltitude =
             when {
                 from.altitude != null && to.altitude != null ->
@@ -297,7 +297,7 @@ object Spherical {
         // Normalize longitude to [-180, 180] range
         val normalizedLongitude = normalizeLng(interpolatedLongitude)
 
-        return GeoPoint(
+        return GeoPointImpl(
             latitude = interpolatedLatitude,
             longitude = normalizedLongitude,
             altitude = interpolatedAltitude!!,

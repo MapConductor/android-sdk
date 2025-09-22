@@ -1,7 +1,7 @@
 package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +23,9 @@ interface MapViewState<ActualMapDesignType> {
     }
 
     val id: String
-    val initCameraPosition: MapCameraPosition
+    val initCameraPosition: MapCameraPositionImpl
     val isInitialized: StateFlow<InitState>
-    val cameraPosition: StateFlow<MapCameraPosition?>
+    val cameraPosition: StateFlow<MapCameraPositionImpl?>
     var mapDesignType: ActualMapDesignType
 
     fun initAsync(init: suspend () -> Boolean)
@@ -33,13 +33,13 @@ interface MapViewState<ActualMapDesignType> {
     fun resetInitState()
 
     fun moveCameraTo(
-        cameraPosition: MapCameraPosition,
+        cameraPosition: MapCameraPositionImpl,
         durationMs: Long? = 0,
         listener: MoveCameraCallback? = null,
     )
 
     fun moveCameraTo(
-        position: GeoPoint,
+        position: GeoPointImpl,
         durationMs: Long? = 0,
         listener: MoveCameraCallback? = null,
     )

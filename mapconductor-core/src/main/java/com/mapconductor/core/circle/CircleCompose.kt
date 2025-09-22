@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.IGeoPoint
+import com.mapconductor.core.features.GeoPoint
 import android.os.Parcelable
 
 @Composable
@@ -20,7 +20,7 @@ fun MapViewScope.Circle(state: CircleState) {
 
 @Composable
 fun MapViewScope.Circle(
-    center: IGeoPoint,
+    center: GeoPoint,
     radius: Double,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
