@@ -137,7 +137,6 @@ class PostOfficeViewModelImpl(
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
         renderingStrategy.value?.clear()
-        _isMapLoaded.value = false
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _renderingStrategy.value =
@@ -148,6 +147,7 @@ class PostOfficeViewModelImpl(
                 is ArcGISMapViewState -> strategies.arcgis
                 else -> SimpleMarkerRenderingStrategy<Any>()
             } as MarkerRenderingStrategy<Any>?
+        _isMapLoaded.value = false
     }
 
     override fun onCleared() {
