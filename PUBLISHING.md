@@ -8,7 +8,7 @@ The following modules are configured for publishing:
 
 - `mapconductor-core` - Core abstractions and shared functionality
 - `mapconductor-for-arcgis` - ArcGIS Maps implementation
-- `mapconductor-for-googlemaps` - Google Maps implementation  
+- `mapconductor-for-googlemaps` - Google Maps implementation
 - `mapconductor-for-here` - HERE Maps implementation
 - `mapconductor-for-mapbox` - Mapbox implementation
 - `mapconductor-icons` - Reusable marker icon components
@@ -111,11 +111,11 @@ Configure in `gradle.properties`:
 
 ```properties
 libraryGroupId=com.mapconductor
-libraryUrl=https://github.com/your-organization/mapconductor-android-sdk
+libraryUrl=https://github.com/mapconductor/android-sdk
 developerId=mapconductor
 developerName=MapConductor Team
 developerEmail=dev@mapconductor.com
-scmUrl=https://github.com/your-organization/mapconductor-android-sdk.git
+scmUrl=https://github.com/mapconductor/android-sdk.git
 ```
 
 ### Module-Specific Configuration

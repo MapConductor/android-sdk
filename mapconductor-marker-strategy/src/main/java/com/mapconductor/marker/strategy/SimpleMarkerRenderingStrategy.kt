@@ -24,6 +24,7 @@ class SimpleMarkerRenderingStrategy<ActualMarker>(
      * Default MarkerManager instance provided by dependency injection.
      */
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
+
     override fun clear() {
         markerManager.clear()
     }

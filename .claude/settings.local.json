@@ -2,34 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(./gradlew:*)",
-      "Bash(grep:*)",
-      "Bash(rm:*)",
-      "Bash(dir:*)",
-      "Bash(ls:*)",
+      "Read(//Users/masashi/.m2/repository/com/mapconductor/**)",
+      "Bash(/opt/homebrew/opt/openjdk@17/bin/java:*)",
+      "Bash(JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home ./gradlew publishAllLocal)",
+      "Bash(export:*)",
       "Bash(echo:*)",
-      "Bash(for file in *.png)",
-      "Bash(do cwebp:*)",
-      "Bash(done)",
-      "Bash(for:*)",
-      "Bash(python:*)",
-      "Bash(\"C:\\Users\\masashi\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" convert_geojson.py)",
-      "Bash(rg:*)",
-      "Bash(where python)",
-      "Bash(\"C:\\Users\\masashi\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" \"C:\\Users\\masashi\\Desktop\\android-sdk\\extract_post_offices.py\")",
-      "Bash(where node)",
-      "Bash(node:*)",
-      "Bash(git checkout:*)",
-      "Bash(find:*)",
-      "Bash(mkdir:*)",
-      "Bash(git add:*)",
-      "Bash(touch:*)",
-      "Bash(mv:*)",
-      "Bash(cp:*)",
-      "WebFetch(*)",
-      "Bash(sed:*)",
-      "Bash(.gradlew:*)",
-      "WebFetch(domain:docs.mapbox.com)"
+      "Bash(nm:*)",
+      "Bash(act workflow_dispatch:*)",
+      "Bash(mdbook build:*)",
+      "Bash(brew install:*)",
+      "Bash(mdbook:*)",
+      "Bash(find:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   }
 }

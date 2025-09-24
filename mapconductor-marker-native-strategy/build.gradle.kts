@@ -83,19 +83,10 @@ dependencies {
 
 // Publishing configuration
 val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
-val libraryArtifactId = "mapconductor-marker-native-strategy"
+val libraryArtifactId = "marker-native-strategy"
 val libraryVersion = project.findProperty("libraryVersion") as String? ?: project.property("versionName") as String
 val libraryName = "MapConductor Native Marker Strategy"
 val libraryDescription = "High-performance C++ marker rendering strategies for MapConductor"
-
-val sourcesJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("sources")
-    from(
-        android.sourceSets
-            .getByName("main")
-            .java.srcDirs,
-    )
-}
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
@@ -113,14 +104,13 @@ afterEvaluate {
                 version = libraryVersion
 
                 artifact(javadocJar.get())
-                artifact(sourcesJar.get())
 
                 pom {
                     name.set(libraryName)
                     description.set(libraryDescription)
                     url.set(
                         project.findProperty("libraryUrl") as String?
-                            ?: "https://github.com/your-organization/mapconductor-android-sdk",
+                            ?: "https://github.com/MapConductor/android-sdk",
                     )
 
                     licenses {
@@ -139,12 +129,12 @@ afterEvaluate {
                     }
 
                     scm {
-                        connection.set("scm:git:git://github.com/your-organization/mapconductor-android-sdk.git")
+                        connection.set("scm:git:git://github.com/MapConductor/android-sdk.git")
                         developerConnection
-                            .set("scm:git:ssh://github.com:your-organization/mapconductor-android-sdk.git")
+                            .set("scm:git:ssh://github.com:MapConductor/android-sdk.git")
                         url.set(
                             project.findProperty("scmUrl") as String?
-                                ?: "https://github.com/your-organization/mapconductor-android-sdk.git",
+                                ?: "https://github.com/MapConductor/android-sdk.git",
                         )
                     }
                 }
@@ -154,17 +144,21 @@ afterEvaluate {
         repositories {
             maven {
                 name = "GitHubPackages"
-                setUrl("https://maven.pkg.github.com/your-organization/mapconductor-android-sdk")
+                setUrl("https://maven.pkg.github.com/MapConductor/android-sdk")
                 credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                    username =
+                        project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USER")
+                            ?: System.getenv("GITHUB_ACTOR")
+                    password =
+                        project.findProperty("gpr.key") as String? ?: System.getenv("GPR_TOKEN")
+                            ?: System.getenv("GITHUB_TOKEN")
                 }
             }
 
             maven {
                 name = "OSSRH"
-                val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
                 setUrl(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
                 credentials {
                     username = project.findProperty("ossrh.username") as String? ?: System.getenv("OSSRH_USERNAME")

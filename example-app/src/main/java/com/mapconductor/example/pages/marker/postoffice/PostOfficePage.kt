@@ -20,7 +20,6 @@ import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
-import com.mapconductor.marker.nativestrategy.SimpleNativeParallelStrategy
 
 @Composable
 fun PostOfficeMapPage(
@@ -31,10 +30,10 @@ fun PostOfficeMapPage(
     val dataLoader = remember { PostOfficeDataLoader(context) }
     val strategies =
         remember {
-            val google = SimpleNativeParallelStrategy<GoogleMapActualMarker>(addOnlyMode = false)
-            val mapbox = SimpleNativeParallelStrategy<MapboxActualMarker>(addOnlyMode = false)
-            val here = SimpleNativeParallelStrategy<HereActualMarker>(addOnlyMode = false)
-            val arcgis = SimpleNativeParallelStrategy<ArcGISActualMarker>(addOnlyMode = false)
+            val google = NativeSpatialMarkerRenderingStrategy<GoogleMapActualMarker>()
+            val mapbox = NativeSpatialMarkerRenderingStrategy<MapboxActualMarker>()
+            val here = NativeSpatialMarkerRenderingStrategy<HereActualMarker>()
+            val arcgis = NativeSpatialMarkerRenderingStrategy<ArcGISActualMarker>()
             Strategies(
                 google = google,
                 mapbox = mapbox,
@@ -61,7 +60,7 @@ fun PostOfficeMapPage(
                 },
         )
 
-// Show loading indicator while map is loading or data is being loaded
+    // Show loading indicator while map is loading or data is being loaded
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
@@ -72,7 +71,6 @@ fun PostOfficeMapPage(
         val isMapLoaded = viewModel.isMapLoaded.collectAsState().value
 
         DemoMapPageScaffold(
-            initSelect = 3,
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = viewModel::onMapViewChanged,

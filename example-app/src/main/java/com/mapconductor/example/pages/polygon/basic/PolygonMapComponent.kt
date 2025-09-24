@@ -1,4 +1,4 @@
-package com.mapconductor.example.pages.polygon
+package com.mapconductor.example.pages.polygon.basic
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

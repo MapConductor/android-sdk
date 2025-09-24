@@ -101,31 +101,31 @@ class SimpleNativeParallelStrategy<ActualMarker>(
                     }
                 }
 
-                CoroutineScope(Dispatchers.Default).run {
-                    if (markersToRemove.isNotEmpty()) {
-                            renderer.onRemove(markersToRemove)
-                    }
+                // Execute rendering operations on current thread (needed for Mapbox, HERE, ArcGIS)
+                if (markersToRemove.isNotEmpty()) {
+                    renderer.onRemove(markersToRemove)
+                }
 
-                    if (markersToRender.isNotEmpty()) {
-                        val addParams =
-                            markersToRender.map { entity ->
-                                object : MarkerOverlayRenderer.AddParams {
-                                    override val state = entity.state
-                                    override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
-                                }
-                            }
-
-                        val actualMarkers = renderer.onAdd(addParams)
-                        actualMarkers.forEachIndexed { index, actualMarker ->
-                            actualMarker?.let {
-                                markersToRender[index].marker = it
-                                markersToRender[index].isRendered = true
-                                markersToRender[index].visible = true
+                if (markersToRender.isNotEmpty()) {
+                    val addParams =
+                        markersToRender.map { entity ->
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state = entity.state
+                                override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
                             }
                         }
+
+                    val actualMarkers = renderer.onAdd(addParams)
+                    actualMarkers.forEachIndexed { index, actualMarker ->
+                        actualMarker?.let {
+                            markersToRender[index].marker = it
+                            markersToRender[index].isRendered = true
+                            markersToRender[index].visible = true
+                        }
                     }
-                    renderer.onPostProcess()
                 }
+
+                renderer.onPostProcess()
             }
         }
     }

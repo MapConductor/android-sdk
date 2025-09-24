@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
+import java.io.Serializable
 import android.graphics.drawable.Drawable
-import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -16,7 +16,7 @@ class GroundImageState(
     image: Drawable,
     opacity: Float = 1.0f,
     id: String? = null,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val id = (id ?: generateId(bounds, image, opacity, extra)).toString()
 
@@ -44,7 +44,7 @@ class GroundImageState(
         bounds: GeoRectBounds,
         image: Drawable,
         opacity: Float,
-        extra: Parcelable?,
+        extra: Serializable?,
     ): Int {
         var result = bounds.hashCode()
         result = 31 * result + image.hashCode()

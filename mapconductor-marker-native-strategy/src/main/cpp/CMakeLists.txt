@@ -9,6 +9,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Add optimization flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
 
+# SIMD optimization flags
+if(CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
+    # ARM NEON optimization (ARM64 has NEON by default)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math")
+elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "armeabi-v7a")
+    # ARM NEON optimization for 32-bit ARM
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon")
+elseif(CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")
+    # x86_64 AVX2 optimization (for emulator)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mfma")
+endif()
+
 # Add 16KB page alignment support for Android 15+ (API 35+)
 # Required for devices with 16KB page sizes
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
@@ -29,9 +41,7 @@ add_library(
     spatial_utils_extended.cpp
     marker_rendering_strategy.cpp
     parallel_marker_strategy.cpp
-    gpu_marker_strategy.cpp
     jni_wrapper.cpp
-    gpu_jni_wrapper.cpp
     remote_spatial_jni_wrapper.cpp
     remote_spatial_marker_strategy.cpp
 )

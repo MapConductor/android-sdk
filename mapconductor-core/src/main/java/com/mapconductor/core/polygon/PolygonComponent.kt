@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
-import android.os.Parcelable
+import java.io.Serializable
 
 @Composable
 fun MapViewScope.Polygon(state: PolygonState) {
@@ -26,7 +26,7 @@ fun MapViewScope.Polygon(
     strokeWidth: Dp = 1.dp,
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val state =
         PolygonState(
