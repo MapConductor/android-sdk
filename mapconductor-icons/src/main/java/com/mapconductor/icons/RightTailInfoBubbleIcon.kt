@@ -16,7 +16,7 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.settings.MarkerIconSize
 import android.graphics.drawable.Drawable
 
-class RightTailInfoWindow(
+class RightTailInfoBubbleIcon(
     private val properties: IconProperties,
 ) : AbstractMarkerIcon() {
     data class IconProperties(
@@ -61,7 +61,7 @@ class RightTailInfoWindow(
         fillColor: Color = this.fillColor,
         scale: Float = this.scale,
         iconSize: Dp,
-    ): RightTailInfoWindow = RightTailInfoWindow(
+    ): RightTailInfoBubbleIcon = RightTailInfoBubbleIcon(
         properties.copy(
             iconDrawable = iconDrawable,
             label = label,
@@ -76,13 +76,13 @@ class RightTailInfoWindow(
     fun copy(
         scale: Float,
         iconSize: Dp,
-    ): RightTailInfoWindow = copy(scale = scale, iconSize = iconSize)
+    ): RightTailInfoBubbleIcon = copy(scale = scale, iconSize = iconSize)
 
-    override fun equals(other: Any?): Boolean = other is RightTailInfoWindow && properties == other.properties
+    override fun equals(other: Any?): Boolean = other is RightTailInfoBubbleIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
 
-    override fun toString(): String = "RightTailInfoWindow($properties)"
+    override fun toString(): String = "RightTailInfoBubbleIcon($properties)"
 
     override fun toBitmapIcon(): BitmapIcon {
         return TODO("ビットマップを返却")
@@ -91,11 +91,11 @@ class RightTailInfoWindow(
 
 @Preview
 @Composable
-fun RightTailInfoWindowPreview() {
+fun RightTailInfoBubbleIconPreview() {
     val context = LocalContext.current
 
-    val icon = RightTailInfoWindow(
-        properties = RightTailInfoWindow.IconProperties(
+    val icon = RightTailInfoBubbleIcon(
+        properties = RightTailInfoBubbleIcon.IconProperties(
             iconDrawable = ContextCompat.getDrawable(context, R.drawable.default_marker)!!,
             label = "5時間37分",
             snippet = "304マイル",
