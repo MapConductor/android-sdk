@@ -81,7 +81,10 @@ dependencies {
 // Publishing configuration
 val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
 val libraryArtifactId = "for-mapbox"
-val libraryVersion = project.findProperty("libraryVersion") as String? ?: project.property("versionName") as String
+val libraryVersion = project.findProperty("libraryVersion") as String? ?: "1.0.0"
+
+// Set project version for NMCP plugin
+version = libraryVersion
 val libraryName = "MapConductor for Mapbox"
 val libraryDescription = "Mapbox implementation for MapConductor unified mapping library"
 

@@ -6,14 +6,15 @@ This document explains how to publish MapConductor modules to various Maven repo
 
 The following modules are configured for publishing:
 
-- `mapconductor-core` - Core abstractions and shared functionality
-- `mapconductor-for-arcgis` - ArcGIS Maps implementation
-- `mapconductor-for-googlemaps` - Google Maps implementation
-- `mapconductor-for-here` - HERE Maps implementation
-- `mapconductor-for-mapbox` - Mapbox implementation
-- `mapconductor-icons` - Reusable marker icon components
-- `mapconductor-marker-native-strategy` - High-performance C++ marker strategies
-- `mapconductor-marker-strategy` - Advanced marker rendering strategies
+- `mapconductor-bom` - Versioning dependency modules
+- `core` - Core abstractions and shared functionality
+- `for-arcgis` - ArcGIS Maps implementation
+- `for-googlemaps` - Google Maps implementation
+- `for-here` - HERE Maps implementation
+- `for-mapbox` - Mapbox implementation
+- `icons` - Reusable marker icon components
+- `marker-native-strategy` - High-performance C++ marker strategies
+- `marker-strategy` - Advanced marker rendering strategies
 
 ## Publishing Destinations
 
@@ -61,11 +62,11 @@ export GITHUB_TOKEN=your-github-personal-access-token
 ./gradlew :mapconductor-core:publishReleasePublicationToGitHubPackagesRepository
 ```
 
-### 3. Maven Central (Sonatype OSSRH)
+### 3. Maven Central (Central Portal)
 
-For publishing to Maven Central:
+For publishing to Maven Central via the new Central Portal:
 
-#### Setup Sonatype Credentials
+#### Setup Central Portal Credentials
 
 Add to `local.properties` or set environment variables:
 
@@ -74,25 +75,35 @@ Add to `local.properties` or set environment variables:
 signing.keyId=your-gpg-key-id
 signing.password=your-gpg-key-password
 signing.secretKeyRingFile=/path/to/secring.gpg
-ossrh.username=your-sonatype-username
-ossrh.password=your-sonatype-password
+ossrh.username=your-central-portal-username
+ossrh.password=your-central-portal-password
 ```
 
 Or set environment variables:
 ```bash
-export OSSRH_USERNAME=your-sonatype-username
-export OSSRH_PASSWORD=your-sonatype-password
+export OSSRH_USERNAME=your-central-portal-username
+export OSSRH_PASSWORD=your-central-portal-password
 ```
 
 #### Publish to Maven Central
 
 ```bash
-# Publish all modules to Maven Central
+# Step 1: Stage all modules locally (prepare for Central Portal)
 ./gradlew publishAllToMavenCentral
 
-# Publish individual module
-./gradlew :mapconductor-core:publishReleasePublicationToOSSRHRepository
+# Step 2: Submit to Central Portal
+./gradlew publishAllPublicationsToCentralPortal
+
+# For individual module submissions
+./gradlew :mapconductor-core:publishReleasePublicationToCentralPortal
 ```
+
+#### Verification
+
+Check your submission at https://central.sonatype.com/
+- Login with your Central Portal credentials
+- View deployments to see status
+- Artifacts will appear on Maven Central after successful validation
 
 ## Configuration
 
@@ -102,8 +113,9 @@ Update version in `gradle.properties`:
 
 ```properties
 libraryVersion=1.0.1
-versionName=1.0.1
 ```
+
+Note: `versionName` is no longer used for library publishing. Only `libraryVersion` is needed.
 
 ### Library Metadata
 
@@ -111,11 +123,11 @@ Configure in `gradle.properties`:
 
 ```properties
 libraryGroupId=com.mapconductor
-libraryUrl=https://github.com/mapconductor/android-sdk
+libraryUrl=https://github.com/mapconductor/android-sdk-doc
 developerId=mapconductor
 developerName=MapConductor Team
 developerEmail=dev@mapconductor.com
-scmUrl=https://github.com/mapconductor/android-sdk.git
+scmUrl=https://github.com/mapconductor/android-sdk-doc.git
 ```
 
 ### Module-Specific Configuration
@@ -124,7 +136,7 @@ Each module has its own artifact ID and description in its `build.gradle.kts`:
 
 ```kotlin
 ext {
-    libraryArtifactId = "mapconductor-core"
+    libraryArtifactId = "core"
     libraryName = "MapConductor Core"
     libraryDescription = "Core abstractions and shared functionality for MapConductor unified mapping library"
 }
@@ -147,7 +159,7 @@ Each module publishes the following artifacts:
 repositories {
     maven {
         name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/your-organization/mapconductor-android-sdk")
+        url = uri("https://maven.pkg.github.com/mapconductor/android-sdk")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
@@ -156,8 +168,9 @@ repositories {
 }
 
 dependencies {
-    implementation("com.mapconductor:mapconductor-core:1.0.0")
-    implementation("com.mapconductor:mapconductor-for-googlemaps:1.0.0")
+    implementation("com.mapconductor:mapconductor-bom:1.0.0")
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-googlemaps")
     // Add other modules as needed
 }
 ```
@@ -166,8 +179,9 @@ dependencies {
 
 ```kotlin
 dependencies {
-    implementation("com.mapconductor:mapconductor-core:1.0.0")
-    implementation("com.mapconductor:mapconductor-for-googlemaps:1.0.0")
+    implementation("com.mapconductor:mapconductor-bom:1.0.0")
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-googlemaps")
     // Add other modules as needed
 }
 ```
@@ -176,9 +190,11 @@ dependencies {
 
 ### Common Issues
 
-1. **Authentication Failed**: Verify credentials in `local.properties` or environment variables
+1. **Authentication Failed**: Verify Central Portal credentials in `local.properties` or environment variables
 2. **Signing Failed**: Ensure GPG key is properly configured for Maven Central
 3. **Build Failed**: Run `./gradlew allLintChecks` to fix code style issues first
+4. **Version Shows as "unspecified"**: Check that `libraryVersion` is properly set in `gradle.properties`
+5. **Central Portal Submission Failed**: Use `./gradlew publishAllPublicationsToCentralPortal --info` for detailed logs
 
 ### Verifying Artifacts
 
@@ -206,11 +222,13 @@ If you encounter issues, try a clean build:
 
 Before publishing a release:
 
-1. [ ] Update version in `gradle.properties`
+1. [ ] Update `libraryVersion` in `gradle.properties`
 2. [ ] Run `./gradlew allLintChecks` and fix any issues
 3. [ ] Run `./gradlew build` and ensure all tests pass
 4. [ ] Test locally with `./gradlew publishAllLocal`
 5. [ ] Update `CHANGELOG.md` with release notes
 6. [ ] Create git tag: `git tag v1.0.0`
-7. [ ] Publish to target repository
-8. [ ] Push tag: `git push origin v1.0.0`
+7. [ ] Stage artifacts: `./gradlew publishAllToMavenCentral`
+8. [ ] Submit to Central Portal: `./gradlew publishAllPublicationsToCentralPortal`
+9. [ ] Verify submission at https://central.sonatype.com/
+10. [ ] Push tag: `git push origin v1.0.0`

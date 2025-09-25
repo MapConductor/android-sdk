@@ -40,8 +40,10 @@ jobs:
     - name: Copy docs directory
       run: |
         if [ -d "docs/build" ]; then
+          mv docs-repo/CNAME docs/build/
           rm -rf docs-repo/*
           cp -r docs/build/* docs-repo/
+          mv docs/CNAME docs-repo/
           echo "Documentation copied successfully"
         else
           echo "docs/build directory not found"

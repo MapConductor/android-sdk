@@ -87,7 +87,10 @@ dependencies {
 // Publishing configuration
 val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
 val libraryArtifactId = "for-arcgis"
-val libraryVersion = project.findProperty("libraryVersion") as String? ?: project.property("versionName") as String
+val libraryVersion = project.findProperty("libraryVersion") as String? ?: "1.0.0"
+
+// Set project version for NMCP plugin
+version = libraryVersion
 val libraryName = "MapConductor for ArcGIS"
 val libraryDescription = "ArcGIS Maps implementation for MapConductor unified mapping library"
 

@@ -12,7 +12,8 @@
       "Bash(mdbook build:*)",
       "Bash(brew install:*)",
       "Bash(mdbook:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(for:*)"
     ],
     "deny": [],
     "ask": []
