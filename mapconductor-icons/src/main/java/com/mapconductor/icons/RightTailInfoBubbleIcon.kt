@@ -113,7 +113,7 @@ class RightTailInfoBubbleIcon(
 
         val snippetPaint = Paint().apply {
             isAntiAlias = true
-            color = Color.LightGray.toArgb()
+            color = Color.Gray.toArgb()
             textSize = drawableSize * 0.4f
         }
         val snippetHeight = snippetPaint.fontMetrics.run { bottom - top }
