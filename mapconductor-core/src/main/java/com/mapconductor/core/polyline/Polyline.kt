@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.features.GeoPoint
-import android.os.Parcelable
+import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -18,7 +18,7 @@ class PolylineState(
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val id =
         (
@@ -63,7 +63,7 @@ class PolylineState(
         strokeColor: Color = this.strokeColor,
         strokeWidth: Dp = this.strokeWidth,
         geodesic: Boolean = this.geodesic,
-        extra: Parcelable? = this.extra,
+        extra: Serializable? = this.extra,
     ): PolylineState =
         PolylineState(
             points = points,

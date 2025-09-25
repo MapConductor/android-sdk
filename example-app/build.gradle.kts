@@ -214,21 +214,30 @@ dependencies {
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     // Map Conductor
+    implementation(platform("com.mapconductor:mapconductor-bom:1.0.0"))
+//    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:icons")
+//    implementation("com.mapconductor:for-googlemaps")
+//    implementation("com.mapconductor:for-here")
+//    implementation("com.mapconductor:for-mapbox")
+//    implementation("com.mapconductor:for-arcgis")
+    implementation("com.mapconductor:marker-strategy")
+    implementation("com.mapconductor:marker-native-strategy")
 
     implementation(project(":mapconductor-core"))
-
-    implementation(project(":mapconductor-icons"))
-
+//
+//    implementation(project(":mapconductor-icons"))
+//
     implementation(project(":mapconductor-for-googlemaps"))
-
+//
     implementation(project(":mapconductor-for-here"))
-
+//
     implementation(project(":mapconductor-for-mapbox"))
-
+//
     implementation(project(":mapconductor-for-arcgis"))
-
-    implementation(project(":mapconductor-marker-strategy"))
-    implementation(project(":mapconductor-marker-native-strategy"))
+//
+//    implementation(project(":mapconductor-marker-strategy"))
+//    implementation(project(":mapconductor-marker-native-strategy"))
 
     implementation(libs.androidx.vectordrawable)
 

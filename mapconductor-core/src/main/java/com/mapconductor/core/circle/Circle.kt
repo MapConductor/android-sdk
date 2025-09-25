@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerState
-import android.os.Parcelable
+import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -28,7 +28,7 @@ class CircleState(
         ),
     id: String? = null,
     zIndex: Int? = null,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     var center by mutableStateOf(center)
     var clickable by mutableStateOf(clickable)
@@ -89,7 +89,7 @@ class CircleState(
             ),
         id: String? = this.id,
         zIndex: Int? = this.zIndex,
-        extra: Parcelable? = this.extra,
+        extra: Serializable? = this.extra,
     ): CircleState =
         CircleState(
             center = center,

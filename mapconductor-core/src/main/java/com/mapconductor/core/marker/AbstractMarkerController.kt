@@ -4,7 +4,15 @@ import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 
 interface MarkerCapable {
@@ -71,6 +79,40 @@ abstract class AbstractMarkerController<ActualMarker>(
     var dragListener: ((MarkerState) -> Unit)? = null
     var dragEndListener: ((MarkerState) -> Unit)? = null
     private var mapCameraPosition: MapCameraPositionImpl? = null
+
+    // Timer-based debounce implementation (ArcGIS Flow-compatible)
+    private val debounceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val debounceMutex = Mutex()
+    private var pendingCameraPosition: MapCameraPositionImpl? = null
+    private var debounceJob: kotlinx.coroutines.Job? = null
+
+    private suspend fun processCameraChangeDebounced(cameraPosition: MapCameraPositionImpl) {
+        debounceMutex.withLock {
+            // Store the latest camera position
+            pendingCameraPosition = cameraPosition
+
+            // Cancel previous debounce job
+            debounceJob?.cancel()
+
+            // Start new debounce job
+            debounceJob =
+                debounceScope.launch {
+                    delay(100) // 100ms debounce delay
+
+                    // Process the latest camera position
+                    val latestPosition =
+                        debounceMutex.withLock {
+                            pendingCameraPosition
+                        }
+
+                    latestPosition?.let { position ->
+                        this@AbstractMarkerController.mapCameraPosition = position
+                        renderingStrategy?.onCameraChanged(position, renderer)
+                    }
+                }
+        }
+    }
+
     private val worldBounds =
         GeoRectBounds(
             southWest = GeoPointImpl(90.0, 180.0),
@@ -376,8 +418,11 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
-        this.mapCameraPosition = mapCameraPosition
-        renderingStrategy?.onCameraChanged(mapCameraPosition, renderer)
+        // Use timer-based debounce instead of Flow to avoid ArcGIS SDK conflicts
+        processCameraChangeDebounced(mapCameraPosition)
+
+//        this.mapCameraPosition = mapCameraPosition
+//        renderingStrategy?.onCameraChanged(mapCameraPosition, renderer)
     }
 
     /**
@@ -385,6 +430,8 @@ abstract class AbstractMarkerController<ActualMarker>(
      * IMPORTANT: Call this when switching map providers or disposing the map
      */
     override fun destroy() {
+        debounceJob?.cancel()
+        debounceScope.cancel()
         markerManager.destroy()
     }
 }

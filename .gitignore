@@ -25,3 +25,5 @@ libs/*
 *.ps1
 compose-map-story/
 slides/
+*.secrets
+act.env

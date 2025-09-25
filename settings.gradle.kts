@@ -24,8 +24,18 @@ dependencyResolutionManagement {
             // ArcGIS Maven repository
             url = uri("https://esri.jfrog.io/artifactory/arcgis")
         }
+
+        maven {
+            name = "GithubPackages"
+            url = uri("https://maven.pkg.github.com/mapconductor/android-sdk")
+            credentials {
+                username = System.getenv("GPR_USER")
+                password = System.getenv("GPR_TOKEN")
+            }
+            content { includeGroup("com.mapconductor") }
+        }
         flatDir {
-            dirs(rootDir.resolve("libs")) // ← プロジェクトルートの libs/
+            dirs(rootDir.resolve("libs"))
         }
     }
 }

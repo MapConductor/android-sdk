@@ -14,12 +14,13 @@ A unified mapping library that provides a common API for multiple map providers 
 
 ### Module Structure
 
-- **`mapconductor-core`**: Core abstractions and shared functionality
-- **`mapconductor-for-googlemaps`**: Google Maps implementation
-- **`mapconductor-for-mapbox`**: Mapbox implementation
-- **`mapconductor-for-here`**: HERE Maps implementation
-- **`mapconductor-for-arcgis`**: ArcGIS implementation
-- **`mapconductor-icons`**: Reusable marker icon components
+- **`mapconductor-bom`**: Version managemenet
+- **`core`**: Core abstractions and shared functionality
+- **`for-googlemaps`**: Google Maps implementation
+- **`for-mapbox`**: Mapbox implementation
+- **`for-here`**: HERE Maps implementation
+- **`for-arcgis`**: ArcGIS implementation
+- **`icons`**: Reusable marker icon components
 - **`example-app`**: Comprehensive demo application
 
 ### Key Components

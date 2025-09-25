@@ -208,4 +208,8 @@ abstract class AbstractViewportStrategy<ActualMarker>(
         }
         return true
     }
+
+    override fun clear() {
+        markerManager.clear()
+    }
 }
