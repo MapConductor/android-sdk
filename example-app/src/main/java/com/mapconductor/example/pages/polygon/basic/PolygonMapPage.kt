@@ -1,4 +1,4 @@
-package com.mapconductor.example.pages.polygon
+package com.mapconductor.example.pages.polygon.basic
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.calculateEndPadding

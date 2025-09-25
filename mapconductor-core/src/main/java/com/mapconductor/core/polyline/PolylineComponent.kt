@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
-import android.os.Parcelable
+import java.io.Serializable
 
 @Composable
 fun MapViewScope.Polyline(state: PolylineState) {
@@ -25,7 +25,7 @@ fun MapViewScope.Polyline(
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val state =
         PolylineState(

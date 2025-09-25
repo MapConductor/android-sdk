@@ -1,0 +1,65 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [ release ]
+  workflow_dispatch:
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Install mdbook
+      run: |
+        curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.37/mdbook-v0.4.37-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+        sudo mv mdbook /usr/local/bin/
+
+    - name: Build documentation
+      run: |
+        cd docs
+        mdbook build
+
+    - name: Clone documentation repository
+      env:
+        GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        GPR_USER: ${{ vars.GPR_USER }}
+      run: |
+        git clone https://${GPR_USER}:${GPR_TOKEN}@github.com/MapConductor/android-sdk-doc.git docs-repo
+
+    - name: Copy docs directory
+      run: |
+        if [ -d "docs/build" ]; then
+          mv docs-repo/CNAME docs/build/
+          rm -rf docs-repo/*
+          cp -r docs/build/* docs-repo/
+          mv docs/CNAME docs-repo/
+          echo "Documentation copied successfully"
+        else
+          echo "docs/build directory not found"
+          exit 1
+        fi
+
+    - name: Commit and push changes
+      env:
+        GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        GPR_USER: ${{ vars.GPR_USER }}
+      run: |
+        cd docs-repo
+        git add .
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update documentation from android-sdk@${{ github.sha }}"
+          git push origin main
+        fi

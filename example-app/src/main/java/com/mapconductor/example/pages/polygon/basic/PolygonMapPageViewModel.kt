@@ -1,4 +1,4 @@
-package com.mapconductor.example.pages.polygon
+package com.mapconductor.example.pages.polygon.basic
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf

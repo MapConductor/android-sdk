@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.GeoPoint
-import android.os.Parcelable
+import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -20,7 +20,7 @@ class PolygonState(
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val id =
         (

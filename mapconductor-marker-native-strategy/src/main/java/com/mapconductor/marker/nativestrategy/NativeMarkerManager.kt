@@ -32,12 +32,15 @@ data class NativeMarkerManagerStats(
  * - Reduced memory footprint by ~90% vs original MarkerManager
  */
 class NativeMarkerManager<ActualMarker>(
-    geocell: HexGeocell,
-) : MarkerManager<ActualMarker>(geocell) {
+    private val hexGeocell: HexGeocell,
+) : MarkerManager<ActualMarker>(hexGeocell) {
+    // Public access to geocell for spatial operations
+    val geocellInstance: HexGeocell get() = hexGeocell
+
     // Native index is the ONLY storage - no Java entity duplication
     private val nativeIndex: NativeMarkerIndex =
         NativeMarkerIndex.create(
-            baseHexSideLength = geocell.baseHexSideLength,
+            baseHexSideLength = hexGeocell.baseHexSideLength,
             zoom = 20.0,
         )
 
