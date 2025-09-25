@@ -90,64 +90,63 @@ class RoundInfoBubbleIcon(
             return it
         }
 
-        val iconSize = ResourceProvider.dpToPx(iconSize.value * scale).toFloat()
-        val iconInnerPadding = iconSize * 0.1f
+        val drawableSize = ResourceProvider.dpToPx(iconSize.value * scale).toFloat()
+        val innerPadding = drawableSize * 0.1f
 
         val textPaint = Paint().apply {
             isAntiAlias = true
             color = android.graphics.Color.BLACK
-            textSize = iconSize * 0.5f
+            textSize = drawableSize * 0.5f
         }
         val textWidth = textPaint.measureText(label)
         val textHeight = textPaint.fontMetrics.run { bottom - top }
 
-        val width = iconSize + iconInnerPadding + textWidth + iconInnerPadding * 3
-        val height = maxOf(iconSize, textHeight) + iconInnerPadding * 2
-        val pointerHeight = height /8f
+        val canvasWidth = drawableSize + innerPadding + textWidth + innerPadding * 3
+        val canvasHeight = maxOf(drawableSize, textHeight) + innerPadding * 2
+        val pointerHeight = canvasHeight / 8f
 
         val bitmap = createBitmap(
-            width.toInt(), (height + pointerHeight).toInt(), Bitmap.Config.ARGB_8888
+            canvasWidth.toInt(),
+            (canvasHeight + pointerHeight).toInt(),
+            Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
 
-        val bgPaint = Paint().apply {
+        val backgroundPaint = Paint().apply {
             color = fillColor.toArgb()
             style = Paint.Style.FILL
             isAntiAlias = true
         }
 
-        val rectLeft = 0f
-        val rectTop = 0f
-        val rectRight = width
-        val rectBottom = height
-
         val path = Path().apply {
             addRoundRect(
-                RectF(rectLeft, rectTop, rectRight, rectBottom), height / 2, height / 2, Path.Direction.CW
+                RectF(0f, 0f, canvasWidth, canvasHeight),
+                canvasHeight / 2, canvasHeight / 2, Path.Direction.CW
             )
 
-            moveTo(width / 2f - pointerHeight / 1f, rectBottom)
-            lineTo(width / 2f + pointerHeight / 1f, rectBottom)
-            lineTo(width / 2f, rectBottom + pointerHeight)
+            moveTo(canvasWidth / 2f - pointerHeight / 1f, canvasHeight)
+            lineTo(canvasWidth / 2f + pointerHeight / 1f, canvasHeight)
+            lineTo(canvasWidth / 2f, canvasHeight + pointerHeight)
             close()
         }
 
-        canvas.drawPath(path, bgPaint)
+        canvas.drawPath(path, backgroundPaint)
 
-        val iconTop = iconInnerPadding
-        val iconLeft = iconInnerPadding
         iconDrawable.setBounds(
-            iconLeft.toInt(), iconTop.toInt(), (iconLeft + iconSize).toInt(), (iconTop + iconSize).toInt()
+            innerPadding.toInt(),
+            innerPadding.toInt(),
+            (innerPadding + drawableSize).toInt(),
+            (innerPadding + drawableSize).toInt()
         )
         iconDrawable.draw(canvas)
 
-        val textX = iconLeft + iconSize + iconInnerPadding
-        val textY = iconTop + iconSize / 2f + textHeight / 2f - textPaint.fontMetrics.bottom
+        val textX = innerPadding + drawableSize + innerPadding
+        val textY = innerPadding + drawableSize / 2f + textHeight / 2f - textPaint.fontMetrics.bottom
         canvas.drawText(label, textX, textY, textPaint)
 
         val result = BitmapIcon(
             bitmap = bitmap, anchor = Offset(0.5f, 1.0f),
-            size = Size(width, height + pointerHeight)
+            size = Size(canvasWidth, canvasHeight + pointerHeight)
         )
 
         BitmapIconCache.put(id, result)

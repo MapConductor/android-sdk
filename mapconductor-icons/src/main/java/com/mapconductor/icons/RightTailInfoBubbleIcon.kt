@@ -183,7 +183,7 @@ fun RightTailInfoBubbleIconPreview() {
             label = "5時間37分",
             snippet = "304マイル",
             fillColor = Color.White,
-            labelTextColor = Color.Yellow,
+            labelTextColor = Color.Black,
             scale = 1f,
             iconSize = MarkerIconSize.Small,
             debug = false,
