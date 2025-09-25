@@ -29,13 +29,13 @@ dependencyResolutionManagement {
             name = "GithubPackages"
             url = uri("https://maven.pkg.github.com/mapconductor/android-sdk")
             credentials {
-                username = "wf9a5m75"
-                password = "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"
+                username = System.getenv("GPR_USER")
+                password = System.getenv("GPR_TOKEN")
             }
             content { includeGroup("com.mapconductor") }
         }
         flatDir {
-            dirs(rootDir.resolve("libs")) // ← プロジェクトルートの libs/
+            dirs(rootDir.resolve("libs"))
         }
     }
 }
