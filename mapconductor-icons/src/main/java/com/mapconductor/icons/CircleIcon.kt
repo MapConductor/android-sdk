@@ -83,7 +83,7 @@ class CircleIcon(
     override fun toString(): String = "CircleIcon($properties)"
 
     override fun toBitmapIcon(): BitmapIcon {
-        val id = "flag_icon_${hashCode()}".hashCode()
+        val id = "circle_icon_${hashCode()}".hashCode()
         BitmapIconCache.get(id)?.let {
             return it
         }
