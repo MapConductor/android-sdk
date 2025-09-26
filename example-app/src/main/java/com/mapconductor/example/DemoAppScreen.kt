@@ -14,6 +14,10 @@ import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
+import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
+import com.mapconductor.example.pages.infobubble.RichContentBubblePage
+import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
+import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
@@ -22,7 +26,7 @@ import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
-import com.mapconductor.example.pages.polygon.PolygonMapPage
+import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -70,6 +74,22 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Map",
             ),
             SidebarItem(
+                id = "simple-info-bubble",
+                title = "Simple Text Bubble",
+            ),
+            SidebarItem(
+                id = "styled-info-bubble",
+                title = "Custom Styled Bubble",
+            ),
+            SidebarItem(
+                id = "rich-content-info-bubble",
+                title = "Rich Content Bubble",
+            ),
+            SidebarItem(
+                id = "multiple-info-bubbles",
+                title = "Multiple Bubbles",
+            ),
+            SidebarItem(
                 id = "map-flyTo",
                 title = "Move camera",
             ),
@@ -106,8 +126,16 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Polyline ",
             ),
             SidebarItem(
+                id = "animated-route",
+                title = "Animated Route ",
+            ),
+            SidebarItem(
                 id = "polygon",
-                title = "polygon ",
+                title = "Polygon ",
+            ),
+            SidebarItem(
+                id = "polygon-hole",
+                title = "Polygon with hole ",
             ),
         )
 
@@ -118,6 +146,26 @@ fun DemoAppScreen(initPage: String = "map") {
                 when (currentPage) {
                     "startup" -> {
                         StartUpPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "simple-info-bubble" -> {
+                        SimpleTextBubblePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "styled-info-bubble" -> {
+                        StyledInfoBubblePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "rich-content-info-bubble" -> {
+                        RichContentBubblePage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "multiple-info-bubbles" -> {
+                        MultipleBubblesPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

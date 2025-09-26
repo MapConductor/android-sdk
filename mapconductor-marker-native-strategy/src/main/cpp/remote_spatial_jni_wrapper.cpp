@@ -53,7 +53,7 @@ MarkerDataDTO jobjectToMarkerDataDTO(JNIEnv* env, jobject markerObj) {
 }
 
 jobject createMarkerDataDTO(JNIEnv* env, const MarkerDataDTO& marker) {
-    jclass markerClass = env->FindClass("com/mapconductor/marker/strategy/spatial/NativeMarkerDataDTO");
+    jclass markerClass = env->FindClass("com/mapconductor/marker/nativestrategy/spatial/NativeMarkerDataDTO");
     jmethodID constructor = env->GetMethodID(markerClass, "<init>", "(Ljava/lang/String;DDZ)V");
 
     jstring jid = stringToJstring(env, marker.id);
@@ -103,7 +103,7 @@ CameraPosition jobjectToCameraPosition(JNIEnv* env, jobject cameraObj) {
 }
 
 jobject createSpatialResultDTO(JNIEnv* env, const SpatialResultDTO& result) {
-    jclass resultClass = env->FindClass("com/mapconductor/marker/strategy/spatial/NativeSpatialResultDTO");
+    jclass resultClass = env->FindClass("com/mapconductor/marker/nativestrategy/spatial/NativeSpatialResultDTO");
     jmethodID constructor = env->GetMethodID(resultClass, "<init>", "()V");
     jobject resultObj = env->NewObject(resultClass, constructor);
 
@@ -152,7 +152,7 @@ jobject createSpatialResultDTO(JNIEnv* env, const SpatialResultDTO& result) {
 extern "C" {
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeCreate(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeCreate(
     JNIEnv* env, jclass clazz, jstring sessionId, jdouble expandMargin, jboolean addOnlyMode) {
 
     try {
@@ -175,7 +175,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeInitializeSession(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeInitializeSession(
     JNIEnv* env, jclass clazz, jlong strategyId, jdouble expandMargin, jboolean addOnlyMode) {
 
     try {
@@ -193,7 +193,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeDestroySession(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeDestroySession(
     JNIEnv* env, jclass clazz, jlong strategyId) {
 
     try {
@@ -210,7 +210,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeAddMarkers(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeAddMarkers(
     JNIEnv* env, jclass clazz, jlong strategyId, jobjectArray markersArray) {
 
     try {
@@ -237,7 +237,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeUpdateMarker(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeUpdateMarker(
     JNIEnv* env, jclass clazz, jlong strategyId, jobject markerObj) {
 
     try {
@@ -255,7 +255,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeRemoveMarker(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeRemoveMarker(
     JNIEnv* env, jclass clazz, jlong strategyId, jstring markerId) {
 
     try {
@@ -273,7 +273,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeProcessCameraChange(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeProcessCameraChange(
     JNIEnv* env, jclass clazz, jlong strategyId, jobject cameraObj) {
 
     try {
@@ -293,7 +293,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeFindMarkersInBounds(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeFindMarkersInBounds(
     JNIEnv* env, jclass clazz, jlong strategyId, jobject boundsObj) {
 
     try {
@@ -337,7 +337,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeFindNearestMarker(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeFindNearestMarker(
     JNIEnv* env, jclass clazz, jlong strategyId, jdouble latitude, jdouble longitude) {
 
     try {
@@ -355,7 +355,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeAddToBatch(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeAddToBatch(
     JNIEnv* env, jclass clazz, jlong strategyId, jobject markerObj) {
 
     try {
@@ -372,7 +372,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeGetMarkerCount(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeGetMarkerCount(
     JNIEnv* env, jclass clazz, jlong strategyId) {
 
     try {
@@ -389,7 +389,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeGetRenderedMarkerCount(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeGetRenderedMarkerCount(
     JNIEnv* env, jclass clazz, jlong strategyId) {
 
     try {
@@ -406,7 +406,7 @@ Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_mapconductor_marker_strategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeGetPerformanceStats(
+Java_com_mapconductor_marker_nativestrategy_spatial_NativeRemoteSpatialMarkerStrategy_nativeGetPerformanceStats(
     JNIEnv* env, jclass clazz, jlong strategyId) {
 
     try {

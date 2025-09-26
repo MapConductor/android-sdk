@@ -25,6 +25,10 @@ class SimpleMarkerRenderingStrategy<ActualMarker>(
      */
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
 
+    override fun clear() {
+        markerManager.clear()
+    }
+
     override suspend fun onCameraChanged(
         cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,

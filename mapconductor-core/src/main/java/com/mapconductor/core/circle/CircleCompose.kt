@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
-import android.os.Parcelable
+import java.io.Serializable
 
 @Composable
 fun MapViewScope.Circle(state: CircleState) {
@@ -22,13 +22,15 @@ fun MapViewScope.Circle(state: CircleState) {
 fun MapViewScope.Circle(
     center: GeoPoint,
     radius: Double,
+    id: String? = null,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val state =
         CircleState(
+            id = id,
             center = center,
             radiusMeters = radius,
             strokeColor = strokeColor,

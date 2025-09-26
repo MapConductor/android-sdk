@@ -10,6 +10,8 @@ import com.mapconductor.core.map.MapCameraPositionImpl
 interface MarkerRenderingStrategy<ActualMarker> {
     val markerManager: MarkerManager<ActualMarker>
 
+    fun clear()
+
     suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,

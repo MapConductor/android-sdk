@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoRectBounds
+import java.io.Serializable
 import android.graphics.drawable.Drawable
-import android.os.Parcelable
 
 @Composable
 fun MapViewScope.GroundImage(state: GroundImageState) {
@@ -22,7 +22,7 @@ fun MapViewScope.GroundImage(
     image: Drawable,
     opacity: Float = 0.5f,
     id: String? = null,
-    extra: Parcelable? = null,
+    extra: Serializable? = null,
 ) {
     val state =
         GroundImageState(

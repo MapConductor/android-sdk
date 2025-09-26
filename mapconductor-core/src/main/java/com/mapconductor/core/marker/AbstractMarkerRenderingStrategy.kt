@@ -8,6 +8,10 @@ abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
 ) : MarkerRenderingStrategy<ActualMarker> {
     protected val defaultIcon = DefaultIcon().toBitmapIcon()
 
+    override fun clear() {
+        markerManager.clear()
+    }
+
     /**
      * MarkerManager instance provided by dependency injection.
      * Each strategy can provide its own optimized MarkerManager implementation.

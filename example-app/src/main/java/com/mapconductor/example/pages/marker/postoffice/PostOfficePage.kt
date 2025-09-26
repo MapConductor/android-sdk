@@ -12,9 +12,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
+import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.here.HereActualMarker
+import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
 
 @Composable
 fun PostOfficeMapPage(
@@ -23,6 +28,19 @@ fun PostOfficeMapPage(
 ) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
+    val strategies =
+        remember {
+            val google = NativeSpatialMarkerRenderingStrategy<GoogleMapActualMarker>()
+            val mapbox = NativeSpatialMarkerRenderingStrategy<MapboxActualMarker>()
+            val here = NativeSpatialMarkerRenderingStrategy<HereActualMarker>()
+            val arcgis = NativeSpatialMarkerRenderingStrategy<ArcGISActualMarker>()
+            Strategies(
+                google = google,
+                mapbox = mapbox,
+                here = here,
+                arcgis = arcgis,
+            )
+        }
 
     val viewModel: PostOfficeViewModel =
         viewModel<PostOfficeViewModelImpl>(
@@ -31,14 +49,18 @@ fun PostOfficeMapPage(
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         if (modelClass.isAssignableFrom(PostOfficeViewModelImpl::class.java)) {
                             @Suppress("UNCHECKED_CAST")
-                            return PostOfficeViewModelImpl(context, postOfficeIcon, dataLoader) as T
+                            return PostOfficeViewModelImpl(
+                                strategies = strategies,
+                                postOfficeIcon = postOfficeIcon,
+                                dataLoader = dataLoader,
+                            ) as T
                         }
                         throw IllegalArgumentException("Unknown ViewModel class")
                     }
                 },
         )
 
-// Show loading indicator while map is loading or data is being loaded
+    // Show loading indicator while map is loading or data is being loaded
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,

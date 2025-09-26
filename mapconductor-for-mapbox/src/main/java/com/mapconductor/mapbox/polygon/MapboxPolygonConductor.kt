@@ -97,6 +97,6 @@ private fun PolygonState.toPolylineState(): PolylineState {
         strokeColor = this.strokeColor,
         strokeWidth = this.strokeWidth,
         geodesic = this.geodesic,
-        extra = null,
+        extra = this.extra,
     )
 }

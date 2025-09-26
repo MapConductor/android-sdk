@@ -27,6 +27,7 @@ fun MapViewScope.Marker(state: MarkerState) {
 @Composable
 fun MapViewScope.Marker(
     position: GeoPoint,
+    id: String? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
     icon: MarkerIcon? = null,
@@ -34,6 +35,7 @@ fun MapViewScope.Marker(
 ) {
     val state =
         MarkerState(
+            id = id,
             position = position,
             extra = extra,
             clickable = clickable,

@@ -9,7 +9,6 @@ import com.mapconductor.core.marker.MarkerEntityImpl
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
-import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -39,7 +38,6 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ): Boolean {
-        val startTime = System.currentTimeMillis()
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
@@ -120,9 +118,6 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
                 renderer.onRemove(removed)
             }
 
-            val halfTime = System.currentTimeMillis()
-            Log.d("debug", "native.add(1): ${halfTime - startTime} ms, added = ${added.count()}")
-
             // Add new markers
             if (added.isNotEmpty()) {
                 val actualMarkers: List<ActualMarker?> = renderer.onAdd(added)
@@ -139,8 +134,6 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
                     }
                 }
             }
-            val addTime = System.currentTimeMillis()
-            Log.d("debug", "native.add(2): ${addTime - halfTime} ms")
 
             // Update changed markers
             if (updated.isNotEmpty()) {
