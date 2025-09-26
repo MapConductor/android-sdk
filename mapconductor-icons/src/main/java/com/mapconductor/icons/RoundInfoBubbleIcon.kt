@@ -1,5 +1,12 @@
 package com.mapconductor.icons
 
+import android.graphics.Bitmap
+import android.graphics.Bitmap.createBitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -17,13 +24,6 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.settings.MarkerIconSize
-import android.graphics.Bitmap
-import android.graphics.Bitmap.createBitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
-import android.graphics.drawable.Drawable
 
 class RoundInfoBubbleIcon(
     private val properties: IconProperties,
@@ -78,7 +78,8 @@ class RoundInfoBubbleIcon(
         iconSize: Dp,
     ): RoundInfoBubbleIcon = copy(scale = scale, iconSize = iconSize)
 
-    override fun equals(other: Any?): Boolean = other is RoundInfoBubbleIcon && properties == other.properties
+    override fun equals(other: Any?): Boolean =
+        other is RoundInfoBubbleIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
 
@@ -141,7 +142,8 @@ class RoundInfoBubbleIcon(
         iconDrawable.draw(canvas)
 
         val textX = innerPadding + drawableSize + innerPadding
-        val textY = innerPadding + drawableSize / 2f + textHeight / 2f - textPaint.fontMetrics.bottom
+        val textY =
+            innerPadding + drawableSize / 2f + textHeight / 2f - textPaint.fontMetrics.bottom
         canvas.drawText(label, textX, textY, textPaint)
 
         val result = BitmapIcon(
@@ -160,14 +162,15 @@ fun RoundInfoBubbleIconPreview() {
     val context = LocalContext.current
 
     val icon = RoundInfoBubbleIcon(
-        properties = RoundInfoBubbleIcon.IconProperties(
-            iconDrawable = ContextCompat.getDrawable(context, com.mapconductor.core.R.drawable.default_marker)!!,
-            label = "$197",
-            fillColor = Color.White,
-            scale = 1f,
-            iconSize = MarkerIconSize.Small,
-            debug = false,
-        )
+        iconDrawable = ContextCompat.getDrawable(
+            context,
+            com.mapconductor.core.R.drawable.default_marker
+        )!!,
+        label = "$197",
+        fillColor = Color.White,
+        scale = 1f,
+        iconSize = MarkerIconSize.Small,
+        debug = false,
     )
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }

@@ -178,7 +178,6 @@ fun RightTailInfoBubbleIconPreview() {
     val context = LocalContext.current
 
     val icon = RightTailInfoBubbleIcon(
-        properties = RightTailInfoBubbleIcon.IconProperties(
             iconDrawable = ContextCompat.getDrawable(context, R.drawable.default_marker)!!,
             label = "5時間37分",
             snippet = "304マイル",
@@ -187,7 +186,6 @@ fun RightTailInfoBubbleIconPreview() {
             scale = 1f,
             iconSize = MarkerIconSize.Small,
             debug = false,
-        )
     )
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
