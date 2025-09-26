@@ -1,8 +1,13 @@
 package com.mapconductor.icons
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -216,13 +221,19 @@ class FlagIcon(
 @Preview
 @Composable
 private fun FlagIconPreview() {
-    val icon = FlagIcon()
+    val icon = FlagIcon(debug = true)
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
 
-    Image(
-        bitmap = imageBitmap,
-        contentDescription = null,
-    )
+    Box(
+        modifier = Modifier
+            .background(Color.Green)
+            .padding(all = 20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            bitmap = imageBitmap,
+            contentDescription = null,
+        )
+    }
 }
-

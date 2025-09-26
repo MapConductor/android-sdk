@@ -1,8 +1,13 @@
 package com.mapconductor.icons
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -11,6 +16,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.mapconductor.core.BitmapIconCache
 import com.mapconductor.core.R
@@ -123,12 +129,25 @@ class RightTailInfoBubbleIcon(
         val pointerWidth = canvasWidth / 9f
         val pointerHeight = canvasHeight / 8f
 
+
         val bitmap = createBitmap(
             canvasWidth.toInt(),
             (canvasHeight + pointerHeight).toInt(),
             Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
+
+        if (this.debug) {
+            Paint()
+                .apply {
+                    isAntiAlias = true
+                    strokeWidth = 1f
+                    this.color = Color.Black.toArgb()
+                    style = Paint.Style.STROKE
+                }.also {
+                    canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), it)
+                }
+        }
 
         val backgroundPaint = Paint().apply {
             color = fillColor.toArgb()
@@ -185,13 +204,20 @@ fun RightTailInfoBubbleIconPreview() {
             labelTextColor = Color.Black,
             scale = 1f,
             iconSize = MarkerIconSize.Small,
-            debug = false,
+        debug = true,
     )
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
 
-    Image(
-        bitmap = imageBitmap,
-        contentDescription = null,
-    )
+    Box(
+        modifier = Modifier
+            .background(Color.Green)
+            .padding(all = 20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            bitmap = imageBitmap,
+            contentDescription = null,
+        )
+    }
 }
