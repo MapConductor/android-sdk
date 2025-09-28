@@ -31,6 +31,7 @@ import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.R
 import com.mapconductor.icons.CircleIcon
 import com.mapconductor.icons.FlagIcon
+import com.mapconductor.icons.RightTailInfoBubbleIcon
 import com.mapconductor.icons.RoundInfoBubbleIcon
 import com.mapconductor.settings.MarkerIconSize
 import android.content.Context
@@ -303,7 +304,7 @@ fun MarkerBasicMapComponent(
             """.trimIndent()
         )
 
-        ContextCompat.getDrawable(context,com.mapconductor.core.R.drawable.default_marker)?.let {
+        ContextCompat.getDrawable(context, com.mapconductor.core.R.drawable.default_marker)?.let {
             Marker(
                 position = GeoPointImpl.fromLatLong(0.006, 0.012),
                 icon = RoundInfoBubbleIcon(
@@ -321,6 +322,31 @@ fun MarkerBasicMapComponent(
                 iconSize = MarkerIconSize.Small,
             )
             """.trimIndent()
+            )
+        }
+
+        AppCompatResources.getDrawable(context, R.drawable.wmo_00_clear)?.let { icon ->
+            Marker(
+                position = GeoPointImpl.fromLatLong(0.006, 0.017),
+                icon =
+                    RightTailInfoBubbleIcon(
+                        iconDrawable = icon,
+                        label = "5時間37分",
+                        snippet = "304マイル",
+                        fillColor = Color.White,
+                        labelTextColor = Color.Black,
+                        scale = 0.8f,
+                    ),
+                extra = """
+                RightTailInfoBubbleIcon(
+                    label = "5時間37分",
+                    snippet = "304マイル",
+                    fillColor = Color.White,
+                    labelTextColor = Color.Black,
+                    scale = 1f,
+                    debug = true,
+                )
+                """.trimIndent(),
             )
         }
     }
