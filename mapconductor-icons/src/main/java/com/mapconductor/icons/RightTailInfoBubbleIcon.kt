@@ -1,5 +1,11 @@
 package com.mapconductor.icons
 
+import android.graphics.Bitmap
+import android.graphics.Bitmap.createBitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,12 +30,6 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.settings.MarkerIconSize
-import android.graphics.Bitmap
-import android.graphics.Bitmap.createBitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.drawable.Drawable
 
 class RightTailInfoBubbleIcon(
     private val properties: IconProperties,
@@ -55,7 +55,16 @@ class RightTailInfoBubbleIcon(
         iconSize: Dp = MarkerIconSize.Small,
         debug: Boolean = false,
     ) : this(
-        IconProperties(iconDrawable, label, snippet, fillColor, labelTextColor, scale, iconSize, debug)
+        IconProperties(
+            iconDrawable,
+            label,
+            snippet,
+            fillColor,
+            labelTextColor,
+            scale,
+            iconSize,
+            debug
+        )
     )
 
     val iconDrawable: Drawable by properties::iconDrawable
@@ -93,7 +102,8 @@ class RightTailInfoBubbleIcon(
         iconSize: Dp,
     ): RightTailInfoBubbleIcon = copy(scale = scale, iconSize = iconSize)
 
-    override fun equals(other: Any?): Boolean = other is RightTailInfoBubbleIcon && properties == other.properties
+    override fun equals(other: Any?): Boolean =
+        other is RightTailInfoBubbleIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
 
@@ -125,7 +135,10 @@ class RightTailInfoBubbleIcon(
         val snippetHeight = snippetPaint.fontMetrics.run { bottom - top }
 
         val canvasWidth = drawableSize + drawableInnerPadding + labelWidth + contentMargin * 2
-        val canvasHeight = maxOf(drawableSize, labelHeight) + drawableInnerPadding + snippetHeight + drawableInnerPadding * 2
+        val canvasHeight = maxOf(
+            drawableSize,
+            labelHeight
+        ) + drawableInnerPadding + snippetHeight + drawableInnerPadding * 2
         val pointerWidth = canvasWidth / 9f
         val pointerHeight = canvasHeight / 8f
 
@@ -171,12 +184,16 @@ class RightTailInfoBubbleIcon(
         canvas.drawPath(backgroundPath, backgroundPaint)
 
         iconDrawable.setBounds(
-            contentMargin.toInt(), contentMargin.toInt(), (drawableInnerPadding + drawableSize).toInt(), (drawableInnerPadding + drawableSize).toInt()
+            contentMargin.toInt(),
+            contentMargin.toInt(),
+            (drawableInnerPadding + drawableSize).toInt(),
+            (drawableInnerPadding + drawableSize).toInt()
         )
         iconDrawable.draw(canvas)
 
         val labelX = contentMargin + drawableSize + drawableInnerPadding
-        val labelY = contentMargin + drawableSize / 2f + labelHeight / 2f - labelPaint.fontMetrics.bottom
+        val labelY =
+            contentMargin + drawableSize / 2f + labelHeight / 2f - labelPaint.fontMetrics.bottom
         canvas.drawText(label, labelX, labelY, labelPaint)
 
         canvas.drawText(snippet, contentMargin, canvasHeight - contentMargin, snippetPaint)
@@ -197,13 +214,13 @@ fun RightTailInfoBubbleIconPreview() {
     val context = LocalContext.current
 
     val icon = RightTailInfoBubbleIcon(
-            iconDrawable = ContextCompat.getDrawable(context, R.drawable.default_marker)!!,
-            label = "5時間37分",
-            snippet = "304マイル",
-            fillColor = Color.White,
-            labelTextColor = Color.Black,
-            scale = 1f,
-            iconSize = MarkerIconSize.Small,
+        iconDrawable = ContextCompat.getDrawable(context, R.drawable.default_marker)!!,
+        label = "5時間37分",
+        snippet = "304マイル",
+        fillColor = Color.White,
+        labelTextColor = Color.Black,
+        scale = 1f,
+        iconSize = MarkerIconSize.Small,
         debug = true,
     )
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
