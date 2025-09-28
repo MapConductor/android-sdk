@@ -126,16 +126,8 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Polyline ",
             ),
             SidebarItem(
-                id = "animated-route",
-                title = "Animated Route ",
-            ),
-            SidebarItem(
                 id = "polygon",
                 title = "Polygon ",
-            ),
-            SidebarItem(
-                id = "polygon-hole",
-                title = "Polygon with hole ",
             ),
         )
 
