@@ -327,7 +327,7 @@ fun MarkerBasicMapComponent(
 
         AppCompatResources.getDrawable(context, R.drawable.wmo_00_clear)?.let { icon ->
             Marker(
-                position = GeoPointImpl.fromLatLong(0.006, 0.017),
+                position = GeoPointImpl.fromLatLong(0.000, 0.004),
                 icon =
                     RightTailInfoBubbleIcon(
                         iconDrawable = icon,
