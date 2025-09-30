@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 import com.mapconductor.core.ResourceProvider
@@ -28,6 +29,11 @@ import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.R
+import com.mapconductor.icons.CircleIcon
+import com.mapconductor.icons.FlagIcon
+import com.mapconductor.icons.RightTailInfoBubbleIcon
+import com.mapconductor.icons.RoundInfoBubbleIcon
+import com.mapconductor.settings.MarkerIconSize
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -264,6 +270,84 @@ fun MarkerBasicMapComponent(
                     textAlign = TextAlign.Left,
                 )
             }
+        }
+
+        Marker(
+            position = GeoPointImpl.fromLatLong(0.006, 0.004),
+            icon = CircleIcon(
+                fillColor = Color.Blue,
+                strokeColor = Color.White,
+                strokeWidth = 2.dp,
+            ),
+            extra = """
+            CircleIcon(
+                fillColor = Color.Blue,
+                strokeColor = Color.White,
+                strokeWidth = 2.dp,
+            )
+            """.trimIndent(),
+        )
+
+        Marker(
+            position = GeoPointImpl.fromLatLong(0.006, 0.007),
+            icon = FlagIcon(
+                fillColor = Color.Green,
+                strokeColor = Color.Gray,
+                strokeWidth = 1.dp,
+            ),
+            extra = """
+            FlagIcon(
+                fillColor = Color.Green,
+                strokeColor = Color.Gray,
+                strokeWidth = 1.dp,
+            )
+            """.trimIndent()
+        )
+
+        ContextCompat.getDrawable(context, com.mapconductor.core.R.drawable.default_marker)?.let {
+            Marker(
+                position = GeoPointImpl.fromLatLong(0.006, 0.012),
+                icon = RoundInfoBubbleIcon(
+                    iconDrawable = it,
+                    label = "$197",
+                    fillColor = Color.White,
+                    scale = 1f,
+                    iconSize = MarkerIconSize.Small,
+                ),
+                extra = """
+            RoundInfoBubbleIcon(
+                label = "$$197",
+                fillColor = Color.White,
+                scale = 1f,
+                iconSize = MarkerIconSize.Small,
+            )
+            """.trimIndent()
+            )
+        }
+
+        AppCompatResources.getDrawable(context, R.drawable.wmo_00_clear)?.let { icon ->
+            Marker(
+                position = GeoPointImpl.fromLatLong(0.000, 0.004),
+                icon =
+                    RightTailInfoBubbleIcon(
+                        iconDrawable = icon,
+                        label = "5時間37分",
+                        snippet = "304マイル",
+                        fillColor = Color.White,
+                        labelTextColor = Color.Black,
+                        scale = 0.8f,
+                    ),
+                extra = """
+                RightTailInfoBubbleIcon(
+                    label = "5時間37分",
+                    snippet = "304マイル",
+                    fillColor = Color.White,
+                    labelTextColor = Color.Black,
+                    scale = 1f,
+                    debug = true,
+                )
+                """.trimIndent(),
+            )
         }
     }
 }

@@ -63,6 +63,7 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.compose.ui.tooling.preview)
     compileOnly(libs.androidx.foundation)
     compileOnly(platform(libs.androidx.compose.bom))
     compileOnly(project(":mapconductor-core"))
@@ -70,6 +71,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
 // Publishing configuration
