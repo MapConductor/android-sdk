@@ -75,7 +75,7 @@ class PolylineClickPageViewModelImpl :
         _markers.value = _markers.value +
             MarkerState(
                 position = clicked.clicked,
-                animation = MarkerAnimation.Bounce,
+                animation = MarkerAnimation.Drop,
             )
     }
 
