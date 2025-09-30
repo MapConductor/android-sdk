@@ -31,7 +31,9 @@ arcgisMapsKotlin = "200.7.0"
 vectordrawable = "1.2.0"
 firebaseBom = "34.2.0"
 ktLint = "13.1.0"
-ui = "1.9.1"
+uiToolingPreviewAndroid = "1.9.1"
+uiToolingPreview = "1.9.1"
+uiTooling = "1.9.1"
 
 [libraries]
 # Android 基本
@@ -78,7 +80,9 @@ androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordra
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
+androidx-compose-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

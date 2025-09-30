@@ -9,6 +9,7 @@
 # Keep all icon implementations
 -keep class com.mapconductor.icons.CircleIcon { *; }
 -keep class com.mapconductor.icons.FlagIcon { *; }
+-keep class com.mapconductor.icons.RoundInfoBubbleIcon { *; }
 
 # Compose integration
 -keep class * extends androidx.compose.runtime.** { *; }
