@@ -2,6 +2,7 @@ package com.mapconductor.core.projection
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import kotlin.math.atan
 import kotlin.math.exp
 import kotlin.math.ln
@@ -21,6 +22,8 @@ object WebMercator : Projection {
             override val latitude: Double = latitude
             override val longitude: Double = longitude
             override val altitude: Double? = null
+
+            override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
         }
     }
 }

@@ -5,6 +5,8 @@ import com.mapconductor.core.toFixed
 import kotlin.math.abs
 
 interface GeoPoint {
+    fun wrap(): GeoPoint
+
     val latitude: Double
     val longitude: Double
     val altitude: Double?
@@ -37,6 +39,31 @@ data class GeoPointImpl(
         result = 31 * result + lngHash.hashCode()
         result = 31 * result + altHash.hashCode()
         return result
+    }
+
+    override fun wrap(): GeoPoint {
+        var wrappedLatitude = latitude
+        var wrappedLongitude = longitude
+
+        // Handle latitude overflow/underflow
+        if (wrappedLatitude > 90.0) {
+            // If latitude exceeds 90, wrap around from -90
+            val excess = wrappedLatitude - 90.0
+            wrappedLatitude = -90.0 + excess
+            // Also flip longitude by 180 degrees when crossing pole
+            wrappedLongitude += 180.0
+        } else if (wrappedLatitude < -90.0) {
+            // If latitude is below -90, wrap around from 90
+            val deficit = -90.0 - wrappedLatitude
+            wrappedLatitude = 90.0 - deficit
+            // Also flip longitude by 180 degrees when crossing pole
+            wrappedLongitude += 180.0
+        }
+
+        // Normalize longitude to [-180, 180] range
+        wrappedLongitude = (((wrappedLongitude + 180) % 360 + 360) % 360) - 180
+
+        return GeoPointImpl(wrappedLatitude, wrappedLongitude, altitude)
     }
 
     companion object {

@@ -36,6 +36,7 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
@@ -87,6 +88,9 @@ internal class MapboxMapViewControllerImpl(
         }
         setupListeners()
         registerController(markerController)
+        registerController(polygonController)
+        registerController(polylineController)
+        registerController(circleController)
     }
 
     fun setupListeners() {
@@ -275,6 +279,18 @@ internal class MapboxMapViewControllerImpl(
                     clicked = touchPosition,
                 )
             circleController.clickListener?.invoke(event)
+            return true
+        }
+
+        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
+            val event =
+                PolylineEvent(
+                    state = hitResult.entity.state,
+                    clicked = hitResult.closestPoint,
+                )
+            coroutine.launch {
+                polylineController.clickListener?.invoke(event)
+            }
             return true
         }
 

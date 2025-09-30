@@ -274,54 +274,60 @@ fun MarkerBasicMapComponent(
 
         Marker(
             position = GeoPointImpl.fromLatLong(0.006, 0.004),
-            icon = CircleIcon(
-                fillColor = Color.Blue,
-                strokeColor = Color.White,
-                strokeWidth = 2.dp,
-            ),
-            extra = """
-            CircleIcon(
-                fillColor = Color.Blue,
-                strokeColor = Color.White,
-                strokeWidth = 2.dp,
-            )
-            """.trimIndent(),
+            icon =
+                CircleIcon(
+                    fillColor = Color.Blue,
+                    strokeColor = Color.White,
+                    strokeWidth = 2.dp,
+                ),
+            extra =
+                """
+                CircleIcon(
+                    fillColor = Color.Blue,
+                    strokeColor = Color.White,
+                    strokeWidth = 2.dp,
+                )
+                """.trimIndent(),
         )
 
         Marker(
             position = GeoPointImpl.fromLatLong(0.006, 0.007),
-            icon = FlagIcon(
-                fillColor = Color.Green,
-                strokeColor = Color.Gray,
-                strokeWidth = 1.dp,
-            ),
-            extra = """
-            FlagIcon(
-                fillColor = Color.Green,
-                strokeColor = Color.Gray,
-                strokeWidth = 1.dp,
-            )
-            """.trimIndent()
+            icon =
+                FlagIcon(
+                    fillColor = Color.Green,
+                    strokeColor = Color.Gray,
+                    strokeWidth = 1.dp,
+                ),
+            extra =
+                """
+                FlagIcon(
+                    fillColor = Color.Green,
+                    strokeColor = Color.Gray,
+                    strokeWidth = 1.dp,
+                )
+                """.trimIndent(),
         )
 
         ContextCompat.getDrawable(context, com.mapconductor.core.R.drawable.default_marker)?.let {
             Marker(
                 position = GeoPointImpl.fromLatLong(0.006, 0.012),
-                icon = RoundInfoBubbleIcon(
-                    iconDrawable = it,
-                    label = "$197",
-                    fillColor = Color.White,
-                    scale = 1f,
-                    iconSize = MarkerIconSize.Small,
-                ),
-                extra = """
-            RoundInfoBubbleIcon(
-                label = "$$197",
-                fillColor = Color.White,
-                scale = 1f,
-                iconSize = MarkerIconSize.Small,
-            )
-            """.trimIndent()
+                icon =
+                    RoundInfoBubbleIcon(
+                        iconDrawable = it,
+                        label = "$197",
+                        fillColor = Color.White,
+                        scale = 1f,
+                        iconSize = MarkerIconSize.Small,
+                    ),
+                extra =
+                    """
+                    RoundInfoBubbleIcon(
+                        label = "$$197",
+                        fillColor = Color.White,
+                        scale = 1f,
+                        iconSize = MarkerIconSize.Small,
+                    )
+                    """.trimIndent(),
             )
         }
 
@@ -337,16 +343,17 @@ fun MarkerBasicMapComponent(
                         labelTextColor = Color.Black,
                         scale = 0.8f,
                     ),
-                extra = """
-                RightTailInfoBubbleIcon(
-                    label = "5時間37分",
-                    snippet = "304マイル",
-                    fillColor = Color.White,
-                    labelTextColor = Color.Black,
-                    scale = 1f,
-                    debug = true,
-                )
-                """.trimIndent(),
+                extra =
+                    """
+                    RightTailInfoBubbleIcon(
+                        label = "5時間37分",
+                        snippet = "304マイル",
+                        fillColor = Color.White,
+                        labelTextColor = Color.Black,
+                        scale = 1f,
+                        debug = true,
+                    )
+                    """.trimIndent(),
             )
         }
     }

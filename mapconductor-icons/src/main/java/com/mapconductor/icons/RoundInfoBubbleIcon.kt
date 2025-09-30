@@ -1,12 +1,5 @@
 package com.mapconductor.icons
 
-import android.graphics.Bitmap
-import android.graphics.Bitmap.createBitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -30,6 +23,13 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.settings.MarkerIconSize
+import android.graphics.Bitmap
+import android.graphics.Bitmap.createBitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.drawable.Drawable
 
 class RoundInfoBubbleIcon(
     private val properties: IconProperties,
@@ -51,7 +51,7 @@ class RoundInfoBubbleIcon(
         iconSize: Dp = MarkerIconSize.Small,
         debug: Boolean = false,
     ) : this(
-        IconProperties(iconDrawable, label, fillColor, scale, iconSize, debug)
+        IconProperties(iconDrawable, label, fillColor, scale, iconSize, debug),
     )
 
     val iconDrawable: Drawable by properties::iconDrawable
@@ -69,23 +69,23 @@ class RoundInfoBubbleIcon(
         fillColor: Color = this.fillColor,
         scale: Float = this.scale,
         iconSize: Dp,
-    ): RoundInfoBubbleIcon = RoundInfoBubbleIcon(
-        properties.copy(
-            iconDrawable = iconDrawable,
-            label = label,
-            fillColor = fillColor,
-            scale = scale,
-            iconSize = iconSize,
-        ),
-    )
+    ): RoundInfoBubbleIcon =
+        RoundInfoBubbleIcon(
+            properties.copy(
+                iconDrawable = iconDrawable,
+                label = label,
+                fillColor = fillColor,
+                scale = scale,
+                iconSize = iconSize,
+            ),
+        )
 
     fun copy(
         scale: Float,
         iconSize: Dp,
     ): RoundInfoBubbleIcon = copy(scale = scale, iconSize = iconSize)
 
-    override fun equals(other: Any?): Boolean =
-        other is RoundInfoBubbleIcon && properties == other.properties
+    override fun equals(other: Any?): Boolean = other is RoundInfoBubbleIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
 
@@ -100,11 +100,12 @@ class RoundInfoBubbleIcon(
         val drawableSize = ResourceProvider.dpToPx(iconSize.value * scale).toFloat()
         val innerPadding = drawableSize * 0.1f
 
-        val textPaint = Paint().apply {
-            isAntiAlias = true
-            color = android.graphics.Color.BLACK
-            textSize = drawableSize * 0.5f
-        }
+        val textPaint =
+            Paint().apply {
+                isAntiAlias = true
+                color = android.graphics.Color.BLACK
+                textSize = drawableSize * 0.5f
+            }
         val textWidth = textPaint.measureText(label)
         val textHeight = textPaint.fontMetrics.run { bottom - top }
 
@@ -112,11 +113,12 @@ class RoundInfoBubbleIcon(
         val canvasHeight = maxOf(drawableSize, textHeight) + innerPadding * 2
         val pointerHeight = canvasHeight / 8f
 
-        val bitmap = createBitmap(
-            canvasWidth.toInt(),
-            (canvasHeight + pointerHeight).toInt(),
-            Bitmap.Config.ARGB_8888
-        )
+        val bitmap =
+            createBitmap(
+                canvasWidth.toInt(),
+                (canvasHeight + pointerHeight).toInt(),
+                Bitmap.Config.ARGB_8888,
+            )
         val canvas = Canvas(bitmap)
 
         if (this.debug) {
@@ -131,23 +133,25 @@ class RoundInfoBubbleIcon(
                 }
         }
 
-        val backgroundPaint = Paint().apply {
-            color = fillColor.toArgb()
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+        val backgroundPaint =
+            Paint().apply {
+                color = fillColor.toArgb()
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
 
-        val path = Path().apply {
-            addRoundRect(
-                RectF(0f, 0f, canvasWidth, canvasHeight),
-                canvasHeight / 2, canvasHeight / 2, Path.Direction.CW
-            )
+        val path =
+            Path().apply {
+                addRoundRect(
+                    RectF(0f, 0f, canvasWidth, canvasHeight),
+                    canvasHeight / 2, canvasHeight / 2, Path.Direction.CW,
+                )
 
-            moveTo(canvasWidth / 2f - pointerHeight / 1f, canvasHeight)
-            lineTo(canvasWidth / 2f + pointerHeight / 1f, canvasHeight)
-            lineTo(canvasWidth / 2f, canvasHeight + pointerHeight)
-            close()
-        }
+                moveTo(canvasWidth / 2f - pointerHeight / 1f, canvasHeight)
+                lineTo(canvasWidth / 2f + pointerHeight / 1f, canvasHeight)
+                lineTo(canvasWidth / 2f, canvasHeight + pointerHeight)
+                close()
+            }
 
         canvas.drawPath(path, backgroundPaint)
 
@@ -155,7 +159,7 @@ class RoundInfoBubbleIcon(
             innerPadding.toInt(),
             innerPadding.toInt(),
             (innerPadding + drawableSize).toInt(),
-            (innerPadding + drawableSize).toInt()
+            (innerPadding + drawableSize).toInt(),
         )
         iconDrawable.draw(canvas)
 
@@ -164,10 +168,11 @@ class RoundInfoBubbleIcon(
             innerPadding + drawableSize / 2f + textHeight / 2f - textPaint.fontMetrics.bottom
         canvas.drawText(label, textX, textY, textPaint)
 
-        val result = BitmapIcon(
-            bitmap = bitmap, anchor = Offset(0.5f, 1.0f),
-            size = Size(canvasWidth, canvasHeight + pointerHeight)
-        )
+        val result =
+            BitmapIcon(
+                bitmap = bitmap, anchor = Offset(0.5f, 1.0f),
+                size = Size(canvasWidth, canvasHeight + pointerHeight),
+            )
 
         BitmapIconCache.put(id, result)
         return result
@@ -179,24 +184,27 @@ class RoundInfoBubbleIcon(
 fun RoundInfoBubbleIconPreview() {
     val context = LocalContext.current
 
-    val icon = RoundInfoBubbleIcon(
-        iconDrawable = ContextCompat.getDrawable(
-            context,
-            com.mapconductor.core.R.drawable.default_marker
-        )!!,
-        label = "$197",
-        fillColor = Color.White,
-        scale = 1f,
-        iconSize = MarkerIconSize.Small,
-        debug = true,
-    )
+    val icon =
+        RoundInfoBubbleIcon(
+            iconDrawable =
+                ContextCompat.getDrawable(
+                    context,
+                    com.mapconductor.core.R.drawable.default_marker,
+                )!!,
+            label = "$197",
+            fillColor = Color.White,
+            scale = 1f,
+            iconSize = MarkerIconSize.Small,
+            debug = true,
+        )
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
 
     Box(
-        modifier = Modifier
-            .background(Color.Green)
-            .padding(all = 20.dp),
+        modifier =
+            Modifier
+                .background(Color.Green)
+                .padding(all = 20.dp),
         contentAlignment = Alignment.Center,
     ) {
         Image(
