@@ -29,13 +29,11 @@ jobs:
       NDK_VERSION: 27.0.12077973
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      GPR_USER: ${{ vars.GPR_USER }}
-      GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
     steps:
       - name: Check variables
         run: |
-          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then
+          if [ -z "${{ vars.GPR_USER }}" ] || [ -z "${{ secrets.$GPR_TOKEN }}" ]; then
             echo "GPR credentials are not available"
             exit 1
           fi
@@ -124,7 +122,7 @@ jobs:
           target_path="libs/${HERE_SDK_AAR_NAME}.aar"
           echo "Downloading HERE SDK mock artifact to $target_path"
           curl --fail --show-error --silent --location \
-            -u "$GPR_USER:$GPR_TOKEN" \
+            -u "${{ vars.GPR_USER }}:${{ secrets.$GPR_TOKEN }}" \
             -o "$target_path" \
             "https://raw.githubusercontent.com/MapConductor/here-sdk-mocks/main/heresdk-explore-mock-4.23.2.0.210004.jar"
           if [ ! -s "$target_path" ]; then
