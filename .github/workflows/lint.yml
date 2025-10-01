@@ -42,12 +42,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Write local.properties
+      - name: Write gradle.properties
         run: |
           {
             echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
             echo "android.ndkVersion=${NDK_VERSION}"
-          } >> local.properties
+          } >> gradle.properties
 
       - name: Set NDK environment
         run: |
