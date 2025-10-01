@@ -28,7 +28,6 @@ jobs:
       NDK_VERSION: 27.3.13750724
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/27.3.13750724
       GPR_USER: ${{ secrets.GPR_USER }}
       GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
@@ -39,6 +38,14 @@ jobs:
             echo "GPR credentials are not available"
             exit 1
           fi
+      - name: Write local.properties
+        run: |
+          {
+            echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
+          } >> local.properties
+      - name: cat
+        run: |
+            cat local.properties
 
       - name: Checkout
         uses: actions/checkout@v4
