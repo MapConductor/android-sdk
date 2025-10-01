@@ -38,6 +38,9 @@ jobs:
             echo "GPR credentials are not available"
             exit 1
           fi
+        env:
+          GPR_USER: ${{ vars.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -114,6 +117,8 @@ jobs:
         if: steps.detect.outputs.changed_modules != ''
         env:
           HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
+          GPR_USER: ${{ vars.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
         run: |
           if [ -z "$HERE_SDK_AAR_NAME" ]; then
             echo "HERE SDK artifact name not found in gradle.properties"
