@@ -112,12 +112,14 @@ jobs:
         if: steps.detect.outputs.changed_modules != ''
         env:
           HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
+          GPR_USER: ${{ vars.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
         run: |
-          if [ -z "$HERE_SDK_AAR_NAME" ]; then
+          if [ -z "${{ env.HERE_SDK_AAR_NAME }}" ]; then
             echo "HERE SDK artifact name not found in gradle.properties"
             exit 1
           fi
-          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then
+          if [ -z "${{ env.GPR_USER }}" ] || [ -z "${{ env.GPR_TOKEN }}" ]; then
             echo "GPR credentials are not available"
             exit 1
           fi
@@ -125,7 +127,7 @@ jobs:
           target_path="libs/${HERE_SDK_AAR_NAME}.aar"
           echo "Downloading HERE SDK mock artifact to $target_path"
           curl --fail --show-error --silent --location \
-            -u "$GPR_USER:$GPR_TOKEN" \
+            -u "${{ env.GPR_USER }}:${{ env.GPR_TOKEN }}" \
             -o "$target_path" \
             "https://raw.githubusercontent.com/MapConductor/here-sdk-mocks/main/heresdk-explore-mock-4.23.2.0.210004.jar"
           if [ ! -s "$target_path" ]; then
