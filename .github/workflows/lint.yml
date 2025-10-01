@@ -10,7 +10,7 @@ name: Lint Check on Push
 # ただし「Draft → Ready」に切り替えた瞬間のみ ready_for_review で実行されます
 on:
   pull_request:
-    types: [opened, reopened, synchronize, requested_review, ready_for_review,push]
+    types: [opened, reopened, synchronize, requested_review, ready_for_review]
     branches:
       - main
 
@@ -18,7 +18,6 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 
 jobs:
   lint:
@@ -33,7 +32,7 @@ jobs:
     steps:
       - name: Check variables
         run: |
-          if [ -z "${{ vars.GPR_USER }}" ] || [ -z "${{ secrets.$GPR_TOKEN }}" ]; then
+          if [ -z "${{ vars.GPR_USER }}" ] || [ -z "${{ secrets.GPR_TOKEN }}" ]; then
             echo "GPR credentials are not available"
             exit 1
           fi
@@ -122,7 +121,7 @@ jobs:
           target_path="libs/${HERE_SDK_AAR_NAME}.aar"
           echo "Downloading HERE SDK mock artifact to $target_path"
           curl --fail --show-error --silent --location \
-            -u "${{ vars.GPR_USER }}:${{ secrets.$GPR_TOKEN }}" \
+            -u "${{ vars.GPR_USER }}:${{ secrets.GPR_TOKEN }}" \
             -o "$target_path" \
             "https://raw.githubusercontent.com/MapConductor/here-sdk-mocks/main/heresdk-explore-mock-4.23.2.0.210004.jar"
           if [ ! -s "$target_path" ]; then
