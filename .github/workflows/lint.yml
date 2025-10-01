@@ -28,7 +28,7 @@ jobs:
       NDK_VERSION: 27.0.12077973
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      GPR_USER: ${{ vars.GPR_USER }}
+      GPR_USER: ${{ secrets.GPR_USER }}
       GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
     steps:
@@ -38,9 +38,6 @@ jobs:
             echo "GPR credentials are not available"
             exit 1
           fi
-        env:
-          GPR_USER: ${{ vars.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -117,8 +114,6 @@ jobs:
         if: steps.detect.outputs.changed_modules != ''
         env:
           HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
-          GPR_USER: ${{ vars.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
         run: |
           if [ -z "$HERE_SDK_AAR_NAME" ]; then
             echo "HERE SDK artifact name not found in gradle.properties"
