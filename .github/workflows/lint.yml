@@ -25,6 +25,14 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     name: Lint Changed Modules
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/27.0.12077973
+      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/27.0.12077973
+      ORG_GRADLE_PROJECT_android_ndkPath: /usr/local/lib/android/sdk/ndk/27.0.12077973
+      GPR_USER: ${{ vars.GPR_USER }}
+      GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
     steps:
       - name: Checkout
@@ -36,11 +44,18 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
+      - name: Install Android NDK 27.0.12077973
+        uses: android-actions/setup-android@v3
+        with:
+          components: "ndk;27.0.12077973"
+
       - name: Read module list from projects.properties
         id: define
         run: |
           modules=$(grep '^modules=' projects.properties | cut -d= -f2 | tr ',' ' ')
           echo "modules=$modules" >> $GITHUB_OUTPUT
+          here_sdk_name=$(grep '^hereSdkAarName=' gradle.properties | cut -d= -f2 | tr -d '\r')
+          echo "here_sdk_artifact=$here_sdk_name" >> $GITHUB_OUTPUT
 
       - name: Restore hash cache
         uses: actions/cache/restore@v4
@@ -88,6 +103,31 @@ jobs:
           changed_modules=$(echo "$changed_modules" | xargs)
           echo "Changed modules: $changed_modules"
           echo "changed_modules=$changed_modules" >> $GITHUB_OUTPUT
+
+      - name: Fetch HERE SDK mock artifact
+        if: steps.detect.outputs.changed_modules != ''
+        env:
+          HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
+        run: |
+          if [ -z "$HERE_SDK_AAR_NAME" ]; then
+            echo "HERE SDK artifact name not found in gradle.properties"
+            exit 1
+          fi
+          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then
+            echo "GPR credentials are not available"
+            exit 1
+          fi
+          mkdir -p libs
+          target_path="libs/${HERE_SDK_AAR_NAME}.aar"
+          echo "Downloading HERE SDK mock artifact to $target_path"
+          curl --fail --show-error --silent --location \
+            -u "$GPR_USER:$GPR_TOKEN" \
+            -o "$target_path" \
+            "https://raw.githubusercontent.com/MapConductor/here-sdk-mocks/main/heresdk-explore-mock-4.23.2.0.210004.jar"
+          if [ ! -s "$target_path" ]; then
+            echo "Failed to download HERE SDK mock artifact"
+            exit 1
+          fi
 
       - name: Run ktlintCheck
         if: steps.detect.outputs.changed_modules != ''
