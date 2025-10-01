@@ -51,11 +51,12 @@ android {
     }
 
     // Configure NDK version for modern Gradle
-    ndkVersion = providers
-        .gradleProperty("android.ndkVersion")
-        .orElse(providers.environmentVariable("NDK_VERSION"))
-        .orElse("27.0.12077973")
-        .get()
+    ndkVersion =
+        providers
+            .gradleProperty("android.ndkVersion")
+            .orElse(providers.environmentVariable("NDK_VERSION"))
+            .orElse("27.0.12077973")
+            .get()
 
     publishing {
         singleVariant("release") {
