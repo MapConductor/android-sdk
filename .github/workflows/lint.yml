@@ -20,17 +20,19 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+
 jobs:
   lint:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     name: Lint Changed Modules
     env:
+      NDK_VERSION: 27.0.12077973
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/27.0.12077973
-      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/27.0.12077973
-      ORG_GRADLE_PROJECT_android_ndkPath: /usr/local/lib/android/sdk/ndk/27.0.12077973
+      # ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/${{ env.NDK_VERSION }}
+      # ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/${{ env.NDK_VERSION }}
+      # ORG_GRADLE_PROJECT_android_ndkPath: /usr/local/lib/android/sdk/ndk/${{ env.NDK_VERSION }}
       GPR_USER: ${{ vars.GPR_USER }}
       GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
@@ -44,10 +46,10 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Install Android NDK 27.0.12077973
+      - name: Install Android NDK ${{ env.NDK_VERSION }}
         uses: android-actions/setup-android@v3
         with:
-          components: "ndk;27.0.12077973"
+          packages: "build-tools;36.0.0 ndk;${{ env.NDK_VERSION }} platform-tools platforms;android-35"
 
       - name: Read module list from projects.properties
         id: define
@@ -72,31 +74,33 @@ jobs:
           mkdir -p .lint-hash-cache
 
           for module in ${{ steps.define.outputs.modules }}; do
-            # src配下のKotlinとXMLファイルのハッシュを計算
-            if [ -d "$module/src" ]; then
-              hash=$(find "$module/src" -type f -name "*.kt" -print0 2>/dev/null | \
-                     sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d ' ' -f1)
-            else
-              hash="empty"
-            fi
-
-            CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
-
-            # ハッシュベースの比較
-            if [ -f "$CACHE_KEY_FILE" ]; then
-              old_hash=$(cat "$CACHE_KEY_FILE")
-              if [ "$hash" == "$old_hash" ]; then
-                echo "Module $module unchanged (hash match)"
-                continue
+            if "$module" -ne "mapconductor-bom"; then
+              # src配下のKotlinとXMLファイルのハッシュを計算
+              if [ -d "$module/src" ]; then
+                hash=$(find "$module/src" -type f -name "*.kt" -print0 2>/dev/null | \
+                      sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d ' ' -f1)
               else
-                echo "Module $module changed (hash mismatch: $old_hash -> $hash)"
+                hash="empty"
               fi
-            else
-              echo "Module $module changed (no previous hash)"
-            fi
 
-            changed_modules="${changed_modules:+$changed_modules }$module"
-            echo "$hash" > "$CACHE_KEY_FILE"
+              CACHE_KEY_FILE=".lint-hash-cache/${module//\//-}.txt"
+
+              # ハッシュベースの比較
+              if [ -f "$CACHE_KEY_FILE" ]; then
+                old_hash=$(cat "$CACHE_KEY_FILE")
+                if [ "$hash" == "$old_hash" ]; then
+                  echo "Module $module unchanged (hash match)"
+                  continue
+                else
+                  echo "Module $module changed (hash mismatch: $old_hash -> $hash)"
+                fi
+              else
+                echo "Module $module changed (no previous hash)"
+              fi
+
+              changed_modules="${changed_modules:+$changed_modules }$module"
+              echo "$hash" > "$CACHE_KEY_FILE"
+            fi
           done
 
           # 余分な空白や改行を除去
