@@ -42,6 +42,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Write local.properties
+        run: |
+          {
+            echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
+            echo "android.ndkVersion=${NDK_VERSION}"
+          } >> local.properties
+
+      - name: Set NDK environment
+        run: |
+          echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
+          echo "NDK_VERSION=${NDK_VERSION}" >> $GITHUB_ENV
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -134,10 +146,6 @@ jobs:
       - name: Run ktlintCheck
         if: steps.detect.outputs.changed_modules != ''
         run: |
-          {
-            echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
-            echo "android.ndkVersion=${NDK_VERSION}"
-          } >> local.properties
           echo "Running ktlintCheck for modules: ${{ steps.detect.outputs.changed_modules }}"
           for module in ${{ steps.detect.outputs.changed_modules }}; do
             echo "Running ktlintCheck for $module"
