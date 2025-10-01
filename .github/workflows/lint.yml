@@ -45,7 +45,6 @@ jobs:
       - name: Write gradle.properties
         run: |
           {
-            echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
             echo "android.ndkVersion=${NDK_VERSION}"
           } >> gradle.properties
 
