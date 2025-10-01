@@ -29,8 +29,8 @@ jobs:
       NDK_VERSION: 27.0.12077973
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      GPR_USER: $vars.GPR_USER
-      GPR_TOKEN: $secrets.GPR_TOKEN
+      GPR_USER: ${{ vars.GPR_USER }}
+      GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
     steps:
       - name: Check variables
