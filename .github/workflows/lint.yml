@@ -42,6 +42,7 @@ jobs:
         run: |
           {
             echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
+            echo "android.ndkVersion=${NDK_VERSION}"
           } >> local.properties
       - name: cat
         run: |
