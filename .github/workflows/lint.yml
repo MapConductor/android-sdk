@@ -74,7 +74,7 @@ jobs:
           mkdir -p .lint-hash-cache
 
           for module in ${{ steps.define.outputs.modules }}; do
-            if "$module" -ne "mapconductor-bom"; then
+            if [ "$module" != "mapconductor-bom" ]; then
               # src配下のKotlinとXMLファイルのハッシュを計算
               if [ -d "$module/src" ]; then
                 hash=$(find "$module/src" -type f -name "*.kt" -print0 2>/dev/null | \
