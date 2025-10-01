@@ -38,18 +38,16 @@ jobs:
             echo "GPR credentials are not available"
             exit 1
           fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Write local.properties
         run: |
           {
             echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
             echo "android.ndkVersion=${NDK_VERSION}"
           } >> local.properties
-      - name: cat
-        run: |
-            cat local.properties
-
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
