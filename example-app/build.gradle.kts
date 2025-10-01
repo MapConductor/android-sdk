@@ -194,10 +194,7 @@ dependencies {
     implementation(libs.play.services.maps)
 
     // Here Maps SDK
-
-    val hereSdkAarName: String by project
-
-    implementation(files("${rootProject.projectDir}/libs/$hereSdkAarName.aar"))
+    implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("heresdk*."))))
 
     // Mapbox SDK
 

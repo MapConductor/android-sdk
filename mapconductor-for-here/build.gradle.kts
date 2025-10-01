@@ -60,7 +60,6 @@ android {
     }
 }
 
-val hereSdkAarName: String by project
 dependencies {
 
     compileOnly(libs.androidx.ui)
@@ -72,7 +71,7 @@ dependencies {
     compileOnly(libs.androidx.lifecycle.common.java8)
 
     // libs
-    compileOnly(files("${rootProject.projectDir}/libs/$hereSdkAarName.aar"))
+    compileOnly(fileTree(mapOf("dir" to "libs", "include" to arrayOf("heresdk*."))))
     compileOnly(project(":mapconductor-core"))
 
     testImplementation(libs.junit)

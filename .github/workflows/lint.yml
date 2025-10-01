@@ -47,7 +47,7 @@ jobs:
           {
             echo "android.ndkVersion=${NDK_VERSION}"
           } >> gradle.properties
-          
+
       - name: Set NDK environment
         run: |
           echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
@@ -131,7 +131,7 @@ jobs:
             exit 1
           fi
           mkdir -p libs
-          target_path="libs/${HERE_SDK_AAR_NAME}.aar"
+          target_path="libs/${HERE_SDK_AAR_NAME}.jar"
           echo "Downloading HERE SDK mock artifact to $target_path"
           curl --fail --show-error --silent --location \
             -u "$GPR_USER:$GPR_TOKEN" \
