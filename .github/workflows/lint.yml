@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: Check variables
         run: |
-          if [ -z "${{ env.GPR_USER }}" ] || [ -z "${{ env.GPR_TOKEN }}" ]; then
+          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then
             echo "GPR credentials are not available"
             exit 1
           fi
@@ -49,7 +49,7 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Install Android NDK ${{ env.NDK_VERSION }}
+      - name: Install Android NDK $NDK_VERSION
         uses: android-actions/setup-android@v3
         with:
           packages: "build-tools;36.0.0 ndk;${{ env.NDK_VERSION }} platform-tools platforms;android-35"
@@ -116,7 +116,7 @@ jobs:
         env:
           HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
         run: |
-          if [ -z "${{ env.HERE_SDK_AAR_NAME }}" ]; then
+          if [ -z "$HERE_SDK_AAR_NAME" ]; then
             echo "HERE SDK artifact name not found in gradle.properties"
             exit 1
           fi
@@ -124,7 +124,7 @@ jobs:
           target_path="libs/${HERE_SDK_AAR_NAME}.aar"
           echo "Downloading HERE SDK mock artifact to $target_path"
           curl --fail --show-error --silent --location \
-            -u "${{ env.GPR_USER }}:${{ env.GPR_TOKEN }}" \
+            -u "$GPR_USER:$GPR_TOKEN" \
             -o "$target_path" \
             "https://raw.githubusercontent.com/MapConductor/here-sdk-mocks/main/heresdk-explore-mock-4.23.2.0.210004.jar"
           if [ ! -s "$target_path" ]; then
