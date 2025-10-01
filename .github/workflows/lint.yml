@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: Check variables
         run: |
-          if [ -z "${{ env.GPR_USER }}" ] || [ -z "${{ env.GPR_TOKEN }}" ]; then                                                                                                                                                                                                                                 " ]; then
+          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then                                                                                                                                                                                                                                 " ]; then
             echo "GPR credentials are not available"
             exit 1
           fi
