@@ -1,11 +1,5 @@
 package com.mapconductor.icons
 
-import android.graphics.Bitmap
-import android.graphics.Bitmap.createBitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -30,6 +24,12 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.marker.AbstractMarkerIcon
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.settings.MarkerIconSize
+import android.graphics.Bitmap
+import android.graphics.Bitmap.createBitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.drawable.Drawable
 
 class RightTailInfoBubbleIcon(
     private val properties: IconProperties,
@@ -63,8 +63,8 @@ class RightTailInfoBubbleIcon(
             labelTextColor,
             scale,
             iconSize,
-            debug
-        )
+            debug,
+        ),
     )
 
     val iconDrawable: Drawable by properties::iconDrawable
@@ -85,25 +85,25 @@ class RightTailInfoBubbleIcon(
         fillColor: Color = this.fillColor,
         scale: Float = this.scale,
         iconSize: Dp,
-    ): RightTailInfoBubbleIcon = RightTailInfoBubbleIcon(
-        properties.copy(
-            iconDrawable = iconDrawable,
-            label = label,
-            snippet = snippet,
-            fillColor = fillColor,
-            labelTextColor = labelTextColor,
-            scale = scale,
-            iconSize = iconSize,
-        ),
-    )
+    ): RightTailInfoBubbleIcon =
+        RightTailInfoBubbleIcon(
+            properties.copy(
+                iconDrawable = iconDrawable,
+                label = label,
+                snippet = snippet,
+                fillColor = fillColor,
+                labelTextColor = labelTextColor,
+                scale = scale,
+                iconSize = iconSize,
+            ),
+        )
 
     fun copy(
         scale: Float,
         iconSize: Dp,
     ): RightTailInfoBubbleIcon = copy(scale = scale, iconSize = iconSize)
 
-    override fun equals(other: Any?): Boolean =
-        other is RightTailInfoBubbleIcon && properties == other.properties
+    override fun equals(other: Any?): Boolean = other is RightTailInfoBubbleIcon && properties == other.properties
 
     override fun hashCode(): Int = properties.hashCode()
 
@@ -119,35 +119,38 @@ class RightTailInfoBubbleIcon(
         val drawableInnerPadding = drawableSize * 0.1f
         val contentMargin = drawableSize * 0.2f
 
-        val labelPaint = Paint().apply {
-            isAntiAlias = true
-            color = labelTextColor.toArgb()
-            textSize = drawableSize * 0.7f
-        }
+        val labelPaint =
+            Paint().apply {
+                isAntiAlias = true
+                color = labelTextColor.toArgb()
+                textSize = drawableSize * 0.7f
+            }
         val labelWidth = labelPaint.measureText(label)
         val labelHeight = labelPaint.fontMetrics.run { bottom - top }
 
-        val snippetPaint = Paint().apply {
-            isAntiAlias = true
-            color = Color.Gray.toArgb()
-            textSize = drawableSize * 0.4f
-        }
+        val snippetPaint =
+            Paint().apply {
+                isAntiAlias = true
+                color = Color.Gray.toArgb()
+                textSize = drawableSize * 0.4f
+            }
         val snippetHeight = snippetPaint.fontMetrics.run { bottom - top }
 
         val canvasWidth = drawableSize + drawableInnerPadding + labelWidth + contentMargin * 2
-        val canvasHeight = maxOf(
-            drawableSize,
-            labelHeight
-        ) + drawableInnerPadding + snippetHeight + drawableInnerPadding * 2
+        val canvasHeight =
+            maxOf(
+                drawableSize,
+                labelHeight,
+            ) + drawableInnerPadding + snippetHeight + drawableInnerPadding * 2
         val pointerWidth = canvasWidth / 9f
         val pointerHeight = canvasHeight / 8f
 
-
-        val bitmap = createBitmap(
-            canvasWidth.toInt(),
-            (canvasHeight + pointerHeight).toInt(),
-            Bitmap.Config.ARGB_8888
-        )
+        val bitmap =
+            createBitmap(
+                canvasWidth.toInt(),
+                (canvasHeight + pointerHeight).toInt(),
+                Bitmap.Config.ARGB_8888,
+            )
         val canvas = Canvas(bitmap)
 
         if (this.debug) {
@@ -162,24 +165,26 @@ class RightTailInfoBubbleIcon(
                 }
         }
 
-        val backgroundPaint = Paint().apply {
-            color = fillColor.toArgb()
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+        val backgroundPaint =
+            Paint().apply {
+                color = fillColor.toArgb()
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
 
-        val backgroundPath = Path().apply {
-            addRect(
-                0f, 0f, canvasWidth, canvasHeight,
-                Path.Direction.CW
-            )
+        val backgroundPath =
+            Path().apply {
+                addRect(
+                    0f, 0f, canvasWidth, canvasHeight,
+                    Path.Direction.CW,
+                )
 
-            // 吹き出しの矢印
-            moveTo(canvasWidth - pointerWidth * 2f, canvasHeight)
-            lineTo(canvasWidth - pointerWidth, canvasHeight)
-            lineTo(canvasWidth - pointerWidth * 1.5f, canvasHeight + pointerHeight)
-            close()
-        }
+                // 吹き出しの矢印
+                moveTo(canvasWidth - pointerWidth * 2f, canvasHeight)
+                lineTo(canvasWidth - pointerWidth, canvasHeight)
+                lineTo(canvasWidth - pointerWidth * 1.5f, canvasHeight + pointerHeight)
+                close()
+            }
 
         canvas.drawPath(backgroundPath, backgroundPaint)
 
@@ -187,7 +192,7 @@ class RightTailInfoBubbleIcon(
             contentMargin.toInt(),
             contentMargin.toInt(),
             (drawableInnerPadding + drawableSize).toInt(),
-            (drawableInnerPadding + drawableSize).toInt()
+            (drawableInnerPadding + drawableSize).toInt(),
         )
         iconDrawable.draw(canvas)
 
@@ -198,10 +203,11 @@ class RightTailInfoBubbleIcon(
 
         canvas.drawText(snippet, contentMargin, canvasHeight - contentMargin, snippetPaint)
 
-        val result = BitmapIcon(
-            bitmap = bitmap, anchor = Offset(0.5f, 1.0f),
-            size = Size(canvasWidth, canvasHeight + pointerHeight)
-        )
+        val result =
+            BitmapIcon(
+                bitmap = bitmap, anchor = Offset(0.5f, 1.0f),
+                size = Size(canvasWidth, canvasHeight + pointerHeight),
+            )
 
         BitmapIconCache.put(id, result)
         return result
@@ -213,23 +219,25 @@ class RightTailInfoBubbleIcon(
 fun RightTailInfoBubbleIconPreview() {
     val context = LocalContext.current
 
-    val icon = RightTailInfoBubbleIcon(
-        iconDrawable = ContextCompat.getDrawable(context, R.drawable.default_marker)!!,
-        label = "5時間37分",
-        snippet = "304マイル",
-        fillColor = Color.White,
-        labelTextColor = Color.Black,
-        scale = 1f,
-        iconSize = MarkerIconSize.Small,
-        debug = true,
-    )
+    val icon =
+        RightTailInfoBubbleIcon(
+            iconDrawable = ContextCompat.getDrawable(context, R.drawable.default_marker)!!,
+            label = "5時間37分",
+            snippet = "304マイル",
+            fillColor = Color.White,
+            labelTextColor = Color.Black,
+            scale = 1f,
+            iconSize = MarkerIconSize.Small,
+            debug = true,
+        )
     val bitmapIcon = remember(icon) { icon.toBitmapIcon() }
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
 
     Box(
-        modifier = Modifier
-            .background(Color.Green)
-            .padding(all = 20.dp),
+        modifier =
+            Modifier
+                .background(Color.Green)
+                .padding(all = 20.dp),
         contentAlignment = Alignment.Center,
     ) {
         Image(

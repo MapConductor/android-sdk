@@ -168,9 +168,10 @@ private fun CircleIconPreview() {
     val imageBitmap = remember(bitmapIcon) { bitmapIcon.bitmap.asImageBitmap() }
 
     Box(
-        modifier = Modifier
-            .background(Color.Green)
-            .padding(all = 20.dp),
+        modifier =
+            Modifier
+                .background(Color.Green)
+                .padding(all = 20.dp),
         contentAlignment = Alignment.Center,
     ) {
         Image(
