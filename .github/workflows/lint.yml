@@ -4,7 +4,6 @@ name: Lint Check on Push
 #   → mainブランチ向けのPRのみで発火します
 # types: [opened, synchronize, reopened, ready_for_review]
 #   → PRが作成された時・更新された時・下書きからreadyにした時だけ実行
-#   ready_for_review で「Draft → 通常PR」に変更時にも実行
 # closed や merged などは含まれません
 # Draft PRでは自動で実行されません
 # Draft中はsynchronizeやopenedイベントでもGitHub側でWorkflow実行がスキップされます
@@ -20,25 +19,40 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-
 jobs:
   lint:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     name: Lint Changed Modules
     env:
-      NDK_VERSION: 27.0.12077973
+      NDK_VERSION: 27.3.13750724
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
-      # ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/${{ env.NDK_VERSION }}
-      # ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/${{ env.NDK_VERSION }}
-      # ORG_GRADLE_PROJECT_android_ndkPath: /usr/local/lib/android/sdk/ndk/${{ env.NDK_VERSION }}
-      GPR_USER: ${{ vars.GPR_USER }}
+      GPR_USER: ${{ secrets.GPR_USER }}
       GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
 
     steps:
+      - name: Check variables
+        run: |
+          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then
+            echo "GPR credentials are not available"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Write local.properties
+        run: |
+          {
+            echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
+            echo "android.ndkVersion=${NDK_VERSION}"
+          } >> local.properties
+
+      - name: Set NDK environment
+        run: |
+          echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
+          echo "NDK_VERSION=${NDK_VERSION}" >> $GITHUB_ENV
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -46,7 +60,7 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Install Android NDK ${{ env.NDK_VERSION }}
+      - name: Install Android NDK $NDK_VERSION
         uses: android-actions/setup-android@v3
         with:
           packages: "build-tools;36.0.0 ndk;${{ env.NDK_VERSION }} platform-tools platforms;android-35"
@@ -74,7 +88,7 @@ jobs:
           mkdir -p .lint-hash-cache
 
           for module in ${{ steps.define.outputs.modules }}; do
-            if "$module" -ne "mapconductor-bom"; then
+            if [ "$module" != "mapconductor-bom" ]; then
               # src配下のKotlinとXMLファイルのハッシュを計算
               if [ -d "$module/src" ]; then
                 hash=$(find "$module/src" -type f -name "*.kt" -print0 2>/dev/null | \
@@ -115,10 +129,6 @@ jobs:
         run: |
           if [ -z "$HERE_SDK_AAR_NAME" ]; then
             echo "HERE SDK artifact name not found in gradle.properties"
-            exit 1
-          fi
-          if [ -z "$GPR_USER" ] || [ -z "$GPR_TOKEN" ]; then
-            echo "GPR credentials are not available"
             exit 1
           fi
           mkdir -p libs
