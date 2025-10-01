@@ -47,7 +47,7 @@ jobs:
           {
             echo "android.ndkVersion=${NDK_VERSION}"
           } >> gradle.properties
-
+          
       - name: Set NDK environment
         run: |
           echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
