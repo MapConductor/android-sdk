@@ -51,13 +51,14 @@ android {
     }
 
     // Configure NDK path for modern Gradle
-    if (project.hasProperty("android.ndkPath")) {
-        ndkPath = project.property("android.ndkPath").toString()
+    val ndkPathProperty = project.findProperty("android.ndkPath")?.toString()
+    if (ndkPathProperty != null) {
+        ndkPath = ndkPathProperty
     } else if (System.getenv("ANDROID_NDK_ROOT") != null) {
         ndkPath = System.getenv("ANDROID_NDK_ROOT")
     } else {
         // Fallback to default SDK location; normalize separators for cross-platform use
-        val fallbackNdkVersion = System.getenv("NDK_VERSION") ?: "27.0.12077973"
+        val fallbackNdkVersion = System.getenv("NDK_VERSION") ?: "27.0.12077973" // ""27.3.13750724"
         val androidSdkRoot =
             System.getenv("ANDROID_SDK_ROOT")
                 ?: System.getenv("ANDROID_HOME")
