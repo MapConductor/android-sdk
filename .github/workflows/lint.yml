@@ -37,10 +37,6 @@ jobs:
     steps:
       - name: Check variables
         run: |
-          if [ -z "${{ env.HERE_SDK_AAR_NAME }}" ]; then
-            echo "HERE SDK artifact name not found in gradle.properties"
-            exit 1
-          fi
           if [ -z "${{ vars.GPR_USER }}" ] || [ -z "${{ secrets.GPR_TOKEN }}" ]; then
             echo "GPR credentials are not available"
             exit 1
@@ -122,14 +118,10 @@ jobs:
         env:
           HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
         run: |
-#          if [ -z "${{ env.HERE_SDK_AAR_NAME }}" ]; then
-#            echo "HERE SDK artifact name not found in gradle.properties"
-#            exit 1
-#          fi
-#          if [ -z "${{ vars.GPR_USER }}" ] || [ -z "${{ secrets.GPR_TOKEN }}" ]; then
-#            echo "GPR credentials are not available"
-#            exit 1
-#          fi
+          if [ -z "${{ env.HERE_SDK_AAR_NAME }}" ]; then
+            echo "HERE SDK artifact name not found in gradle.properties"
+            exit 1
+          fi
           mkdir -p libs
           target_path="libs/${HERE_SDK_AAR_NAME}.aar"
           echo "Downloading HERE SDK mock artifact to $target_path"
