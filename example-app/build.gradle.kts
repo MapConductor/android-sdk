@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
 
     alias(libs.plugins.android.application)
 
@@ -194,7 +194,15 @@ dependencies {
     implementation(libs.play.services.maps)
 
     // Here Maps SDK
-    implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("heresdk*."))))
+
+    implementation(
+        fileTree(
+            mapOf(
+                "dir" to rootDir.resolve("libs").toString(),
+                "include" to arrayOf("heresdk*.jar", "heresdk*.aar"),
+            ),
+        ),
+    )
 
     // Mapbox SDK
 
@@ -251,3 +259,4 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
