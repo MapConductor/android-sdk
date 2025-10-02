@@ -69,6 +69,8 @@ fun calculateDestinationPoint(
         override val latitude: Double get() = destLatRad.toDegrees()
         override val longitude: Double get() = destLonRad.toDegrees()
         override val altitude: Double? get() = null
+
+        override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
     }
 }
 

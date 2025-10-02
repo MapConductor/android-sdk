@@ -17,6 +17,7 @@ abstract class PolylineController<ActualPolyline>(
     > {
     override val zIndex: Int = 5
     val semaphore = Semaphore(1)
+    private var currentCameraPosition: MapCameraPositionImpl? = null
 
     override suspend fun add(data: List<PolylineState>) {
         semaphore.withPermit {
@@ -141,9 +142,15 @@ abstract class PolylineController<ActualPolyline>(
         }
     }
 
-    override fun find(position: GeoPoint): PolylineEntity<ActualPolyline>? = polylineManager.find(position)
+    override fun find(position: GeoPoint): PolylineEntity<ActualPolyline>? =
+        polylineManager.find(position, currentCameraPosition)?.entity
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    fun findWithClosestPoint(position: GeoPoint): PolylineHitResult<ActualPolyline>? =
+        polylineManager.find(position, currentCameraPosition)
+
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+        currentCameraPosition = mapCameraPosition
+    }
 
     override fun destroy() {
         // No native resources to clean up for polylines

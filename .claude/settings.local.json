@@ -13,7 +13,9 @@
       "Bash(brew install:*)",
       "Bash(mdbook:*)",
       "Bash(find:*)",
-      "Bash(for:*)"
+      "Bash(for:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

@@ -29,7 +29,7 @@ class GoogleMapPolylineOverlayRenderer(
                     .color(state.strokeColor.toArgb())
                     .width(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                     .geodesic(state.geodesic)
-                    .clickable(true)
+                    .clickable(false)
 
             holder.map.addPolyline(options).also {
                 it.tag = state.id

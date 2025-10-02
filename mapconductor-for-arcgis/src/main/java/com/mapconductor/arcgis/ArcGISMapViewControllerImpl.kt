@@ -52,6 +52,9 @@ class ArcGISMapViewControllerImpl(
         holder.map.graphicsOverlays.add(markerController.renderer.markerLayer)
         setupListeners()
         registerController(markerController)
+        registerController(polygonController)
+        registerController(polylineController)
+        registerController(circleController)
     }
 
     fun setupListeners() {
@@ -258,11 +261,11 @@ class ArcGISMapViewControllerImpl(
             return
         }
 
-        polylineController.find(touchPosition)?.let { polylineEntity ->
+        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
             val event =
                 PolylineEvent(
-                    state = polylineEntity.state,
-                    clicked = touchPosition,
+                    state = hitResult.entity.state,
+                    clicked = hitResult.closestPoint,
                 )
             polylineController.clickListener?.invoke(event)
             return

@@ -33,6 +33,7 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.HereMarkerController
@@ -124,6 +125,9 @@ class HereMapViewControllerImpl(
     init {
         setupListeners()
         registerController(markerController)
+        registerController(polygonController)
+        registerController(polylineController)
+        registerController(circleController)
     }
 
     fun setupListeners() {
@@ -239,6 +243,18 @@ class HereMapViewControllerImpl(
                     clicked = touchPosition,
                 )
             circleController.clickListener?.invoke(event)
+            return
+        }
+
+        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
+            val event =
+                PolylineEvent(
+                    state = hitResult.entity.state,
+                    clicked = hitResult.closestPoint,
+                )
+            coroutine.launch {
+                polylineController.clickListener?.invoke(event)
+            }
             return
         }
 

@@ -1,6 +1,7 @@
 package com.mapconductor.core.geocell
 
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.MarkerEntity
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -233,6 +234,8 @@ class HexCellRegistry<ActualMarker>(
                     override val latitude = position.latitude
                     override val longitude = newLng
                     override val altitude = position.altitude
+
+                    override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
                 },
             )
 
