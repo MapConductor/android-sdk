@@ -27,6 +27,7 @@ import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
+import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -126,6 +127,10 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Polyline ",
             ),
             SidebarItem(
+                id = "polyline-click",
+                title = "Polyline Click",
+            ),
+            SidebarItem(
                 id = "polygon",
                 title = "Polygon ",
             ),
@@ -208,6 +213,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "polyline" -> {
                         PolylineMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "polyline-click" -> {
+                        PolylineClickMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

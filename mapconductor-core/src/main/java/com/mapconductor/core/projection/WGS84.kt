@@ -2,6 +2,7 @@ package com.mapconductor.core.projection
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 
 /*
  * Copyright 2013 Google Inc.
@@ -38,6 +39,8 @@ object WGS84 : Projection {
             override val latitude: Double = lat
             override val longitude: Double = lng
             override val altitude: Double? = null
+
+            override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
         }
     }
 }

@@ -2,6 +2,7 @@
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Projection
 import com.mapconductor.core.projection.WebMercator
@@ -208,6 +209,8 @@ class HexGeocellImpl(
             override val latitude: Double = centralLat
             override val longitude: Double = centralLng
             override val altitude: Double? = null
+
+            override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
         }
     }
 

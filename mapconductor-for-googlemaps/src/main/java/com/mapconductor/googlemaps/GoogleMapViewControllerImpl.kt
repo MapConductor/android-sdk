@@ -25,6 +25,7 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
@@ -55,6 +56,9 @@ class GoogleMapViewControllerImpl(
     init {
         setupListeners()
         registerController(markerController)
+        registerController(polygonController)
+        registerController(polylineController)
+        registerController(circleController)
     }
 
     fun setupListeners() {
@@ -195,6 +199,18 @@ class GoogleMapViewControllerImpl(
                 )
             coroutine.launch {
                 groundImageController.clickListener?.invoke(event)
+            }
+            return
+        }
+
+        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
+            val event =
+                PolylineEvent(
+                    state = hitResult.entity.state,
+                    clicked = hitResult.closestPoint,
+                )
+            coroutine.launch {
+                polylineController.clickListener?.invoke(event)
             }
             return
         }
