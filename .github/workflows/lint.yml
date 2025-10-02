@@ -42,12 +42,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Write local.properties
+      - name: Write gradle.properties
         run: |
           {
-            echo "android.ndkPath=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}"
             echo "android.ndkVersion=${NDK_VERSION}"
-          } >> local.properties
+          } >> gradle.properties
 
       - name: Set NDK environment
         run: |
@@ -124,15 +123,9 @@ jobs:
 
       - name: Fetch HERE SDK mock artifact
         if: steps.detect.outputs.changed_modules != ''
-        env:
-          HERE_SDK_AAR_NAME: ${{ steps.define.outputs.here_sdk_artifact }}
         run: |
-          if [ -z "$HERE_SDK_AAR_NAME" ]; then
-            echo "HERE SDK artifact name not found in gradle.properties"
-            exit 1
-          fi
           mkdir -p libs
-          target_path="libs/${HERE_SDK_AAR_NAME}.aar"
+          target_path="libs/heresdk-explore-mock-4.23.2.0.210004.jar"
           echo "Downloading HERE SDK mock artifact to $target_path"
           curl --fail --show-error --silent --location \
             -u "$GPR_USER:$GPR_TOKEN" \

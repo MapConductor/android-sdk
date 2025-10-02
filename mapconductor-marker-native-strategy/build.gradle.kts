@@ -50,21 +50,13 @@ android {
         }
     }
 
-    // Configure NDK path for modern Gradle
-    if (project.hasProperty("android.ndkPath")) {
-        ndkPath = project.property("android.ndkPath").toString()
-    } else if (System.getenv("ANDROID_NDK_ROOT") != null) {
-        ndkPath = System.getenv("ANDROID_NDK_ROOT")
-    } else {
-        // Fallback to default SDK location; normalize separators for cross-platform use
-        val fallbackNdkVersion = System.getenv("NDK_VERSION") ?: "27.0.12077973"
-        val androidSdkRoot =
-            System.getenv("ANDROID_SDK_ROOT")
-                ?: System.getenv("ANDROID_HOME")
-                ?: "C:\\Users\\masashi\\AppData\\Local\\Android\\Sdk"
-        val normalizedSdkRoot = androidSdkRoot.replace("\\", "/")
-        ndkPath = "$normalizedSdkRoot/ndk/$fallbackNdkVersion"
-    }
+    // Configure NDK version for modern Gradle
+    ndkVersion =
+        providers
+            .gradleProperty("android.ndkVersion")
+            .orElse(providers.environmentVariable("NDK_VERSION"))
+            .orElse("27.0.12077973")
+            .get()
 
     publishing {
         singleVariant("release") {

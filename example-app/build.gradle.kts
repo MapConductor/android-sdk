@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
 
     alias(libs.plugins.android.application)
 
@@ -195,9 +195,14 @@ dependencies {
 
     // Here Maps SDK
 
-    val hereSdkAarName: String by project
-
-    implementation(files("${rootProject.projectDir}/libs/$hereSdkAarName.aar"))
+    implementation(
+        fileTree(
+            mapOf(
+                "dir" to rootDir.resolve("libs").toString(),
+                "include" to arrayOf("heresdk*.jar", "heresdk*.aar"),
+            ),
+        ),
+    )
 
     // Mapbox SDK
 
