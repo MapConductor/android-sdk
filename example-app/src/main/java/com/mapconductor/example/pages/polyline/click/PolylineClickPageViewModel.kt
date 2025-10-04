@@ -33,8 +33,8 @@ class PolylineClickPageViewModelImpl :
     override val initCameraPosition =
         MapCameraPositionImpl(
             position =
-                GeoPointImpl.fromLatLong(35.548852, 139.784086),
-            zoom = 4.0,
+                GeoPointImpl.fromLatLong(35.843794, 140.297793),
+            zoom = 20.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,

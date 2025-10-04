@@ -133,28 +133,56 @@ fun pointOnGeodesicSegmentOrNull(
     val fractionAlong = alongTrackRad / ang12
 
     // 線分外（<=0 or >=1）は端点で距離判定
+//    if (fractionAlong <= 0.0 || fractionAlong >= 1.0) {
+//        val distPosTo = Spherical.computeDistanceBetween(to, position)
+//        val minDist = min(distPosFrom, distPosTo)
+//        if (minDist > thresholdMeters) return null
+//
+//        return Pair(
+//            if (distPosFrom <= distPosTo) {
+//                GeoPointImpl(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0)
+//            } else {
+//                GeoPointImpl(to.latitude, to.longitude, to.altitude ?: from.altitude ?: 0.0)
+//            },
+//            distPosFrom
+//        )
+//    }
     if (fractionAlong <= 0.0 || fractionAlong >= 1.0) {
         val distPosTo = Spherical.computeDistanceBetween(to, position)
         val minDist = min(distPosFrom, distPosTo)
         if (minDist > thresholdMeters) return null
 
         return Pair(
-            if (distPosFrom <= distPosTo) {
+            // 最近端点
+    if (distPosFrom <= distPosTo) {
                 GeoPointImpl(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0)
             } else {
                 GeoPointImpl(to.latitude, to.longitude, to.altitude ?: from.altitude ?: 0.0)
             },
-            distPosFrom
+            minDist  // 端点への距離（クロストラック距離ではない）
         )
     }
 
-    // 線分内：クロストラック距離で許容判定
-    val crossTrackMeters = abs(crossTrackRad) * radius
-    if (crossTrackMeters > thresholdMeters) return null
+
+    val t = fractionAlong.coerceIn(0.0, 1.0)
+    val latClosest = from.latitude + t * (to.latitude - from.latitude)
+    val lngClosest = from.longitude + t * (to.longitude - from.longitude)
+    val altClosest = when {
+        from.altitude != null && to.altitude != null ->
+            from.altitude!! + t * (to.altitude!! - from.altitude!!)
+        from.altitude != null -> from.altitude!!
+        to.altitude != null -> to.altitude!!
+        else -> 0.0
+    }
+    val closestPoint = Spherical.interpolate(from, to, t)
+    val actualDistance = Spherical.computeDistanceBetween(position, closestPoint)
+
+    if (actualDistance > thresholdMeters) return null
+
+    return Pair(closestPoint, actualDistance)
 
     // 最近点（測地線上）を補間で取得
-    val t = fractionAlong.coerceIn(0.0, 1.0)
-    return Pair(Spherical.interpolate(from, to, t), crossTrackMeters)
+    // return Pair(Spherical.interpolate(from, to, t), crossTrackMeters)
 }
 
 /**
