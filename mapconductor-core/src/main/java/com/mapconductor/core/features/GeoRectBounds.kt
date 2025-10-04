@@ -1,9 +1,20 @@
 package com.mapconductor.core.features
 
+import android.util.Log
+
 class GeoRectBounds(
     southWest: GeoPointImpl? = null,
     northEast: GeoPointImpl? = null,
 ) {
+    companion object {
+        private const val DEBUG_INTERSECTS = true
+        private const val TAG = "GeoRectBounds"
+
+        private fun d(msg: String) {
+            if (DEBUG_INTERSECTS) Log.d(TAG, msg)
+        }
+    }
+
     private var _southWest: GeoPointImpl? = southWest
     private var _northEast: GeoPointImpl? = northEast
 
@@ -17,22 +28,21 @@ class GeoRectBounds(
         get() = _northEast
 
     fun extend(point: GeoPoint) {
-        val position = GeoPointImpl.from(point)
+        val position = GeoPointImpl.from(GeoPointImpl.from(point).wrap())
 
         when {
-            // まだ何もない：両方に同じ点を入れて初期化
+            // 初期化
             _southWest == null && _northEast == null -> {
                 _southWest = position
                 _northEast = position
                 return
             }
 
-            // southWest だけある：既存点と position の2点から SW/NE を決める
+            // southWest のみ存在
             _southWest != null && _northEast == null -> {
                 val sw = _southWest!!
                 val south = minOf(sw.latitude, position.latitude)
                 val north = maxOf(sw.latitude, position.latitude)
-                // 1点ずつなので子午線跨ぎの判定は不要。単純に min/max でOK
                 val west = minOf(sw.longitude, position.longitude)
                 val east = maxOf(sw.longitude, position.longitude)
 
@@ -41,7 +51,7 @@ class GeoRectBounds(
                 return
             }
 
-            // northEast だけある：既存点と position の2点から SW/NE を決める
+            // northEast のみ存在
             _southWest == null && _northEast != null -> {
                 val ne = _northEast!!
                 val south = minOf(ne.latitude, position.latitude)
@@ -55,7 +65,6 @@ class GeoRectBounds(
             }
 
             else -> {
-                // どちらもある：従来ロジック（子午線跨ぎ考慮）＋ 緯度/経度の参照を修正
                 val south = minOf(position.latitude, _southWest!!.latitude)
                 val north = maxOf(position.latitude, _northEast!!.latitude)
 
@@ -63,16 +72,24 @@ class GeoRectBounds(
                 var east = _northEast!!.longitude
 
                 if (west > 0 && east < 0) {
-                    // すでに経度が + と - に分かれている＝日付変更線跨ぎの矩形
                     if (position.longitude > 0) {
                         west = minOf(position.longitude, west)
                     } else {
                         east = maxOf(position.longitude, east)
                     }
                 } else {
-                    // 通常ケース：単純に min/max
                     west = minOf(position.longitude, _southWest!!.longitude)
                     east = maxOf(position.longitude, _northEast!!.longitude)
+                }
+
+                // Ensure longitudinal span uses the minimal arc (handle antimeridian)
+                val span = ((east - west + 360) % 360)
+                if (span > 180.0) {
+                    // Flip to crossing-dateline representation so that west > east
+                    val newWest = east
+                    val newEast = west
+                    west = newWest
+                    east = newEast
                 }
 
                 _southWest = GeoPointImpl(south, west)
@@ -111,9 +128,9 @@ class GeoRectBounds(
     fun contains(point: GeoPoint): Boolean {
         if (isEmpty) return false
 
-        val p = GeoPointImpl.from(point)
-        val sw = _southWest!!
-        val ne = _northEast!!
+        val p = GeoPointImpl.from(point).wrap()
+        val sw = _southWest!!.wrap()
+        val ne = _northEast!!.wrap()
 
         val withinLat = p.latitude in sw.latitude..ne.latitude
         val withinLng = containsLongitude(p.longitude, sw.longitude, ne.longitude)
@@ -125,8 +142,8 @@ class GeoRectBounds(
         get() {
             if (isEmpty) return null
 
-            val sw = _southWest!!
-            val ne = _northEast!!
+            val sw = _southWest!!.wrap()
+            val ne = _northEast!!.wrap()
 
             val centerLat = (sw.latitude + ne.latitude) / 2.0
 
@@ -151,16 +168,16 @@ class GeoRectBounds(
             return this
         }
 
-        extend(other._southWest!!)
-        extend(other._northEast!!)
+        extend(other._southWest!!.wrap())
+        extend(other._northEast!!.wrap())
         return this
     }
 
     fun toSpan(): GeoPointImpl? {
         if (isEmpty) return null
 
-        val sw = _southWest!!
-        val ne = _northEast!!
+        val sw = _southWest!!.wrap()
+        val ne = _northEast!!.wrap()
 
         val latSpan = ne.latitude - sw.latitude
         val lngSpan = ((ne.longitude - sw.longitude + 360) % 360).takeIf { it != 0.0 } ?: 360.0
@@ -171,8 +188,8 @@ class GeoRectBounds(
     fun toUrlValue(precision: Int = 6): String {
         if (isEmpty) return "1.0,180.0,-1.0,-180.0"
 
-        val sw = _southWest!!
-        val ne = _northEast!!
+        val sw = _southWest!!.wrap()
+        val ne = _northEast!!.wrap()
 
         fun Double.toFixed(p: Int): String = "%.${p}f".format(this)
 
@@ -184,21 +201,98 @@ class GeoRectBounds(
         ).joinToString(",")
     }
 
+    /**
+     * Returns a new bounds expanded by the given degrees in latitude/longitude.
+     * Positive pads expand outward in all directions. Handles antimeridian safely.
+     */
+    fun expandedByDegrees(
+        latPad: Double,
+        lonPad: Double,
+    ): GeoRectBounds {
+        if (isEmpty) return this
+
+        val sw = _southWest!!.wrap()
+        val ne = _northEast!!.wrap()
+
+        val south = (sw.latitude - latPad).coerceIn(-90.0, 90.0)
+        val north = (ne.latitude + latPad).coerceIn(-90.0, 90.0)
+
+        fun norm(lon: Double): Double = (((lon + 180.0) % 360.0 + 360.0) % 360.0) - 180.0
+
+        var west = norm(sw.longitude - lonPad)
+        var east = norm(ne.longitude + lonPad)
+
+        // Keep minimal longitudinal arc representation
+        val span = ((east - west + 360) % 360)
+        if (span > 180.0) {
+            val newWest = east
+            val newEast = west
+            west = newWest
+            east = newEast
+        }
+
+        return GeoRectBounds(
+            southWest = GeoPointImpl(south, west),
+            northEast = GeoPointImpl(north, east),
+        )
+    }
+
     fun intersects(other: GeoRectBounds): Boolean {
         if (this.isEmpty || other.isEmpty) return false
 
-        val sw1 = this._southWest!!
-        val ne1 = this._northEast!!
-        val sw2 = other._southWest!!
-        val ne2 = other._northEast!!
+        val sw1 = this._southWest!!.wrap()
+        val ne1 = this._northEast!!.wrap()
+        val sw2 = other._southWest!!.wrap()
+        val ne2 = other._northEast!!.wrap()
 
-        val latOverlap = sw1.latitude <= ne2.latitude && ne1.latitude >= sw2.latitude
+        // Latitude overlap (simple interval intersection)
+        val latOverlap = !(ne1.latitude < sw2.latitude || ne2.latitude < sw1.latitude)
+        if (!latOverlap) {
+//            d("intersects: lat no-overlap: this=${this}, other=${other}")
+            return false
+        }
 
-        val lngOverlap =
-            containsLongitude(sw2.longitude, sw1.longitude, ne1.longitude) ||
-                containsLongitude(ne2.longitude, sw1.longitude, ne1.longitude)
+        fun norm(lon: Double): Double = (((lon + 180.0) % 360.0 + 360.0) % 360.0) - 180.0
 
-        return latOverlap && lngOverlap
+        // Normalize longitudes to [-180, 180] for robustness
+        val w1 = norm(sw1.longitude)
+        val e1 = norm(ne1.longitude)
+        val w2 = norm(sw2.longitude)
+        val e2 = norm(ne2.longitude)
+
+        // Longitude overlap: represent each bounds as up to two intervals to handle antimeridian
+        fun lonIntervals(
+            west: Double,
+            east: Double,
+        ): List<Pair<Double, Double>> =
+            if (west <= east) {
+                val span = east - west
+                if (span <= 180.0) {
+                    listOf(west to east)
+                } else {
+                    // Large span means minimal interval crosses the dateline
+                    listOf(west to 180.0, -180.0 to east)
+                }
+            } else {
+                // Crosses the antimeridian: [west, 180] U [-180, east]
+                listOf(west to 180.0, -180.0 to east)
+            }
+
+        val intervals1 = lonIntervals(w1, e1)
+        val intervals2 = lonIntervals(w2, e2)
+
+//        d("intersects: this=${this} (norm=[$w1,$e1] -> $intervals1), other=${other} (norm=[$w2,$e2] -> $intervals2)")
+
+        // Check if any pair of intervals overlaps (inclusive)
+        for ((aStart, aEnd) in intervals1) {
+            for ((bStart, bEnd) in intervals2) {
+                val overlap = aStart <= bEnd && aEnd >= bStart
+//                d("check intervals [$aStart,$aEnd] vs [$bStart,$bEnd] => $overlap")
+                if (overlap) return true
+            }
+        }
+//        d("intersects: lng no-overlap: this=${this}, other=${other}")
+        return false
     }
 
     override fun toString(): String =

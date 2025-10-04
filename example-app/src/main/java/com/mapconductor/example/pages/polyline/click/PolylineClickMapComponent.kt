@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.polyline
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
@@ -26,6 +27,11 @@ fun PolylineClickMapComponent(
         ) {
             // Polyline
             Polyline(polylineState)
+            Polyline(polylineState.copy(
+                id = "copy",
+                geodesic = false,
+                strokeColor = Color.Blue,
+            ))
 
             // Waypoint markers
             markers.forEach { marker ->

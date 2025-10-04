@@ -72,10 +72,12 @@ class PolylineClickPageViewModelImpl :
     }
 
     override fun onPolylineClicked(clicked: PolylineEvent) {
-        _markers.value = _markers.value +
-            MarkerState(
-                position = clicked.clicked,
-                animation = MarkerAnimation.Drop,
+        _markers.value =
+            listOf(
+                MarkerState(
+                    position = clicked.clicked,
+                    animation = MarkerAnimation.Drop,
+                ),
             )
     }
 

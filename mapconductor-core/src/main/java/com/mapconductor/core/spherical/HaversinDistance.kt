@@ -12,7 +12,7 @@ fun haversineDistance(
     p1: GeoPoint,
     p2: GeoPoint,
 ): Double {
-    val earthR = 6371000.0 // 地球の半径（m）
+    val earthR = 6378137 // 地球の半径（m）
     val lat1 = Math.toRadians(p1.latitude)
     val lat2 = Math.toRadians(p2.latitude)
     val dLat = lat2 - lat1

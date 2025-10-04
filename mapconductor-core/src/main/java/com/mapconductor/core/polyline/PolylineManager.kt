@@ -1,15 +1,22 @@
 package com.mapconductor.core.polyline
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateMetersPerPixel
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.isPointOnLinearLine
 import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.pointOnGeodesicSegmentOrNull
 import com.mapconductor.core.spherical.Spherical
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import com.mapconductor.core.spherical.isPointOnTheGeodesicLine
+import com.mapconductor.settings.Settings
+import kotlin.math.max
+import android.util.Log
 
 data class PolylineHitResult<ActualPolyline>(
     val entity: PolylineEntity<ActualPolyline>,
@@ -22,6 +29,9 @@ private data class DistanceResult(
 )
 
 interface PolylineManager<ActualPolyline> {
+    val debugDrawRectangle: ((GeoRectBounds, Color) -> Unit)?
+    val debugDrawCircle: ((GeoPoint, Double, Color) -> Unit)?
+
     fun registerEntity(entity: PolylineEntity<ActualPolyline>)
 
     fun removeEntity(id: String): PolylineEntity<ActualPolyline>?
@@ -40,7 +50,19 @@ interface PolylineManager<ActualPolyline> {
     ): PolylineHitResult<ActualPolyline>?
 }
 
-class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
+class PolylineManagerImpl<ActualPolyline>(
+    override val debugDrawRectangle: ((GeoRectBounds, Color) -> Unit)? = null,
+    override val debugDrawCircle: ((GeoPoint, Double, Color) -> Unit)? = null,
+) : PolylineManager<ActualPolyline> {
+    companion object {
+        private const val DEBUG_FIND = true
+        private const val TAG = "PolylineManager"
+
+        private fun d(msg: String) {
+            if (DEBUG_FIND) Log.d(TAG, msg)
+        }
+    }
+
     private val entities = mutableMapOf<String, PolylineEntity<ActualPolyline>>()
 
     override fun registerEntity(entity: PolylineEntity<ActualPolyline>) {
@@ -64,103 +86,157 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         cameraPosition: MapCameraPositionImpl?,
     ): PolylineHitResult<ActualPolyline>? {
         // Calculate pixel-based tolerance that adapts to zoom level
-        val toleranceMeters = calculateToleranceInMeters(position, cameraPosition)
+//        val toleranceMeters = calculateToleranceInMeters(position, cameraPosition)
+
+        // Get visible region for viewport filtering
+        val visibleRegion = cameraPosition?.visibleRegion?.bounds
+
+//        d(
+//            "find: pos=${GeoPointImpl.from(position).toUrlValue()} tol=${"%.2f".format(toleranceMeters)} " +
+//                "visibleRegion=${visibleRegion} camZoom=${cameraPosition?.zoom}"
+//        )
+//        // Expand visible region by tolerance (converted to degrees) to avoid false negatives
+//        // especially for geodesic bulges and near-screen edges.
+//        val latRef = cameraPosition?.position?.latitude ?: position.latitude
+//        val metersPerDegLat = 111_320.0
+//        val metersPerDegLon = (111_320.0 * cos(Math.toRadians(kotlin.math.abs(latRef)))).coerceAtLeast(1e-3)
+//        val padLatDeg = toleranceMeters / metersPerDegLat
+//        val padLonDeg = toleranceMeters / metersPerDegLon
+//        val paddedRegion = visibleRegion?.expandedByDegrees(padLatDeg, padLonDeg)
+//        val metersPerPixelAtTap = cameraPosition?.let { calculateMetersPerPixel(latRef, it.zoom) }
+
+        // Collect all candidates with their closest distances
+        val candidates = mutableListOf<Triple<PolylineEntity<ActualPolyline>, GeoPoint, Double>>()
+        val fingerSize = ResourceProvider.dpToPx(Settings.Default.tapTolerance)
+        val zoom = cameraPosition?.zoom ?: 0.0
+        val threshold = calculateMetersPerPixel(position.latitude, zoom) * fingerSize
+        debugDrawCircle?.invoke(
+            position,
+            threshold,
+            Color.Green
+        )
 
         entities.values.forEach { entity ->
-            val points = entity.state.points
-            if (points.size < 2) return@forEach
+            val points: List<GeoPoint> =
+                when (entity.state.geodesic) {
+                    true -> createInterpolatePoints(entity.state.points)
+                    false -> createLinearInterpolatePoints(entity.state.points)
+                }
 
-            var closestResult: DistanceResult? = null
-            var minDistance = Double.MAX_VALUE
-
-            // Check if the position is within tolerance of any line segment
+//
             for (i in 0 until points.size - 1) {
-                val segmentStart = points[i]
-                val segmentEnd = points[i + 1]
-                val result =
-                    if (entity.state.geodesic) {
-                        distanceFromPointToGeodesicSegmentWithPoint(position, segmentStart, segmentEnd)
-                    } else {
-                        distanceFromPointToLineSegmentWithPoint(position, segmentStart, segmentEnd)
-                    }
-
-                if (result.distance < minDistance) {
-                    minDistance = result.distance
-                    closestResult = result
+                val box = GeoRectBounds()
+                box.extend(points[i])
+                box.extend(points[i + 1])
+                if (visibleRegion == null || visibleRegion.intersects(box)) {
+//                    if (entity.state.geodesic) {
+                        pointOnGeodesicSegmentOrNull(
+                            points[i],
+                            points[i + 1],
+                            position,
+        threshold)?.let {
+                            candidates.add(
+                                Triple(
+                                    entity,
+                                    it.first,
+                                    it.second,
+                                ),
+                            )
+                        }
+//                    } else {
+//                    isPointOnLinearLine(
+//                        points[i],
+//                        points[i + 1],
+//                        position,
+//        threshold
+//                    )?.let {
+//                        candidates.add(
+//                            Triple(
+//                                entity,
+//                                it.first,
+//                                it.second,
+//                            ),
+//                        )
+//                    }
+//                        }
                 }
             }
+        }
 
-            // If any segment is within tolerance, return this entity with the closest point
-            if (minDistance <= toleranceMeters && closestResult != null) {
-                return PolylineHitResult(
-                    entity = entity,
-                    closestPoint = closestResult.closestPoint.wrap(),
+        // Return the closest candidate among all qualifying polylines
+        val closest = candidates.minByOrNull { it.third }
+        return closest?.let { (entity, closestPoint, distance) ->
+            PolylineHitResult(
+                entity = entity,
+                closestPoint = position,
+            ).also {
+                d(
+                    "winner id=${entity.state.id} point=${GeoPointImpl.from(closestPoint).toUrlValue()}" +
+                        " dist=${"%.2f".format(distance)}",
                 )
             }
         }
-
-        return null
     }
 
-    private fun distanceFromPointToLineSegmentWithPoint(
-        point: GeoPoint,
-        lineStart: GeoPoint,
-        lineEnd: GeoPoint,
-    ): DistanceResult {
-        // Check if line segment is actually a point
-        if (lineStart.latitude == lineEnd.latitude && lineStart.longitude == lineEnd.longitude) {
-            return DistanceResult(
-                distance = Spherical.computeDistanceBetween(point, lineStart),
-                closestPoint = GeoPointImpl.from(lineStart),
-            )
-        }
+//    private fun distanceFromPointToLineSegmentWithPoint(
+//        point: GeoPoint,
+//        lineStart: GeoPoint,
+//        lineEnd: GeoPoint,
+//    ): DistanceResult {
+//        // Check if line segment is actually a point
+//        if (lineStart.latitude == lineEnd.latitude && lineStart.longitude == lineEnd.longitude) {
+//            return DistanceResult(
+//                distance = Spherical.computeDistanceBetween(point, lineStart),
+//                closestPoint = GeoPointImpl.from(lineStart),
+//            )
+//        }
+//
+//        // For non-geodesic lines, we'll use a more accurate approach
+//        // Sample points along the line segment and find the closest one
+//        var minDistance = Double.MAX_VALUE
+//        var bestFraction = 0.0
+//
+//        // Sample points along the line segment
+//        val samples = 20 // Number of sample points
+//        for (i in 0..samples) {
+//            val fraction = i.toDouble() / samples
+//            val samplePoint = Spherical.linearInterpolate(lineStart, lineEnd, fraction)
+//            val distance = Spherical.computeDistanceBetween(point, samplePoint)
+//
+//            if (distance < minDistance) {
+//                minDistance = distance
+//                bestFraction = fraction
+//            }
+//        }
+//
+//        // Refine the result using binary search in the vicinity of the best fraction
+//        val searchRadius = 1.0 / samples
+//        val refinedFraction =
+//            refineLinearFraction(
+//                point, lineStart, lineEnd, bestFraction, searchRadius, 5,
+//            )
+//
+//        val closestPoint = Spherical.linearInterpolate(lineStart, lineEnd, refinedFraction)
+//        return DistanceResult(
+//            distance = Spherical.computeDistanceBetween(point, closestPoint),
+//            closestPoint = closestPoint,
+//        )
+//    }
 
-        // For non-geodesic lines, we'll use a more accurate approach
-        // Sample points along the line segment and find the closest one
-        var minDistance = Double.MAX_VALUE
-        var bestFraction = 0.0
-
-        // Sample points along the line segment
-        val samples = 20 // Number of sample points
-        for (i in 0..samples) {
-            val fraction = i.toDouble() / samples
-            val samplePoint = Spherical.linearInterpolate(lineStart, lineEnd, fraction)
-            val distance = Spherical.computeDistanceBetween(point, samplePoint)
-
-            if (distance < minDistance) {
-                minDistance = distance
-                bestFraction = fraction
-            }
-        }
-
-        // Refine the result using binary search in the vicinity of the best fraction
-        val searchRadius = 1.0 / samples
-        val refinedFraction =
-            refineLinearFraction(
-                point, lineStart, lineEnd, bestFraction, searchRadius, 5,
-            )
-
-        val closestPoint = Spherical.linearInterpolate(lineStart, lineEnd, refinedFraction)
-        return DistanceResult(
-            distance = Spherical.computeDistanceBetween(point, closestPoint),
-            closestPoint = closestPoint,
-        )
-    }
-
-    private fun haversineDistance(
-        point1: GeoPoint,
-        point2: GeoPoint,
-    ): Double {
-        val earthRadiusKm = 6371.0
-        val dLat = Math.toRadians(point2.latitude - point1.latitude)
-        val dLon = Math.toRadians(point2.longitude - point1.longitude)
-        val lat1 = Math.toRadians(point1.latitude)
-        val lat2 = Math.toRadians(point2.latitude)
-
-        val a = sin(dLat / 2).pow(2) + sin(dLon / 2).pow(2) * cos(lat1) * cos(lat2)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return earthRadiusKm * c * 1000 // Convert to meters
-    }
+//    private fun haversineDistance(
+//        point1: GeoPoint,
+//        point2: GeoPoint,
+//    ): Double {
+//        val earthRadiusKm = 6371.0
+//        val dLat = Math.toRadians(point2.latitude - point1.latitude)
+//        val dLon = Math.toRadians(point2.longitude - point1.longitude)
+//        val lat1 = Math.toRadians(point1.latitude)
+//        val lat2 = Math.toRadians(point2.latitude)
+//
+//        val a = sin(dLat / 2).pow(2) + sin(dLon / 2).pow(2) * cos(lat1) * cos(lat2)
+//        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+//        return earthRadiusKm * c * 1000 // Convert to meters
+//    }
 
     private fun distanceFromPointToGeodesicSegmentWithPoint(
         point: GeoPoint,
@@ -189,6 +265,7 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         // Use iterative approach to find the closest point on the geodesic segment
         var minDistance = Double.MAX_VALUE
         var bestFraction = 0.0
+        var closestPoint = lineStart
 
         // Sample points along the geodesic segment to find the approximate closest point
         val samples = 20 // Number of sample points
@@ -200,21 +277,26 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
             if (distance < minDistance) {
                 minDistance = distance
                 bestFraction = fraction
+                closestPoint = samplePoint
             }
         }
-
-        // Refine the result using binary search in the vicinity of the best fraction
-        val searchRadius = 1.0 / samples
-        val refinedFraction =
-            refineGeodesicFraction(
-                point, lineStart, lineEnd, bestFraction, searchRadius, 5,
-            )
-
-        val closestPoint = Spherical.interpolate(lineStart, lineEnd, refinedFraction)
         return DistanceResult(
-            distance = Spherical.computeDistanceBetween(point, closestPoint),
+            distance = minDistance,
             closestPoint = closestPoint,
         )
+
+        // Refine the result using binary search in the vicinity of the best fraction
+//        val searchRadius = 1.0 / samples
+//        val refinedFraction =
+//            refineGeodesicFraction(
+//                point, lineStart, lineEnd, bestFraction, searchRadius, 5,
+//            )
+//
+//        val closestPoint = Spherical.interpolate(lineStart, lineEnd, refinedFraction)
+//        return DistanceResult(
+//            distance = Spherical.computeDistanceBetween(point, closestPoint),
+//            closestPoint = closestPoint,
+//        )
     }
 
     private fun refineGeodesicFraction(
@@ -292,7 +374,8 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         cameraPosition: MapCameraPositionImpl?,
     ): Double {
         // Default pixel tolerance for touch targets (20 pixels is good for mobile touch)
-        val tolerancePixels = 20.0
+        val baseTolerancePx = 20.0
+        val minTolerancePx = 16.0
 
         // Fallback to fixed tolerance if no camera position available
         if (cameraPosition == null) {
@@ -303,29 +386,8 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         val metersPerPixel = calculateMetersPerPixel(position.latitude, cameraPosition.zoom)
 
         // Convert pixel tolerance to meters
-        return tolerancePixels * metersPerPixel
-    }
-
-    private fun calculateMetersPerPixel(
-        latitude: Double,
-        zoom: Double,
-    ): Double {
-        // Web Mercator projection formula for meters per pixel
-        // Based on the standard: 1 pixel = 78271.484 meters at zoom 0 at the equator
-
-        val earthCircumference = 40075016.686 // meters at equator
-        val tileSize = 256.0 // standard tile size in pixels
-
-        // At zoom level 0, the entire world (40M meters) fits in 256 pixels
-        val metersPerPixelAtEquator = earthCircumference / tileSize
-
-        // Adjust for zoom level (each zoom level halves the meters per pixel)
-        val metersPerPixelAtZoom = metersPerPixelAtEquator / 2.0.pow(zoom)
-
-        // Adjust for latitude (Mercator projection stretches at higher latitudes)
-        val latitudeRadians = Math.toRadians(abs(latitude))
-        val latitudeAdjustment = cos(latitudeRadians)
-
-        return metersPerPixelAtZoom / latitudeAdjustment
+        val tolerancePixels = max(baseTolerancePx, minTolerancePx)
+        val minMeters = 20.0
+        return max(tolerancePixels * metersPerPixel, minMeters)
     }
 }

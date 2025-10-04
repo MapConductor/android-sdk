@@ -177,58 +177,60 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun onMapClick(position: LatLng) {
-        val touchPosition = position.toGeoPoint()
+        backCoroutine.launch {
+            val touchPosition = position.toGeoPoint()
 
-        circleController.find(touchPosition)?.let { entity ->
-            val event =
-                CircleEvent(
-                    state = entity.state,
-                    clicked = touchPosition,
-                )
-            coroutine.launch {
-                circleController.clickListener?.invoke(event)
+            circleController.find(touchPosition)?.let { entity ->
+                val event =
+                    CircleEvent(
+                        state = entity.state,
+                        clicked = touchPosition,
+                    )
+                coroutine.launch {
+                    circleController.clickListener?.invoke(event)
+                }
+                return@launch
             }
-            return
-        }
 
-        groundImageController.find(touchPosition)?.let { entity ->
-            val event =
-                GroundImageEvent(
-                    state = entity.state,
-                    clicked = touchPosition,
-                )
-            coroutine.launch {
-                groundImageController.clickListener?.invoke(event)
+            groundImageController.find(touchPosition)?.let { entity ->
+                val event =
+                    GroundImageEvent(
+                        state = entity.state,
+                        clicked = touchPosition,
+                    )
+                coroutine.launch {
+                    groundImageController.clickListener?.invoke(event)
+                }
+                return@launch
             }
-            return
-        }
 
-        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
-            val event =
-                PolylineEvent(
-                    state = hitResult.entity.state,
-                    clicked = hitResult.closestPoint,
-                )
-            coroutine.launch {
-                polylineController.clickListener?.invoke(event)
+            polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
+                val event =
+                    PolylineEvent(
+                        state = hitResult.entity.state,
+                        clicked = hitResult.closestPoint,
+                    )
+                coroutine.launch {
+                    polylineController.clickListener?.invoke(event)
+                }
+                return@launch
             }
-            return
-        }
 
-        polygonController.find(touchPosition)?.let { entity ->
-            val event =
-                PolygonEvent(
-                    state = entity.state,
-                    clicked = touchPosition,
-                )
-            coroutine.launch {
-                polygonController.clickListener?.invoke(event)
+            polygonController.find(touchPosition)?.let { entity ->
+                val event =
+                    PolygonEvent(
+                        state = entity.state,
+                        clicked = touchPosition,
+                    )
+                coroutine.launch {
+                    polygonController.clickListener?.invoke(event)
+                }
+                return@launch
             }
-            return
-        }
 
-        mapClickCallback?.let {
-            coroutine.launch { it(position.toGeoPoint()) }
+            mapClickCallback?.let {
+                coroutine.launch { it(position.toGeoPoint()) }
+            }
         }
     }
 

@@ -51,7 +51,7 @@ class MapboxMarkerController(
                 Settings.Default.tapTolerance.value
                     .toDouble() * ResourceProvider.getDensity()
             val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom)
-            val radius = tolerance * meterInMapPixel
+            val radius = (tolerance * 0.5) * meterInMapPixel
             val distance = haversineDistance(position, nearest.state.position)
             return if (distance <= radius) {
                 nearest

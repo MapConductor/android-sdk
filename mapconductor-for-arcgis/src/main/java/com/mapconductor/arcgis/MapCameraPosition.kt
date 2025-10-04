@@ -30,7 +30,7 @@ fun MapCameraPositionImpl.toCamera(): Camera {
     )
 }
 
-internal const val EARTH_MEAN_RADIUS_METERS = 6371000.0
+internal const val EARTH_MEAN_RADIUS_METERS = 6378137
 internal const val DEFAULT_MAX_GMAPS_TILT = 60.0
 internal const val ARCGIS_MAX_PITCH = 90.0
 internal const val MIN_ANGLE = 0.0

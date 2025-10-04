@@ -496,7 +496,7 @@ private fun calculateDistance(
     lat2: Double,
     lon2: Double,
 ): Double {
-    val earthRadius = 6371.0
+    val earthRadius = 6378137 / 1000
     val dLat = Math.toRadians(lat2 - lat1)
     val dLon = Math.toRadians(lon2 - lon1)
     val a =

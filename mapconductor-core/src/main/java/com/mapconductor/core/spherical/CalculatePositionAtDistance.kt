@@ -11,7 +11,7 @@ fun calculatePositionAtDistance(
     distanceMeters: Double,
     bearingDegrees: Double,
 ): GeoPointImpl {
-    val earthRadiusKm = 6371.0
+    val earthRadiusKm = 6378137 / 1000
     val distanceKm = distanceMeters / 1000.0
     val bearingRad = Math.toRadians(bearingDegrees)
 
