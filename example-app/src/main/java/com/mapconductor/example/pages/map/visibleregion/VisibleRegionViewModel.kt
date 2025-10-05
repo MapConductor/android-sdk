@@ -114,7 +114,7 @@ class VisibleRegionViewModelImpl :
         val widthKm =
             computeDistanceBetween(
                 bounds.southWest!!,
-                GeoPointImpl(bounds.southWest!!.latitude, bounds.southWest!!.longitude),
+                GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
             )
         val heightKm =
             computeDistanceBetween(

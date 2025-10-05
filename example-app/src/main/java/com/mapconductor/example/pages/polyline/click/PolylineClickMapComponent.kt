@@ -29,7 +29,6 @@ fun PolylineClickMapComponent(
             Polyline(polylineState)
             Polyline(
                 polylineState.copy(
-                    id = "copy",
                     geodesic = false,
                     strokeColor = Color.Blue,
                 ),

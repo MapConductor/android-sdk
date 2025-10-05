@@ -55,7 +55,7 @@ abstract class AbstractMarkerOverlayRenderer<
     fun zoomToMetersPerPixel(
         zoom: Double,
         tileSize: Int,
-    ): Double = Earth.RADIUS_METERS / (tileSize * 2.0.pow(zoom))
+    ): Double = Earth.CIRCUMFERENCE_METERS / (tileSize * 2.0.pow(zoom))
 
     fun animateMarkerDrop(
         entity: MarkerEntity<ActualMarker>,

@@ -8,6 +8,7 @@ import com.mapbox.maps.extension.style.layers.generated.circleLayer
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.projection.Earth
 import com.mapconductor.mapbox.MapboxActualCircle
 
 class MapboxCircleLayer(
@@ -23,7 +24,6 @@ class MapboxCircleLayer(
     }
 
     companion object {
-        private const val EARTH_CIRCUMFERENCE = 2 * Math.PI * 6378137.0
         private const val TILE_SIZE = 512.0
     }
 
@@ -44,7 +44,7 @@ class MapboxCircleLayer(
                         literal(TILE_SIZE)
                         product {
                             get { literal(Prop.LATITUDE_CORRECTION) }
-                            literal(EARTH_CIRCUMFERENCE)
+                            literal(Earth.CIRCUMFERENCE_METERS)
                         }
                     }
                 }
@@ -59,7 +59,7 @@ class MapboxCircleLayer(
                         literal(TILE_SIZE)
                         product {
                             get { literal(Prop.LATITUDE_CORRECTION) }
-                            literal(EARTH_CIRCUMFERENCE)
+                            literal(Earth.CIRCUMFERENCE_METERS)
                         }
                     }
                     literal(4194304.0) // 2^22
