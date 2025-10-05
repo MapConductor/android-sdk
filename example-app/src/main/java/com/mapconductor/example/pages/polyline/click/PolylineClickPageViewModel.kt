@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.MarkerAnimation
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
@@ -33,8 +33,8 @@ class PolylineClickPageViewModelImpl :
     override val initCameraPosition =
         MapCameraPositionImpl(
             position =
-                GeoPointImpl.fromLatLong(35.843794, 140.297793),
-            zoom = 20.0,
+                GeoPointImpl.fromLatLong(35.548852, 139.784086),
+            zoom = 4.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -65,6 +65,7 @@ class PolylineClickPageViewModelImpl :
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
     override fun onMapViewChanged(state: MapViewState<*>) {
+        _markers.value = emptyList<MarkerState>()
         mapViewState.value?.cameraPosition?.value?.let {
             state.moveCameraTo(it)
         }
@@ -72,12 +73,13 @@ class PolylineClickPageViewModelImpl :
     }
 
     override fun onPolylineClicked(clicked: PolylineEvent) {
-        _markers.value =
-            listOf(
-                MarkerState(
-                    position = clicked.clicked,
-                    animation = MarkerAnimation.Drop,
-                ),
+        _markers.value = _markers.value +
+            MarkerState(
+                position = clicked.clicked,
+                icon =
+                    DefaultIcon(
+                        fillColor = clicked.state.strokeColor,
+                    ),
             )
     }
 

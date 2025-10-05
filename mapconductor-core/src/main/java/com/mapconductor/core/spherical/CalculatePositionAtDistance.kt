@@ -1,6 +1,7 @@
 package com.mapconductor.core.spherical
 
 import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.projection.Earth
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -11,7 +12,7 @@ fun calculatePositionAtDistance(
     distanceMeters: Double,
     bearingDegrees: Double,
 ): GeoPointImpl {
-    val earthRadiusKm = 6378137 / 1000
+    val earthRadiusKm = Earth.RADIUS_METERS / 1000
     val distanceKm = distanceMeters / 1000.0
     val bearingRad = Math.toRadians(bearingDegrees)
 

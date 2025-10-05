@@ -2,6 +2,7 @@ package com.mapconductor.core.spherical
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.projection.Earth
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.acos
@@ -11,7 +12,6 @@ import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -26,7 +26,6 @@ data class ClosestHit(
 
 object GeoNearest {
     // 平均地球半径（WGS84準拠の近似）
-    private const val R = 6378137 // meters
     private const val DEG = PI / 180.0
     private const val EPS = 1e-12
 
@@ -36,9 +35,9 @@ object GeoNearest {
         B: GeoPoint,
     ): ClosestHit {
         // スケール判定のために概算距離をいくつか見る
-        val dPA = haversineMeters(P, A)
-        val dPB = haversineMeters(P, B)
-        val dAB = haversineMeters(A, B)
+        val dPA = Spherical.computeDistanceBetween(P, A)
+        val dPB = Spherical.computeDistanceBetween(P, B)
+        val dAB = Spherical.computeDistanceBetween(A, B)
         val maxSpan = max(dAB, max(dPA, dPB))
 
         // ≲50km を局所平面、≳50km を球面に
@@ -57,8 +56,8 @@ object GeoNearest {
     ): ClosestHit {
         // 中心Pの緯度に合わせてlonスケールをcos(phi)で補正
         val phi0 = P.latitude * DEG
-        val kx = R * cos(phi0) * DEG
-        val ky = R * DEG
+        val kx = Earth.RADIUS_METERS * cos(phi0) * DEG
+        val ky = Earth.RADIUS_METERS * DEG
 
         fun toLocalXY(X: GeoPoint): Pair<Double, Double> {
             val x = (normalizelongitude(X.longitude - P.longitude)) * kx
@@ -77,24 +76,32 @@ object GeoNearest {
 
         val (ax, ay) = toLocalXY(A)
         val (bx, by) = toLocalXY(B)
-        val px = 0.0
-        val py = 0.0
+        val testPointX = 0.0
+        val testPointY = 0.0
 
-        val abx = bx - ax
-        val aby = by - ay
-        val apx = px - ax
-        val apy = py - ay
-        val ab2 = abx * abx + aby * aby
+        val segmentVectorX = bx - ax
+        val segmentVectorY = by - ay
+        val pointVectorX = testPointX - ax
+        val pointVectorY = testPointY - ay
+        val segmentLengthSquared = segmentVectorX * segmentVectorX + segmentVectorY * segmentVectorY
 
-        val t = if (ab2 < EPS) 0.0 else ((apx * abx + apy * aby) / ab2).coerceIn(0.0, 1.0)
-        val qx = ax + t * abx
-        val qy = ay + t * aby
+        val t =
+            if (segmentLengthSquared <
+                EPS
+            ) {
+                0.0
+            } else {
+                ((pointVectorX * segmentVectorX + pointVectorY * segmentVectorY) / segmentLengthSquared)
+                    .coerceIn(0.0, 1.0)
+            }
+        val projectionX = ax + t * segmentVectorX
+        val projectionY = ay + t * segmentVectorY
 
-        val dx = qx - px
-        val dy = qy - py
-        val d = hypot(dx, dy) // meters
+        val deltaX = projectionX - testPointX
+        val deltaY = projectionY - testPointY
+        val d = hypot(deltaX, deltaY) // meters
 
-        val hitLL = toGeoPoint(qx, qy)
+        val hitLL = toGeoPoint(projectionX, projectionY)
         return ClosestHit(radiusMeters = d, hit = hitLL, mode = "planar")
     }
 
@@ -138,7 +145,7 @@ object GeoNearest {
             }
 
         val delta = acos(clamp(dot(p, chosenQ), -1.0, 1.0)) // radians
-        val meters = delta * R
+        val meters = delta * Earth.RADIUS_METERS
         val hitLL = toGeoPoint(chosenQ)
 
         return ClosestHit(radiusMeters = meters, hit = hitLL, mode = "spherical")
@@ -191,19 +198,6 @@ object GeoNearest {
         hi: Double,
     ) = max(lo, min(hi, x))
 
-    private fun haversineMeters(
-        A: GeoPoint,
-        B: GeoPoint,
-    ): Double {
-        val φ1 = A.latitude * DEG
-        val φ2 = B.latitude * DEG
-        val dφ = (B.latitude - A.latitude) * DEG
-        val dλ = (normalizelongitude(B.longitude - A.longitude)) * DEG
-        val s = sin(dφ / 2).pow(2) + cos(φ1) * cos(φ2) * sin(dλ / 2).pow(2)
-        val c = 2 * atan2(sqrt(s), sqrt(max(0.0, 1 - s)))
-        return R * c
-    }
-
     private fun normalizelongitude(dlon: Double): Double {
         var x = dlon
         while (x > 180.0) x -= 360.0
@@ -229,7 +223,7 @@ object GeoNearest {
         val dPA = acos(clamp(dot(p, a), -1.0, 1.0))
         val dPB = acos(clamp(dot(p, b), -1.0, 1.0))
         val chosen = if (dPA <= dPB) A else B
-        val meters = min(dPA, dPB) * R
+        val meters = min(dPA, dPB) * Earth.RADIUS_METERS
         return ClosestHit(meters, chosen, mode)
     }
 }

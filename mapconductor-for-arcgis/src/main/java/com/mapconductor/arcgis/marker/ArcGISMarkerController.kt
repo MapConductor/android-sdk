@@ -56,7 +56,7 @@ class ArcGISMarkerController private constructor(
                 renderer.holder.map
                     .getCurrentViewpointCamera()
                     .getZoomLevel()
-            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom)
+            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom, 256)
             val radius = tolerance * meterInMapPixel
             val distance = haversineDistance(position, nearest.state.position)
             return if (distance <= radius) {

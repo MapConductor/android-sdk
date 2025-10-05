@@ -43,7 +43,7 @@ class HereMarkerController private constructor(
             val tolerance =
                 Settings.Default.tapTolerance.value
                     .toDouble() * ResourceProvider.getDensity()
-            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom)
+            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom, 256)
             val radius = tolerance * meterInMapPixel
             val distance = haversineDistance(position, nearest.state.position)
             return if (distance <= radius) {

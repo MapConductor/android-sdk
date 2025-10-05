@@ -5,6 +5,7 @@ import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.geocell.HexGeocellImpl
+import com.mapconductor.core.projection.Earth
 
 /**
  * Memory usage statistics for MarkerManager optimization
@@ -56,9 +57,8 @@ open class MarkerManager<ActualMarker>(
     ): Double {
         checkNotDestroyed()
         // Optimized calculation without native reflection calls
-        val earthCircumference = 40075017.0 // meters
         val pixelsAtZoom = tileSize * Math.pow(2.0, zoom)
-        return earthCircumference / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
+        return Earth.CIRCUMFERENCE_METERS / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
     }
 
     open fun findNearest(position: GeoPoint): MarkerEntity<ActualMarker>? {
@@ -72,9 +72,9 @@ open class MarkerManager<ActualMarker>(
                     .getEntryIDsByHexCell(cell)
                     ?.mapNotNull { id -> entities[id] }
                     ?.minByOrNull { entity ->
-                        val dx = entity.state.position.latitude - position.latitude
-                        val dy = entity.state.position.longitude - position.longitude
-                        dx * dx + dy * dy
+                        val deltaLatitude = entity.state.position.latitude - position.latitude
+                        val deltaLongitude = entity.state.position.longitude - position.longitude
+                        deltaLatitude * deltaLatitude + deltaLongitude * deltaLongitude
                     }
             } ?: bruteForceNearest(position) // Fallback if no cell found
         } else {

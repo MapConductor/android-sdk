@@ -28,7 +28,7 @@ object LineSegmentUtils {
         bounds.extend(point1)
         for (s in 1..samples) {
             val f = s.toDouble() / samples
-            val sp = Spherical.interpolate(point1, point2, f)
+            val sp = Spherical.sphericalInterpolate(point1, point2, f)
             bounds.extend(sp)
         }
         return bounds

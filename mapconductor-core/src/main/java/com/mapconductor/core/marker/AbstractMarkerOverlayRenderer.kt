@@ -3,6 +3,7 @@ package com.mapconductor.core.marker
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.projection.Earth
 import com.mapconductor.settings.Settings
 import kotlin.math.min
 import kotlin.math.pow
@@ -23,7 +24,6 @@ abstract class AbstractMarkerOverlayRenderer<
 >(
     val holder: MapViewHolderType,
     val coroutine: CoroutineScope,
-    val tileSize: Int = 256,
     val dropAnimateDuration: Long = Settings.Default.markerDropAnimateDuration,
     val bounceAnimateDuration: Long = Settings.Default.markerBounceAnimateDuration,
 ) : MarkerOverlayRenderer<ActualMarker> {
@@ -52,10 +52,10 @@ abstract class AbstractMarkerOverlayRenderer<
         }
     }
 
-    fun zoomToMetersPerPixel(zoom: Double): Double {
-        val earthCircumference = 40075016.686
-        return earthCircumference / (tileSize * 2.0.pow(zoom))
-    }
+    fun zoomToMetersPerPixel(
+        zoom: Double,
+        tileSize: Int,
+    ): Double = Earth.RADIUS_METERS / (tileSize * 2.0.pow(zoom))
 
     fun animateMarkerDrop(
         entity: MarkerEntity<ActualMarker>,
@@ -86,11 +86,11 @@ abstract class AbstractMarkerOverlayRenderer<
             val startLatLng = holder.fromScreenOffset(startPoint)!!
 
             // 緯度・経度を線形補間
-            val lat = t * target.latitude + (1f - t) * startLatLng.latitude
-            val lng = t * target.longitude + (1f - t) * startLatLng.longitude
+            val interpolatedLatitude = t * target.latitude + (1f - t) * startLatLng.latitude
+            val interpolatedLongitude = t * target.longitude + (1f - t) * startLatLng.longitude
 
             // 現在の座標をマーカーに適用
-            val newPosition = GeoPointImpl.fromLatLong(lat, lng)
+            val newPosition = GeoPointImpl.fromLatLong(interpolatedLatitude, interpolatedLongitude)
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             entity.state.position = target
@@ -119,11 +119,11 @@ abstract class AbstractMarkerOverlayRenderer<
             }
         }.onEach { t ->
             val startLatLng = holder.fromScreenOffset(startPoint) ?: return@onEach
-            val lng = t * target.longitude + (1f - t) * startLatLng.longitude
-            val lat = t * target.latitude + (1f - t) * startLatLng.latitude
+            val interpolatedLongitude = t * target.longitude + (1f - t) * startLatLng.longitude
+            val interpolatedLatitude = t * target.latitude + (1f - t) * startLatLng.latitude
 
             // 現在の座標をマーカーに適用
-            val newPosition = GeoPointImpl.fromLatLong(lat, lng)
+            val newPosition = GeoPointImpl.fromLatLong(interpolatedLatitude, interpolatedLongitude)
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）

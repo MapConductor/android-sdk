@@ -191,7 +191,7 @@ fun GeoPoint.offset(
 fun GeoPoint.interpolateTo(
     other: GeoPoint,
     fraction: Double,
-): GeoPointImpl = Spherical.interpolate(this, other, fraction)
+): GeoPointImpl = Spherical.sphericalInterpolate(this, other, fraction)
 
 /**
  * Extension function for linear interpolation (ignores Earth's curvature)

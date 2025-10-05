@@ -5,6 +5,7 @@ import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.spherical.GeoNearest.closestIntersection
+import com.mapconductor.core.spherical.Spherical
 
 fun isPointOnTheGeodesicLine(
     points: List<GeoPoint>,
@@ -26,9 +27,9 @@ fun isPointOnTheGeodesicLine(
         val box = GeoRectBounds()
         box.extend(points[i])
         box.extend(points[i + 1])
-        val trueDistance = haversineDistance(points[i], points[i + 1])
-        val testDistance1 = haversineDistance(points[i], position)
-        val testDistance2 = haversineDistance(points[i + 1], position)
+        val trueDistance = Spherical.computeDistanceBetween(points[i], points[i + 1])
+        val testDistance1 = Spherical.computeDistanceBetween(points[i], position)
+        val testDistance2 = Spherical.computeDistanceBetween(points[i + 1], position)
         // the distance is exactly same if the point is on the straight line
         if (Math.abs(trueDistance - (testDistance1 + testDistance2)) < threshold) {
             start = points[i]
@@ -48,7 +49,7 @@ fun isPointOnTheGeodesicLine(
     val wayPoints =
         createInterpolatePoints(listOf(start, finish), fStep)
             .filter {
-                if (haversineDistance(position, it) <= threshold) {
+                if (Spherical.computeDistanceBetween(position, it) <= threshold) {
                     debugDrawCircle?.invoke(it, threshold, Color.Green)
                     true
                 } else {
@@ -91,7 +92,7 @@ fun isPointOnTheGeodesicLine(
     }
 
     for (i in 0 until inspectPoints.size) {
-        val distance = haversineDistance(position, inspectPoints[i])
+        val distance = Spherical.computeDistanceBetween(position, inspectPoints[i])
         if (distance < minDistance) {
             minDistance = distance
             closestPoint = i

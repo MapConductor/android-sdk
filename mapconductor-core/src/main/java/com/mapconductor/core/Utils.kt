@@ -4,15 +4,15 @@ import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
+import com.mapconductor.core.projection.Earth
+import com.mapconductor.core.spherical.GeographicLibCalculator
 import com.mapconductor.core.spherical.Spherical
+import net.sf.geographiclib.Geodesic
 import kotlin.math.abs
-import kotlin.math.asin
-import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.time.Duration
 import android.util.Log
@@ -34,15 +34,13 @@ fun calculateZIndex(geoPointBase: GeoPoint): Int {
 fun calculateMetersPerPixel(
     latitude: Double,
     zoom: Double,
+    tileSize: Double = 256.0,
 ): Double {
     // Web Mercator projection formula for meters per pixel
     // Based on the standard: 1 pixel = 78271.484 meters at zoom 0 at the equator
 
-    val earthCircumference = 40075016.686 // meters at equator
-    val tileSize = 256.0 // standard tile size in pixels
-
-    // At zoom level 0, the entire world (40M meters) fits in 256 pixels
-    val metersPerPixelAtEquator = earthCircumference / tileSize
+    // At zoom level 0, the entire world (earthCircumferenceMeters meters) fits in tileSize pixels
+    val metersPerPixelAtEquator = Earth.CIRCUMFERENCE_METERS / tileSize
 
     // Adjust for zoom level (each zoom level halves the meters per pixel)
     val metersPerPixelAtZoom = metersPerPixelAtEquator / 2.0.pow(zoom)
@@ -55,19 +53,21 @@ fun calculateMetersPerPixel(
 }
 
 fun closestPointOnSegment(
-    a: Offset,
-    b: Offset,
-    p: Offset,
+    startPoint: Offset,
+    endPoint: Offset,
+    testPoint: Offset,
 ): Offset {
-    val ab = Offset(b.x - a.x, b.y - a.y)
-    val ap = Offset(p.x - a.x, p.y - a.y)
-    val abLen2 = ab.x * ab.x + ab.y * ab.y
-    if (abLen2 == 0.0f) return a // AとBが同じ点
+    val segmentVector = Offset(endPoint.x - startPoint.x, endPoint.y - startPoint.y)
+    val pointVector = Offset(testPoint.x - startPoint.x, testPoint.y - startPoint.y)
+    val segmentLengthSquared = segmentVector.x * segmentVector.x + segmentVector.y * segmentVector.y
+    if (segmentLengthSquared == 0.0f) return startPoint // AとBが同じ点
 
-    // 内積で射影係数 t を求める (0 ≤ t ≤ 1)
-    val t = ((ap.x * ab.x + ap.y * ab.y) / abLen2).coerceIn(0.0f, 1.0f)
+    // 内積で射影係数 projectionRatio を求める (0 ≤ projectionRatio ≤ 1)
+    val projectionRatio =
+        ((pointVector.x * segmentVector.x + pointVector.y * segmentVector.y) / segmentLengthSquared)
+            .coerceIn(0.0f, 1.0f)
 
-    return Offset(a.x + t * ab.x, a.y + t * ab.y)
+    return Offset(startPoint.x + projectionRatio * segmentVector.x, startPoint.y + projectionRatio * segmentVector.y)
 }
 
 fun meterToPixel(
@@ -76,7 +76,7 @@ fun meterToPixel(
     zoom: Double,
     tileSize: Double = 256.0, // Google Mapsはデフォルト256pxだが、Mapbox v10+はデフォルト512px
 ): Double {
-    val earthCircumference = 2 * Math.PI * 6378137
+    val earthCircumference = 2 * Math.PI * Earth.RADIUS_METERS
     val metersPerPixel = cos(Math.toRadians(latitude)) * earthCircumference / (tileSize * 2.0.pow(zoom))
     return meter / metersPerPixel
 }
@@ -93,96 +93,117 @@ fun printPoints(
 
 fun normalize(points: List<GeoPoint>): List<GeoPoint> = points.map { it.normalize() }
 
-
 fun pointOnGeodesicSegmentOrNull(
     from: GeoPoint,
     to: GeoPoint,
     position: GeoPoint,
-    thresholdMeters: Double
+    thresholdMeters: Double,
 ): Pair<GeoPoint, Double>? {
-    // 半径（Sphericalと同じWGS84準拠）
-    val radius = 6_378_137.0
+    val line =
+        Geodesic.WGS84.InverseLine(
+            from.latitude, from.longitude,
+            to.latitude, to.longitude,
+        )
+    val totalDistance = line.Distance()
 
-    // 退化: from==to は単なる点距離で判定
-    val dist12 = Spherical.computeDistanceBetween(from, to)
-    if (dist12 == 0.0) {
-        val distPosFrom = Spherical.computeDistanceBetween(from, position)
+    if (totalDistance == 0.0) {
+        val distPosFrom =
+            Geodesic.WGS84
+                .Inverse(
+                    from.latitude, from.longitude,
+                    position.latitude, position.longitude,
+                ).s12
         return if (distPosFrom <= thresholdMeters) {
-            Pair(
-                GeoPointImpl(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0),
-                distPosFrom
-            )
-        } else null
+            Pair(GeoPointImpl(from.latitude, from.longitude, from.altitude ?: 0.0), distPosFrom)
+        } else {
+            null
+        }
     }
 
-    // 角距離（ラジアン）
-    val ang12 = dist12 / radius
-    val distPosFrom = Spherical.computeDistanceBetween(from, position)
-    val ang13 = distPosFrom / radius
+    // 三分探索で最近点を見つける
+    var left = 0.0
+    var right = 1.0
+    val epsilon = 1e-6 // 十分な精度
 
-    // 方位角（ラジアン）
-    val heading12Rad = Math.toRadians(Spherical.computeHeading(from, to))
-    val heading13Rad = Math.toRadians(Spherical.computeHeading(from, position))
-    val headingDiffRad = heading13Rad - heading12Rad
+    while (right - left > epsilon) {
+        val m1 = left + (right - left) / 3.0
+        val m2 = right - (right - left) / 3.0
 
-    // クロストラック/アロングトラック（ラジアン）
-    val crossTrackRad = asin(sin(ang13) * sin(headingDiffRad))
-    val alongTrackRad = atan2(sin(ang13) * cos(headingDiffRad), cos(ang13))
+        val point1 = line.Position(totalDistance * m1)
+        val dist1 =
+            Geodesic.WGS84
+                .Inverse(
+                    point1.lat2, point1.lon2,
+                    position.latitude, position.longitude,
+                ).s12
 
-    // from→最近点 までの割合
-    val fractionAlong = alongTrackRad / ang12
+        val point2 = line.Position(totalDistance * m2)
+        val dist2 =
+            Geodesic.WGS84
+                .Inverse(
+                    point2.lat2, point2.lon2,
+                    position.latitude, position.longitude,
+                ).s12
 
-    // 線分外（<=0 or >=1）は端点で距離判定
-//    if (fractionAlong <= 0.0 || fractionAlong >= 1.0) {
-//        val distPosTo = Spherical.computeDistanceBetween(to, position)
-//        val minDist = min(distPosFrom, distPosTo)
-//        if (minDist > thresholdMeters) return null
-//
-//        return Pair(
-//            if (distPosFrom <= distPosTo) {
-//                GeoPointImpl(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0)
-//            } else {
-//                GeoPointImpl(to.latitude, to.longitude, to.altitude ?: from.altitude ?: 0.0)
-//            },
-//            distPosFrom
-//        )
-//    }
-    if (fractionAlong <= 0.0 || fractionAlong >= 1.0) {
-        val distPosTo = Spherical.computeDistanceBetween(to, position)
-        val minDist = min(distPosFrom, distPosTo)
-        if (minDist > thresholdMeters) return null
+        if (dist1 > dist2) {
+            left = m1
+        } else {
+            right = m2
+        }
+    }
+
+    val bestFraction = (left + right) / 2.0
+
+    // 線分外の判定
+    if (bestFraction <= 0.0 || bestFraction >= 1.0) {
+        val distFrom =
+            Geodesic.WGS84
+                .Inverse(
+                    from.latitude, from.longitude,
+                    position.latitude, position.longitude,
+                ).s12
+        val distTo =
+            Geodesic.WGS84
+                .Inverse(
+                    to.latitude, to.longitude,
+                    position.latitude, position.longitude,
+                ).s12
+
+        val actualMin = min(distFrom, distTo)
+        if (actualMin > thresholdMeters) return null
 
         return Pair(
-            // 最近端点
-    if (distPosFrom <= distPosTo) {
+            if (distFrom <= distTo) {
                 GeoPointImpl(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0)
             } else {
                 GeoPointImpl(to.latitude, to.longitude, to.altitude ?: from.altitude ?: 0.0)
             },
-            minDist  // 端点への距離（クロストラック距離ではない）
+            actualMin,
         )
     }
 
+    val closestPoint = line.Position(totalDistance * bestFraction)
 
-    val t = fractionAlong.coerceIn(0.0, 1.0)
-    val latClosest = from.latitude + t * (to.latitude - from.latitude)
-    val lngClosest = from.longitude + t * (to.longitude - from.longitude)
-    val altClosest = when {
-        from.altitude != null && to.altitude != null ->
-            from.altitude!! + t * (to.altitude!! - from.altitude!!)
-        from.altitude != null -> from.altitude!!
-        to.altitude != null -> to.altitude!!
-        else -> 0.0
-    }
-    val closestPoint = Spherical.interpolate(from, to, t)
-    val actualDistance = Spherical.computeDistanceBetween(position, closestPoint)
+    val minDistance =
+        Geodesic.WGS84
+            .Inverse(
+                closestPoint.lat2, closestPoint.lon2,
+                position.latitude, position.longitude,
+            ).s12
 
-    if (actualDistance > thresholdMeters) return null
+    if (minDistance > thresholdMeters) return null
 
-    return Pair(closestPoint, actualDistance)
+    val altitude =
+        when {
+            from.altitude != null && to.altitude != null ->
+                from.altitude!! + bestFraction * (to.altitude!! - from.altitude!!)
+            from.altitude != null -> from.altitude!!
+            to.altitude != null -> to.altitude!!
+            else -> 0.0
+        }
 
-    // 最近点（測地線上）を補間で取得
-    // return Pair(Spherical.interpolate(from, to, t), crossTrackMeters)
+    val result = GeoPointImpl(closestPoint.lat2, closestPoint.lon2, altitude)
+    return Pair(result, minDistance)
 }
 
 /**
@@ -193,23 +214,27 @@ fun isPointOnLinearLine(
     from: GeoPoint,
     to: GeoPoint,
     position: GeoPoint,
-    thresholdMeters: Double
+    thresholdMeters: Double,
 ): Pair<GeoPoint, Double>? {
     // --- 経度の unwrap（短い経路を採用） ---
     val fromLng = from.longitude
     val toLng = to.longitude
     val directDiff = toLng - fromLng
-    val crossMeridianDiff = when {
-        directDiff > 180.0  -> directDiff - 360.0
-        directDiff < -180.0 -> directDiff + 360.0
-        else                -> directDiff
-    }
+    val crossMeridianDiff =
+        when {
+            directDiff > 180.0 -> directDiff - 360.0
+            directDiff < -180.0 -> directDiff + 360.0
+            else -> directDiff
+        }
     val toLngUnwrapped = fromLng + crossMeridianDiff
 
     // position も from を基準に unwrap（±180 内に収める）
-    fun unwrapLngRelative(baseLng: Double, targetLng: Double): Double {
+    fun unwrapLngRelative(
+        baseLng: Double,
+        targetLng: Double,
+    ): Double {
         var diff = targetLng - baseLng
-        while (diff > 180.0)  diff -= 360.0
+        while (diff > 180.0) diff -= 360.0
         while (diff < -180.0) diff += 360.0
         return baseLng + diff
     }
@@ -220,104 +245,126 @@ fun isPointOnLinearLine(
     val metersPerDegLat = 111_132.954
     val metersPerDegLng = metersPerDegLat * cos(lat0Rad)
 
-    data class P(val x: Double, val y: Double)
-    fun toMetersPoint(lat: Double, lng: Double) =
-        P(x = lng * metersPerDegLng, y = lat * metersPerDegLat)
+    data class P(
+        val x: Double,
+        val y: Double,
+    )
 
-    val A = toMetersPoint(from.latitude, fromLng)
-    val B = toMetersPoint(to.latitude,   toLngUnwrapped)
-    val Pp= toMetersPoint(position.latitude, posLngUnwrapped)
+    fun toMetersPoint(
+        lat: Double,
+        lng: Double,
+    ) = P(x = lng * metersPerDegLng, y = lat * metersPerDegLat)
 
-    val ABx = B.x - A.x
-    val ABy = B.y - A.y
-    val APx = Pp.x - A.x
-    val APy = Pp.y - A.y
-    val abLen2 = ABx*ABx + ABy*ABy
+    val a = toMetersPoint(from.latitude, fromLng)
+    val b = toMetersPoint(to.latitude, toLngUnwrapped)
+    val pp = toMetersPoint(position.latitude, posLngUnwrapped)
+
+    val segmentVectorX = b.x - a.x
+    val segmentVectorY = b.y - a.y
+    val pointVectorX = pp.x - a.x
+    val pointVectorY = pp.y - a.y
+    val segmentLengthSquared = segmentVectorX * segmentVectorX + segmentVectorY * segmentVectorY
 
     // --- 退化: from==to は点距離で判定 ---
-    if (abLen2 == 0.0) {
-        val dx = Pp.x - A.x
-        val dy = Pp.y - A.y
-        val d  = sqrt(dx*dx + dy*dy)
+    if (segmentLengthSquared == 0.0) {
+        val deltaX = pp.x - a.x
+        val deltaY = pp.y - a.y
+        val d = sqrt(deltaX * deltaX + deltaY * deltaY)
         if (d > thresholdMeters) return null
 
         // 最近点は from 自身
-        val alt = when {
-            from.altitude != null -> from.altitude!!
-            to.altitude != null   -> to.altitude!!
-            else                  -> 0.0
-        }
+        val alt =
+            when {
+                from.altitude != null -> from.altitude!!
+                to.altitude != null -> to.altitude!!
+                else -> 0.0
+            }
         return Pair<GeoPoint, Double>(
             GeoPointImpl(
-                latitude  = from.latitude,
+                latitude = from.latitude,
                 longitude = normalizeLng(fromLng),
-                altitude  = alt
+                altitude = alt,
             ),
             d,
         )
     }
 
     // --- 線分への射影（最近点） ---
-    val t = ((APx*ABx + APy*ABy) / abLen2).coerceIn(0.0, 1.0)
-    val Cx = A.x + t * ABx
-    val Cy = A.y + t * ABy
-    val dx = Pp.x - Cx
-    val dy = Pp.y - Cy
-    val distanceMeters = sqrt(dx*dx + dy*dy)
+    val t = ((pointVectorX * segmentVectorX + pointVectorY * segmentVectorY) / segmentLengthSquared).coerceIn(0.0, 1.0)
+    val projectionX = a.x + t * segmentVectorX
+    val projectionY = a.y + t * segmentVectorY
+    val deltaX = pp.x - projectionX
+    val deltaY = pp.y - projectionY
+    val distanceMeters = sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    // --- t を地理座標に戻す（linearInterpolate と同じルール） ---
+    val latitude = from.latitude + t * (to.latitude - from.latitude)
+    val longitude = fromLng + t * crossMeridianDiff
 
     if (distanceMeters > thresholdMeters) return null
 
-    // --- t を地理座標に戻す（linearInterpolate と同じルール） ---
-    val lat = from.latitude + t * (to.latitude - from.latitude)
-    val lng = fromLng + t * crossMeridianDiff
-
-    val alt = when {
-        from.altitude != null && to.altitude != null ->
-            from.altitude!! + t * (to.altitude!! - from.altitude!!)
-        from.altitude != null -> from.altitude!!
-        to.altitude != null   -> to.altitude!!
-        else                  -> 0.0
-    }
+    val alt =
+        when {
+            from.altitude != null && to.altitude != null ->
+                from.altitude!! + t * (to.altitude!! - from.altitude!!)
+            from.altitude != null -> from.altitude!!
+            to.altitude != null -> to.altitude!!
+            else -> 0.0
+        }
 
     return Pair<GeoPoint, Double>(
         GeoPointImpl(
-            latitude  = lat,
-            longitude = normalizeLng(lng), // 既存の normalizeLng を使えるならそれでOK
-            altitude  = alt
+            latitude = latitude,
+            longitude = normalizeLng(longitude),
+            altitude = alt,
         ),
-        distanceMeters
+        distanceMeters,
     )
 }
+
 fun normalizeLng(lng: Double): Double {
     // [-180, 180] に収める
     return (((lng + 180.0) % 360.0 + 360.0) % 360.0) - 180.0
 }
+
 fun createInterpolatePoints(
     points: List<GeoPoint>,
-    fractionStep: Double = 0.01,
+    // 最大セグメント長（メートル）
+    maxSegmentLength: Double = 10000.0,
 ): List<GeoPoint> {
     val results = mutableListOf<GeoPoint>()
     results.add(points[0])
+
     for (i in 1 until points.size) {
-        var fraction = fractionStep
-        while (fraction <= 1.0) {
+        val distance =
+            Geodesic.WGS84
+                .Inverse(
+                    points[i - 1].latitude, points[i - 1].longitude,
+                    points[i].latitude, points[i].longitude,
+                ).s12
+
+        val numSegments = (distance / maxSegmentLength).toInt().coerceAtLeast(1)
+        val step = 1.0 / numSegments
+
+        var fraction = step
+        while (fraction < 1.0) {
             val point =
-                Spherical.interpolate(
-                    from = points[i - 1],
-                    to = points[i],
-                    fraction = fraction,
+                GeographicLibCalculator.interpolate(
+                    points[i - 1], points[i], fraction,
                 )
             results.add(point)
-            fraction += fractionStep
+            fraction += step
         }
         results.add(points[i])
     }
     return results
 }
 
-fun createLinearInterpolatePoints(points: List<GeoPoint>): List<GeoPoint> {
+fun createLinearInterpolatePoints(
+    points: List<GeoPoint>,
+    fractionStep: Double = 0.01,
+): List<GeoPoint> {
     val results = mutableListOf<GeoPoint>()
-    val fractionStep = 0.01
     results.add(points[0])
     for (i in 1 until points.size) {
         var fraction = fractionStep
@@ -477,7 +524,7 @@ private fun interpolateAtMeridianGeodesic(
     var iteration = 0
     while (iteration < maxIterations && (high - low) > tolerance) {
         val mid = (low + high) / 2.0
-        val interpolatedPoint = Spherical.interpolate(from, to, mid)
+        val interpolatedPoint = Spherical.sphericalInterpolate(from, to, mid)
         val interpolatedLng = interpolatedPoint.longitude
 
         // Normalize longitude to handle crossing
@@ -516,7 +563,7 @@ private fun interpolateAtMeridianGeodesic(
 
     // Final interpolation at the crossing point
     val finalFraction = (low + high) / 2.0
-    val crossingPoint = Spherical.interpolate(from, to, finalFraction)
+    val crossingPoint = Spherical.sphericalInterpolate(from, to, finalFraction)
 
     // Ensure the longitude is exactly at the target meridian
     return GeoPointImpl(

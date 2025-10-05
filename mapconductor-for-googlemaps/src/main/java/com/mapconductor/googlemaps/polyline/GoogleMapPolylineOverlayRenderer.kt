@@ -25,9 +25,9 @@ class GoogleMapPolylineOverlayRenderer(
 ) : AbstractPolylineOverlayRenderer<GoogleMapActualPolyline>() {
     override suspend fun createPolyline(state: PolylineState): GoogleMapActualPolyline? =
         withContext(coroutine.coroutineContext) {
-            val geoPoints: List<GeoPoint> =
+            val geoPoints: List<GeoPoint> = // state.points
                 when (state.geodesic) {
-                    true -> createInterpolatePoints(state.points)
+                    true -> createInterpolatePoints(state.points, maxSegmentLength = 1000.0)
                     false -> createLinearInterpolatePoints(state.points)
                 }
             val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
@@ -36,7 +36,8 @@ class GoogleMapPolylineOverlayRenderer(
                     .addAll(points)
                     .color(state.strokeColor.toArgb())
                     .width(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
-                    .geodesic(false)
+                    .geodesic(state.geodesic)
+                    .clickable(false)
 
             holder.map.addPolyline(options).also {
                 it.tag = state.id

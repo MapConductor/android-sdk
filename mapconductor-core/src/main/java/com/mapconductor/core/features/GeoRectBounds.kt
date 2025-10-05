@@ -102,16 +102,16 @@ class GeoRectBounds(
         lon1: Double,
         lon2: Double,
     ): Double {
-        val d = (lon2 - lon1 + 360) % 360
-        return if (d <= 180) d else 360 - d
+        val distance = (lon2 - lon1 + 360) % 360
+        return if (distance <= 180) distance else 360 - distance
     }
 
     private fun distanceWest(
         lon1: Double,
         lon2: Double,
     ): Double {
-        val d = (lon1 - lon2 + 360) % 360
-        return if (d <= 180) d else 360 - d
+        val distance = (lon1 - lon2 + 360) % 360
+        return if (distance <= 180) distance else 360 - distance
     }
 
     private fun containsLongitude(
@@ -128,12 +128,12 @@ class GeoRectBounds(
     fun contains(point: GeoPoint): Boolean {
         if (isEmpty) return false
 
-        val p = GeoPointImpl.from(point).wrap()
+        val wrappedPoint = GeoPointImpl.from(point).wrap()
         val sw = _southWest!!.wrap()
         val ne = _northEast!!.wrap()
 
-        val withinLat = p.latitude in sw.latitude..ne.latitude
-        val withinLng = containsLongitude(p.longitude, sw.longitude, ne.longitude)
+        val withinLat = wrappedPoint.latitude in sw.latitude..ne.latitude
+        val withinLng = containsLongitude(wrappedPoint.longitude, sw.longitude, ne.longitude)
 
         return withinLat && withinLng
     }
@@ -153,8 +153,8 @@ class GeoRectBounds(
                 if (lng1 <= lng2) {
                     (lng1 + lng2) / 2.0
                 } else {
-                    val mid = (lng1 + (lng2 + 360)) / 2.0
-                    if (mid > 180) mid - 360 else mid
+                    val centerLongitude = (lng1 + (lng2 + 360)) / 2.0
+                    if (centerLongitude > 180) centerLongitude - 360 else centerLongitude
                 }
 
             return GeoPointImpl(centerLat, centerLng)
@@ -246,7 +246,10 @@ class GeoRectBounds(
         val ne2 = other._northEast!!.wrap()
 
         // Latitude overlap (simple interval intersection)
-        val latOverlap = !(ne1.latitude < sw2.latitude || ne2.latitude < sw1.latitude)
+        val epsilon = 1e-9
+        val latOverlap =
+            ne1.latitude >= sw2.latitude - epsilon &&
+                ne2.latitude >= sw1.latitude - epsilon
         if (!latOverlap) {
 //            d("intersects: lat no-overlap: this=${this}, other=${other}")
             return false

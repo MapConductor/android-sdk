@@ -1,18 +1,11 @@
 ﻿package com.mapconductor.googlemaps
 
-import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
-import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.polyline.PolylineManagerImpl
-import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.circle.GoogleMapCircleOverlayRenderer
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
@@ -25,7 +18,6 @@ import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import kotlinx.coroutines.launch
 
 typealias GoogleMapViewHolder = MapViewHolder<MapView, GoogleMap>
 
@@ -116,53 +108,9 @@ object GoogleMapViewControllerStore : StaticHolder<GoogleMapViewControllerImpl>(
             GoogleMapPolylineOverlayRenderer(
                 holder = holder,
             )
-        val circleRenderer =
-            GoogleMapCircleOverlayRenderer(
-                holder = holder,
-            )
-
-        val debugDrawRectangle = { bounds: GeoRectBounds, strokeColor: Color ->
-            val points =
-                listOf(
-                    bounds.southWest!!,
-                    GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
-                    bounds.northEast!!,
-                    GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
-                    bounds.southWest!!,
-                )
-            val state =
-                PolylineState(
-                    points = points,
-                    strokeColor = strokeColor,
-                )
-            renderer.coroutine.launch {
-                renderer.createPolyline(state)
-            }
-            Unit
-        }
-        val debugDrawCircle = { center: GeoPoint, radius: Double, strokeColor: Color ->
-            val state =
-                CircleState(
-                    center = center,
-                    radiusMeters = radius,
-                    strokeColor = strokeColor,
-                    fillColor = Color.Transparent,
-                )
-            circleRenderer.coroutine.launch {
-                circleRenderer.createCircle(state)
-            }
-            Unit
-        }
-
-        val polylineManager =
-            PolylineManagerImpl<GoogleMapActualPolyline>(
-//            debugDrawRectangle = debugDrawRectangle,
-            debugDrawCircle = debugDrawCircle,
-            )
 
         val controller =
             GoogleMapPolylineController(
-                polylineManager = polylineManager,
                 renderer = renderer,
             )
         return controller

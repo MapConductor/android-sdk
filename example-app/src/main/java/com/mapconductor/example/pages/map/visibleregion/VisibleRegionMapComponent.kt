@@ -53,6 +53,7 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.example.MapViewContainer
 import android.annotation.SuppressLint
 import android.content.ClipData
@@ -458,7 +459,10 @@ private fun InfoRow(
 private fun formatLatLng(position: GeoPoint): String =
     "${String.format("%.6f", position.latitude)}, ${String.format("%.6f", position.longitude)}"
 
-private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.VisibleRegion): VisibleRegionInfo {
+private fun createVisibleRegionInfo(
+    visibleRegion: com.mapconductor.core.map.VisibleRegion,
+    earthRadiusMeters: Double = 6_378_137.0,
+): VisibleRegionInfo {
     val bounds = visibleRegion.bounds
     if (bounds.isEmpty || bounds.southWest == null || bounds.northEast == null) {
         return VisibleRegionInfo(
@@ -471,14 +475,14 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
     }
 
     val widthKm =
-        calculateDistance(
-            bounds.southWest!!.latitude, bounds.southWest!!.longitude,
-            bounds.southWest!!.latitude, bounds.northEast!!.longitude,
+        haversineDistance(
+            bounds.southWest!!,
+            bounds.southWest!!,
         )
     val heightKm =
-        calculateDistance(
-            bounds.southWest!!.latitude, bounds.southWest!!.longitude,
-            bounds.northEast!!.latitude, bounds.southWest!!.longitude,
+        haversineDistance(
+            bounds.southWest!!,
+            bounds.northEast!!,
         )
 
     return VisibleRegionInfo(
@@ -488,21 +492,4 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
         widthKm = widthKm,
         heightKm = heightKm,
     )
-}
-
-private fun calculateDistance(
-    lat1: Double,
-    lon1: Double,
-    lat2: Double,
-    lon2: Double,
-): Double {
-    val earthRadius = 6378137 / 1000
-    val dLat = Math.toRadians(lat2 - lat1)
-    val dLon = Math.toRadians(lon2 - lon1)
-    val a =
-        kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
-            kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
-            kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
-    val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
-    return earthRadius * c
 }

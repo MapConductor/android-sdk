@@ -28,13 +28,13 @@ data class HexCoord(
     // Get neighboring coordinates
     fun neighbors(): List<HexCoord> =
         Direction6.values().map {
-            HexCoord(q + it.dq, r + it.dr, depth)
+            HexCoord(q + it.deltaQ, r + it.deltaR, depth)
         }
 }
 
 enum class Direction6(
-    val dq: Int,
-    val dr: Int,
+    val deltaQ: Int,
+    val deltaR: Int,
 ) {
     Right(1, 0),
     RightUp(1, -1),

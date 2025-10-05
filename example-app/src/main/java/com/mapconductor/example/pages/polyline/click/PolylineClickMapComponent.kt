@@ -27,11 +27,13 @@ fun PolylineClickMapComponent(
         ) {
             // Polyline
             Polyline(polylineState)
-            Polyline(polylineState.copy(
-                id = "copy",
-                geodesic = false,
-                strokeColor = Color.Blue,
-            ))
+            Polyline(
+                polylineState.copy(
+                    id = "copy",
+                    geodesic = false,
+                    strokeColor = Color.Blue,
+                ),
+            )
 
             // Waypoint markers
             markers.forEach { marker ->
