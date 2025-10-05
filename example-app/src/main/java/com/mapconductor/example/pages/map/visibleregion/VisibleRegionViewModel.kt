@@ -3,10 +3,11 @@ package com.mapconductor.example.pages.map.visibleregion
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 
 interface VisibleRegionViewModel {
     val mapViewState: State<MapViewState<*>?>
@@ -111,14 +112,14 @@ class VisibleRegionViewModelImpl :
         val centerString = "Center: (${String.format("%.6f", centerLat)}, ${String.format("%.6f", centerLng)})"
 
         val widthKm =
-            haversineDistance(
+            computeDistanceBetween(
                 bounds.southWest!!,
-                bounds.southWest!!,
+                GeoPointImpl(bounds.southWest!!.latitude, bounds.southWest!!.longitude),
             )
         val heightKm =
-            haversineDistance(
+            computeDistanceBetween(
                 bounds.southWest!!,
-                bounds.northEast!!,
+                GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
             )
 
         return VisibleRegionInfo(

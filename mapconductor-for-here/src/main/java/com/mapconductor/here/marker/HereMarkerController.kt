@@ -6,7 +6,7 @@ import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.settings.Settings
@@ -45,7 +45,7 @@ class HereMarkerController private constructor(
                     .toDouble() * ResourceProvider.getDensity()
             val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom, 256)
             val radius = tolerance * meterInMapPixel
-            val distance = haversineDistance(position, nearest.state.position)
+            val distance = computeDistanceBetween(position, nearest.state.position)
             return if (distance <= radius) {
                 nearest
             } else {

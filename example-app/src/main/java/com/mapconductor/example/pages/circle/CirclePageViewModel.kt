@@ -15,8 +15,8 @@ import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.core.spherical.calculatePositionAtDistance
-import com.mapconductor.core.spherical.haversineDistance
 import com.mapconductor.example.toast.ToastMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -119,7 +119,7 @@ class CirclePageViewModelImpl :
         get() = _edgeMarker.value
 
     override val radiusMeters by derivedStateOf {
-        haversineDistance(circleCenter, _edgeMarker.value.position)
+        computeDistanceBetween(circleCenter, _edgeMarker.value.position)
     }
 
     override val circleState: CircleState

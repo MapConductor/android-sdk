@@ -36,7 +36,7 @@ import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import android.annotation.SuppressLint
@@ -569,7 +569,6 @@ private fun calculateAverageRatio(
 
 private fun createVisibleRegionInfo(
     visibleRegion: com.mapconductor.core.map.VisibleRegion,
-    earthRadiusMeters: Double = 6_378_137.0,
 ): VisibleRegionInfo {
     val bounds = visibleRegion.bounds
     if (bounds.isEmpty || bounds.southWest == null || bounds.northEast == null) {
@@ -583,12 +582,12 @@ private fun createVisibleRegionInfo(
     }
 
     val widthKm =
-        haversineDistance(
+        computeDistanceBetween(
             bounds.southWest!!,
             GeoPointImpl(bounds.southWest!!.latitude, bounds.southWest!!.longitude),
         )
     val heightKm =
-        haversineDistance(
+        computeDistanceBetween(
             bounds.southWest!!,
             GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
         )

@@ -53,7 +53,7 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.example.MapViewContainer
 import android.annotation.SuppressLint
 import android.content.ClipData
@@ -461,7 +461,6 @@ private fun formatLatLng(position: GeoPoint): String =
 
 private fun createVisibleRegionInfo(
     visibleRegion: com.mapconductor.core.map.VisibleRegion,
-    earthRadiusMeters: Double = 6_378_137.0,
 ): VisibleRegionInfo {
     val bounds = visibleRegion.bounds
     if (bounds.isEmpty || bounds.southWest == null || bounds.northEast == null) {
@@ -475,14 +474,14 @@ private fun createVisibleRegionInfo(
     }
 
     val widthKm =
-        haversineDistance(
+        computeDistanceBetween(
             bounds.southWest!!,
-            bounds.southWest!!,
+            GeoPointImpl(bounds.southWest!!.latitude, bounds.southWest!!.longitude),
         )
     val heightKm =
-        haversineDistance(
+        computeDistanceBetween(
             bounds.southWest!!,
-            bounds.northEast!!,
+            GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
         )
 
     return VisibleRegionInfo(

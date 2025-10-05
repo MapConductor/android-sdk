@@ -13,7 +13,7 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.settings.Settings
 
 internal data class SelectedMarker(
@@ -58,7 +58,7 @@ class ArcGISMarkerController private constructor(
                     .getZoomLevel()
             val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom, 256)
             val radius = tolerance * meterInMapPixel
-            val distance = haversineDistance(position, nearest.state.position)
+            val distance = computeDistanceBetween(position, nearest.state.position)
             return if (distance <= radius) {
                 nearest
             } else {
