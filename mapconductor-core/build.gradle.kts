@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.foundation)
+    implementation(libs.net.sf.geographiclib)
 
     // Core dependencies - use api to avoid version conflicts
     api(libs.androidx.core.ktx)

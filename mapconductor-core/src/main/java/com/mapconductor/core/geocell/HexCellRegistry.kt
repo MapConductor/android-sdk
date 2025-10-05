@@ -239,9 +239,9 @@ class HexCellRegistry<ActualMarker>(
                 },
             )
 
-        val dx = p2.x - p1.x
-        val dy = p2.y - p1.y
-        return sqrt(dx * dx + dy * dy).toDouble()
+        val deltaX = p2.x - p1.x
+        val deltaY = p2.y - p1.y
+        return sqrt(deltaX * deltaX + deltaY * deltaY).toDouble()
     }
 
     /**

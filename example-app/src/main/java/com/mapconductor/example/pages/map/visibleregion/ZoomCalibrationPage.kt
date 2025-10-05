@@ -36,12 +36,9 @@ import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 import android.annotation.SuppressLint
 
 @SuppressLint("DefaultLocale")
@@ -583,14 +580,14 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
     }
 
     val widthKm =
-        calculateDistance(
-            bounds.southWest!!.latitude, bounds.southWest!!.longitude,
-            bounds.southWest!!.latitude, bounds.northEast!!.longitude,
+        computeDistanceBetween(
+            bounds.southWest!!,
+            GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
         )
     val heightKm =
-        calculateDistance(
-            bounds.southWest!!.latitude, bounds.southWest!!.longitude,
-            bounds.northEast!!.latitude, bounds.southWest!!.longitude,
+        computeDistanceBetween(
+            bounds.southWest!!,
+            GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
         )
 
     return VisibleRegionInfo(
@@ -600,21 +597,4 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
         widthKm = widthKm,
         heightKm = heightKm,
     )
-}
-
-private fun calculateDistance(
-    lat1: Double,
-    lon1: Double,
-    lat2: Double,
-    lon2: Double,
-): Double {
-    val earthRadius = 6371.0
-    val dLat = Math.toRadians(lat2 - lat1)
-    val dLon = Math.toRadians(lon2 - lon1)
-    val a =
-        sin(dLat / 2) * sin(dLat / 2) +
-            cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
-            sin(dLon / 2) * sin(dLon / 2)
-    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return earthRadius * c
 }

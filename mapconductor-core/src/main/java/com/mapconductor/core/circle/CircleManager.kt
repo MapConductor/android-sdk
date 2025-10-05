@@ -2,7 +2,7 @@ package com.mapconductor.core.circle
 
 import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.Spherical
 import java.util.concurrent.ConcurrentHashMap
 
 interface CircleManager<ActualCircle> {
@@ -51,7 +51,7 @@ class CircleManagerImpl<ActualCircle> : CircleManager<ActualCircle> {
         val filtered =
             allEntities().filter { entity ->
                 val centerPos = entity.state.center
-                val distance = haversineDistance(centerPos, position)
+                val distance = Spherical.computeDistanceBetween(centerPos, position)
                 return@filter (distance <= entity.state.radiusMeters) && entity.state.clickable
             }
 

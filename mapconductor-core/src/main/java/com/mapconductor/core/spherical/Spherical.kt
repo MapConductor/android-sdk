@@ -2,7 +2,10 @@ package com.mapconductor.core.spherical
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.normalizeLng
+import com.mapconductor.core.projection.Earth
 import kotlin.math.abs
+import kotlin.math.acos
 import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -17,9 +20,6 @@ import kotlin.math.sqrt
  * Uses GeoPoint instead of LatLng for coordinate representation.
  */
 object Spherical {
-    // Earth's radius in meters (WGS84 ellipsoid semi-major axis)
-    private const val EARTH_RADIUS = 6378137.0
-
     // Mathematical constants
     private const val PI = Math.PI
     private const val RAD_TO_DEG = 180.0 / PI
@@ -42,14 +42,14 @@ object Spherical {
         val deltaLat = (to.latitude - from.latitude) * DEG_TO_RAD
         val deltaLng = (to.longitude - from.longitude) * DEG_TO_RAD
 
-        val a =
+        val haversineA =
             sin(deltaLat / 2) * sin(deltaLat / 2) +
                 cos(lat1Rad) * cos(lat2Rad) *
                 sin(deltaLng / 2) * sin(deltaLng / 2)
 
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        val centralAngle = 2 * atan2(sqrt(haversineA), sqrt(1 - haversineA))
 
-        return EARTH_RADIUS * c
+        return Earth.RADIUS_METERS * centralAngle
     }
 
     /**
@@ -68,10 +68,10 @@ object Spherical {
         val lat2Rad = to.latitude * DEG_TO_RAD
         val deltaLng = (to.longitude - from.longitude) * DEG_TO_RAD
 
-        val y = sin(deltaLng) * cos(lat2Rad)
-        val x = cos(lat1Rad) * sin(lat2Rad) - sin(lat1Rad) * cos(lat2Rad) * cos(deltaLng)
+        val deltaY = sin(deltaLng) * cos(lat2Rad)
+        val deltaX = cos(lat1Rad) * sin(lat2Rad) - sin(lat1Rad) * cos(lat2Rad) * cos(deltaLng)
 
-        var heading = atan2(y, x) * RAD_TO_DEG
+        var heading = atan2(deltaY, deltaX) * RAD_TO_DEG
 
         // Normalize to (-180, 180]
         while (heading > 180) heading -= 360
@@ -94,7 +94,7 @@ object Spherical {
         distance: Double,
         heading: Double,
     ): GeoPointImpl {
-        val distanceRad = distance / EARTH_RADIUS
+        val distanceRad = distance / Earth.RADIUS_METERS
         val headingRad = heading * DEG_TO_RAD
         val lat1Rad = origin.latitude * DEG_TO_RAD
         val lng1Rad = origin.longitude * DEG_TO_RAD
@@ -183,10 +183,10 @@ object Spherical {
         if (path.size < 3) return 0.0
 
         var area = 0.0
-        val n = path.size
+        val pointCount = path.size
 
         for (i in path.indices) {
-            val j = (i + 1) % n
+            val j = (i + 1) % pointCount
             val lat1 = path[i].latitude * DEG_TO_RAD
             val lat2 = path[j].latitude * DEG_TO_RAD
             val deltaLng = (path[j].longitude - path[i].longitude) * DEG_TO_RAD
@@ -194,32 +194,44 @@ object Spherical {
             area += deltaLng * (2 + sin(lat1) + sin(lat2))
         }
 
-        return area * EARTH_RADIUS * EARTH_RADIUS / 2.0
+        return area * Earth.RADIUS_METERS * Earth.RADIUS_METERS / 2.0
     }
 
     /**
-     * Interpolates between two GeoPoint locations along the great circle path.
+     * Interpolates between two GeoPoint locations along the great circle path using spherical linear interpolation (Slerp).
+     * This method considers Earth's curvature and provides high accuracy for any distance.
      *
      * @param from Starting point
      * @param to Ending point
      * @param fraction Interpolation fraction (0.0 = from, 1.0 = to)
      * @return Interpolated GeoPoint position
      */
-    fun interpolate(
+    fun sphericalInterpolate(
         from: GeoPoint,
         to: GeoPoint,
         fraction: Double,
     ): GeoPointImpl {
-        val lat1Rad = from.latitude * DEG_TO_RAD
-        val lng1Rad = from.longitude * DEG_TO_RAD
-        val lat2Rad = to.latitude * DEG_TO_RAD
-        val lng2Rad = to.longitude * DEG_TO_RAD
+        // ラジアンに変換
+        val lat1 = from.latitude * DEG_TO_RAD
+        val lng1 = from.longitude * DEG_TO_RAD
+        val lat2 = to.latitude * DEG_TO_RAD
+        val lng2 = to.longitude * DEG_TO_RAD
 
-        val deltaLat = lat2Rad - lat1Rad
-        val deltaLng = lng2Rad - lng1Rad
+        // 3D単位ベクトルに変換
+        val x1 = cos(lat1) * cos(lng1)
+        val y1 = cos(lat1) * sin(lng1)
+        val z1 = sin(lat1)
 
-        // Use simple linear interpolation for small distances
-        if (abs(deltaLat) < 0.1 && abs(deltaLng) < 0.1) {
+        val x2 = cos(lat2) * cos(lng2)
+        val y2 = cos(lat2) * sin(lng2)
+        val z2 = sin(lat2)
+
+        // 内積から角度を求める
+        val dot = x1 * x2 + y1 * y2 + z1 * z2
+        val angle = acos(dot.coerceIn(-1.0, 1.0))
+
+        // 非常に近い点は線形補間
+        if (angle < 1e-6) {
             val interpolatedAltitude =
                 when {
                     from.altitude != null && to.altitude != null ->
@@ -236,11 +248,33 @@ object Spherical {
             )
         }
 
-        // Use great circle interpolation for larger distances
-        val distance = computeDistanceBetween(from, to)
-        val heading = computeHeading(from, to)
+        // 球面線形補間（Slerp）
+        val sinAngle = sin(angle)
+        val weightFrom = sin((1 - fraction) * angle) / sinAngle
+        val weightTo = sin(fraction * angle) / sinAngle
 
-        return computeOffset(from, distance * fraction, heading)
+        val vectorX = weightFrom * x1 + weightTo * x2
+        val vectorY = weightFrom * y1 + weightTo * y2
+        val vectorZ = weightFrom * z1 + weightTo * z2
+
+        // 3Dベクトルから緯度経度に変換
+        val lat = asin(vectorZ) * RAD_TO_DEG
+        val lng = atan2(vectorY, vectorX) * RAD_TO_DEG
+
+        val interpolatedAltitude =
+            when {
+                from.altitude != null && to.altitude != null ->
+                    from.altitude!! + fraction * (to.altitude!! - from.altitude!!)
+                from.altitude != null -> from.altitude
+                to.altitude != null -> to.altitude
+                else -> 0.0
+            }
+
+        return GeoPointImpl(
+            latitude = lat,
+            longitude = lng,
+            altitude = interpolatedAltitude!!,
+        )
     }
 
     /**
@@ -295,7 +329,7 @@ object Spherical {
         val interpolatedLongitude = fromLng + fraction * crossMeridianDiff
 
         // Normalize longitude to [-180, 180] range
-        val normalizedLongitude = normalizeLng(interpolatedLongitude)
+        val normalizedLongitude = com.mapconductor.core.normalizeLng(interpolatedLongitude)
 
         return GeoPointImpl(
             latitude = interpolatedLatitude,
@@ -303,11 +337,6 @@ object Spherical {
             altitude = interpolatedAltitude!!,
         )
     }
-
-    /**
-     * Normalizes longitude to the range (-180, 180].
-     */
-    private fun normalizeLng(lng: Double): Double = (((lng + 180) % 360 + 360) % 360) - 180
 
     /**
      * Clamps latitude to the range [-90, 90].

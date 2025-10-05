@@ -44,7 +44,7 @@ fun PolylineClickMapPage(onToggleSidebar: () -> Unit = {}) {
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
                     ),
         ) {
-            Text("Tap on the curved polyline")
+            Text("Tap on the curved polyline. A marker would be placed on the tapped polyline.")
         }
     }
 }

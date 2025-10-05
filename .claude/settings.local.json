@@ -15,7 +15,8 @@
       "Bash(find:*)",
       "Bash(for:*)",
       "WebFetch(domain:github.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
