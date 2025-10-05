@@ -35,7 +35,7 @@ class GoogleMapPolygonOverlayRenderer(
                     .strokeColor(state.strokeColor.toArgb())
                     .strokeWidth(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                     .fillColor(state.fillColor.toArgb())
-                    .clickable(true)
+                    .clickable(false)
             holder.map.addPolygon(options)?.also {
                 it.tag = state.id
             }

@@ -147,17 +147,13 @@ abstract class AbstractMarkerController<ActualMarker>(
             val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
             val updated = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
             val removed = mutableListOf<MarkerEntity<ActualMarker>>()
-            val viewportBounds = mapCameraPosition?.visibleRegion?.bounds ?: worldBounds
 
             data.forEach { state ->
-                val isInViewport = viewportBounds.contains(state.position)
 
                 if (previous.contains(state.id)) {
                     val prevEntity = markerManager.getEntity(state.id)!!
                     val markerIcon = state.icon?.toBitmapIcon() ?: defaultIcon
 
-                    // Only add to update list if marker is in viewport
-//                    if (isInViewport) {
                     updated.add(
                         object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
                             override val current: MarkerEntity<ActualMarker> =
@@ -170,20 +166,8 @@ abstract class AbstractMarkerController<ActualMarker>(
                             override val prev: MarkerEntity<ActualMarker> = prevEntity
                         },
                     )
-//                    } else {
-//                        // Register entity without rendering for markers outside viewport
-//                        val entity =
-//                            MarkerEntityImpl(
-//                                state = state,
-//                                marker = prevEntity.marker,
-//                                isRendered = false,
-//                            )
-//                        markerManager.registerEntity(entity)
-//                    }
                     previous.remove(state.id)
                 } else {
-                    // Only add to render list if marker is in viewport
-//                    if (isInViewport) {
                     added.add(
                         object : MarkerOverlayRenderer.AddParams {
                             override val state: MarkerState = state
@@ -191,16 +175,6 @@ abstract class AbstractMarkerController<ActualMarker>(
                                 state.icon?.toBitmapIcon() ?: defaultIcon
                         },
                     )
-//                    } else {
-//                        // Register entity without rendering for new markers outside viewport
-//                        val entity =
-//                            MarkerEntityImpl<ActualMarker>(
-//                                marker = null,
-//                                state = state,
-//                                isRendered = false,
-//                            )
-//                        markerManager.registerEntity(entity)
-//                    }
                     previous.remove(state.id)
                 }
             }

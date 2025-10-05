@@ -237,9 +237,9 @@ class KDTree(
         a: Offset,
         b: Offset,
     ): Float {
-        val dx = a.x - b.x
-        val dy = a.y - b.y
-        return dx * dx + dy * dy
+        val deltaX = a.x - b.x
+        val deltaY = a.y - b.y
+        return deltaX * deltaX + deltaY * deltaY
     }
 
     /**

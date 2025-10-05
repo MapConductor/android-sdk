@@ -4,6 +4,9 @@ import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineEntity
@@ -22,7 +25,12 @@ class GoogleMapPolylineOverlayRenderer(
 ) : AbstractPolylineOverlayRenderer<GoogleMapActualPolyline>() {
     override suspend fun createPolyline(state: PolylineState): GoogleMapActualPolyline? =
         withContext(coroutine.coroutineContext) {
-            val points = state.points.map { GeoPointImpl.from(it).toLatLng() }
+            val geoPoints: List<GeoPoint> = // state.points
+                when (state.geodesic) {
+                    true -> createInterpolatePoints(state.points, maxSegmentLength = 1000.0)
+                    false -> createLinearInterpolatePoints(state.points)
+                }
+            val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
             val options =
                 PolylineOptions()
                     .addAll(points)
@@ -45,13 +53,14 @@ class GoogleMapPolylineOverlayRenderer(
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
 
-            if (finger.points != prevFinger.points) {
-                val points = current.state.points.map { GeoPointImpl.from(it).toLatLng() }
+            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
+                val geoPoints: List<GeoPoint> =
+                    when (current.state.geodesic) {
+                        true -> createInterpolatePoints(current.state.points)
+                        false -> createLinearInterpolatePoints(current.state.points)
+                    }
+                val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
                 polyline.points = points
-            }
-
-            if (finger.geodesic != prevFinger.geodesic) {
-                polyline.isGeodesic = current.state.geodesic
             }
 
             if (finger.strokeWidth != prevFinger.strokeWidth) {

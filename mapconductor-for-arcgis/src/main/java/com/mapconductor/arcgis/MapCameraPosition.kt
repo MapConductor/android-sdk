@@ -7,14 +7,13 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.PI
 import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
-
-const val ZOOM0_ALTITUDE = 5_000_000.0
 
 private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
@@ -30,8 +29,6 @@ fun MapCameraPositionImpl.toCamera(): Camera {
     )
 }
 
-internal const val EARTH_MEAN_RADIUS_METERS = 6371000.0
-internal const val DEFAULT_MAX_GMAPS_TILT = 60.0
 internal const val ARCGIS_MAX_PITCH = 90.0
 internal const val MIN_ANGLE = 0.0
 
@@ -51,7 +48,7 @@ fun calculateDestinationPoint(
     val latRad = lat.toRadians()
     val lonRad = lon.toRadians()
     val bearingRad = bearing.toRadians()
-    val angularDistance = distance / EARTH_MEAN_RADIUS_METERS
+    val angularDistance = distance / Earth.RADIUS_METERS
 
     val destLatRad = asin(sin(latRad) * cos(angularDistance) + cos(latRad) * sin(angularDistance) * cos(bearingRad))
 

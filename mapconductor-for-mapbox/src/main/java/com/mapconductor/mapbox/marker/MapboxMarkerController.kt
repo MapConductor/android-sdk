@@ -6,7 +6,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.spherical.haversineDistance
+import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.settings.Settings
 
@@ -50,9 +50,9 @@ class MapboxMarkerController(
             val tolerance =
                 Settings.Default.tapTolerance.value
                     .toDouble() * ResourceProvider.getDensity()
-            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom)
-            val radius = tolerance * meterInMapPixel
-            val distance = haversineDistance(position, nearest.state.position)
+            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom, 256)
+            val radius = (tolerance * 0.5) * meterInMapPixel
+            val distance = computeDistanceBetween(position, nearest.state.position)
             return if (distance <= radius) {
                 nearest
             } else {

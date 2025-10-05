@@ -3,9 +3,11 @@ package com.mapconductor.example.pages.map.visibleregion
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 
 interface VisibleRegionViewModel {
     val mapViewState: State<MapViewState<*>?>
@@ -110,14 +112,14 @@ class VisibleRegionViewModelImpl :
         val centerString = "Center: (${String.format("%.6f", centerLat)}, ${String.format("%.6f", centerLng)})"
 
         val widthKm =
-            calculateDistance(
-                bounds.southWest!!.latitude, bounds.southWest!!.longitude,
-                bounds.southWest!!.latitude, bounds.northEast!!.longitude,
+            computeDistanceBetween(
+                bounds.southWest!!,
+                GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
             )
         val heightKm =
-            calculateDistance(
-                bounds.southWest!!.latitude, bounds.southWest!!.longitude,
-                bounds.northEast!!.latitude, bounds.southWest!!.longitude,
+            computeDistanceBetween(
+                bounds.southWest!!,
+                GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
             )
 
         return VisibleRegionInfo(
@@ -127,22 +129,5 @@ class VisibleRegionViewModelImpl :
             widthKm = widthKm,
             heightKm = heightKm,
         )
-    }
-
-    private fun calculateDistance(
-        lat1: Double,
-        lon1: Double,
-        lat2: Double,
-        lon2: Double,
-    ): Double {
-        val earthRadius = 6371.0 // Earth's radius in kilometers
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val a =
-            kotlin.math.sin(dLat / 2) * kotlin.math.sin(dLat / 2) +
-                kotlin.math.cos(Math.toRadians(lat1)) * kotlin.math.cos(Math.toRadians(lat2)) *
-                kotlin.math.sin(dLon / 2) * kotlin.math.sin(dLon / 2)
-        val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
-        return earthRadius * c
     }
 }
