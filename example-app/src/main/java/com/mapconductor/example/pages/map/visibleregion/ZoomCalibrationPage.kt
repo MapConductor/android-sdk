@@ -567,9 +567,7 @@ private fun calculateAverageRatio(
     return if (ratios.isEmpty()) 1.0 else ratios.average()
 }
 
-private fun createVisibleRegionInfo(
-    visibleRegion: com.mapconductor.core.map.VisibleRegion,
-): VisibleRegionInfo {
+private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.VisibleRegion): VisibleRegionInfo {
     val bounds = visibleRegion.bounds
     if (bounds.isEmpty || bounds.southWest == null || bounds.northEast == null) {
         return VisibleRegionInfo(

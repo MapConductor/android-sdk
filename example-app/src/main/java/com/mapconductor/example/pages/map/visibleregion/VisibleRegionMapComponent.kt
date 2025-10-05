@@ -459,9 +459,7 @@ private fun InfoRow(
 private fun formatLatLng(position: GeoPoint): String =
     "${String.format("%.6f", position.latitude)}, ${String.format("%.6f", position.longitude)}"
 
-private fun createVisibleRegionInfo(
-    visibleRegion: com.mapconductor.core.map.VisibleRegion,
-): VisibleRegionInfo {
+private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.VisibleRegion): VisibleRegionInfo {
     val bounds = visibleRegion.bounds
     if (bounds.isEmpty || bounds.southWest == null || bounds.northEast == null) {
         return VisibleRegionInfo(

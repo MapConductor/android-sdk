@@ -85,26 +85,23 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
                 box.extend(entity.state.points[i + 1])
 
                 if (visibleRegion == null || visibleRegion.intersects(box)) {
-                    if (entity.state.geodesic) {
-                        pointOnGeodesicSegmentOrNull(
-                            entity.state.points[i], // 元の点を使う
-                            entity.state.points[i + 1],
-                            position,
-                            threshold,
-                        )?.let {
-                            candidates.add(Triple(entity, it.first, it.second))
-                        }
-                    } else {
-                        isPointOnLinearLine(
-                            entity.state.points[i],
-                            entity.state.points[i + 1],
-                            position,
-                            threshold,
-//                            debugDrawRectangle,
-//                            debugDrawCircle,
-                        )?.let {
-                            candidates.add(Triple(entity, it.first, it.second))
-                        }
+                    when (entity.state.geodesic) {
+                        true ->
+                            pointOnGeodesicSegmentOrNull(
+                                entity.state.points[i],
+                                entity.state.points[i + 1],
+                                position,
+                                threshold,
+                            )
+                        false ->
+                            isPointOnLinearLine(
+                                entity.state.points[i],
+                                entity.state.points[i + 1],
+                                position,
+                                threshold,
+                            )
+                    }?.let {
+                        candidates.add(Triple(entity, it.first, it.second))
                     }
                 }
             }
