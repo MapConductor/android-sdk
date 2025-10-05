@@ -77,14 +77,7 @@ class PolylineManagerImpl<ActualPolyline> : PolylineManager<ActualPolyline> {
         val zoom = cameraPosition?.zoom ?: 0.0
         val threshold = calculateMetersPerPixel(position.latitude, zoom) * fingerSize
 
-        val entities =
-            if (visibleRegion != null) {
-                entities.values.filter { visibleRegion.intersects(it.bounds) }
-            } else {
-                entities.values
-            }
-
-        entities.forEach { entity ->
+        entities.values.forEach { entity ->
             // 補間せず、元の線分を直接使う
             for (i in 0 until entity.state.points.size - 1) {
                 val box = GeoRectBounds()
