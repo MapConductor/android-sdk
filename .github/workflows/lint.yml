@@ -69,8 +69,8 @@ jobs:
         run: |
           modules=$(grep '^modules=' projects.properties | cut -d= -f2 | tr ',' ' ')
           echo "modules=$modules" >> $GITHUB_OUTPUT
-          here_sdk_name=$(grep '^hereSdkAarName=' gradle.properties | cut -d= -f2 | tr -d '\r')
-          echo "here_sdk_artifact=$here_sdk_name" >> $GITHUB_OUTPUT
+          # here_sdk_name=$(grep '^hereSdkAarName=' gradle.properties | cut -d= -f2 | tr -d '\r')
+          # echo "here_sdk_artifact=$here_sdk_name" >> $GITHUB_OUTPUT
 
       - name: Restore hash cache
         uses: actions/cache/restore@v4
