@@ -228,14 +228,26 @@ dependencies {
 //    implementation("com.mapconductor:marker-strategy")
 //    implementation("com.mapconductor:marker-native-strategy")
 
-    implementation(project(":mapconductor-core"))
-    implementation(project(":mapconductor-icons"))
-    implementation(project(":mapconductor-for-googlemaps"))
-    implementation(project(":mapconductor-for-here"))
-    implementation(project(":mapconductor-for-mapbox"))
-    implementation(project(":mapconductor-for-arcgis"))
-    implementation(project(":mapconductor-marker-strategy"))
-    implementation(project(":mapconductor-marker-native-strategy"))
+    // Use project dependency for debug, Maven artifact for release
+    // Align versions in release via the project BOM
+    releaseImplementation(platform(project(":mapconductor-bom")))
+    releaseImplementation(libs.mapconductor.core)
+    releaseImplementation(libs.mapconductor.icons)
+    releaseImplementation(libs.mapconductor.googlemaps)
+    releaseImplementation(libs.mapconductor.here)
+    releaseImplementation(libs.mapconductor.mapbox)
+    releaseImplementation(libs.mapconductor.arcgis)
+    releaseImplementation(libs.mapconductor.marker.strategy)
+    releaseImplementation(libs.mapconductor.marker.native.strategy)
+
+    debugImplementation(project(":mapconductor-core"))
+    debugImplementation(project(":mapconductor-icons"))
+    debugImplementation(project(":mapconductor-for-googlemaps"))
+    debugImplementation(project(":mapconductor-for-here"))
+    debugImplementation(project(":mapconductor-for-mapbox"))
+    debugImplementation(project(":mapconductor-for-arcgis"))
+    debugImplementation(project(":mapconductor-marker-strategy"))
+    debugImplementation(project(":mapconductor-marker-native-strategy"))
 
     implementation(libs.androidx.vectordrawable)
 

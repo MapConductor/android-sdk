@@ -92,6 +92,8 @@ class PostOfficeViewModelImpl(
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
         coroutine.launch {
+            // Wait until map tiles are rendered.
+            delay(2500)
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
@@ -117,8 +119,6 @@ class PostOfficeViewModelImpl(
 
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
         coroutine.launch {
-            // Wait until map tiles are rendered.
-            delay(3000)
             _isMapLoaded.value = true
         }
     }

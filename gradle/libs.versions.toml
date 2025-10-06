@@ -61,6 +61,14 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
 
 # Mapbox
+mapconductor-core = { module = "com.mapconductor:core" }
+mapconductor-icons = { module = "com.mapconductor:icons" }
+mapconductor-googlemaps = { module = "com.mapconductor:for-googlemaps" }
+mapconductor-mapbox = { module = "com.mapconductor:for-mapbox" }
+mapconductor-here = { module = "com.mapconductor:for-here" }
+mapconductor-arcgis = { module = "com.mapconductor:for-arcgis" }
+mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
+mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
 
 # Google Maps
