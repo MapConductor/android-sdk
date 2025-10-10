@@ -43,6 +43,10 @@ android {
     kotlinOptions {
         jvmTarget = project.property("jvmTarget").toString()
     }
+
+    buildFeatures {
+        aidl = true
+    }
 }
 
 dependencies {

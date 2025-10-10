@@ -128,7 +128,7 @@ Advanced marker rendering strategies for performance optimization.
 implementation "com.mapconductor:marker-strategy"
 ```
 
-**Provides**: DefaultMarkerRenderingStrategy, SpatialMarkerRenderingStrategy
+**Provides**: DefaultMarkerStrategy, SpatialMarkerStrategy
 **Stability**: Experimental
 **Size**: ~XXX KB
 

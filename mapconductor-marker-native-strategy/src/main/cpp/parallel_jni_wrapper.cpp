@@ -23,7 +23,7 @@ static jlong g_nextParallelHandle = 1000;
 extern "C" {
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeCreateStrategy(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeCreateStrategy(
     JNIEnv *env, jclass clazz, jdouble expandMargin, jboolean addOnlyMode, jint minBatchSize) {
     try {
         auto semaphore = std::make_shared<std::mutex>();
@@ -47,7 +47,7 @@ Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrateg
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeDestroyStrategy(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeDestroyStrategy(
     JNIEnv *env, jclass clazz, jlong handle) {
     auto strategyIt = g_parallelStrategies.find(handle);
     if (strategyIt != g_parallelStrategies.end()) {
@@ -63,7 +63,7 @@ Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrateg
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeAddMarker(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeAddMarker(
     JNIEnv *env, jclass clazz, jlong handle, jstring jId, jdouble latitude, jdouble longitude) {
     auto managerIt = g_markerManagers.find(handle);
     if (managerIt == g_markerManagers.end()) {
@@ -84,7 +84,7 @@ Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrateg
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeRemoveMarker(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeRemoveMarker(
     JNIEnv *env, jclass clazz, jlong handle, jstring jId) {
     auto managerIt = g_markerManagers.find(handle);
     if (managerIt == g_markerManagers.end()) {
@@ -100,7 +100,7 @@ Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrateg
 }
 
 JNIEXPORT void JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeClearMarkers(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeClearMarkers(
     JNIEnv *env, jclass clazz, jlong handle) {
     auto managerIt = g_markerManagers.find(handle);
     if (managerIt == g_markerManagers.end()) {
@@ -112,7 +112,7 @@ Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrateg
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeGetMarkerCount(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeGetMarkerCount(
     JNIEnv *env, jclass clazz, jlong handle) {
     auto managerIt = g_markerManagers.find(handle);
     if (managerIt == g_markerManagers.end()) {
@@ -124,7 +124,7 @@ Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrateg
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerRenderingStrategy_nativeProcessCameraChange(
+Java_com_mapconductor_marker_nativestrategy_NativeParallelMarkerStrategy_nativeProcessCameraChange(
     JNIEnv *env, jclass clazz, jlong handle, jdouble minLat, jdouble maxLat, jdouble minLng, jdouble maxLng) {
     auto strategyIt = g_parallelStrategies.find(handle);
     auto managerIt = g_markerManagers.find(handle);

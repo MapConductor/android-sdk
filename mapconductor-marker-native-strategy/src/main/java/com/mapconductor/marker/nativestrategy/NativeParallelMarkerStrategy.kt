@@ -32,7 +32,7 @@ import kotlinx.coroutines.sync.withPermit
  * @param semaphore Semaphore for synchronizing rendering operations
  * @param geocell Hex geocell for spatial indexing (currently unused but kept for compatibility)
  */
-class NativeParallelMarkerRenderingStrategy<ActualMarker>(
+class NativeParallelMarkerStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
@@ -232,7 +232,7 @@ class NativeParallelMarkerRenderingStrategy<ActualMarker>(
 
     private fun checkNotDestroyed() {
         if (isDestroyed) {
-            throw IllegalStateException("NativeParallelMarkerRenderingStrategy has been destroyed")
+            throw IllegalStateException("NativeParallelMarkerStrategy has been destroyed")
         }
     }
 
@@ -244,7 +244,7 @@ class NativeParallelMarkerRenderingStrategy<ActualMarker>(
 /**
  * Factory methods for creating parallel marker rendering strategies.
  */
-object NativeParallelMarkerRenderingStrategies {
+object NativeParallelMarkerStrategies {
     /**
      * Creates a parallel rendering strategy optimized for large datasets.
      * Uses add-only mode and aggressive viewport expansion for maximum performance.
@@ -254,8 +254,8 @@ object NativeParallelMarkerRenderingStrategies {
         geocell: HexGeocell,
         expandMargin: Double = 0.5,
         minBatchSize: Int = 500,
-    ): NativeParallelMarkerRenderingStrategy<ActualMarker> =
-        NativeParallelMarkerRenderingStrategy(
+    ): NativeParallelMarkerStrategy<ActualMarker> =
+        NativeParallelMarkerStrategy(
             expandMargin = expandMargin,
             addOnlyMode = true, // Maximize performance for large datasets
             minBatchSize = minBatchSize,
@@ -272,8 +272,8 @@ object NativeParallelMarkerRenderingStrategies {
         geocell: HexGeocell,
         expandMargin: Double = 0.3,
         minBatchSize: Int = 200,
-    ): NativeParallelMarkerRenderingStrategy<ActualMarker> =
-        NativeParallelMarkerRenderingStrategy(
+    ): NativeParallelMarkerStrategy<ActualMarker> =
+        NativeParallelMarkerStrategy(
             expandMargin = expandMargin,
             addOnlyMode = false, // Support add/remove for memory efficiency
             minBatchSize = minBatchSize,
@@ -290,8 +290,8 @@ object NativeParallelMarkerRenderingStrategies {
         geocell: HexGeocell,
         expandMargin: Double = 0.2,
         minBatchSize: Int = 100,
-    ): NativeParallelMarkerRenderingStrategy<ActualMarker> =
-        NativeParallelMarkerRenderingStrategy(
+    ): NativeParallelMarkerStrategy<ActualMarker> =
+        NativeParallelMarkerStrategy(
             expandMargin = expandMargin,
             addOnlyMode = false,
             minBatchSize = minBatchSize,

@@ -20,8 +20,10 @@ import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.marker.nativestrategy.NativeHexGeocellImpl
-import com.mapconductor.marker.nativestrategy.NativeParallelMarkerRenderingStrategies
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.NativeParallelMarkerStrategies
+import com.mapconductor.marker.nativestrategy.NativeParallelMarkerStrategy
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerStrategy
+import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
 import kotlinx.coroutines.sync.Semaphore
 
 @Composable
@@ -33,16 +35,17 @@ fun PostOfficeMapPage(
     val dataLoader = remember { PostOfficeDataLoader(context) }
     val strategies =
         remember {
-            val google = NativeParallelMarkerRenderingStrategies.forLargeDatasets<GoogleMapActualMarker>(
-                semaphore = Semaphore(1),
-                geocell = NativeHexGeocellImpl.defaultGeocell(),
-                expandMargin = 0.3,
-                minBatchSize = 100
-            )
-//            val google = NativeSpatialMarkerRenderingStrategy<GoogleMapActualMarker>()
-            val mapbox = NativeSpatialMarkerRenderingStrategy<MapboxActualMarker>()
-            val here = NativeSpatialMarkerRenderingStrategy<HereActualMarker>()
-            val arcgis = NativeSpatialMarkerRenderingStrategy<ArcGISActualMarker>()
+//            val google = NativeParallelMarkerStrategies.forLargeDatasets<GoogleMapActualMarker>(
+//                semaphore = Semaphore(1),
+//                geocell = NativeHexGeocellImpl.defaultGeocell(),
+//                expandMargin = 0.3,
+//                minBatchSize = 100
+//            )
+//            val google = NativeSpatialMarkerStrategy<GoogleMapActualMarker>()
+            val google = NativeParallelMarkerStrategy<GoogleMapActualMarker>()
+            val mapbox = NativeSpatialMarkerStrategy<MapboxActualMarker>()
+            val here = NativeSpatialMarkerStrategy<HereActualMarker>()
+            val arcgis = NativeSpatialMarkerStrategy<ArcGISActualMarker>()
             Strategies(
                 google = google,
                 mapbox = mapbox,

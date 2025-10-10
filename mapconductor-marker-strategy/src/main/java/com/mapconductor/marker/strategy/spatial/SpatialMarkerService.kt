@@ -1,5 +1,10 @@
 package com.mapconductor.marker.strategy.spatial
 
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import android.os.Process
+import android.util.Log
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.marker.MarkerEntityImpl
@@ -7,21 +12,12 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
 import java.util.concurrent.ConcurrentHashMap
-import android.app.Service
-import android.content.Intent
-import android.os.Binder
-import android.os.IBinder
-import android.os.Process
-import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 
 /**
  * Background service that handles marker spatial calculations in a separate process.
- * This service offloads heavy spatial computations from the main process.
- *
- * This is an optional service that can be used by implementing apps when they want
- * to enable IPC-based spatial processing.
+ * Offloads heavy spatial computations from the main process via Binder (AIDL).
  */
 open class SpatialMarkerService : Service() {
     companion object {
@@ -29,12 +25,9 @@ open class SpatialMarkerService : Service() {
         private const val MAX_MARKERS_PER_SESSION = 10000 // Throttling limit
     }
 
-    /**
-     * Session data for managing multiple spatial contexts
-     */
     private data class SpatialSession(
         val config: SpatialConfigDTO,
-        val markerManager: MarkerManager<String>, // Using String as marker type since we only track IDs
+        val markerManager: MarkerManager<String>, // Track IDs only on remote side
         val markerData: MutableMap<String, MarkerDataDTO> = ConcurrentHashMap(),
         val renderedMarkers: MutableSet<String> = ConcurrentHashMap.newKeySet(),
         val semaphore: Semaphore = Semaphore(1),
@@ -43,21 +36,16 @@ open class SpatialMarkerService : Service() {
     private val sessions = ConcurrentHashMap<String, SpatialSession>()
 
     private val binder =
-        object : Binder() { // Temporarily disabled: ISpatialMarkerService.Stub() {
-
-            fun initializeSession(
+        object : ISpatialMarkerService.Stub() {
+            override fun initializeSession(
                 sessionId: String,
                 config: SpatialConfigDTO,
             ): Boolean =
                 try {
                     Log.d(TAG, "Initializing session: $sessionId")
-
-                    // Create marker manager for spatial operations
                     val markerManager = MarkerManager.defaultManager<String>()
-
                     val session = SpatialSession(config, markerManager)
                     sessions[sessionId] = session
-
                     Log.d(TAG, "Session $sessionId initialized successfully")
                     true
                 } catch (e: Exception) {
@@ -65,30 +53,26 @@ open class SpatialMarkerService : Service() {
                     false
                 }
 
-            fun updateMarkers(
+            override fun updateMarkers(
                 sessionId: String,
-                markers: List<MarkerDataDTO>,
+                markers: MutableList<MarkerDataDTO>?,
             ): Boolean {
                 return try {
                     val session = sessions[sessionId] ?: return false
+                    val input = markers ?: emptyList()
 
-                    // Throttle markers if too many
-                    val limitedMarkers =
-                        if (markers.size > MAX_MARKERS_PER_SESSION) {
-                            Log.w(TAG, "Throttling markers from ${markers.size} to $MAX_MARKERS_PER_SESSION")
-                            markers.take(MAX_MARKERS_PER_SESSION)
+                    val limited =
+                        if (input.size > MAX_MARKERS_PER_SESSION) {
+                            Log.w(TAG, "Throttling markers from ${input.size} to $MAX_MARKERS_PER_SESSION")
+                            input.take(MAX_MARKERS_PER_SESSION)
                         } else {
-                            markers
+                            input
                         }
 
-                    // Update marker data in session
-                    limitedMarkers.forEach { marker ->
-                        session.markerData[marker.id] = marker
-                    }
+                    limited.forEach { marker -> session.markerData[marker.id] = marker }
 
-                    // Convert to MarkerState for strategy
                     val markerStates =
-                        limitedMarkers.map { dto ->
+                        limited.map { dto ->
                             MarkerState(
                                 id = dto.id,
                                 position = GeoPointImpl.fromLatLong(dto.latitude, dto.longitude),
@@ -96,20 +80,19 @@ open class SpatialMarkerService : Service() {
                             )
                         }
 
-                    // Add to marker manager
                     runBlocking {
                         markerStates.forEach { state ->
                             val entity =
                                 MarkerEntityImpl<String>(
                                     state = state,
-                                    marker = state.id, // Use ID as the "marker" for tracking
+                                    marker = state.id,
                                     isRendered = false,
                                 )
                             session.markerManager.registerEntity(entity)
                         }
                     }
 
-                    Log.d(TAG, "Updated ${limitedMarkers.size} markers in session $sessionId")
+                    Log.d(TAG, "Updated ${limited.size} markers in session $sessionId")
                     true
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to update markers in session $sessionId", e)
@@ -117,20 +100,19 @@ open class SpatialMarkerService : Service() {
                 }
             }
 
-            fun removeMarkers(
+            override fun removeMarkers(
                 sessionId: String,
-                markerIds: List<String>,
+                markerIds: MutableList<String>?,
             ): Boolean {
                 return try {
                     val session = sessions[sessionId] ?: return false
-
-                    markerIds.forEach { id ->
+                    val ids = markerIds ?: emptyList()
+                    ids.forEach { id ->
                         session.markerData.remove(id)
                         session.renderedMarkers.remove(id)
                         session.markerManager.removeEntity(id)
                     }
-
-                    Log.d(TAG, "Removed ${markerIds.size} markers from session $sessionId")
+                    Log.d(TAG, "Removed ${ids.size} markers from session $sessionId")
                     true
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to remove markers from session $sessionId", e)
@@ -138,12 +120,13 @@ open class SpatialMarkerService : Service() {
                 }
             }
 
-            fun calculateSpatialChanges(
+            override fun calculateChanges(
                 sessionId: String,
                 camera: CameraPositionDTO,
             ): SpatialResultDTO {
                 return try {
-                    val session = sessions[sessionId] ?: return SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                    val session = sessions[sessionId]
+                        ?: return SpatialResultDTO(emptyList(), emptyList(), emptyList())
 
                     val bounds =
                         GeoRectBounds(
@@ -152,8 +135,6 @@ open class SpatialMarkerService : Service() {
                         )
 
                     val expandedBounds = expandBounds(bounds, session.config.expandMargin)
-
-                    // Find markers in viewport using marker manager's spatial index
                     val markersInBounds = session.markerManager.findMarkersInBounds(expandedBounds)
                     val markerIdsInBounds = markersInBounds.map { it.state.id }.toSet()
 
@@ -161,7 +142,6 @@ open class SpatialMarkerService : Service() {
                     val markersToRemove = mutableListOf<String>()
                     val markersToUpdate = mutableListOf<String>()
 
-                    // Find markers that should be added (in viewport but not rendered)
                     markerIdsInBounds.forEach { id ->
                         if (!session.renderedMarkers.contains(id)) {
                             markersToAdd.add(id)
@@ -169,17 +149,12 @@ open class SpatialMarkerService : Service() {
                         }
                     }
 
-                    // Find markers that should be removed (rendered but not in viewport, only if not add-only mode)
                     if (!session.config.addOnlyMode) {
-                        val markersToRemoveSet =
-                            session.renderedMarkers.filter { id ->
-                                !markerIdsInBounds.contains(id)
-                            }
-                        markersToRemove.addAll(markersToRemoveSet)
-                        markersToRemoveSet.forEach { id ->
-                            session.renderedMarkers.remove(id)
-                        }
+                        val toRemove = session.renderedMarkers.filter { id -> !markerIdsInBounds.contains(id) }
+                        markersToRemove.addAll(toRemove)
+                        toRemove.forEach { id -> session.renderedMarkers.remove(id) }
                     }
+
                     SpatialResultDTO(markersToAdd, markersToRemove, markersToUpdate)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to calculate spatial changes for session $sessionId", e)
@@ -187,7 +162,7 @@ open class SpatialMarkerService : Service() {
                 }
             }
 
-            fun findNearestMarker(
+            override fun findNearestMarker(
                 sessionId: String,
                 latitude: Double,
                 longitude: Double,
@@ -195,20 +170,17 @@ open class SpatialMarkerService : Service() {
                 return try {
                     val session = sessions[sessionId] ?: return null
                     val position = GeoPointImpl.fromLatLong(latitude, longitude)
-
-                    val nearestEntity = session.markerManager.findNearest(position)
-                    nearestEntity?.state?.id
+                    session.markerManager.findNearest(position)?.state?.id
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to find nearest marker in session $sessionId", e)
                     null
                 }
             }
 
-            fun destroySession(sessionId: String): Boolean =
+            override fun destroySession(sessionId: String): Boolean =
                 try {
                     val session = sessions.remove(sessionId)
                     session?.markerManager?.destroy()
-
                     Log.d(TAG, "Session $sessionId destroyed")
                     true
                 } catch (e: Exception) {
@@ -216,25 +188,19 @@ open class SpatialMarkerService : Service() {
                     false
                 }
 
-            fun getPerformanceStats(sessionId: String): String {
+            override fun getPerformanceStats(sessionId: String): String {
                 return try {
                     val session = sessions[sessionId] ?: return "{\"error\": \"session_not_found\"}"
-
-                    val stats =
-                        mapOf(
-                            "sessionId" to sessionId,
-                            "markerCount" to session.markerData.size,
-                            "renderedCount" to session.renderedMarkers.size,
-                            "addOnlyMode" to session.config.addOnlyMode,
-                            "expandMargin" to session.config.expandMargin,
-                        )
-
-                    // Simple JSON serialization (or use a proper JSON library)
-                    stats.entries.joinToString(
-                        prefix = "{",
-                        postfix = "}",
-                        separator = ", ",
-                    ) { "\"${it.key}\": ${if (it.value is String) "\"${it.value}\"" else it.value}" }
+                    val stats = mapOf(
+                        "sessionId" to sessionId,
+                        "markerCount" to session.markerData.size,
+                        "renderedCount" to session.renderedMarkers.size,
+                        "addOnlyMode" to session.config.addOnlyMode,
+                        "expandMargin" to session.config.expandMargin,
+                    )
+                    stats.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
+                        "\"${it.key}\": ${if (it.value is String) "\"${it.value}\"" else it.value}"
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to get performance stats for session $sessionId", e)
                     "{\"error\": \"${e.message}\"}"
@@ -244,7 +210,6 @@ open class SpatialMarkerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder {
         Log.d(TAG, "SpatialMarkerService bound with intent: $intent")
-        Log.d(TAG, "Returning binder: $binder")
         return binder
     }
 
@@ -255,8 +220,6 @@ open class SpatialMarkerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-        // Clean up all sessions
         sessions.values.forEach { session ->
             try {
                 session.markerManager.destroy()
@@ -265,7 +228,7 @@ open class SpatialMarkerService : Service() {
             }
         }
         sessions.clear()
-
         Log.d(TAG, "SpatialMarkerService destroyed")
     }
 }
+

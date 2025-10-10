@@ -5,5 +5,9 @@
             android:name=".spatial.InitProvider"
             android:authorities=".initprovider"
             android:exported="false" />
+        <service
+            android:name=".spatial.SpatialMarkerService"
+            android:exported="false"
+            android:process=":marker_remote" />
     </application>
 </manifest>
