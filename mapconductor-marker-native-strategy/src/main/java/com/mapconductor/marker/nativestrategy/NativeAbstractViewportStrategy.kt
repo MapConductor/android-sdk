@@ -228,7 +228,7 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
     /**
      * Clean up native resources. Should be called when the strategy is no longer needed.
      */
-    fun destroy() {
+    open fun destroy() {
         markerManager.destroy()
     }
 }

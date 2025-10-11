@@ -12,6 +12,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
@@ -32,7 +33,7 @@ import kotlinx.coroutines.yield
  * When the IPC service is unavailable, it falls back to local spatial calculations
  * to ensure markers are always rendered correctly.
  */
-class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
+class RemoteSpatialMarkerStrategy<ActualMarker>(
     private val context: Context,
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
@@ -46,7 +47,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
     }
 
     private val sessionId = UUID.randomUUID().toString()
-    private var spatialService: Any? = null // IMarkerSpatialService? = null - Using local fallback
+    private var spatialService: ISpatialMarkerService? = null
     private var isServiceConnected = false
     private val serviceConnectionLock = Object()
     private val strategyId: String
@@ -71,14 +72,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 service: IBinder?,
             ) {
                 try {
-                    // Fallback to local processing since AIDL generation has issues
-                    spatialService = null
-
-                    // If cast fails, log the actual type for debugging
-//                    if (spatialService == null && service != null) {
-//                        Log.w(TAG, "Service cast failed. Actual service type: ${service.javaClass.name}")
-//                        Log.w(TAG, "Service interfaces: ${service.javaClass.interfaces.contentToString()}")
-//                    }
+                    spatialService = ISpatialMarkerService.Stub.asInterface(service)
                 } catch (e: Exception) {
                     Log.e(TAG, "Exception during service cast", e)
                     spatialService = null
@@ -88,16 +82,13 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                     isServiceConnected = (spatialService != null)
                     serviceConnectionLock.notifyAll()
 
-                    // Initialize session in background service
                     if (spatialService != null) {
                         try {
-                            val config =
-                                _root_ide_package_.com.mapconductor.marker.strategy.spatial.SpatialConfigDTO(
-                                    expandMargin,
-                                    addOnlyMode,
-                                )
-                            // val result = spatialService!!.initializeSession(sessionId, config)
-                            val result = true // Using local fallback
+                            val config = SpatialConfigDTO(expandMargin, addOnlyMode)
+                            val result = spatialService!!.initializeSession(sessionId, config)
+                            if (!result) {
+                                isServiceConnected = false
+                            }
                         } catch (e: Exception) {
                             Log.e(TAG, "Failed to initialize session in background service", e)
                             isServiceConnected = false
@@ -117,11 +108,10 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
         }
 
     init {
-        // Register with service manager and start service if needed
         strategyId =
-            _root_ide_package_.com.mapconductor.marker.strategy.SpatialMarkerServiceManager
+            com.mapconductor.marker.strategy.SpatialMarkerServiceManager
                 .registerStrategy(context, this)
-//        connectToService()
+        connectToService()
         startBatchProcessor()
     }
 
@@ -137,7 +127,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
     private fun processPendingUpdates() {
         synchronized(batchLock) {
-            if (pendingUpdates.isEmpty() || !isServiceConnected) return
+            if (pendingUpdates.isEmpty() || !isServiceConnected || spatialService == null) return
 
             val batch = mutableListOf<MarkerDataDTO>()
 
@@ -146,16 +136,14 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 val update = pendingUpdates.poll() ?: return@repeat
                 batch.add(update)
             }
-
-//            if (batch.isNotEmpty()) {
-//                try {
-//                    // spatialService?.updateMarkers(sessionId, batch) - Using local fallback
-//                } catch (e: Exception) {
-//                    Log.e(TAG, "Failed to process batch update", e)
-//                    // Re-add failed updates to queue for retry
-//                    batch.forEach { pendingUpdates.offer(it) }
-//                }
-//            }
+            if (batch.isNotEmpty()) {
+                try {
+                    spatialService?.updateMarkers(sessionId, batch)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to process batch update", e)
+                    batch.forEach { pendingUpdates.offer(it) }
+                }
+            }
         }
     }
 
@@ -170,20 +158,22 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
     private fun connectToService() {
         try {
-            // For now, we'll skip the actual service connection since we're using local fallback
-            Log.d(TAG, "Skipping service connection - using local fallback mode")
-            // val intent = Intent(context, MarkerSpatialService::class.java)
-            // Log.d(TAG, "Attempting to bind to service: ${intent.component}")
-            // val bindResult = context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
-            // Log.d(TAG, "Bind service result: $bindResult")
+            val intent = Intent(context, SpatialMarkerService::class.java)
+            context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to connect to MarkerSpatialService", e)
+            Log.e(TAG, "Failed to connect to SpatialMarkerService", e)
         }
     }
 
     private fun waitForServiceConnection(): Boolean {
-        // Always return false to use local fallback
-        return false
+        synchronized(serviceConnectionLock) {
+            if (isServiceConnected) return true
+            try {
+                serviceConnectionLock.wait(SERVICE_CONNECTION_TIMEOUT_MS)
+            } catch (_: InterruptedException) {
+            }
+            return isServiceConnected
+        }
     }
 
     override suspend fun onCameraChanged(
@@ -194,51 +184,32 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
         semaphore.withPermit {
             try {
-                // Use local spatial calculation as fallback
-                val expandedBounds =
-                    com.mapconductor.core.spherical
-                        .expandBounds(visibleRegion.bounds, expandMargin)
-
-                // Find markers in viewport using local marker manager
-                val markersInBounds = markerManager.findMarkersInBounds(expandedBounds)
-                val markerIdsInBounds = markersInBounds.map { it.state.id }.toSet()
-
-                val markersToAdd = mutableListOf<String>()
-                val markersToRemove = mutableListOf<String>()
-
-                // Track which markers are currently rendered
-                val allEntities = markerManager.allEntities()
-                val currentlyRendered =
-                    allEntities
-                        .filter { it.isRendered }
-                        .map { it.state.id }
-                        .toSet()
-
-                // Find markers that should be added (in viewport but not rendered)
-                markerIdsInBounds.forEach { id ->
-                    if (!currentlyRendered.contains(id)) {
-                        markersToAdd.add(id)
-                    }
-                }
-
-                // Find markers that should be removed (rendered but not in viewport, only if not add-only mode)
-                if (!addOnlyMode) {
-                    currentlyRendered.forEach { id ->
-                        if (!markerIdsInBounds.contains(id)) {
-                            markersToRemove.add(id)
-                        }
-                    }
-                }
-
-                // Create result DTO for processing
-                val result =
-                    _root_ide_package_.com.mapconductor.marker.strategy.spatial.SpatialResultDTO(
-                        markersToAdd,
-                        markersToRemove,
-                        emptyList(),
+                val cameraDto =
+                    CameraPositionDTO(
+                        centerLatitude = cameraPosition.position.latitude,
+                        centerLongitude = cameraPosition.position.longitude,
+                        zoom = cameraPosition.zoom,
+                        bearing = cameraPosition.bearing,
+                        tilt = cameraPosition.tilt,
+                        boundsMinLat = visibleRegion.bounds.southWest?.latitude ?: 0.0,
+                        boundsMaxLat = visibleRegion.bounds.northEast?.latitude ?: 0.0,
+                        boundsMinLng = visibleRegion.bounds.southWest?.longitude ?: 0.0,
+                        boundsMaxLng = visibleRegion.bounds.northEast?.longitude ?: 0.0,
                     )
 
-                // Process results in main process
+                val result =
+                    if (waitForServiceConnection()) {
+                        try {
+                            spatialService?.calculateChanges(sessionId, cameraDto)
+                                ?: SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Remote calculateChanges failed, falling back", e)
+                            SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                        }
+                    } else {
+                        SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                    }
+
                 processRenderingChanges(result, renderer)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to process camera change", e)
@@ -366,7 +337,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
                 // Send marker data to background service for spatial indexing (batched)
                 val markerDTOs =
                     data.map { state ->
-                        _root_ide_package_.com.mapconductor.marker.strategy.spatial.MarkerDataDTO(
+                        MarkerDataDTO(
                             id = state.id,
                             latitude = state.position.latitude,
                             longitude = state.position.longitude,
@@ -461,7 +432,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
 
             // Update background service (batched)
             val markerDTO =
-                _root_ide_package_.com.mapconductor.marker.strategy.spatial.MarkerDataDTO(
+                MarkerDataDTO(
                     id = state.id,
                     latitude = state.position.latitude,
                     longitude = state.position.longitude,
@@ -485,12 +456,8 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
     ): MarkerEntity<ActualMarker>? {
         return try {
             if (!waitForServiceConnection()) return null
-
-            // Using local fallback for nearest marker
-            markerManager.findNearest(
-                com.mapconductor.core.features.GeoPointImpl
-                    .fromLatLong(latitude, longitude),
-            )
+            val id = spatialService?.findNearestMarker(sessionId, latitude, longitude)
+            if (id != null) markerManager.getEntity(id) else null
         } catch (e: Exception) {
             Log.e(TAG, "Failed to find nearest marker", e)
             null
@@ -508,11 +475,18 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
             // Process any remaining updates before shutdown
             processPendingUpdates()
 
-            // spatialService?.destroySession(sessionId) - Using local fallback
-            context.unbindService(serviceConnection)
+            try {
+                spatialService?.destroySession(sessionId)
+            } catch (_: Exception) {
+            }
+            try {
+                context.unbindService(serviceConnection)
+            } catch (_: IllegalArgumentException) {
+                // Not bound
+            }
 
             // Unregister from service manager (may stop service if this was the last strategy)
-            _root_ide_package_.com.mapconductor.marker.strategy.SpatialMarkerServiceManager
+            com.mapconductor.marker.strategy.SpatialMarkerServiceManager
                 .unregisterStrategy(context, strategyId)
         } catch (e: Exception) {
             Log.e(TAG, "Error during cleanup", e)
@@ -525,8 +499,7 @@ class RemoteSpatialMarkerRenderingStrategy<ActualMarker>(
     fun getPerformanceStats(): String? {
         return try {
             if (!waitForServiceConnection()) return null
-            // Using local fallback for performance stats
-            "Local processing mode - no IPC service"
+            spatialService?.getPerformanceStats(sessionId)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get performance stats", e)
             null

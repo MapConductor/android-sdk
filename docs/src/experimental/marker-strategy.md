@@ -33,14 +33,14 @@ dependencies {
 
 ## Core Strategies
 
-### DefaultMarkerRenderingStrategy
+### DefaultMarkerStrategy
 
 Optimal for Google Maps and ArcGIS providers that handle add/remove operations efficiently:
 
 ```kotlin
-import com.mapconductor.marker.strategy.DefaultMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.DefaultMarkerStrategy
 
-val defaultStrategy = DefaultMarkerRenderingStrategy<GoogleMapActualMarker>(
+val defaultStrategy = DefaultMarkerStrategy<GoogleMapActualMarker>(
     expandMargin = 0.2,  // 20% viewport expansion
     semaphore = Semaphore(1),
     geocell = HexGeocellImpl.defaultGeocell()
@@ -53,14 +53,14 @@ val defaultStrategy = DefaultMarkerRenderingStrategy<GoogleMapActualMarker>(
 - **Memory Efficient**: Only keeps visible markers in memory
 - **Smooth Scrolling**: Reduces pop-in/pop-out during map movement
 
-### SimpleMarkerRenderingStrategy
+### SimpleMarkerStrategy
 
 Lightweight strategy for smaller datasets or providers with different performance characteristics:
 
 ```kotlin
-import com.mapconductor.marker.strategy.SimpleMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 
-val simpleStrategy = SimpleMarkerRenderingStrategy<MapboxActualMarker>(
+val simpleStrategy = SimpleMarkerStrategy<MapboxActualMarker>(
     expandMargin = 0.15,
     geocell = HexGeocellImpl.defaultGeocell()
 )
@@ -71,14 +71,14 @@ val simpleStrategy = SimpleMarkerRenderingStrategy<MapboxActualMarker>(
 - **Lower Overhead**: Minimal computational overhead
 - **Good for Mapbox**: Optimized for providers that prefer simpler marker management
 
-### SpatialMarkerRenderingStrategy
+### SpatialMarkerStrategy
 
 Advanced strategy with spatial clustering and optimization:
 
 ```kotlin
-import com.mapconductor.marker.strategy.SpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.SpatialMarkerStrategy
 
-val spatialStrategy = SpatialMarkerRenderingStrategy<HereActualMarker>(
+val spatialStrategy = SpatialMarkerStrategy<HereActualMarker>(
     clusteringEnabled = true,
     clusterRadius = 100.0,      // 100-meter clustering radius
     maxMarkersPerCluster = 10,  // Maximum markers in a cluster
@@ -102,7 +102,7 @@ fun DefaultStrategyExample() {
     val mapViewState = rememberGoogleMapViewState()
 
     val markerStrategy = remember {
-        DefaultMarkerRenderingStrategy<GoogleMapActualMarker>(
+        DefaultMarkerStrategy<GoogleMapActualMarker>(
             expandMargin = 0.2
         )
     }
@@ -127,7 +127,7 @@ fun DefaultStrategyExample() {
 @Composable
 fun StrategyMarkerManagement() {
     val markerStrategy = remember {
-        DefaultMarkerRenderingStrategy<GoogleMapActualMarker>()
+        DefaultMarkerStrategy<GoogleMapActualMarker>()
     }
 
     LaunchedEffect(Unit) {
@@ -167,7 +167,7 @@ fun DynamicLoadingExample() {
     var loadedMarkers by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     val strategy = remember {
-        DefaultMarkerRenderingStrategy<GoogleMapActualMarker>(
+        DefaultMarkerStrategy<GoogleMapActualMarker>(
             expandMargin = 0.3  // Larger margin for preloading
         )
     }
@@ -212,7 +212,7 @@ fun DynamicLoadingExample() {
 @Composable
 fun ClusteringStrategyExample() {
     val clusterStrategy = remember {
-        SpatialMarkerRenderingStrategy<GoogleMapActualMarker>(
+        SpatialMarkerStrategy<GoogleMapActualMarker>(
             clusteringEnabled = true,
             clusterRadius = 50.0,       // 50-meter clustering
             maxMarkersPerCluster = 5,   // Small clusters
@@ -260,7 +260,7 @@ fun ClusteringStrategyExample() {
 @Composable
 fun RemoteSpatialExample() {
     val remoteStrategy = remember {
-        RemoteSpatialMarkerRenderingStrategy<GoogleMapActualMarker>(
+        RemoteSpatialMarkerStrategy<GoogleMapActualMarker>(
             apiEndpoint = "https://api.example.com/markers",
             cacheTimeout = 300000, // 5 minutes
             maxConcurrentRequests = 3
@@ -286,32 +286,32 @@ fun RemoteSpatialExample() {
 
 | Strategy | Best For | Memory Usage | Network | Complexity |
 |----------|----------|--------------|---------|------------|
-| DefaultMarkerRenderingStrategy | Google Maps, ArcGIS | Medium | None | Medium |
-| SimpleMarkerRenderingStrategy | Mapbox, HERE | Low | None | Low |
-| SpatialMarkerRenderingStrategy | Large datasets | High | None | High |
-| RemoteSpatialMarkerRenderingStrategy | Server-side data | Low | High | High |
+| DefaultMarkerStrategy | Google Maps, ArcGIS | Medium | None | Medium |
+| SimpleMarkerStrategy | Mapbox, HERE | Low | None | Low |
+| SpatialMarkerStrategy | Large datasets | High | None | High |
+| RemoteSpatialMarkerStrategy | Server-side data | Low | High | High |
 
 ### Use Case Guidelines
 
-#### Choose DefaultMarkerRenderingStrategy when:
+#### Choose DefaultMarkerStrategy when:
 - Using Google Maps or ArcGIS
 - Have moderate marker counts (1,000-50,000)
 - Want smooth viewport-based rendering
 - Markers are loaded locally
 
-#### Choose SimpleMarkerRenderingStrategy when:
+#### Choose SimpleMarkerStrategy when:
 - Using Mapbox or HERE Maps
 - Have smaller marker counts (<10,000)
 - Want minimal overhead
 - Simple rendering requirements
 
-#### Choose SpatialMarkerRenderingStrategy when:
+#### Choose SpatialMarkerStrategy when:
 - Have very large marker datasets (50,000+)
 - Need clustering functionality
 - Want advanced spatial optimization
 - Can afford higher memory usage
 
-#### Choose RemoteSpatialMarkerRenderingStrategy when:
+#### Choose RemoteSpatialMarkerStrategy when:
 - Markers are stored server-side
 - Want on-demand loading
 - Have network connectivity
@@ -322,7 +322,7 @@ fun RemoteSpatialExample() {
 ### Extending AbstractViewportStrategy
 
 ```kotlin
-class CustomMarkerRenderingStrategy<ActualMarker>(
+class CustomMarkerStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
     geocell: HexGeocell = HexGeocellImpl.defaultGeocell()
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
@@ -378,7 +378,7 @@ class CustomMarkerRenderingStrategy<ActualMarker>(
 
 ```kotlin
 // High-performance configuration
-val performanceStrategy = DefaultMarkerRenderingStrategy<ActualMarker>(
+val performanceStrategy = DefaultMarkerStrategy<ActualMarker>(
     expandMargin = 0.1,  // Smaller margin for less preloading
     semaphore = Semaphore(2),  // Allow some parallelism
     geocell = HexGeocellImpl(
@@ -388,7 +388,7 @@ val performanceStrategy = DefaultMarkerRenderingStrategy<ActualMarker>(
 )
 
 // Memory-optimized configuration
-val memoryStrategy = SimpleMarkerRenderingStrategy<ActualMarker>(
+val memoryStrategy = SimpleMarkerStrategy<ActualMarker>(
     expandMargin = 0.05,  // Minimal expansion
     geocell = HexGeocellImpl(
         baseHexSideLength = 2000.0,  // Very large cells
@@ -402,7 +402,7 @@ val memoryStrategy = SimpleMarkerRenderingStrategy<ActualMarker>(
 ```kotlin
 @Composable
 fun StrategyPerformanceMonitoring() {
-    val strategy = remember { DefaultMarkerRenderingStrategy<GoogleMapActualMarker>() }
+    val strategy = remember { DefaultMarkerStrategy<GoogleMapActualMarker>() }
     var performanceStats by remember { mutableStateOf<String>("") }
 
     LaunchedEffect(Unit) {
@@ -467,7 +467,7 @@ fun BasicMarkers() {
 // After: Strategy-based management
 @Composable
 fun StrategyMarkers() {
-    val strategy = remember { DefaultMarkerRenderingStrategy<ActualMarker>() }
+    val strategy = remember { DefaultMarkerStrategy<ActualMarker>() }
 
     LaunchedEffect(markers) {
         markers.forEach { markerData ->

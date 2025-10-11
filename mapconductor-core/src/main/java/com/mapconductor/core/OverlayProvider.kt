@@ -37,7 +37,7 @@ open class MapViewScope {
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            markerAddSharedFlow.debounceBatch(5.milliseconds, 100).collect { states ->
+            markerAddSharedFlow.debounceBatch(5.milliseconds, 300).collect { states ->
                 val newMap = markerFlow.value.toMutableMap()
                 states.forEach { state ->
                     newMap.set(state.id, state)

@@ -23,7 +23,7 @@ import kotlin.math.sqrt
  * Native-compatible HexGeocell implementation that mirrors the API of
  * com.mapconductor.core.geocell.HexGeocell while living in the native strategy module.
  */
-class NativeHexGeocellImpl(
+internal class NativeHexGeocellImpl(
     override val projection: Projection,
     override val baseHexSideLength: Int = 1000,
 ) : HexGeocell {

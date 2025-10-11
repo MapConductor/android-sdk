@@ -3,7 +3,7 @@ package com.mapconductor.marker.nativestrategy
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 
-class NativeMarkerIndex private constructor(
+internal class NativeMarkerIndex private constructor(
     private val nativeHandle: Long,
 ) {
     companion object {
