@@ -1,2 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest></manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <meta-data
+            android:name="HERE_ACCESS_KEY_ID"
+            android:value="${HERE_ACCESS_KEY_ID}" />
+        <meta-data
+            android:name="HERE_ACCESS_KEY_SECRET"
+            android:value="${HERE_ACCESS_KEY_SECRET}" />
+    </application>
+</manifest>
