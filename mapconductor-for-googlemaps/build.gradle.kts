@@ -62,18 +62,18 @@ android {
 
 dependencies {
 
-    compileOnly(libs.androidx.core.ktx)
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.foundation)
-    compileOnly(libs.androidx.ui.tooling.preview)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.common.java8)
 
     // Google Maps SDK
-    compileOnly(libs.play.services.maps)
-    compileOnly(project(":mapconductor-core"))
+    implementation(libs.play.services.maps)
+    implementation(project(":mapconductor-core"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

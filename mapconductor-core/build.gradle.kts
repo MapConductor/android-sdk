@@ -1,7 +1,7 @@
 ﻿plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
     id("org.jlleitschuh.gradle.ktlint")
     id("maven-publish")
     id("signing")
@@ -63,16 +63,16 @@ dependencies {
     // Make Compose dependencies implementation instead of compileOnly for proper runtime support
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
+    compileOnly(libs.androidx.ui.tooling.preview)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.foundation)
     implementation(libs.net.sf.geographiclib)
 
     // Core dependencies - use api to avoid version conflicts
-    api(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.ktx)
     // Lifecycle（MapView用）
-    api(libs.androidx.lifecycle.runtime.ktx)
-    api(libs.androidx.lifecycle.common.java8)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.common.java8)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
