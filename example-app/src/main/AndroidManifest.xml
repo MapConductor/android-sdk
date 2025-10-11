@@ -18,24 +18,6 @@
         android:theme="@style/Theme.OverlayTest"
         tools:targetApi="35">
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${GOOGLE_MAPS_API_KEY}" />
-
-        <meta-data
-            android:name="ARCGIS_API_KEY"
-            android:value="${ARCGIS_API_KEY}" />
-
-        <meta-data
-            android:name="MAPBOX_ACCESS_TOKEN"
-            android:value="${MAPBOX_ACCESS_TOKEN}" />
-
-        <meta-data
-            android:name="HERE_ACCESS_KEY_ID"
-            android:value="${HERE_ACCESS_KEY_ID}" />
-        <meta-data
-            android:name="HERE_ACCESS_KEY_SECRET"
-            android:value="${HERE_ACCESS_KEY_SECRET}" />
 
         <activity
             android:name=".MainActivity"

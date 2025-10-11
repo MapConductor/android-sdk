@@ -1,10 +1,5 @@
 package com.mapconductor.marker.strategy.spatial
 
-import android.app.Service
-import android.content.Intent
-import android.os.IBinder
-import android.os.Process
-import android.util.Log
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.marker.MarkerEntityImpl
@@ -12,6 +7,11 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
 import java.util.concurrent.ConcurrentHashMap
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import android.os.Process
+import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 
@@ -19,7 +19,7 @@ import kotlinx.coroutines.sync.Semaphore
  * Background service that handles marker spatial calculations in a separate process.
  * Offloads heavy spatial computations from the main process via Binder (AIDL).
  */
-open class SpatialMarkerService : Service() {
+internal class SpatialMarkerService : Service() {
     companion object {
         private const val TAG = "SpatialMarkerService"
         private const val MAX_MARKERS_PER_SESSION = 10000 // Throttling limit
@@ -125,8 +125,9 @@ open class SpatialMarkerService : Service() {
                 camera: CameraPositionDTO,
             ): SpatialResultDTO {
                 return try {
-                    val session = sessions[sessionId]
-                        ?: return SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                    val session =
+                        sessions[sessionId]
+                            ?: return SpatialResultDTO(emptyList(), emptyList(), emptyList())
 
                     val bounds =
                         GeoRectBounds(
@@ -170,7 +171,10 @@ open class SpatialMarkerService : Service() {
                 return try {
                     val session = sessions[sessionId] ?: return null
                     val position = GeoPointImpl.fromLatLong(latitude, longitude)
-                    session.markerManager.findNearest(position)?.state?.id
+                    session.markerManager
+                        .findNearest(position)
+                        ?.state
+                        ?.id
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to find nearest marker in session $sessionId", e)
                     null
@@ -191,13 +195,14 @@ open class SpatialMarkerService : Service() {
             override fun getPerformanceStats(sessionId: String): String {
                 return try {
                     val session = sessions[sessionId] ?: return "{\"error\": \"session_not_found\"}"
-                    val stats = mapOf(
-                        "sessionId" to sessionId,
-                        "markerCount" to session.markerData.size,
-                        "renderedCount" to session.renderedMarkers.size,
-                        "addOnlyMode" to session.config.addOnlyMode,
-                        "expandMargin" to session.config.expandMargin,
-                    )
+                    val stats =
+                        mapOf(
+                            "sessionId" to sessionId,
+                            "markerCount" to session.markerData.size,
+                            "renderedCount" to session.renderedMarkers.size,
+                            "addOnlyMode" to session.config.addOnlyMode,
+                            "expandMargin" to session.config.expandMargin,
+                        )
                     stats.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
                         "\"${it.key}\": ${if (it.value is String) "\"${it.value}\"" else it.value}"
                     }
@@ -231,4 +236,3 @@ open class SpatialMarkerService : Service() {
         Log.d(TAG, "SpatialMarkerService destroyed")
     }
 }
-

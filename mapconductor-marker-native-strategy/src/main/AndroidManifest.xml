@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <service
-            android:name=".nativestrategy.spatial.NativeSpatialMarkerService"
+            android:name=".spatial.NativeSpatialMarkerService"
             android:exported="false"
             android:isolatedProcess="true"
             android:process=":marker_native_remote" />

@@ -1,40 +1,25 @@
 plugins {
-
     alias(libs.plugins.android.application)
-
     alias(libs.plugins.kotlin.android)
-
     alias(libs.plugins.kotlin.compose)
-
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-
     id("org.jlleitschuh.gradle.ktlint")
 }
 
 ktlint {
-
     android.set(true)
-
     reporters {
-
         reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
-
         reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
     }
 }
 
 android {
-
     namespace = "com.mapconductor.example"
-
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
-
         applicationId = "com.mapconductor.example"
-
         minSdk = project.property("minSdk").toString().toInt()
-
         targetSdk = project.property("targetSdk").toString().toInt()
         ndk {
             abiFilters += listOf("arm64-v8a")
@@ -44,23 +29,18 @@ android {
         }
 
         versionCode = 5
-
         versionName = "1.0.4"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     composeOptions {
-
         kotlinCompilerExtensionVersion =
-
             project.property("kotlinCompilerExtensionVersion").toString()
     }
 
     buildTypes {
 
         debug {
-
             isMinifyEnabled = false
 
             proguardFiles(
@@ -148,25 +128,6 @@ android {
             isIncludeAndroidResources = true
         }
     }
-}
-
-secrets {
-
-    // To add your Maps API key to this project:
-
-    // 1. If the secrets.properties file does not exist, create it in the same folder as the local.properties file.
-
-    // 2. Add this line, where YOUR_API_KEY is your API key:
-
-    //        MAPS_API_KEY=YOUR_API_KEY
-
-    propertiesFileName = "secrets.properties"
-
-    // A properties file containing default secret values. This file can be
-
-    // checked in version control.
-
-    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 dependencies {

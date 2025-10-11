@@ -8,7 +8,7 @@ import android.os.Parcelable
  * These classes mirror the C++ structs defined in remote_spatial_marker_strategy.h
  */
 
-data class NativeMarkerDataDTO(
+internal data class NativeMarkerDataDTO(
     val id: String,
     val latitude: Double,
     val longitude: Double,
@@ -21,7 +21,10 @@ data class NativeMarkerDataDTO(
         parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(id)
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)
@@ -32,6 +35,7 @@ data class NativeMarkerDataDTO(
 
     companion object CREATOR : Parcelable.Creator<NativeMarkerDataDTO> {
         override fun createFromParcel(parcel: Parcel): NativeMarkerDataDTO = NativeMarkerDataDTO(parcel)
+
         override fun newArray(size: Int): Array<NativeMarkerDataDTO?> = arrayOfNulls(size)
     }
 }
@@ -45,7 +49,10 @@ data class NativeSpatialConfigDTO(
         parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeDouble(expandMargin)
         parcel.writeByte(if (addOnlyMode) 1 else 0)
     }
@@ -54,6 +61,7 @@ data class NativeSpatialConfigDTO(
 
     companion object CREATOR : Parcelable.Creator<NativeSpatialConfigDTO> {
         override fun createFromParcel(parcel: Parcel): NativeSpatialConfigDTO = NativeSpatialConfigDTO(parcel)
+
         override fun newArray(size: Int): Array<NativeSpatialConfigDTO?> = arrayOfNulls(size)
     }
 }
@@ -69,7 +77,10 @@ data class NativeSpatialResultDTO(
         parcel.createStringArray() ?: emptyArray(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeStringArray(markersToAdd)
         parcel.writeStringArray(markersToRemove)
         parcel.writeStringArray(errors)
@@ -79,6 +90,7 @@ data class NativeSpatialResultDTO(
 
     companion object CREATOR : Parcelable.Creator<NativeSpatialResultDTO> {
         override fun createFromParcel(parcel: Parcel): NativeSpatialResultDTO = NativeSpatialResultDTO(parcel)
+
         override fun newArray(size: Int): Array<NativeSpatialResultDTO?> = arrayOfNulls(size)
     }
 
@@ -142,7 +154,10 @@ data class NativeCameraPositionDTO(
         parcel.readDouble(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)
         parcel.writeDouble(zoom)
@@ -158,6 +173,7 @@ data class NativeCameraPositionDTO(
 
     companion object CREATOR : Parcelable.Creator<NativeCameraPositionDTO> {
         override fun createFromParcel(parcel: Parcel): NativeCameraPositionDTO = NativeCameraPositionDTO(parcel)
+
         override fun newArray(size: Int): Array<NativeCameraPositionDTO?> = arrayOfNulls(size)
     }
 }

@@ -184,29 +184,31 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
 
         semaphore.withPermit {
             try {
-                val cameraDto = CameraPositionDTO(
-                    centerLatitude = cameraPosition.position.latitude,
-                    centerLongitude = cameraPosition.position.longitude,
-                    zoom = cameraPosition.zoom,
-                    bearing = cameraPosition.bearing,
-                    tilt = cameraPosition.tilt,
-                    boundsMinLat = visibleRegion.bounds.southWest?.latitude ?: 0.0,
-                    boundsMaxLat = visibleRegion.bounds.northEast?.latitude ?: 0.0,
-                    boundsMinLng = visibleRegion.bounds.southWest?.longitude ?: 0.0,
-                    boundsMaxLng = visibleRegion.bounds.northEast?.longitude ?: 0.0,
-                )
+                val cameraDto =
+                    CameraPositionDTO(
+                        centerLatitude = cameraPosition.position.latitude,
+                        centerLongitude = cameraPosition.position.longitude,
+                        zoom = cameraPosition.zoom,
+                        bearing = cameraPosition.bearing,
+                        tilt = cameraPosition.tilt,
+                        boundsMinLat = visibleRegion.bounds.southWest?.latitude ?: 0.0,
+                        boundsMaxLat = visibleRegion.bounds.northEast?.latitude ?: 0.0,
+                        boundsMinLng = visibleRegion.bounds.southWest?.longitude ?: 0.0,
+                        boundsMaxLng = visibleRegion.bounds.northEast?.longitude ?: 0.0,
+                    )
 
-                val result = if (waitForServiceConnection()) {
-                    try {
-                        spatialService?.calculateChanges(sessionId, cameraDto)
-                            ?: SpatialResultDTO(emptyList(), emptyList(), emptyList())
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Remote calculateChanges failed, falling back", e)
+                val result =
+                    if (waitForServiceConnection()) {
+                        try {
+                            spatialService?.calculateChanges(sessionId, cameraDto)
+                                ?: SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Remote calculateChanges failed, falling back", e)
+                            SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                        }
+                    } else {
                         SpatialResultDTO(emptyList(), emptyList(), emptyList())
                     }
-                } else {
-                    SpatialResultDTO(emptyList(), emptyList(), emptyList())
-                }
 
                 processRenderingChanges(result, renderer)
             } catch (e: Exception) {

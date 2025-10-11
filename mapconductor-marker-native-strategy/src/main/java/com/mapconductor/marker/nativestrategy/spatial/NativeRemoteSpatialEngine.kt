@@ -17,7 +17,7 @@ import android.util.Log
  * - Vectorized operations for geometric calculations
  * - Lock-free operations where possible
  */
-class NativeRemoteSpatialEngine private constructor(
+internal class NativeRemoteSpatialEngine private constructor(
     private val nativeStrategyId: Long,
     private val sessionId: String,
 ) {
@@ -68,8 +68,7 @@ class NativeRemoteSpatialEngine private constructor(
          * Create a strategy optimized for very large marker datasets (10K+ markers).
          * Uses aggressive viewport expansion and add-only mode for maximum performance.
          */
-        fun createForLargeDatasets(): NativeRemoteSpatialEngine? =
-            create(expandMargin = 0.8, addOnlyMode = true)
+        fun createForLargeDatasets(): NativeRemoteSpatialEngine? = create(expandMargin = 0.8, addOnlyMode = true)
 
         // Native method declarations
         @JvmStatic external fun nativeCreate(

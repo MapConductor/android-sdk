@@ -15,6 +15,75 @@ ktlint {
     }
 }
 
+// Task to create secrets.properties in root project if it doesn't exist
+tasks.register("ensureSecretsFiles") {
+    doFirst {
+        val secretsFile = rootProject.file("secrets.properties")
+        val defaultsFile = rootProject.file("local.defaults.properties")
+
+        // Create secrets.properties if it doesn't exist
+        if (!secretsFile.exists()) {
+            secretsFile.createNewFile()
+            println("Created secrets.properties in root project")
+        }
+
+        // Create local.defaults.properties if it doesn't exist
+        if (!defaultsFile.exists()) {
+            defaultsFile.createNewFile()
+            println("Created local.defaults.properties in root project")
+        }
+
+        // Ensure GOOGLE_MAPS_API_KEY exists in secrets.properties
+        val secretsContent = secretsFile.readText()
+        if (!secretsContent.contains("GOOGLE_MAPS_API_KEY=")) {
+            secretsFile.appendText("GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY\n")
+            println("Added GOOGLE_MAPS_API_KEY to secrets.properties")
+        }
+
+        // Ensure GOOGLE_MAPS_API_KEY exists in local.defaults.properties
+        val defaultsContent = defaultsFile.readText()
+        if (!defaultsContent.contains("GOOGLE_MAPS_API_KEY=")) {
+            defaultsFile.appendText("GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY\n")
+            println("Added GOOGLE_MAPS_API_KEY to local.defaults.properties")
+        }
+    }
+}
+
+// Function to read API key from secrets.properties
+fun getGoogleMapsApiKey(): String {
+    val secretsFile = rootProject.file("secrets.properties")
+    val defaultsFile = rootProject.file("local.defaults.properties")
+
+    // Try to read from secrets.properties first
+    if (secretsFile.exists()) {
+        val content = secretsFile.readText()
+        content.lines().forEach { line ->
+            if (line.startsWith("GOOGLE_MAPS_API_KEY=")) {
+                val value = line.substringAfter("=").trim()
+                if (value.isNotEmpty() && value != "GOOGLE_MAPS_API_KEY") {
+                    return value
+                }
+            }
+        }
+    }
+
+    // Fallback to local.defaults.properties
+    if (defaultsFile.exists()) {
+        val content = defaultsFile.readText()
+        content.lines().forEach { line ->
+            if (line.startsWith("GOOGLE_MAPS_API_KEY=")) {
+                val value = line.substringAfter("=").trim()
+                if (value.isNotEmpty()) {
+                    return value
+                }
+            }
+        }
+    }
+
+    // Return placeholder if no valid key found
+    return "GOOGLE_MAPS_API_KEY"
+}
+
 android {
     namespace = "com.mapconductor.googlemaps"
     compileSdk = project.property("compileSdk").toString().toInt()
@@ -24,6 +93,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // Set the Google Maps API key from secrets.properties
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = getGoogleMapsApiKey()
     }
 
     buildFeatures {
@@ -51,6 +123,11 @@ android {
             )
         }
     }
+
+    // Run ensureSecretsFiles before processing manifests
+    tasks.matching { it.name.contains("process") && it.name.contains("Manifest") }.configureEach {
+        dependsOn("ensureSecretsFiles")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
@@ -62,18 +139,18 @@ android {
 
 dependencies {
 
-    compileOnly(libs.androidx.core.ktx)
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.foundation)
-    compileOnly(libs.androidx.ui.tooling.preview)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.common.java8)
 
     // Google Maps SDK
-    compileOnly(libs.play.services.maps)
-    compileOnly(project(":mapconductor-core"))
+    implementation(libs.play.services.maps)
+    implementation(project(":mapconductor-core"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
-        <provider
-            android:name=".spatial.InitProvider"
-            android:authorities=".initprovider"
-            android:exported="false" />
         <service
             android:name=".spatial.SpatialMarkerService"
             android:exported="false"

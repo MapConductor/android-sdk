@@ -1,11 +1,5 @@
 package com.mapconductor.marker.nativestrategy.spatial
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
-import android.util.Log
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
@@ -19,15 +13,21 @@ import com.mapconductor.core.spherical.expandBounds
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
@@ -62,25 +62,34 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     private var batchJob: Job? = null
     private val renderingMutex = kotlinx.coroutines.sync.Mutex()
 
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            try {
-                remoteService = INativeSpatialMarkerService.Stub.asInterface(service)
-                val ok = remoteService?.initializeSession(sessionId, NativeSpatialConfigDTO(expandMargin, addOnlyMode)) == true
-                isServiceConnected.set(ok)
-            } catch (e: Exception) {
-                Log.e(TAG, "Remote service cast/init failed", e)
+    private val serviceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                name: ComponentName?,
+                service: IBinder?,
+            ) {
+                try {
+                    remoteService = INativeSpatialMarkerService.Stub.asInterface(service)
+                    val ok =
+                        remoteService
+                            ?.initializeSession(
+                                sessionId,
+                                NativeSpatialConfigDTO(expandMargin, addOnlyMode),
+                            ) == true
+                    isServiceConnected.set(ok)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Remote service cast/init failed", e)
+                    remoteService = null
+                    isServiceConnected.set(false)
+                }
+                synchronized(serviceConnectionLock) { serviceConnectionLock.notifyAll() }
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
                 remoteService = null
                 isServiceConnected.set(false)
             }
-            synchronized(serviceConnectionLock) { serviceConnectionLock.notifyAll() }
         }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            remoteService = null
-            isServiceConnected.set(false)
-        }
-    }
 
     init {
         // Try remote first, fallback to local native engine
@@ -90,7 +99,9 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
 
     private fun connectToService() {
         try {
-            val ok = context.bindService(Intent(context, NativeSpatialMarkerService::class.java), serviceConnection, Context.BIND_AUTO_CREATE)
+            val intent = Intent(context, NativeSpatialMarkerService::class.java)
+            val ok =
+                context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
             if (!ok) initializeNativeStrategy()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to bind NativeSpatialMarkerService, falling back", e)
@@ -120,14 +131,15 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     }
 
     private fun startBatchProcessor() {
-        batchJob = batchScope.launch {
-            while (true) {
-                delay(BATCH_DELAY_MS)
-                renderingMutex.withLock {
-                    processPendingUpdates()
+        batchJob =
+            batchScope.launch {
+                while (true) {
+                    delay(BATCH_DELAY_MS)
+                    renderingMutex.withLock {
+                        processPendingUpdates()
+                    }
                 }
             }
-        }
     }
 
     private fun processPendingUpdates() {
@@ -170,56 +182,69 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
         semaphore.withPermit {
             renderingMutex.withLock {
                 try {
-                    val result: NativeSpatialResultDTO? = when {
-                    remoteService != null && isServiceConnected.get() -> {
-                        try {
-                            val dto = NativeCameraPositionDTO(
-                                latitude = cameraPosition.position.latitude,
-                                longitude = cameraPosition.position.longitude,
-                                zoom = cameraPosition.zoom,
-                                bearing = cameraPosition.bearing,
-                                tilt = cameraPosition.tilt,
-                                boundsMinLat = visibleRegion.bounds.southWest!!.latitude,
-                                boundsMaxLat = visibleRegion.bounds.northEast!!.latitude,
-                                boundsMinLng = visibleRegion.bounds.southWest!!.longitude,
-                                boundsMaxLng = visibleRegion.bounds.northEast!!.longitude,
-                            )
-                            remoteService?.processCameraChange(sessionId, dto)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Remote processCameraChange failed", e)
-                            null
+                    val result: NativeSpatialResultDTO? =
+                        when {
+                            remoteService != null && isServiceConnected.get() -> {
+                                try {
+                                    val dto =
+                                        NativeCameraPositionDTO(
+                                            latitude = cameraPosition.position.latitude,
+                                            longitude = cameraPosition.position.longitude,
+                                            zoom = cameraPosition.zoom,
+                                            bearing = cameraPosition.bearing,
+                                            tilt = cameraPosition.tilt,
+                                            boundsMinLat = visibleRegion.bounds.southWest!!.latitude,
+                                            boundsMaxLat = visibleRegion.bounds.northEast!!.latitude,
+                                            boundsMinLng = visibleRegion.bounds.southWest!!.longitude,
+                                            boundsMaxLng = visibleRegion.bounds.northEast!!.longitude,
+                                        )
+                                    remoteService?.processCameraChange(sessionId, dto)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Remote processCameraChange failed", e)
+                                    null
+                                }
+                            }
+                            nativeStrategy != null && isServiceConnected.get() -> {
+                                val nativeCameraPosition =
+                                    CameraPosition(
+                                        latitude = cameraPosition.position.latitude,
+                                        longitude = cameraPosition.position.longitude,
+                                        zoom = cameraPosition.zoom,
+                                        bearing = cameraPosition.bearing,
+                                        tilt = cameraPosition.tilt,
+                                        visibleBounds =
+                                            NativeGeoRectBounds(
+                                                south = visibleRegion.bounds.southWest!!.latitude,
+                                                north = visibleRegion.bounds.northEast!!.latitude,
+                                                west = visibleRegion.bounds.southWest!!.longitude,
+                                                east = visibleRegion.bounds.northEast!!.longitude,
+                                            ),
+                                    )
+                                nativeStrategy!!.processCameraChange(nativeCameraPosition)
+                            }
+                            else -> {
+                                val expandedBounds = expandBounds(visibleRegion.bounds, expandMargin)
+                                val markersInBounds = markerManager.findMarkersInBounds(expandedBounds)
+                                val markerIdsInBounds = markersInBounds.map { it.state.id }.toSet()
+                                val markersToAdd = mutableListOf<String>()
+                                val markersToRemove = mutableListOf<String>()
+                                val currentlyRendered =
+                                    markerManager
+                                        .allEntities()
+                                        .filter { it.isRendered }
+                                        .map { it.state.id }
+                                        .toSet()
+                                markerIdsInBounds.forEach { id ->
+                                    if (!currentlyRendered.contains(id)) markersToAdd.add(id)
+                                }
+                                if (!addOnlyMode) {
+                                    currentlyRendered.forEach { id ->
+                                        if (!markerIdsInBounds.contains(id)) markersToRemove.add(id)
+                                    }
+                                }
+                                NativeSpatialResultDTO(markersToAdd.toTypedArray(), markersToRemove.toTypedArray())
+                            }
                         }
-                    }
-                    nativeStrategy != null && isServiceConnected.get() -> {
-                        val nativeCameraPosition = CameraPosition(
-                            latitude = cameraPosition.position.latitude,
-                            longitude = cameraPosition.position.longitude,
-                            zoom = cameraPosition.zoom,
-                            bearing = cameraPosition.bearing,
-                            tilt = cameraPosition.tilt,
-                            visibleBounds = NativeGeoRectBounds(
-                                south = visibleRegion.bounds.southWest!!.latitude,
-                                north = visibleRegion.bounds.northEast!!.latitude,
-                                west = visibleRegion.bounds.southWest!!.longitude,
-                                east = visibleRegion.bounds.northEast!!.longitude,
-                            ),
-                        )
-                        nativeStrategy!!.processCameraChange(nativeCameraPosition)
-                    }
-                    else -> {
-                        val expandedBounds = expandBounds(visibleRegion.bounds, expandMargin)
-                        val markersInBounds = markerManager.findMarkersInBounds(expandedBounds)
-                        val markerIdsInBounds = markersInBounds.map { it.state.id }.toSet()
-                        val markersToAdd = mutableListOf<String>()
-                        val markersToRemove = mutableListOf<String>()
-                        val currentlyRendered = markerManager.allEntities().filter { it.isRendered }.map { it.state.id }.toSet()
-                        markerIdsInBounds.forEach { id -> if (!currentlyRendered.contains(id)) markersToAdd.add(id) }
-                        if (!addOnlyMode) {
-                            currentlyRendered.forEach { id -> if (!markerIdsInBounds.contains(id)) markersToRemove.add(id) }
-                        }
-                        NativeSpatialResultDTO(markersToAdd.toTypedArray(), markersToRemove.toTypedArray())
-                    }
-                    }
                     result?.let { processRenderingChanges(it, renderer) }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to process camera change", e)
@@ -247,10 +272,12 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
         result.markersToAdd.forEach { markerId ->
             markerManager.getEntity(markerId)?.let { entity ->
                 if (!entity.isRendered) {
-                    markersToAdd.add(object : MarkerOverlayRenderer.AddParams {
-                        override val state = entity.state
-                        override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
-                    })
+                    markersToAdd.add(
+                        object : MarkerOverlayRenderer.AddParams {
+                            override val state = entity.state
+                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                        },
+                    )
                 }
             }
         }
@@ -290,78 +317,84 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRenderer<ActualMarker>,
-    ): Boolean = withContext(Dispatchers.Default) {
-        try {
-            val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
-            val markersToRegister = mutableListOf<MarkerEntityImpl<ActualMarker>>()
-            if (isServiceConnected.get()) {
-                val nativeMarkers = data.map { state ->
-                    NativeMarkerDataDTO(
-                        id = state.id,
-                        latitude = state.position.latitude,
-                        longitude = state.position.longitude,
-                        clickable = state.clickable,
-                    )
-                }
-                try {
-                    if (remoteService != null) {
-                        remoteService?.addMarkers(sessionId, nativeMarkers)
-                    } else if (nativeStrategy != null) {
-                        nativeStrategy!!.addMarkers(nativeMarkers)
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to add markers to backend", e)
-                }
-            }
-            val chunks = data.chunked(100)
-            chunks.forEach { chunk ->
-                chunk.forEach { state ->
-                    val isInViewport = viewport.contains(state.position)
-                    if (isInViewport) {
-                        markersToRender.add(object : MarkerOverlayRenderer.AddParams {
-                            override val state = state
-                            override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
-                        })
-                    } else {
-                        val entity = MarkerEntityImpl<ActualMarker>(state = state, marker = null, isRendered = false)
-                        markersToRegister.add(entity)
-                    }
-                }
-                yield()
-            }
-            markersToRegister.forEach { entity -> markerManager.registerEntity(entity) }
-
-            semaphore.withPermit {
-                renderingMutex.withLock {
-                    withContext(Dispatchers.Main) {
-                        if (markersToRender.isNotEmpty()) {
-                            val renderChunks = markersToRender.chunked(50)
-                            renderChunks.forEach { renderChunk ->
-                                val actualMarkers = renderer.onAdd(renderChunk)
-                                actualMarkers.forEachIndexed { index, actualMarker ->
-                                    actualMarker?.let {
-                                        val entity = MarkerEntityImpl<ActualMarker>(
-                                            state = renderChunk[index].state,
-                                            marker = actualMarker,
-                                            isRendered = true,
-                                            visible = true,
-                                        )
-                                        markerManager.registerEntity(entity)
-                                    }
-                                }
-                                if (renderChunks.size > 1) delay(1)
-                            }
+    ): Boolean =
+        withContext(Dispatchers.Default) {
+            try {
+                val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
+                val markersToRegister = mutableListOf<MarkerEntityImpl<ActualMarker>>()
+                if (isServiceConnected.get()) {
+                    val nativeMarkers =
+                        data.map { state ->
+                            NativeMarkerDataDTO(
+                                id = state.id,
+                                latitude = state.position.latitude,
+                                longitude = state.position.longitude,
+                                clickable = state.clickable,
+                            )
                         }
-                        renderer.onPostProcess()
+                    try {
+                        if (remoteService != null) {
+                            remoteService?.addMarkers(sessionId, nativeMarkers)
+                        } else if (nativeStrategy != null) {
+                            nativeStrategy!!.addMarkers(nativeMarkers)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to add markers to backend", e)
                     }
                 }
+                val chunks = data.chunked(100)
+                chunks.forEach { chunk ->
+                    chunk.forEach { state ->
+                        val isInViewport = viewport.contains(state.position)
+                        if (isInViewport) {
+                            markersToRender.add(
+                                object : MarkerOverlayRenderer.AddParams {
+                                    override val state = state
+                                    override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                },
+                            )
+                        } else {
+                            val entity =
+                                MarkerEntityImpl<ActualMarker>(state = state, marker = null, isRendered = false)
+                            markersToRegister.add(entity)
+                        }
+                    }
+                    yield()
+                }
+                markersToRegister.forEach { entity -> markerManager.registerEntity(entity) }
+
+                semaphore.withPermit {
+                    renderingMutex.withLock {
+                        withContext(Dispatchers.Main) {
+                            if (markersToRender.isNotEmpty()) {
+                                val renderChunks = markersToRender.chunked(50)
+                                renderChunks.forEach { renderChunk ->
+                                    val actualMarkers = renderer.onAdd(renderChunk)
+                                    actualMarkers.forEachIndexed { index, actualMarker ->
+                                        actualMarker?.let {
+                                            val entity =
+                                                MarkerEntityImpl<ActualMarker>(
+                                                    state = renderChunk[index].state,
+                                                    marker = actualMarker,
+                                                    isRendered = true,
+                                                    visible = true,
+                                                )
+                                            markerManager.registerEntity(entity)
+                                        }
+                                    }
+                                    if (renderChunks.size > 1) delay(1)
+                                }
+                            }
+                            renderer.onPostProcess()
+                        }
+                    }
+                }
+                true
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to add markers", e)
+                false
             }
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to add markers", e)
-            false
         }
-    }
 
     override suspend fun onUpdate(
         state: MarkerState,
@@ -376,10 +409,11 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                     val wasRendered = entity.isRendered
 
                     if (isInViewport && !wasRendered) {
-                        val addParams = object : MarkerOverlayRenderer.AddParams {
-                            override val state = state
-                            override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
-                        }
+                        val addParams =
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state = state
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                            }
                         val actualMarkers = renderer.onAdd(listOf(addParams))
                         actualMarkers.firstOrNull()?.let { actualMarker ->
                             entity.marker = actualMarker
@@ -392,11 +426,13 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         entity.isRendered = false
                         renderer.onPostProcess()
                     } else if (isInViewport && wasRendered) {
-                        val changeParams = object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                            override val current = MarkerEntityImpl(state = state, marker = entity.marker, isRendered = true)
-                            override val prev = entity
-                            override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
-                        }
+                        val changeParams =
+                            object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
+                                override val current =
+                                    MarkerEntityImpl(state = state, marker = entity.marker, isRendered = true)
+                                override val prev = entity
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                            }
                         val actualMarkers = renderer.onChange(listOf(changeParams))
                         actualMarkers.firstOrNull()?.let { actualMarker ->
                             entity.marker = actualMarker
@@ -404,7 +440,16 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         renderer.onPostProcess()
                     }
 
-                    val dto = NativeMarkerDataDTO(id = state.id, latitude = state.position.latitude, longitude = state.position.longitude, clickable = state.clickable)
+                    val latitude = state.position.latitude
+                    val longitude = state.position.longitude
+
+                    val dto =
+                        NativeMarkerDataDTO(
+                            id = state.id,
+                            latitude = latitude,
+                            longitude = longitude,
+                            clickable = state.clickable,
+                        )
                     addToBatch(dto)
                     return@withLock true
                 }
@@ -415,51 +460,64 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
         }
     }
 
-    suspend fun findNearestMarker(latitude: Double, longitude: Double): MarkerEntity<ActualMarker>? = try {
-        renderingMutex.withLock {
+    suspend fun findNearestMarker(
+        latitude: Double,
+        longitude: Double,
+    ): MarkerEntity<ActualMarker>? =
+        try {
+            renderingMutex.withLock {
+                if (isServiceConnected.get()) {
+                    if (remoteService != null) {
+                        val id = remoteService?.findNearestMarker(sessionId, latitude, longitude)
+                        id?.let { markerManager.getEntity(it) }
+                    } else if (nativeStrategy != null) {
+                        val nearestId = nativeStrategy!!.findNearestMarker(latitude, longitude)
+                        nearestId?.let { markerManager.getEntity(it) }
+                    } else {
+                        null
+                    }
+                } else {
+                    markerManager.findNearest(GeoPointImpl.fromLatLong(latitude, longitude))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to find nearest marker", e)
+            null
+        }
+
+    fun getPerformanceStats(): String? =
+        try {
             if (isServiceConnected.get()) {
                 if (remoteService != null) {
-                    val id = remoteService?.findNearestMarker(sessionId, latitude, longitude)
-                    id?.let { markerManager.getEntity(it) }
+                    remoteService?.getPerformanceStats(sessionId)
                 } else if (nativeStrategy != null) {
-                    val nearestId = nativeStrategy!!.findNearestMarker(latitude, longitude)
-                    nearestId?.let { markerManager.getEntity(it) }
-                } else null
+                    nativeStrategy!!.getPerformanceStats()?.toString() ?: "Native performance stats not available"
+                } else {
+                    "Backend not connected"
+                }
             } else {
-                markerManager.findNearest(GeoPointImpl.fromLatLong(latitude, longitude))
+                "Native strategy not connected - using local fallback"
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get performance stats", e)
+            null
         }
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to find nearest marker", e)
-        null
-    }
 
-    fun getPerformanceStats(): String? = try {
-        if (isServiceConnected.get()) {
-            if (remoteService != null) {
-                remoteService?.getPerformanceStats(sessionId)
-            } else if (nativeStrategy != null) {
-                nativeStrategy!!.getPerformanceStats()?.toString() ?: "Native performance stats not available"
-            } else "Backend not connected"
-        } else "Native strategy not connected - using local fallback"
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to get performance stats", e)
-        null
-    }
+    fun getMarkerCount(): Long =
+        try {
+            nativeStrategy?.getMarkerCount() ?: markerManager.allEntities().size.toLong()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get marker count", e)
+            0L
+        }
 
-    fun getMarkerCount(): Long = try {
-        nativeStrategy?.getMarkerCount() ?: markerManager.allEntities().size.toLong()
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to get marker count", e)
-        0L
-    }
-
-    fun getRenderedMarkerCount(): Long = try {
-        nativeStrategy?.getRenderedMarkerCount() ?: markerManager.allEntities().count { it.isRendered }.toLong()
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to get rendered marker count", e)
-        0L
-    }
+    fun getRenderedMarkerCount(): Long =
+        try {
+            nativeStrategy?.getRenderedMarkerCount() ?: markerManager.allEntities().count { it.isRendered }.toLong()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get rendered marker count", e)
+            0L
+        }
 
     fun destroy() {
         try {
@@ -472,8 +530,14 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                 }
             }
 
-            try { remoteService?.destroySession(sessionId) } catch (_: Exception) {}
-            try { context.unbindService(serviceConnection) } catch (_: Exception) {}
+            try {
+                remoteService?.destroySession(sessionId)
+            } catch (_: Exception) {
+            }
+            try {
+                context.unbindService(serviceConnection)
+            } catch (_: Exception) {
+            }
             nativeStrategy?.destroy()
             nativeStrategy = null
             Log.d(TAG, "NativeRemoteSpatialMarkerStrategy destroyed: $sessionId")

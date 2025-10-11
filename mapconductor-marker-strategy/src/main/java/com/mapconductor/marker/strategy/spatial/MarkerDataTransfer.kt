@@ -7,7 +7,7 @@ import android.os.Parcelable
  * Data transfer object for passing marker information between processes.
  * Contains only essential data needed for spatial calculations.
  */
-data class MarkerDataDTO(
+internal data class MarkerDataDTO(
     val id: String,
     val latitude: Double,
     val longitude: Double,

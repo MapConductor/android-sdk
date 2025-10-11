@@ -1,7 +1,6 @@
 package com.mapconductor.marker.strategy
 
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
-import com.mapconductor.marker.strategy.spatial.SpatialMarkerService
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import android.content.Context
