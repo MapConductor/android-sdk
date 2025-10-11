@@ -8,8 +8,6 @@ import android.content.res.Resources
 import android.os.Build
 import android.util.DisplayMetrics
 import android.util.TypedValue
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 data class IconResource(
     val name: String,
@@ -21,9 +19,6 @@ data class IconResource(
 )
 
 object ResourceProvider {
-    private val _initialized: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val initialized = _initialized.asStateFlow()
-
     private lateinit var appContext: Context
 
     fun getDisplayMetrics(): DisplayMetrics = Resources.getSystem().displayMetrics
@@ -32,7 +27,6 @@ object ResourceProvider {
 
     fun init(context: Context) {
         appContext = context.applicationContext
-        _initialized.value = true
     }
 
     fun getDensity(): Float = getDisplayMetrics().density

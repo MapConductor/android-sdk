@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.node.Ref
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
@@ -87,7 +88,7 @@ fun <
     shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable SpecificScope.() -> Unit)? = null,
 ) {
-    val isResourceProviderReady by ResourceProvider.initialized.collectAsState()
+    ResourceProvider.init(LocalContext.current)
     val initState by state.isInitialized.collectAsState()
     val cameraPosition by state.cameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
@@ -276,8 +277,7 @@ fun <
         }
     }
 
-    LaunchedEffect(isResourceProviderReady, initState, shouldInitialize) {
-        if (!isResourceProviderReady) return@LaunchedEffect
+    LaunchedEffect(initState, shouldInitialize) {
         if (!shouldInitialize) return@LaunchedEffect // Don't initialize if deferred
         if (initState != InitState.NotStarted) return@LaunchedEffect
         state.initAsync(onInitialize)
