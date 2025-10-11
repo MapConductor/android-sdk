@@ -94,14 +94,14 @@ val strategy = SimpleNativeParallelStrategy<ActualMarker>(
 )
 ```
 
-#### NativeSpatialMarkerRenderingStrategy
+#### NativeSpatialMarkerStrategy
 
 Advanced spatial rendering with clustering:
 
 ```kotlin
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerStrategy
 
-val spatialStrategy = NativeSpatialMarkerRenderingStrategy<ActualMarker>(
+val spatialStrategy = NativeSpatialMarkerStrategy<ActualMarker>(
     clusteringEnabled = true,
     clusterThreshold = 100,    // Cluster when > 100 markers in area
     geocell = HexGeocellImpl.defaultGeocell()
@@ -265,7 +265,7 @@ fun DynamicNativeLoadingExample() {
 @Composable
 fun NativeClusteringExample() {
     val clusteringStrategy = remember {
-        NativeSpatialMarkerRenderingStrategy<GoogleMapActualMarker>(
+        NativeSpatialMarkerStrategy<GoogleMapActualMarker>(
             clusteringEnabled = true,
             clusterThreshold = 50,     // Cluster when > 50 markers nearby
             clusterRadius = 100.0,     // 100-meter clustering radius

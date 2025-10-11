@@ -42,6 +42,7 @@ add_library(
     marker_rendering_strategy.cpp
     parallel_marker_strategy.cpp
     jni_wrapper.cpp
+    parallel_jni_wrapper.cpp
     remote_spatial_jni_wrapper.cpp
     remote_spatial_marker_strategy.cpp
 )

@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <string>
 
 namespace mapconductor {
 namespace marker {

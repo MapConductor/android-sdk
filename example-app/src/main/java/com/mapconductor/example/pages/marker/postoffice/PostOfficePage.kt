@@ -19,7 +19,8 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerStrategy
+import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
 
 @Composable
 fun PostOfficeMapPage(
@@ -30,10 +31,12 @@ fun PostOfficeMapPage(
     val dataLoader = remember { PostOfficeDataLoader(context) }
     val strategies =
         remember {
-            val google = NativeSpatialMarkerRenderingStrategy<GoogleMapActualMarker>()
-            val mapbox = NativeSpatialMarkerRenderingStrategy<MapboxActualMarker>()
-            val here = NativeSpatialMarkerRenderingStrategy<HereActualMarker>()
-            val arcgis = NativeSpatialMarkerRenderingStrategy<ArcGISActualMarker>()
+            val google = NativeRemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
+//            val google = NativeSpatialMarkerStrategy<GoogleMapActualMarker>()
+//            val google = NativeParallelMarkerStrategy<GoogleMapActualMarker>()
+            val mapbox = NativeSpatialMarkerStrategy<MapboxActualMarker>()
+            val here = NativeSpatialMarkerStrategy<HereActualMarker>()
+            val arcgis = NativeSpatialMarkerStrategy<ArcGISActualMarker>()
             Strategies(
                 google = google,
                 mapbox = mapbox,

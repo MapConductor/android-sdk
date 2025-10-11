@@ -4,6 +4,7 @@
 #include <future>
 #include <chrono>
 #include <queue>
+#include <cmath>
 
 namespace mapconductor {
 namespace marker {
