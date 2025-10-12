@@ -15,8 +15,8 @@ import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.marker.strategy.SimpleMarkerRenderingStrategy
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
+import com.mapconductor.marker.strategy.SimpleMarkerStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -92,6 +92,8 @@ class PostOfficeViewModelImpl(
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
         coroutine.launch {
+            // Wait until map tiles are rendered.
+            delay(2500)
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
@@ -117,8 +119,6 @@ class PostOfficeViewModelImpl(
 
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
         coroutine.launch {
-            // Wait until map tiles are rendered.
-            delay(3000)
             _isMapLoaded.value = true
         }
     }
@@ -145,7 +145,7 @@ class PostOfficeViewModelImpl(
                 is MapboxViewState -> strategies.mapbox
                 is HereViewState -> strategies.here
                 is ArcGISMapViewState -> strategies.arcgis
-                else -> SimpleMarkerRenderingStrategy<Any>()
+                else -> SimpleMarkerStrategy<Any>()
             } as MarkerRenderingStrategy<Any>?
         _isMapLoaded.value = false
     }
@@ -153,6 +153,6 @@ class PostOfficeViewModelImpl(
     override fun onCleared() {
         super.onCleared()
         // Clean up remote strategy if it's being used
-        (renderingStrategy as? RemoteSpatialMarkerRenderingStrategy<*>)?.destroy()
+        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }

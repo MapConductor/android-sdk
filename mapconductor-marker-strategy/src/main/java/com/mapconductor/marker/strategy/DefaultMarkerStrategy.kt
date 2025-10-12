@@ -22,7 +22,7 @@ import kotlinx.coroutines.sync.withPermit
  * @param semaphore The semaphore for synchronizing rendering operations
  * @param geocell Hex geocell for spatial indexing
  */
-class DefaultMarkerRenderingStrategy<ActualMarker>(
+class DefaultMarkerStrategy<ActualMarker>(
     private val expandMargin: Double = 0.2,
     semaphore: Semaphore = Semaphore(1),
     geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),

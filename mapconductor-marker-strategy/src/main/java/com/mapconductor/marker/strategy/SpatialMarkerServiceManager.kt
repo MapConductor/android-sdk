@@ -1,11 +1,9 @@
 package com.mapconductor.marker.strategy
 
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerRenderingStrategy
-import com.mapconductor.marker.strategy.spatial.SpatialMarkerService
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 
 /**
@@ -19,16 +17,16 @@ object SpatialMarkerServiceManager {
     private const val TAG = "SpatialMarkerServiceManager"
 
     private val activeStrategyCount = AtomicInteger(0)
-    private val activeStrategies = ConcurrentHashMap<String, RemoteSpatialMarkerRenderingStrategy<*>>()
-    private var isServiceStarted = false
+    private val activeStrategies = ConcurrentHashMap<String, RemoteSpatialMarkerStrategy<*>>()
+    private var isServiceStarted = false // deprecated: bind-only mode
     private val serviceLock = Object()
 
     /**
-     * Register a new remote strategy. Starts the service if this is the first strategy.
+     * Register a new remote strategy. Bind-only mode: no startService.
      */
     fun <T> registerStrategy(
         context: Context,
-        strategy: RemoteSpatialMarkerRenderingStrategy<T>,
+        strategy: RemoteSpatialMarkerStrategy<T>,
     ): String {
         val strategyId = strategy.hashCode().toString()
 
@@ -36,17 +34,14 @@ object SpatialMarkerServiceManager {
             activeStrategies[strategyId] = strategy
 //            val count = activeStrategyCount.incrementAndGet()
 
-            // For now, we skip starting the actual service since we're using local fallback
-            if (!isServiceStarted) {
-                startService(context, SpatialMarkerService.javaClass)
-            }
+            // Bind-only: do not start the service here. Client binds on demand.
         }
 
         return strategyId
     }
 
     /**
-     * Unregister a strategy. Stops the service if this was the last strategy.
+     * Unregister a strategy. Bind-only: no explicit stopService.
      */
     fun unregisterStrategy(
         context: Context,
@@ -58,10 +53,7 @@ object SpatialMarkerServiceManager {
 
                 Log.d(TAG, "Unregistered strategy $strategyId. Active strategies: $count")
 
-                // For now, we skip stopping the service since we're using local fallback
-                if (count == 0 && isServiceStarted) {
-                    stopService(context, SpatialMarkerService.javaClass)
-                }
+                // Bind-only: when all clients unbind, the system destroys the service automatically.
             }
         }
     }
@@ -93,39 +85,7 @@ object SpatialMarkerServiceManager {
         }
     }
 
-    /**
-     * Start the background service (when IPC functionality is enabled)
-     */
-    private fun startService(
-        context: Context,
-        serviceClass: Class<*>,
-    ) {
-        try {
-            val intent = Intent(context, serviceClass)
-            context.startService(intent)
-            isServiceStarted = true
-            Log.d(TAG, "SpatialMarkerService started")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start SpatialMarkerService", e)
-        }
-    }
-
-    /**
-     * Stop the background service (when IPC functionality is enabled)
-     */
-    private fun stopService(
-        context: Context,
-        serviceClass: Class<*>,
-    ) {
-        try {
-            val intent = Intent(context, serviceClass)
-            context.stopService(intent)
-            isServiceStarted = false
-            Log.d(TAG, "SpatialMarkerService stopped")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to stop SpatialMarkerService", e)
-        }
-    }
+    // No start/stop in bind-only mode
 
     /**
      * Get current service statistics for debugging
@@ -133,10 +93,10 @@ object SpatialMarkerServiceManager {
     fun getServiceStats(): Map<String, Any> {
         synchronized(serviceLock) {
             return mapOf(
-                "isServiceStarted" to isServiceStarted,
+                "isServiceStarted" to false,
                 "activeStrategyCount" to activeStrategyCount.get(),
                 "activeStrategyIds" to activeStrategies.keys.toList(),
-                "mode" to "local_fallback",
+                "mode" to "bind_only",
             )
         }
     }

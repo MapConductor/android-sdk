@@ -44,6 +44,10 @@ android {
         jvmTarget = project.property("jvmTarget").toString()
     }
 
+    buildFeatures {
+        aidl = true
+    }
+
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
