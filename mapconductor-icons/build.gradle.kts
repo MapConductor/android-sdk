@@ -63,9 +63,9 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.ui.tooling.preview)
+    compileOnly(libs.androidx.compose.ui.tooling.preview)
     compileOnly(libs.androidx.foundation)
-    compileOnly(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.androidx.compose.bom))
     compileOnly(project(":mapconductor-core"))
 
     testImplementation(libs.junit)

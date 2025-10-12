@@ -15,116 +15,6 @@ ktlint {
     }
 }
 
-// Task to create secrets.properties in root project if it doesn't exist
-tasks.register("ensureSecretsFiles") {
-    doFirst {
-        val secretsFile = rootProject.file("secrets.properties")
-        val defaultsFile = rootProject.file("local.defaults.properties")
-
-        // Create secrets.properties if it doesn't exist
-        if (!secretsFile.exists()) {
-            secretsFile.createNewFile()
-            println("Created secrets.properties in root project")
-        }
-
-        // Create local.defaults.properties if it doesn't exist
-        if (!defaultsFile.exists()) {
-            defaultsFile.createNewFile()
-            println("Created local.defaults.properties in root project")
-        }
-
-        // Ensure HERE_ACCESS_KEY_ID and HERE_ACCESS_KEY_SECRET exist in secrets.properties
-        val secretsContent = secretsFile.readText()
-        if (!secretsContent.contains("HERE_ACCESS_KEY_ID=")) {
-            secretsFile.appendText("HERE_ACCESS_KEY_ID=HERE_ACCESS_KEY_ID\n")
-            println("Added HERE_ACCESS_KEY_ID to secrets.properties")
-        }
-        if (!secretsContent.contains("HERE_ACCESS_KEY_SECRET=")) {
-            secretsFile.appendText("HERE_ACCESS_KEY_SECRET=HERE_ACCESS_KEY_SECRET\n")
-            println("Added HERE_ACCESS_KEY_SECRET to secrets.properties")
-        }
-
-        // Ensure HERE_ACCESS_KEY_ID and HERE_ACCESS_KEY_SECRET exist in local.defaults.properties
-        val defaultsContent = defaultsFile.readText()
-        if (!defaultsContent.contains("HERE_ACCESS_KEY_ID=")) {
-            defaultsFile.appendText("HERE_ACCESS_KEY_ID=HERE_ACCESS_KEY_ID\n")
-            println("Added HERE_ACCESS_KEY_ID to local.defaults.properties")
-        }
-        if (!defaultsContent.contains("HERE_ACCESS_KEY_SECRET=")) {
-            defaultsFile.appendText("HERE_ACCESS_KEY_SECRET=HERE_ACCESS_KEY_SECRET\n")
-            println("Added HERE_ACCESS_KEY_SECRET to local.defaults.properties")
-        }
-    }
-}
-
-// Functions to read API keys from secrets.properties
-fun getHereAccessKeyId(): String {
-    val secretsFile = rootProject.file("secrets.properties")
-    val defaultsFile = rootProject.file("local.defaults.properties")
-
-    // Try to read from secrets.properties first
-    if (secretsFile.exists()) {
-        val content = secretsFile.readText()
-        content.lines().forEach { line ->
-            if (line.startsWith("HERE_ACCESS_KEY_ID=")) {
-                val value = line.substringAfter("=").trim()
-                if (value.isNotEmpty() && value != "HERE_ACCESS_KEY_ID") {
-                    return value
-                }
-            }
-        }
-    }
-
-    // Fallback to local.defaults.properties
-    if (defaultsFile.exists()) {
-        val content = defaultsFile.readText()
-        content.lines().forEach { line ->
-            if (line.startsWith("HERE_ACCESS_KEY_ID=")) {
-                val value = line.substringAfter("=").trim()
-                if (value.isNotEmpty()) {
-                    return value
-                }
-            }
-        }
-    }
-
-    // Return placeholder if no valid key found
-    return "HERE_ACCESS_KEY_ID"
-}
-
-fun getHereAccessKeySecret(): String {
-    val secretsFile = rootProject.file("secrets.properties")
-    val defaultsFile = rootProject.file("local.defaults.properties")
-
-    // Try to read from secrets.properties first
-    if (secretsFile.exists()) {
-        val content = secretsFile.readText()
-        content.lines().forEach { line ->
-            if (line.startsWith("HERE_ACCESS_KEY_SECRET=")) {
-                val value = line.substringAfter("=").trim()
-                if (value.isNotEmpty() && value != "HERE_ACCESS_KEY_SECRET") {
-                    return value
-                }
-            }
-        }
-    }
-
-    // Fallback to local.defaults.properties
-    if (defaultsFile.exists()) {
-        val content = defaultsFile.readText()
-        content.lines().forEach { line ->
-            if (line.startsWith("HERE_ACCESS_KEY_SECRET=")) {
-                val value = line.substringAfter("=").trim()
-                if (value.isNotEmpty()) {
-                    return value
-                }
-            }
-        }
-    }
-
-    // Return placeholder if no valid key found
-    return "HERE_ACCESS_KEY_SECRET"
-}
 android {
     namespace = "com.mapconductor.here"
     compileSdk = project.property("compileSdk").toString().toInt()
@@ -134,10 +24,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        // Set the HERE API keys from secrets.properties
-        manifestPlaceholders["HERE_ACCESS_KEY_ID"] = getHereAccessKeyId()
-        manifestPlaceholders["HERE_ACCESS_KEY_SECRET"] = getHereAccessKeySecret()
     }
 
     buildFeatures {
@@ -166,10 +52,6 @@ android {
         }
     }
 
-    // Run ensureSecretsFiles before processing manifests
-    tasks.matching { it.name.contains("process") && it.name.contains("Manifest") }.configureEach {
-        dependsOn("ensureSecretsFiles")
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
@@ -184,10 +66,10 @@ dependencies {
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.ui.tooling.preview)
     compileOnly(libs.androidx.foundation)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    implementation(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.common.java8)
 
     // libs
     compileOnly(

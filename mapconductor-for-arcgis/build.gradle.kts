@@ -15,74 +15,6 @@ ktlint {
     }
 }
 
-// Task to create secrets.properties in root project if it doesn't exist
-tasks.register("ensureSecretsFiles") {
-    doFirst {
-        val secretsFile = rootProject.file("secrets.properties")
-        val defaultsFile = rootProject.file("local.defaults.properties")
-
-        // Create secrets.properties if it doesn't exist
-        if (!secretsFile.exists()) {
-            secretsFile.createNewFile()
-            println("Created secrets.properties in root project")
-        }
-
-        // Create local.defaults.properties if it doesn't exist
-        if (!defaultsFile.exists()) {
-            defaultsFile.createNewFile()
-            println("Created local.defaults.properties in root project")
-        }
-
-        // Ensure ARCGIS_API_KEY exists in secrets.properties
-        val secretsContent = secretsFile.readText()
-        if (!secretsContent.contains("ARCGIS_API_KEY=")) {
-            secretsFile.appendText("ARCGIS_API_KEY=ARCGIS_API_KEY\n")
-            println("Added ARCGIS_API_KEY to secrets.properties")
-        }
-
-        // Ensure ARCGIS_API_KEY exists in local.defaults.properties
-        val defaultsContent = defaultsFile.readText()
-        if (!defaultsContent.contains("ARCGIS_API_KEY=")) {
-            defaultsFile.appendText("ARCGIS_API_KEY=ARCGIS_API_KEY\n")
-            println("Added ARCGIS_API_KEY to local.defaults.properties")
-        }
-    }
-}
-
-// Function to read API key from secrets.properties
-fun getArcgisApiKey(): String {
-    val secretsFile = rootProject.file("secrets.properties")
-    val defaultsFile = rootProject.file("local.defaults.properties")
-
-    // Try to read from secrets.properties first
-    if (secretsFile.exists()) {
-        val content = secretsFile.readText()
-        content.lines().forEach { line ->
-            if (line.startsWith("ARCGIS_API_KEY=")) {
-                val value = line.substringAfter("=").trim()
-                if (value.isNotEmpty() && value != "ARCGIS_API_KEY") {
-                    return value
-                }
-            }
-        }
-    }
-
-    // Fallback to local.defaults.properties
-    if (defaultsFile.exists()) {
-        val content = defaultsFile.readText()
-        content.lines().forEach { line ->
-            if (line.startsWith("ARCGIS_API_KEY=")) {
-                val value = line.substringAfter("=").trim()
-                if (value.isNotEmpty()) {
-                    return value
-                }
-            }
-        }
-    }
-
-    // Return placeholder if no valid key found
-    return "ARCGIS_API_KEY"
-}
 android {
     namespace = "com.mapconductor.arcgis"
     compileSdk = project.property("compileSdk").toString().toInt()
@@ -92,9 +24,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        // Set the ArcGIS API key from secrets.properties
-        manifestPlaceholders["ARCGIS_API_KEY"] = getArcgisApiKey()
     }
 
     buildFeatures {
@@ -123,10 +52,6 @@ android {
         }
     }
 
-    // Run ensureSecretsFiles before processing manifests
-    tasks.matching { it.name.contains("process") && it.name.contains("Manifest") }.configureEach {
-        dependsOn("ensureSecretsFiles")
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
@@ -142,10 +67,10 @@ dependencies {
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.ui.tooling.preview)
     compileOnly(libs.androidx.core.ktx)
-    compileOnly(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
+    implementation(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
     // Lifecycle（MapView用）
-    compileOnly(libs.androidx.lifecycle.runtime.ktx)
-    compileOnly(libs.androidx.lifecycle.common.java8)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.common.java8)
 
     // ArcGIS SDK
     compileOnly(libs.arcgis.maps.kotlin)
