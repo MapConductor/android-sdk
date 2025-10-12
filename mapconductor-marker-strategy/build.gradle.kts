@@ -51,10 +51,10 @@ dependencies {
     // Compose dependencies for BitmapIcon/DefaultIcon
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.foundation)
-    compileOnly(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.androidx.compose.bom))
 
     // Coroutines for Semaphore and withPermit
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
