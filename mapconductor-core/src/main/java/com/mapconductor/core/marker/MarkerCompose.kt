@@ -11,17 +11,6 @@ fun MapViewScope.Marker(state: MarkerState) {
     LaunchedEffect(state) {
         markerAddSharedFlow.emit(state)
     }
-//    DisposableEffect(Unit) {
-//        overflowScope.launch {
-//            markerAddSharedFlow.emit(state)
-//        }
-//
-//        onDispose {
-//            val newMap = bubbleFlow.value.toMutableMap()
-//            newMap.remove(state.id)
-//            bubbleFlow.value = newMap
-//        }
-//    }
 }
 
 @Composable
