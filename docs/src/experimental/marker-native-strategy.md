@@ -94,20 +94,6 @@ val strategy = SimpleNativeParallelStrategy<ActualMarker>(
 )
 ```
 
-#### NativeSpatialMarkerStrategy
-
-Advanced spatial rendering with clustering:
-
-```kotlin
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerStrategy
-
-val spatialStrategy = NativeSpatialMarkerStrategy<ActualMarker>(
-    clusteringEnabled = true,
-    clusterThreshold = 100,    // Cluster when > 100 markers in area
-    geocell = HexGeocellImpl.defaultGeocell()
-)
-```
-
 ## Basic Usage
 
 ### Simple Native Manager
