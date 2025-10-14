@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,10 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
                 icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
                 extra = "Point of Interest",
             )
+
+        LaunchedEffect(Unit) {
+            selectedMarker = markerState
+        }
 
         mapViewState?.let {
             MapViewContainer(
