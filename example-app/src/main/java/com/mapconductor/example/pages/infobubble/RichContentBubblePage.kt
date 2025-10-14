@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +76,10 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                 extra = locationInfo,
             )
 
+        LaunchedEffect(Unit) {
+            selectedMarker = markerState
+        }
+
         mapViewState?.let {
             MapViewContainer(
                 modifier = Modifier.fillMaxSize(),
@@ -89,8 +94,8 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                     info?.let {
                         InfoBubble(
                             marker = marker,
-                            bubbleColor = Color.White,
-                            borderColor = Color.Gray,
+                            bubbleColor = if (isDarkTheme) Color.Black else Color.White,
+                            borderColor = if (isDarkTheme) Color.Gray else Color.Black,
                             contentPadding = 16.dp,
                             cornerRadius = 12.dp,
                         ) {
@@ -108,7 +113,7 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                                 Text(
                                     text = info.description,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray,
+                                    color = if (isDarkTheme) Color.White else Color.Gray,
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))

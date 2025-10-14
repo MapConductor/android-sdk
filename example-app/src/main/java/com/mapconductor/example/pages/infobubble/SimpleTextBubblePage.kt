@@ -61,6 +61,7 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
                     InfoBubble(marker = marker) {
                         Text(
                             text = marker.extra as? String ?: "No information",
+                            color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(4.dp),
                         )
