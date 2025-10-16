@@ -117,15 +117,20 @@ fun GoogleMapsView(
                 val stateId = _state.id
                 val observer =
                     object : DefaultLifecycleObserver {
-                        override fun onResume(owner: LifecycleOwner) {}
+                        override fun onResume(owner: LifecycleOwner) {
+                            _holderRef.value?.mapView?.onResume()
+                        }
 
-                        override fun onPause(owner: LifecycleOwner) {}
+                        override fun onPause(owner: LifecycleOwner) {
+                            _holderRef.value?.mapView?.onPause()
+                        }
 
                         override fun onDestroy(owner: LifecycleOwner) {
                             val activity = context.findActivity()
                             if (activity?.isChangingConfigurations == true) {
                                 _holderRef.value?.mapView?.let {
                                     (it.parent as? ViewGroup)?.removeView(it)
+                                    it.onDestroy()
                                 }
                             } else {
                                 GoogleMapViewControllerStore.remove(stateId)

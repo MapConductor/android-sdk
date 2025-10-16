@@ -1,4 +1,3 @@
 package com.mapconductor.maplibre
 
-class MapLibreTypeAlias {
-}
+typealias MapLibreActualMarker = Annotation

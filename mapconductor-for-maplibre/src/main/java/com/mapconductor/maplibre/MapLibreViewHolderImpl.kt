@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
-import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.MapLibre
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
@@ -14,9 +14,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 
-typealias MapLibreMapViewHolder = MapViewHolder<MapView, MapLibreMap>
+typealias MapLibreViewHolder = MapViewHolder<MapView, MapLibreMap>
 
-internal class MapLibreMapViewHolderImpl private constructor(
+internal class MapLibreViewHolderImpl(
     override val mapView: MapView,
 ) : MapViewHolder<MapView, MapLibreMap> {
     override lateinit var map: MapLibreMap
@@ -34,27 +34,4 @@ internal class MapLibreMapViewHolderImpl private constructor(
         map.projection.fromScreenLocation(PointF(offset.x, offset.y)).toGeoPoint()
 
     override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? = fromScreenOffsetSync(offset)
-
-    companion object {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        suspend fun create(
-            context: Context,
-            mapInitOptions: MapLibreMapOptions,
-        ): MapViewHolder<MapView, MapLibreMap> {
-
-            val mapView = MapView(context, mapInitOptions).apply {
-                onCreate(null)
-            }
-            val holder = MapLibreMapViewHolderImpl(mapView)
-
-            suspendCancellableCoroutine<Unit> { cont ->
-                mapView.getMapAsync {
-                    holder.map = it
-                    cont.resume(Unit) {}
-                }
-            }
-
-            return holder
-        }
-    }
 }

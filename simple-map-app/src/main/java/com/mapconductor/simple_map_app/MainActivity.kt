@@ -1,17 +1,17 @@
 package com.mapconductor.simple_map_app
 
-import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simple_map_app.ui.theme.MapConductorSDKTheme
+import android.os.Bundle
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,8 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    MapView(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -31,17 +30,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+fun MapView(modifier: Modifier = Modifier) {
+    val state = rememberMapLibreMapViewState()
+    MapLibreMapView(
+        modifier = modifier,
+        state = state,
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MapConductorSDKTheme {
-        Greeting("Android")
-    }
 }

@@ -2,7 +2,7 @@ package com.mapconductor.maplibre
 
 import com.mapconductor.core.controller.MapViewController
 
-interface MapLibreMapViewController :
+interface MapLibreViewController :
     MapViewController {
     fun setMapDesignType(value: MapLibreMapDesignType)
 

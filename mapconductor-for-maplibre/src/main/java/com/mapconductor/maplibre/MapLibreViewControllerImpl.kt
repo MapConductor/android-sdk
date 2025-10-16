@@ -2,19 +2,21 @@ package com.mapconductor.maplibre
 
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.MapViewState
+import org.maplibre.android.camera.CameraUpdateFactory
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 typealias MapLibreDesignTypeChangeHandler = (MapLibreMapDesignType) -> Unit
 
-class MapLibreMapViewControllerImpl(
-    override val holder: MapViewHolder<*, *>,
-    override val coroutine: CoroutineScope
-) :
-    BaseMapViewController(),
-    MapLibreMapViewController {
+class MapLibreViewControllerImpl(
+    override val holder: MapLibreViewHolder,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+) : BaseMapViewController(),
+    MapLibreViewController {
     override suspend fun clearOverlays() {
         TODO("Not yet implemented")
     }
@@ -23,7 +25,12 @@ class MapLibreMapViewControllerImpl(
         position: MapCameraPositionImpl,
         listener: MapViewState.MoveCameraCallback?
     ) {
-        TODO("Not yet implemented")
+        coroutine.launch {
+            val cameraUpdate = CameraUpdateFactory
+                .newCameraPosition(position.toCameraPosition())
+            holder.map.moveCamera(cameraUpdate)
+            listener?.onComplete()
+        }
     }
 
     override fun animateCamera(
@@ -31,15 +38,27 @@ class MapLibreMapViewControllerImpl(
         duration: Long,
         listener: MapViewState.MoveCameraCallback?
     ) {
-        TODO("Not yet implemented")
+        coroutine.launch {
+            val cameraUpdate = CameraUpdateFactory
+                .newCameraPosition(position.toCameraPosition())
+            holder.map.animateCamera(cameraUpdate, duration.toInt())
+            listener?.onComplete()
+        }
     }
 
+    private var mapDesignType: MapLibreMapDesignType = MapLibreMapDesign.DemoTiles
+
+    private var mapDesignTypeChangeListener: MapLibreDesignTypeChangeHandler? = null
+
     override fun setMapDesignType(value: MapLibreMapDesignType) {
-        TODO("Not yet implemented")
+        coroutine.launch {
+            holder.map.setStyle(value.styleJsonURL)
+        }
     }
 
     override fun setMapDesignTypeChangeListener(listener: MapLibreDesignTypeChangeHandler) {
-        TODO("Not yet implemented")
+        mapDesignTypeChangeListener = listener
+        listener(mapDesignType)
     }
 
 }

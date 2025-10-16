@@ -280,8 +280,9 @@ fun <
     LaunchedEffect(initState, shouldInitialize) {
         if (!shouldInitialize) return@LaunchedEffect // Don't initialize if deferred
         if (initState != InitState.NotStarted) return@LaunchedEffect
-        state.initAsync(onInitialize)
-        onMapViewInitialized?.invoke(state)
+        state.initAsync(onInitialize) {
+            onMapViewInitialized?.invoke(state)
+        }
     }
 
     customDisposableEffect?.invoke(state, holderRef)

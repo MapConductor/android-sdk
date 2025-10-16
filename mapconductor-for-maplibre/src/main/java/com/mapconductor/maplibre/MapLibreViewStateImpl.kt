@@ -1,6 +1,5 @@
-package com.mapconductor.mapbox
+package com.mapconductor.maplibre
 
-import MapboxMapViewController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,30 +11,29 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
-import com.mapconductor.mapbox.MapboxMapDesign.Standard
 import java.util.UUID
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface MapboxViewState : MapViewState<MapboxDesignType>
+interface MapLibreViewState : MapViewState<MapLibreMapDesignType>
 
-class MapboxViewStateImpl(
-    mapDesignType: MapboxDesignType,
+class MapLibreViewStateImpl(
+    mapDesignType: MapLibreMapDesignType,
     override val id: String,
     override val initCameraPosition: MapCameraPositionImpl = MapCameraPositionImpl.Default,
-) : MapViewStateImpl<MapboxDesignType>(),
-    MapboxViewState {
-    private var controller: MapboxMapViewController? = null
+) : MapViewStateImpl<MapLibreMapDesignType>(),
+    MapLibreViewState {
+    private var controller: MapLibreViewController? = null
 
     // Camera center position
     private val _cameraPosition = MutableStateFlow(initCameraPosition)
     override val cameraPosition: StateFlow<MapCameraPositionImpl> = _cameraPosition.asStateFlow()
 
-    private var _mapDesignType: MapboxDesignType = mapDesignType
+    private var _mapDesignType: MapLibreMapDesignType = mapDesignType
 
-    override var mapDesignType: MapboxDesignType
+    override var mapDesignType: MapLibreMapDesignType
         set(value) {
             value?.let {
                 _mapDesignType = it
@@ -44,7 +42,7 @@ class MapboxViewStateImpl(
         }
         get() = _mapDesignType
 
-    internal fun setController(controller: MapboxMapViewController) {
+    internal fun setController(controller: MapLibreViewController) {
         this.controller = controller
         _mapDesignType?.let {
             controller.setMapDesignType(it)
@@ -52,7 +50,7 @@ class MapboxViewStateImpl(
         controller.moveCamera(_cameraPosition.value)
     }
 
-    internal fun onMapDesignTypeChange(value: MapboxDesignType) {
+    internal fun onMapDesignTypeChange(value: MapLibreMapDesignType) {
         _mapDesignType = value
     }
 
@@ -78,7 +76,7 @@ class MapboxViewStateImpl(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun getMapViewHolder(): MapboxMapViewHolder? = controller?.holder as? MapboxMapViewHolder
+    override fun getMapViewHolder(): MapLibreViewHolder? = controller?.holder as? MapLibreViewHolder
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
@@ -87,7 +85,7 @@ class MapboxViewStateImpl(
     ) {
         controller?.let { ctrl ->
             if (this.isInitialized.value == InitState.Initialized) {
-                val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
+                val dstCameraPosition = MapCameraPositionImpl.Companion.from(cameraPosition)
                 if (durationMs == null || durationMs == 0L) {
                     ctrl.moveCamera(dstCameraPosition, listener)
                 } else {
@@ -105,51 +103,54 @@ class MapboxViewStateImpl(
     }
 }
 
-class MapboxMapViewSaver : BaseMapViewSaver<MapboxViewStateImpl>() {
-    override fun extractCameraPosition(state: MapboxViewStateImpl): MapCameraPositionImpl? = state.cameraPosition.value
+class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
+    override fun extractCameraPosition(state: MapLibreViewStateImpl): MapCameraPositionImpl? = state.cameraPosition.value
 
     override fun saveMapDesign(
-        state: MapboxViewStateImpl,
+        state: MapLibreViewStateImpl,
         bundle: Bundle,
     ) {
-        bundle.putString("id", state.mapDesignType?.id ?: "null")
+        bundle.putString("styleJsonURL", state.mapDesignType?.styleJsonURL ?: "null")
     }
 
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
         cameraPosition: MapCameraPositionImpl,
-    ): MapboxViewStateImpl =
-        MapboxViewStateImpl(
+    ): MapLibreViewStateImpl =
+        MapLibreViewStateImpl(
             id = stateId,
             mapDesignType =
-                MapboxMapDesign.Create(
-                    layerId = mapDesignBundle?.getString("id") ?: Standard.id,
+                MapLibreMapDesign(
+                    id = mapDesignBundle?.getString("id") ?:
+                        MapLibreMapDesign.DemoTiles.id,
+                    styleJsonURL = mapDesignBundle?.getString("styleJsonURL") ?:
+                        MapLibreMapDesign.DemoTiles.styleJsonURL,
                 ),
             initCameraPosition = cameraPosition,
         )
 
-    override fun getStateId(state: MapboxViewStateImpl): String = state.id
+    override fun getStateId(state: MapLibreViewStateImpl): String = state.id
 }
 
 @Composable
-fun rememberMapboxMapViewState(
-    mapDesign: MapboxDesignType = Standard,
+fun rememberMapLibreMapViewState(
+    mapDesign: MapLibreMapDesignType = MapLibreMapDesign.DemoTiles,
     cameraPosition: MapCameraPosition = MapCameraPositionImpl.Default,
-): MapboxViewStateImpl {
+): MapLibreViewStateImpl {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()
         mutableStateOf(uuid)
     }
     val state =
         rememberSaveable(
-            stateSaver = MapboxMapViewSaver().createSaver(),
+            stateSaver = MapLibreMapViewSaver().createSaver(),
         ) {
             mutableStateOf(
-                MapboxViewStateImpl(
+                MapLibreViewStateImpl(
                     id = stateId,
                     mapDesignType = mapDesign,
-                    initCameraPosition = MapCameraPositionImpl.from(cameraPosition),
+                    initCameraPosition = MapCameraPositionImpl.Companion.from(cameraPosition),
                 ),
             )
         }

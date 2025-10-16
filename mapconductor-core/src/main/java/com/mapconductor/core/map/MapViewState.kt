@@ -28,7 +28,10 @@ interface MapViewState<ActualMapDesignType> {
     val cameraPosition: StateFlow<MapCameraPositionImpl?>
     var mapDesignType: ActualMapDesignType
 
-    fun initAsync(init: suspend () -> Boolean)
+    fun initAsync(
+        init: suspend () -> Boolean,
+        onInitialized: () -> Unit,
+    )
 
     fun resetInitState()
 
@@ -67,7 +70,10 @@ abstract class MapViewStateImpl<ActualMapDesignType>(
         Log.d(tag, message)
     }
 
-    override fun initAsync(init: suspend () -> Boolean) {
+    override fun initAsync(
+        init: suspend () -> Boolean,
+        onInitialized: () -> Unit,
+    ) {
         if (isInitialized.value != InitState.NotStarted) return
         _isInitialized.value = InitState.Initializing
 
@@ -79,6 +85,7 @@ abstract class MapViewStateImpl<ActualMapDesignType>(
                 _isInitialized.value = InitState.Failed
                 Log.e("MapConductor", "Failed to initialize the Map view", e)
             }
+            onInitialized()
         }
     }
 }

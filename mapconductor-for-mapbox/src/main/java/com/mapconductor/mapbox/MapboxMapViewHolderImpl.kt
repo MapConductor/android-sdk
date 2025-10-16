@@ -59,7 +59,7 @@ class MapboxMapViewHolderImpl private constructor(
                     .Builder()
                     .center(mapInitOptions.cameraOptions!!.center)
                     .bearing(mapInitOptions.cameraOptions!!.bearing)
-                    .zoom(mapInitOptions.cameraOptions!!.zoom!! - 1.0)
+                    .zoom(mapInitOptions.cameraOptions!!.zoom!! - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
                     .pitch(mapInitOptions.cameraOptions!!.pitch)
                     .build()
 

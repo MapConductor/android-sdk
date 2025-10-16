@@ -45,11 +45,16 @@ rootProject.name = "MapConductorSDK"
 val modulesProp =
     rootDir
         .resolve("projects.properties")
-        .readLines()
-        .firstOrNull { it.startsWith("modules=") }
-        ?.removePrefix("modules=")
-        ?.split(",")
-        ?.map { it.trim() }
-        ?: emptyList()
+        .readText()
+        .lines()
+        .joinToString("")
+        .substringAfter("modules=")
+        .substringBefore("\n#")
+        .substringBefore("\nmodules.")
+        .replace("\\", "")
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
 
 modulesProp.forEach { include(":$it") }
+include(":simple-map-app")

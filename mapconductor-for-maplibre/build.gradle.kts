@@ -16,7 +16,7 @@ ktlint {
 }
 
 android {
-    namespace = "com.mapconductor.maplibre-gl"
+    namespace = "com.mapconductor.maplibre"
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
@@ -68,14 +68,15 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.common.java8)
 
-    // Mapbox SDK
-    compileOnly(libs.maplibre.gl)
+    // MapLibre SDK
+    compileOnly(libs.maplibre.sdk)
+    compileOnly(libs.maplibre.annotation)
     compileOnly(project(":mapconductor-core"))
 }
 
 // Publishing configuration
 val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
-val libraryArtifactId = "for-maplibre-gl"
+val libraryArtifactId = "for-maplibre"
 val libraryVersion = project.findProperty("libraryVersion") as String? ?: "1.0.0"
 
 // Set project version for NMCP plugin
