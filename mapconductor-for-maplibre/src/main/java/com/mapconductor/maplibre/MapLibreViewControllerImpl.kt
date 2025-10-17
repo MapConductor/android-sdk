@@ -13,6 +13,7 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
+import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -38,14 +39,55 @@ class MapLibreViewControllerImpl(
     MapLibreMap.OnCameraMoveListener,
     MapLibreMap.OnCameraIdleListener {
 
-    init {
-        holder.map.getStyle { style ->
-            // Marker
+    // Keep reference to the style instance to avoid getting a new one
+    private var styleInstance: org.maplibre.android.maps.Style? = null
+
+    private fun setupStyle(style: org.maplibre.android.maps.Style) {
+        // Store the style instance for future use
+        styleInstance = style
+
+        // Log existing layers
+        val topLayerId = style.layers.lastOrNull()?.id
+
+        // Ensure default icon image exists on this style
+        markerController.renderer.ensureDefaultIcon(style)
+
+        // Marker - add source and layer at the top
+        if (style.getSource(markerController.renderer.markerLayer.sourceId) == null) {
             style.addSource(markerController.renderer.markerLayer.source)
-            style.addLayer(markerController.renderer.markerLayer.layer)
-            style.addSource(markerController.renderer.dragLayer.source)
-            style.addLayer(markerController.renderer.dragLayer.layer)
         }
+
+        // Add layer at the top (after all existing layers)
+        if (style.getLayer(markerController.renderer.markerLayer.layerId) == null) {
+            if (topLayerId != null) {
+                style.addLayerAbove(markerController.renderer.markerLayer.layer, topLayerId)
+            } else {
+                style.addLayer(markerController.renderer.markerLayer.layer)
+            }
+        }
+
+        // Drag layer above marker layer
+        if (style.getSource(markerController.renderer.dragLayer.sourceId) == null) {
+            style.addSource(markerController.renderer.dragLayer.source)
+        }
+        if (style.getLayer(markerController.renderer.dragLayer.layerId) == null) {
+            style.addLayerAbove(
+                markerController.renderer.dragLayer.layer,
+                markerController.renderer.markerLayer.layerId,
+            )
+        }
+
+        // Force redraw after adding layers
+        markerController.renderer.redraw()
+    }
+
+    init {
+        // Style should already be loaded by holderProvider
+        val style = holder.map.style
+        if (style != null) {
+            setupStyle(style)
+        }
+
         setupListeners()
         registerController(markerController)
 //        registerController(polygonController)
@@ -102,13 +144,20 @@ class MapLibreViewControllerImpl(
 
     override fun setMapDesignType(value: MapLibreMapDesignType) {
         coroutine.launch {
-            holder.map.setStyle(value.styleJsonURL)
+            holder.map.setStyle(value.styleJsonURL) { newStyle ->
+                android.util.Log.d("MapLibre", "Style changed to ${value.styleJsonURL}")
+                setupStyle(newStyle)
+            }
         }
     }
 
+    // Provide access to the style instance
+    fun getStyleInstance(): org.maplibre.android.maps.Style? = styleInstance
+
     override fun setMapDesignTypeChangeListener(listener: MapLibreDesignTypeChangeHandler) {
         mapDesignTypeChangeListener = listener
-        listener(mapDesignType)
+        // Don't call listener immediately - it may trigger style reload
+        // listener(mapDesignType)
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)

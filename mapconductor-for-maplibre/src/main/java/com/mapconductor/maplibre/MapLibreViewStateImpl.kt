@@ -43,9 +43,6 @@ class MapLibreViewStateImpl(
 
     internal fun setController(controller: MapLibreViewController) {
         this.controller = controller
-        _mapDesignType?.let {
-            controller.setMapDesignType(it)
-        }
         controller.moveCamera(_cameraPosition.value)
     }
 

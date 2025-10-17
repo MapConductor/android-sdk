@@ -57,8 +57,24 @@ class MapLibreMarkerOverlayRenderer(
     }
 
     init {
-        holder.map.getStyle { style ->
+        val style = holder.map.style
+        if (style != null) {
             style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+        } else {
+            holder.map.getStyle { style ->
+                style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            }
+        }
+    }
+
+    // Ensure default icon exists on the given style (used after style reload)
+    fun ensureDefaultIcon(style: org.maplibre.android.maps.Style) {
+        try {
+            if (style.getImage(Prop.DEFAULT_MARKER_ID) == null) {
+                style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("MapLibre", "Failed ensuring default icon on style: ${e.message}")
         }
     }
 
@@ -82,34 +98,36 @@ class MapLibreMarkerOverlayRenderer(
                     it.marker
                 }
             }
-        coroutine.launch {
-            markerLayer.source.setGeoJson(
-                FeatureCollection.fromFeatures(features),
-            )
+        // Execute directly instead of launching a new coroutine
+        holder.map.style?.let { style ->
+            val styleSource = style.getSourceAs<org.maplibre.android.style.sources.GeoJsonSource>(markerLayer.sourceId)
+            styleSource?.setGeoJson(FeatureCollection.fromFeatures(features))
         }
     }
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<MapLibreActualMarker?> {
-        return withContext(coroutine.coroutineContext) {
-            val style =
-                suspendCoroutine { continuation ->
-                    holder.map.getStyle { style ->
-                        continuation.resumeWith(Result.success(style))
-                    }
-                }
-            data.forEach {
-                it.state.icon?.let { icon ->
-                    val iconKey = icon
-                            .hashCode()
-                            .toString()
-                    if (!iconRefCounter.contains(iconKey)) {
-                        style.addImage(iconKey, it.bitmapIcon.bitmap)
-                        iconRefCounter[iconKey] = 0
-                    }
+        // Get style from controller to use the same instance
+        val style = holder.getController()?.getStyleInstance() ?: run {
+            holder.map.style
+        }
+
+        if (style == null) {
+            return emptyList()
+        }
+
+        data.forEach {
+            it.state.icon?.let { icon ->
+                val iconKey = icon
+                        .hashCode()
+                        .toString()
+                if (!iconRefCounter.contains(iconKey)) {
+                    style.addImage(iconKey, it.bitmapIcon.bitmap)
+                    iconRefCounter[iconKey] = 0
                 }
             }
+        }
 
-            data.map {
+        return data.map {
                 val featureId = "marker-${it.state.id}"
                 val position = GeoPointImpl.from(it.state.position).toPoint()
                 val properties =
@@ -128,8 +146,7 @@ class MapLibreMarkerOverlayRenderer(
                         }
                         addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
                     }
-                Feature.fromGeometry(position, properties, featureId)
-            }
+            Feature.fromGeometry(position, properties, featureId)
         }
     }
 
@@ -157,8 +174,11 @@ class MapLibreMarkerOverlayRenderer(
 
     fun redraw() {
         val entities = markerManager.allEntities()
-        coroutine.launch {
-            markerLayer.draw(entities)
+        // Get style from controller to use the same instance
+        val style = holder.getController()?.getStyleInstance() ?: holder.map.style
+
+        style?.let {
+            markerLayer.draw(entities, it)
         }
     }
     override suspend fun onPostProcess() {

@@ -58,6 +58,7 @@ fun MapLibreMapView(
             val mapInitOptions = MapLibreMapOptions.createFromAttributes(context)
                 .camera(cameraPosition)
                 .textureMode(true)
+                // Don't set style here - it will be set in holderProvider
 
             MapView(context, mapInitOptions)
         },
@@ -67,8 +68,11 @@ fun MapLibreMapView(
         holderProvider = { mapView ->
             suspendCancellableCoroutine { continuation ->
                 mapView.getMapAsync { map ->
-                    map.setStyle(state.mapDesignType.styleJsonURL)
-                    continuation.resume(MapLibreViewHolderImpl(mapView, map)) {}
+                    // Set style and wait for it to load completely
+                    map.setStyle(state.mapDesignType.styleJsonURL) { loadedStyle ->
+                        // Resume only after style is fully loaded
+                        continuation.resume(MapLibreViewHolderImpl(mapView, map)) {}
+                    }
                 }
             }
         },
@@ -81,6 +85,8 @@ fun MapLibreMapView(
                 holder = holder,
                 markerController = markerController,
             ).also { controller ->
+                // Store controller reference in holder
+                (holder as? MapLibreViewHolderImpl)?.setController(controller)
                 controller.setCameraMoveListener(state::onCameraChange)
                 controller.setMapClickListener(onMapClick)
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)

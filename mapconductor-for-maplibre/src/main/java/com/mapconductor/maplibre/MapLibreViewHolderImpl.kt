@@ -9,12 +9,21 @@ import org.maplibre.android.maps.MapView
 import android.graphics.PointF
 
 
-typealias MapLibreViewHolder = MapViewHolder<MapView, MapLibreMap>
+interface MapLibreViewHolder : MapViewHolder<MapView, MapLibreMap> {
+    fun getController(): MapLibreViewControllerImpl?
+}
 
 internal class MapLibreViewHolderImpl(
     override val mapView: MapView,
     override val map: MapLibreMap,
-) : MapViewHolder<MapView, MapLibreMap> {
+) : MapLibreViewHolder {
+    private var controller: MapLibreViewControllerImpl? = null
+
+    fun setController(ctrl: MapLibreViewControllerImpl) {
+        controller = ctrl
+    }
+
+    override fun getController(): MapLibreViewControllerImpl? = controller
 
     override fun toScreenOffset(position: GeoPoint): Offset? {
         val pixel =
