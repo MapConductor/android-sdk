@@ -94,16 +94,7 @@ class ArcGISMapViewHolderImpl private constructor(
             context: Context,
             options: ArcGISMapViewInitOptions,
         ): MapViewHolder<WrapSceneView, SceneView> {
-            val apiKey = context.applicationContext.getArcGisApiKey()
-            if (apiKey == null) throw Exception("<meta-data android:name=\"ARCGIS_API_KEY\" /> is required")
-            ArcGISEnvironment.apiKey = ApiKey.create(apiKey)
 
-            val sceneView = SceneView(context)
-            val wrapView =
-                WrapSceneView(context).apply {
-                    addView(sceneView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-                }
-            wrapView.sceneView = sceneView
 
             val holder = ArcGISMapViewHolderImpl(wrapView)
             val scene = ArcGISScene(options.basemapStyle)

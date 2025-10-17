@@ -4,22 +4,17 @@ import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
-import org.maplibre.android.MapLibre
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
-import android.content.Context
 import android.graphics.PointF
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 
 typealias MapLibreViewHolder = MapViewHolder<MapView, MapLibreMap>
 
 internal class MapLibreViewHolderImpl(
     override val mapView: MapView,
+    override val map: MapLibreMap,
 ) : MapViewHolder<MapView, MapLibreMap> {
-    override lateinit var map: MapLibreMap
 
     override fun toScreenOffset(position: GeoPoint): Offset? {
         val pixel =

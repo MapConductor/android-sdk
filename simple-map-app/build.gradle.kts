@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
 android {
@@ -39,6 +40,11 @@ android {
     }
 }
 
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -50,9 +56,13 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // Google Maps SDK
+    implementation(libs.play.services.maps)
+
     // MapLibre SDK
     implementation(libs.maplibre.sdk)
     implementation(libs.maplibre.annotation)
-    implementation(project(":mapconductor-core"))
-    implementation(project(":mapconductor-for-maplibre"))
+    debugImplementation(project(":mapconductor-core"))
+    debugImplementation(project(":mapconductor-for-maplibre"))
+    debugImplementation(project(":mapconductor-for-googlemaps"))
 }

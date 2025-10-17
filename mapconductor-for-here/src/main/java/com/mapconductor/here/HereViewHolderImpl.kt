@@ -11,10 +11,10 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
 import android.content.Context
 
-internal class HereViewHolderImpl private constructor(
+internal class HereViewHolderImpl(
     override val mapView: MapView,
+    override val map: MapScene,
 ) : MapViewHolder<MapView, MapScene> {
-    override lateinit var map: MapScene
 
     override fun toScreenOffset(position: GeoPoint): Offset? {
         val result =
@@ -40,23 +40,4 @@ internal class HereViewHolderImpl private constructor(
                 Point2D(offset.x.toDouble(), offset.y.toDouble()),
             )?.toGeoPoint()
 
-    companion object {
-        fun create(context: Context): MapViewHolder<MapView, MapScene> {
-            // TEXTUREモードにしないとデバイスが回転したときに再描画を適切に行わない
-            val viewOptions =
-                MapViewOptions().also {
-                    it.renderMode = MapRenderMode.TEXTURE
-                }
-
-            val mapView =
-                MapView(context, viewOptions).apply {
-                    onCreate(null)
-                    onResume()
-                }
-
-            val holder = HereViewHolderImpl(mapView)
-            holder.map = mapView.mapScene
-            return holder
-        }
-    }
 }

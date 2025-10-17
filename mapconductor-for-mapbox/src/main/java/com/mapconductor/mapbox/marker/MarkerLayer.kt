@@ -32,10 +32,7 @@ open class MarkerLayer(
             )
         }
 
-    val source: GeoJsonSource =
-        geoJsonSource(sourceId) {
-            featureCollection(FeatureCollection.fromFeatures(emptyList()))
-        }
+    val source: GeoJsonSource = geoJsonSource(sourceId)
 
     fun draw(entities: List<MarkerEntity<Feature>>) {
         val visibleEntities = entities.filter { it.visible && it.marker != null }

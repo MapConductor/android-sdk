@@ -1,3 +1,5 @@
 package com.mapconductor.maplibre
 
-typealias MapLibreActualMarker = Annotation
+import org.maplibre.geojson.Feature
+
+typealias MapLibreActualMarker = Feature

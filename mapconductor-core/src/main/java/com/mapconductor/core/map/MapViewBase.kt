@@ -11,7 +11,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +48,8 @@ import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
+import android.content.Context
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.FlowPreview
@@ -72,31 +76,33 @@ fun <
     ActualMap : Any,
     // SpecificViewHolder is now constrained by your MapViewHolder interface
     // and uses the ActualMapView and ActualMap generic types.
-    SpecificViewHolder : MapViewHolder<ActualMapView, ActualMap>,
     SpecificScope : MapViewScope,
+    SpecificHolder: MapViewHolder<ActualMapView, ActualMap>,
 > MapViewBase(
     state: SpecificState,
     modifier: Modifier = Modifier,
-    holderRef: Ref<SpecificViewHolder>,
-    controllerRef: Ref<SpecificController>,
-    viewProvider: SpecificViewHolder.() -> ActualMapView, // Function to get the Android View from ViewHolder
+    viewProvider: () -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
-    onInitialize: suspend () -> Boolean,
+    sdkInitialize: suspend () -> Boolean = { true },
+    holderProvider: suspend (mapView: ActualMapView) -> SpecificHolder,
+    controllerProvider: suspend (holder: SpecificHolder) -> SpecificController,
     onMapViewInitialized: OnMapViewInitializedHandler? = null,
-    customDisposableEffect: (@Composable (SpecificState, Ref<SpecificViewHolder>) -> Unit)? = null,
-    shouldInitialize: Boolean = true, // Allow deferring initialization
+    customDisposableEffect: (@Composable (InitState, Ref<SpecificHolder>) -> Unit)? = null,
     content: (@Composable SpecificScope.() -> Unit)? = null,
 ) {
     ResourceProvider.init(LocalContext.current)
-    val initState by state.isInitialized.collectAsState()
+    val mapViewRef = remember { Ref<ActualMapView>() }
+    val controllerRef = remember { Ref<SpecificController>() }
+    val holderRef = remember { Ref<SpecificHolder>() }
+    var initState by remember { mutableStateOf<InitState>(InitState.NotStarted) }
     val cameraPosition by state.cameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
-    val controller = controllerRef.value
     val cameraTick = remember { mutableIntStateOf(0) }
+    val controller = controllerRef.value
 
-    if (initState == InitState.Initialized && controller != null) {
-        // 収集した子コンポーネントを描画する
+    if (initState == InitState.MapCreated && controller != null) {
+        // 5. 収集した子コンポーネントを描画する
         CollectAndRenderOverlays(
             registry = registry, // This should come from the specific scope or be passed
             controller = controller,
@@ -176,30 +182,34 @@ fun <
     }
 
     SubcomposeLayout(modifier = modifier.fillMaxSize().clipToBounds().background(Color.LightGray)) { constraints ->
-        // 1) Map フェーズ：先に Map の AndroidView をレイアウト
+        // 2. Map フェーズ：先に Map の AndroidView をレイアウト
         val mapPlaceables =
             subcompose("map") {
                 when (initState) {
                     InitState.NotStarted -> BasicMessage("Not initialized yet")
                     InitState.Failed -> BasicMessage("Failed to initialize")
-                    InitState.Initializing -> BasicMessage("Initializing")
-                    InitState.Initialized -> {
-                        if (holderRef.value == null) {
-                            state.resetInitState() // Or handle error appropriately
-                        } else {
-                            AndroidView(factory = { _ ->
-                                viewProvider(holderRef.value!!).also { view ->
-                                    (view as ViewGroup).layoutParams =
-                                        ViewGroup.LayoutParams(
-                                            ViewGroup.LayoutParams.MATCH_PARENT,
-                                            ViewGroup.LayoutParams.MATCH_PARENT,
-                                        )
-                                }
-                            })
+                    InitState.Initializing -> BasicMessage("SDK Initializing")
+                    InitState.SdkInitialized -> {
+                        // 3. Create a map view
+                        viewProvider().also { mapView ->
+                            (mapView as ViewGroup).layoutParams =
+                                ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                )
+                            mapViewRef.value = mapView
+                            initState = InitState.MapViewCreated
                         }
+                        BasicMessage("Loading.")
+                    }
+                    else -> {
+                        AndroidView(factory = { context ->
+                            mapViewRef.value!!
+                        })
                     }
                 }
             }.map { it.measure(constraints) }
+
 
         val width = mapPlaceables.maxOfOrNull { it.width } ?: constraints.minWidth
         val height = mapPlaceables.maxOfOrNull { it.height } ?: constraints.minHeight
@@ -207,7 +217,7 @@ fun <
 
         // 2) Overlay フェーズ：Map のサイズが確定し、かつ controller などが揃っているときだけ合成
         val canOverlay =
-            initState == InitState.Initialized &&
+            initState >= InitState.MapViewCreated //&&
                 controller != null &&
                 mapSize.width > 0 &&
                 mapSize.height > 0 &&
@@ -277,15 +287,32 @@ fun <
         }
     }
 
-    LaunchedEffect(initState, shouldInitialize) {
-        if (!shouldInitialize) return@LaunchedEffect // Don't initialize if deferred
+    // 1. Start initialization
+    LaunchedEffect(initState) {
         if (initState != InitState.NotStarted) return@LaunchedEffect
-        state.initAsync(onInitialize) {
+        initState = InitState.Initializing
+        try {
+            val success = sdkInitialize()
+            initState = if (success) InitState.SdkInitialized else InitState.Failed
+        } catch (e: Exception) {
+            initState = InitState.Failed
+            Log.e("MapConductor", "Failed to initialize the Map view", e)
+        }
+    }
+
+    // 4. Create a map instance, then returns as a holder
+    LaunchedEffect(initState) {
+        if (initState != InitState.MapViewCreated) return@LaunchedEffect
+        mapViewRef.value?.let { mapView ->
+            val holder = holderProvider(mapView)
+            holderRef.value = holder
+            controllerRef.value = controllerProvider(holder)
+            initState = InitState.MapCreated
             onMapViewInitialized?.invoke(state)
         }
     }
 
-    customDisposableEffect?.invoke(state, holderRef)
+    customDisposableEffect?.invoke(initState, holderRef)
 }
 
 @Composable

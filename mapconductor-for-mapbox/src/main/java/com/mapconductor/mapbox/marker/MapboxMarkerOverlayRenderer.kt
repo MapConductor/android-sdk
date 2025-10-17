@@ -101,13 +101,14 @@ class MapboxMarkerOverlayRenderer(
                 }
 
             data.forEach {
-                val iconKey =
-                    it.state.icon
+                it.state.icon?.let { icon ->
+                    val iconKey = icon
                         .hashCode()
                         .toString()
-                if (!iconRefCounter.contains(iconKey)) {
-                    style.addImage(iconKey, it.bitmapIcon.bitmap)
-                    iconRefCounter[iconKey] = 0
+                    if (!iconRefCounter.contains(iconKey)) {
+                        style.addImage(iconKey, it.bitmapIcon.bitmap)
+                        iconRefCounter[iconKey] = 0
+                    }
                 }
             }
 

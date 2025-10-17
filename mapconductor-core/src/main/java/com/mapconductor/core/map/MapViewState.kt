@@ -13,7 +13,9 @@ import kotlinx.coroutines.launch
 enum class InitState {
     NotStarted,
     Initializing,
-    Initialized,
+    SdkInitialized,
+    MapViewCreated,
+    MapCreated,
     Failed,
 }
 
@@ -24,16 +26,8 @@ interface MapViewState<ActualMapDesignType> {
 
     val id: String
     val initCameraPosition: MapCameraPositionImpl
-    val isInitialized: StateFlow<InitState>
     val cameraPosition: StateFlow<MapCameraPositionImpl?>
     var mapDesignType: ActualMapDesignType
-
-    fun initAsync(
-        init: suspend () -> Boolean,
-        onInitialized: () -> Unit,
-    )
-
-    fun resetInitState()
 
     fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
@@ -54,40 +48,6 @@ abstract class MapViewStateImpl<ActualMapDesignType>(
     protected val mainCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : MapViewState<ActualMapDesignType> {
     private val tag = this.javaClass.name
-
-    private val _isInitialized = MutableStateFlow(InitState.NotStarted)
-    override val isInitialized: StateFlow<InitState> = _isInitialized.asStateFlow()
-
-    override fun resetInitState() {
-        this._isInitialized.value = InitState.NotStarted
-    }
-
-    protected fun warningLog(message: String) {
-        Log.w(tag, message)
-    }
-
-    protected fun debugLog(message: String) {
-        Log.d(tag, message)
-    }
-
-    override fun initAsync(
-        init: suspend () -> Boolean,
-        onInitialized: () -> Unit,
-    ) {
-        if (isInitialized.value != InitState.NotStarted) return
-        _isInitialized.value = InitState.Initializing
-
-        mainCoroutine.launch {
-            try {
-                val success = init()
-                _isInitialized.value = if (success) InitState.Initialized else InitState.Failed
-            } catch (e: Exception) {
-                _isInitialized.value = InitState.Failed
-                Log.e("MapConductor", "Failed to initialize the Map view", e)
-            }
-            onInitialized()
-        }
-    }
 }
 
 interface MapOverlay<DataType> {

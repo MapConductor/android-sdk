@@ -8,6 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.marker.Marker
+import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simple_map_app.ui.theme.MapConductorSDKTheme
@@ -22,6 +27,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MapView(
                         modifier = Modifier.padding(innerPadding)
+                            .fillMaxSize()
                     )
                 }
             }
@@ -31,9 +37,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MapView(modifier: Modifier = Modifier) {
-    val state = rememberMapLibreMapViewState()
+    val state = rememberMapLibreMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = GeoPointImpl.fromLatLong(52.35673, 4.91638),
+            zoom = 5.0,
+        )
+    )
     MapLibreMapView(
         modifier = modifier,
         state = state,
-    )
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(52.35673, 4.91638),
+        )
+    }
 }

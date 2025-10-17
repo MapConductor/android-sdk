@@ -155,7 +155,7 @@ internal class MapboxMapViewControllerImpl(
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
     private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPositionImpl? {
-        val options = cameraChanged.toMapCameraPosition()
+//        val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
 
         val mapWidth = holder.mapView.width.toFloat()

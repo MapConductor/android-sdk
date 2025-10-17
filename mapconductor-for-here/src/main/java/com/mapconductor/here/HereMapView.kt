@@ -1,5 +1,6 @@
 package com.mapconductor.here
 
+import HerePolygonOverlayRenderer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -9,6 +10,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.here.sdk.mapview.MapRenderMode
+import com.here.sdk.mapview.MapView
+import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
@@ -19,7 +23,12 @@ import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import android.util.Log
+import com.mapconductor.here.circle.HereCircleController
+import com.mapconductor.here.circle.HereCircleOverlayRenderer
+import com.mapconductor.here.marker.HereMarkerController
+import com.mapconductor.here.polygon.HerePolygonController
+import com.mapconductor.here.polyline.HerePolylineController
+import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import android.view.ViewGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -54,27 +63,38 @@ fun HereMapView(
     MapViewBase(
         state = state,
         modifier = modifier,
-        holderRef = holderRef,
-        controllerRef = controllerRef,
-        viewProvider = { this.mapView },
-        scope = scope,
-        registry = registry,
-        onInitialize = {
-            HereMapViewControllerStore.initSDK(context)
+        sdkInitialize = {
+            HereMapViewControllerStore.initSDK(context.applicationContext)
+            true
+        },
+        viewProvider = {
+            // TEXTUREモードにしないとデバイスが回転したときに再描画を適切に行わない
+            val viewOptions =
+                MapViewOptions().also {
+                    it.renderMode = MapRenderMode.TEXTURE
+                }
 
-            val mapInitOptions =
-                HereViewInitOptions(
-                    scheme = state.mapDesignType.getValue(),
-                )
-
+            MapView(context, viewOptions).apply {
+                onCreate(null)
+                onResume()
+            }
+        },
+        holderProvider = { mapView ->
+            HereViewHolderImpl(mapView, mapView.mapScene)
+        },
+        controllerProvider = { holder ->
             val controller =
-                HereMapViewControllerStore.getOrCreate(
-                    context = context,
-                    id = state.id,
-                    options = mapInitOptions,
-                    markerRenderingStrategy = markerRenderingStrategy,
+                HereMapViewControllerImpl(
+                    holder = holder,
+                    markerController =
+                        getMarkerController(
+                            holder = holder,
+                            renderingStrategy = markerRenderingStrategy,
+                        ),
+                    polylineController = getPolylineController(holder),
+                    polygonController = getPolygonController(holder),
+                    circleController = getHereCircleController(holder),
                 )
-
             controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
@@ -97,47 +117,44 @@ fun HereMapView(
                     throw Throwable("Loading map failed: mapError: " + mapError.name)
                 }
             }
-            try {
-                holderRef.value = controller.holder
-                controllerRef.value = controller
+            holderRef.value = controller.holder
+            controllerRef.value = controller
 
-                return@MapViewBase suspendCancellableCoroutine<Boolean> { cont ->
-                    val restoreCameraPosition = state.cameraPosition.value
-                    controller.moveCamera(
-                        position = restoreCameraPosition,
-                        listener =
-                            object : MapViewState.MoveCameraCallback {
-                                override fun onComplete() {
-                                    cont.resume(true) { }
-                                }
-                            },
-                    )
-                }
-            } catch (e: Exception) {
-                Log.e("HereMap", "failed to initialize", e)
-                false // Scene loading failed
+            return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
+                val restoreCameraPosition = state.cameraPosition.value
+                controller.moveCamera(
+                    position = restoreCameraPosition,
+                    listener =
+                        object : MapViewState.MoveCameraCallback {
+                            override fun onComplete() {
+                                cont.resume(controller) { }
+                            }
+                        },
+                )
             }
         },
+        scope = scope,
+        registry = registry,
         onMapViewInitialized = onMapViewInitialized,
-        customDisposableEffect = { _state, _holderRef ->
+        customDisposableEffect = { initState, holderRef ->
 
             // HERE specific DisposableEffect logic
             DisposableEffect(lifecycle) {
-                val stateId = _state.id // from BaseMapViewState
+                val stateId = state.id // from BaseMapViewState
                 val observer =
                     object : DefaultLifecycleObserver {
                         override fun onResume(owner: LifecycleOwner) {
                             // Do not call here to keep the MapView instance
-                            // _holderRef.value?.mapView?.onResume()
+                            // holderRef.value?.mapView?.onResume()
                         }
 
                         override fun onPause(owner: LifecycleOwner) {
                             // Do not call here to keep the MapView instance
-                            // _holderRef.value?.mapView?.onPause()
+                            // holderRef.value?.mapView?.onPause()
                         }
 
                         override fun onDestroy(owner: LifecycleOwner) {
-                            val currentHolder = _holderRef.value
+                            val currentHolder = holderRef.value
                             if (currentHolder != null) {
                                 val activity = context.findActivity()
                                 if (activity?.isChangingConfigurations == true) {
@@ -153,7 +170,6 @@ fun HereMapView(
                     }
                 lifecycle.addObserver(observer)
                 onDispose {
-                    _state.resetInitState()
                     lifecycle.removeObserver(observer)
                 }
             }
@@ -163,4 +179,52 @@ fun HereMapView(
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
     )
+}
+
+
+private fun getPolylineController(holder: HereViewHolder): HerePolylineController {
+    val renderer =
+        HerePolylineOverlayRenderer(
+            holder = holder,
+        )
+
+    val controller =
+        HerePolylineController(
+            renderer = renderer,
+        )
+    return controller
+}
+
+private fun getMarkerController(
+    holder: HereViewHolder,
+    renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
+) = HereMarkerController.create(
+    holder = holder,
+    renderingStrategy = renderingStrategy,
+)
+
+private fun getHereCircleController(holder: HereViewHolder): HereCircleController {
+    val renderer =
+        HereCircleOverlayRenderer(
+            holder = holder,
+        )
+
+    val controller =
+        HereCircleController(
+            renderer = renderer,
+        )
+    return controller
+}
+
+private fun getPolygonController(holder: HereViewHolder): HerePolygonController {
+    val renderer =
+        HerePolygonOverlayRenderer(
+            holder = holder,
+        )
+
+    val controller =
+        HerePolygonController(
+            renderer = renderer,
+        )
+    return controller
 }
