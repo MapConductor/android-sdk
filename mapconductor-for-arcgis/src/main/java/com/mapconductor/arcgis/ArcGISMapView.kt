@@ -76,6 +76,10 @@ fun ArcGISMapView(
                     addView(sceneView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
                 }
             wrapView.sceneView = sceneView
+            // Ensure lifecycle owner is set before the view is attached/drawn
+            // to avoid GeoView.lifeCycleOwner UninitializedPropertyAccessException
+            sceneView.onCreate(owner)
+            sceneView.onResume(owner)
             wrapView
         },
         scope = scope,
@@ -134,8 +138,6 @@ fun ArcGISMapView(
                 polygonController = getPolygonController(holder),
                 circleController = getCircleController(holder),
             ).also { controller ->
-                controller.holder.mapView.onCreate(owner)
-                controller.holder.mapView.onResume(owner)
                 controller.setCameraMoveListener(state::onCameraChange)
                 controller.setMapClickListener(onMapClick)
                 controller.setOnCircleClickListener(onCircleClick)
