@@ -12,23 +12,21 @@ import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreViewHolder
+import com.mapconductor.maplibre.MapLibreMapViewHolder
 import com.mapconductor.maplibre.toPoint
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MapLibreMarkerOverlayRenderer(
-    holder: MapLibreViewHolder,
+    holder: MapLibreMapViewHolder,
     val markerManager: MarkerManager<MapLibreActualMarker>,
     val markerLayer: MarkerLayer,
     val dragLayer: MarkerDragLayer,
     coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : AbstractMarkerOverlayRenderer<MapLibreViewHolder, MapLibreActualMarker>(
+) : AbstractMarkerOverlayRenderer<MapLibreMapViewHolder, MapLibreActualMarker>(
     holder = holder,
     coroutine = coroutine,
 ) {

@@ -64,7 +64,7 @@ class MapLibreViewStateImpl(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun getMapViewHolder(): MapLibreViewHolder? = controller?.holder as? MapLibreViewHolder
+    override fun getMapViewHolder(): MapLibreMapViewHolder? = controller?.holder as? MapLibreMapViewHolder
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,

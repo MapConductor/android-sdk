@@ -63,14 +63,14 @@ dependencies {
 //    debugImplementation(project(":mapconductor-for-googlemaps"))
 
     // MapLibre SDK
-//    implementation(libs.maplibre.sdk)
-//    implementation(libs.maplibre.annotation)
-//    debugImplementation(project(":mapconductor-for-maplibre"))
+    implementation(libs.maplibre.sdk)
+    implementation(libs.maplibre.annotation)
+    debugImplementation(project(":mapconductor-for-maplibre"))
 
     // arcgis
-    debugImplementation(project(":mapconductor-for-arcgis"))
-    implementation(libs.arcgis.maps.kotlin)
-    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+//    debugImplementation(project(":mapconductor-for-arcgis"))
+//    implementation(libs.arcgis.maps.kotlin)
+//    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+//    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+//    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 }

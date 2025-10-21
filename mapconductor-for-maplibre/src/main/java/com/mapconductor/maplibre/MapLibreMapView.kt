@@ -11,10 +11,14 @@ import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import com.mapconductor.maplibre.marker.MarkerDragLayer
 import com.mapconductor.maplibre.marker.MarkerLayer
+import com.mapconductor.maplibre.polyline.MapLibrePolylineController
+import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
+import com.mapconductor.maplibre.polyline.MapLibrePolylineOverlayRenderer
 import org.maplibre.android.MapLibre
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
@@ -71,7 +75,7 @@ fun MapLibreMapView(
                     // Set style and wait for it to load completely
                     map.setStyle(state.mapDesignType.styleJsonURL) { loadedStyle ->
                         // Resume only after style is fully loaded
-                        continuation.resume(MapLibreViewHolderImpl(mapView, map)) {}
+                        continuation.resume(MapLibreMapViewHolderImpl(mapView, map)) {}
                     }
                 }
             }
@@ -81,12 +85,16 @@ fun MapLibreMapView(
                 holder = holder,
                 renderingStrategy = markerRenderingStrategy,
             )
+            val polylineController = getPolylineController(
+                holder = holder,
+            )
             MapLibreViewControllerImpl(
                 holder = holder,
                 markerController = markerController,
+                polylineController = polylineController,
             ).also { controller ->
                 // Store controller reference in holder
-                (holder as? MapLibreViewHolderImpl)?.setController(controller)
+                (holder as? MapLibreMapViewHolderImpl)?.setController(controller)
                 controller.setCameraMoveListener(state::onCameraChange)
                 controller.setMapClickListener(onMapClick)
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
@@ -109,7 +117,7 @@ fun MapLibreMapView(
 }
 
 internal fun getMarkerController(
-    holder: MapLibreViewHolder,
+    holder: MapLibreMapViewHolder,
     renderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
 ): MapLibreMarkerController {
     val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
@@ -138,6 +146,31 @@ internal fun getMarkerController(
         )
     return controller
 }
+
+
+internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolylineController {
+    val polylineLayer: MapLibrePolylineLayer =
+        MapLibrePolylineLayer(
+            sourceId = "polyline-source",
+            layerId = "polyline-layer",
+        )
+    val polylineManager = PolylineManagerImpl<MapLibreActualPolyline>()
+
+    val renderer =
+        MapLibrePolylineOverlayRenderer(
+            layer = polylineLayer,
+            polylineManager = polylineManager,
+            holder = holder,
+        )
+
+    val controller =
+        MapLibrePolylineController(
+            renderer = renderer,
+        )
+    return controller
+}
+
+
 internal fun Context.findActivity(): Activity? =
     when (this) {
         is Activity -> this

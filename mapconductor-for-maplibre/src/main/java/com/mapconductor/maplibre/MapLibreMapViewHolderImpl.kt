@@ -9,14 +9,14 @@ import org.maplibre.android.maps.MapView
 import android.graphics.PointF
 
 
-interface MapLibreViewHolder : MapViewHolder<MapView, MapLibreMap> {
+interface MapLibreMapViewHolder : MapViewHolder<MapView, MapLibreMap> {
     fun getController(): MapLibreViewControllerImpl?
 }
 
-internal class MapLibreViewHolderImpl(
+internal class MapLibreMapViewHolderImpl(
     override val mapView: MapView,
     override val map: MapLibreMap,
-) : MapLibreViewHolder {
+) : MapLibreMapViewHolder {
     private var controller: MapLibreViewControllerImpl? = null
 
     fun setController(ctrl: MapLibreViewControllerImpl) {

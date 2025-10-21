@@ -1,7 +1,6 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
@@ -10,10 +9,11 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polygon.PolygonEvent
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
-import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
+import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -27,8 +27,9 @@ import kotlinx.coroutines.launch
 typealias MapLibreDesignTypeChangeHandler = (MapLibreMapDesignType) -> Unit
 
 class MapLibreViewControllerImpl(
-    override val holder: MapLibreViewHolder,
+    override val holder: MapLibreMapViewHolder,
     private val markerController: MapLibreMarkerController,
+    private val polylineController: MapLibrePolylineController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -52,6 +53,10 @@ class MapLibreViewControllerImpl(
 
         // Ensure default icon image exists on this style
         markerController.renderer.ensureDefaultIcon(style)
+
+        // Polyline
+        style.addSource(polylineController.renderer.layer.source)
+        style.addLayer(polylineController.renderer.layer.layer)
 
         // Marker - add source and layer at the top
         if (style.getSource(markerController.renderer.markerLayer.sourceId) == null) {
@@ -80,6 +85,7 @@ class MapLibreViewControllerImpl(
 
         // Force redraw after adding layers
         markerController.renderer.redraw()
+        polylineController.renderer.redraw()
     }
 
     init {
@@ -92,7 +98,7 @@ class MapLibreViewControllerImpl(
         setupListeners()
         registerController(markerController)
 //        registerController(polygonController)
-//        registerController(polylineController)
+        registerController(polylineController)
 //        registerController(circleController)
     }
 
@@ -165,6 +171,10 @@ class MapLibreViewControllerImpl(
 
     override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
 
+    override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
+
+    override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
+
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerController.dragStartListener = listener
     }
@@ -175,6 +185,10 @@ class MapLibreViewControllerImpl(
 
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
         markerController.dragEndListener = listener
+    }
+
+    override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
+        polylineController.clickListener = listener
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
@@ -190,6 +204,11 @@ class MapLibreViewControllerImpl(
     }
 
     override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
+
+    override fun hasPolyline(state: PolylineState): Boolean =
+        this.polylineController.polylineManager
+            .hasEntity(state.id)
+
     override fun onMapClick(point: LatLng): Boolean {
         val touchPosition = point.toGeoPoint()
 
@@ -208,17 +227,17 @@ class MapLibreViewControllerImpl(
 //            return true
 //        }
 //
-//        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
-//            val event =
-//                PolylineEvent(
-//                    state = hitResult.entity.state,
-//                    clicked = hitResult.closestPoint,
-//                )
-//            coroutine.launch {
-//                polylineController.clickListener?.invoke(event)
-//            }
-//            return true
-//        }
+        polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
+            val event =
+                PolylineEvent(
+                    state = hitResult.entity.state,
+                    clicked = hitResult.closestPoint,
+                )
+            coroutine.launch {
+                polylineController.clickListener?.invoke(event)
+            }
+            return true
+        }
 //
 //        polygonController.find(touchPosition)?.let { polygonEntity ->
 //            val event =
