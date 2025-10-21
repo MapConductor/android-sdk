@@ -98,33 +98,28 @@ fun ArcGISMapView(
             }
 
             wrapView.sceneView.scene = scene
-            ArcGISMapViewHolderImpl(
-                mapView = wrapView,
-                map = wrapView.sceneView,
-            )
 
+            val coroutine = CoroutineScope(Dispatchers.Default)
 
-//            val coroutine = CoroutineScope(Dispatchers.Default)
-//
-//            suspendCancellableCoroutine<ArcGISMapViewHolderImpl> { cont ->
-//                coroutine.launch {
-//                    scene.loadStatus.collect {
-//                        when (it) {
-//                            is LoadStatus.Loaded -> {
-//                                val holder = ArcGISMapViewHolderImpl(
-//                                    mapView = wrapView,
-//                                    map = wrapView.sceneView,
-//                                )
-//                                cont.resume(holder) {}
-//                            }
-//                            is LoadStatus.FailedToLoad -> cont.resume(null) {}
-//                            else -> {
-//                                // Do nothing here
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            suspendCancellableCoroutine<ArcGISMapViewHolderImpl> { cont ->
+                coroutine.launch {
+                    scene.loadStatus.collect {
+                        when (it) {
+                            is LoadStatus.Loaded,
+                            is LoadStatus.FailedToLoad -> {
+                                val holder = ArcGISMapViewHolderImpl(
+                                    mapView = wrapView,
+                                    map = wrapView.sceneView,
+                                )
+                                cont.resume(holder) {}
+                            }
+                            else -> {
+                                // Do nothing here
+                            }
+                        }
+                    }
+                }
+            }
         },
         controllerProvider = { holder ->
             ArcGISMapViewControllerImpl(
