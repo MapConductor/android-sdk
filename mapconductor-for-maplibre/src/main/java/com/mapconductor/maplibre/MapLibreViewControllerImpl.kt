@@ -41,6 +41,7 @@ class MapLibreViewControllerImpl(
 
     // Keep reference to the style instance to avoid getting a new one
     private var styleInstance: org.maplibre.android.maps.Style? = null
+    private var wasScrollEnabledBeforeDrag: Boolean? = null
 
     private fun setupStyle(style: org.maplibre.android.maps.Style) {
         // Store the style instance for future use
@@ -237,6 +238,14 @@ class MapLibreViewControllerImpl(
         val touchPosition = point.toGeoPoint()
         markerController.find(touchPosition)?.let { entity ->
             if (entity.state.draggable) {
+                // Disable map scroll while dragging a marker
+                try {
+                    val ui = holder.map.uiSettings
+                    wasScrollEnabledBeforeDrag = ui.isScrollGesturesEnabled
+                    ui.setScrollGesturesEnabled(false)
+                } catch (e: Exception) {
+                    android.util.Log.w("MapLibre", "Failed to disable scroll gestures: ${e.message}")
+                }
                 markerController.selectedMarker = entity
                 markerController.markerManager.removeEntity(entity.state.id)
                 markerController.dragStartListener?.invoke(entity.state)
@@ -282,6 +291,15 @@ class MapLibreViewControllerImpl(
             markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
             markerController.selectedMarker = null
             markerController.dragEndListener?.invoke(entity.state)
+            // Re-enable map scroll after dragging finishes
+            try {
+                val ui = holder.map.uiSettings
+                ui.setScrollGesturesEnabled(wasScrollEnabledBeforeDrag ?: true)
+            } catch (e: Exception) {
+                android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
+            } finally {
+                wasScrollEnabledBeforeDrag = null
+            }
         }
     }
 

@@ -36,6 +36,7 @@ geographiclib = "2.1"
 material = "1.10.0"
 mapLibreSdk = "12.0.0"
 mapLibreAnnotation = "3.0.2"
+runtime = "1.9.3"
 
 [libraries]
 # Android 基本
@@ -96,6 +97,7 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 
 net-sf-geographiclib = { group = "net.sf.geographiclib", name="GeographicLib-Java", version.ref="geographiclib"}
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

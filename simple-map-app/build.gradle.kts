@@ -56,13 +56,21 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    debugImplementation(project(":mapconductor-core"))
+
     // Google Maps SDK
-    implementation(libs.play.services.maps)
+//    implementation(libs.play.services.maps)
+//    debugImplementation(project(":mapconductor-for-googlemaps"))
 
     // MapLibre SDK
-    implementation(libs.maplibre.sdk)
-    implementation(libs.maplibre.annotation)
-    debugImplementation(project(":mapconductor-core"))
-    debugImplementation(project(":mapconductor-for-maplibre"))
-    debugImplementation(project(":mapconductor-for-googlemaps"))
+//    implementation(libs.maplibre.sdk)
+//    implementation(libs.maplibre.annotation)
+//    debugImplementation(project(":mapconductor-for-maplibre"))
+
+    // arcgis
+    debugImplementation(project(":mapconductor-for-arcgis"))
+    implementation(libs.arcgis.maps.kotlin)
+    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 }

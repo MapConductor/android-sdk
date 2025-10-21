@@ -51,10 +51,10 @@ class WrapSceneView : FrameLayout {
     }
 }
 
-class ArcGISMapViewHolderImpl private constructor(
+class ArcGISMapViewHolderImpl(
     override val mapView: WrapSceneView,
+    override val map: SceneView
 ) : MapViewHolder<WrapSceneView, SceneView> {
-    override lateinit var map: SceneView
 
     override fun toScreenOffset(position: GeoPoint): Offset? {
         val result =
@@ -89,45 +89,45 @@ class ArcGISMapViewHolderImpl private constructor(
             fromScreenOffset(offset)
         }
 
-    companion object {
-        suspend fun create(
-            context: Context,
-            options: ArcGISMapViewInitOptions,
-        ): MapViewHolder<WrapSceneView, SceneView> {
-
-
-            val holder = ArcGISMapViewHolderImpl(wrapView)
-            val scene = ArcGISScene(options.basemapStyle)
-            options.elevationSources.forEach {
-                val source = ArcGISTiledElevationSource(it)
-                scene.baseSurface.elevationSources.add(source)
-            }
-
-            holder.map = sceneView
-            sceneView.scene = scene
-            val coroutine = CoroutineScope(Dispatchers.Default)
-
-            val result =
-                suspendCancellableCoroutine<Boolean> { cont ->
-                    coroutine.launch {
-                        scene.loadStatus.collect {
-                            when (it) {
-                                is LoadStatus.Loaded -> cont.resume(true)
-                                is LoadStatus.FailedToLoad -> cont.resume(false)
-                                else -> {
-                                    // Do nothing here
-                                }
-                            }
-                        }
-                    }
-                }
-            if (!result) {
-                throw Exception("Can not load the scene")
-            }
-
-            return holder
-        }
-    }
+//    companion object {
+//        suspend fun create(
+//            context: Context,
+//            options: ArcGISMapViewInitOptions,
+//        ): MapViewHolder<WrapSceneView, SceneView> {
+//
+//
+//            val holder = ArcGISMapViewHolderImpl(wrapView)
+//            val scene = ArcGISScene(options.basemapStyle)
+//            options.elevationSources.forEach {
+//                val source = ArcGISTiledElevationSource(it)
+//                scene.baseSurface.elevationSources.add(source)
+//            }
+//
+//            holder.map = sceneView
+//            sceneView.scene = scene
+//            val coroutine = CoroutineScope(Dispatchers.Default)
+//
+//            val result =
+//                suspendCancellableCoroutine<Boolean> { cont ->
+//                    coroutine.launch {
+//                        scene.loadStatus.collect {
+//                            when (it) {
+//                                is LoadStatus.Loaded -> cont.resume(true)
+//                                is LoadStatus.FailedToLoad -> cont.resume(false)
+//                                else -> {
+//                                    // Do nothing here
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            if (!result) {
+//                throw Exception("Can not load the scene")
+//            }
+//
+//            return holder
+//        }
+//    }
 }
 
 internal fun Context.getArcGisApiKey(): String? =

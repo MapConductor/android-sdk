@@ -1,12 +1,16 @@
 package com.mapconductor.arcgis
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
+import com.arcgismaps.LoadStatus
+import com.arcgismaps.mapping.ArcGISScene
+import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
@@ -26,9 +30,16 @@ import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import kotlin.coroutines.resume
 import android.util.Log
 import android.widget.FrameLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun ArcGISMapView(
     state: ArcGISMapViewStateImpl,
@@ -69,16 +80,47 @@ fun ArcGISMapView(
         },
         scope = scope,
         registry = registry,
-        holderProvider = { mapView ->
+        holderProvider = { wrapView ->
             val options =
                 ArcGISMapViewInitOptions(
                     basemapStyle = basemapStyle,
                     elevationSources = state.mapDesignType.elevationSources,
                 )
-            ArcGISMapViewHolderImpl.create(
-                context = context.applicationContext,
-                options = options,
+
+            val scene = ArcGISScene(options.basemapStyle)
+            options.elevationSources.forEach {
+                val source = ArcGISTiledElevationSource(it)
+                scene.baseSurface.elevationSources.add(source)
+            }
+
+            wrapView.sceneView.scene = scene
+            ArcGISMapViewHolderImpl(
+                mapView = wrapView,
+                map = wrapView.sceneView,
             )
+
+
+//            val coroutine = CoroutineScope(Dispatchers.Default)
+//
+//            suspendCancellableCoroutine<ArcGISMapViewHolderImpl> { cont ->
+//                coroutine.launch {
+//                    scene.loadStatus.collect {
+//                        when (it) {
+//                            is LoadStatus.Loaded -> {
+//                                val holder = ArcGISMapViewHolderImpl(
+//                                    mapView = wrapView,
+//                                    map = wrapView.sceneView,
+//                                )
+//                                cont.resume(holder) {}
+//                            }
+//                            is LoadStatus.FailedToLoad -> cont.resume(null) {}
+//                            else -> {
+//                                // Do nothing here
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         },
         controllerProvider = { holder ->
             ArcGISMapViewControllerImpl(
@@ -125,44 +167,6 @@ fun ArcGISMapView(
             true
         },
         onMapViewInitialized = onMapViewInitialized,
-        customDisposableEffect = { _state, _holderRef ->
-
-            // ArcGIS specific DisposableEffect logic
-//            DisposableEffect(lifecycle) {
-//                val stateId = _stateId // from BaseMapViewState
-//                val observer =
-//                    object : DefaultLifecycleObserver {
-//                        override fun onResume(owner: LifecycleOwner) {
-//                            _holderRef.value?.mapView?.onResume(owner)
-//                        }
-//
-//                        override fun onPause(owner: LifecycleOwner) {
-//                            _holderRef.value?.mapView?.onPause(owner)
-//                        }
-//
-//                        override fun onDestroy(owner: LifecycleOwner) {
-//                            val currentHolder = _holderRef.value
-//                            if (currentHolder != null) {
-//                                val activity = context.findActivity()
-//                                if (activity?.isChangingConfigurations == true) {
-//                                    (currentHolder.mapView.parent as? ViewGroup)?.removeView(currentHolder.mapView)
-//                                } else {
-//                                    // Ensure these calls are safe if mapView might be null or already destroyed
-//                                    currentHolder.mapView.onPause(owner)
-//                                    currentHolder.mapView.onDestroy(owner)
-//                                    _state.controller = null
-//                                    ArcGISMapViewHolderStore.remove(stateId) // Clean up from your store
-//                                }
-//                            }
-//                        }
-//                    }
-//                lifecycle.addObserver(observer)
-//                onDispose {
-//                    _state.resetInitState()
-//                    lifecycle.removeObserver(observer)
-//                }
-//            }
-        },
         content = content,
     )
 }
