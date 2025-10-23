@@ -44,7 +44,6 @@ fun MapViewContainer(
     onPolylineClick: OnPolylineEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
-    shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
     @Suppress("UNCHECKED_CAST")
@@ -67,7 +66,6 @@ fun MapViewContainer(
                 onPolylineClick = onPolylineClick,
                 onPolygonClick = onPolygonClick,
                 onGroundImageClick = onGroundImageClick,
-                shouldInitialize = shouldInitialize,
                 content = content,
             )
 

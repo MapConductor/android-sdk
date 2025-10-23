@@ -61,14 +61,6 @@ class MapboxViewStateImpl(
         durationMs: Long?,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        if (this.initState.value != InitState.SdkInitialized) {
-            _cameraPosition.value =
-                MapCameraPositionImpl(
-                    position = position,
-                )
-            listener?.onComplete()
-            return
-        }
         val currentPosition = this.cameraPosition.value
         val newPosition =
             currentPosition.copy(
@@ -85,17 +77,6 @@ class MapboxViewStateImpl(
         durationMs: Long?,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        controller?.let { ctrl ->
-            if (this.initState.value == InitState.SdkInitialized) {
-                val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
-                if (durationMs == null || durationMs == 0L) {
-                    ctrl.moveCamera(dstCameraPosition, listener)
-                } else {
-                    ctrl.animateCamera(dstCameraPosition, durationMs, listener)
-                }
-                return
-            }
-        }
         _cameraPosition.value = cameraPosition
         listener?.onComplete()
     }

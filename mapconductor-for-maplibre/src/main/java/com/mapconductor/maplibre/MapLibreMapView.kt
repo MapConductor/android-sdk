@@ -25,6 +25,7 @@ import org.maplibre.android.maps.MapView
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import com.mapconductor.core.polyline.OnPolylineEventHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -45,7 +46,7 @@ fun MapLibreMapView(
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
 //    onCircleClick: OnCircleEventHandler? = null,
-//    onPolylineClick: OnPolylineEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
 //    onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapLibreMapViewScope.() -> Unit)? = null,
 ) {
@@ -98,6 +99,13 @@ fun MapLibreMapView(
                 controller.setCameraMoveListener(state::onCameraChange)
                 controller.setMapClickListener(onMapClick)
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                controller.setOnMarkerDragStart(onMarkerDragStart)
+                controller.setOnMarkerDrag(onMarkerDrag)
+                controller.setOnMarkerDragEnd(onMarkerDragEnd)
+                controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                controller.setOnMarkerClickListener(onMarkerClick)
+                controller.setOnPolylineClickListener(onPolylineClick)
                 state.setController(controller)
                 controller.setMapLoadedListener {
                     onMapLoaded?.invoke(state)
