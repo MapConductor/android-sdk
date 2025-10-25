@@ -9,11 +9,15 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.polygon.OnPolygonEventHandler
+import com.mapconductor.core.polygon.PolygonEvent
+import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
+import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -30,6 +34,7 @@ class MapLibreViewControllerImpl(
     override val holder: MapLibreMapViewHolder,
     private val markerController: MapLibreMarkerController,
     private val polylineController: MapLibrePolylineController,
+    private val polygonController: MapLibrePolygonConductor,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -53,6 +58,12 @@ class MapLibreViewControllerImpl(
 
         // Ensure default icon image exists on this style
         markerController.renderer.ensureDefaultIcon(style)
+
+        // Polygon fill and outline
+        style.addSource(polygonController.polygonOverlay.layer.source)
+        style.addLayer(polygonController.polygonOverlay.layer.layer)
+        style.addSource(polygonController.polylineOverlay.layer.source)
+        style.addLayer(polygonController.polylineOverlay.layer.layer)
 
         // Polyline
         style.addSource(polylineController.renderer.layer.source)
@@ -86,6 +97,7 @@ class MapLibreViewControllerImpl(
         // Force redraw after adding layers
         markerController.renderer.redraw()
         polylineController.renderer.redraw()
+        // polygonController.polygonOverlay.onPostProcess()
     }
 
     init {
@@ -97,8 +109,8 @@ class MapLibreViewControllerImpl(
 
         setupListeners()
         registerController(markerController)
-//        registerController(polygonController)
         registerController(polylineController)
+        registerController(polygonController)
 //        registerController(circleController)
     }
 
@@ -117,7 +129,9 @@ class MapLibreViewControllerImpl(
     }
 
     override suspend fun clearOverlays() {
-        TODO("Not yet implemented")
+        markerController.clear()
+        polylineController.clear()
+        polygonController.clear()
     }
 
     override fun moveCamera(
@@ -175,6 +189,10 @@ class MapLibreViewControllerImpl(
 
     override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
+    override suspend fun compositionPolygons(data: List<PolygonState>) = polygonController.add(data)
+
+    override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
+
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerController.dragStartListener = listener
     }
@@ -189,6 +207,10 @@ class MapLibreViewControllerImpl(
 
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
         polylineController.clickListener = listener
+    }
+
+    override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
+        polygonController.clickListener = listener
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
@@ -207,6 +229,10 @@ class MapLibreViewControllerImpl(
 
     override fun hasPolyline(state: PolylineState): Boolean =
         this.polylineController.polylineManager
+            .hasEntity(state.id)
+
+    override fun hasPolygon(state: PolygonState): Boolean =
+        this.polygonController.polygonOverlay.polygonManager
             .hasEntity(state.id)
 
     override fun onMapClick(point: LatLng): Boolean {
@@ -238,16 +264,16 @@ class MapLibreViewControllerImpl(
             }
             return true
         }
-//
-//        polygonController.find(touchPosition)?.let { polygonEntity ->
-//            val event =
-//                PolygonEvent(
-//                    state = polygonEntity.state,
-//                    clicked = touchPosition,
-//                )
-//            polygonController.clickListener?.invoke(event)
-//            return true
-//        }
+
+        polygonController.find(touchPosition)?.let { polygonEntity ->
+            val event =
+                PolygonEvent(
+                    state = polygonEntity.state,
+                    clicked = touchPosition,
+                )
+            polygonController.clickListener?.invoke(event)
+            return true
+        }
 
         mapClickCallback?.invoke(touchPosition)
         return true

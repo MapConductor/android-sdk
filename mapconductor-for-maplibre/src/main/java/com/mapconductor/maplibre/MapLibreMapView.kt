@@ -12,6 +12,9 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
+import com.mapconductor.maplibre.MapLibreActualPolygon
+import com.mapconductor.core.polygon.OnPolygonEventHandler
+import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import com.mapconductor.maplibre.marker.MarkerDragLayer
@@ -26,9 +29,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
+import com.mapconductor.maplibre.polygon.MapLibrePolygonLayer
+import com.mapconductor.maplibre.polygon.MapLibrePolygonOverlayRenderer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
-
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
@@ -45,9 +50,8 @@ fun MapLibreMapView(
     onMarkerDragEnd: OnMarkerEventHandler? = null,
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-//    onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
-//    onPolygonClick: OnPolygonEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapLibreMapViewScope.() -> Unit)? = null,
 ) {
     val context = LocalContext.current
@@ -89,10 +93,14 @@ fun MapLibreMapView(
             val polylineController = getPolylineController(
                 holder = holder,
             )
+            val polygonController = getPolygonController(
+                holder = holder,
+            )
             MapLibreViewControllerImpl(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,
+                polygonController = polygonController,
             ).also { controller ->
                 // Store controller reference in holder
                 (holder as? MapLibreMapViewHolderImpl)?.setController(controller)
@@ -106,6 +114,7 @@ fun MapLibreMapView(
                 controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
                 controller.setOnMarkerClickListener(onMarkerClick)
                 controller.setOnPolylineClickListener(onPolylineClick)
+                controller.setOnPolygonClickListener(onPolygonClick)
                 state.setController(controller)
                 controller.setMapLoadedListener {
                     onMapLoaded?.invoke(state)
@@ -176,6 +185,40 @@ internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolyl
             renderer = renderer,
         )
     return controller
+}
+
+
+internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygonConductor {
+    val polylineLayer =
+        MapLibrePolylineLayer(
+            sourceId = "polygon-outline-source",
+            layerId = "polygon-outline-layer",
+        )
+    val polylineManager = PolylineManagerImpl<MapLibreActualPolyline>()
+    val polylineOverlayRenderer =
+        MapLibrePolylineOverlayRenderer(
+            layer = polylineLayer,
+            polylineManager = polylineManager,
+            holder = holder,
+        )
+
+    val polygonManager = PolygonManagerImpl<MapLibreActualPolygon>()
+    val polygonLayer =
+        MapLibrePolygonLayer(
+            sourceId = "polygon-fill-source",
+            layerId = "polygon-fill-layer",
+        )
+    val polygonOverlayRenderer =
+        MapLibrePolygonOverlayRenderer(
+            layer = polygonLayer,
+            polygonManager = polygonManager,
+            holder = holder,
+        )
+
+    return MapLibrePolygonConductor(
+        polygonOverlay = polygonOverlayRenderer,
+        polylineOverlay = polylineOverlayRenderer,
+    )
 }
 
 
