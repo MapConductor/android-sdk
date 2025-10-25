@@ -134,7 +134,6 @@ fun MapboxMapView(
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
-
         customDisposableEffect = { initState, holderRef ->
 
             // HERE specific DisposableEffect logic

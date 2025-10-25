@@ -1,7 +1,6 @@
 package com.mapconductor.arcgis
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -106,11 +105,13 @@ fun ArcGISMapView(
                     scene.loadStatus.collect {
                         when (it) {
                             is LoadStatus.Loaded,
-                            is LoadStatus.FailedToLoad -> {
-                                val holder = ArcGISMapViewHolderImpl(
-                                    mapView = wrapView,
-                                    map = wrapView.sceneView,
-                                )
+                            is LoadStatus.FailedToLoad,
+                            -> {
+                                val holder =
+                                    ArcGISMapViewHolderImpl(
+                                        mapView = wrapView,
+                                        map = wrapView.sceneView,
+                                    )
                                 cont.resume(holder) {}
                             }
                             else -> {

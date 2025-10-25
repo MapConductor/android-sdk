@@ -49,4 +49,3 @@ fun Color.toMapLibreColorString(): String {
     val alpha = this.alpha
     return "rgba($red, $green, $blue, $alpha)"
 }
-

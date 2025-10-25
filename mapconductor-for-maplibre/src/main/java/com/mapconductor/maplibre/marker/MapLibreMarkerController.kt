@@ -14,10 +14,10 @@ class MapLibreMarkerController(
     override val renderer: MapLibreMarkerOverlayRenderer,
     renderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
 ) : AbstractMarkerController<MapLibreActualMarker>(
-    markerManager = renderer.markerManager,
-    renderer = renderer,
-    renderingStrategy = renderingStrategy,
-) {
+        markerManager = renderer.markerManager,
+        renderer = renderer,
+        renderingStrategy = renderingStrategy,
+    ) {
     private var internalSelectedMarker: MarkerEntity<MapLibreActualMarker>? = null
 
     internal var selectedMarker: MarkerEntity<MapLibreActualMarker>?

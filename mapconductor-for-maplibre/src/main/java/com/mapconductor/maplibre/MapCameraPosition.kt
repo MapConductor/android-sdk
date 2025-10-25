@@ -7,7 +7,6 @@ import org.maplibre.android.camera.CameraPosition
 
 internal const val MAPLIBRE_CAMERA_ZOOM_ADJUST_VALUE = 0.0
 
-
 fun MapCameraPositionImpl.toCameraPosition(): CameraPosition =
     CameraPosition
         .Builder()

@@ -9,13 +9,14 @@ interface MapLibreMapDesignType : MapDesignType<String> {
 data class MapLibreMapDesign(
     override val id: String,
     override val styleJsonURL: String,
-): MapLibreMapDesignType {
-    override fun getValue(): String = "mapDesign_id=${id},style=${styleJsonURL}"
+) : MapLibreMapDesignType {
+    override fun getValue(): String = "mapDesign_id=$id,style=$styleJsonURL"
 
     companion object {
-        val DemoTiles = MapLibreMapDesign(
-            id = "demo",
-            styleJsonURL = "https://demotiles.maplibre.org/style.json",
-        )
+        val DemoTiles =
+            MapLibreMapDesign(
+                id = "demo",
+                styleJsonURL = "https://demotiles.maplibre.org/style.json",
+            )
     }
 }

@@ -30,14 +30,18 @@ class MapLibrePolygonLayer(
             )
         }
 
-    fun draw(entities: List<PolygonEntity<MapLibreActualPolygon>>, style: org.maplibre.android.maps.Style) {
+    fun draw(
+        entities: List<PolygonEntity<MapLibreActualPolygon>>,
+        style: org.maplibre.android.maps.Style,
+    ) {
         val features: List<Feature> = entities.flatMap { it.polygon }
 
-        val styleSource = try {
-            style.getSource(sourceId)
-        } catch (e: IllegalStateException) {
-            null
-        }
+        val styleSource =
+            try {
+                style.getSource(sourceId)
+            } catch (e: IllegalStateException) {
+                null
+            }
 
         if (styleSource is GeoJsonSource) {
             try {
@@ -51,4 +55,3 @@ class MapLibrePolygonLayer(
         source.setGeoJson(FeatureCollection.fromFeatures(features))
     }
 }
-

@@ -12,8 +12,9 @@ fun LatLng.toGeoPoint() = GeoPointImpl(latitude, longitude, altitude)
 
 fun GeoPointImpl.toPoint(): Point = Point.fromLngLat(longitude, latitude)
 
-fun GeoPointImpl.Companion.from(point: Point) = GeoPointImpl(
-    latitude = point.latitude(),
-    longitude = point.longitude(),
-    altitude = point.altitude(),
-)
+fun GeoPointImpl.Companion.from(point: Point) =
+    GeoPointImpl(
+        latitude = point.latitude(),
+        longitude = point.longitude(),
+        altitude = point.altitude(),
+    )

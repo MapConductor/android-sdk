@@ -3,9 +3,6 @@ package com.mapconductor.maplibre.marker
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.maplibre.MapLibreActualMarker
 import org.maplibre.android.style.expressions.Expression.get
-// import org.maplibre.android.style.expressions.Expression.has
-// import org.maplibre.android.style.expressions.Expression.literal
-// import org.maplibre.android.style.expressions.Expression.switchCase
 import org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap
 import org.maplibre.android.style.layers.PropertyFactory.iconAnchor
 import org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement
@@ -35,22 +32,27 @@ open class MarkerLayer(
             )
         }
 
-    val source: GeoJsonSource = GeoJsonSource(
-        sourceId,
-        FeatureCollection.fromFeatures(emptyList<MapLibreActualMarker>()),
-    )
+    val source: GeoJsonSource =
+        GeoJsonSource(
+            sourceId,
+            FeatureCollection.fromFeatures(emptyList<MapLibreActualMarker>()),
+        )
 
-    fun draw(entities: List<MarkerEntity<Feature>>, style: org.maplibre.android.maps.Style) {
+    fun draw(
+        entities: List<MarkerEntity<Feature>>,
+        style: org.maplibre.android.maps.Style,
+    ) {
         val visibleEntities = entities.filter { it.visible && it.marker != null }
         val features = visibleEntities.mapNotNull { it.marker }
 
         // Try to get the source from the style (wrapped in try-catch in case style is being replaced)
-        val sourceFromStyle = try {
-            style.getSource(sourceId)
-        } catch (e: IllegalStateException) {
-            android.util.Log.w("MapLibre", "Cannot get source, style is being replaced: ${e.message}")
-            null
-        }
+        val sourceFromStyle =
+            try {
+                style.getSource(sourceId)
+            } catch (e: IllegalStateException) {
+                android.util.Log.w("MapLibre", "Cannot get source, style is being replaced: ${e.message}")
+                null
+            }
 
         if (sourceFromStyle is GeoJsonSource) {
             try {

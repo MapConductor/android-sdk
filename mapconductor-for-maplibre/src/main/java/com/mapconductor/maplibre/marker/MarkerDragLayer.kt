@@ -36,7 +36,7 @@ open class MarkerDragLayer(
                 }
             } ?: emptyList()
         source.setGeoJson(
-            FeatureCollection.fromFeatures(features)
+            FeatureCollection.fromFeatures(features),
         )
     }
 }

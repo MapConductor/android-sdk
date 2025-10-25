@@ -48,7 +48,6 @@ import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapable
 import com.mapconductor.settings.Settings
-import android.content.Context
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -77,7 +76,7 @@ fun <
     // SpecificViewHolder is now constrained by your MapViewHolder interface
     // and uses the ActualMapView and ActualMap generic types.
     SpecificScope : MapViewScope,
-    SpecificHolder: MapViewHolder<ActualMapView, ActualMap>,
+    SpecificHolder : MapViewHolder<ActualMapView, ActualMap>,
 > MapViewBase(
     state: SpecificState,
     modifier: Modifier = Modifier,
@@ -210,18 +209,17 @@ fun <
                 }
             }.map { it.measure(constraints) }
 
-
         val width = mapPlaceables.maxOfOrNull { it.width } ?: constraints.minWidth
         val height = mapPlaceables.maxOfOrNull { it.height } ?: constraints.minHeight
         val mapSize = IntSize(width, height)
 
         // 2) Overlay フェーズ：Map のサイズが確定し、かつ controller などが揃っているときだけ合成
         val canOverlay =
-            initState >= InitState.MapViewCreated //&&
-                controller != null &&
-                mapSize.width > 0 &&
-                mapSize.height > 0 &&
-                holderRef.value != null
+            initState >= InitState.MapViewCreated // &&
+        controller != null &&
+            mapSize.width > 0 &&
+            mapSize.height > 0 &&
+            holderRef.value != null
 
         val overlayPlaceables =
             if (canOverlay) {

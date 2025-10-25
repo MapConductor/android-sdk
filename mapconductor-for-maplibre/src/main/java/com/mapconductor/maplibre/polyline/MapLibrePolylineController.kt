@@ -8,4 +8,3 @@ class MapLibrePolylineController(
     override val renderer: MapLibrePolylineOverlayRenderer,
     polylineManager: PolylineManager<MapLibreActualPolyline> = renderer.polylineManager,
 ) : PolylineController<MapLibreActualPolyline>(polylineManager, renderer)
-

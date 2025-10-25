@@ -1,4 +1,4 @@
-package com.mapconductor.simple_map_app.ui.theme
+package com.mapconductor.simplemapapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

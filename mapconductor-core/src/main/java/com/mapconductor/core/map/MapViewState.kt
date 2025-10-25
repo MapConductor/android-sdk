@@ -2,13 +2,9 @@ package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPointImpl
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 enum class InitState {
     NotStarted,

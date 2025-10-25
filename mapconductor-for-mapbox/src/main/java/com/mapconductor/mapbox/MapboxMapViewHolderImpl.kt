@@ -1,8 +1,6 @@
 package com.mapconductor.mapbox
 
 import androidx.compose.ui.geometry.Offset
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxLifecycleObserver
 import com.mapbox.maps.MapboxMap
@@ -11,7 +9,6 @@ import com.mapbox.maps.plugin.lifecycle.lifecycle
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
-import android.content.Context
 
 typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
 
@@ -20,7 +17,6 @@ class MapboxMapViewHolderImpl(
     override val map: MapboxMap,
 ) : MapViewHolder<MapView, MapboxMap>,
     MapboxLifecycleObserver {
-
     init {
         this.mapView.lifecycle.registerLifecycleObserver(this.mapView, this)
     }

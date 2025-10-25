@@ -12,11 +12,11 @@ import com.mapconductor.maplibre.MapLibreActualPolygon
 import com.mapconductor.maplibre.MapLibreMapViewHolder
 import com.mapconductor.maplibre.toMapLibreColorString
 import com.mapconductor.maplibre.toPoint
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.Polygon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.maplibre.geojson.Feature
-import org.maplibre.geojson.Polygon
 
 class MapLibrePolygonOverlayRenderer(
     val layer: MapLibrePolygonLayer,
@@ -123,7 +123,5 @@ class MapLibrePolygonOverlayRenderer(
         return results
     }
 
-    private fun getAllPolygonEntities(): List<PolygonEntity<MapLibreActualPolygon>> =
-        polygonManager.allEntities()
+    private fun getAllPolygonEntities(): List<PolygonEntity<MapLibreActualPolygon>> = polygonManager.allEntities()
 }
-

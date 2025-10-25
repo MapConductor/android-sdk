@@ -81,7 +81,8 @@ class MapLibreViewStateImpl(
 }
 
 class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
-    override fun extractCameraPosition(state: MapLibreViewStateImpl): MapCameraPositionImpl? = state.cameraPosition.value
+    override fun extractCameraPosition(state: MapLibreViewStateImpl): MapCameraPositionImpl? =
+        state.cameraPosition.value
 
     override fun saveMapDesign(
         state: MapLibreViewStateImpl,
@@ -99,10 +100,12 @@ class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
             id = stateId,
             mapDesignType =
                 MapLibreMapDesign(
-                    id = mapDesignBundle?.getString("id") ?:
-                        MapLibreMapDesign.DemoTiles.id,
-                    styleJsonURL = mapDesignBundle?.getString("styleJsonURL") ?:
-                        MapLibreMapDesign.DemoTiles.styleJsonURL,
+                    id =
+                        mapDesignBundle?.getString("id")
+                            ?: MapLibreMapDesign.DemoTiles.id,
+                    styleJsonURL =
+                        mapDesignBundle?.getString("styleJsonURL")
+                            ?: MapLibreMapDesign.DemoTiles.styleJsonURL,
                 ),
             initCameraPosition = cameraPosition,
         )

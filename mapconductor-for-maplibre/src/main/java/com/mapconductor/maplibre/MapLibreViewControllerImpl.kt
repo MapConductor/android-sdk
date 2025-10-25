@@ -16,8 +16,8 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
-import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
+import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -26,7 +26,6 @@ import android.graphics.PointF
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 
 typealias MapLibreDesignTypeChangeHandler = (MapLibreMapDesignType) -> Unit
 
@@ -44,7 +43,6 @@ class MapLibreViewControllerImpl(
     MapLibreMap.OnMoveListener,
     MapLibreMap.OnCameraMoveListener,
     MapLibreMap.OnCameraIdleListener {
-
     // Keep reference to the style instance to avoid getting a new one
     private var styleInstance: org.maplibre.android.maps.Style? = null
     private var wasScrollEnabledBeforeDrag: Boolean? = null
@@ -136,11 +134,12 @@ class MapLibreViewControllerImpl(
 
     override fun moveCamera(
         position: MapCameraPositionImpl,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
         coroutine.launch {
-            val cameraUpdate = CameraUpdateFactory
-                .newCameraPosition(position.toCameraPosition())
+            val cameraUpdate =
+                CameraUpdateFactory
+                    .newCameraPosition(position.toCameraPosition())
             holder.map.moveCamera(cameraUpdate)
             listener?.onComplete()
         }
@@ -149,11 +148,12 @@ class MapLibreViewControllerImpl(
     override fun animateCamera(
         position: MapCameraPositionImpl,
         duration: Long,
-        listener: MapViewState.MoveCameraCallback?
+        listener: MapViewState.MoveCameraCallback?,
     ) {
         coroutine.launch {
-            val cameraUpdate = CameraUpdateFactory
-                .newCameraPosition(position.toCameraPosition())
+            val cameraUpdate =
+                CameraUpdateFactory
+                    .newCameraPosition(position.toCameraPosition())
             holder.map.animateCamera(cameraUpdate, duration.toInt())
             listener?.onComplete()
         }
@@ -369,7 +369,6 @@ class MapLibreViewControllerImpl(
     }
 
     private fun getMapCameraPosition(camera: MapCameraPosition): MapCameraPositionImpl? {
-
         val mapWidth = holder.mapView.width.toFloat()
         val mapHeight = holder.mapView.height.toFloat()
         val nearLeft =

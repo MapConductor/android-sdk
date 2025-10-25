@@ -27,18 +27,19 @@ class MapLibreMarkerOverlayRenderer(
     val dragLayer: MarkerDragLayer,
     coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractMarkerOverlayRenderer<MapLibreMapViewHolder, MapLibreActualMarker>(
-    holder = holder,
-    coroutine = coroutine,
-) {
-
+        holder = holder,
+        coroutine = coroutine,
+    ) {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
     private val defaultIcon: BitmapIcon = DefaultIcon().toBitmapIcon()
+
     object Prop {
         const val ICON_ID = "icon_id"
         const val DEFAULT_MARKER_ID = "default"
         const val SCALE = "scale"
         const val ICON_ANCHOR = "icon-offset"
     }
+
     object IconAnchor {
         const val CENTER = "center"
         const val LEFT = "left"
@@ -49,6 +50,7 @@ class MapLibreMarkerOverlayRenderer(
         const val BOTTOM_LEFT = "bottom-left"
         const val BOTTOM_RIGHT = "bottom-right"
     }
+
     object IconTranslateAnchor {
         const val MAP = "map"
         const val VIEWPORT = "viewport"
@@ -105,9 +107,10 @@ class MapLibreMarkerOverlayRenderer(
 
     override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<MapLibreActualMarker?> {
         // Get style from controller to use the same instance
-        val style = holder.getController()?.getStyleInstance() ?: run {
-            holder.map.style
-        }
+        val style =
+            holder.getController()?.getStyleInstance() ?: run {
+                holder.map.style
+            }
 
         if (style == null) {
             return emptyList()
@@ -115,7 +118,8 @@ class MapLibreMarkerOverlayRenderer(
 
         data.forEach {
             it.state.icon?.let { icon ->
-                val iconKey = icon
+                val iconKey =
+                    icon
                         .hashCode()
                         .toString()
                 if (!iconRefCounter.contains(iconKey)) {
@@ -126,24 +130,24 @@ class MapLibreMarkerOverlayRenderer(
         }
 
         return data.map {
-                val featureId = "marker-${it.state.id}"
-                val position = GeoPointImpl.from(it.state.position).toPoint()
-                val properties =
-                    JsonObject().apply {
-                        if (it.state.icon != null) {
-                            it.state.icon?.let { icon ->
-                                val iconKey = icon.hashCode().toString()
-                                iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
-                                addProperty(Prop.ICON_ID, iconKey)
-                                // icon offset property
-                                add(Prop.ICON_ANCHOR, createIconOffset(icon))
-                            }
-                        } else {
-                            addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
-                            add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
+            val featureId = "marker-${it.state.id}"
+            val position = GeoPointImpl.from(it.state.position).toPoint()
+            val properties =
+                JsonObject().apply {
+                    if (it.state.icon != null) {
+                        it.state.icon?.let { icon ->
+                            val iconKey = icon.hashCode().toString()
+                            iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
+                            addProperty(Prop.ICON_ID, iconKey)
+                            // icon offset property
+                            add(Prop.ICON_ANCHOR, createIconOffset(icon))
                         }
-                        addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
+                    } else {
+                        addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                        add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                     }
+                    addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
+                }
             Feature.fromGeometry(position, properties, featureId)
         }
     }
@@ -179,6 +183,7 @@ class MapLibreMarkerOverlayRenderer(
             markerLayer.draw(entities, it)
         }
     }
+
     override suspend fun onPostProcess() {
         // For Mapbox, we need to update the layer after add/remove operations
         // but only redraw when there were actual changes

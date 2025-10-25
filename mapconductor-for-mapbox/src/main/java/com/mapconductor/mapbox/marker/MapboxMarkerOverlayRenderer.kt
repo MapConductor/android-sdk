@@ -102,9 +102,10 @@ class MapboxMarkerOverlayRenderer(
 
             data.forEach {
                 it.state.icon?.let { icon ->
-                    val iconKey = icon
-                        .hashCode()
-                        .toString()
+                    val iconKey =
+                        icon
+                            .hashCode()
+                            .toString()
                     if (!iconRefCounter.contains(iconKey)) {
                         style.addImage(iconKey, it.bitmapIcon.bitmap)
                         iconRefCounter[iconKey] = 0

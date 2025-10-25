@@ -2,26 +2,16 @@ package com.mapconductor.arcgis
 
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.LifecycleOwner
-import com.arcgismaps.ApiKey
-import com.arcgismaps.ArcGISEnvironment
-import com.arcgismaps.LoadStatus
-import com.arcgismaps.mapping.ArcGISScene
-import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
-import kotlin.coroutines.resume
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
 import android.widget.FrameLayout
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 class WrapSceneView : FrameLayout {
     lateinit var sceneView: SceneView
@@ -53,9 +43,8 @@ class WrapSceneView : FrameLayout {
 
 class ArcGISMapViewHolderImpl(
     override val mapView: WrapSceneView,
-    override val map: SceneView
+    override val map: SceneView,
 ) : MapViewHolder<WrapSceneView, SceneView> {
-
     override fun toScreenOffset(position: GeoPoint): Offset? {
         val result =
             mapView.sceneView.locationToScreen(

@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.BaseMapViewSaver
-import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapPaddings

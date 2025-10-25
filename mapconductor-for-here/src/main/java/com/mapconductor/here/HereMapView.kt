@@ -181,7 +181,6 @@ fun HereMapView(
     )
 }
 
-
 private fun getPolylineController(holder: HereViewHolder): HerePolylineController {
     val renderer =
         HerePolylineOverlayRenderer(

@@ -17,7 +17,6 @@ class MapLibrePolylineOverlayRenderer(
     override val holder: MapLibreMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolylineOverlayRenderer<MapLibreActualPolyline>() {
-
     override suspend fun createPolyline(state: PolylineState): MapLibreActualPolyline? =
         createMapLibreLines(
             id = state.id,
@@ -75,4 +74,3 @@ class MapLibrePolylineOverlayRenderer(
         }
     }
 }
-

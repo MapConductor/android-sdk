@@ -9,7 +9,6 @@ import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineEntityImpl
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.maplibre.MapLibreActualPolygon
 import com.mapconductor.maplibre.polyline.MapLibrePolylineOverlayRenderer
 
 class MapLibrePolygonConductor(
@@ -100,4 +99,3 @@ private fun PolygonState.toPolylineState(): PolylineState {
         extra = this.extra,
     )
 }
-

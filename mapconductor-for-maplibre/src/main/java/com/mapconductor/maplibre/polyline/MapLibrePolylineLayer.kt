@@ -38,15 +38,19 @@ class MapLibrePolylineLayer(
             )
         }
 
-    fun draw(entities: List<PolylineEntity<MapLibreActualPolyline>>, style: org.maplibre.android.maps.Style) {
+    fun draw(
+        entities: List<PolylineEntity<MapLibreActualPolyline>>,
+        style: org.maplibre.android.maps.Style,
+    ) {
         val features: List<Feature> = entities.flatMap { it.polyline }
 
-        val styleSource = try {
-            style.getSource(sourceId)
-        } catch (e: IllegalStateException) {
-            // Style might be in transition
-            null
-        }
+        val styleSource =
+            try {
+                style.getSource(sourceId)
+            } catch (e: IllegalStateException) {
+                // Style might be in transition
+                null
+            }
 
         if (styleSource is GeoJsonSource) {
             try {
@@ -60,4 +64,3 @@ class MapLibrePolylineLayer(
         source.setGeoJson(FeatureCollection.fromFeatures(features))
     }
 }
-

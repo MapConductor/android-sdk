@@ -93,10 +93,11 @@ fun GoogleMapsView(
             }
         },
         controllerProvider = { holder ->
-            val markerController = getMarkerController(
-                holder = holder,
-                markerRenderingStrategy = markerRenderingStrategy,
-            )
+            val markerController =
+                getMarkerController(
+                    holder = holder,
+                    markerRenderingStrategy = markerRenderingStrategy,
+                )
             val groundImageController = getGroundImageController(holder)
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -109,8 +110,7 @@ fun GoogleMapsView(
                 polygonController = polygonController,
                 circleController = circleController,
                 holder = holder,
-            )
-            .also { controller ->
+            ).also { controller ->
                 state.setController(controller)
                 controller.setCameraMoveListener(state::onCameraChange)
                 controller.setMapClickListener(onMapClick)

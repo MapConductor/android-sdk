@@ -1,6 +1,5 @@
 ﻿package com.mapconductor.here
 
-import HerePolygonOverlayRenderer
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
@@ -8,13 +7,6 @@ import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.mapconductor.core.map.MapViewHolder
 import com.mapconductor.core.map.StaticHolder
-import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.here.circle.HereCircleController
-import com.mapconductor.here.circle.HereCircleOverlayRenderer
-import com.mapconductor.here.marker.HereMarkerController
-import com.mapconductor.here.polygon.HerePolygonController
-import com.mapconductor.here.polyline.HerePolylineController
-import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import android.content.Context
 import android.content.pm.PackageManager
 

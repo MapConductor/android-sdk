@@ -43,12 +43,14 @@ val modules: List<String> =
     rootDir
         .resolve("projects.properties")
         .readLines()
-        .firstOrNull { it.startsWith("modules=") }
-        ?.removePrefix("modules=")
-        ?.split(",")
-        ?.map { it.trim() }
-        ?.filter { it.isNotEmpty() }
-        ?: emptyList()
+        .dropWhile { !it.startsWith("modules=") }
+        .takeWhile { it.startsWith("modules=") || it.trim().endsWith(",\\") || it.trim().matches(Regex("^[a-zA-Z0-9-]+$")) }
+        .joinToString("")
+        .removePrefix("modules=")
+        .replace("\\", "")
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
 
 tasks.register("allLintChecks") {
     group = "verification"

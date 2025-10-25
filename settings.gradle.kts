@@ -57,4 +57,3 @@ val modulesProp =
         .filter { it.isNotEmpty() }
 
 modulesProp.forEach { include(":$it") }
-include(":simple-map-app")

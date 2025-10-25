@@ -11,14 +11,18 @@ import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polyline.PolylineManagerImpl
-import com.mapconductor.maplibre.MapLibreActualPolygon
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
+import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.polyline.PolylineManagerImpl
+import com.mapconductor.maplibre.MapLibreActualPolygon
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import com.mapconductor.maplibre.marker.MarkerDragLayer
 import com.mapconductor.maplibre.marker.MarkerLayer
+import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
+import com.mapconductor.maplibre.polygon.MapLibrePolygonLayer
+import com.mapconductor.maplibre.polygon.MapLibrePolygonOverlayRenderer
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
 import com.mapconductor.maplibre.polyline.MapLibrePolylineOverlayRenderer
@@ -28,10 +32,6 @@ import org.maplibre.android.maps.MapView
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
-import com.mapconductor.maplibre.polygon.MapLibrePolygonLayer
-import com.mapconductor.maplibre.polygon.MapLibrePolygonOverlayRenderer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -64,10 +64,12 @@ fun MapLibreMapView(
         viewProvider = {
             val cameraPosition =
                 state.cameraPosition.value.toCameraPosition()
-            val mapInitOptions = MapLibreMapOptions.createFromAttributes(context)
-                .camera(cameraPosition)
-                .textureMode(true)
-                // Don't set style here - it will be set in holderProvider
+            val mapInitOptions =
+                MapLibreMapOptions
+                    .createFromAttributes(context)
+                    .camera(cameraPosition)
+                    .textureMode(true)
+            // Don't set style here - it will be set in holderProvider
 
             MapView(context, mapInitOptions)
         },
@@ -86,16 +88,19 @@ fun MapLibreMapView(
             }
         },
         controllerProvider = { holder ->
-            val markerController = getMarkerController(
-                holder = holder,
-                renderingStrategy = markerRenderingStrategy,
-            )
-            val polylineController = getPolylineController(
-                holder = holder,
-            )
-            val polygonController = getPolygonController(
-                holder = holder,
-            )
+            val markerController =
+                getMarkerController(
+                    holder = holder,
+                    renderingStrategy = markerRenderingStrategy,
+                )
+            val polylineController =
+                getPolylineController(
+                    holder = holder,
+                )
+            val polygonController =
+                getPolygonController(
+                    holder = holder,
+                )
             MapLibreViewControllerImpl(
                 holder = holder,
                 markerController = markerController,
@@ -125,7 +130,6 @@ fun MapLibreMapView(
             MapLibre.getInstance(context)
             true
         },
-
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
@@ -164,7 +168,6 @@ internal fun getMarkerController(
     return controller
 }
 
-
 internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolylineController {
     val polylineLayer: MapLibrePolylineLayer =
         MapLibrePolylineLayer(
@@ -186,7 +189,6 @@ internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolyl
         )
     return controller
 }
-
 
 internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygonConductor {
     val polylineLayer =
@@ -220,7 +222,6 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
         polylineOverlay = polylineOverlayRenderer,
     )
 }
-
 
 internal fun Context.findActivity(): Activity? =
     when (this) {

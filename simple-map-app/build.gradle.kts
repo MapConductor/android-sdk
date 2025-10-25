@@ -2,15 +2,24 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jlleitschuh.gradle.ktlint")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
 }
 
+ktlint {
+    android.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+}
+
 android {
-    namespace = "com.mapconductor.simple_map_app"
+    namespace = "com.mapconductor.simplemapapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.mapconductor.simple_map_app"
+        applicationId = "com.mapconductor.simplemapapp"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -24,7 +33,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -37,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
