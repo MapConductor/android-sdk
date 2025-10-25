@@ -1,6 +1,7 @@
 package com.mapconductor.core.groundimage
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoRectBounds
@@ -13,6 +14,12 @@ fun MapViewScope.GroundImage(state: GroundImageState) {
         val newMap = groundImageFlow.value.toMutableMap()
         newMap.set(state.id, state)
         groundImageFlow.value = newMap
+    }
+
+    DisposableEffect(state.id) {
+        onDispose {
+            groundImageRemoveSharedFlow.tryEmit(state.id)
+        }
     }
 }
 

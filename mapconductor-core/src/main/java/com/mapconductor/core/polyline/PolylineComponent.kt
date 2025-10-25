@@ -1,6 +1,7 @@
 package com.mapconductor.core.polyline
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -15,6 +16,12 @@ fun MapViewScope.Polyline(state: PolylineState) {
         val newMap = polylineFlow.value.toMutableMap()
         newMap.set(state.id, state)
         polylineFlow.value = newMap
+    }
+
+    DisposableEffect(state.id) {
+        onDispose {
+            polylineRemoveSharedFlow.tryEmit(state.id)
+        }
     }
 }
 
