@@ -61,36 +61,31 @@ class MapLibreViewControllerImpl(
         style.addSource(polygonController.polygonOverlay.layer.source)
         style.addLayer(polygonController.polygonOverlay.layer.layer)
         style.addSource(polygonController.polylineOverlay.layer.source)
-        style.addLayer(polygonController.polylineOverlay.layer.layer)
+        style.addLayerAbove(
+            polygonController.polylineOverlay.layer.layer,
+            polygonController.polygonOverlay.layer.layerId,
+        )
 
         // Polyline
         style.addSource(polylineController.renderer.layer.source)
-        style.addLayer(polylineController.renderer.layer.layer)
+        style.addLayerAbove(
+            polylineController.renderer.layer.layer,
+            polygonController.polylineOverlay.layer.layerId,
+        )
 
         // Marker - add source and layer at the top
-        if (style.getSource(markerController.renderer.markerLayer.sourceId) == null) {
-            style.addSource(markerController.renderer.markerLayer.source)
-        }
-
-        // Add layer at the top (after all existing layers)
-        if (style.getLayer(markerController.renderer.markerLayer.layerId) == null) {
-            if (topLayerId != null) {
-                style.addLayerAbove(markerController.renderer.markerLayer.layer, topLayerId)
-            } else {
-                style.addLayer(markerController.renderer.markerLayer.layer)
-            }
-        }
+        style.addSource(markerController.renderer.markerLayer.source)
+        style.addLayerAbove(
+            markerController.renderer.markerLayer.layer,
+            polylineController.renderer.layer.layerId,
+        )
 
         // Drag layer above marker layer
-        if (style.getSource(markerController.renderer.dragLayer.sourceId) == null) {
-            style.addSource(markerController.renderer.dragLayer.source)
-        }
-        if (style.getLayer(markerController.renderer.dragLayer.layerId) == null) {
-            style.addLayerAbove(
-                markerController.renderer.dragLayer.layer,
-                markerController.renderer.markerLayer.layerId,
-            )
-        }
+        style.addSource(markerController.renderer.dragLayer.source)
+        style.addLayerAbove(
+            markerController.renderer.dragLayer.layer,
+            markerController.renderer.markerLayer.layerId,
+        )
 
         // Force redraw after adding layers
         markerController.renderer.redraw()

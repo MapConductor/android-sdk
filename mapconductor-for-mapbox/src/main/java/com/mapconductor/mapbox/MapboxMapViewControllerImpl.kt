@@ -66,15 +66,15 @@ internal class MapboxMapViewControllerImpl(
     OnMoveListener {
     init {
         holder.map.getStyle { style ->
-            // Circle
-            style.addSource(circleController.renderer.layer.source)
-            style.addLayer(circleController.renderer.layer.layer)
-
             // Polygon
             style.addSource(polygonController.polygonOverlay.layer.source)
             style.addLayer(polygonController.polygonOverlay.layer.layer)
             style.addSource(polygonController.polylineOverlay.layer.source)
             style.addLayer(polygonController.polylineOverlay.layer.layer)
+
+            // Circle
+            style.addSource(circleController.renderer.layer.source)
+            style.addLayer(circleController.renderer.layer.layer)
 
             // Polyline
             style.addSource(polylineController.renderer.layer.source)
