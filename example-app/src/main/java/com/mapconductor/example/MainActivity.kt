@@ -12,8 +12,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DemoAppScreen(
-//                initPage = "polyline-click",
-                initPage = "startup",
+                initPage = "polygon-click",
+//                initPage = "startup",
             )
         }
     }

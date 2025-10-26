@@ -8,6 +8,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
@@ -76,6 +77,7 @@ class PolylineClickPageViewModelImpl :
         _markers.value = _markers.value +
             MarkerState(
                 position = clicked.clicked,
+                animation = MarkerAnimation.Drop,
                 icon =
                     DefaultIcon(
                         fillColor = clicked.state.strokeColor,

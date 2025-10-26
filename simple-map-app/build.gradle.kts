@@ -69,8 +69,12 @@ dependencies {
     debugImplementation(project(":mapconductor-core"))
 
     // Google Maps SDK
-//    implementation(libs.play.services.maps)
-//    debugImplementation(project(":mapconductor-for-googlemaps"))
+    implementation(libs.play.services.maps)
+    debugImplementation(project(":mapconductor-for-googlemaps"))
+
+    // Mapbox SDK
+    implementation(libs.mapbox.android)
+    debugImplementation(project(":mapconductor-for-mapbox"))
 
     // MapLibre SDK
     implementation(libs.maplibre.sdk)
@@ -78,9 +82,20 @@ dependencies {
     debugImplementation(project(":mapconductor-for-maplibre"))
 
     // arcgis
-//    debugImplementation(project(":mapconductor-for-arcgis"))
-//    implementation(libs.arcgis.maps.kotlin)
-//    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-//    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-//    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+    debugImplementation(project(":mapconductor-for-arcgis"))
+    implementation(libs.arcgis.maps.kotlin)
+    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+
+    // Here Maps SDK
+    debugImplementation(project(":mapconductor-for-here"))
+    implementation(
+        fileTree(
+            mapOf(
+                "dir" to rootDir.resolve("libs").toString(),
+                "include" to arrayOf("heresdk*.jar", "heresdk*.aar"),
+            ),
+        ),
+    )
 }

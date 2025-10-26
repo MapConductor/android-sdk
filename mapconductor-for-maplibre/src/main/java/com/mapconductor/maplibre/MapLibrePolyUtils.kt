@@ -10,8 +10,10 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.splitByMeridian
 import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
+import com.mapconductor.maplibre.polygon.MapLibrePolygonLayer
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.LineString
+import org.maplibre.geojson.Polygon as GLPolygon
 
 internal fun createMapLibreLines(
     id: String,
@@ -48,4 +50,34 @@ fun Color.toMapLibreColorString(): String {
     val blue = (this.blue * 255).toInt()
     val alpha = this.alpha
     return "rgba($red, $green, $blue, $alpha)"
+}
+
+internal fun createMapLibrePolygons(
+    id: String,
+    points: List<GeoPoint>,
+    geodesic: Boolean,
+    fillColor: Color,
+): List<Feature> {
+    val geoPoints: List<GeoPoint> =
+        when (geodesic) {
+            true -> createInterpolatePoints(points)
+            false -> createLinearInterpolatePoints(points)
+        }.map { it.normalize() }
+
+    // Split to avoid antimeridian artifacts and produce multiple polygons if needed
+    return splitByMeridian(geoPoints, geodesic).mapIndexed { index, ringPoints ->
+        val pts = ringPoints.map { GeoPointImpl.from(it).toPoint() }
+        // Ensure closed ring
+        val closed = if (pts.first() != pts.last()) pts + pts.first() else pts
+        val fid = "polygon-$id-$index"
+
+        Feature.fromGeometry(
+            GLPolygon.fromLngLats(listOf(closed)),
+            JsonObject().apply {
+                addProperty(MapLibrePolygonLayer.Prop.FILL_COLOR, fillColor.toMapLibreColorString())
+                addProperty("id", fid)
+            },
+            fid,
+        )
+    }
 }

@@ -3,6 +3,8 @@ package com.mapconductor.googlemaps.polygon
 import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
@@ -28,7 +30,12 @@ class GoogleMapPolygonOverlayRenderer(
 
     override suspend fun createPolygon(state: PolygonState) =
         withContext(coroutine.coroutineContext) {
-            val points = state.points.map { GeoPointImpl.from(it).toLatLng() }
+            val geoPoints =
+                when (state.geodesic) {
+                    true -> createInterpolatePoints(state.points)
+                    false -> createLinearInterpolatePoints(state.points)
+                }
+            val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
             val options =
                 PolygonOptions()
                     .addAll(points)
@@ -51,10 +58,13 @@ class GoogleMapPolygonOverlayRenderer(
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
             Log.d("GoogleMaps", "----->$finger, $prevFinger")
-            if (finger.points != prevFinger.points) {
-                val points =
-                    current.state.points
-                        .map { GeoPointImpl.from(it).toLatLng() }
+            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
+                val geoPoints =
+                    when (current.state.geodesic) {
+                        true -> createInterpolatePoints(current.state.points)
+                        false -> createLinearInterpolatePoints(current.state.points)
+                    }
+                val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
                 polygon.points = points
             }
             polygon.strokeWidth = ResourceProvider.dpToPx(current.state.strokeWidth).toFloat()
