@@ -3,6 +3,9 @@ import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
@@ -50,7 +53,7 @@ class HerePolygonOverlayRenderer(
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
 
-            if (finger.points != prevFinger.points) {
+            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
                 val geoPolygon = createGeoPolygon(current.state)
                 current.polygon.geometry = geoPolygon
             }
@@ -78,7 +81,12 @@ class HerePolygonOverlayRenderer(
         }
 
     private fun createGeoPolygon(state: PolygonState): GeoPolygon {
-        val points = state.points.map { GeoPointImpl.from(it).toGeoCoordinates() }
+        val geoPoints: List<GeoPoint> =
+            when (state.geodesic) {
+                true -> createInterpolatePoints(state.points)
+                false -> createLinearInterpolatePoints(state.points)
+            }
+        val points = geoPoints.map { GeoPointImpl.from(it).toGeoCoordinates() }
         // Ensure the polygon is closed by adding the first point at the end if not already closed
         val closedPoints =
             if (points.first() != points.last()) {
