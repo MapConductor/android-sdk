@@ -28,6 +28,7 @@ import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
+import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
@@ -139,6 +140,10 @@ fun DemoAppScreen(initPage: String = "map") {
                 id = "polygon-click",
                 title = "Polygon Click",
             ),
+            SidebarItem(
+                id = "polygon-geodesic",
+                title = "Geodesic polygons",
+            ),
         )
 
     AppTheme {
@@ -233,6 +238,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "polygon-click" -> {
                         PolygonClickPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "polygon-geodesic" -> {
+                        PolygonGeodesicPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
