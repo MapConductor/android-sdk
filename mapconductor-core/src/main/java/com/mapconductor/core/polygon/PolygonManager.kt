@@ -47,8 +47,8 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
         val testX = normalizeLng(position.longitude)
         val testY = position.latitude
 
-        // Iterate in insertion order where possible
-        for (entity in entities.values) {
+        // Iterate from top-most to bottom-most by zIndex
+        for (entity in entities.values.sortedByDescending { it.state.zIndex }) {
             val state = entity.state
             val basePoints = state.points
             if (basePoints.size < 3) continue

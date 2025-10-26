@@ -16,6 +16,7 @@ class MapboxPolylineLayer(
     object Prop {
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
+        const val Z_INDEX = "zIndex"
     }
 
     val source = geoJsonSource(sourceId)
@@ -31,6 +32,11 @@ class MapboxPolylineLayer(
             lineWidth(
                 get {
                     literal(Prop.STROKE_WIDTH)
+                },
+            )
+            lineSortKey(
+                get {
+                    literal(Prop.Z_INDEX)
                 },
             )
         }

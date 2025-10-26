@@ -20,6 +20,7 @@ class MapLibrePolylineLayer(
     object Prop {
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
+        const val Z_INDEX = "zIndex"
     }
 
     val source: GeoJsonSource =
@@ -35,6 +36,7 @@ class MapLibrePolylineLayer(
                 lineCap(Property.LINE_CAP_ROUND),
                 lineColor(get(Prop.STROKE_COLOR)),
                 lineWidth(get(Prop.STROKE_WIDTH)),
+                org.maplibre.android.style.layers.PropertyFactory.lineSortKey(get(Prop.Z_INDEX)),
             )
         }
 

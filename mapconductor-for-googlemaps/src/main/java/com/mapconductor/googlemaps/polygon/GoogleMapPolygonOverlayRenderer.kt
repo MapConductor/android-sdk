@@ -42,6 +42,7 @@ class GoogleMapPolygonOverlayRenderer(
                     .strokeColor(state.strokeColor.toArgb())
                     .strokeWidth(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                     .fillColor(state.fillColor.toArgb())
+                    .zIndex(state.zIndex.toFloat())
                     .clickable(false)
             holder.map.addPolygon(options)?.also {
                 it.tag = state.id
@@ -72,6 +73,7 @@ class GoogleMapPolygonOverlayRenderer(
                 current.state.strokeColor.toArgb()
             polygon.fillColor =
                 current.state.fillColor.toArgb()
+            polygon.zIndex = current.state.zIndex.toFloat()
             polygon
         }
 }

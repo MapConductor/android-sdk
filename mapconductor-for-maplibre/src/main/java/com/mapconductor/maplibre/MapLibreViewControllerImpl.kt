@@ -57,20 +57,20 @@ class MapLibreViewControllerImpl(
         // Ensure default icon image exists on this style
         markerController.renderer.ensureDefaultIcon(style)
 
-        // Polygon fill and outline
-        style.addSource(polygonController.polygonOverlay.layer.source)
-        style.addLayer(polygonController.polygonOverlay.layer.layer)
+        // Polygon outline below fill to respect zIndex of other polygons
         style.addSource(polygonController.polylineOverlay.layer.source)
+        style.addLayer(polygonController.polylineOverlay.layer.layer)
+        style.addSource(polygonController.polygonOverlay.layer.source)
         style.addLayerAbove(
-            polygonController.polylineOverlay.layer.layer,
-            polygonController.polygonOverlay.layer.layerId,
+            polygonController.polygonOverlay.layer.layer,
+            polygonController.polylineOverlay.layer.layerId,
         )
 
         // Polyline
         style.addSource(polylineController.renderer.layer.source)
         style.addLayerAbove(
             polylineController.renderer.layer.layer,
-            polygonController.polylineOverlay.layer.layerId,
+            polygonController.polygonOverlay.layer.layerId,
         )
 
         // Marker - add source and layer at the top

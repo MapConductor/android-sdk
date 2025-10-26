@@ -49,6 +49,7 @@ class MapLibrePolygonOverlayRenderer(
             points = state.points,
             geodesic = state.geodesic,
             fillColor = state.fillColor,
+            zIndex = state.zIndex,
         )
 
     override suspend fun updatePolygonProperties(

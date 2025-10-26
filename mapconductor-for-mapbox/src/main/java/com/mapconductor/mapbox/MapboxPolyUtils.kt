@@ -21,6 +21,7 @@ internal fun createMapboxLines(
     geodesic: Boolean,
     strokeColor: Color,
     strokeWidth: Dp,
+    zIndex: Int = 0,
 ): List<Feature> {
     val geoPoints: List<GeoPoint> =
         when (geodesic) {
@@ -37,6 +38,7 @@ internal fun createMapboxLines(
             JsonObject().apply {
                 addProperty(MapboxPolylineLayer.Prop.STROKE_COLOR, strokeColor.toMapboxColorString())
                 addProperty(MapboxPolylineLayer.Prop.STROKE_WIDTH, strokeWidth.value)
+                addProperty("zIndex", zIndex)
                 addProperty("id", id)
             },
             id,
@@ -49,6 +51,7 @@ internal fun createMapboxPolygons(
     points: List<GeoPoint>,
     geodesic: Boolean,
     fillColor: Color,
+    zIndex: Int,
 ): List<Feature> {
     val geoPoints: List<GeoPoint> =
         when (geodesic) {
@@ -65,6 +68,7 @@ internal fun createMapboxPolygons(
             MBPolygon.fromLngLats(listOf(closed)),
             JsonObject().apply {
                 addProperty(MapboxPolygonLayer.Prop.FILL_COLOR, fillColor.toMapboxColorString())
+                addProperty("zIndex", zIndex)
                 addProperty("id", fid)
             },
             fid,

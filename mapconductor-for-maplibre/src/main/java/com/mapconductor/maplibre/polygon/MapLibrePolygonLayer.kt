@@ -15,6 +15,7 @@ class MapLibrePolygonLayer(
 ) {
     object Prop {
         const val FILL_COLOR = "fillColor"
+        const val Z_INDEX = "zIndex"
     }
 
     val source: GeoJsonSource =
@@ -27,6 +28,8 @@ class MapLibrePolygonLayer(
         FillLayer(layerId, sourceId).apply {
             setProperties(
                 fillColor(get(Prop.FILL_COLOR)),
+                // Sort within layer by zIndex; higher renders above lower
+                org.maplibre.android.style.layers.PropertyFactory.fillSortKey(get(Prop.Z_INDEX)),
             )
         }
 
@@ -34,7 +37,10 @@ class MapLibrePolygonLayer(
         entities: List<PolygonEntity<MapLibreActualPolygon>>,
         style: org.maplibre.android.maps.Style,
     ) {
-        val features: List<Feature> = entities.flatMap { it.polygon }
+        val features: List<Feature> =
+            entities
+                .sortedBy { it.state.zIndex }
+                .flatMap { it.polygon }
 
         val styleSource =
             try {

@@ -21,6 +21,7 @@ internal fun createMapLibreLines(
     geodesic: Boolean,
     strokeColor: Color,
     strokeWidth: Dp,
+    zIndex: Int = 0,
 ): List<Feature> {
     val geoPoints: List<GeoPoint> =
         when (geodesic) {
@@ -37,6 +38,7 @@ internal fun createMapLibreLines(
             JsonObject().apply {
                 addProperty(MapLibrePolylineLayer.Prop.STROKE_COLOR, strokeColor.toMapLibreColorString())
                 addProperty(MapLibrePolylineLayer.Prop.STROKE_WIDTH, strokeWidth.value)
+                addProperty("zIndex", zIndex)
                 addProperty("id", fid)
             },
             fid,
@@ -57,6 +59,7 @@ internal fun createMapLibrePolygons(
     points: List<GeoPoint>,
     geodesic: Boolean,
     fillColor: Color,
+    zIndex: Int,
 ): List<Feature> {
     val geoPoints: List<GeoPoint> =
         when (geodesic) {
@@ -75,6 +78,7 @@ internal fun createMapLibrePolygons(
             GLPolygon.fromLngLats(listOf(closed)),
             JsonObject().apply {
                 addProperty(MapLibrePolygonLayer.Prop.FILL_COLOR, fillColor.toMapLibreColorString())
+                addProperty("zIndex", zIndex)
                 addProperty("id", fid)
             },
             fid,

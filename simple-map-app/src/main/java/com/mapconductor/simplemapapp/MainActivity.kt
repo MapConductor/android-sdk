@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.mapconductor.arcgis.ArcGISMapView
+import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
@@ -25,6 +28,10 @@ import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import com.mapconductor.here.HereMapView
+import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
@@ -49,6 +56,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun MapView(modifier: Modifier = Modifier) {
     val state =
@@ -62,22 +70,34 @@ fun MapView(modifier: Modifier = Modifier) {
 
     var clickedPosition by remember { mutableStateOf<MarkerState?>(null) }
 
-    val polygonState =
-        remember {
-            val points =
-                listOf(
-                    GeoPointImpl(25.774, -80.19),
-                    GeoPointImpl(18.466, -66.118),
-                    GeoPointImpl(32.321, -64.757),
-                    GeoPointImpl(25.774, -80.19),
-                )
-            PolygonState(
-                points = points,
-                strokeColor = Color.Red.copy(alpha = 0.7f),
-                strokeWidth = 3.dp,
-                fillColor = Color.Blue.copy(alpha = 0.4f),
-            )
-        }
+    val points = listOf(
+        GeoPointImpl.fromLongLat(23.66, 56.42),
+        GeoPointImpl.fromLongLat(13.39, 2.95),
+        GeoPointImpl.fromLongLat(-87.82, 38.58),
+        GeoPointImpl.fromLongLat(23.66, 56.42),
+    )
+
+    val polylineState = remember {
+        PolygonState(
+            points = points,
+            strokeColor = Color.Yellow,
+            strokeWidth = 3.dp,
+            fillColor = Color.Green,
+            geodesic = false,
+            zIndex = 0,
+        )
+    }
+
+    val geodesicPolylineState = remember {
+        PolygonState(
+            points = points,
+            strokeColor = Color.Red,
+            strokeWidth = 3.dp,
+            fillColor = Color.Blue,
+            geodesic = true,
+            zIndex = 1,
+        )
+    }
 
     MapLibreMapView(
         modifier = modifier,
@@ -85,9 +105,11 @@ fun MapView(modifier: Modifier = Modifier) {
         onPolygonClick = { event ->
             clickedPosition =
                 MarkerState(
+                    id = "clicked_position",
                     position = event.clicked,
-                    icon = DefaultIcon(scale = 2.0f),
-                    animation = MarkerAnimation.Drop,
+                    icon = DefaultIcon(
+                        fillColor = event.state.fillColor,
+                    ),
                 )
         },
     ) {
@@ -95,7 +117,8 @@ fun MapView(modifier: Modifier = Modifier) {
             Marker(it)
         }
 
-        Polygon(polygonState)
+        Polygon(polylineState)
+        Polygon(geodesicPolylineState)
     }
 }
 

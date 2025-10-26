@@ -66,11 +66,11 @@ internal class MapboxMapViewControllerImpl(
     OnMoveListener {
     init {
         holder.map.getStyle { style ->
-            // Polygon
-            style.addSource(polygonController.polygonOverlay.layer.source)
-            style.addLayer(polygonController.polygonOverlay.layer.layer)
+            // Polygon outline below fill to respect zIndex of other polygons
             style.addSource(polygonController.polylineOverlay.layer.source)
             style.addLayer(polygonController.polylineOverlay.layer.layer)
+            style.addSource(polygonController.polygonOverlay.layer.source)
+            style.addLayer(polygonController.polygonOverlay.layer.layer)
 
             // Circle
             style.addSource(circleController.renderer.layer.source)

@@ -24,6 +24,7 @@ class MapLibrePolylineOverlayRenderer(
             geodesic = state.geodesic,
             strokeColor = state.strokeColor,
             strokeWidth = state.strokeWidth,
+            zIndex = (state.extra as? Int) ?: 0,
         )
 
     override suspend fun updatePolylineProperties(
@@ -38,6 +39,7 @@ class MapLibrePolylineOverlayRenderer(
             geodesic = current.state.geodesic,
             strokeColor = current.state.strokeColor,
             strokeWidth = current.state.strokeWidth,
+            zIndex = (current.state.extra as? Int) ?: 0,
         )
     }
 

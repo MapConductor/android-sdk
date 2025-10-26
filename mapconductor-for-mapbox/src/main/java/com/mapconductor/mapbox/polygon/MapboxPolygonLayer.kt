@@ -13,6 +13,7 @@ class MapboxPolygonLayer(
 ) {
     object Prop {
         const val FILL_COLOR = "fillColor"
+        const val Z_INDEX = "zIndex"
     }
 
     val source = geoJsonSource(sourceId)
@@ -23,10 +24,18 @@ class MapboxPolygonLayer(
                     literal(Prop.FILL_COLOR)
                 },
             )
+            // Sort rendering within this layer by zIndex (higher draws on top)
+            fillSortKey(
+                get {
+                    literal(Prop.Z_INDEX)
+                },
+            )
         }
 
     fun draw(entities: List<PolygonEntity<MapboxActualPolygon>>) {
-        val features = entities.map { it.polygon }
+        val features = entities
+            .sortedBy { it.state.zIndex }
+            .map { it.polygon }
         source.featureCollection(
             FeatureCollection.fromFeatures(features.flatten()),
         )
