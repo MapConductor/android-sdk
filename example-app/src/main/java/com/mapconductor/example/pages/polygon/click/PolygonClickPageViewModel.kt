@@ -15,8 +15,11 @@ interface PolygonClickPageViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val markerState: StateFlow<MarkerState?>
     val message: StateFlow<String>
+
     fun onMapViewChanged(state: MapViewState<*>)
+
     fun onMapClicked(clicked: GeoPointImpl)
+
     fun onPolygonClicked(event: PolygonEvent)
 }
 
@@ -32,13 +35,11 @@ class PolygonClickPageViewModelImpl :
     private val _message = MutableStateFlow<String>("")
     override val message: StateFlow<String> = _message.asStateFlow()
 
-
     override val initCameraPosition =
         MapCameraPositionImpl(
             position = GeoPointImpl(36.73030, -120.24512),
             zoom = 5.0,
         )
-
 
     override fun onMapViewChanged(state: MapViewState<*>) {
         _mapViewState.value = state
@@ -47,19 +48,21 @@ class PolygonClickPageViewModelImpl :
     override fun onMapClicked(clicked: GeoPointImpl) {
         _message.value = "Outside"
 
-        _markerState.value = MarkerState(
-            id = "clicked",
-            position = clicked,
-        )
+        _markerState.value =
+            MarkerState(
+                id = "clicked",
+                position = clicked,
+            )
     }
 
     override fun onPolygonClicked(event: PolygonEvent) {
         val latLng = GeoPointImpl.from(event.clicked).toUrlValue()
-        _message.value = "Inside\n${latLng}"
+        _message.value = "Inside\n$latLng"
 
-        _markerState.value = MarkerState(
-            id = "clicked",
-            position = event.clicked,
-        )
+        _markerState.value =
+            MarkerState(
+                id = "clicked",
+                position = event.clicked,
+            )
     }
 }

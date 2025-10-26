@@ -1,10 +1,6 @@
 package com.mapconductor.mapbox.polygon
 
-import com.google.gson.JsonObject
-import com.mapbox.geojson.Feature
-import com.mapbox.geojson.Polygon
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
@@ -12,8 +8,6 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.mapbox.MapboxActualPolygon
 import com.mapconductor.mapbox.MapboxMapViewHolder
-import com.mapconductor.mapbox.toMapboxColorString
-import com.mapconductor.mapbox.toPoint
 import com.mapconductor.mapbox.createMapboxPolygons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

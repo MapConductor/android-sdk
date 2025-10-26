@@ -68,6 +68,7 @@ internal class MapboxMapViewControllerImpl(
     OnMoveListener {
     // Track created z-indexed polygon layers to manage add/remove without enumerating style layers
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
+
     init {
         holder.map.getStyle { style ->
             // Polygon sources only (z-indexed layers added below)
@@ -414,23 +415,31 @@ internal class MapboxMapViewControllerImpl(
             mapDesignTypeChangeListener?.invoke(mapDesignType)
         }
     }
+
     private fun ensurePolygonZLayers(style: com.mapbox.maps.Style) {
         val fillSourceId = polygonController.polygonOverlay.layer.sourceId
         val outlineSourceId = polygonController.polylineOverlay.layer.sourceId
         val anchorId = polylineController.renderer.layer.layerId
 
-        val zSet = polygonController.polygonOverlay.polygonManager
-            .allEntities()
-            .map { it.state.zIndex }
-            .toSet()
+        val zSet =
+            polygonController.polygonOverlay.polygonManager
+                .allEntities()
+                .map { it.state.zIndex }
+                .toSet()
 
         // Remove stale z-indexed layers we previously created
         val toRemove = polygonZLayers.subtract(zSet)
         toRemove.forEach { z ->
             val fillId = "polygon-fill-layer-$z"
             val outlineId = "polygon-outline-layer-$z"
-            try { style.removeStyleLayer(outlineId) } catch (_: Exception) {}
-            try { style.removeStyleLayer(fillId) } catch (_: Exception) {}
+            try {
+                style.removeStyleLayer(outlineId)
+            } catch (_: Exception) {
+            }
+            try {
+                style.removeStyleLayer(fillId)
+            } catch (_: Exception) {
+            }
         }
 
         val zList = zSet.toList().sorted()
@@ -440,35 +449,56 @@ internal class MapboxMapViewControllerImpl(
 
             // Fill layer for this z
             if (!style.styleLayerExists(fillId)) {
-                val layer = com.mapbox.maps.extension.style.layers.generated.fillLayer(fillId, fillSourceId) {
-                    filter(com.mapbox.maps.extension.style.expressions.generated.Expression.eq(
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("zIndex"),
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.literal(z.toDouble()),
-                    ))
-                    fillColor(
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("fillColor"),
-                    )
+                val layer =
+                    com.mapbox.maps.extension.style.layers.generated.fillLayer(fillId, fillSourceId) {
+                        filter(
+                            com.mapbox.maps.extension.style.expressions.generated.Expression.eq(
+                                com.mapbox.maps.extension.style.expressions.generated.Expression
+                                    .get("zIndex"),
+                                com.mapbox.maps.extension.style.expressions.generated.Expression
+                                    .literal(z.toDouble()),
+                            ),
+                        )
+                        fillColor(
+                            com.mapbox.maps.extension.style.expressions.generated.Expression
+                                .get("fillColor"),
+                        )
+                    }
+                try {
+                    style.addLayerBelow(layer, anchorId)
+                } catch (_: Exception) {
+                    style.addLayer(layer)
                 }
-                try { style.addLayerBelow(layer, anchorId) } catch (_: Exception) { style.addLayer(layer) }
             }
 
             // Outline layer above its fill
             if (!style.styleLayerExists(outlineId)) {
-                val layer = com.mapbox.maps.extension.style.layers.generated.lineLayer(outlineId, outlineSourceId) {
-                    lineJoin(com.mapbox.maps.extension.style.layers.properties.generated.LineJoin.ROUND)
-                    lineCap(com.mapbox.maps.extension.style.layers.properties.generated.LineCap.ROUND)
-                    filter(com.mapbox.maps.extension.style.expressions.generated.Expression.eq(
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("zIndex"),
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.literal(z.toDouble()),
-                    ))
-                    lineColor(
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("strokeColor"),
-                    )
-                    lineWidth(
-                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("strokeWidth"),
-                    )
+                val layer =
+                    com.mapbox.maps.extension.style.layers.generated.lineLayer(outlineId, outlineSourceId) {
+                        lineJoin(com.mapbox.maps.extension.style.layers.properties.generated.LineJoin.ROUND)
+                        lineCap(com.mapbox.maps.extension.style.layers.properties.generated.LineCap.ROUND)
+                        filter(
+                            com.mapbox.maps.extension.style.expressions.generated.Expression.eq(
+                                com.mapbox.maps.extension.style.expressions.generated.Expression
+                                    .get("zIndex"),
+                                com.mapbox.maps.extension.style.expressions.generated.Expression
+                                    .literal(z.toDouble()),
+                            ),
+                        )
+                        lineColor(
+                            com.mapbox.maps.extension.style.expressions.generated.Expression
+                                .get("strokeColor"),
+                        )
+                        lineWidth(
+                            com.mapbox.maps.extension.style.expressions.generated.Expression
+                                .get("strokeWidth"),
+                        )
+                    }
+                try {
+                    style.addLayerAbove(layer, fillId)
+                } catch (_: Exception) {
+                    style.addLayer(layer)
                 }
-                try { style.addLayerAbove(layer, fillId) } catch (_: Exception) { style.addLayer(layer) }
             }
         }
         // Update tracked set

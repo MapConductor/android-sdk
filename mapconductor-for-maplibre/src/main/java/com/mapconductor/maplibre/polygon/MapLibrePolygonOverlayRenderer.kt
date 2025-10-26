@@ -1,8 +1,6 @@
 package com.mapconductor.maplibre.polygon
 
-import com.google.gson.JsonObject
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
@@ -10,11 +8,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.maplibre.MapLibreActualPolygon
 import com.mapconductor.maplibre.MapLibreMapViewHolder
-import com.mapconductor.maplibre.toMapLibreColorString
-import com.mapconductor.maplibre.toPoint
 import com.mapconductor.maplibre.createMapLibrePolygons
-import org.maplibre.geojson.Feature
-import org.maplibre.geojson.Polygon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

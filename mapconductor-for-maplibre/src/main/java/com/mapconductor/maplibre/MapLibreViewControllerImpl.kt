@@ -410,18 +410,25 @@ class MapLibreViewControllerImpl(
         val outlineSourceId = polygonController.polylineOverlay.layer.sourceId
         val anchorId = polylineController.renderer.layer.layerId
 
-        val zSet = polygonController.polygonOverlay.polygonManager
-            .allEntities()
-            .map { it.state.zIndex }
-            .toSet()
+        val zSet =
+            polygonController.polygonOverlay.polygonManager
+                .allEntities()
+                .map { it.state.zIndex }
+                .toSet()
 
         // Remove stale z-indexed layers we previously created
         val toRemove = polygonZLayers.subtract(zSet)
         toRemove.forEach { z ->
             val fillId = "polygon-fill-layer-$z"
             val outlineId = "polygon-outline-layer-$z"
-            try { style.removeLayer(outlineId) } catch (_: Exception) {}
-            try { style.removeLayer(fillId) } catch (_: Exception) {}
+            try {
+                style.removeLayer(outlineId)
+            } catch (_: Exception) {
+            }
+            try {
+                style.removeLayer(fillId)
+            } catch (_: Exception) {
+            }
         }
 
         val zList = zSet.toList().sorted()
@@ -430,38 +437,61 @@ class MapLibreViewControllerImpl(
             val outlineId = "polygon-outline-layer-$z"
 
             if (style.getLayer(fillId) == null) {
-                val fill = org.maplibre.android.style.layers.FillLayer(fillId, fillSourceId).apply {
-                    setFilter(org.maplibre.android.style.expressions.Expression.eq(
-                        org.maplibre.android.style.expressions.Expression.get("zIndex"),
-                        org.maplibre.android.style.expressions.Expression.literal(z),
-                    ))
-                    setProperties(
-                        org.maplibre.android.style.layers.PropertyFactory.fillColor(
-                            org.maplibre.android.style.expressions.Expression.get("fillColor"),
-                        ),
-                    )
+                val fill =
+                    org.maplibre.android.style.layers.FillLayer(fillId, fillSourceId).apply {
+                        setFilter(
+                            org.maplibre.android.style.expressions.Expression.eq(
+                                org.maplibre.android.style.expressions.Expression
+                                    .get("zIndex"),
+                                org.maplibre.android.style.expressions.Expression
+                                    .literal(z),
+                            ),
+                        )
+                        setProperties(
+                            org.maplibre.android.style.layers.PropertyFactory.fillColor(
+                                org.maplibre.android.style.expressions.Expression
+                                    .get("fillColor"),
+                            ),
+                        )
+                    }
+                try {
+                    style.addLayerBelow(fill, anchorId)
+                } catch (_: Exception) {
+                    style.addLayer(fill)
                 }
-                try { style.addLayerBelow(fill, anchorId) } catch (_: Exception) { style.addLayer(fill) }
             }
 
             if (style.getLayer(outlineId) == null) {
-                val outline = org.maplibre.android.style.layers.LineLayer(outlineId, outlineSourceId).apply {
-                    setFilter(org.maplibre.android.style.expressions.Expression.eq(
-                        org.maplibre.android.style.expressions.Expression.get("zIndex"),
-                        org.maplibre.android.style.expressions.Expression.literal(z),
-                    ))
-                    setProperties(
-                        org.maplibre.android.style.layers.PropertyFactory.lineJoin(org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND),
-                        org.maplibre.android.style.layers.PropertyFactory.lineCap(org.maplibre.android.style.layers.Property.LINE_CAP_ROUND),
-                        org.maplibre.android.style.layers.PropertyFactory.lineColor(
-                            org.maplibre.android.style.expressions.Expression.get("strokeColor"),
-                        ),
-                        org.maplibre.android.style.layers.PropertyFactory.lineWidth(
-                            org.maplibre.android.style.expressions.Expression.get("strokeWidth"),
-                        ),
-                    )
+                val outline =
+                    org.maplibre.android.style.layers.LineLayer(outlineId, outlineSourceId).apply {
+                        setFilter(
+                            org.maplibre.android.style.expressions.Expression.eq(
+                                org.maplibre.android.style.expressions.Expression
+                                    .get("zIndex"),
+                                org.maplibre.android.style.expressions.Expression
+                                    .literal(z),
+                            ),
+                        )
+                        setProperties(
+                            org.maplibre.android.style.layers.PropertyFactory
+                                .lineJoin(org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND),
+                            org.maplibre.android.style.layers.PropertyFactory
+                                .lineCap(org.maplibre.android.style.layers.Property.LINE_CAP_ROUND),
+                            org.maplibre.android.style.layers.PropertyFactory.lineColor(
+                                org.maplibre.android.style.expressions.Expression
+                                    .get("strokeColor"),
+                            ),
+                            org.maplibre.android.style.layers.PropertyFactory.lineWidth(
+                                org.maplibre.android.style.expressions.Expression
+                                    .get("strokeWidth"),
+                            ),
+                        )
+                    }
+                try {
+                    style.addLayerAbove(outline, fillId)
+                } catch (_: Exception) {
+                    style.addLayer(outline)
                 }
-                try { style.addLayerAbove(outline, fillId) } catch (_: Exception) { style.addLayer(outline) }
             }
         }
         polygonZLayers.clear()

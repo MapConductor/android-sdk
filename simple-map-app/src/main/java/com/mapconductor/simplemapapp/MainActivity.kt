@@ -8,28 +8,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.ArcGISMapView
-import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.googlemaps.GoogleMapsView
-import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.maplibre.MapLibreMapView
@@ -56,7 +50,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun MapView(modifier: Modifier = Modifier) {
     val state =
@@ -70,34 +63,37 @@ fun MapView(modifier: Modifier = Modifier) {
 
     var clickedPosition by remember { mutableStateOf<MarkerState?>(null) }
 
-    val points = listOf(
-        GeoPointImpl.fromLongLat(23.66, 56.42),
-        GeoPointImpl.fromLongLat(13.39, 2.95),
-        GeoPointImpl.fromLongLat(-87.82, 38.58),
-        GeoPointImpl.fromLongLat(23.66, 56.42),
-    )
-
-    val polylineState = remember {
-        PolygonState(
-            points = points,
-            strokeColor = Color.Yellow.copy(alpha = 0.3f),
-            strokeWidth = 3.dp,
-            fillColor = Color.Green.copy(alpha = 0.5f),
-            geodesic = false,
-            zIndex = 0,
+    val points =
+        listOf(
+            GeoPointImpl.fromLongLat(23.66, 56.42),
+            GeoPointImpl.fromLongLat(13.39, 2.95),
+            GeoPointImpl.fromLongLat(-87.82, 38.58),
+            GeoPointImpl.fromLongLat(23.66, 56.42),
         )
-    }
 
-    val geodesicPolylineState = remember {
-        PolygonState(
-            points = points,
-            strokeColor = Color.Red.copy(alpha = 0.3f),
-            strokeWidth = 3.dp,
-            fillColor = Color.Blue.copy(alpha = 0.5f),
-            geodesic = true,
-            zIndex = 1,
-        )
-    }
+    val polylineState =
+        remember {
+            PolygonState(
+                points = points,
+                strokeColor = Color.Yellow.copy(alpha = 0.3f),
+                strokeWidth = 3.dp,
+                fillColor = Color.Green.copy(alpha = 0.5f),
+                geodesic = false,
+                zIndex = 0,
+            )
+        }
+
+    val geodesicPolylineState =
+        remember {
+            PolygonState(
+                points = points,
+                strokeColor = Color.Red.copy(alpha = 0.3f),
+                strokeWidth = 3.dp,
+                fillColor = Color.Blue.copy(alpha = 0.5f),
+                geodesic = true,
+                zIndex = 1,
+            )
+        }
 
     HereMapView(
         modifier = modifier,
@@ -107,9 +103,10 @@ fun MapView(modifier: Modifier = Modifier) {
                 MarkerState(
                     id = "clicked_position",
                     position = event.clicked,
-                    icon = DefaultIcon(
-                        fillColor = event.state.fillColor.copy(alpha = 1.0f),
-                    ),
+                    icon =
+                        DefaultIcon(
+                            fillColor = event.state.fillColor.copy(alpha = 1.0f),
+                        ),
                 )
         },
     ) {

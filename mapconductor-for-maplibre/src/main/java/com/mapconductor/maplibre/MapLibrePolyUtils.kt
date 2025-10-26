@@ -9,8 +9,8 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.splitByMeridian
-import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
 import com.mapconductor.maplibre.polygon.MapLibrePolygonLayer
+import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Polygon as GLPolygon

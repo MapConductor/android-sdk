@@ -43,12 +43,13 @@ fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
             ) {
                 key(california) {
                     california.forEach { points ->
-                        val state = PolygonState(
-                            points = points,
-                            strokeColor = Color.Red.copy(alpha = 0.7f),
-                            strokeWidth = 3.dp,
-                            fillColor = Color.Blue.copy(alpha = 0.4f),
-                        )
+                        val state =
+                            PolygonState(
+                                points = points,
+                                strokeColor = Color.Red.copy(alpha = 0.7f),
+                                strokeWidth = 3.dp,
+                                fillColor = Color.Blue.copy(alpha = 0.4f),
+                            )
                         Polygon(state)
                     }
                 }
@@ -65,7 +66,6 @@ fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
                         )
                     }
                 }
-
             }
         }
 

@@ -33,9 +33,10 @@ class MapboxPolygonLayer(
         }
 
     fun draw(entities: List<PolygonEntity<MapboxActualPolygon>>) {
-        val features = entities
-            .sortedBy { it.state.zIndex }
-            .map { it.polygon }
+        val features =
+            entities
+                .sortedBy { it.state.zIndex }
+                .map { it.polygon }
         source.featureCollection(
             FeatureCollection.fromFeatures(features.flatten()),
         )

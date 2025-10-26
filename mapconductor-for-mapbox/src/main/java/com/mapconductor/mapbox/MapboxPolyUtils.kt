@@ -12,8 +12,8 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.splitByMeridian
-import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
+import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 
 internal fun createMapboxLines(
     id: String,
