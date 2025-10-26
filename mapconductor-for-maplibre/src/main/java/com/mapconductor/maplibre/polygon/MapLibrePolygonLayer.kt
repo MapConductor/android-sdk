@@ -28,8 +28,6 @@ class MapLibrePolygonLayer(
         FillLayer(layerId, sourceId).apply {
             setProperties(
                 fillColor(get(Prop.FILL_COLOR)),
-                // Sort within layer by zIndex; higher renders above lower
-                org.maplibre.android.style.layers.PropertyFactory.fillSortKey(get(Prop.Z_INDEX)),
             )
         }
 

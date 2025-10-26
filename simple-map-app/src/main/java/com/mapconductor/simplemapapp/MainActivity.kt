@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MapView(modifier: Modifier = Modifier) {
     val state =
-        rememberMapLibreMapViewState(
+        rememberHereMapViewState(
             cameraPosition =
                 MapCameraPositionImpl(
                     position = GeoPointImpl(24.886, -70.268),
@@ -80,9 +80,9 @@ fun MapView(modifier: Modifier = Modifier) {
     val polylineState = remember {
         PolygonState(
             points = points,
-            strokeColor = Color.Yellow,
+            strokeColor = Color.Yellow.copy(alpha = 0.3f),
             strokeWidth = 3.dp,
-            fillColor = Color.Green,
+            fillColor = Color.Green.copy(alpha = 0.5f),
             geodesic = false,
             zIndex = 0,
         )
@@ -91,15 +91,15 @@ fun MapView(modifier: Modifier = Modifier) {
     val geodesicPolylineState = remember {
         PolygonState(
             points = points,
-            strokeColor = Color.Red,
+            strokeColor = Color.Red.copy(alpha = 0.3f),
             strokeWidth = 3.dp,
-            fillColor = Color.Blue,
+            fillColor = Color.Blue.copy(alpha = 0.5f),
             geodesic = true,
             zIndex = 1,
         )
     }
 
-    MapLibreMapView(
+    HereMapView(
         modifier = modifier,
         state = state,
         onPolygonClick = { event ->
@@ -108,7 +108,7 @@ fun MapView(modifier: Modifier = Modifier) {
                     id = "clicked_position",
                     position = event.clicked,
                     icon = DefaultIcon(
-                        fillColor = event.state.fillColor,
+                        fillColor = event.state.fillColor.copy(alpha = 1.0f),
                     ),
                 )
         },

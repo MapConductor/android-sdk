@@ -46,6 +46,7 @@ class MapLibreViewControllerImpl(
     // Keep reference to the style instance to avoid getting a new one
     private var styleInstance: org.maplibre.android.maps.Style? = null
     private var wasScrollEnabledBeforeDrag: Boolean? = null
+    private val polygonZLayers: MutableSet<Int> = mutableSetOf()
 
     private fun setupStyle(style: org.maplibre.android.maps.Style) {
         // Store the style instance for future use
@@ -57,21 +58,16 @@ class MapLibreViewControllerImpl(
         // Ensure default icon image exists on this style
         markerController.renderer.ensureDefaultIcon(style)
 
-        // Polygon outline below fill to respect zIndex of other polygons
+        // Polygon sources only (layers will be added per zIndex)
         style.addSource(polygonController.polylineOverlay.layer.source)
-        style.addLayer(polygonController.polylineOverlay.layer.layer)
         style.addSource(polygonController.polygonOverlay.layer.source)
-        style.addLayerAbove(
-            polygonController.polygonOverlay.layer.layer,
-            polygonController.polylineOverlay.layer.layerId,
-        )
 
-        // Polyline
+        // Polyline (general) acts as anchor above polygons
         style.addSource(polylineController.renderer.layer.source)
-        style.addLayerAbove(
-            polylineController.renderer.layer.layer,
-            polygonController.polygonOverlay.layer.layerId,
-        )
+        style.addLayer(polylineController.renderer.layer.layer)
+
+        // Add z-indexed polygon layers below general polylines
+        ensurePolygonZLayers(style)
 
         // Marker - add source and layer at the top
         style.addSource(markerController.renderer.markerLayer.source)
@@ -90,7 +86,7 @@ class MapLibreViewControllerImpl(
         // Force redraw after adding layers
         markerController.renderer.redraw()
         polylineController.renderer.redraw()
-        // polygonController.polygonOverlay.onPostProcess()
+//        polygonController.polygonOverlay.onPostProcess()
     }
 
     init {
@@ -184,9 +180,15 @@ class MapLibreViewControllerImpl(
 
     override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
-    override suspend fun compositionPolygons(data: List<PolygonState>) = polygonController.add(data)
+    override suspend fun compositionPolygons(data: List<PolygonState>) {
+        polygonController.add(data)
+        getStyleInstance()?.let { ensurePolygonZLayers(it) }
+    }
 
-    override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
+    override suspend fun updatePolygon(state: PolygonState) {
+        polygonController.update(state)
+        getStyleInstance()?.let { ensurePolygonZLayers(it) }
+    }
 
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerController.dragStartListener = listener
@@ -401,5 +403,68 @@ class MapLibreViewControllerImpl(
                 visibleRegion = visibleRegion,
             )
         return mapCameraPosition
+    }
+
+    private fun ensurePolygonZLayers(style: org.maplibre.android.maps.Style) {
+        val fillSourceId = polygonController.polygonOverlay.layer.sourceId
+        val outlineSourceId = polygonController.polylineOverlay.layer.sourceId
+        val anchorId = polylineController.renderer.layer.layerId
+
+        val zSet = polygonController.polygonOverlay.polygonManager
+            .allEntities()
+            .map { it.state.zIndex }
+            .toSet()
+
+        // Remove stale z-indexed layers we previously created
+        val toRemove = polygonZLayers.subtract(zSet)
+        toRemove.forEach { z ->
+            val fillId = "polygon-fill-layer-$z"
+            val outlineId = "polygon-outline-layer-$z"
+            try { style.removeLayer(outlineId) } catch (_: Exception) {}
+            try { style.removeLayer(fillId) } catch (_: Exception) {}
+        }
+
+        val zList = zSet.toList().sorted()
+        zList.forEach { z ->
+            val fillId = "polygon-fill-layer-$z"
+            val outlineId = "polygon-outline-layer-$z"
+
+            if (style.getLayer(fillId) == null) {
+                val fill = org.maplibre.android.style.layers.FillLayer(fillId, fillSourceId).apply {
+                    setFilter(org.maplibre.android.style.expressions.Expression.eq(
+                        org.maplibre.android.style.expressions.Expression.get("zIndex"),
+                        org.maplibre.android.style.expressions.Expression.literal(z),
+                    ))
+                    setProperties(
+                        org.maplibre.android.style.layers.PropertyFactory.fillColor(
+                            org.maplibre.android.style.expressions.Expression.get("fillColor"),
+                        ),
+                    )
+                }
+                try { style.addLayerBelow(fill, anchorId) } catch (_: Exception) { style.addLayer(fill) }
+            }
+
+            if (style.getLayer(outlineId) == null) {
+                val outline = org.maplibre.android.style.layers.LineLayer(outlineId, outlineSourceId).apply {
+                    setFilter(org.maplibre.android.style.expressions.Expression.eq(
+                        org.maplibre.android.style.expressions.Expression.get("zIndex"),
+                        org.maplibre.android.style.expressions.Expression.literal(z),
+                    ))
+                    setProperties(
+                        org.maplibre.android.style.layers.PropertyFactory.lineJoin(org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND),
+                        org.maplibre.android.style.layers.PropertyFactory.lineCap(org.maplibre.android.style.layers.Property.LINE_CAP_ROUND),
+                        org.maplibre.android.style.layers.PropertyFactory.lineColor(
+                            org.maplibre.android.style.expressions.Expression.get("strokeColor"),
+                        ),
+                        org.maplibre.android.style.layers.PropertyFactory.lineWidth(
+                            org.maplibre.android.style.expressions.Expression.get("strokeWidth"),
+                        ),
+                    )
+                }
+                try { style.addLayerAbove(outline, fillId) } catch (_: Exception) { style.addLayer(outline) }
+            }
+        }
+        polygonZLayers.clear()
+        polygonZLayers.addAll(zSet)
     }
 }

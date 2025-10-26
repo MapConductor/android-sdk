@@ -36,7 +36,6 @@ class MapLibrePolylineLayer(
                 lineCap(Property.LINE_CAP_ROUND),
                 lineColor(get(Prop.STROKE_COLOR)),
                 lineWidth(get(Prop.STROKE_WIDTH)),
-                org.maplibre.android.style.layers.PropertyFactory.lineSortKey(get(Prop.Z_INDEX)),
             )
         }
 

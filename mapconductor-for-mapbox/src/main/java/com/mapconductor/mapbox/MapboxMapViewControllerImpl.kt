@@ -10,6 +10,8 @@ import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.StyleLoaded
 import com.mapbox.maps.StyleLoadedCallback
 import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.addLayerAbove
+import com.mapbox.maps.extension.style.layers.addLayerBelow
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.flyTo
@@ -64,21 +66,24 @@ internal class MapboxMapViewControllerImpl(
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
+    // Track created z-indexed polygon layers to manage add/remove without enumerating style layers
+    private val polygonZLayers: MutableSet<Int> = mutableSetOf()
     init {
         holder.map.getStyle { style ->
-            // Polygon outline below fill to respect zIndex of other polygons
+            // Polygon sources only (z-indexed layers added below)
             style.addSource(polygonController.polylineOverlay.layer.source)
-            style.addLayer(polygonController.polylineOverlay.layer.layer)
             style.addSource(polygonController.polygonOverlay.layer.source)
-            style.addLayer(polygonController.polygonOverlay.layer.layer)
 
             // Circle
             style.addSource(circleController.renderer.layer.source)
             style.addLayer(circleController.renderer.layer.layer)
 
-            // Polyline
+            // Polyline (general)
             style.addSource(polylineController.renderer.layer.source)
             style.addLayer(polylineController.renderer.layer.layer)
+
+            // Add z-indexed polygon layers below general polylines
+            ensurePolygonZLayers(style)
 
             // Marker
             style.addSource(markerController.renderer.markerLayer.source)
@@ -120,9 +125,15 @@ internal class MapboxMapViewControllerImpl(
 
     override suspend fun updatePolyline(state: PolylineState) = polylineController.update(state)
 
-    override suspend fun compositionPolygons(data: List<PolygonState>) = polygonController.add(data)
+    override suspend fun compositionPolygons(data: List<PolygonState>) {
+        polygonController.add(data)
+        holder.map.getStyle { ensurePolygonZLayers(it) }
+    }
 
-    override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
+    override suspend fun updatePolygon(state: PolygonState) {
+        polygonController.update(state)
+        holder.map.getStyle { ensurePolygonZLayers(it) }
+    }
 
     override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
 
@@ -402,5 +413,66 @@ internal class MapboxMapViewControllerImpl(
             this@MapboxMapViewControllerImpl.mapDesignType = mapDesignType
             mapDesignTypeChangeListener?.invoke(mapDesignType)
         }
+    }
+    private fun ensurePolygonZLayers(style: com.mapbox.maps.Style) {
+        val fillSourceId = polygonController.polygonOverlay.layer.sourceId
+        val outlineSourceId = polygonController.polylineOverlay.layer.sourceId
+        val anchorId = polylineController.renderer.layer.layerId
+
+        val zSet = polygonController.polygonOverlay.polygonManager
+            .allEntities()
+            .map { it.state.zIndex }
+            .toSet()
+
+        // Remove stale z-indexed layers we previously created
+        val toRemove = polygonZLayers.subtract(zSet)
+        toRemove.forEach { z ->
+            val fillId = "polygon-fill-layer-$z"
+            val outlineId = "polygon-outline-layer-$z"
+            try { style.removeStyleLayer(outlineId) } catch (_: Exception) {}
+            try { style.removeStyleLayer(fillId) } catch (_: Exception) {}
+        }
+
+        val zList = zSet.toList().sorted()
+        zList.forEach { z ->
+            val fillId = "polygon-fill-layer-$z"
+            val outlineId = "polygon-outline-layer-$z"
+
+            // Fill layer for this z
+            if (!style.styleLayerExists(fillId)) {
+                val layer = com.mapbox.maps.extension.style.layers.generated.fillLayer(fillId, fillSourceId) {
+                    filter(com.mapbox.maps.extension.style.expressions.generated.Expression.eq(
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("zIndex"),
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.literal(z.toDouble()),
+                    ))
+                    fillColor(
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("fillColor"),
+                    )
+                }
+                try { style.addLayerBelow(layer, anchorId) } catch (_: Exception) { style.addLayer(layer) }
+            }
+
+            // Outline layer above its fill
+            if (!style.styleLayerExists(outlineId)) {
+                val layer = com.mapbox.maps.extension.style.layers.generated.lineLayer(outlineId, outlineSourceId) {
+                    lineJoin(com.mapbox.maps.extension.style.layers.properties.generated.LineJoin.ROUND)
+                    lineCap(com.mapbox.maps.extension.style.layers.properties.generated.LineCap.ROUND)
+                    filter(com.mapbox.maps.extension.style.expressions.generated.Expression.eq(
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("zIndex"),
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.literal(z.toDouble()),
+                    ))
+                    lineColor(
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("strokeColor"),
+                    )
+                    lineWidth(
+                        com.mapbox.maps.extension.style.expressions.generated.Expression.get("strokeWidth"),
+                    )
+                }
+                try { style.addLayerAbove(layer, fillId) } catch (_: Exception) { style.addLayer(layer) }
+            }
+        }
+        // Update tracked set
+        polygonZLayers.clear()
+        polygonZLayers.addAll(zSet)
     }
 }
