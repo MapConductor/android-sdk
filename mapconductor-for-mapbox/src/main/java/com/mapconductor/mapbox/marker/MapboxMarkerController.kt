@@ -27,6 +27,8 @@ class MapboxMarkerController(
                     renderer.dragLayer.updatePosition(GeoPointImpl.from(it.state.position))
                     // Restore the recomposition for the position property
                     setDraggingState(it.state, false)
+                    // Clear drag layer selection to avoid duplicate icon after drop
+                    renderer.dragLayer.selected = null
                     renderer.drawDragLayer()
                     markerManager.registerEntity(it)
                     renderer.redraw()

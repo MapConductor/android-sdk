@@ -27,6 +27,8 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
 import org.maplibre.android.maps.MapLibreMap
 import android.graphics.PointF
+import android.view.MotionEvent
+import android.view.View
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,6 +53,7 @@ class MapLibreViewControllerImpl(
     // Keep reference to the style instance to avoid getting a new one
     private var styleInstance: org.maplibre.android.maps.Style? = null
     private var wasScrollEnabledBeforeDrag: Boolean? = null
+    private var dragTouchInterceptor: View.OnTouchListener? = null
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
 
     private fun setupStyle(style: org.maplibre.android.maps.Style) {
@@ -300,13 +303,15 @@ class MapLibreViewControllerImpl(
                 try {
                     val ui = holder.map.uiSettings
                     wasScrollEnabledBeforeDrag = ui.isScrollGesturesEnabled
-                    ui.setScrollGesturesEnabled(false)
+                    ui.isScrollGesturesEnabled = false
                 } catch (e: Exception) {
                     android.util.Log.w("MapLibre", "Failed to disable scroll gestures: ${e.message}")
                 }
                 markerController.selectedMarker = entity
                 markerController.markerManager.removeEntity(entity.state.id)
                 markerController.dragStartListener?.invoke(entity.state)
+                // Intercept touch to move marker without moving the map
+                installDragTouchInterceptor()
                 return true
             }
         }
@@ -320,7 +325,7 @@ class MapLibreViewControllerImpl(
     }
 
     override fun onMove(detector: MoveGestureDetector) {
-        markerController.renderer.dragLayer.selected?.let { entity ->
+        markerController.selectedMarker?.let { entity ->
 
             val screenCoordinate =
                 Offset(
@@ -352,13 +357,58 @@ class MapLibreViewControllerImpl(
             // Re-enable map scroll after dragging finishes
             try {
                 val ui = holder.map.uiSettings
-                ui.setScrollGesturesEnabled(wasScrollEnabledBeforeDrag ?: true)
+                ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
             } catch (e: Exception) {
                 android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
             } finally {
                 wasScrollEnabledBeforeDrag = null
             }
+            removeDragTouchInterceptor()
         }
+    }
+
+    private fun installDragTouchInterceptor() {
+        if (dragTouchInterceptor != null) return
+        val view = holder.mapView
+        dragTouchInterceptor = View.OnTouchListener { _, event ->
+            val selected = markerController.selectedMarker ?: return@OnTouchListener false
+            when (event.actionMasked) {
+                MotionEvent.ACTION_MOVE -> {
+                    val pos = holder.fromScreenOffsetSync(Offset(event.x, event.y))
+                    if (pos != null) {
+                        selected.state.position = pos
+                        markerController.renderer.dragLayer.updatePosition(pos)
+                        markerController.renderer.drawDragLayer()
+                        markerController.dragListener?.invoke(selected.state)
+                    }
+                    true // consume to prevent map panning
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val point = holder.map.projection.fromScreenLocation(PointF(event.x, event.y))
+                    markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
+                    markerController.selectedMarker = null
+                    markerController.dragEndListener?.invoke(selected.state)
+                    try {
+                        val ui = holder.map.uiSettings
+                        ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
+                    } catch (e: Exception) {
+                        android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
+                    } finally {
+                        wasScrollEnabledBeforeDrag = null
+                    }
+                    removeDragTouchInterceptor()
+                    true
+                }
+                else -> false
+            }
+        }
+        view.setOnTouchListener(dragTouchInterceptor)
+    }
+
+    private fun removeDragTouchInterceptor() {
+        val view = holder.mapView
+        view.setOnTouchListener(null)
+        dragTouchInterceptor = null
     }
 
     override fun onCameraMove() {

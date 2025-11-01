@@ -32,7 +32,6 @@ internal class MapLibreMapViewHolderImpl(
             y = pixel.y,
         )
     }
-
     override fun fromScreenOffsetSync(offset: Offset): GeoPointImpl? =
         map.projection.fromScreenLocation(PointF(offset.x, offset.y)).toGeoPoint()
 
