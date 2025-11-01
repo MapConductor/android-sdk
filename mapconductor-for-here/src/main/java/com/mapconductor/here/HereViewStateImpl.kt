@@ -68,6 +68,15 @@ class HereViewStateImpl(
         durationMs: Long?,
         listener: MoveCameraCallback?,
     ) {
+        controller?.let { ctrl ->
+            val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
+            if (durationMs == null || durationMs == 0L) {
+                ctrl.moveCamera(dstCameraPosition, listener)
+            } else {
+                ctrl.animateCamera(dstCameraPosition, durationMs, listener)
+            }
+            return@let
+        }
         _cameraPosition.value = cameraPosition
         listener?.onComplete()
     }
