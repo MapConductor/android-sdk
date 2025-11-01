@@ -17,9 +17,9 @@ import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
-import com.mapconductor.example.ui.PolygonCapableMapViewItems
 
 @Composable
 fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
@@ -58,7 +58,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
         }
 
     DemoMapPageScaffold(
-        menuItems = PolygonCapableMapViewItems(viewModel.initCameraPosition),
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
