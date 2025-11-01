@@ -66,7 +66,7 @@ class ArcGISPolygonOverlayRenderer(
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
-            if (finger.points != prevFinger.points) {
+            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
                 current.polygon.geometry = createGeometry(current.state)
             }
 
@@ -112,9 +112,14 @@ class ArcGISPolygonOverlayRenderer(
     }
 
     private fun createGeometry(state: PolygonState): Geometry {
+        val geoPoints: List<GeoPoint> =
+            when (state.geodesic) {
+                true -> createInterpolatePoints(state.points)
+                false -> createLinearInterpolatePoints(state.points)
+            }
         val polygonBuilder =
             PolygonBuilder().also { builder ->
-                state.points.forEach {
+                geoPoints.forEach {
                     builder.addPoint(GeoPointImpl.from(it).toPoint())
                 }
             }
