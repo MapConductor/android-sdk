@@ -13,6 +13,9 @@ import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
@@ -48,6 +51,7 @@ class ArcGISPolygonOverlayRenderer(
             val graphic =
                 Graphic(geometry, fillSymbol).also {
                     it.attributes.set("id", state.id)
+                    it.attributes.set("zIndex", state.zIndex)
                 }
 
             polygonLayer.graphics.add(graphic)
@@ -83,12 +87,27 @@ class ArcGISPolygonOverlayRenderer(
                     }
                 }
             }
+            if (finger.zIndex != prevFinger.zIndex) {
+                current.polygon.attributes.set("zIndex", current.state.zIndex)
+            }
             polygon
         }
 
     override suspend fun removePolygon(entity: PolygonEntity<ArcGISActualPolygon>) {
         coroutine.launch {
             polygonLayer.graphics.remove(entity.polygon)
+        }
+    }
+
+    override suspend fun onPostProcess() {
+        // Sort graphics by zIndex to ensure correct rendering order
+        withContext(coroutine.coroutineContext) {
+            val sortedGraphics =
+                polygonLayer.graphics.toList().sortedBy { graphic ->
+                    (graphic.attributes.get("zIndex") as? Int) ?: 0
+                }
+            polygonLayer.graphics.clear()
+            polygonLayer.graphics.addAll(sortedGraphics)
         }
     }
 

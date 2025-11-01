@@ -37,7 +37,9 @@ class HerePolygonOverlayRenderer(
                 Color.valueOf(state.fillColor.toArgb()),
                 Color.valueOf(state.strokeColor.toArgb()),
                 lineWidth,
-            )
+            ).apply {
+                drawOrder = state.zIndex
+            }
         coroutine.launch {
             holder.map.addMapPolygon(mapPolygon)
         }
@@ -76,6 +78,9 @@ class HerePolygonOverlayRenderer(
                     Color.valueOf(
                         current.state.fillColor.toArgb(),
                     )
+            }
+            if (finger.zIndex != prevFinger.zIndex) {
+                current.polygon.drawOrder = current.state.zIndex
             }
             polygon
         }
