@@ -67,16 +67,16 @@ class MapLibreViewControllerImpl(
         style.addSource(polygonController.polylineOverlay.layer.source)
         style.addSource(polygonController.polygonOverlay.layer.source)
 
-        // Polyline (general) acts as anchor above polygons
+        // Circle cts as anchor above polygons
+        style.addSource(circleController.renderer.layer.source)
+        style.addLayer(circleController.renderer.layer.layer)
+
+        // Polyline (general) acts as anchor above circles
         style.addSource(polylineController.renderer.layer.source)
         style.addLayer(polylineController.renderer.layer.layer)
 
         // Add z-indexed polygon layers below general polylines
         ensurePolygonZLayers(style)
-
-        // Circle
-        style.addSource(circleController.renderer.layer.source)
-        style.addLayer(circleController.renderer.layer.layer)
 
         // Marker - add source and layer at the top
         style.addSource(markerController.renderer.markerLayer.source)
@@ -110,7 +110,6 @@ class MapLibreViewControllerImpl(
         registerController(polylineController)
         registerController(polygonController)
         registerController(circleController)
-//        registerController(circleController)
     }
 
     fun setupListeners() {
@@ -267,16 +266,6 @@ class MapLibreViewControllerImpl(
             return true
         }
 
-//        circleController.find(touchPosition)?.let { entity ->
-//            val event =
-//                CircleEvent(
-//                    state = entity.state,
-//                    clicked = touchPosition,
-//                )
-//            circleController.clickListener?.invoke(event)
-//            return true
-//        }
-//
         polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
             val event =
                 PolylineEvent(

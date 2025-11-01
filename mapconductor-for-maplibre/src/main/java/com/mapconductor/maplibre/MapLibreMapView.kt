@@ -245,7 +245,10 @@ internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleC
             circleManager = circleManager,
             holder = holder,
         )
-    return MapLibreCircleController(renderer = renderer)
+    return MapLibreCircleController(
+        renderer = renderer,
+        circleManager = circleManager,
+    )
 }
 
 internal fun Context.findActivity(): Activity? =
