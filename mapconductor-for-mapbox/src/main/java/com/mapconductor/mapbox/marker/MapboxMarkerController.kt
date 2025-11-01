@@ -31,6 +31,7 @@ class MapboxMarkerController(
                     markerManager.registerEntity(it)
                     renderer.redraw()
                 }
+                internalSelectedMarker = null
                 return
             }
             internalSelectedMarker = value
