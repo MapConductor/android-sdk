@@ -70,33 +70,34 @@ internal class MapboxMapViewControllerImpl(
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
 
     init {
-        holder.map.getStyle { style ->
-            // Polygon sources only (z-indexed layers added below)
-            style.addSource(polygonController.polylineOverlay.layer.source)
-            style.addSource(polygonController.polygonOverlay.layer.source)
-
-            // Circle
-            style.addSource(circleController.renderer.layer.source)
-            style.addLayer(circleController.renderer.layer.layer)
-
-            // Polyline (general)
-            style.addSource(polylineController.renderer.layer.source)
-            style.addLayer(polylineController.renderer.layer.layer)
-
-            // Add z-indexed polygon layers below general polylines
-            ensurePolygonZLayers(style)
-
-            // Marker
-            style.addSource(markerController.renderer.markerLayer.source)
-            style.addLayer(markerController.renderer.markerLayer.layer)
-            style.addSource(markerController.renderer.dragLayer.source)
-            style.addLayer(markerController.renderer.dragLayer.layer)
-        }
         setupListeners()
         registerController(markerController)
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+    }
+
+    private fun attachOverlaySourcesAndLayers(style: com.mapbox.maps.Style) {
+        // Polygon sources only (z-indexed layers added below)
+        style.addSource(polygonController.polylineOverlay.layer.source)
+        style.addSource(polygonController.polygonOverlay.layer.source)
+
+        // Circle
+        style.addSource(circleController.renderer.layer.source)
+        style.addLayer(circleController.renderer.layer.layer)
+
+        // Polyline (general)
+        style.addSource(polylineController.renderer.layer.source)
+        style.addLayer(polylineController.renderer.layer.layer)
+
+        // Add z-indexed polygon layers below general polylines
+        ensurePolygonZLayers(style)
+
+        // Marker + drag layers
+        style.addSource(markerController.renderer.markerLayer.source)
+        style.addLayer(markerController.renderer.markerLayer.layer)
+        style.addSource(markerController.renderer.dragLayer.source)
+        style.addLayer(markerController.renderer.dragLayer.layer)
     }
 
     fun setupListeners() {
@@ -321,7 +322,7 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun onMove(detector: MoveGestureDetector): Boolean {
-        markerController.renderer.dragLayer.selected?.let { entity ->
+        markerController.selectedMarker?.let { entity ->
 
             val screenCoordinate =
                 Offset(
@@ -410,9 +411,17 @@ internal class MapboxMapViewControllerImpl(
         mapLoadedCallback?.invoke()
         mapLoadedCallback = null
 
-        holder.map.style?.toMapDesignType()?.let { mapDesignType ->
-            this@MapboxMapViewControllerImpl.mapDesignType = mapDesignType
-            mapDesignTypeChangeListener?.invoke(mapDesignType)
+        holder.map.style?.let { style ->
+            // When style reloads, our runtime sources/layers/images are dropped.
+            // Reattach overlays and ensure marker images exist, then redraw.
+            attachOverlaySourcesAndLayers(style)
+            markerController.renderer.ensureStyleImages(style)
+            markerController.renderer.redraw()
+
+            style.toMapDesignType().let { mapDesign ->
+                this@MapboxMapViewControllerImpl.mapDesignType = mapDesign
+                mapDesignTypeChangeListener?.invoke(mapDesign)
+            }
         }
     }
 

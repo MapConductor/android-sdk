@@ -45,9 +45,6 @@ class MapboxViewStateImpl(
 
     internal fun setController(controller: MapboxMapViewController) {
         this.controller = controller
-        _mapDesignType?.let {
-            controller.setMapDesignType(it)
-        }
         controller.moveCamera(_cameraPosition.value)
     }
 
