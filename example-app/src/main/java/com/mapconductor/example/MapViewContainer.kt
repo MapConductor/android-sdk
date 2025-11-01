@@ -25,6 +25,9 @@ import com.mapconductor.here.HereViewStateImpl
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewStateImpl
+import com.mapconductor.maplibre.MapLibreActualMarker
+import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.MapLibreViewStateImpl
 
 @Composable
 fun MapViewContainer(
@@ -113,6 +116,26 @@ fun MapViewContainer(
             ArcGISMapView(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<ArcGISActualMarker>?,
+                state = state,
+                onMapViewInitialized = onMapViewInitialized,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
+                onMarkerDragStart = onMarkerDragStart,
+                onMarkerDrag = onMarkerDrag,
+                onMarkerDragEnd = onMarkerDragEnd,
+                onMarkerAnimateStart = onMarkerAnimateStart,
+                onMarkerAnimateEnd = onMarkerAnimateEnd,
+                onCircleClick = onCircleClick,
+                onPolylineClick = onPolylineClick,
+                onPolygonClick = onPolygonClick,
+                content = content,
+            )
+
+        is MapLibreViewStateImpl ->
+            MapLibreMapView(
+                modifier = modifier,
+                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapLibreActualMarker>?,
                 state = state,
                 onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,

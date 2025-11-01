@@ -42,6 +42,9 @@ import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateImpl
 import com.mapconductor.mapbox.rememberMapboxMapViewState
+import com.mapconductor.maplibre.MapLibreMapDesign
+import com.mapconductor.maplibre.MapLibreViewStateImpl
+import com.mapconductor.maplibre.rememberMapLibreMapViewState
 
 @Composable
 fun GetGoogleMapViewItem(initCameraPosition: MapCameraPosition): IconItem<GoogleMapViewStateImpl> {
@@ -111,6 +114,23 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMap
     )
 }
 
+
+@Composable
+fun GetMapLibreViewItem(initCameraPosition: MapCameraPosition): IconItem<MapLibreViewStateImpl> {
+    val mapLibreMapState =
+        rememberMapLibreMapViewState(
+            mapDesign = MapLibreMapDesign.DemoTiles,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "maplibre",
+        label = "MapLibre",
+        lightIconResId = R.drawable.maplibre_logo,
+        darkIconResId = R.drawable.maplibre_logo,
+        value = mapLibreMapState,
+    )
+}
+
 @Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
     listOf(
@@ -118,6 +138,7 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<ou
         GetMapboxViewItem(initCameraPosition),
         GetHereViewItem(initCameraPosition),
         GetArcGISViewItem(initCameraPosition),
+        GetMapLibreViewItem(initCameraPosition),
     )
 
 @Composable
@@ -126,15 +147,6 @@ fun GroundImageCapableMapViewItems(
 ): List<IconItem<out MapViewStateImpl<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
-    )
-
-@Composable
-fun PolygonCapableMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
-    listOf(
-        GetGoogleMapViewItem(initCameraPosition),
-        GetMapboxViewItem(initCameraPosition),
-        GetHereViewItem(initCameraPosition),
-        GetArcGISViewItem(initCameraPosition),
     )
 
 @Composable

@@ -170,6 +170,10 @@ dependencies {
     implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
+    // MapLibre SDK
+    implementation(libs.maplibre.sdk)
+    implementation(libs.maplibre.annotation)
+
     // Map Conductor
 //    implementation("com.mapconductor:core")
 //    implementation("com.mapconductor:icons")
@@ -189,6 +193,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.here)
     releaseImplementation(libs.mapconductor.mapbox)
     releaseImplementation(libs.mapconductor.arcgis)
+    releaseImplementation(libs.mapconductor.maplibre)
     releaseImplementation(libs.mapconductor.marker.strategy)
     releaseImplementation(libs.mapconductor.marker.native.strategy)
 
@@ -198,6 +203,7 @@ dependencies {
     debugImplementation(project(":mapconductor-for-here"))
     debugImplementation(project(":mapconductor-for-mapbox"))
     debugImplementation(project(":mapconductor-for-arcgis"))
+    debugImplementation(project(":mapconductor-for-maplibre"))
     debugImplementation(project(":mapconductor-marker-strategy"))
     debugImplementation(project(":mapconductor-marker-native-strategy"))
 
