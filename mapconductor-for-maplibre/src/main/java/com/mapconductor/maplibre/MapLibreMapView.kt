@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.mapconductor.core.circle.CircleManagerImpl
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
@@ -16,6 +18,9 @@ import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
 import com.mapconductor.maplibre.MapLibreActualPolygon
+import com.mapconductor.maplibre.circle.MapLibreCircleController
+import com.mapconductor.maplibre.circle.MapLibreCircleLayer
+import com.mapconductor.maplibre.circle.MapLibreCircleOverlayRenderer
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import com.mapconductor.maplibre.marker.MarkerDragLayer
@@ -51,6 +56,7 @@ fun MapLibreMapView(
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapLibreMapViewScope.() -> Unit)? = null,
 ) {
@@ -101,11 +107,13 @@ fun MapLibreMapView(
                 getPolygonController(
                     holder = holder,
                 )
+            val circleController = getCircleController(holder)
             MapLibreViewControllerImpl(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,
                 polygonController = polygonController,
+                circleController = circleController,
             ).also { controller ->
                 // Store controller reference in holder
                 (holder as? MapLibreMapViewHolderImpl)?.setController(controller)
@@ -119,6 +127,7 @@ fun MapLibreMapView(
                 controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
                 controller.setOnMarkerClickListener(onMarkerClick)
                 controller.setOnPolylineClickListener(onPolylineClick)
+                controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolygonClickListener(onPolygonClick)
                 state.setController(controller)
                 controller.setMapLoadedListener {
@@ -221,6 +230,22 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
         polygonOverlay = polygonOverlayRenderer,
         polylineOverlay = polylineOverlayRenderer,
     )
+}
+
+internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleController {
+    val circleLayer =
+        MapLibreCircleLayer(
+            sourceId = "circle-source",
+            layerId = "circle-layer",
+        )
+    val circleManager = CircleManagerImpl<MapLibreActualCircle>()
+    val renderer =
+        MapLibreCircleOverlayRenderer(
+            layer = circleLayer,
+            circleManager = circleManager,
+            holder = holder,
+        )
+    return MapLibreCircleController(renderer = renderer)
 }
 
 internal fun Context.findActivity(): Activity? =

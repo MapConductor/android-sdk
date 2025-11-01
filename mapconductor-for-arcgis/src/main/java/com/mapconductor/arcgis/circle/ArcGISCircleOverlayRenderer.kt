@@ -35,13 +35,21 @@ class ArcGISCircleOverlayRenderer(
                     ?.spatialReference
             val centerPoint = GeoPointImpl.from(state.center).toPoint(spec)
             val circleGeometry =
-                GeometryEngine.bufferGeodeticOrNull(
-                    geometry = centerPoint,
-                    distance = state.radiusMeters,
-                    distanceUnit = LinearUnit(LinearUnitId.Meters),
-                    maxDeviation = Double.NaN,
-                    curveType = GeodeticCurveType.NormalSection,
-                )
+                if (state.geodesic) {
+                    GeometryEngine.bufferGeodeticOrNull(
+                        geometry = centerPoint,
+                        distance = state.radiusMeters,
+                        distanceUnit = LinearUnit(LinearUnitId.Meters),
+                        maxDeviation = Double.NaN,
+                        curveType = GeodeticCurveType.NormalSection,
+                    )
+                } else {
+                    // Planar buffer in the map's spatial reference
+                    GeometryEngine.bufferOrNull(
+                        geometry = centerPoint,
+                        distance = state.radiusMeters,
+                    )
+                }
             val stroke =
                 SimpleLineSymbol(
                     style = SimpleLineSymbolStyle.Solid,
@@ -80,17 +88,26 @@ class ArcGISCircleOverlayRenderer(
             val prevFinger = prev.fingerPrint
             val graphic = current.circle
 
-            if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
+            if (finger.center != prevFinger.center ||
+                finger.radiusMeters != prevFinger.radiusMeters ||
+                finger.geodesic != prevFinger.geodesic
+            ) {
                 val centerPoint = GeoPointImpl.from(current.state.center).toPoint(spec)
-
                 val newGeometry =
-                    GeometryEngine.bufferGeodeticOrNull(
-                        geometry = centerPoint,
-                        distance = current.state.radiusMeters,
-                        distanceUnit = LinearUnit(LinearUnitId.Meters),
-                        maxDeviation = Double.NaN,
-                        curveType = GeodeticCurveType.NormalSection,
-                    )
+                    if (current.state.geodesic) {
+                        GeometryEngine.bufferGeodeticOrNull(
+                            geometry = centerPoint,
+                            distance = current.state.radiusMeters,
+                            distanceUnit = LinearUnit(LinearUnitId.Meters),
+                            maxDeviation = Double.NaN,
+                            curveType = GeodeticCurveType.NormalSection,
+                        )
+                    } else {
+                        GeometryEngine.bufferOrNull(
+                            geometry = centerPoint,
+                            distance = current.state.radiusMeters,
+                        )
+                    }
                 newGeometry?.let {
                     graphic.geometry = it
                 }

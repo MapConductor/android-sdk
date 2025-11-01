@@ -57,7 +57,10 @@ class HereCircleOverlayRenderer(
             val prevFinger = prev.fingerPrint
 
             // Update geometry if center or radius changed
-            if (finger.center != prevFinger.center || finger.radiusMeters != prevFinger.radiusMeters) {
+            if (finger.center != prevFinger.center ||
+                finger.radiusMeters != prevFinger.radiusMeters ||
+                finger.geodesic != prevFinger.geodesic
+            ) {
                 val geoCircle = createCirclePolygon(current.state)
                 current.circle.geometry = geoCircle
             }
@@ -101,25 +104,22 @@ class HereCircleOverlayRenderer(
      */
     private fun createCirclePolygon(state: CircleState): GeoPolygon {
         val center = GeoPointImpl.from(state.center).toGeoCoordinates()
-        // val radiusMeters = state.radiusMeters
-
-//        val points = mutableListOf<GeoCoordinates>()
-//
-//        // Generate points around the circle
-//        for (i in 0 until CIRCLE_POINT_COUNT) {
-//            val angle = 2.0 * PI * i / CIRCLE_POINT_COUNT
-//            val point = calculateCirclePoint(center, radiusMeters, angle)
-//            points.add(point)
-//        }
-//
-//        // Close the circle by adding the first point at the end
-//        if (points.isNotEmpty()) {
-//            points.add(points.first())
-//        }
-        val geoCircle = GeoCircle(center, state.radiusMeters)
-        val geoPolygon = GeoPolygon(geoCircle)
-
-        return geoPolygon
+        if (state.geodesic) {
+            // Native geodesic circle
+            val geoCircle = GeoCircle(center, state.radiusMeters)
+            return GeoPolygon(geoCircle)
+        } else {
+            // Approximate planar circle by sampling points
+            val segments = 128
+            val pts = ArrayList<GeoCoordinates>(segments + 1)
+            val twoPi = kotlin.math.PI * 2.0
+            for (i in 0 until segments) {
+                val angle = twoPi * i / segments
+                pts.add(calculateCirclePoint(center, state.radiusMeters, angle))
+            }
+            if (pts.isNotEmpty()) pts.add(pts.first())
+            return GeoPolygon(pts)
+        }
     }
 
     /**

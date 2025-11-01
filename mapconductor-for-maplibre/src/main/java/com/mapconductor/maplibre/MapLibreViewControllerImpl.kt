@@ -1,6 +1,9 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.circle.CircleEvent
+import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
@@ -15,6 +18,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
@@ -34,6 +38,7 @@ class MapLibreViewControllerImpl(
     private val markerController: MapLibreMarkerController,
     private val polylineController: MapLibrePolylineController,
     private val polygonController: MapLibrePolygonConductor,
+    private val circleController: MapLibreCircleController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -69,6 +74,10 @@ class MapLibreViewControllerImpl(
         // Add z-indexed polygon layers below general polylines
         ensurePolygonZLayers(style)
 
+        // Circle
+        style.addSource(circleController.renderer.layer.source)
+        style.addLayer(circleController.renderer.layer.layer)
+
         // Marker - add source and layer at the top
         style.addSource(markerController.renderer.markerLayer.source)
         style.addLayerAbove(
@@ -100,6 +109,7 @@ class MapLibreViewControllerImpl(
         registerController(markerController)
         registerController(polylineController)
         registerController(polygonController)
+        registerController(circleController)
 //        registerController(circleController)
     }
 
@@ -121,6 +131,7 @@ class MapLibreViewControllerImpl(
         markerController.clear()
         polylineController.clear()
         polygonController.clear()
+        circleController.clear()
     }
 
     override fun moveCamera(
@@ -190,6 +201,10 @@ class MapLibreViewControllerImpl(
         getStyleInstance()?.let { ensurePolygonZLayers(it) }
     }
 
+    override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
+
+    override suspend fun updateCircle(state: CircleState) = circleController.update(state)
+
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerController.dragStartListener = listener
     }
@@ -208,6 +223,10 @@ class MapLibreViewControllerImpl(
 
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         polygonController.clickListener = listener
+    }
+
+    override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
+        this.circleController.clickListener = listener
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
@@ -232,11 +251,19 @@ class MapLibreViewControllerImpl(
         this.polygonController.polygonOverlay.polygonManager
             .hasEntity(state.id)
 
+    override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
     override fun onMapClick(point: LatLng): Boolean {
         val touchPosition = point.toGeoPoint()
 
         markerController.find(touchPosition)?.let { entity ->
             markerController.clickListener?.invoke(entity.state)
+            return true
+        }
+
+        circleController.find(touchPosition)?.let { entity ->
+            val event = CircleEvent(state = entity.state, clicked = touchPosition)
+            circleController.clickListener?.invoke(event)
             return true
         }
 

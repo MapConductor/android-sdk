@@ -1,5 +1,6 @@
 package com.mapconductor.maplibre
 
+import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.polygon.PolygonCapable
@@ -9,7 +10,8 @@ interface MapLibreViewController :
     MapViewController,
     MarkerCapable,
     PolylineCapable,
-    PolygonCapable {
+    PolygonCapable,
+    CircleCapable {
     fun setMapDesignType(value: MapLibreMapDesignType)
 
     fun setMapDesignTypeChangeListener(listener: MapLibreDesignTypeChangeHandler)
