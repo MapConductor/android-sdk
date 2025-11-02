@@ -68,7 +68,10 @@ class MapboxMarkerOverlayRenderer(
                         val iconKey = icon.hashCode().toString()
                         // Recreate bitmap from icon definition
                         val bmp = icon.toBitmapIcon().bitmap
-                        try { style.addImage(iconKey, bmp) } catch (_: Exception) {}
+                        try {
+                            style.addImage(iconKey, bmp)
+                        } catch (_: Exception) {
+                        }
                     }
                 }
         } catch (_: Exception) {

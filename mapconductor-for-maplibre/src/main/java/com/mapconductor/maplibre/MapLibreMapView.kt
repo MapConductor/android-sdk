@@ -1,9 +1,11 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
@@ -63,6 +65,16 @@ fun MapLibreMapView(
     val context = LocalContext.current
     val scope = remember { MapLibreMapViewScope() }
     val registry = remember { scope.buildRegistry() }
+
+    // Set bitmap density to 1.0 for MapLibre since it auto-scales based on Bitmap.density
+    DisposableEffect(Unit) {
+        val previousDensity = ResourceProvider.getBitmapDensity()
+        ResourceProvider.setBitmapDensity(1.0f)
+        onDispose {
+            // Restore previous density when leaving MapLibre
+            ResourceProvider.setBitmapDensity(previousDensity)
+        }
+    }
 
     MapViewBase(
         state = state,

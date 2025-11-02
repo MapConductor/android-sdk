@@ -146,7 +146,9 @@ class MapLibreMarkerOverlayRenderer(
                         addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                         add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                     }
-                    addProperty(Prop.SCALE, it.state.icon?.scale ?: 1.0)
+                    // No additional scaling needed - bitmap is created with device density
+                    // and Bitmap.density is set to prevent MapLibre's automatic scaling
+                    addProperty(Prop.SCALE, 1.0)
                 }
             Feature.fromGeometry(position, properties, featureId)
         }
@@ -200,11 +202,9 @@ class MapLibreMarkerOverlayRenderer(
 
             val properties =
                 JsonObject().apply {
-                    addProperty(
-                        Prop.SCALE,
-                        params.current.state.icon
-                            ?.scale ?: 1.0f,
-                    )
+                    // No additional scaling needed - bitmap is created with device density
+                    // and Bitmap.density is set to prevent MapLibre's automatic scaling
+                    // addProperty(Prop.SCALE, 1.0)
                     if (currFinger.icon == prevFinger.icon) {
                         addProperty(
                             Prop.ICON_ID,

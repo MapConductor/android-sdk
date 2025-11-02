@@ -82,7 +82,7 @@ class ImageIcon(
             return it
         }
 
-        val scaledSize = ResourceProvider.dpToPx(iconSize.value) * scale
+        val scaledSize = ResourceProvider.dpToPxForBitmap(iconSize.value) * scale
 
         val bitmap =
             this.toBitmap(
@@ -90,6 +90,10 @@ class ImageIcon(
                 width = scaledSize.toInt(),
                 height = scaledSize.toInt(),
             )
+        // Set bitmap density based on override (e.g., 1.0 for MapLibre to prevent auto-scaling)
+        ResourceProvider.getBitmapDensity().let { density ->
+            bitmap.density = (density * android.util.DisplayMetrics.DENSITY_DEFAULT).toInt()
+        }
 
         val result =
             BitmapIcon(

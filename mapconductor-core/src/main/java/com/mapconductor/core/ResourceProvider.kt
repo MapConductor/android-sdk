@@ -20,6 +20,7 @@ data class IconResource(
 
 object ResourceProvider {
     private lateinit var appContext: Context
+    private var bitmapDensityOverride: Float? = null
 
     fun getDisplayMetrics(): DisplayMetrics = Resources.getSystem().displayMetrics
 
@@ -30,6 +31,22 @@ object ResourceProvider {
     }
 
     fun getDensity(): Float = getDisplayMetrics().density
+
+    /**
+     * Set the density used for bitmap creation. This is useful for map providers
+     * that automatically scale bitmaps based on their density property.
+     *
+     * @param density The density to use for bitmap creation, or null to use system density
+     */
+    fun setBitmapDensity(density: Float?) {
+        bitmapDensityOverride = density
+    }
+
+    /**
+     * Get the density to use for bitmap creation.
+     * Returns the override density if set, otherwise returns system density.
+     */
+    fun getBitmapDensity(): Float = bitmapDensityOverride ?: getDensity()
 
     fun dpToPx(dp: Float): Double = dpToPx(dp.toDouble())
 
@@ -42,6 +59,18 @@ object ResourceProvider {
                 dp.toFloat(),
                 getDisplayMetrics(),
             ).toDouble()
+
+    /**
+     * Convert dp to px using bitmap density instead of system density.
+     * This is used for creating bitmaps that will be used by map providers.
+     * Note: Always uses device density for bitmap pixel size, regardless of bitmapDensityOverride.
+     * The bitmapDensityOverride is used to set Bitmap.density property after creation.
+     */
+    fun dpToPxForBitmap(dp: Double): Double = dp * getDensity()
+
+    fun dpToPxForBitmap(dp: Float): Double = dpToPxForBitmap(dp.toDouble())
+
+    fun dpToPxForBitmap(dp: Dp): Double = dpToPxForBitmap(dp.value.toDouble())
 
     fun pxToSp(px: Double): Double {
         val displayMetrics = getDisplayMetrics()

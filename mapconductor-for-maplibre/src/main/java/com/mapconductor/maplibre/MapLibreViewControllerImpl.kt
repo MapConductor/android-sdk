@@ -370,38 +370,39 @@ class MapLibreViewControllerImpl(
     private fun installDragTouchInterceptor() {
         if (dragTouchInterceptor != null) return
         val view = holder.mapView
-        dragTouchInterceptor = View.OnTouchListener { _, event ->
-            val selected = markerController.selectedMarker ?: return@OnTouchListener false
-            when (event.actionMasked) {
-                MotionEvent.ACTION_MOVE -> {
-                    val pos = holder.fromScreenOffsetSync(Offset(event.x, event.y))
-                    if (pos != null) {
-                        selected.state.position = pos
-                        markerController.renderer.dragLayer.updatePosition(pos)
-                        markerController.renderer.drawDragLayer()
-                        markerController.dragListener?.invoke(selected.state)
+        dragTouchInterceptor =
+            View.OnTouchListener { _, event ->
+                val selected = markerController.selectedMarker ?: return@OnTouchListener false
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_MOVE -> {
+                        val pos = holder.fromScreenOffsetSync(Offset(event.x, event.y))
+                        if (pos != null) {
+                            selected.state.position = pos
+                            markerController.renderer.dragLayer.updatePosition(pos)
+                            markerController.renderer.drawDragLayer()
+                            markerController.dragListener?.invoke(selected.state)
+                        }
+                        true // consume to prevent map panning
                     }
-                    true // consume to prevent map panning
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val point = holder.map.projection.fromScreenLocation(PointF(event.x, event.y))
-                    markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
-                    markerController.selectedMarker = null
-                    markerController.dragEndListener?.invoke(selected.state)
-                    try {
-                        val ui = holder.map.uiSettings
-                        ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
-                    } catch (e: Exception) {
-                        android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
-                    } finally {
-                        wasScrollEnabledBeforeDrag = null
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        val point = holder.map.projection.fromScreenLocation(PointF(event.x, event.y))
+                        markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
+                        markerController.selectedMarker = null
+                        markerController.dragEndListener?.invoke(selected.state)
+                        try {
+                            val ui = holder.map.uiSettings
+                            ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
+                        } catch (e: Exception) {
+                            android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
+                        } finally {
+                            wasScrollEnabledBeforeDrag = null
+                        }
+                        removeDragTouchInterceptor()
+                        true
                     }
-                    removeDragTouchInterceptor()
-                    true
+                    else -> false
                 }
-                else -> false
             }
-        }
         view.setOnTouchListener(dragTouchInterceptor)
     }
 
