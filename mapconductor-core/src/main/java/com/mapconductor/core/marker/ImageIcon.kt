@@ -24,33 +24,24 @@ class ImageIcon(
     private fun getDrawableIdentity(): Any =
         when (drawable) {
             is BitmapDrawable -> {
-                drawable.bitmap?.let { bitmap ->
-                    if (bitmap.isRecycled) {
-                        drawable.hashCode()
-                    } else {
-                        try {
-                            // Sample a small portion for efficient hashing
-                            val sampleWidth = minOf(bitmap.width, 32)
-                            val sampleHeight = minOf(bitmap.height, 32)
-                            val buffer = IntArray(sampleWidth * sampleHeight)
-                            bitmap.getPixels(
-                                buffer,
-                                0,
-                                sampleWidth,
-                                0,
-                                0,
-                                sampleWidth,
-                                sampleHeight,
-                            )
-                            buffer.contentHashCode()
-                        } catch (e: Exception) {
-                            drawable.hashCode()
-                        }
+                val bmp = drawable.bitmap
+                if (bmp == null || bmp.isRecycled) {
+                    "BMP_NULL_${drawable.hashCode()}"
+                } else {
+                    try {
+                        val w = bmp.width
+                        val h = bmp.height
+                        val buffer = IntArray(w * h)
+                        bmp.getPixels(buffer, 0, w, 0, 0, w, h)
+                        // Combine dimensions and content for stability
+                        "BMP_${w}x${h}_${buffer.contentHashCode()}"
+                    } catch (e: Exception) {
+                        "BMP_ERR_${drawable.hashCode()}"
                     }
-                } ?: drawable.hashCode()
+                }
             }
-            is ColorDrawable -> drawable.color
-            is GradientDrawable -> drawable.hashCode()
+            is ColorDrawable -> "COLOR_${drawable.color}"
+            is GradientDrawable -> "GRADIENT_${drawable.hashCode()}"
             else -> "${drawable::class.java.name}_${drawable.hashCode()}"
         }
 
