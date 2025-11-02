@@ -17,7 +17,6 @@ import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -39,7 +38,6 @@ fun GoogleMapsView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -125,14 +123,11 @@ fun GoogleMapsView(
                 controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
                 controller.setOnGroundImageClickListener(onGroundImageClick)
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
-                controller.setMapLoadedListener {
-                    onMapLoaded?.invoke(state)
-                }
             }
         },
         scope = scope,
         registry = registry,
-        onMapViewInitialized = onMapViewInitialized,
+        onMapLoaded = onMapLoaded,
         customDisposableEffect = { initState, holderRef ->
             // Specific Google Maps DisposableEffect logic
             val lifecycle = LocalLifecycleOwner.current.lifecycle // Get lifecycle here

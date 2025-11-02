@@ -11,7 +11,6 @@ import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -56,7 +55,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -77,7 +75,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<HereActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -97,7 +94,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapboxActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -137,7 +133,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapLibreActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,

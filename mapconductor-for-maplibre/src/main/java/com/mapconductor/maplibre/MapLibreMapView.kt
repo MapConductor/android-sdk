@@ -1,17 +1,14 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -48,7 +45,6 @@ fun MapLibreMapView(
     state: MapLibreViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -132,9 +128,6 @@ fun MapLibreMapView(
                 controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolygonClickListener(onPolygonClick)
                 state.setController(controller)
-                controller.setMapLoadedListener {
-                    onMapLoaded?.invoke(state)
-                }
             }
         },
         sdkInitialize = {

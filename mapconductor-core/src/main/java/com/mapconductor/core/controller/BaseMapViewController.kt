@@ -22,15 +22,11 @@ abstract class BaseMapViewController : MapViewController {
     }
 
     override fun setMapLongClickListener(listener: OnMapEventHandler?) {
-        this.mapClickCallback = listener
+        this.mapLongClickCallback = listener
     }
 
     protected fun registerController(controller: OverlayController<*, *, *>) {
         overlayControllers.add(controller)
-    }
-
-    fun setMapLoadedListener(listener: InternalOnMapLoadedHandler?) {
-        this.mapLoadedCallback = listener
     }
 
     protected suspend fun notifyMapCameraPosition(mapCameraPosition: MapCameraPositionImpl) {

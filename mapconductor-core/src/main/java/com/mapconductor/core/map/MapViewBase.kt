@@ -57,7 +57,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-typealias OnMapViewInitializedHandler = (MapViewState<*>) -> Unit
 typealias OnMapLoadedHandler = (MapViewState<*>) -> Unit
 internal typealias InternalOnMapLoadedHandler = () -> Unit
 typealias OnMapEventHandler = (GeoPointImpl) -> Unit
@@ -86,7 +85,7 @@ fun <
     sdkInitialize: suspend () -> Boolean = { true },
     holderProvider: suspend (mapView: ActualMapView) -> SpecificHolder,
     controllerProvider: suspend (holder: SpecificHolder) -> SpecificController,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
     customDisposableEffect: (@Composable (InitState, Ref<SpecificHolder>) -> Unit)? = null,
     content: (@Composable SpecificScope.() -> Unit)? = null,
 ) {

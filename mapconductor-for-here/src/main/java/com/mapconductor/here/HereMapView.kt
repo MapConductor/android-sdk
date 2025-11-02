@@ -18,7 +18,6 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -39,7 +38,6 @@ fun HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -108,9 +106,6 @@ fun HereMapView(
             controller.setOnPolygonClickListener(onPolygonClick)
             state.setController(controller)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
-            controller.setMapLoadedListener {
-                onMapLoaded?.invoke(state)
-            }
 
             controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
                 if (mapError != null) {
@@ -135,7 +130,7 @@ fun HereMapView(
         },
         scope = scope,
         registry = registry,
-        onMapViewInitialized = onMapViewInitialized,
+        onMapLoaded = onMapLoaded,
         customDisposableEffect = { initState, holderRef ->
 
             // HERE specific DisposableEffect logic
