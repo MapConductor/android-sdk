@@ -305,7 +305,7 @@ fun <
             holderRef.value = holder
             controllerRef.value = controllerProvider(holder)
             initState = InitState.MapCreated
-            onMapViewInitialized?.invoke(state)
+            onMapLoaded?.invoke(state)
         }
     }
 
