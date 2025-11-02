@@ -44,28 +44,23 @@ open class MarkerLayer(
     ) {
         val visibleEntities = entities.filter { it.visible && it.marker != null }
         val features = visibleEntities.mapNotNull { it.marker }
+        val collection = FeatureCollection.fromFeatures(features)
 
-        // Try to get the source from the style (wrapped in try-catch in case style is being replaced)
-        val sourceFromStyle =
-            try {
-                style.getSource(sourceId)
-            } catch (e: IllegalStateException) {
-                android.util.Log.w("MapLibre", "Cannot get source, style is being replaced: ${e.message}")
-                null
+        try {
+            // Always update the source attached to the current style
+            var styleSource = style.getSourceAs<GeoJsonSource>(sourceId)
+            if (styleSource == null) {
+                // Source might not be attached yet (e.g., after style reload). Try to attach ours.
+                try {
+                    style.addSource(source)
+                } catch (_: Exception) {
+                    // ignore if already added or style busy
+                }
+                styleSource = style.getSourceAs(sourceId)
             }
-
-        if (sourceFromStyle is GeoJsonSource) {
-            try {
-                sourceFromStyle.setGeoJson(FeatureCollection.fromFeatures(features))
-            } catch (e: IllegalStateException) {
-                android.util.Log.w("MapLibre", "Cannot update source, style is being replaced: ${e.message}")
-                // Fallback to original source instance
-                source.setGeoJson(FeatureCollection.fromFeatures(features))
-            }
-        } else {
-            android.util.Log.w("MapLibre", "Could not get source from style! Using original source instance")
-            // Fallback to original method
-            source.setGeoJson(FeatureCollection.fromFeatures(features))
+            styleSource?.setGeoJson(collection)
+        } catch (e: Exception) {
+            android.util.Log.w("MapLibre", "Failed to update marker source: ${e.message}")
         }
     }
 }
