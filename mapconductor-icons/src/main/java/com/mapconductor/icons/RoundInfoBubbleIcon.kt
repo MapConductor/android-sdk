@@ -30,6 +30,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
+import android.util.DisplayMetrics
 
 class RoundInfoBubbleIcon(
     private val properties: IconProperties,
@@ -120,6 +121,10 @@ class RoundInfoBubbleIcon(
                 Bitmap.Config.ARGB_8888,
             )
         val canvas = Canvas(bitmap)
+        // Set bitmap density to control map provider scaling
+        ResourceProvider.getBitmapDensity().let { density ->
+            bitmap.density = (density * DisplayMetrics.DENSITY_DEFAULT).toInt()
+        }
 
         if (this.debug) {
             Paint()

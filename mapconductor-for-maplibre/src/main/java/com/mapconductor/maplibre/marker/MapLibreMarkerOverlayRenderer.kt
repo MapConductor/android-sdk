@@ -181,9 +181,7 @@ class MapLibreMarkerOverlayRenderer(
         // Get style from controller to use the same instance
         val style = holder.getController()?.getStyleInstance() ?: holder.map.style
 
-        style?.let {
-            markerLayer.draw(entities, it)
-        }
+        style?.let { markerLayer.draw(entities, it) }
     }
 
     override suspend fun onPostProcess() {

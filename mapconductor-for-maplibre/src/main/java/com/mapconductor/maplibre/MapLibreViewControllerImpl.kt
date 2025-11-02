@@ -87,6 +87,8 @@ class MapLibreViewControllerImpl(
             markerController.renderer.markerLayer.layer,
             polylineController.renderer.layer.layerId,
         )
+        // Normalize icon-size on the actual style instance
+        markerController.renderer.redraw()
 
         // Drag layer above marker layer
         style.addSource(markerController.renderer.dragLayer.source)
@@ -94,6 +96,7 @@ class MapLibreViewControllerImpl(
             markerController.renderer.dragLayer.layer,
             markerController.renderer.markerLayer.layerId,
         )
+        markerController.renderer.redraw()
 
         // Force redraw after adding layers
         markerController.renderer.redraw()

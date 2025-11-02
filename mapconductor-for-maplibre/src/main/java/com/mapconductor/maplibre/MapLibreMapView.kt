@@ -66,16 +66,6 @@ fun MapLibreMapView(
     val scope = remember { MapLibreMapViewScope() }
     val registry = remember { scope.buildRegistry() }
 
-    // Set bitmap density to 1.0 for MapLibre since it auto-scales based on Bitmap.density
-    DisposableEffect(Unit) {
-        val previousDensity = ResourceProvider.getBitmapDensity()
-        ResourceProvider.setBitmapDensity(1.0f)
-        onDispose {
-            // Restore previous density when leaving MapLibre
-            ResourceProvider.setBitmapDensity(previousDensity)
-        }
-    }
-
     MapViewBase(
         state = state,
         modifier = modifier,

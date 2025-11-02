@@ -17,7 +17,9 @@
       "WebFetch(domain:github.com)",
       "Bash(grep:*)",
       "Bash(rm:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//Users/masashi/.gradle/caches/**)",
+      "Bash(xargs jar tf:*)"
     ],
     "deny": [],
     "ask": []
