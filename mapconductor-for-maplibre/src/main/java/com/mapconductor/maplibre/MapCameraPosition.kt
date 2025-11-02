@@ -4,14 +4,15 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import org.maplibre.android.camera.CameraPosition
+import kotlin.math.max
 
-internal const val MAPLIBRE_CAMERA_ZOOM_ADJUST_VALUE = 0.0
+internal const val MAPLIBRE_CAMERA_ZOOM_ADJUST_VALUE = 1.0
 
 fun MapCameraPositionImpl.toCameraPosition(): CameraPosition =
     CameraPosition
         .Builder()
         .target(GeoPointImpl.from(position).toLatLng())
-        .zoom(zoom)
+        .zoom(max(zoom - MAPLIBRE_CAMERA_ZOOM_ADJUST_VALUE, 0.0))
         .tilt(tilt)
         .bearing(bearing)
         // TODO:
