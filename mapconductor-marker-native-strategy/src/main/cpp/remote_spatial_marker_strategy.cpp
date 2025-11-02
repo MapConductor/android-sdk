@@ -116,23 +116,30 @@ bool RemoteSpatialMarkerStrategy::addMarkers(const std::vector<MarkerDataDTO>& m
 bool RemoteSpatialMarkerStrategy::updateMarker(const MarkerDataDTO& markerDTO) {
     try {
         std::unique_lock<std::mutex> lock(markersMutex);
-        
+
         auto it = allMarkers.find(markerDTO.id);
         if (it != allMarkers.end()) {
             // Update marker data
             it->second = markerDTO;
-            
+
             // Update in spatial index
             if (spatialIndex) {
                 GeoPoint position(markerDTO.latitude, markerDTO.longitude);
                 spatialIndex->updateMarker(markerDTO.id, position, markerDTO.clickable);
             }
-            
+
             stats.totalMarkersProcessed++;
             return true;
         } else {
-            LOGE("Marker not found for update: %s", markerDTO.id.c_str());
-            return false;
+            // Upsert behavior: add if not exists (aligns with non-native logic)
+            allMarkers[markerDTO.id] = markerDTO;
+            if (spatialIndex) {
+                GeoPoint position(markerDTO.latitude, markerDTO.longitude);
+                spatialIndex->registerMarker(markerDTO.id, position, markerDTO.clickable);
+            }
+            stats.currentMarkerCount.store(allMarkers.size());
+            stats.totalMarkersProcessed++;
+            return true;
         }
     } catch (const std::exception& e) {
         LOGE("Failed to update marker %s: %s", markerDTO.id.c_str(), e.what());
