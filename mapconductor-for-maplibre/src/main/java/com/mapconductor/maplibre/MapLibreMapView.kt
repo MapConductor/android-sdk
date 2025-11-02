@@ -16,7 +16,6 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManagerImpl
-import com.mapconductor.maplibre.MapLibreActualPolygon
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.circle.MapLibreCircleLayer
 import com.mapconductor.maplibre.circle.MapLibreCircleOverlayRenderer
@@ -79,7 +78,7 @@ fun MapLibreMapView(
         },
         scope = scope,
         registry = registry,
-        onMapViewInitialized = onMapViewInitialized,
+        onMapLoaded = onMapLoaded,
         holderProvider = { mapView ->
             suspendCancellableCoroutine { continuation ->
                 mapView.getMapAsync { map ->
@@ -106,6 +105,13 @@ fun MapLibreMapView(
                     holder = holder,
                 )
             val circleController = getCircleController(holder)
+
+            val initCamera = state.cameraPosition.value
+            markerController.onCameraChanged(initCamera)
+            circleController.onCameraChanged(initCamera)
+            polylineController.onCameraChanged(initCamera)
+            polygonController.onCameraChanged(initCamera)
+
             MapLibreViewControllerImpl(
                 holder = holder,
                 markerController = markerController,

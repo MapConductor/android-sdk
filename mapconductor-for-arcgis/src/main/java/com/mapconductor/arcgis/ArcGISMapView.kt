@@ -120,16 +120,28 @@ fun ArcGISMapView(
             }
         },
         controllerProvider = { holder ->
+
+            val markerController =
+                getMarkerController(
+                    holder = holder,
+                    renderingStrategy = markerRenderingStrategy,
+                )
+            val polylineController = getPolylineController(holder)
+            val polygonController = getPolygonController(holder)
+            val circleController = getCircleController(holder)
+
+            val initCamera = state.cameraPosition.value
+            markerController.onCameraChanged(initCamera)
+            circleController.onCameraChanged(initCamera)
+            polylineController.onCameraChanged(initCamera)
+            polygonController.onCameraChanged(initCamera)
+
             ArcGISMapViewControllerImpl(
                 holder = holder,
-                markerController =
-                    getMarkerController(
-                        holder = holder,
-                        renderingStrategy = markerRenderingStrategy,
-                    ),
-                polylineController = getPolylineController(holder),
-                polygonController = getPolygonController(holder),
-                circleController = getCircleController(holder),
+                markerController = markerController,
+                polylineController = polylineController,
+                polygonController = polygonController,
+                circleController = circleController,
             ).also { controller ->
                 controller.setCameraMoveListener(state::onCameraChange)
                 controller.setMapClickListener(onMapClick)

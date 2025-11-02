@@ -101,6 +101,12 @@ fun GoogleMapsView(
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
 
+            val initCamera = state.cameraPosition.value
+            markerController.onCameraChanged(initCamera)
+            circleController.onCameraChanged(initCamera)
+            polylineController.onCameraChanged(initCamera)
+            polygonController.onCameraChanged(initCamera)
+
             GoogleMapViewControllerImpl(
                 markerController = markerController,
                 groundImageController = groundImageController,

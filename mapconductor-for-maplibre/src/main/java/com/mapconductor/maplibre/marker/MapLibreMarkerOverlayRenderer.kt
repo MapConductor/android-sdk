@@ -19,6 +19,7 @@ import org.maplibre.geojson.FeatureCollection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MapLibreMarkerOverlayRenderer(
     holder: MapLibreMapViewHolder,
@@ -116,15 +117,14 @@ class MapLibreMarkerOverlayRenderer(
             return emptyList()
         }
 
-        data.forEach {
-            it.state.icon?.let { icon ->
-                val iconKey =
-                    icon
-                        .hashCode()
-                        .toString()
-                if (!iconRefCounter.contains(iconKey)) {
-                    style.addImage(iconKey, it.bitmapIcon.bitmap)
-                    iconRefCounter[iconKey] = 0
+        withContext(Dispatchers.Main) {
+            data.forEach {
+                it.state.icon?.let { icon ->
+                    val iconKey = icon.hashCode().toString()
+                    if (!iconRefCounter.contains(iconKey)) {
+                        style.addImage(iconKey, it.bitmapIcon.bitmap, false)
+                        iconRefCounter[iconKey] = 0
+                    }
                 }
             }
         }
@@ -179,8 +179,11 @@ class MapLibreMarkerOverlayRenderer(
         val entities = markerManager.allEntities()
         // Get style from controller to use the same instance
         val style = holder.getController()?.getStyleInstance() ?: holder.map.style
-
-        style?.let { markerLayer.draw(entities, it) }
+        style?.let { s ->
+            coroutine.launch {
+                markerLayer.draw(entities, s)
+            }
+        }
     }
 
     override suspend fun onPostProcess() {
@@ -217,7 +220,7 @@ class MapLibreMarkerOverlayRenderer(
                         val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
                         if (cnt == 0) {
                             iconRefCounter.remove(iconKey)
-                            holder.map.style?.removeImage(iconKey)
+                            coroutine.launch { holder.map.style?.removeImage(iconKey) }
                         } else {
                             iconRefCounter[iconKey] = cnt
                         }
@@ -232,7 +235,9 @@ class MapLibreMarkerOverlayRenderer(
                                 if (iconRefCounter.contains(iconKey)) {
                                     iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
                                 } else {
-                                    holder.map.style?.addImage(iconKey, params.bitmapIcon.bitmap)
+                                    coroutine.launch {
+                                        holder.map.style?.addImage(iconKey, params.bitmapIcon.bitmap, false)
+                                    }
                                     iconRefCounter[iconKey] = 1
                                 }
                                 addProperty(Prop.ICON_ID, iconKey)

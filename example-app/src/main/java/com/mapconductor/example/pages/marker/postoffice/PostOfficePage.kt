@@ -19,9 +19,11 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.marker.nativestrategy.NativeParallelMarkerStrategy
 import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
 import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 
 @Composable
 fun PostOfficeMapPage(
@@ -32,16 +34,17 @@ fun PostOfficeMapPage(
     val dataLoader = remember { PostOfficeDataLoader(context) }
     val strategies =
         remember {
-            val google = NativeRemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
-//            val google = NativeParallelMarkerStrategy<GoogleMapActualMarker>()
-            val mapbox = NativeParallelMarkerStrategy<MapboxActualMarker>()
-            val here = NativeParallelMarkerStrategy<HereActualMarker>()
-            val arcgis = NativeSpatialMarkerRenderingStrategy<ArcGISActualMarker>()
+            val google = RemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
+            val mapbox = RemoteSpatialMarkerStrategy<MapboxActualMarker>(context)
+            val here = RemoteSpatialMarkerStrategy<HereActualMarker>(context)
+            val arcgis = RemoteSpatialMarkerStrategy<ArcGISActualMarker>(context)
+            val maplibre = RemoteSpatialMarkerStrategy<MapLibreActualMarker>(context)
             Strategies(
                 google = google,
                 mapbox = mapbox,
                 here = here,
                 arcgis = arcgis,
+                maplibre = maplibre,
             )
         }
 
@@ -75,6 +78,7 @@ fun PostOfficeMapPage(
 
         DemoMapPageScaffold(
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
+            initSelect = 4,
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = viewModel::onMapViewChanged,
         ) {

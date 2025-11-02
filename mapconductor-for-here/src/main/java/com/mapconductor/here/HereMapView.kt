@@ -81,17 +81,28 @@ fun HereMapView(
             HereViewHolderImpl(mapView, mapView.mapScene)
         },
         controllerProvider = { holder ->
+            val markerController =
+                getMarkerController(
+                    holder = holder,
+                    renderingStrategy = markerRenderingStrategy,
+                )
+            val polylineController = getPolylineController(holder)
+            val polygonController = getPolygonController(holder)
+            val circleController = getHereCircleController(holder)
+
+            val initCamera = state.cameraPosition.value
+            markerController.onCameraChanged(initCamera)
+            circleController.onCameraChanged(initCamera)
+            polylineController.onCameraChanged(initCamera)
+            polygonController.onCameraChanged(initCamera)
+
             val controller =
                 HereMapViewControllerImpl(
                     holder = holder,
-                    markerController =
-                        getMarkerController(
-                            holder = holder,
-                            renderingStrategy = markerRenderingStrategy,
-                        ),
-                    polylineController = getPolylineController(holder),
-                    polygonController = getPolygonController(holder),
-                    circleController = getHereCircleController(holder),
+                    markerController = markerController,
+                    polylineController = polylineController,
+                    polygonController = polygonController,
+                    circleController = circleController,
                 )
             controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)

@@ -15,6 +15,8 @@ import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxViewState
+import com.mapconductor.maplibre.MapLibreActualMarker
+import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +54,7 @@ data class Strategies(
     val mapbox: MarkerRenderingStrategy<MapboxActualMarker>,
     val here: MarkerRenderingStrategy<HereActualMarker>,
     val arcgis: MarkerRenderingStrategy<ArcGISActualMarker>,
+    val maplibre: MarkerRenderingStrategy<MapLibreActualMarker>,
 )
 
 class PostOfficeViewModelImpl(
@@ -90,10 +93,9 @@ class PostOfficeViewModelImpl(
     override val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?> = _renderingStrategy.asStateFlow()
 
     override fun loadPostOfficeData() {
-        if (_markerList.value.isNotEmpty()) return
         coroutine.launch {
             // Wait until map tiles are rendered.
-            delay(2500)
+            delay(1000)
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
@@ -139,15 +141,17 @@ class PostOfficeViewModelImpl(
         renderingStrategy.value?.clear()
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
+        _isMapLoaded.value = false
+        _markerList.value = emptyList()
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState -> strategies.google
                 is MapboxViewState -> strategies.mapbox
                 is HereViewState -> strategies.here
                 is ArcGISMapViewState -> strategies.arcgis
+                is MapLibreViewState -> strategies.maplibre
                 else -> SimpleMarkerStrategy<Any>()
             } as MarkerRenderingStrategy<Any>?
-        _isMapLoaded.value = false
     }
 
     override fun onCleared() {
