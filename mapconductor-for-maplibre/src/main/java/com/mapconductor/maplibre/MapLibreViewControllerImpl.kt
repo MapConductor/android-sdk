@@ -83,19 +83,27 @@ class MapLibreViewControllerImpl(
 
         // Marker - add source and layer at the top
         style.addSource(markerController.renderer.markerLayer.source)
-        style.addLayerAbove(
-            markerController.renderer.markerLayer.layer,
-            polylineController.renderer.layer.layerId,
-        )
-        // Normalize icon-size on the actual style instance
+        try {
+            style.addLayerAbove(
+                markerController.renderer.markerLayer.layer,
+                polylineController.renderer.layer.layerId,
+            )
+        } catch (_: Exception) {
+            // Fallback when anchor layer is not present yet
+            style.addLayer(markerController.renderer.markerLayer.layer)
+        }
         markerController.renderer.redraw()
 
         // Drag layer above marker layer
         style.addSource(markerController.renderer.dragLayer.source)
-        style.addLayerAbove(
-            markerController.renderer.dragLayer.layer,
-            markerController.renderer.markerLayer.layerId,
-        )
+        try {
+            style.addLayerAbove(
+                markerController.renderer.dragLayer.layer,
+                markerController.renderer.markerLayer.layerId,
+            )
+        } catch (_: Exception) {
+            style.addLayer(markerController.renderer.dragLayer.layer)
+        }
         markerController.renderer.redraw()
 
         // Force redraw after adding layers
