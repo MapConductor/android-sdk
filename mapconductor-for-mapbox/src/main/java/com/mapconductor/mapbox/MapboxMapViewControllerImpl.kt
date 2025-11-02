@@ -418,6 +418,9 @@ internal class MapboxMapViewControllerImpl(
             markerController.renderer.ensureStyleImages(style)
             markerController.renderer.redraw()
 
+            // After style is ready, trigger an initial camera update
+            sendInitialCameraUpdate()
+
             style.toMapDesignType().let { mapDesign ->
                 this@MapboxMapViewControllerImpl.mapDesignType = mapDesign
                 mapDesignTypeChangeListener?.invoke(mapDesign)
@@ -513,5 +516,31 @@ internal class MapboxMapViewControllerImpl(
         // Update tracked set
         polygonZLayers.clear()
         polygonZLayers.addAll(zSet)
+    }
+
+    // Trigger an initial camera update after the view and style are ready
+    fun sendInitialCameraUpdate() {
+        coroutine.launch {
+            val mapWidth = holder.mapView.width.toFloat()
+            val mapHeight = holder.mapView.height.toFloat()
+            if (mapWidth <= 0 || mapHeight <= 0) return@launch
+
+            val camera = holder.map.cameraState.toMapCameraPosition()
+            val nearLeft = holder.fromScreenOffsetSync(Offset(0f, mapHeight)) ?: return@launch
+            val nearRight = holder.fromScreenOffsetSync(Offset(mapWidth, mapHeight)) ?: return@launch
+            val farLeft = holder.fromScreenOffsetSync(Offset(0f, 0f)) ?: return@launch
+            val farRight = holder.fromScreenOffsetSync(Offset(mapWidth, 0f)) ?: return@launch
+
+            val bounds = GeoRectBounds()
+            bounds.extend(nearLeft)
+            bounds.extend(nearRight)
+            bounds.extend(farLeft)
+            bounds.extend(farRight)
+
+            val visibleRegion = VisibleRegion(bounds, nearLeft, nearRight, farLeft, farRight)
+            val mapCameraPosition = camera.copy(visibleRegion = visibleRegion)
+
+            backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
+        }
     }
 }

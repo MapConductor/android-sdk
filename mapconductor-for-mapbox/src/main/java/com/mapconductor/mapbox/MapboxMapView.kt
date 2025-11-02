@@ -99,11 +99,7 @@ fun MapboxMapView(
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
 
-            val initCamera = state.cameraPosition.value
-            markerController.onCameraChanged(initCamera)
-            circleController.onCameraChanged(initCamera)
-            polylineController.onCameraChanged(initCamera)
-            polygonController.onCameraChanged(initCamera)
+            // Defer initial camera update until after controller is created and view is laid out
 
             MapboxMapViewControllerImpl(
                 holder = holder,
@@ -128,6 +124,9 @@ fun MapboxMapView(
 
                 holderRef.value = holder
                 controllerRef.value = controller
+
+                // Post an initial camera update once the MapView is laid out and style is ready
+                holder.mapView.post { controller.sendInitialCameraUpdate() }
             }
         },
         scope = scope,

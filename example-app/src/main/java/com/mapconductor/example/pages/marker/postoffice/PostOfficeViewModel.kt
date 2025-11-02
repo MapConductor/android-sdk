@@ -19,6 +19,7 @@ import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,6 +34,7 @@ interface PostOfficeViewModel {
     val markerList: StateFlow<List<MarkerState>>
     val mapViewState: StateFlow<MapViewState<*>?>
     val isMapLoaded: StateFlow<Boolean>
+    val isDataLoading: StateFlow<Boolean>
 
     val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?>
 
@@ -82,6 +84,9 @@ class PostOfficeViewModelImpl(
     private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()
 
+    private val _isDataLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isDataLoading: StateFlow<Boolean> = _isDataLoading.asStateFlow()
+
     private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
@@ -94,9 +99,9 @@ class PostOfficeViewModelImpl(
 
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
+
         coroutine.launch {
-            // Wait until map tiles are rendered.
-            delay(1000)
+            _isDataLoading.value = true
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
@@ -109,6 +114,14 @@ class PostOfficeViewModelImpl(
                     )
                 }
             _markerList.value = markerStates
+            _isDataLoading.value = false
+        }
+    }
+
+    // Convenience: in case of error paths, ensure the dialog is hidden
+    private fun markLoadingFinished() {
+        if (_isDataLoading.value) {
+            _isDataLoading.value = false
         }
     }
 

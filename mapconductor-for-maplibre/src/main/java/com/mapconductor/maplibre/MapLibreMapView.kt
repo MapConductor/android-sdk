@@ -106,11 +106,7 @@ fun MapLibreMapView(
                 )
             val circleController = getCircleController(holder)
 
-            val initCamera = state.cameraPosition.value
-            markerController.onCameraChanged(initCamera)
-            circleController.onCameraChanged(initCamera)
-            polylineController.onCameraChanged(initCamera)
-            polygonController.onCameraChanged(initCamera)
+            // Defer initial camera update until controller is created and view is laid out
 
             MapLibreViewControllerImpl(
                 holder = holder,
@@ -134,6 +130,8 @@ fun MapLibreMapView(
                 controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolygonClickListener(onPolygonClick)
                 state.setController(controller)
+                // Post an initial camera update after layout to compute visibleRegion correctly
+                holder.mapView.post { controller.sendInitialCameraUpdate() }
             }
         },
         sdkInitialize = {

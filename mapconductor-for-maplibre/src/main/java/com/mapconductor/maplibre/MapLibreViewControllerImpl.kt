@@ -117,6 +117,8 @@ class MapLibreViewControllerImpl(
         val style = holder.map.style
         if (style != null) {
             setupStyle(style)
+            // Trigger initial camera update after style is ready
+            sendInitialCameraUpdate()
         }
 
         setupListeners()
@@ -574,5 +576,19 @@ class MapLibreViewControllerImpl(
         }
         polygonZLayers.clear()
         polygonZLayers.addAll(zSet)
+    }
+
+    // Trigger an initial camera update after the view and style are ready
+    fun sendInitialCameraUpdate() {
+        coroutine.launch {
+            val mapWidth = holder.mapView.width.toFloat()
+            val mapHeight = holder.mapView.height.toFloat()
+            if (mapWidth <= 0 || mapHeight <= 0) return@launch
+
+            val camera = holder.map.cameraPosition.toMapCameraPosition()
+            getMapCameraPosition(camera)?.let { mapCameraPosition ->
+                backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
+            }
+        }
     }
 }
