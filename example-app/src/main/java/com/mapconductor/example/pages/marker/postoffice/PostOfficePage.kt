@@ -34,11 +34,17 @@ fun PostOfficeMapPage(
     val dataLoader = remember { PostOfficeDataLoader(context) }
     val strategies =
         remember {
-            val google = RemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
-            val mapbox = RemoteSpatialMarkerStrategy<MapboxActualMarker>(context)
-            val here = RemoteSpatialMarkerStrategy<HereActualMarker>(context)
-            val arcgis = RemoteSpatialMarkerStrategy<ArcGISActualMarker>(context)
-            val maplibre = RemoteSpatialMarkerStrategy<MapLibreActualMarker>(context)
+            val google = NativeRemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
+            val mapbox = NativeRemoteSpatialMarkerStrategy<MapboxActualMarker>(
+                context = context,
+                addOnlyMode = true,
+            )
+            val here = NativeRemoteSpatialMarkerStrategy<HereActualMarker>(context)
+            val arcgis = NativeRemoteSpatialMarkerStrategy<ArcGISActualMarker>(context)
+            val maplibre = NativeRemoteSpatialMarkerStrategy<MapLibreActualMarker>(
+                context = context,
+                addOnlyMode = true,
+            )
             Strategies(
                 google = google,
                 mapbox = mapbox,

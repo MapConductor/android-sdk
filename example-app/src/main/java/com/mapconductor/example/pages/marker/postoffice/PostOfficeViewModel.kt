@@ -93,6 +93,7 @@ class PostOfficeViewModelImpl(
     override val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?> = _renderingStrategy.asStateFlow()
 
     override fun loadPostOfficeData() {
+        if (_markerList.value.isNotEmpty()) return
         coroutine.launch {
             // Wait until map tiles are rendered.
             delay(1000)
@@ -142,7 +143,6 @@ class PostOfficeViewModelImpl(
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
-        _markerList.value = emptyList()
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState -> strategies.google
