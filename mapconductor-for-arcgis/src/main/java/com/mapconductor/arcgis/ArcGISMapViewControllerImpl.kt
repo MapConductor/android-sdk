@@ -416,4 +416,16 @@ class ArcGISMapViewControllerImpl(
         mapDesignTypeChangeListener = listener
         listener(mapDesignType)
     }
+
+    // Trigger an initial camera update after the view and scene are ready
+    fun sendInitialCameraUpdate() {
+        coroutine.launch {
+            val mapWidth = holder.map.width
+            val mapHeight = holder.map.height
+            if (mapWidth <= 0 || mapHeight <= 0) return@launch
+            getMapCameraPosition()?.let { mapCameraPosition ->
+                notifyMapCameraPosition(mapCameraPosition)
+            }
+        }
+    }
 }

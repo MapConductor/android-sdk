@@ -130,11 +130,7 @@ fun ArcGISMapView(
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
 
-            val initCamera = state.cameraPosition.value
-            markerController.onCameraChanged(initCamera)
-            circleController.onCameraChanged(initCamera)
-            polylineController.onCameraChanged(initCamera)
-            polygonController.onCameraChanged(initCamera)
+            // Defer initial camera update until controller is created and view is laid out
 
             ArcGISMapViewControllerImpl(
                 holder = holder,
@@ -159,6 +155,8 @@ fun ArcGISMapView(
 
                 val restoreCameraPosition = state.cameraPosition.value
                 controller.moveCamera(restoreCameraPosition)
+                // Post an initial camera update after layout to compute visibleRegion correctly
+                holder.mapView.post { controller.sendInitialCameraUpdate() }
             }
         },
         sdkInitialize = {

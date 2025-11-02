@@ -101,11 +101,7 @@ fun GoogleMapsView(
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
 
-            val initCamera = state.cameraPosition.value
-            markerController.onCameraChanged(initCamera)
-            circleController.onCameraChanged(initCamera)
-            polylineController.onCameraChanged(initCamera)
-            polygonController.onCameraChanged(initCamera)
+            // Defer initial camera update until controller is created and view is laid out
 
             GoogleMapViewControllerImpl(
                 markerController = markerController,
@@ -129,6 +125,8 @@ fun GoogleMapsView(
                 controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
                 controller.setOnGroundImageClickListener(onGroundImageClick)
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                // Post an initial camera update once the MapView is laid out
+                holder.mapView.post { controller.sendInitialCameraUpdate() }
             }
         },
         scope = scope,

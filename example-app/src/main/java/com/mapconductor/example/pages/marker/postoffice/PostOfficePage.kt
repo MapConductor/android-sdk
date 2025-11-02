@@ -97,7 +97,6 @@ fun PostOfficeMapPage(
 
         DemoMapPageScaffold(
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
-            initSelect = 4,
             onToggleSidebar = onToggleSidebar,
             onMapViewStateChanged = viewModel::onMapViewChanged,
         ) {

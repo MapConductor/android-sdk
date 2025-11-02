@@ -90,11 +90,7 @@ fun HereMapView(
             val polygonController = getPolygonController(holder)
             val circleController = getHereCircleController(holder)
 
-            val initCamera = state.cameraPosition.value
-            markerController.onCameraChanged(initCamera)
-            circleController.onCameraChanged(initCamera)
-            polylineController.onCameraChanged(initCamera)
-            polygonController.onCameraChanged(initCamera)
+            // Defer initial camera update until after controller is created and camera is moved
 
             val controller =
                 HereMapViewControllerImpl(

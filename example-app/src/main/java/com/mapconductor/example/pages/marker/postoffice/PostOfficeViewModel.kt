@@ -19,6 +19,7 @@ import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+import java.lang.Thread.sleep
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,6 +103,7 @@ class PostOfficeViewModelImpl(
 
         coroutine.launch {
             _isDataLoading.value = true
+            sleep(3000)
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
@@ -115,6 +117,7 @@ class PostOfficeViewModelImpl(
                 }
             _markerList.value = markerStates
             _isDataLoading.value = false
+            sleep(1000)
         }
     }
 
