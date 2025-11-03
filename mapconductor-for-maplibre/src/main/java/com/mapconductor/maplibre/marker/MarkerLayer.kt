@@ -22,7 +22,7 @@ open class MarkerLayer(
         SymbolLayer(layerId, sourceId).apply {
             setProperties(
                 iconImage(get(MapLibreMarkerOverlayRenderer.Prop.ICON_ID)),
-                //iconSize(get(MapLibreMarkerOverlayRenderer.Prop.SCALE)),
+                // iconSize(get(MapLibreMarkerOverlayRenderer.Prop.SCALE)),
                 iconAllowOverlap(true),
                 iconIgnorePlacement(true),
                 iconAnchor(MapLibreMarkerOverlayRenderer.IconAnchor.TOP_LEFT),

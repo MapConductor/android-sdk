@@ -65,8 +65,11 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
 
     // Cache last camera and renderer to allow recalculation after batches are sent
     @Volatile private var lastCamera: MapCameraPositionImpl? = null
+
     @Volatile private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
-    private val cameraSeq = java.util.concurrent.atomic.AtomicLong(0L)
+    private val cameraSeq =
+        java.util.concurrent.atomic
+            .AtomicLong(0L)
 
     private val serviceConnection =
         object : ServiceConnection {
@@ -185,7 +188,8 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
             if (isServiceConnected.get()) return true
             try {
                 serviceConnectionLock.wait(SERVICE_CONNECTION_TIMEOUT_MS)
-            } catch (_: InterruptedException) {}
+            } catch (_: InterruptedException) {
+            }
             return isServiceConnected.get()
         }
     }
@@ -345,7 +349,8 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         try {
                             delay(120)
                             triggerRecalculateAfterBatch()
-                        } catch (_: Exception) {}
+                        } catch (_: Exception) {
+                        }
                     }
                 }
             }
@@ -428,12 +433,13 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         added.forEachIndexed { i, actualMarker ->
                             actualMarker?.let {
                                 val state = chunk[i].state
-                                val entity = MarkerEntityImpl<ActualMarker>(
-                                    state = state,
-                                    marker = actualMarker,
-                                    isRendered = true,
-                                    visible = true,
-                                )
+                                val entity =
+                                    MarkerEntityImpl<ActualMarker>(
+                                        state = state,
+                                        marker = actualMarker,
+                                        isRendered = true,
+                                        visible = true,
+                                    )
                                 markerManager.registerEntity(entity)
                             }
                         }
@@ -517,12 +523,13 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
             } catch (e: Exception) {
                 return@withContext if (e is kotlinx.coroutines.CancellationException) {
                     // Reconstruct params for fallback from the input data
-                    val params = data.map { state ->
-                        object : MarkerOverlayRenderer.AddParams {
-                            override val state: MarkerState = state
-                            override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                    val params =
+                        data.map { state ->
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state: MarkerState = state
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                            }
                         }
-                    }
                     fallbackAddAsync(params, renderer)
                     true
                 } else {

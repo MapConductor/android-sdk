@@ -114,7 +114,6 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMap
     )
 }
 
-
 @Composable
 fun GetMapLibreViewItem(initCameraPosition: MapCameraPosition): IconItem<MapLibreViewStateImpl> {
     val mapLibreMapState =

@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.os.Process
 import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -101,7 +100,9 @@ internal class SpatialMarkerService : Service() {
                             val buckets = session.cellBucketsByZoom.getOrPut(z) { ConcurrentHashMap() }
                             val markerToCell = session.markerCellByZoom.getOrPut(z) { ConcurrentHashMap() }
                             limited.forEach { dto ->
-                                val cellId = this@SpatialMarkerService.latLngToCellId(session.geocell, dto.latitude, dto.longitude, z)
+                                val cellId =
+                                    this@SpatialMarkerService
+                                        .latLngToCellId(session.geocell, dto.latitude, dto.longitude, z)
                                 val prev = markerToCell.put(dto.id, cellId)
                                 if (prev != null && prev != cellId) {
                                     buckets[prev]?.remove(dto.id)
@@ -149,17 +150,19 @@ internal class SpatialMarkerService : Service() {
                 return try {
                     val session = sessions[sessionId] ?: return SpatialResultDTO(emptyList(), emptyList(), emptyList())
 
-                    val bounds = GeoRectBounds(
-                        southWest = GeoPointImpl.fromLatLong(camera.boundsMinLat, camera.boundsMinLng),
-                        northEast = GeoPointImpl.fromLatLong(camera.boundsMaxLat, camera.boundsMaxLng),
-                    )
+                    val bounds =
+                        GeoRectBounds(
+                            southWest = GeoPointImpl.fromLatLong(camera.boundsMinLat, camera.boundsMinLng),
+                            northEast = GeoPointImpl.fromLatLong(camera.boundsMaxLat, camera.boundsMaxLng),
+                        )
                     val expandedBounds = expandBounds(bounds, session.config.expandMargin)
 
                     val indexZoom = this@SpatialMarkerService.chooseIndexZoom(camera.zoom)
                     this@SpatialMarkerService.ensureIndexedForZoom(session, indexZoom)
 
                     // Build coverage cells for expanded bounds
-                    val center = expandedBounds.center ?: GeoPointImpl.fromLatLong(camera.centerLatitude, camera.centerLongitude)
+                    val center =
+                        expandedBounds.center ?: GeoPointImpl.fromLatLong(camera.centerLatitude, camera.centerLongitude)
                     val centerCoord = session.geocell.latLngToHexCoord(center, indexZoom.toDouble())
                     val sw = expandedBounds.southWest ?: center
                     val ne = expandedBounds.northEast ?: center
@@ -169,12 +172,13 @@ internal class SpatialMarkerService : Service() {
                     val nec = session.geocell.latLngToHexCoord(ne, indexZoom.toDouble())
                     val sec = session.geocell.latLngToHexCoord(se, indexZoom.toDouble())
                     val nwc = session.geocell.latLngToHexCoord(nw, indexZoom.toDouble())
-                    val radius = maxOf(
-                        session.geocell.hexDistance(centerCoord, swc),
-                        session.geocell.hexDistance(centerCoord, nec),
-                        session.geocell.hexDistance(centerCoord, sec),
-                        session.geocell.hexDistance(centerCoord, nwc),
-                    )
+                    val radius =
+                        maxOf(
+                            session.geocell.hexDistance(centerCoord, swc),
+                            session.geocell.hexDistance(centerCoord, nec),
+                            session.geocell.hexDistance(centerCoord, sec),
+                            session.geocell.hexDistance(centerCoord, nwc),
+                        )
 
                     val buckets = session.cellBucketsByZoom[indexZoom] ?: emptyMap()
                     val idsInBounds = mutableSetOf<String>()
@@ -182,7 +186,6 @@ internal class SpatialMarkerService : Service() {
                         val cid = session.geocell.hexToCellId(coord, indexZoom.toDouble())
                         buckets[cid]?.let { idsInBounds.addAll(it) }
                     }
-
 
                     val markersToAdd = mutableListOf<String>()
                     val markersToRemove = mutableListOf<String>()
@@ -215,7 +218,10 @@ internal class SpatialMarkerService : Service() {
                 return try {
                     val session = sessions[sessionId] ?: return null
                     val position = GeoPointImpl.fromLatLong(latitude, longitude)
-                    session.markerManager.findNearest(position)?.state?.id
+                    session.markerManager
+                        .findNearest(position)
+                        ?.state
+                        ?.id
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to find nearest marker in session $sessionId", e)
                     null
@@ -242,14 +248,15 @@ internal class SpatialMarkerService : Service() {
             override fun getPerformanceStats(sessionId: String): String {
                 return try {
                     val session = sessions[sessionId] ?: return "{\"error\": \"session_not_found\"}"
-                    val stats = mapOf(
-                        "sessionId" to sessionId,
-                        "markerCount" to session.markerData.size,
-                        "renderedCount" to session.renderedMarkers.size,
-                        "addOnlyMode" to session.config.addOnlyMode,
-                        "expandMargin" to session.config.expandMargin,
-                        "indexedZooms" to session.cellBucketsByZoom.size,
-                    )
+                    val stats =
+                        mapOf(
+                            "sessionId" to sessionId,
+                            "markerCount" to session.markerData.size,
+                            "renderedCount" to session.renderedMarkers.size,
+                            "addOnlyMode" to session.config.addOnlyMode,
+                            "expandMargin" to session.config.expandMargin,
+                            "indexedZooms" to session.cellBucketsByZoom.size,
+                        )
                     stats.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
                         "\"${it.key}\": ${if (it.value is String) "\"${it.value}\"" else it.value}"
                     }
@@ -260,9 +267,7 @@ internal class SpatialMarkerService : Service() {
             }
         }
 
-    override fun onBind(intent: Intent?): IBinder {
-        return binder
-    }
+    override fun onBind(intent: Intent?): IBinder = binder
 
     override fun onCreate() {
         super.onCreate()
@@ -280,22 +285,29 @@ internal class SpatialMarkerService : Service() {
         sessions.clear()
     }
 
-    private fun chooseIndexZoom(zoom: Double): Int {
-        return when {
+    private fun chooseIndexZoom(zoom: Double): Int =
+        when {
             zoom < 7 -> 7
             zoom < 9 -> 8
             zoom < 11 -> 10
             zoom < 13 -> 12
             else -> 14
         }
-    }
 
-    private fun latLngToCellId(geocell: HexGeocell, lat: Double, lng: Double, z: Int): String {
+    private fun latLngToCellId(
+        geocell: HexGeocell,
+        lat: Double,
+        lng: Double,
+        z: Int,
+    ): String {
         val coord = geocell.latLngToHexCoord(GeoPointImpl.fromLatLong(lat, lng), z.toDouble())
         return geocell.hexToCellId(coord, z.toDouble())
     }
 
-    private fun ensureIndexedForZoom(session: SpatialSession, z: Int) {
+    private fun ensureIndexedForZoom(
+        session: SpatialSession,
+        z: Int,
+    ) {
         val buckets = session.cellBucketsByZoom.getOrPut(z) { ConcurrentHashMap() }
         val markerToCell = session.markerCellByZoom.getOrPut(z) { ConcurrentHashMap() }
         if (markerToCell.size == session.markerData.size) return

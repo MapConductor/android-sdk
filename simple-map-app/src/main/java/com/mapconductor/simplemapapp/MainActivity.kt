@@ -8,33 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.ArcGISMapView
-import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.circle.Circle
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polygon.Polygon
-import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.Polyline
-import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.googlemaps.GoogleMapsView
-import com.mapconductor.googlemaps.rememberGoogleMapViewState
-import com.mapconductor.here.HereMapView
-import com.mapconductor.here.rememberHereMapViewState
-import com.mapconductor.mapbox.MapboxMapView
-import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
@@ -102,4 +86,3 @@ fun MapView(modifier: Modifier = Modifier) {
         Circle(circleState)
     }
 }
-

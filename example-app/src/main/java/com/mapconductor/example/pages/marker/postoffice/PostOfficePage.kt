@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -16,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,10 +28,7 @@ import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.marker.nativestrategy.NativeParallelMarkerStrategy
-import com.mapconductor.marker.nativestrategy.NativeSpatialMarkerRenderingStrategy
 import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 
 @Composable
 fun PostOfficeMapPage(
@@ -43,16 +40,18 @@ fun PostOfficeMapPage(
     val strategies =
         remember {
             val google = NativeRemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
-            val mapbox = NativeRemoteSpatialMarkerStrategy<MapboxActualMarker>(
-                context = context,
-                addOnlyMode = true,
-            )
+            val mapbox =
+                NativeRemoteSpatialMarkerStrategy<MapboxActualMarker>(
+                    context = context,
+                    addOnlyMode = true,
+                )
             val here = NativeRemoteSpatialMarkerStrategy<HereActualMarker>(context)
             val arcgis = NativeRemoteSpatialMarkerStrategy<ArcGISActualMarker>(context)
-            val maplibre = NativeRemoteSpatialMarkerStrategy<MapLibreActualMarker>(
-                context = context,
-                addOnlyMode = true,
-            )
+            val maplibre =
+                NativeRemoteSpatialMarkerStrategy<MapLibreActualMarker>(
+                    context = context,
+                    addOnlyMode = true,
+                )
             Strategies(
                 google = google,
                 mapbox = mapbox,
@@ -137,9 +136,11 @@ private fun LoadingDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(top = 8.dp))
+                androidx.compose.foundation.layout
+                    .Spacer(modifier = Modifier.padding(top = 8.dp))
                 CircularProgressIndicator()
-                androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(top = 8.dp))
+                androidx.compose.foundation.layout
+                    .Spacer(modifier = Modifier.padding(top = 8.dp))
                 Text(text = message, style = MaterialTheme.typography.bodyMedium)
             }
         }

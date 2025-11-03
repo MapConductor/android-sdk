@@ -20,10 +20,8 @@ import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import java.lang.Thread.sleep
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
