@@ -392,11 +392,13 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
-        // Use timer-based debounce instead of Flow to avoid ArcGIS SDK conflicts
-        processCameraChangeDebounced(mapCameraPosition)
-
-//        this.mapCameraPosition = mapCameraPosition
-//        renderingStrategy?.onCameraChanged(mapCameraPosition, renderer)
+        if (this.mapCameraPosition == null) {
+            // Set the initial camera position
+            this.mapCameraPosition = mapCameraPosition
+        } else {
+            // Use timer-based debounce instead of Flow to avoid ArcGIS SDK conflicts
+            processCameraChangeDebounced(mapCameraPosition)
+        }
     }
 
     /**

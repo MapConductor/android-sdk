@@ -1,10 +1,6 @@
 package com.mapconductor.mapbox.polygon
 
-import com.google.gson.JsonObject
-import com.mapbox.geojson.Feature
-import com.mapbox.geojson.Polygon
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
 import com.mapconductor.core.polygon.PolygonManager
@@ -12,8 +8,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.mapbox.MapboxActualPolygon
 import com.mapconductor.mapbox.MapboxMapViewHolder
-import com.mapconductor.mapbox.toMapboxColorString
-import com.mapconductor.mapbox.toPoint
+import com.mapconductor.mapbox.createMapboxPolygons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,30 +39,14 @@ class MapboxPolygonOverlayRenderer(
 //        layer.source.removeGeoJSONSourceFeatures(featureIds)
     }
 
-    override suspend fun createPolygon(state: PolygonState): MapboxActualPolygon? {
-        val geoPoints: List<GeoPoint> =
-            when (state.geodesic) {
-                true -> createGeodesicPolygonPoints(state.points)
-                false -> state.points
-            }
-        val points = geoPoints.map { GeoPointImpl.from(it).toPoint() }
-        // Close the polygon by adding the first point at the end if not already closed
-        val closedPoints =
-            if (points.first() != points.last()) {
-                points + points.first()
-            } else {
-                points
-            }
-        return listOf(
-            Feature.fromGeometry(
-                Polygon.fromLngLats(listOf(closedPoints)),
-                JsonObject().apply {
-                    addProperty(MapboxPolygonLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
-                },
-                "polygon-${state.id}",
-            ),
+    override suspend fun createPolygon(state: PolygonState): MapboxActualPolygon? =
+        createMapboxPolygons(
+            id = state.id,
+            points = state.points,
+            geodesic = state.geodesic,
+            fillColor = state.fillColor,
+            zIndex = state.zIndex,
         )
-    }
 
     override suspend fun updatePolygonProperties(
         polygon: MapboxActualPolygon,
@@ -77,13 +56,10 @@ class MapboxPolygonOverlayRenderer(
         val finger = current.fingerPrint
         val prevFinger = prev.fingerPrint
 
-        if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
-            // If points or geodesic changed, recreate the polygon
+        if (finger != prevFinger) {
+            // Recreate features when any polygon property changes
             return createPolygon(current.state)
         }
-
-        // For other property changes, return the existing polygon
-        // The layer will handle style updates
         return prev.polygon
     }
 

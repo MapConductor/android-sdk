@@ -15,11 +15,13 @@ import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxViewState
+import com.mapconductor.maplibre.MapLibreActualMarker
+import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +33,7 @@ interface PostOfficeViewModel {
     val markerList: StateFlow<List<MarkerState>>
     val mapViewState: StateFlow<MapViewState<*>?>
     val isMapLoaded: StateFlow<Boolean>
+    val isDataLoading: StateFlow<Boolean>
 
     val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?>
 
@@ -52,6 +55,7 @@ data class Strategies(
     val mapbox: MarkerRenderingStrategy<MapboxActualMarker>,
     val here: MarkerRenderingStrategy<HereActualMarker>,
     val arcgis: MarkerRenderingStrategy<ArcGISActualMarker>,
+    val maplibre: MarkerRenderingStrategy<MapLibreActualMarker>,
 )
 
 class PostOfficeViewModelImpl(
@@ -79,6 +83,9 @@ class PostOfficeViewModelImpl(
     private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()
 
+    private val _isDataLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isDataLoading: StateFlow<Boolean> = _isDataLoading.asStateFlow()
+
     private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
@@ -91,9 +98,10 @@ class PostOfficeViewModelImpl(
 
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
+
         coroutine.launch {
-            // Wait until map tiles are rendered.
-            delay(2500)
+            _isDataLoading.value = true
+            sleep(3000)
             val postOffices = dataLoader.loadAllPostOffices()
 
             val markerStates =
@@ -106,6 +114,15 @@ class PostOfficeViewModelImpl(
                     )
                 }
             _markerList.value = markerStates
+            _isDataLoading.value = false
+            sleep(1000)
+        }
+    }
+
+    // Convenience: in case of error paths, ensure the dialog is hidden
+    private fun markLoadingFinished() {
+        if (_isDataLoading.value) {
+            _isDataLoading.value = false
         }
     }
 
@@ -139,15 +156,16 @@ class PostOfficeViewModelImpl(
         renderingStrategy.value?.clear()
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
+        _isMapLoaded.value = false
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewState -> strategies.google
                 is MapboxViewState -> strategies.mapbox
                 is HereViewState -> strategies.here
                 is ArcGISMapViewState -> strategies.arcgis
+                is MapLibreViewState -> strategies.maplibre
                 else -> SimpleMarkerStrategy<Any>()
             } as MarkerRenderingStrategy<Any>?
-        _isMapLoaded.value = false
     }
 
     override fun onCleared() {

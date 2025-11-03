@@ -11,7 +11,6 @@ import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -25,13 +24,15 @@ import com.mapconductor.here.HereViewStateImpl
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewStateImpl
+import com.mapconductor.maplibre.MapLibreActualMarker
+import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.MapLibreViewStateImpl
 
 @Composable
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     renderingStrategy: MarkerRenderingStrategy<*>? = null,
     state: MapViewState<*>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -44,7 +45,6 @@ fun MapViewContainer(
     onPolylineClick: OnPolylineEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
-    shouldInitialize: Boolean = true, // Allow deferring initialization
     content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
     @Suppress("UNCHECKED_CAST")
@@ -54,7 +54,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -67,7 +66,6 @@ fun MapViewContainer(
                 onPolylineClick = onPolylineClick,
                 onPolygonClick = onPolygonClick,
                 onGroundImageClick = onGroundImageClick,
-                shouldInitialize = shouldInitialize,
                 content = content,
             )
 
@@ -76,7 +74,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<HereActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -96,7 +93,6 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapboxActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -116,7 +112,25 @@ fun MapViewContainer(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<ArcGISActualMarker>?,
                 state = state,
-                onMapViewInitialized = onMapViewInitialized,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
+                onMarkerDragStart = onMarkerDragStart,
+                onMarkerDrag = onMarkerDrag,
+                onMarkerDragEnd = onMarkerDragEnd,
+                onMarkerAnimateStart = onMarkerAnimateStart,
+                onMarkerAnimateEnd = onMarkerAnimateEnd,
+                onCircleClick = onCircleClick,
+                onPolylineClick = onPolylineClick,
+                onPolygonClick = onPolygonClick,
+                content = content,
+            )
+
+        is MapLibreViewStateImpl ->
+            MapLibreMapView(
+                modifier = modifier,
+                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapLibreActualMarker>?,
+                state = state,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,

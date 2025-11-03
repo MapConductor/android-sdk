@@ -1,6 +1,7 @@
 package com.mapconductor.core.circle
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -15,6 +16,12 @@ fun MapViewScope.Circle(state: CircleState) {
         val newMap = circleFlow.value.toMutableMap()
         newMap.set(state.id, state)
         circleFlow.value = newMap
+    }
+
+    DisposableEffect(state.id) {
+        onDispose {
+            circleRemoveSharedFlow.tryEmit(state.id)
+        }
     }
 }
 

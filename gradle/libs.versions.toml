@@ -33,6 +33,10 @@ uiToolingPreviewAndroid = "1.9.1"
 uiToolingPreview = "1.9.1"
 uiTooling = "1.9.1"
 geographiclib = "2.1"
+material = "1.10.0"
+mapLibreSdk = "12.0.0"
+mapLibreAnnotation = "3.0.2"
+runtime = "1.9.3"
 
 [libraries]
 # Android 基本
@@ -65,9 +69,14 @@ mapconductor-googlemaps = { module = "com.mapconductor:for-googlemaps" }
 mapconductor-mapbox = { module = "com.mapconductor:for-mapbox" }
 mapconductor-here = { module = "com.mapconductor:for-here" }
 mapconductor-arcgis = { module = "com.mapconductor:for-arcgis" }
+mapconductor-maplibre = { module = "com.mapconductor:for-maplibre" }
 mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
 mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
+
+# MapLibre
+maplibre-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "mapLibreSdk" }
+maplibre-annotation = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "mapLibreAnnotation"}
 
 # Google Maps
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
@@ -85,12 +94,11 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "vectordrawable" }
 
 # Firebase
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-androidx-compose-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 
 net-sf-geographiclib = { group = "net.sf.geographiclib", name="GeographicLib-Java", version.ref="geographiclib"}
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -27,21 +27,76 @@ import kotlinx.coroutines.launch
 
 open class MapViewScope {
     val markerAddSharedFlow = MutableSharedFlow<MarkerState>(1000)
+    val markerRemoveSharedFlow = MutableSharedFlow<String>(1000)
     val markerFlow = MutableStateFlow<MutableMap<String, MarkerState>>(mutableMapOf())
     val bubbleFlow = MutableStateFlow<MutableMap<String, InfoBubbleEntry>>(mutableMapOf())
     val polylineFlow = MutableStateFlow<MutableMap<String, PolylineState>>(mutableMapOf())
+    val polylineRemoveSharedFlow = MutableSharedFlow<String>(1000)
     val circleFlow = MutableStateFlow<MutableMap<String, CircleState>>(mutableMapOf())
+    val circleRemoveSharedFlow = MutableSharedFlow<String>(1000)
     val polygonFlow = MutableStateFlow<MutableMap<String, PolygonState>>(mutableMapOf())
+    val polygonRemoveSharedFlow = MutableSharedFlow<String>(1000)
     val groundImageFlow = MutableStateFlow<MutableMap<String, GroundImageState>>(mutableMapOf())
+    val groundImageRemoveSharedFlow = MutableSharedFlow<String>(1000)
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            markerAddSharedFlow.debounceBatch(5.milliseconds, 300).collect { states ->
+            markerAddSharedFlow.debounceBatch(5.milliseconds, 100).collect { states ->
                 val newMap = markerFlow.value.toMutableMap()
                 states.forEach { state ->
                     newMap.set(state.id, state)
                 }
                 markerFlow.value = newMap
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            markerRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
+                val newMap = markerFlow.value.toMutableMap()
+                ids.forEach { id ->
+                    newMap.remove(id)
+                }
+                markerFlow.value = newMap
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            polylineRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
+                val newMap = polylineFlow.value.toMutableMap()
+                ids.forEach { id ->
+                    newMap.remove(id)
+                }
+                polylineFlow.value = newMap
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            circleRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
+                val newMap = circleFlow.value.toMutableMap()
+                ids.forEach { id ->
+                    newMap.remove(id)
+                }
+                circleFlow.value = newMap
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            polygonRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
+                val newMap = polygonFlow.value.toMutableMap()
+                ids.forEach { id ->
+                    newMap.remove(id)
+                }
+                polygonFlow.value = newMap
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            groundImageRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
+                val newMap = groundImageFlow.value.toMutableMap()
+                ids.forEach { id ->
+                    newMap.remove(id)
+                }
+                groundImageFlow.value = newMap
             }
         }
     }

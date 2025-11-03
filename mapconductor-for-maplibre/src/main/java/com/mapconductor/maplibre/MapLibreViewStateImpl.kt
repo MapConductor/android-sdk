@@ -1,0 +1,148 @@
+package com.mapconductor.maplibre
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.BaseMapViewSaver
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateImpl
+import java.util.UUID
+import android.os.Bundle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+interface MapLibreViewState : MapViewState<MapLibreMapDesignType>
+
+class MapLibreViewStateImpl(
+    mapDesignType: MapLibreMapDesignType,
+    override val id: String,
+    override val initCameraPosition: MapCameraPositionImpl = MapCameraPositionImpl.Default,
+) : MapViewStateImpl<MapLibreMapDesignType>(),
+    MapLibreViewState {
+    private var controller: MapLibreViewController? = null
+
+    // Camera center position
+    private val _cameraPosition = MutableStateFlow(initCameraPosition)
+    override val cameraPosition: StateFlow<MapCameraPositionImpl> = _cameraPosition.asStateFlow()
+
+    private var _mapDesignType: MapLibreMapDesignType = mapDesignType
+
+    override var mapDesignType: MapLibreMapDesignType
+        set(value) {
+            value?.let {
+                _mapDesignType = it
+                this.controller?.setMapDesignType(it)
+            }
+        }
+        get() = _mapDesignType
+
+    internal fun setController(controller: MapLibreViewController) {
+        this.controller = controller
+        controller.moveCamera(_cameraPosition.value)
+    }
+
+    internal fun onMapDesignTypeChange(value: MapLibreMapDesignType) {
+        _mapDesignType = value
+    }
+
+    override fun moveCameraTo(
+        position: GeoPointImpl,
+        durationMs: Long?,
+        listener: MapViewState.MoveCameraCallback?,
+    ) {
+        val currentPosition = this.cameraPosition.value
+        val newPosition =
+            currentPosition.copy(
+                position = position,
+            )
+        this.moveCameraTo(newPosition, durationMs, listener)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun getMapViewHolder(): MapLibreMapViewHolder? = controller?.holder as? MapLibreMapViewHolder
+
+    override fun moveCameraTo(
+        cameraPosition: MapCameraPositionImpl,
+        durationMs: Long?,
+        listener: MapViewState.MoveCameraCallback?,
+    ) {
+        controller?.let { ctrl ->
+            val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
+            if (durationMs == null || durationMs == 0L) {
+                ctrl.moveCamera(dstCameraPosition, listener)
+            } else {
+                ctrl.animateCamera(dstCameraPosition, durationMs, listener)
+            }
+            return@let
+        }
+        _cameraPosition.value = cameraPosition
+        listener?.onComplete()
+    }
+
+    internal fun onCameraChange(cameraPosition: MapCameraPositionImpl) {
+        _cameraPosition.value = cameraPosition
+    }
+}
+
+class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
+    override fun extractCameraPosition(state: MapLibreViewStateImpl): MapCameraPositionImpl? =
+        state.cameraPosition.value
+
+    override fun saveMapDesign(
+        state: MapLibreViewStateImpl,
+        bundle: Bundle,
+    ) {
+        bundle.putString("styleJsonURL", state.mapDesignType?.styleJsonURL ?: "null")
+    }
+
+    override fun createState(
+        stateId: String,
+        mapDesignBundle: Bundle?,
+        cameraPosition: MapCameraPositionImpl,
+    ): MapLibreViewStateImpl =
+        MapLibreViewStateImpl(
+            id = stateId,
+            mapDesignType =
+                MapLibreMapDesign(
+                    id =
+                        mapDesignBundle?.getString("id")
+                            ?: MapLibreMapDesign.DemoTiles.id,
+                    styleJsonURL =
+                        mapDesignBundle?.getString("styleJsonURL")
+                            ?: MapLibreMapDesign.DemoTiles.styleJsonURL,
+                ),
+            initCameraPosition = cameraPosition,
+        )
+
+    override fun getStateId(state: MapLibreViewStateImpl): String = state.id
+}
+
+@Composable
+fun rememberMapLibreMapViewState(
+    mapDesign: MapLibreMapDesignType = MapLibreMapDesign.DemoTiles,
+    cameraPosition: MapCameraPosition = MapCameraPositionImpl.Default,
+): MapLibreViewStateImpl {
+    val stateId by rememberSaveable {
+        val uuid = UUID.randomUUID().toString()
+        mutableStateOf(uuid)
+    }
+    val state =
+        rememberSaveable(
+            stateSaver = MapLibreMapViewSaver().createSaver(),
+        ) {
+            mutableStateOf(
+                MapLibreViewStateImpl(
+                    id = stateId,
+                    mapDesignType = mapDesign,
+                    initCameraPosition = MapCameraPositionImpl.Companion.from(cameraPosition),
+                ),
+            )
+        }
+
+    return state.value
+}

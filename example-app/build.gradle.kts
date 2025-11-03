@@ -139,29 +139,19 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-
     implementation(libs.androidx.lifecycle.runtime.ktx)
-
     implementation(libs.androidx.activity.compose)
-
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
     implementation(platform(libs.androidx.compose.bom))
-
     implementation(libs.androidx.ui)
-
     implementation(libs.androidx.ui.graphics)
-
     implementation(libs.androidx.material3)
-
     implementation(libs.androidx.appcompat)
 
     // Google Maps SDK
-
     implementation(libs.play.services.maps)
 
     // Here Maps SDK
-
     implementation(
         fileTree(
             mapOf(
@@ -172,18 +162,17 @@ dependencies {
     )
 
     // Mapbox SDK
-
     implementation(libs.mapbox.android)
 
     // ArcGIS Maps for Kotlin - SDK dependency
-
     implementation(libs.arcgis.maps.kotlin)
-
     implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-
     implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+
+    // MapLibre SDK
+    implementation(libs.maplibre.sdk)
+    implementation(libs.maplibre.annotation)
 
     // Map Conductor
 //    implementation("com.mapconductor:core")
@@ -204,6 +193,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.here)
     releaseImplementation(libs.mapconductor.mapbox)
     releaseImplementation(libs.mapconductor.arcgis)
+    releaseImplementation(libs.mapconductor.maplibre)
     releaseImplementation(libs.mapconductor.marker.strategy)
     releaseImplementation(libs.mapconductor.marker.native.strategy)
 
@@ -213,28 +203,19 @@ dependencies {
     debugImplementation(project(":mapconductor-for-here"))
     debugImplementation(project(":mapconductor-for-mapbox"))
     debugImplementation(project(":mapconductor-for-arcgis"))
+    debugImplementation(project(":mapconductor-for-maplibre"))
     debugImplementation(project(":mapconductor-marker-strategy"))
     debugImplementation(project(":mapconductor-marker-native-strategy"))
 
     implementation(libs.androidx.vectordrawable)
-
     testImplementation(libs.junit)
-
     testImplementation(libs.androidx.core)
-
     testImplementation(libs.androidx.junit)
-
     testImplementation(libs.androidx.runner)
-
     androidTestImplementation(libs.androidx.junit)
-
     androidTestImplementation(libs.androidx.espresso.core)
-
     androidTestImplementation(platform(libs.androidx.compose.bom))
-
     androidTestImplementation(libs.androidx.ui.test.junit4)
-
     debugImplementation(libs.androidx.ui.tooling)
-
     debugImplementation(libs.androidx.ui.test.manifest)
 }

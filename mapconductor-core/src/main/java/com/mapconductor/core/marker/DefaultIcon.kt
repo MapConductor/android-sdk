@@ -82,10 +82,14 @@ abstract class AbstractDefaultIcon(
         }
 
         // Calculate canvas size with scale applied
-        val baseCanvasSize = ResourceProvider.dpToPx(iconSize.value)
+        val baseCanvasSize = ResourceProvider.dpToPxForBitmap(iconSize.value)
         val canvasSize = (baseCanvasSize * scale).toInt()
 
         val bitmap = createBitmap(canvasSize, canvasSize)
+        // Set bitmap density based on override (e.g., 1.0 for MapLibre to prevent auto-scaling)
+        ResourceProvider.getBitmapDensity().let { density ->
+            bitmap.density = (density * android.util.DisplayMetrics.DENSITY_DEFAULT).toInt()
+        }
         val canvas = Canvas(bitmap)
 
         // Draw marker (scale is already applied in canvasSize)
@@ -145,7 +149,7 @@ abstract class AbstractDefaultIcon(
         // we don't need to apply iconScale again to the markerScale calculation
         val scaledStrokeWidth =
             ResourceProvider
-                .dpToPx(strokeWidth.value * iconScale)
+                .dpToPxForBitmap(strokeWidth.value * iconScale)
                 .toFloat()
 
         // Reserve space for stroke on sides and top, but not bottom (point should touch edge)
@@ -245,7 +249,7 @@ abstract class AbstractDefaultIcon(
             style = Paint.Style.STROKE
             strokeWidth =
                 ResourceProvider
-                    .dpToPx(
+                    .dpToPxForBitmap(
                         this@AbstractDefaultIcon.strokeWidth.value * iconScale,
                     ).toFloat()
             isAntiAlias = true
@@ -287,7 +291,7 @@ abstract class AbstractDefaultIcon(
             // アウトライン描画（アイコンスケールを考慮したストローク幅）
             val outlineStrokeWidth =
                 max(
-                    ResourceProvider.dpToPx(1f * iconScale).toFloat(),
+                    ResourceProvider.dpToPxForBitmap(1f * iconScale).toFloat(),
                     2f, // 最小2px
                 )
 

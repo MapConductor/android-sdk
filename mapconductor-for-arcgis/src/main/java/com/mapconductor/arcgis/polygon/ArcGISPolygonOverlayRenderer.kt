@@ -13,6 +13,9 @@ import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.createInterpolatePoints
+import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntity
@@ -48,6 +51,7 @@ class ArcGISPolygonOverlayRenderer(
             val graphic =
                 Graphic(geometry, fillSymbol).also {
                     it.attributes.set("id", state.id)
+                    it.attributes.set("zIndex", state.zIndex)
                 }
 
             polygonLayer.graphics.add(graphic)
@@ -62,7 +66,7 @@ class ArcGISPolygonOverlayRenderer(
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
-            if (finger.points != prevFinger.points) {
+            if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
                 current.polygon.geometry = createGeometry(current.state)
             }
 
@@ -83,6 +87,9 @@ class ArcGISPolygonOverlayRenderer(
                     }
                 }
             }
+            if (finger.zIndex != prevFinger.zIndex) {
+                current.polygon.attributes.set("zIndex", current.state.zIndex)
+            }
             polygon
         }
 
@@ -92,10 +99,27 @@ class ArcGISPolygonOverlayRenderer(
         }
     }
 
+    override suspend fun onPostProcess() {
+        // Sort graphics by zIndex to ensure correct rendering order
+        withContext(coroutine.coroutineContext) {
+            val sortedGraphics =
+                polygonLayer.graphics.toList().sortedBy { graphic ->
+                    (graphic.attributes.get("zIndex") as? Int) ?: 0
+                }
+            polygonLayer.graphics.clear()
+            polygonLayer.graphics.addAll(sortedGraphics)
+        }
+    }
+
     private fun createGeometry(state: PolygonState): Geometry {
+        val geoPoints: List<GeoPoint> =
+            when (state.geodesic) {
+                true -> createInterpolatePoints(state.points)
+                false -> createLinearInterpolatePoints(state.points)
+            }
         val polygonBuilder =
             PolygonBuilder().also { builder ->
-                state.points.forEach {
+                geoPoints.forEach {
                     builder.addPoint(GeoPointImpl.from(it).toPoint())
                 }
             }

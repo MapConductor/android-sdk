@@ -63,7 +63,8 @@ android {
 
 dependencies {
 
-//    implementation(libs.play.services.maps)
+    implementation(libs.androidx.compose.runtime)
+    //    implementation(libs.play.services.maps)
     compileOnly(libs.androidx.ui)
     compileOnly(libs.androidx.ui.tooling.preview)
     compileOnly(libs.androidx.core.ktx)

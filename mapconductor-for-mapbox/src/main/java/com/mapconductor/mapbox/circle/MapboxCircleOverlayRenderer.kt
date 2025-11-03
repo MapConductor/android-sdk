@@ -35,10 +35,15 @@ class MapboxCircleOverlayRenderer(
 
     override suspend fun createCircle(state: CircleState): MapboxActualCircle? {
         val centerPoint = GeoPointImpl.from(state.center).toPoint()
+        val latitudeCorrection =
+            if (state.geodesic) {
+                cos(Math.toRadians(centerPoint.latitude()))
+            } else {
+                1.0
+            }
         return Feature.fromGeometry(
             Point.fromLngLat(centerPoint.longitude(), centerPoint.latitude()),
             JsonObject().apply {
-                val latitudeCorrection = cos(Math.toRadians(centerPoint.latitude()))
                 addProperty(MapboxCircleLayer.Prop.LATITUDE_CORRECTION, latitudeCorrection)
                 addProperty(MapboxCircleLayer.Prop.RADIUS, state.radiusMeters)
                 addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
@@ -56,10 +61,15 @@ class MapboxCircleOverlayRenderer(
     ): MapboxActualCircle? {
         val state = current.state
         val centerPoint = GeoPointImpl.from(state.center).toPoint()
+        val latitudeCorrection =
+            if (state.geodesic) {
+                cos(Math.toRadians(centerPoint.latitude()))
+            } else {
+                1.0
+            }
         return Feature.fromGeometry(
             Point.fromLngLat(centerPoint.longitude(), centerPoint.latitude()),
             JsonObject().apply {
-                val latitudeCorrection = cos(Math.toRadians(centerPoint.latitude()))
                 addProperty(MapboxCircleLayer.Prop.LATITUDE_CORRECTION, latitudeCorrection)
                 addProperty(MapboxCircleLayer.Prop.RADIUS, state.radiusMeters)
                 addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())

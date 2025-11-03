@@ -2,21 +2,16 @@ package com.mapconductor.googlemaps
 
 import androidx.compose.ui.geometry.Offset
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
-import android.content.Context
 import android.graphics.Point
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.suspendCancellableCoroutine
 
-internal class GoogleMapViewHolderImpl private constructor(
+internal class GoogleMapViewHolderImpl(
     override val mapView: MapView,
+    override val map: GoogleMap,
 ) : MapViewHolder<MapView, GoogleMap> {
-    override lateinit var map: GoogleMap
-
     override fun toScreenOffset(position: GeoPoint): Offset? {
         val point =
             map.projection.toScreenLocation(
@@ -36,25 +31,4 @@ internal class GoogleMapViewHolderImpl private constructor(
                     offset.y.toInt(),
                 ),
             ).toGeoPoint()
-
-    companion object {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        suspend fun create(
-            context: Context,
-            options: GoogleMapOptions? = null,
-        ): MapViewHolder<MapView, GoogleMap> {
-            val mapView = MapView(context, options).apply { onCreate(null) }
-
-            val holder = GoogleMapViewHolderImpl(mapView)
-
-            suspendCancellableCoroutine<Unit> { cont ->
-                mapView.getMapAsync {
-                    holder.map = it
-                    cont.resume(Unit) {}
-                }
-            }
-
-            return holder
-        }
-    }
 }

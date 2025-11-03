@@ -1,6 +1,7 @@
 package com.mapconductor.core.polygon
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -15,6 +16,12 @@ fun MapViewScope.Polygon(state: PolygonState) {
         val newMap = polygonFlow.value.toMutableMap()
         newMap.set(state.id, state)
         polygonFlow.value = newMap
+    }
+
+    DisposableEffect(state.id) {
+        onDispose {
+            polygonRemoveSharedFlow.tryEmit(state.id)
+        }
     }
 }
 

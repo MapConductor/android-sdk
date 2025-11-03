@@ -24,6 +24,7 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.settings.Settings
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.util.DisplayMetrics
 
 class CircleIcon(
     private val properties: IconProperties,
@@ -97,6 +98,10 @@ class CircleIcon(
         val canvasSize = ResourceProvider.dpToPx(iconSize.value * scale)
 
         val bitmap = createBitmap(canvasSize.toInt(), canvasSize.toInt())
+        // Set bitmap density to control map provider scaling
+        ResourceProvider.getBitmapDensity().let { density ->
+            bitmap.density = (density * DisplayMetrics.DENSITY_DEFAULT).toInt()
+        }
         val canvas = Canvas(bitmap)
         val centerX = canvas.width / 2.0f
         val centerY = canvas.height / 2.0f

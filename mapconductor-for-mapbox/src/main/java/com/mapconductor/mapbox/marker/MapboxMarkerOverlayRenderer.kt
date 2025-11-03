@@ -51,6 +51,34 @@ class MapboxMarkerOverlayRenderer(
         }
     }
 
+    // Ensure default and custom marker images exist on the given style (used after style reload)
+    fun ensureStyleImages(style: com.mapbox.maps.Style) {
+        try {
+            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+        } catch (_: Exception) {
+            // Image may already exist; ignore
+        }
+
+        // Re-add custom icon images for existing markers
+        try {
+            markerManager
+                .allEntities()
+                .forEach { entity ->
+                    entity.state.icon?.let { icon ->
+                        val iconKey = icon.hashCode().toString()
+                        // Recreate bitmap from icon definition
+                        val bmp = icon.toBitmapIcon().bitmap
+                        try {
+                            style.addImage(iconKey, bmp)
+                        } catch (_: Exception) {
+                        }
+                    }
+                }
+        } catch (_: Exception) {
+            // Style might be in transition; ignore quietly
+        }
+    }
+
     fun redraw() {
         val entities = markerManager.allEntities()
         coroutine.launch {
@@ -101,13 +129,15 @@ class MapboxMarkerOverlayRenderer(
                 }
 
             data.forEach {
-                val iconKey =
-                    it.state.icon
-                        .hashCode()
-                        .toString()
-                if (!iconRefCounter.contains(iconKey)) {
-                    style.addImage(iconKey, it.bitmapIcon.bitmap)
-                    iconRefCounter[iconKey] = 0
+                it.state.icon?.let { icon ->
+                    val iconKey =
+                        icon
+                            .hashCode()
+                            .toString()
+                    if (!iconRefCounter.contains(iconKey)) {
+                        style.addImage(iconKey, it.bitmapIcon.bitmap)
+                        iconRefCounter[iconKey] = 0
+                    }
                 }
             }
 

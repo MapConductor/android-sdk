@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.BaseMapViewSaver
-import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
@@ -46,9 +45,6 @@ class MapboxViewStateImpl(
 
     internal fun setController(controller: MapboxMapViewController) {
         this.controller = controller
-        _mapDesignType?.let {
-            controller.setMapDesignType(it)
-        }
         controller.moveCamera(_cameraPosition.value)
     }
 
@@ -61,14 +57,6 @@ class MapboxViewStateImpl(
         durationMs: Long?,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        if (this.isInitialized.value != InitState.Initialized) {
-            _cameraPosition.value =
-                MapCameraPositionImpl(
-                    position = position,
-                )
-            listener?.onComplete()
-            return
-        }
         val currentPosition = this.cameraPosition.value
         val newPosition =
             currentPosition.copy(
@@ -86,15 +74,13 @@ class MapboxViewStateImpl(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         controller?.let { ctrl ->
-            if (this.isInitialized.value == InitState.Initialized) {
-                val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
-                if (durationMs == null || durationMs == 0L) {
-                    ctrl.moveCamera(dstCameraPosition, listener)
-                } else {
-                    ctrl.animateCamera(dstCameraPosition, durationMs, listener)
-                }
-                return
+            val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
+            if (durationMs == null || durationMs == 0L) {
+                ctrl.moveCamera(dstCameraPosition, listener)
+            } else {
+                ctrl.animateCamera(dstCameraPosition, durationMs, listener)
             }
+            return@let
         }
         _cameraPosition.value = cameraPosition
         listener?.onComplete()

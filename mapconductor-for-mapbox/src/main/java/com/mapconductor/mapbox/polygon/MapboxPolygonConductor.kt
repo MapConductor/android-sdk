@@ -72,7 +72,8 @@ class MapboxPolygonConductor(
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null
 
-    override fun find(position: GeoPoint): PolygonEntity<PolygonState>? = null
+    override fun find(position: GeoPoint): PolygonEntity<PolygonState>? =
+        polygonOverlay.polygonManager.find(position) as? PolygonEntity<PolygonState>
 
     override suspend fun clear() {
     }
@@ -97,6 +98,6 @@ private fun PolygonState.toPolylineState(): PolylineState {
         strokeColor = this.strokeColor,
         strokeWidth = this.strokeWidth,
         geodesic = this.geodesic,
-        extra = this.extra,
+        extra = this.zIndex,
     )
 }

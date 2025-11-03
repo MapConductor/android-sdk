@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class CircleState(
     center: GeoPoint,
     radiusMeters: Double,
+    geodesic: Boolean = true,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
@@ -33,6 +34,7 @@ class CircleState(
     var center by mutableStateOf(center)
     var clickable by mutableStateOf(clickable)
     var radiusMeters by mutableStateOf(radiusMeters)
+    var geodesic by mutableStateOf(geodesic)
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
@@ -46,6 +48,7 @@ class CircleState(
                     center.hashCode(),
                     radiusMeters.hashCode(),
                     clickable.hashCode(),
+                    geodesic.hashCode(),
                     extra?.hashCode() ?: 0,
                     strokeColor.hashCode(),
                     strokeWidth.hashCode(),
@@ -66,6 +69,7 @@ class CircleState(
             center = center.hashCode(),
             radiusMeters = radiusMeters.hashCode(),
             clickable = clickable.hashCode(),
+            geodesic = geodesic.hashCode(),
             strokeColor = strokeColor.hashCode(),
             strokeWidth = strokeWidth.hashCode(),
             fillColor = fillColor.hashCode(),
@@ -78,6 +82,7 @@ class CircleState(
     fun copy(
         center: GeoPoint = this.center,
         radiusMeters: Double = this.radiusMeters,
+        geodesic: Boolean = this.geodesic,
         strokeColor: Color = this.strokeColor,
         strokeWidth: Dp = this.strokeWidth,
         fillColor: Color =
@@ -95,6 +100,7 @@ class CircleState(
             center = center,
             clickable = clickable,
             radiusMeters = radiusMeters,
+            geodesic = geodesic,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             fillColor = fillColor,
@@ -112,6 +118,7 @@ class CircleState(
         var result = extra?.hashCode() ?: 0
         result = 31 * result + center.hashCode()
         result = 31 * result + clickable.hashCode()
+        result = 31 * result + geodesic.hashCode()
         result = 31 * result + radiusMeters.hashCode()
         result = 31 * result + strokeColor.hashCode()
         result = 31 * result + strokeWidth.hashCode()
@@ -126,6 +133,7 @@ data class CircleFingerPrint(
     val center: Int,
     val radiusMeters: Int,
     val clickable: Int,
+    val geodesic: Int,
     val strokeColor: Int,
     val strokeWidth: Int,
     val fillColor: Int,

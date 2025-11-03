@@ -85,21 +85,23 @@ bool RemoteSpatialMarkerStrategy::addMarkers(const std::vector<MarkerDataDTO>& m
     auto startTime = std::chrono::high_resolution_clock::now();
     
     try {
-        std::unique_lock<std::mutex> lock(markersMutex);
-        
-        for (const auto& markerDTO : markers) {
-            // Add to our marker collection
-            allMarkers[markerDTO.id] = markerDTO;
-            
-            // Add to spatial index
-            if (spatialIndex) {
+        {
+            // Update logical store under lock
+            std::unique_lock<std::mutex> lock(markersMutex);
+            for (const auto& markerDTO : markers) {
+                allMarkers[markerDTO.id] = markerDTO;
+            }
+            stats.currentMarkerCount.store(allMarkers.size());
+            stats.totalMarkersProcessed += markers.size();
+        }
+
+        // Update spatial index outside of markersMutex to avoid lock-order inversion
+        if (spatialIndex) {
+            for (const auto& markerDTO : markers) {
                 GeoPoint position(markerDTO.latitude, markerDTO.longitude);
                 spatialIndex->registerMarker(markerDTO.id, position, markerDTO.clickable);
             }
         }
-        
-        stats.currentMarkerCount.store(allMarkers.size());
-        stats.totalMarkersProcessed += markers.size();
         
         auto endTime = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
@@ -115,25 +117,26 @@ bool RemoteSpatialMarkerStrategy::addMarkers(const std::vector<MarkerDataDTO>& m
 
 bool RemoteSpatialMarkerStrategy::updateMarker(const MarkerDataDTO& markerDTO) {
     try {
-        std::unique_lock<std::mutex> lock(markersMutex);
-        
-        auto it = allMarkers.find(markerDTO.id);
-        if (it != allMarkers.end()) {
-            // Update marker data
-            it->second = markerDTO;
-            
-            // Update in spatial index
-            if (spatialIndex) {
-                GeoPoint position(markerDTO.latitude, markerDTO.longitude);
-                spatialIndex->updateMarker(markerDTO.id, position, markerDTO.clickable);
-            }
-            
+        bool existed = false;
+        {
+            std::unique_lock<std::mutex> lock(markersMutex);
+            auto it = allMarkers.find(markerDTO.id);
+            existed = (it != allMarkers.end());
+            allMarkers[markerDTO.id] = markerDTO; // upsert
+            stats.currentMarkerCount.store(allMarkers.size());
             stats.totalMarkersProcessed++;
-            return true;
-        } else {
-            LOGE("Marker not found for update: %s", markerDTO.id.c_str());
-            return false;
         }
+
+        // Update spatial index outside markersMutex
+        if (spatialIndex) {
+            GeoPoint position(markerDTO.latitude, markerDTO.longitude);
+            if (existed) {
+                spatialIndex->updateMarker(markerDTO.id, position, markerDTO.clickable);
+            } else {
+                spatialIndex->registerMarker(markerDTO.id, position, markerDTO.clickable);
+            }
+        }
+        return true;
     } catch (const std::exception& e) {
         LOGE("Failed to update marker %s: %s", markerDTO.id.c_str(), e.what());
         return false;
@@ -142,29 +145,30 @@ bool RemoteSpatialMarkerStrategy::updateMarker(const MarkerDataDTO& markerDTO) {
 
 bool RemoteSpatialMarkerStrategy::removeMarker(const std::string& markerId) {
     try {
-        std::unique_lock<std::mutex> lock(markersMutex);
-        
-        auto it = allMarkers.find(markerId);
-        if (it != allMarkers.end()) {
-            // Remove from spatial index
-            if (spatialIndex) {
-                spatialIndex->removeMarker(markerId);
+        bool existed = false;
+        {
+            std::unique_lock<std::mutex> lock(markersMutex);
+            auto it = allMarkers.find(markerId);
+            if (it != allMarkers.end()) {
+                existed = true;
+                // Remove from rendered set and logical collection
+                renderedMarkers.erase(markerId);
+                allMarkers.erase(it);
+                stats.currentMarkerCount.store(allMarkers.size());
+                stats.renderedMarkerCount.store(renderedMarkers.size());
             }
-            
-            // Remove from rendered set
-            renderedMarkers.erase(markerId);
-            
-            // Remove from markers collection
-            allMarkers.erase(it);
-            
-            stats.currentMarkerCount.store(allMarkers.size());
-            stats.renderedMarkerCount.store(renderedMarkers.size());
-            
-            return true;
-        } else {
+        }
+
+        if (!existed) {
             LOGE("Marker not found for removal: %s", markerId.c_str());
             return false;
         }
+
+        // Update spatial index outside markersMutex
+        if (spatialIndex) {
+            spatialIndex->removeMarker(markerId);
+        }
+        return true;
     } catch (const std::exception& e) {
         LOGE("Failed to remove marker %s: %s", markerId.c_str(), e.what());
         return false;

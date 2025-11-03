@@ -25,6 +25,7 @@ class MapboxPolylineOverlayRenderer(
             geodesic = state.geodesic,
             strokeColor = state.strokeColor,
             strokeWidth = state.strokeWidth,
+            zIndex = (state.extra as? Int) ?: 0,
         )
 
     override suspend fun updatePolylineProperties(
@@ -39,6 +40,7 @@ class MapboxPolylineOverlayRenderer(
             geodesic = current.state.geodesic,
             strokeColor = current.state.strokeColor,
             strokeWidth = current.state.strokeWidth,
+            zIndex = (current.state.extra as? Int) ?: 0,
         )
     }
 

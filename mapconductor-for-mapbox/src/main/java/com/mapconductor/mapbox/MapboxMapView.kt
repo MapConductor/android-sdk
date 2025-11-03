@@ -1,17 +1,21 @@
 ﻿package com.mapconductor.mapbox
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapbox.maps.MapInitOptions
+import com.mapbox.maps.MapView
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.map.OnMapViewInitializedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -35,13 +39,13 @@ import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.view.ViewGroup
 
 @Composable
 fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
@@ -60,23 +64,18 @@ fun MapboxMapView(
     val controllerRef = remember { Ref<MapboxMapViewControllerImpl>() }
     val scope = remember { MapboxMapViewScope() }
     val registry = remember { scope.buildRegistry() }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
 
     MapViewBase(
         state = state,
         modifier = modifier,
-        holderRef = holderRef,
-        controllerRef = controllerRef,
-        viewProvider = { this.mapView },
-        scope = scope,
-        registry = registry,
-        onInitialize = {
-            MapboxInitSDK(context)
-
+        viewProvider = {
             val cameraOptions =
                 state.cameraPosition.value.toCameraOptions()
 
             val styleUri = state.mapDesignType.getValue()
-            val mapInitOptions =
+
+            val mapOptions =
                 MapInitOptions(
                     context = context,
                     textureView = true,
@@ -84,46 +83,98 @@ fun MapboxMapView(
                     cameraOptions = cameraOptions,
                 )
 
-            val holder = MapboxMapViewHolderImpl.create(context, mapInitOptions)
-
-            val controller =
-                MapboxMapViewControllerImpl(
-                    holder = holder,
-                    markerController =
-                        getMarkerController(
-                            holder = holder,
-                            renderingStrategy = markerRenderingStrategy,
-                        ),
-                    polylineController = getPolylineController(holder),
-                    polygonController = getPolygonController(holder),
-                    circleController = getCircleController(holder),
-                )
-            controller.setCameraMoveListener(state::onCameraChange)
-            controller.setMapClickListener(onMapClick)
-            controller.setOnCircleClickListener(onCircleClick)
-            controller.setOnPolylineClickListener(onPolylineClick)
-            controller.setOnPolygonClickListener(onPolygonClick)
-            controller.setOnMarkerClickListener(onMarkerClick)
-            controller.setOnMarkerDragStart(onMarkerDragStart)
-            controller.setOnMarkerDrag(onMarkerDrag)
-            controller.setOnMarkerDragEnd(onMarkerDragEnd)
-            controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
-            controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-            controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
-            state.setController(controller)
-            controller.setMapLoadedListener {
-                onMapLoaded?.invoke(state)
+            MapView(context, mapOptions).also {
+                it.onStart()
             }
+        },
+        holderProvider = { mapView -> MapboxMapViewHolderImpl(mapView, mapView.mapboxMap) },
+        controllerProvider = { holder ->
 
-            holderRef.value = holder
-            controllerRef.value = controller
+            val markerController =
+                getMarkerController(
+                    holder = holder,
+                    renderingStrategy = markerRenderingStrategy,
+                )
+            val polylineController = getPolylineController(holder)
+            val polygonController = getPolygonController(holder)
+            val circleController = getCircleController(holder)
+
+            // Defer initial camera update until after controller is created and view is laid out
+
+            MapboxMapViewControllerImpl(
+                holder = holder,
+                markerController = markerController,
+                polylineController = polylineController,
+                polygonController = polygonController,
+                circleController = circleController,
+            ).also { controller ->
+                controller.setCameraMoveListener(state::onCameraChange)
+                controller.setMapClickListener(onMapClick)
+                controller.setOnCircleClickListener(onCircleClick)
+                controller.setOnPolylineClickListener(onPolylineClick)
+                controller.setOnPolygonClickListener(onPolygonClick)
+                controller.setOnMarkerClickListener(onMarkerClick)
+                controller.setOnMarkerDragStart(onMarkerDragStart)
+                controller.setOnMarkerDrag(onMarkerDrag)
+                controller.setOnMarkerDragEnd(onMarkerDragEnd)
+                controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                state.setController(controller)
+
+                holderRef.value = holder
+                controllerRef.value = controller
+
+                // Post an initial camera update once the MapView is laid out and style is ready
+                holder.mapView.post { controller.sendInitialCameraUpdate() }
+            }
+        },
+        scope = scope,
+        registry = registry,
+        sdkInitialize = {
+            MapboxInitSDK(context)
             true
         },
-        onMapViewInitialized = onMapViewInitialized,
+        onMapLoaded = onMapLoaded,
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
+        customDisposableEffect = { initState, holderRef ->
+
+            // HERE specific DisposableEffect logic
+            DisposableEffect(lifecycle) {
+                val stateId = state.id // from BaseMapViewState
+                val observer =
+                    object : DefaultLifecycleObserver {
+                        override fun onResume(owner: LifecycleOwner) {
+                            holderRef.value?.mapView?.onResume()
+                        }
+
+                        override fun onPause(owner: LifecycleOwner) {
+                            // Do not call here to keep the MapView instance
+                            // holderRef.value?.mapView?.onPause()
+                        }
+
+                        override fun onDestroy(owner: LifecycleOwner) {
+                            val currentHolder = holderRef.value
+                            if (currentHolder != null) {
+                                val activity = context.findActivity()
+                                if (activity?.isChangingConfigurations == true) {
+                                    (currentHolder.mapView.parent as? ViewGroup)?.removeView(currentHolder.mapView)
+                                } else {
+                                    // Ensure these calls are safe if mapView might be null or already destroyed
+                                    currentHolder.mapView.onDestroy()
+                                }
+                            }
+                        }
+                    }
+                lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycle.removeObserver(observer)
+                }
+            }
+        },
     )
 }
 

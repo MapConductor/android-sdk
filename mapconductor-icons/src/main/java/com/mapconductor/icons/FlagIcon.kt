@@ -26,6 +26,7 @@ import com.mapconductor.settings.Settings
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.util.DisplayMetrics
 
 class FlagIcon(
     private val properties: IconProperties,
@@ -181,6 +182,10 @@ class FlagIcon(
         val canvasSize = ResourceProvider.dpToPx(iconSize.value * scale)
 
         val bitmap = createBitmap(canvasSize.toInt(), canvasSize.toInt())
+        // Set bitmap density to control map provider scaling
+        ResourceProvider.getBitmapDensity().let { density ->
+            bitmap.density = (density * DisplayMetrics.DENSITY_DEFAULT).toInt()
+        }
         val canvas = Canvas(bitmap)
 
         val flagPaint =

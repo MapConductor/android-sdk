@@ -14,16 +14,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
-import com.mapconductor.example.ui.PolygonCapableMapViewItems
 
 @Composable
 fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { PolygonMapPageViewModelImpl() }
 
     DemoMapPageScaffold(
-        menuItems = PolygonCapableMapViewItems(viewModel.initCameraPosition),
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->

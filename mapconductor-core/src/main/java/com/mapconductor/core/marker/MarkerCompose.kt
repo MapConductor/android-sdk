@@ -1,6 +1,7 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
@@ -10,6 +11,12 @@ import java.io.Serializable
 fun MapViewScope.Marker(state: MarkerState) {
     LaunchedEffect(state) {
         markerAddSharedFlow.emit(state)
+    }
+
+    DisposableEffect(state.id) {
+        onDispose {
+            markerRemoveSharedFlow.tryEmit(state.id)
+        }
     }
 }
 

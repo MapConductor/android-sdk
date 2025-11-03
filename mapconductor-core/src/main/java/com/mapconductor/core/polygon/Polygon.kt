@@ -20,6 +20,7 @@ class PolygonState(
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
+    zIndex: Int = 0,
     extra: Serializable? = null,
 ) {
     val id =
@@ -39,6 +40,7 @@ class PolygonState(
     var strokeWidth by mutableStateOf(strokeWidth)
     var fillColor by mutableStateOf(fillColor)
     var geodesic by mutableStateOf(geodesic)
+    var zIndex by mutableStateOf(zIndex)
     var points by StateFlowDelegate<List<GeoPoint>>(points)
     var extra by mutableStateOf(extra)
 
@@ -58,6 +60,7 @@ class PolygonState(
         result = 31 * result + this@PolygonState.strokeWidth.hashCode()
         result = 31 * result + this@PolygonState.fillColor.hashCode()
         result = 31 * result + geodesic.hashCode()
+        result = 31 * result + zIndex.hashCode()
         result = 31 * result + points.hashCode()
         return result
     }
@@ -77,6 +80,7 @@ class PolygonState(
             strokeWidth = this@PolygonState.strokeWidth.hashCode(),
             fillColor = this@PolygonState.fillColor.hashCode(),
             geodesic = geodesic.toString().hashCode(),
+            zIndex = zIndex,
             points = listHashCode(points),
             extra = extra?.hashCode() ?: 0,
         )
@@ -90,13 +94,14 @@ data class PolygonFingerPrint(
     val strokeWidth: Int,
     val fillColor: Int,
     val geodesic: Int,
+    val zIndex: Int,
     val points: Int,
     val extra: Int,
 )
 
 data class PolygonEvent(
     val state: PolygonState,
-    val clicked: GeoPoint?,
+    val clicked: GeoPoint,
 )
 
 typealias OnPolygonEventHandler = (PolygonEvent) -> Unit

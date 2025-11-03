@@ -315,4 +315,13 @@ class GoogleMapViewControllerImpl(
         val mapDesignType = GoogleMapDesign.toMapDesignType(holder.map.mapType)
         mapDesignTypeChangeListener?.invoke(mapDesignType)
     }
+
+    // Trigger an initial camera update after the view and map are ready
+    fun sendInitialCameraUpdate() {
+        val w = holder.mapView.width
+        val h = holder.mapView.height
+        if (w <= 0 || h <= 0) return
+        val mapCameraPosition = getMapCameraPosition()
+        backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
+    }
 }

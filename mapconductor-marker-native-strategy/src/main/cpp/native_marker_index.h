@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <vector>
 #include <memory>
+#include <shared_mutex>
 
 class NativeMarkerIndex {
 private:
@@ -14,6 +15,7 @@ private:
     std::unordered_map<std::string, std::unordered_set<std::string>> cellToMarkers;
     std::unordered_map<std::string, std::string> markerToCell;
     double zoom;
+    mutable std::shared_mutex indexMutex;
     
     void removeFromCell(const std::string& markerId, const std::string& cellId);
     void addToCell(const std::string& markerId, const std::string& cellId);

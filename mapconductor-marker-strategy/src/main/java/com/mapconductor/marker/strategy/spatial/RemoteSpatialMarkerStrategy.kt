@@ -10,6 +10,7 @@ import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicLong
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -35,7 +36,7 @@ import kotlinx.coroutines.yield
  */
 class RemoteSpatialMarkerStrategy<ActualMarker>(
     private val context: Context,
-    private val expandMargin: Double = 0.3,
+    private val expandMargin: Double = 0.5,
     private val addOnlyMode: Boolean = false,
     semaphore: Semaphore = Semaphore(1),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
@@ -115,6 +116,12 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
         startBatchProcessor()
     }
 
+    // Cache last camera and renderer to allow recalculation after batches are sent
+    @Volatile private var lastCamera: MapCameraPositionImpl? = null
+
+    @Volatile private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
+    private val cameraSeq = AtomicLong(0L)
+
     private fun startBatchProcessor() {
         batchJob =
             batchScope.launch {
@@ -139,9 +146,90 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
             if (batch.isNotEmpty()) {
                 try {
                     spatialService?.updateMarkers(sessionId, batch)
+                    // Trigger a recalculation for current camera after new markers are registered remotely
+                    triggerRecalculateAfterBatch()
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to process batch update", e)
                     batch.forEach { pendingUpdates.offer(it) }
+                }
+            }
+        }
+    }
+
+    // Fallback path to complete add outside of Compose composition when it cancels mid-flight
+    private fun fallbackAddAsync(
+        params: List<MarkerOverlayRenderer.AddParams>,
+        renderer: MarkerOverlayRenderer<ActualMarker>,
+    ) {
+        if (params.isEmpty()) return
+        batchScope.launch {
+            semaphore.withPermit {
+                try {
+                    // Execute add in chunks to avoid UI stalls
+                    val chunkSize = 1000
+                    var index = 0
+                    while (index < params.size) {
+                        val end = kotlin.math.min(index + chunkSize, params.size)
+                        val chunk = params.subList(index, end)
+                        val added = renderer.onAdd(chunk)
+                        added.forEachIndexed { i, actualMarker ->
+                            actualMarker?.let {
+                                val state = chunk[i].state
+                                val entity =
+                                    MarkerEntityImpl<ActualMarker>(
+                                        state = state,
+                                        marker = actualMarker,
+                                        isRendered = true,
+                                        visible = true,
+                                    )
+                                markerManager.registerEntity(entity)
+                            }
+                        }
+                        index = end
+                    }
+                    renderer.onPostProcess()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Fallback add failed", e)
+                }
+            }
+        }
+    }
+
+    private fun buildCameraDto(cameraPosition: MapCameraPositionImpl): CameraPositionDTO? {
+        val visibleRegion = cameraPosition.visibleRegion ?: return null
+        return CameraPositionDTO(
+            centerLatitude = cameraPosition.position.latitude,
+            centerLongitude = cameraPosition.position.longitude,
+            zoom = cameraPosition.zoom,
+            bearing = cameraPosition.bearing,
+            tilt = cameraPosition.tilt,
+            boundsMinLat = visibleRegion.bounds.southWest?.latitude ?: 0.0,
+            boundsMaxLat = visibleRegion.bounds.northEast?.latitude ?: 0.0,
+            boundsMinLng = visibleRegion.bounds.southWest?.longitude ?: 0.0,
+            boundsMaxLng = visibleRegion.bounds.northEast?.longitude ?: 0.0,
+        )
+    }
+
+    private fun triggerRecalculateAfterBatch() {
+        val renderer = lastRenderer ?: return
+        // Use the latest camera snapshot when executing; do not drop on seq mismatch
+        batchScope.launch {
+            semaphore.withPermit {
+                try {
+                    val cam = lastCamera ?: return@withPermit
+                    val dto = buildCameraDto(cam) ?: return@withPermit
+                    if (!waitForServiceConnection()) return@withPermit
+                    val result =
+                        try {
+                            spatialService?.calculateChanges(sessionId, dto)
+                                ?: SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Recalc after batch failed", e)
+                            SpatialResultDTO(emptyList(), emptyList(), emptyList())
+                        }
+                    processRenderingChanges(result, renderer)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to process recalc after batch", e)
                 }
             }
         }
@@ -181,9 +269,15 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
+        // Cache last known camera and renderer
+        lastCamera = cameraPosition
+        lastRenderer = renderer
+        val seq = cameraSeq.incrementAndGet()
 
         semaphore.withPermit {
             try {
+                // Drop stale request if a newer camera arrived while waiting
+                if (seq != cameraSeq.get()) return@withPermit
                 val cameraDto =
                     CameraPositionDTO(
                         centerLatitude = cameraPosition.position.latitude,
@@ -210,9 +304,22 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                         SpatialResultDTO(emptyList(), emptyList(), emptyList())
                     }
 
-                processRenderingChanges(result, renderer)
+                // Only apply if this request is still current
+                if (seq == cameraSeq.get()) {
+                    processRenderingChanges(result, renderer)
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to process camera change", e)
+                if (e is kotlinx.coroutines.CancellationException) {
+                    // Schedule a follow-up recalculation to avoid missing markers
+                    batchScope.launch {
+                        try {
+                            delay(120)
+                            triggerRecalculateAfterBatch()
+                        } catch (_: Exception) {
+                        }
+                    }
+                }
             }
         }
     }
@@ -247,15 +354,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
             }
         }
 
-        // Execute rendering operations
-        if (markersToRemove.isNotEmpty()) {
-            renderer.onRemove(markersToRemove)
-            markersToRemove.forEach { entity ->
-                entity.isRendered = false
-                entity.marker = null
-            }
-        }
-
+        // Execute rendering operations - add first to avoid visible gaps during fast pans
         if (markersToAdd.isNotEmpty()) {
             val actualMarkers = renderer.onAdd(markersToAdd)
             actualMarkers.forEachIndexed { index, actualMarker ->
@@ -264,8 +363,17 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                     entity?.let { e ->
                         e.marker = actualMarker
                         e.isRendered = true
+                        e.visible = true
                     }
                 }
+            }
+        }
+
+        if (markersToRemove.isNotEmpty()) {
+            renderer.onRemove(markersToRemove)
+            markersToRemove.forEach { entity ->
+                entity.isRendered = false
+                entity.marker = null
             }
         }
 
@@ -349,8 +457,22 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                 markerDTOs.forEach { addToBatch(it) }
                 true
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to add markers", e)
-                false
+                return@withContext if (e is kotlinx.coroutines.CancellationException) {
+                    // Add cancelled; schedule fallback add without noisy log
+                    // Reconstruct params for fallback from the input data
+                    val params =
+                        data.map { state ->
+                            object : MarkerOverlayRenderer.AddParams {
+                                override val state: MarkerState = state
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                            }
+                        }
+                    fallbackAddAsync(params, renderer)
+                    true
+                } else {
+                    Log.e(TAG, "Failed to add markers", e)
+                    false
+                }
             }
         }
 

@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.BaseMapViewSaver
-import com.mapconductor.core.map.InitState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapPaddingsImpl
@@ -38,17 +37,15 @@ class GoogleMapViewStateImpl(
 
     override var mapDesignType: GoogleMapDesignType
         set(value) {
-            value?.let {
-                _mapDesignType = value
-                this.controller?.setMapDesignType(value)
-            }
+            _mapDesignType = value
+            this.controller?.setMapDesignType(value)
         }
         get() = _mapDesignType
     private var controller: GoogleMapViewController? = null
 
     internal fun setController(controller: GoogleMapViewController) {
         this.controller = controller
-        _mapDesignType?.let {
+        _mapDesignType.let {
             controller.setMapDesignType(it)
         }
         controller.moveCamera(_cameraPosition.value)
@@ -63,14 +60,6 @@ class GoogleMapViewStateImpl(
         durationMs: Long?,
         listener: MapViewState.MoveCameraCallback?,
     ) {
-        if (this.isInitialized.value != InitState.Initialized) {
-            _cameraPosition.value =
-                MapCameraPositionImpl(
-                    position = position,
-                )
-            listener?.onComplete()
-            return
-        }
         val currentPosition = this.cameraPosition.value
         val newPosition =
             currentPosition.copy(
@@ -88,15 +77,13 @@ class GoogleMapViewStateImpl(
         listener: MapViewState.MoveCameraCallback?,
     ) {
         controller?.let { ctrl ->
-            if (this.isInitialized.value == InitState.Initialized) {
-                val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
-                if (durationMs == null || durationMs == 0L) {
-                    ctrl.moveCamera(dstCameraPosition, listener)
-                } else {
-                    ctrl.animateCamera(dstCameraPosition, durationMs, listener)
-                }
-                return
+            val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
+            if (durationMs == null || durationMs == 0L) {
+                ctrl.moveCamera(dstCameraPosition, listener)
+            } else {
+                ctrl.animateCamera(dstCameraPosition, durationMs, listener)
             }
+            return@let
         }
         _cameraPosition.value = cameraPosition
         listener?.onComplete()
@@ -116,7 +103,7 @@ class GoogleMapViewSaver : BaseMapViewSaver<GoogleMapViewStateImpl>() {
         state: GoogleMapViewStateImpl,
         bundle: Bundle,
     ) {
-        bundle.putInt("id", state.mapDesignType?.id ?: GoogleMapDesign.None.id)
+        bundle.putInt("id", state.mapDesignType.id)
     }
 
     override fun createState(
