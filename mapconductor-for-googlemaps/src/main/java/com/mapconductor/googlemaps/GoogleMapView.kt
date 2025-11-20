@@ -15,6 +15,7 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
@@ -40,6 +41,9 @@ fun GoogleMapsView(
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
@@ -61,7 +65,7 @@ fun GoogleMapsView(
         modifier = modifier,
         viewProvider = {
             val cameraPosition =
-                state.cameraPosition.value.let { camera ->
+                state.cameraPosition.let { camera ->
                     CameraPosition
                         .Builder()
                         .apply {
@@ -112,7 +116,18 @@ fun GoogleMapsView(
                 holder = holder,
             ).also { controller ->
                 state.setController(controller)
-                controller.setCameraMoveListener(state::onCameraChange)
+                controller.setCameraMoveStartListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveStart?.invoke(it)
+                }
+                controller.setCameraMoveListener {
+                    state.updateCameraPosition(it)
+                    onCameraMove?.invoke(it)
+                }
+                controller.setCameraMoveEndListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveEnd?.invoke(it)
+                }
                 controller.setMapClickListener(onMapClick)
                 controller.setOnMarkerClickListener(onMarkerClick)
                 controller.setOnMarkerDragStart(onMarkerDragStart)

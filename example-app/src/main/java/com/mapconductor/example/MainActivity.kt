@@ -12,8 +12,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DemoAppScreen(
-                initPage = "polygon-geodesic",
-//                initPage = "startup",
+//                initPage = "polygon-geodesic",
+                initPage = "startup",
             )
         }
     }

@@ -15,7 +15,7 @@ import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
@@ -40,6 +40,9 @@ fun HereMapView(
     markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
@@ -100,7 +103,7 @@ fun HereMapView(
                     polygonController = polygonController,
                     circleController = circleController,
                 )
-            controller.setCameraMoveListener(state::onCameraChange)
+//            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
@@ -123,16 +126,21 @@ fun HereMapView(
             controllerRef.value = controller
 
             return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
-                val restoreCameraPosition = state.cameraPosition.value
-                controller.moveCamera(
-                    position = restoreCameraPosition,
-                    listener =
-                        object : MapViewState.MoveCameraCallback {
-                            override fun onComplete() {
-                                cont.resume(controller) { }
-                            }
-                        },
-                )
+                controller.setCameraMoveListener {
+                    controller.setCameraMoveStartListener {
+                        state.updateCameraPosition(it)
+                        onCameraMoveStart?.invoke(it)
+                    }
+                    controller.setCameraMoveListener {
+                        state.updateCameraPosition(it)
+                        onCameraMove?.invoke(it)
+                    }
+                    controller.setCameraMoveEndListener {
+                        state.updateCameraPosition(it)
+                        onCameraMoveEnd?.invoke(it)
+                    }
+                    cont.resume(controller) { }
+                }
             }
         },
         scope = scope,

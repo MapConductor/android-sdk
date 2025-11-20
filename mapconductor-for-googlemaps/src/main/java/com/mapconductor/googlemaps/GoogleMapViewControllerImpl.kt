@@ -17,7 +17,6 @@ import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -70,22 +69,17 @@ class GoogleMapViewControllerImpl(
         holder.map.setOnMapLoadedCallback(this)
     }
 
-    override fun moveCamera(
-        position: MapCameraPositionImpl,
-        listener: MapViewState.MoveCameraCallback?,
-    ) {
+    override fun moveCamera(position: MapCameraPositionImpl) {
         coroutine.launch {
             val dstCameraPosition = position.toCameraPosition()
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
             holder.map.moveCamera(cameraUpdate)
-            listener?.onComplete()
         }
     }
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
         duration: Long,
-        listener: MapViewState.MoveCameraCallback?,
     ) {
         val dstCameraPosition = position.toCameraPosition()
         coroutine.launch {
@@ -95,11 +89,11 @@ class GoogleMapViewControllerImpl(
                 duration.toInt(),
                 object : CancelableCallback {
                     override fun onCancel() {
-                        listener?.onComplete()
+                        cameraMoveEndCallback?.invoke(getMapCameraPosition())
                     }
 
                     override fun onFinish() {
-                        listener?.onComplete()
+                        cameraMoveEndCallback?.invoke(getMapCameraPosition())
                     }
                 },
             )
@@ -135,6 +129,7 @@ class GoogleMapViewControllerImpl(
         backCoroutine.launch {
             notifyMapCameraPosition(mapCameraPosition)
         }
+        cameraMoveCallback?.invoke(getMapCameraPosition())
     }
 
     override fun onCameraIdle() {
@@ -142,23 +137,15 @@ class GoogleMapViewControllerImpl(
         backCoroutine.launch {
             markerController.onCameraChanged(mapCameraPosition)
         }
-        cameraMoveCallback?.let { callBack ->
-            callBack(mapCameraPosition)
-        }
+        cameraMoveEndCallback?.invoke(getMapCameraPosition())
     }
 
     override fun onCameraMoveStarted(p0: Int) {
-        cameraMoveCallback?.let { callBack ->
-            val mapCameraPosition = getMapCameraPosition()
-            callBack(mapCameraPosition)
-        }
+        cameraMoveStartCallback?.invoke(getMapCameraPosition())
     }
 
     override fun onCameraMoveCanceled() {
-        cameraMoveCallback?.let { callBack ->
-            val mapCameraPosition = getMapCameraPosition()
-            callBack(mapCameraPosition)
-        }
+        cameraMoveEndCallback?.invoke(getMapCameraPosition())
     }
 
     private fun getMapCameraPosition(): MapCameraPositionImpl {

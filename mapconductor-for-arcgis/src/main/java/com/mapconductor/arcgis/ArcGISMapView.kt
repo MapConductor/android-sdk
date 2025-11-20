@@ -22,6 +22,7 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
@@ -43,6 +44,9 @@ fun ArcGISMapView(
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
@@ -139,7 +143,18 @@ fun ArcGISMapView(
                 polygonController = polygonController,
                 circleController = circleController,
             ).also { controller ->
-                controller.setCameraMoveListener(state::onCameraChange)
+                controller.setCameraMoveStartListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveStart?.invoke(it)
+                }
+                controller.setCameraMoveListener {
+                    state.updateCameraPosition(it)
+                    onCameraMove?.invoke(it)
+                }
+                controller.setCameraMoveEndListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveEnd?.invoke(it)
+                }
                 controller.setMapClickListener(onMapClick)
                 controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolylineClickListener(onPolylineClick)
@@ -153,7 +168,7 @@ fun ArcGISMapView(
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 state.setController(controller)
 
-                val restoreCameraPosition = state.cameraPosition.value
+                val restoreCameraPosition = state.cameraPosition
                 controller.moveCamera(restoreCameraPosition)
                 // Post an initial camera update after layout to compute visibleRegion correctly
                 holder.mapView.post { controller.sendInitialCameraUpdate() }

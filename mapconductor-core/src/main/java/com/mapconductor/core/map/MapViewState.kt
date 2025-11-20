@@ -2,8 +2,6 @@ package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.features.GeoPointImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 
 enum class InitState {
@@ -16,33 +14,24 @@ enum class InitState {
 }
 
 interface MapViewState<ActualMapDesignType> {
-    interface MoveCameraCallback {
-        fun onComplete()
-    }
-
     val id: String
-    val initCameraPosition: MapCameraPositionImpl
-    val cameraPosition: StateFlow<MapCameraPositionImpl?>
+    val cameraPosition: MapCameraPositionImpl
     var mapDesignType: ActualMapDesignType
 
     fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
         durationMs: Long? = 0,
-        listener: MoveCameraCallback? = null,
     )
 
     fun moveCameraTo(
         position: GeoPointImpl,
         durationMs: Long? = 0,
-        listener: MoveCameraCallback? = null,
     )
 
     fun getMapViewHolder(): MapViewHolder<*, *>?
 }
 
-abstract class MapViewStateImpl<ActualMapDesignType>(
-    protected val mainCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : MapViewState<ActualMapDesignType> {
+abstract class MapViewStateImpl<ActualMapDesignType> : MapViewState<ActualMapDesignType> {
     private val tag = this.javaClass.name
 }
 

@@ -94,7 +94,7 @@ class PolylinePageViewModelImpl :
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
 
     override fun onMapViewChanged(state: MapViewState<*>) {
-        mapViewState.value?.cameraPosition?.value?.let {
+        mapViewState.value?.cameraPosition?.let {
             state.moveCameraTo(it)
         }
         this._mapViewState.value = state

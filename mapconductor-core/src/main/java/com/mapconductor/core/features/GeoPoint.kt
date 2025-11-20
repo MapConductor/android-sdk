@@ -1,6 +1,5 @@
 package com.mapconductor.core.features
 
-import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.toFixed
 import kotlin.math.abs
 
@@ -166,37 +165,3 @@ fun GeoPoint.normalize(): GeoPointImpl =
  * Extension function to check if a GeoPoint is valid
  */
 fun GeoPoint.isValid(): Boolean = latitude in -90.0..90.0 && longitude in -180.0..180.0
-
-/**
- * Extension function to calculate distance to another point
- */
-fun GeoPoint.distanceTo(other: GeoPoint): Double = Spherical.computeDistanceBetween(this, other)
-
-/**
- * Extension function to calculate heading to another point
- */
-fun GeoPoint.headingTo(other: GeoPoint): Double = Spherical.computeHeading(this, other)
-
-/**
- * Extension function to move to a new position
- */
-fun GeoPoint.offset(
-    distance: Double,
-    heading: Double,
-): GeoPointImpl = Spherical.computeOffset(this, distance, heading)
-
-/**
- * Extension function for spherical interpolation (considers Earth's curvature)
- */
-fun GeoPoint.interpolateTo(
-    other: GeoPoint,
-    fraction: Double,
-): GeoPointImpl = Spherical.sphericalInterpolate(this, other, fraction)
-
-/**
- * Extension function for linear interpolation (ignores Earth's curvature)
- */
-fun GeoPoint.linearInterpolateTo(
-    other: GeoPoint,
-    fraction: Double,
-): GeoPointImpl = Spherical.linearInterpolate(this, other, fraction)

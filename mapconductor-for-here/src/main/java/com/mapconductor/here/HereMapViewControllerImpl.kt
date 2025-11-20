@@ -25,7 +25,6 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewHolder
-import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -137,10 +136,7 @@ class HereMapViewControllerImpl(
         holder.mapView.gestures.longPressListener = this
     }
 
-    override fun moveCamera(
-        position: MapCameraPositionImpl,
-        listener: MoveCameraCallback?,
-    ) {
+    override fun moveCamera(position: MapCameraPositionImpl) {
         val camera = this.holder.mapView.camera
         val adjustCameraUpdate =
             MapCameraUpdateFactory.lookAt(
@@ -150,13 +146,11 @@ class HereMapViewControllerImpl(
             )
 
         camera.applyUpdate(adjustCameraUpdate)
-        listener?.onComplete()
     }
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
         durationMs: Long,
-        listener: MoveCameraCallback?,
     ) {
         val camera = this.holder.mapView.camera
 
@@ -176,9 +170,15 @@ class HereMapViewControllerImpl(
             camera.startAnimation(animation) { animState ->
                 when (animState) {
                     // Do nothing here
-                    AnimationState.STARTED -> Unit
-                    AnimationState.COMPLETED -> listener?.onComplete()
-                    AnimationState.CANCELLED -> listener?.onComplete()
+                    AnimationState.STARTED ->
+                        cameraMoveStartCallback?.invoke(
+                            getMapCameraPosition(holder.mapView.camera.state)!!,
+                        )
+                    AnimationState.COMPLETED -> cameraMoveEndCallback?.invoke(position)
+                    AnimationState.CANCELLED ->
+                        cameraMoveEndCallback?.invoke(
+                            getMapCameraPosition(holder.mapView.camera.state)!!,
+                        )
                 }
             }
         }
@@ -187,6 +187,7 @@ class HereMapViewControllerImpl(
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
         backCoroutine.launch {
             getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
+                cameraMoveCallback?.invoke(mapCameraPosition)
                 notifyMapCameraPosition(mapCameraPosition)
             }
         }

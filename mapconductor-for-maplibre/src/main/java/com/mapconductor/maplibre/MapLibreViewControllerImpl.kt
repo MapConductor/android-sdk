@@ -8,7 +8,6 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -149,30 +148,28 @@ class MapLibreViewControllerImpl(
         circleController.clear()
     }
 
-    override fun moveCamera(
-        position: MapCameraPositionImpl,
-        listener: MapViewState.MoveCameraCallback?,
-    ) {
+    override fun moveCamera(position: MapCameraPositionImpl) {
         coroutine.launch {
+            val cameraPos = position.toCameraPosition()
             val cameraUpdate =
                 CameraUpdateFactory
-                    .newCameraPosition(position.toCameraPosition())
+                    .newCameraPosition(cameraPos)
             holder.map.moveCamera(cameraUpdate)
-            listener?.onComplete()
+            cameraMoveEndCallback?.invoke(position)
         }
     }
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
         duration: Long,
-        listener: MapViewState.MoveCameraCallback?,
     ) {
         coroutine.launch {
+            val cameraPos = position.toCameraPosition()
             val cameraUpdate =
                 CameraUpdateFactory
-                    .newCameraPosition(position.toCameraPosition())
+                    .newCameraPosition(cameraPos)
             holder.map.animateCamera(cameraUpdate, duration.toInt())
-            listener?.onComplete()
+            cameraMoveEndCallback?.invoke(position)
         }
     }
 
@@ -334,7 +331,11 @@ class MapLibreViewControllerImpl(
     }
 
     override fun onMoveBegin(detector: MoveGestureDetector) {
-        // Do nothing here
+        coroutine.launch {
+            getMapCameraPosition(holder.map.cameraPosition.toMapCameraPosition())?.let { mapCameraPosition ->
+                cameraMoveStartCallback?.invoke(mapCameraPosition)
+            }
+        }
     }
 
     override fun onMove(detector: MoveGestureDetector) {
@@ -431,6 +432,7 @@ class MapLibreViewControllerImpl(
                 backCoroutine.launch {
                     notifyMapCameraPosition(mapCameraPosition)
                 }
+                cameraMoveCallback?.invoke(mapCameraPosition)
             }
         }
     }
@@ -441,6 +443,7 @@ class MapLibreViewControllerImpl(
                 backCoroutine.launch {
                     notifyMapCameraPosition(mapCameraPosition)
                 }
+                cameraMoveEndCallback?.invoke(mapCameraPosition)
             }
         }
     }

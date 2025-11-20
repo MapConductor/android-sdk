@@ -19,7 +19,6 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -65,10 +64,10 @@ class ArcGISMapViewControllerImpl(
             holder.map.viewpointChanged.collect { onViewpointChange() }
         }
         coroutine.launch {
-            holder.map.onInteractiveZooming.collect { onlyCallback() }
+            holder.map.onInteractiveZooming.collect { invokeCameraMoveCallback() }
         }
         coroutine.launch {
-            holder.map.onRotate.collect { onlyCallback() }
+            holder.map.onRotate.collect { invokeCameraMoveCallback() }
         }
         coroutine.launch {
             holder.map.onLongPress.collect { onMapLongPress(it) }
@@ -91,9 +90,27 @@ class ArcGISMapViewControllerImpl(
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
-    private suspend fun onlyCallback() {
-        getMapCameraPosition()?.let { mapCameraPosition ->
-            cameraMoveCallback?.invoke(mapCameraPosition)
+    private suspend fun invokeCameraMoveStartCallback() {
+        cameraMoveCallback?.let {
+            getMapCameraPosition()?.let { mapCameraPosition ->
+                cameraMoveStartCallback?.invoke(mapCameraPosition)
+            }
+        }
+    }
+
+    private suspend fun invokeCameraMoveCallback() {
+        cameraMoveCallback?.let {
+            getMapCameraPosition()?.let { mapCameraPosition ->
+                cameraMoveCallback?.invoke(mapCameraPosition)
+            }
+        }
+    }
+
+    private suspend fun invokeCameraMoveEndCallback() {
+        cameraMoveEndCallback?.let {
+            getMapCameraPosition()?.let { mapCameraPosition ->
+                cameraMoveEndCallback?.invoke(mapCameraPosition)
+            }
         }
     }
 
@@ -168,7 +185,6 @@ class ArcGISMapViewControllerImpl(
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {
-        onlyCallback()
         markerController.selectedMarker?.also {
             val screenPoint = event.screenCoordinate
             val point = holder.map.screenToLocation(screenPoint).getOrNull() ?: return
@@ -177,6 +193,7 @@ class ArcGISMapViewControllerImpl(
             it.state.position = position
             markerController.dragListener?.invoke(it.state)
         }
+        invokeCameraMoveCallback()
     }
 
     private suspend fun onMapUp(event: UpEvent) {
@@ -312,32 +329,30 @@ class ArcGISMapViewControllerImpl(
         this.circleController.clickListener = listener
     }
 
-    override fun moveCamera(
-        position: MapCameraPositionImpl,
-        listener: MapViewState.MoveCameraCallback?,
-    ) {
+    override fun moveCamera(position: MapCameraPositionImpl) {
         val dstCameraPosition = toCameraWithView(position)
 
         holder.map.setViewpointCamera(
             camera = dstCameraPosition,
         )
-        listener?.onComplete()
+        coroutine.launch {
+            invokeCameraMoveEndCallback()
+        }
     }
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
         duration: Long,
-        listener: MapViewState.MoveCameraCallback?,
     ) {
         val dstCameraPosition = toCameraWithView(position)
 
         coroutine.launch {
-            val result =
-                holder.map.setViewpointCameraAnimated(
-                    camera = dstCameraPosition,
-                    duration = duration.toFloat() / 1000.0f,
-                )
-            listener?.onComplete()
+            invokeCameraMoveStartCallback()
+            holder.map.setViewpointCameraAnimated(
+                camera = dstCameraPosition,
+                duration = duration.toFloat() / 1000.0f,
+            )
+            invokeCameraMoveEndCallback()
         }
     }
 

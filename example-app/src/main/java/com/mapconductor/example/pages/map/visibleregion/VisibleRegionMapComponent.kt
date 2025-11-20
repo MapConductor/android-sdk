@@ -29,7 +29,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +74,14 @@ fun VisibleRegionMapComponent(
             modifier = Modifier.fillMaxSize(),
             state = mapViewState,
             onMapLoaded = onMapLoaded,
+            onCameraMoveEnd = { cameraPosition ->
+                currentCameraPosition = cameraPosition
+                onCameraChanged?.invoke(cameraPosition)
+
+                cameraPosition.visibleRegion?.let { visibleRegion ->
+                    visibleRegionInfo = createVisibleRegionInfo(visibleRegion)
+                }
+            },
         ) {
             currentCameraPosition?.visibleRegion?.let { visibleRegion ->
                 val bounds = visibleRegion.bounds
@@ -166,19 +173,6 @@ fun VisibleRegionMapComponent(
             cameraPosition = currentCameraPosition,
             visibleRegionInfo = visibleRegionInfo,
         )
-    }
-
-    LaunchedEffect(mapViewState.cameraPosition) {
-        mapViewState.cameraPosition.collect { position ->
-            position?.let {
-                currentCameraPosition = it
-                onCameraChanged?.invoke(it)
-
-                it.visibleRegion?.let { visibleRegion ->
-                    visibleRegionInfo = createVisibleRegionInfo(visibleRegion)
-                }
-            }
-        }
     }
 }
 

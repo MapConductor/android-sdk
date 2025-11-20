@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerManager
@@ -46,6 +47,9 @@ fun MapLibreMapView(
     markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
@@ -66,7 +70,7 @@ fun MapLibreMapView(
         modifier = modifier,
         viewProvider = {
             val cameraPosition =
-                state.cameraPosition.value.toCameraPosition()
+                state.cameraPosition.toCameraPosition()
             val mapInitOptions =
                 MapLibreMapOptions
                     .createFromAttributes(context)
@@ -83,7 +87,7 @@ fun MapLibreMapView(
             suspendCancellableCoroutine { continuation ->
                 mapView.getMapAsync { map ->
                     // Set style and wait for it to load completely
-                    map.setStyle(state.mapDesignType.styleJsonURL) { loadedStyle ->
+                    map.setStyle(state.mapDesignType.styleJsonURL) {
                         // Resume only after style is fully loaded
                         continuation.resume(MapLibreMapViewHolderImpl(mapView, map)) {}
                     }
@@ -116,8 +120,19 @@ fun MapLibreMapView(
                 circleController = circleController,
             ).also { controller ->
                 // Store controller reference in holder
-                (holder as? MapLibreMapViewHolderImpl)?.setController(controller)
-                controller.setCameraMoveListener(state::onCameraChange)
+                holder.setController(controller)
+                controller.setCameraMoveStartListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveStart?.invoke(it)
+                }
+                controller.setCameraMoveListener {
+                    state.updateCameraPosition(it)
+                    onCameraMove?.invoke(it)
+                }
+                controller.setCameraMoveEndListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveEnd?.invoke(it)
+                }
                 controller.setMapClickListener(onMapClick)
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 controller.setOnMarkerDragStart(onMarkerDragStart)

@@ -9,6 +9,7 @@ import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerRenderingStrategy
@@ -35,6 +36,9 @@ fun MapViewContainer(
     state: MapViewState<*>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
@@ -56,6 +60,9 @@ fun MapViewContainer(
                 state = state,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
@@ -76,6 +83,9 @@ fun MapViewContainer(
                 state = state,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
@@ -95,6 +105,9 @@ fun MapViewContainer(
                 state = state,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
@@ -114,6 +127,9 @@ fun MapViewContainer(
                 state = state,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,
@@ -133,6 +149,9 @@ fun MapViewContainer(
                 state = state,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
                 onMarkerClick = onMarkerClick,
                 onMarkerDragStart = onMarkerDragStart,
                 onMarkerDrag = onMarkerDrag,

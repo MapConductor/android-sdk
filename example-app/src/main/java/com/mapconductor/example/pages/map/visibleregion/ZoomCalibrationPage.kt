@@ -192,7 +192,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
             Button(
                 onClick = {
                     // Extract visible region data from Google Maps view
-                    googleMapViewState.cameraPosition.value.visibleRegion?.let { visibleRegion ->
+                    googleMapViewState.cameraPosition.visibleRegion?.let { visibleRegion ->
                         val info = createVisibleRegionInfo(visibleRegion)
                         googleMapResults = googleMapResults + (currentZoomLevel to info)
                         measurementMessage =
@@ -213,7 +213,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
             Button(
                 onClick = {
                     // Extract visible region data from ArcGIS view
-                    arcGisMapViewState.cameraPosition.value?.visibleRegion?.let { visibleRegion ->
+                    arcGisMapViewState.cameraPosition.visibleRegion?.let { visibleRegion ->
                         val info = createVisibleRegionInfo(visibleRegion)
                         arcgisResults = arcgisResults + (currentZoomLevel to info)
                         measurementMessage =

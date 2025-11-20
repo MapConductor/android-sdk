@@ -14,6 +14,7 @@ import com.mapbox.maps.MapView
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerManager
@@ -48,6 +49,9 @@ fun MapboxMapView(
     markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
@@ -71,7 +75,7 @@ fun MapboxMapView(
         modifier = modifier,
         viewProvider = {
             val cameraOptions =
-                state.cameraPosition.value.toCameraOptions()
+                state.cameraPosition.toCameraOptions()
 
             val styleUri = state.mapDesignType.getValue()
 
@@ -108,7 +112,18 @@ fun MapboxMapView(
                 polygonController = polygonController,
                 circleController = circleController,
             ).also { controller ->
-                controller.setCameraMoveListener(state::onCameraChange)
+                controller.setCameraMoveStartListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveStart?.invoke(it)
+                }
+                controller.setCameraMoveListener {
+                    state.updateCameraPosition(it)
+                    onCameraMove?.invoke(it)
+                }
+                controller.setCameraMoveEndListener {
+                    state.updateCameraPosition(it)
+                    onCameraMoveEnd?.invoke(it)
+                }
                 controller.setMapClickListener(onMapClick)
                 controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolylineClickListener(onPolylineClick)

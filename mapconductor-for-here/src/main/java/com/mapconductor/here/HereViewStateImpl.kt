@@ -12,52 +12,45 @@ import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.MapViewState.MoveCameraCallback
 import com.mapconductor.core.map.MapViewStateImpl
 import java.util.UUID
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 interface HereViewState : MapViewState<HereMapDesignType>
 
 class HereViewStateImpl(
     override val id: String,
     mapDesignType: HereMapDesignType,
-    override val initCameraPosition: MapCameraPositionImpl = MapCameraPositionImpl.Default,
+    cameraPosition: MapCameraPositionImpl = MapCameraPositionImpl.Default,
 ) : MapViewStateImpl<HereMapDesignType>(),
     HereViewState {
+    private var _cameraPosition: MapCameraPositionImpl = cameraPosition
+    override val cameraPosition: MapCameraPositionImpl
+        get() = _cameraPosition
     private var controller: HereMapViewController? = null
 
-    // Camera center position
-    private val _cameraPosition = MutableStateFlow<MapCameraPositionImpl>(initCameraPosition)
-    override val cameraPosition: StateFlow<MapCameraPositionImpl> = _cameraPosition.asStateFlow()
     private var _mapDesignType: HereMapDesignType = mapDesignType
 
     override var mapDesignType: HereMapDesignType
         set(value) {
-            value?.let {
-                _mapDesignType = value
-                this.controller?.setMapDesignType(value)
-            }
+            _mapDesignType = value
+            this.controller?.setMapDesignType(value)
         }
         get() = _mapDesignType
 
     override fun moveCameraTo(
         position: GeoPointImpl,
         durationMs: Long?,
-        listener: MoveCameraCallback?,
     ) {
-        val currentPosition = this.cameraPosition.value
+        val currentPosition = this.cameraPosition
         val newPosition =
             currentPosition.copy(
                 position = position,
             )
-        this.moveCameraTo(newPosition, durationMs, listener)
+        this.moveCameraTo(newPosition, durationMs)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -66,41 +59,35 @@ class HereViewStateImpl(
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
         durationMs: Long?,
-        listener: MoveCameraCallback?,
     ) {
         controller?.let { ctrl ->
             val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
             if (durationMs == null || durationMs == 0L) {
-                ctrl.moveCamera(dstCameraPosition, listener)
+                ctrl.moveCamera(dstCameraPosition)
             } else {
-                ctrl.animateCamera(dstCameraPosition, durationMs, listener)
+                ctrl.animateCamera(dstCameraPosition, durationMs)
             }
             return@let
         }
-        _cameraPosition.value = cameraPosition
-        listener?.onComplete()
-    }
-
-    internal fun onCameraChange(cameraState: MapCameraPositionImpl) {
-        this._cameraPosition.value = cameraState
+        this._cameraPosition = cameraPosition
     }
 
     internal fun setController(controller: HereMapViewController) {
         this.controller = controller
-        _mapDesignType?.let {
-            controller.setMapDesignType(it)
-        }
-        controller.moveCamera(_cameraPosition.value)
+//        controller.setMapDesignType(_mapDesignType)
+        controller.moveCamera(this.cameraPosition)
     }
 
     internal fun onMapDesignTypeChange(value: HereMapDesignType) {
         _mapDesignType = value
     }
+
+    internal fun updateCameraPosition(cameraPosition: MapCameraPositionImpl) {
+        this._cameraPosition = cameraPosition
+    }
 }
 
 class HereMapViewSaver : BaseMapViewSaver<HereViewStateImpl>() {
-    override fun extractCameraPosition(state: HereViewStateImpl): MapCameraPositionImpl? = state.cameraPosition.value
-
     override fun saveMapDesign(
         state: HereViewStateImpl,
         bundle: Bundle,
@@ -119,7 +106,7 @@ class HereMapViewSaver : BaseMapViewSaver<HereViewStateImpl>() {
                 HereMapDesign.CreateById(
                     id = mapDesignBundle?.getInt("id") ?: HereMapDesign.NormalDay.id.value,
                 ),
-            initCameraPosition = cameraPosition,
+            cameraPosition = cameraPosition,
         )
 
     override fun getCameraPaddings(): MapPaddings? = MapPaddingsImpl.Zeros
@@ -144,7 +131,7 @@ fun rememberHereMapViewState(
                 HereViewStateImpl(
                     id = stateId,
                     mapDesignType = mapDesign,
-                    initCameraPosition = MapCameraPositionImpl.from(cameraPosition),
+                    cameraPosition = MapCameraPositionImpl.from(cameraPosition),
                 ),
             )
         }

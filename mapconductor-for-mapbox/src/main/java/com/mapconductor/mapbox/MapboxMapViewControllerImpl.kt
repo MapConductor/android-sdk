@@ -30,7 +30,6 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -210,21 +209,17 @@ internal class MapboxMapViewControllerImpl(
         return mapCameraPosition
     }
 
-    override fun moveCamera(
-        position: MapCameraPositionImpl,
-        listener: MapViewState.MoveCameraCallback?,
-    ) {
+    override fun moveCamera(position: MapCameraPositionImpl) {
         val cameraOptions = position.toCameraOptions()
         coroutine.launch {
             holder.map.setCamera(cameraOptions)
+            cameraMoveEndCallback?.invoke(position)
         }
-        listener?.onComplete()
     }
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
         duration: Long,
-        listener: MapViewState.MoveCameraCallback?,
     ) {
         val targetCamera = position.toCameraOptions()
 
@@ -237,15 +232,15 @@ internal class MapboxMapViewControllerImpl(
         val animatorListener =
             object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
-                    // Do nothing here
+                    cameraMoveStartCallback?.invoke(position)
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
-                    listener?.onComplete()
+                    cameraMoveEndCallback?.invoke(position)
                 }
 
                 override fun onAnimationCancel(animation: Animator) {
-                    listener?.onComplete()
+                    cameraMoveCallback?.invoke(holder.map.cameraState.toMapCameraPosition())
                 }
 
                 override fun onAnimationRepeat(animation: Animator) {

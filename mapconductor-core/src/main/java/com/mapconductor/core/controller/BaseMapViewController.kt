@@ -7,14 +7,24 @@ import com.mapconductor.core.map.OnMapEventHandler
 
 abstract class BaseMapViewController : MapViewController {
     private var overlayControllers = mutableListOf<OverlayController<*, *, *>>()
+    protected var cameraMoveStartCallback: OnCameraMoveHandler? = null
     protected var cameraMoveCallback: OnCameraMoveHandler? = null
+    protected var cameraMoveEndCallback: OnCameraMoveHandler? = null
     protected var mapClickCallback: OnMapEventHandler? = null
     protected var mapLongClickCallback: OnMapEventHandler? = null
 
     protected var mapLoadedCallback: InternalOnMapLoadedHandler? = null
 
+    override fun setCameraMoveStartListener(listener: OnCameraMoveHandler?) {
+        this.cameraMoveStartCallback = listener
+    }
+
     override fun setCameraMoveListener(listener: OnCameraMoveHandler?) {
         this.cameraMoveCallback = listener
+    }
+
+    override fun setCameraMoveEndListener(listener: OnCameraMoveHandler?) {
+        this.cameraMoveEndCallback = listener
     }
 
     override fun setMapClickListener(listener: OnMapEventHandler?) {

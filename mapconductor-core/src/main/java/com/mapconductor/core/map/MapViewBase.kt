@@ -94,7 +94,6 @@ fun <
     val controllerRef = remember { Ref<SpecificController>() }
     val holderRef = remember { Ref<SpecificHolder>() }
     var initState by remember { mutableStateOf<InitState>(InitState.NotStarted) }
-    val cameraPosition by state.cameraPosition.collectAsState()
     val bubbles by scope.bubbleFlow.collectAsState()
     val cameraTick = remember { mutableIntStateOf(0) }
     val controller = controllerRef.value
@@ -171,7 +170,7 @@ fun <
     }
 
     LaunchedEffect(Unit) {
-        snapshotFlow { cameraPosition }
+        snapshotFlow { state.cameraPosition }
             .map { camera ->
                 // 丸めて比較キーに
                 cameraInvalidationKey(camera)

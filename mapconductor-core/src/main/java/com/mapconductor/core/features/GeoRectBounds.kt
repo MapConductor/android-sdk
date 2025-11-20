@@ -251,7 +251,6 @@ class GeoRectBounds(
             ne1.latitude >= sw2.latitude - epsilon &&
                 ne2.latitude >= sw1.latitude - epsilon
         if (!latOverlap) {
-//            d("intersects: lat no-overlap: this=${this}, other=${other}")
             return false
         }
 
@@ -284,17 +283,13 @@ class GeoRectBounds(
         val intervals1 = lonIntervals(w1, e1)
         val intervals2 = lonIntervals(w2, e2)
 
-//        d("intersects: this=${this} (norm=[$w1,$e1] -> $intervals1), other=${other} (norm=[$w2,$e2] -> $intervals2)")
-
         // Check if any pair of intervals overlaps (inclusive)
         for ((aStart, aEnd) in intervals1) {
             for ((bStart, bEnd) in intervals2) {
                 val overlap = aStart <= bEnd && aEnd >= bStart
-//                d("check intervals [$aStart,$aEnd] vs [$bStart,$bEnd] => $overlap")
                 if (overlap) return true
             }
         }
-//        d("intersects: lng no-overlap: this=${this}, other=${other}")
         return false
     }
 
@@ -305,5 +300,5 @@ class GeoRectBounds(
             "((${_southWest!!.latitude}, ${_southWest!!.longitude}), (${_northEast!!.latitude}, ${_northEast!!.longitude}))"
         }
 
-    fun equalsTo(other: GeoRectBounds): Boolean = this.southWest == other.southWest && this.northEast == other.northEast
+    fun equals(other: GeoRectBounds): Boolean = this.southWest == other.southWest && this.northEast == other.northEast
 }

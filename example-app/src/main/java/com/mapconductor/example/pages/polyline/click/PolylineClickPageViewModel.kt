@@ -67,7 +67,7 @@ class PolylineClickPageViewModelImpl :
 
     override fun onMapViewChanged(state: MapViewState<*>) {
         _markers.value = emptyList<MarkerState>()
-        mapViewState.value?.cameraPosition?.value?.let {
+        mapViewState.value?.cameraPosition?.let {
             state.moveCameraTo(it)
         }
         this._mapViewState.value = state

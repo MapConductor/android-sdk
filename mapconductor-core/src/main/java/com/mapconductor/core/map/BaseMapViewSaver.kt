@@ -8,12 +8,7 @@ import android.os.Bundle
  * Base class for MapView state savers
  * @param T MapViewState type
  */
-abstract class BaseMapViewSaver<T : Any> {
-    /**
-     * Extract camera position from the state, handling null cases
-     */
-    protected abstract fun extractCameraPosition(state: T): MapCameraPositionImpl?
-
+abstract class BaseMapViewSaver<T : MapViewState<*>> {
     /**
      * Save map design type to bundle
      */
@@ -30,11 +25,6 @@ abstract class BaseMapViewSaver<T : Any> {
         mapDesignBundle: Bundle?,
         cameraPosition: MapCameraPositionImpl,
     ): T
-
-    /**
-     * Get default camera position for fallback
-     */
-    protected open fun getDefaultCameraPosition(): MapCameraPositionImpl = MapCameraPositionImpl.Default
 
     /**
      * Get paddings for restored camera position (can be overridden by subclasses)
@@ -75,11 +65,8 @@ abstract class BaseMapViewSaver<T : Any> {
      */
     protected abstract fun getStateId(state: T): String
 
-    private fun createCameraBundle(state: T): Bundle? {
-        val cameraState = extractCameraPosition(state)
-        val defaultCamera = getDefaultCameraPosition()
-
-        return cameraState?.let {
+    private fun createCameraBundle(state: T): Bundle =
+        state.cameraPosition.let {
             Bundle().apply {
                 putDouble("zoom", it.zoom)
                 putDouble("tilt", it.tilt)
@@ -87,14 +74,7 @@ abstract class BaseMapViewSaver<T : Any> {
                 putDouble("latitude", it.position.latitude)
                 putDouble("longitude", it.position.longitude)
             }
-        } ?: Bundle().apply {
-            putDouble("zoom", defaultCamera.zoom)
-            putDouble("tilt", defaultCamera.tilt)
-            putDouble("bearing", defaultCamera.bearing)
-            putDouble("latitude", defaultCamera.position.latitude)
-            putDouble("longitude", defaultCamera.position.longitude)
         }
-    }
 
     private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPositionImpl =
         MapCameraPositionImpl(
