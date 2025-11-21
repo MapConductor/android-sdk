@@ -21,6 +21,7 @@ val moduleInfo = mapOf(
     "for-googlemaps" to getModuleVersion(":mapconductor-for-googlemaps"),
     "for-here" to getModuleVersion(":mapconductor-for-here"),
     "for-mapbox" to getModuleVersion(":mapconductor-for-mapbox"),
+    "for-maplibre" to getModuleVersion(":mapconductor-for-maplibre"),
     "icons" to getModuleVersion(":mapconductor-icons"),
     "marker-native-strategy" to getModuleVersion(":mapconductor-marker-native-strategy"),
     "marker-strategy" to getModuleVersion(":mapconductor-marker-strategy")
