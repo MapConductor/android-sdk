@@ -1,0 +1,23 @@
+{
+  "id": "team",
+  "title": "Team",
+  "description": "Katsumata Masashi – Lead Developer & Founder",
+  "source": "@site/docs/team.md",
+  "sourceDirName": ".",
+  "slug": "/team",
+  "permalink": "/docs/team",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "team",
+    "title": "Team",
+    "sidebar_label": "Team"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Roadmap & Community",
+    "permalink": "/docs/roadmap"
+  }
+}

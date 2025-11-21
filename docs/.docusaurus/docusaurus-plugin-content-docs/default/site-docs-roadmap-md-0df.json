@@ -1,0 +1,27 @@
+{
+  "id": "roadmap",
+  "title": "Roadmap & Community",
+  "description": "MapConductor is still in an early but active stage. Our short‑term priority is to make the Android SDK stable and practical for real projects, while keeping the API simple enough for beginners.",
+  "source": "@site/docs/roadmap.md",
+  "sourceDirName": ".",
+  "slug": "/roadmap",
+  "permalink": "/docs/roadmap",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "roadmap",
+    "title": "Roadmap & Community",
+    "sidebar_label": "Roadmap & Community"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "For Developers",
+    "permalink": "/docs/developers"
+  },
+  "next": {
+    "title": "Team",
+    "permalink": "/docs/team"
+  }
+}

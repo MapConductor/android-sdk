@@ -1,0 +1,73 @@
+---
+title: MapConductor Android SDK
+description: Un SDK de mapas unificado para Android que ofrece una API común para múltiples proveedores de mapas
+template: splash
+hero:
+  tagline: Usa una sola API para trabajar con Google Maps, Mapbox, HERE, ArcGIS y MapLibre en tu app Android
+  actions:
+    - text: Empezar
+      link: /es-419/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: Ver en GitHub
+      link: https://github.com/MapConductor/android-sdk
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## ¿Por qué MapConductor?
+
+<CardGrid>
+  <Card title="API unificada" icon="puzzle">
+    Escribe tu código una vez y cambia de proveedor de mapas cuando quieras. No necesitas reescribir grandes partes del código al pasar de Google Maps a Mapbox u otro proveedor.
+  </Card>
+  <Card title="Listo para Jetpack Compose" icon="rocket">
+    Diseñado para el desarrollo moderno de Android, con soporte completo para Jetpack Compose.
+  </Card>
+  <Card title="Múltiples proveedores" icon="setting">
+    Soporte para Google Maps, Mapbox, HERE Maps, ArcGIS y MapLibre con un comportamiento consistente.
+  </Card>
+  <Card title="Código abierto" icon="github">
+    Proyecto gratuito y de código abierto bajo la licencia Apache 2.0, desarrollado por la comunidad.
+  </Card>
+</CardGrid>
+
+## Ejemplo rápido
+
+```kotlin
+@Composable
+fun MyMap() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    GoogleMapsView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(label = "SF")
+        )
+    }
+}
+```
+
+¿Quieres cambiar a Mapbox? Solo sustituye `rememberGoogleMapViewState()` por `rememberMapboxMapViewState()` y `GoogleMapsView` por `MapboxMapView`. El resto del código permanece igual.
+
+## Funcionalidades compatibles
+
+| Función | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
+|--------|-------------|--------|------|--------|----------|
+| Mapa | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Marcador | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Círculo | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Polilínea | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Polígono | ✓ | ✓ | ✓ | ✓ | ✓ |
+| GroundImage | ✓ | N/A | N/A | N/A | N/A |
+
+## Empezar
+
+Cuando estés listo para integrar MapConductor en tu app Android, consulta las secciones de [Introducción](/es-419/introduction/) e [Instalación](/es-419/installation/).
+

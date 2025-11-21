@@ -1,0 +1,27 @@
+{
+  "id": "architecture",
+  "title": "High‑Level Architecture",
+  "description": "At a high level, MapConductor sits between your app and the underlying map SDKs. Your app talks to MapConductor using a unified set of classes and methods. MapConductor then forwards those operations to the selected map provider.",
+  "source": "@site/docs/architecture.md",
+  "sourceDirName": ".",
+  "slug": "/architecture",
+  "permalink": "/docs/architecture",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "architecture",
+    "title": "High‑Level Architecture",
+    "sidebar_label": "Architecture"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/docs/intro"
+  },
+  "next": {
+    "title": "For Developers",
+    "permalink": "/docs/developers"
+  }
+}

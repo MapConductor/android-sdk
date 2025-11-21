@@ -1,0 +1,42 @@
+{
+  "/es-419/docs-d69": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/es-419/docs-577": {
+    "__comp": "a7bd4aaa",
+    "__props": "260e48e0"
+  },
+  "/es-419/docs-f0f": {
+    "__comp": "a94703ab"
+  },
+  "/es-419/docs/architecture-2f8": {
+    "__comp": "17896441",
+    "content": "f5bb525c"
+  },
+  "/es-419/docs/developers-e50": {
+    "__comp": "17896441",
+    "content": "e4c0087d"
+  },
+  "/es-419/docs/intro-af2": {
+    "__comp": "17896441",
+    "content": "ffacbb18"
+  },
+  "/es-419/docs/roadmap-730": {
+    "__comp": "17896441",
+    "content": "f1504437"
+  },
+  "/es-419/docs/team-d77": {
+    "__comp": "17896441",
+    "content": "b01bc630"
+  },
+  "/es-419/-7a5": {
+    "__comp": "c4f5d8e4",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "config": "5e9f5e1a"
+  }
+}

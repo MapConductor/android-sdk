@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(taskkill:*)",
+      "Bash(find:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm view:*)",
+      "Bash(npm search:*)",
+      "Bash(cat:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

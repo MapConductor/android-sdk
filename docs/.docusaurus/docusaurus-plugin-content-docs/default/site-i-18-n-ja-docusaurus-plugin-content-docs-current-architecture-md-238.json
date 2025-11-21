@@ -1,0 +1,27 @@
+{
+  "id": "architecture",
+  "title": "アーキテクチャ概要",
+  "description": "MapConductor はアプリケーションと各種地図 SDK の橋渡しを行います。アプリは統一されたクラスとメソッド群を通じて MapConductor にアクセスし、MapConductor が選択された地図プロバイダへ処理を転送します。",
+  "source": "@site/i18n/ja/docusaurus-plugin-content-docs/current/architecture.md",
+  "sourceDirName": ".",
+  "slug": "/architecture",
+  "permalink": "/ja/docs/architecture",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "architecture",
+    "title": "アーキテクチャ概要",
+    "sidebar_label": "アーキテクチャ"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "概要",
+    "permalink": "/ja/docs/intro"
+  },
+  "next": {
+    "title": "開発者向け",
+    "permalink": "/ja/docs/developers"
+  }
+}

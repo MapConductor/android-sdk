@@ -1,0 +1,90 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import Hero from '../components/home/Hero.astro';
+import { YouTube } from 'astro-embed';
+
+const content = {
+  title: 'MapConductor',
+  description: 'A unified map SDK for mobile app developers',
+  subtitle: 'A unified map SDK\nfor mobile app developers',
+  heroMessage: `Let's make\nmap apps\neasier to build`,
+  paragraphs: [
+    '',
+    '',
+  ],
+  paragraphs2Title: 'Even pros don\'t know everything...',
+  paragraphs2: [
+    'MapConductor is an open-source SDK that lets you work with multiple map SDKs through a unified API. You don\'t need to relearn the API for each map provider, and you can focus on what you really want to do: displaying data on the map.',
+    'The project is aimed at general-purpose location-based applications and is built to be approachable even for developers who are new to Android or iOS.',
+  ],
+  buttons: {
+    getStarted: 'Overview',
+    developers: 'For Developers'
+  }
+};
+---
+
+<StarlightPage frontmatter={{ title: content.title, description: content.description }}>
+  <Hero title={content.title} subtitle={content.subtitle} heroMessage={content.heroMessage} />
+
+  <div class="sl-markdown-content home-summary">
+    <p>MapConductor absorbs the differences between numerous map SDKs and eliminates development complexity.
+      You can focus on your business logic—how you want to display data on the map—without worrying about the detailed implementation methods of each map SDK's API.
+      That's right, you can handle any supported map SDK the same way. Like an orchestra conductor handling multiple map SDKs. That's the world MapConductor aims to create.</p>
+  </div>
+
+  <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+    <a class="sl-link-button" href="/intro" style="padding: 0.75rem 1.5rem; background: var(--sl-color-accent); color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 600;">
+      {content.buttons.getStarted}
+    </a>
+    <a class="sl-link-button" href="/developers" style="padding: 0.75rem 1.5rem; background: transparent; color: var(--sl-color-accent); text-decoration: none; border-radius: 0.5rem; border: 2px solid var(--sl-color-accent); font-weight: 600;">
+      {content.buttons.developers}
+    </a>
+  </div>
+
+  <h2>Promotional Video</h2>
+  <YouTube id="https://youtu.be/Sh2GAsM7Qe8"
+  title="MapConductor Introduction" />
+
+
+  <div class="sl-markdown-content home-summary">
+    <h2>Key Features</h2>
+    <ul dir="auto">
+      <li>
+        <p dir="auto"><strong>Multi-SDK Support:</strong></p>
+        <ul dir="auto">
+          <li>With a single codebase, you can operate multiple major map SDKs including Google Maps, Mapbox, HERE, and ArcGIS.</li>
+          <li>We aim to support over 50 SDKs in the future.</li>
+        </ul>
+      </li>
+      <li>
+        <p dir="auto"><strong>Common API:</strong></p>
+        <ul dir="auto">
+          <li>Just use the unified methods provided by MapConductor to display, manipulate, and plot data on maps.</li>
+          <li>No more need to learn the detailed conventions of each SDK.</li>
+        </ul>
+      </li>
+      <li>
+        <p dir="auto"><strong>(Android) Jetpack Compose Support:</strong></p>
+        <ul dir="auto">
+          <li>The Android SDK is designed to be used with Jetpack Compose.</li>
+          <li>You don't need to write code in XML Layout just for the map part.</li>
+        </ul>
+      </li>
+      <li>
+        <p dir="auto"><strong>Freedom from Vendor Lock-in:</strong></p>
+        <ul dir="auto">
+          <li>You can freely switch backend map services with minimal code changes according to your project requirements.</li>
+        </ul>
+      </li>
+      <li>
+        <p dir="auto"><strong>High Performance:</strong></p>
+        <ul dir="auto">
+          <li>Algorithms are implemented by default to smoothly handle thousands of markers</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <YouTube id="https://youtu.be/uGjpXKX0a4w"  title="Android Demonstration" />
+</StarlightPage>

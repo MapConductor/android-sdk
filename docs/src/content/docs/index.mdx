@@ -1,0 +1,72 @@
+---
+title: MapConductor Android SDK
+description: A unified map SDK for Android that provides a common API for multiple map providers
+template: splash
+hero:
+  tagline: Use a single API to work with Google Maps, Mapbox, HERE, ArcGIS, and MapLibre in your Android app
+  actions:
+    - text: Get Started
+      link: /introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/MapConductor/android-sdk
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Why MapConductor?
+
+<CardGrid>
+  <Card title="Unified API" icon="puzzle">
+    Write once, switch map providers anytime. No need to rewrite code when changing from Google Maps to Mapbox or any other provider.
+  </Card>
+  <Card title="Jetpack Compose Ready" icon="rocket">
+    Built for modern Android development with full Jetpack Compose support.
+  </Card>
+  <Card title="Multiple Providers" icon="setting">
+    Support for Google Maps, Mapbox, HERE Maps, ArcGIS, and MapLibre with consistent behavior.
+  </Card>
+  <Card title="Open Source" icon="github">
+    Free and open-source under Apache License 2.0. Community-driven development.
+  </Card>
+</CardGrid>
+
+## Quick Example
+
+```kotlin
+@Composable
+fun MyMap() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    GoogleMapsView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(label = "SF")
+        )
+    }
+}
+```
+
+Switch to Mapbox? Just change `rememberGoogleMapViewState()` to `rememberMapboxMapViewState()` and `GoogleMapsView` to `MapboxMapView`. Everything else stays the same.
+
+## Supported Features
+
+| Feature | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
+|---------|-------------|--------|------|--------|----------|
+| Map | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Marker | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Circle | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Polyline | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Polygon | ✓ | ✓ | ✓ | ✓ | ✓ |
+| GroundImage | ✓ | N/A | N/A | N/A | N/A |
+
+## Get Started
+
+Ready to integrate MapConductor into your Android app? Check out our [Introduction](/introduction/) and [Installation](/installation/) guides to begin.

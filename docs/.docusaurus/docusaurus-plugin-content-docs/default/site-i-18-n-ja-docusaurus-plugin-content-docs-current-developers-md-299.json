@@ -1,0 +1,27 @@
+{
+  "id": "developers",
+  "title": "開発者向け",
+  "description": "MapConductor は、Android 向け地図開発に不慣れな開発者にも扱いやすいことを重視して設計されています。ベンダーごとに新しい API を覚え直すのではなく、1つのAPIを学べば、複数のプロバイダで再利用できることを目指しています。",
+  "source": "@site/i18n/ja/docusaurus-plugin-content-docs/current/developers.md",
+  "sourceDirName": ".",
+  "slug": "/developers",
+  "permalink": "/ja/docs/developers",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "developers",
+    "title": "開発者向け",
+    "sidebar_label": "開発者向け"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "アーキテクチャ",
+    "permalink": "/ja/docs/architecture"
+  },
+  "next": {
+    "title": "ロードマップとコミュニティ",
+    "permalink": "/ja/docs/roadmap"
+  }
+}

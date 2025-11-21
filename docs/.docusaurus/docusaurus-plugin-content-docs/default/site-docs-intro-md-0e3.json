@@ -1,0 +1,23 @@
+{
+  "id": "intro",
+  "title": "MapConductor – Overview",
+  "description": "MapConductor is an open‑source SDK that lets you control multiple Android map SDKs through a single, easy‑to‑learn API. Instead of rewriting your app whenever you change map providers, you focus on your app — not on each vendor’s quirks.",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/intro",
+  "permalink": "/docs/intro",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "intro",
+    "title": "MapConductor – Overview",
+    "sidebar_label": "Overview"
+  },
+  "sidebar": "docs",
+  "next": {
+    "title": "Architecture",
+    "permalink": "/docs/architecture"
+  }
+}

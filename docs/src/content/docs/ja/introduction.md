@@ -1,0 +1,154 @@
+---
+title: イントロダクション
+---
+
+# MapConductor Android SDK ドキュメント
+
+MapConductor は、Google Maps、Mapbox、HERE、ArcGIS、そして MapLibre を含む複数の地図プロバイダに対して、共通の API を提供する統一地図 SDK です。このドキュメントでは、Maven から配布される **v1.1.0** 向けの公開 API コンポーネントについて説明します。
+
+## 概要
+
+MapConductor SDK を使うと、単一の API で複数の地図プロバイダを扱えるようになります。各プロバイダ固有の実装は SDK 側で吸収され、アプリケーションからは一貫したインターフェースで操作できます。
+
+### サポートされている地図プロバイダ
+
+- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
+- **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
+- **HERE Maps**: `HereViewStateImpl` / `HereMapView`
+- **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
+- **MapLibre**: `MapLibreViewStateImpl` / `MapLibreMapView`
+
+### コアクラス
+
+SDK は、以下のような基本的な地理情報クラスを提供します。
+
+- **GeoPoint**: 緯度・経度・高度を表す地理座標
+- **GeoRectBounds**: 南西・北東の2点で表される矩形の地理範囲
+- **MapCameraPosition**: カメラ位置（ターゲット、ズーム、方位、傾き、パディング）
+
+### 主なコンポーネント
+
+SDK は次のようなコアコンポーネントを提供します。
+
+1. **マップビューコンポーネント**: プロバイダ別のマップビュー（GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView）
+2. **Marker**: カスタマイズ可能なアイコンやインタラクションを持つポイントマーカー
+3. **Circle**: スタイル指定可能な円形オーバーレイ
+4. **Polyline**: 複数点を結ぶ線分
+5. **Polygon**: 枠線と塗りつぶしを持つ多角形
+6. **GroundImage**: 地理座標に配置する画像オーバーレイ（Google Maps のみ対応）
+
+## はじめに
+
+MapConductor をプロジェクトで利用するには、次のステップに従います。
+
+### 1. インストール
+
+依存関係やバージョンの詳細は、[インストールとバージョン](/ja/installation/) を参照してください。
+
+### 2. 各地図 SDK のセットアップ
+
+> **重要**: MapConductor は既存の地図 SDK の上に統一 API レイヤーを提供するライブラリです。そのため、MapConductor を利用する前に、各地図 SDK を個別にセットアップする必要があります。
+
+各地図プロバイダは、それぞれ API キー、パーミッション、設定などの準備が必要です。
+
+- **[Google Maps のセットアップ](/ja/setup/google-maps)** – Google Maps SDK の API キーやパーミッションの設定
+- **[Mapbox のセットアップ](/ja/setup/mapbox)** – Mapbox のアクセストークンやスタイル設定
+- **[HERE Maps のセットアップ](/ja/setup/here-maps)** – HERE SDK の API キーやライセンス設定
+- **[ArcGIS のセットアップ](/ja/setup/arcgis)** – ArcGIS SDK の API キーやライセンス設定
+- **[MapLibre のセットアップ](/ja/setup/maplibre/)** – タイルやスタイル情報の設定
+
+利用する地図 SDK だけをセットアップすればかまいません。
+
+### 3. 基本的な使い方
+
+マップビューを作成し、マーカーと円を表示する例です。
+
+```kotlin
+@Composable
+fun BasicMapExample(modifier: Modifier = Modifier) {
+    val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val camera = MapCameraPositionImpl(
+        position = sanFrancisco,
+        zoom = 13.0,
+    )
+    // 利用する地図 SDK に置き換えてください
+    // - Google Maps -> rememberGoogleMapViewState
+    // - Mapbox -> rememberMapboxViewState
+    // ... など
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = camera,
+    )
+
+    // MapView も利用するプロバイダに応じて切り替えます
+    // - Google Maps -> GoogleMapsView
+    // - Mapbox -> MapboxMapView
+    // ... など
+    GoogleMapsView(
+        modifier = modifier,
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        },
+        onMarkerClick = { markerState ->
+            println("Marker clicked: ${markerState.extra}")
+        }
+    ) {
+        // マーカーを追加
+        Marker(
+            position = sanFrancisco,
+            icon = DefaultIcon(label = "SF"),
+            extra = "San Francisco marker"
+        )
+
+        // 円を追加
+        Circle(
+            center = sanFrancisco,
+            radius = 1000.0,
+            strokeColor = Color.Blue,
+            fillColor = Color.Blue.copy(alpha = 0.3f)
+        )
+    }
+}
+```
+
+![マーカーと円が描画された地図](/img/introduction/basic-googlemaps-example.jpg)
+
+### 4. マッププロバイダの切り替え
+
+マッププロバイダを切り替えるには、`MapViewState` の実装を変更するだけです。
+
+```kotlin
+// Google Maps
+val googleMapState = rememberGoogleMapViewState()
+
+// Mapbox
+val mapboxState = rememberMapboxMapViewState()
+
+// HERE Maps
+val hereState = rememberHereMapViewState()
+
+// ArcGIS
+val arcgisState = rememberArcGISMapViewState()
+
+// MapLibre
+val mapLibreState = rememberMapLibreMapViewState()
+```
+
+その他のコードは共通で、すべてのコンポーネントをプロバイダ間で同じように扱えます。
+
+## v1.1.0 での主な変更点
+
+v1.0.0 と比較した v1.1.0 の主な改善点は次のとおりです。
+
+- 各プロバイダでカメラ移動イベント (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) を統一
+- `MapViewState` のカメラ位置と `VisibleRegion` 連携の改善
+- マーカーコントローラのインターフェースを整理し、プロバイダ実装を明確化
+- 例示アプリに高度なカメラ制御と `VisibleRegion` の利用例を追加
+
+## 関連ドキュメント
+
+- [インストール](/ja/installation/)
+- [モジュール構成](/ja/modules/)
+- [SDK バージョン互換性](/ja/sdk-version-compatibility/)
+- [プロバイダ互換性](/ja/provider-compatibility/)
+

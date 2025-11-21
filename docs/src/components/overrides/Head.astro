@@ -1,0 +1,300 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<!-- Mermaid Zoom Functionality -->
+<script>
+  function initMermaidZoom() {
+    const overlayId = 'mermaid-zoom-overlay';
+
+    const ensureOverlay = () => {
+      let overlay = document.getElementById(overlayId);
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = overlayId;
+        overlay.className = 'mermaid-zoom-overlay';
+        overlay.addEventListener('click', () => {
+          overlay.classList.remove('mermaid-zoom-overlay--visible');
+        });
+        document.body.appendChild(overlay);
+      }
+      return overlay;
+    };
+
+    const showOverlay = (svg) => {
+      const overlay = ensureOverlay();
+      const clonedSvg = svg.cloneNode(true);
+
+      let viewBox = svg.getAttribute('viewBox');
+      if (!viewBox) {
+        try {
+          const bbox = svg.getBBox();
+          viewBox = `0 0 ${bbox.width} ${bbox.height}`;
+        } catch (e) {
+          const width = svg.getAttribute('width') || '800';
+          const height = svg.getAttribute('height') || '600';
+          viewBox = `0 0 ${width} ${height}`;
+        }
+      }
+
+      clonedSvg.setAttribute('viewBox', viewBox);
+      clonedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      clonedSvg.removeAttribute('width');
+      clonedSvg.removeAttribute('height');
+
+      const originalWidth = svg.getBoundingClientRect().width;
+      const minWidth = window.innerWidth * 0.6;
+      const scale = Math.max(2, minWidth / originalWidth);
+      const newWidth = Math.min(originalWidth * scale, window.innerWidth * 0.9);
+      clonedSvg.style.width = newWidth + 'px';
+      clonedSvg.style.height = 'auto';
+
+      const inner = document.createElement('div');
+      inner.className = 'mermaid-zoom-overlay__inner';
+      inner.appendChild(clonedSvg);
+
+      overlay.innerHTML = '';
+      overlay.appendChild(inner);
+      overlay.classList.add('mermaid-zoom-overlay--visible');
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        const overlay = document.getElementById(overlayId);
+        if (overlay) {
+          overlay.classList.remove('mermaid-zoom-overlay--visible');
+        }
+      }
+    };
+
+    const enhanceDiagrams = () => {
+      const diagrams = document.querySelectorAll('.mermaid, pre.mermaid, .starlight-mermaid');
+      diagrams.forEach((diagram) => {
+        if (diagram.dataset.zoomable === 'true') return;
+        
+        diagram.dataset.zoomable = 'true';
+        diagram.classList.add('mermaid--zoomable');
+        diagram.setAttribute('role', 'button');
+        diagram.setAttribute('tabindex', '0');
+        
+        const handleClick = () => {
+          const svg = diagram.querySelector('svg');
+          if (svg) showOverlay(svg);
+        };
+        
+        diagram.addEventListener('click', handleClick);
+        diagram.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleClick();
+          }
+        });
+      });
+    };
+
+    enhanceDiagrams();
+    window.addEventListener('keydown', handleKeyDown);
+    
+    document.addEventListener('astro:page-load', () => {
+      setTimeout(enhanceDiagrams, 500);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMermaidZoom);
+  } else {
+    initMermaidZoom();
+  }
+</script>
+
+<!-- Mobile Language Switcher -->
+<script>
+  function initMobileLangSwitcher() {
+    // Only show on mobile
+    if (window.innerWidth > 768) return;
+
+    const langConfig = {
+      'en': { label: 'English', path: '' },
+      'ja': { label: '日本語', path: '/ja' },
+      'es-419': { label: 'Español', path: '/es-419' }
+    };
+
+    // Detect current language from URL
+    const path = window.location.pathname;
+    let currentLang = 'en';
+    let pagePath = path;
+
+    if (path.startsWith('/ja/') || path === '/ja') {
+      currentLang = 'ja';
+      pagePath = path.replace(/^\/ja/, '') || '/';
+    } else if (path.startsWith('/es-419/') || path === '/es-419') {
+      currentLang = 'es-419';
+      pagePath = path.replace(/^\/es-419/, '') || '/';
+    }
+
+    // Create floating button
+    const button = document.createElement('button');
+    button.id = 'mobile-lang-switcher';
+    button.className = 'mobile-lang-switcher-btn';
+    button.innerHTML = '🌐';
+    button.setAttribute('aria-label', 'Switch language');
+
+    // Create language menu
+    const menu = document.createElement('div');
+    menu.className = 'mobile-lang-switcher-menu';
+    menu.innerHTML = Object.entries(langConfig)
+      .map(([lang, config]) => {
+        const href = lang === 'en' ? pagePath : `${config.path}${pagePath}`;
+        const isCurrent = lang === currentLang;
+        return `<a href="${href}" class="${isCurrent ? 'current' : ''}">${config.label}</a>`;
+      })
+      .join('');
+
+    // Toggle menu
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('visible');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      menu.classList.remove('visible');
+    });
+
+    menu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    document.body.appendChild(button);
+    document.body.appendChild(menu);
+
+    // Re-initialize on page navigation
+    document.addEventListener('astro:page-load', () => {
+      const existingBtn = document.getElementById('mobile-lang-switcher');
+      const existingMenu = document.querySelector('.mobile-lang-switcher-menu');
+      if (existingBtn) existingBtn.remove();
+      if (existingMenu) existingMenu.remove();
+      setTimeout(initMobileLangSwitcher, 100);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileLangSwitcher);
+  } else {
+    initMobileLangSwitcher();
+  }
+</script>
+
+<!-- Hide h1 title on home page -->
+<script>
+  function hideHomePageTitle() {
+    const path = window.location.pathname;
+    console.log('Current path:', path);
+
+    // Check if we're on home page (including localized versions)
+    const isHomePage = path === '/' ||
+                       path === '/ja/' || path === '/ja' ||
+                       path === '/es-419/' || path === '/es-419';
+
+    console.log('Is home page:', isHomePage);
+
+    if (isHomePage) {
+      // Wait for DOM to be ready and find the h1 element
+      setTimeout(() => {
+        const h1 = document.querySelector('h1#_top');
+        console.log('Found h1 element:', h1);
+        if (h1) {
+          h1.style.display = 'none';
+          console.log('h1 hidden');
+        }
+      }, 100);
+    }
+  }
+
+  // Run on initial page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hideHomePageTitle);
+  } else {
+    hideHomePageTitle();
+  }
+
+  // Re-apply on Astro page navigation
+  document.addEventListener('astro:page-load', () => {
+    hideHomePageTitle();
+  });
+</script>
+
+<!-- Sidebar Toggle Button -->
+<script>
+  function initSidebarToggle() {
+    // Only enable on desktop (> 768px)
+    if (window.innerWidth <= 768) return;
+
+    // Check if we're on a documentation page with a sidebar
+    const sidebar = document.querySelector('nav.sidebar');
+    if (!sidebar) return;
+
+    // Avoid duplicate buttons
+    if (document.getElementById('sidebar-toggle-btn')) return;
+
+    // Create toggle button
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'sidebar-toggle-btn';
+    toggleBtn.className = 'sidebar-toggle-btn';
+    toggleBtn.setAttribute('aria-label', 'Toggle sidebar');
+    toggleBtn.innerHTML = `
+      <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path class="sidebar-close-icon" d="M15 19l-7-7 7-7"/>
+      </svg>
+    `;
+
+    // Check localStorage for saved state (only on desktop)
+    const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+    if (isCollapsed) {
+      document.body.classList.add('sidebar-collapsed');
+    }
+
+    // Toggle sidebar on button click
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nowCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('sidebar-collapsed', nowCollapsed.toString());
+    });
+
+    // Insert button into body
+    document.body.appendChild(toggleBtn);
+
+    // Re-initialize on page navigation (for Astro view transitions)
+    document.addEventListener('astro:page-load', () => {
+      const existingBtn = document.getElementById('sidebar-toggle-btn');
+      if (existingBtn) existingBtn.remove();
+      setTimeout(initSidebarToggle, 100);
+    });
+
+    // Re-initialize on resize if crossing the mobile/desktop boundary
+    let wasDesktop = window.innerWidth > 768;
+    window.addEventListener('resize', () => {
+      const isDesktop = window.innerWidth > 768;
+      if (wasDesktop !== isDesktop) {
+        wasDesktop = isDesktop;
+        const existingBtn = document.getElementById('sidebar-toggle-btn');
+        if (existingBtn) existingBtn.remove();
+        if (isDesktop) {
+          setTimeout(initSidebarToggle, 100);
+        } else {
+          // Remove collapsed state on mobile
+          document.body.classList.remove('sidebar-collapsed');
+        }
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarToggle);
+  } else {
+    initSidebarToggle();
+  }
+</script>

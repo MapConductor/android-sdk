@@ -1,0 +1,23 @@
+{
+  "id": "team",
+  "title": "チーム",
+  "description": "勝又 雅史 – リード開発者・創設者",
+  "source": "@site/i18n/ja/docusaurus-plugin-content-docs/current/team.md",
+  "sourceDirName": ".",
+  "slug": "/team",
+  "permalink": "/ja/docs/team",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "team",
+    "title": "チーム",
+    "sidebar_label": "チーム"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "ロードマップとコミュニティ",
+    "permalink": "/ja/docs/roadmap"
+  }
+}

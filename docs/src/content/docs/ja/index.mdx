@@ -1,0 +1,73 @@
+---
+title: MapConductor Android SDK
+description: 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK
+template: splash
+hero:
+  tagline: Google Maps / Mapbox / HERE / ArcGIS / MapLibre を単一のAPIで扱えるAndroid向けSDK
+  actions:
+    - text: はじめる
+      link: /ja/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: GitHubを見る
+      link: https://github.com/MapConductor/android-sdk
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## なぜ MapConductor なのか
+
+<CardGrid>
+  <Card title="統一されたAPI" icon="puzzle">
+    一度コードを書けば、地図プロバイダをいつでも切り替えられます。Google Maps から Mapbox などに乗り換えても、大量のコードを書き直す必要はありません。
+  </Card>
+  <Card title="Jetpack Compose に最適化" icon="rocket">
+    最新のAndroid開発のために設計されており、Jetpack Compose を前提にしたAPIになっています。
+  </Card>
+  <Card title="複数プロバイダをサポート" icon="setting">
+    Google Maps / Mapbox / HERE Maps / ArcGIS / MapLibre を、挙動を揃えた形でサポートしています。
+  </Card>
+  <Card title="オープンソース" icon="github">
+    Apache License 2.0 で公開されたオープンソースプロジェクトです。コミュニティ主導で開発が進んでいます。
+  </Card>
+</CardGrid>
+
+## クイックサンプル
+
+```kotlin
+@Composable
+fun MyMap() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    GoogleMapsView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(label = "SF")
+        )
+    }
+}
+```
+
+Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `rememberMapboxMapViewState()` に、`GoogleMapsView` を `MapboxMapView` に変更するだけです。それ以外のコードはそのままです。
+
+## サポートされている機能
+
+| 機能 | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
+|---------|-------------|--------|------|--------|----------|
+| 地図 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| マーカー | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 円 | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ポリライン | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ポリゴン | ✓ | ✓ | ✓ | ✓ | ✓ |
+| GroundImage | ✓ | N/A | N/A | N/A | N/A |
+
+## 次のステップ
+
+Android アプリに MapConductor を導入する準備ができたら、[イントロダクション](/ja/introduction/) と [インストール方法](/ja/installation/) を参照してください。
+

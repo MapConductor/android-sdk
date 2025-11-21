@@ -1,0 +1,23 @@
+{
+  "id": "team",
+  "title": "Equipo",
+  "description": "Katsumata Masashi – Desarrollador principal y fundador",
+  "source": "@site/i18n/es-419/docusaurus-plugin-content-docs/current/team.md",
+  "sourceDirName": ".",
+  "slug": "/team",
+  "permalink": "/es-419/docs/team",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "team",
+    "title": "Equipo",
+    "sidebar_label": "Equipo"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Hoja de ruta y comunidad",
+    "permalink": "/es-419/docs/roadmap"
+  }
+}

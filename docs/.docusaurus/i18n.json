@@ -1,0 +1,42 @@
+{
+  "defaultLocale": "en",
+  "locales": [
+    "en",
+    "ja",
+    "es-419"
+  ],
+  "path": "i18n",
+  "currentLocale": "es-419",
+  "localeConfigs": {
+    "en": {
+      "label": "English",
+      "direction": "ltr",
+      "htmlLang": "en",
+      "calendar": "gregory",
+      "path": "en",
+      "translate": false,
+      "url": "https://mapconductor.com",
+      "baseUrl": "/"
+    },
+    "ja": {
+      "label": "日本語",
+      "direction": "ltr",
+      "htmlLang": "ja",
+      "calendar": "gregory",
+      "path": "ja",
+      "translate": true,
+      "url": "https://mapconductor.com",
+      "baseUrl": "/ja/"
+    },
+    "es-419": {
+      "label": "Español (Latinoamérica)",
+      "direction": "ltr",
+      "htmlLang": "es-419",
+      "calendar": "gregory",
+      "path": "es-419",
+      "translate": true,
+      "url": "https://mapconductor.com",
+      "baseUrl": "/es-419/"
+    }
+  }
+}

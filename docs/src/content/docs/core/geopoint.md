@@ -1,0 +1,335 @@
+---
+title: "GeoPoint"
+---
+
+`GeoPoint` represents a geographic coordinate with latitude, longitude, and optional altitude. It is the fundamental building block for positioning markers, circles, and other map overlays.
+
+## Interface and Implementation
+
+### GeoPoint Interface
+
+```kotlin
+interface GeoPoint {
+    val latitude: Double
+    val longitude: Double
+    val altitude: Double?
+}
+```
+
+### GeoPointImpl
+
+The main implementation provides immutable geographic coordinates:
+
+```kotlin
+data class GeoPointImpl(
+    override val latitude: Double,
+    override val longitude: Double,
+    override val altitude: Double = 0.0
+) : GeoPoint
+```
+
+## Creation Methods
+
+### Factory Methods
+
+```kotlin
+// Standard creation - latitude first (common pattern)
+GeoPointImpl.fromLatLong(37.7749, -122.4194)
+
+// Alternative - longitude first
+GeoPointImpl.fromLongLat(-122.4194, 37.7749)
+
+// From existing GeoPoint
+GeoPointImpl.from(existingGeoPoint)
+
+// Direct constructor
+GeoPointImpl(latitude = 37.7749, longitude = -122.4194, altitude = 100.0)
+```
+
+### Usage Examples
+
+```kotlin
+// Basic marker positioning
+val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+
+// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+MapView(state = mapViewState) {
+    Marker(
+        position = sanFrancisco,
+        icon = DefaultIcon(label = "SF")
+    )
+}
+```
+
+```kotlin
+// With altitude for 3D positioning
+val mountEverest = GeoPointImpl(
+    latitude = 27.9881,
+    longitude = 86.9250,
+    altitude = 8848.0 // meters
+)
+```
+
+## Coordinate System
+
+### Latitude
+- **Range**: -90.0 to 90.0 degrees
+- **-90.0**: South Pole
+- **0.0**: Equator
+- **90.0**: North Pole
+
+### Longitude
+- **Range**: -180.0 to 180.0 degrees
+- **-180.0**: International Date Line (west side)
+- **0.0**: Prime Meridian (Greenwich)
+- **180.0**: International Date Line (east side)
+
+### Altitude
+- **Optional**: Can be `null` or `0.0` for 2D positioning
+- **Units**: Meters above sea level
+- **Usage**: 3D positioning, elevation data
+
+## Validation and Normalization
+
+### Validation
+
+```kotlin
+fun GeoPoint.isValid(): Boolean =
+    latitude in -90.0..90.0 && longitude in -180.0..180.0
+
+// Usage
+val point = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+if (point.isValid()) {
+    // Use the point
+}
+```
+
+### Normalization
+
+```kotlin
+fun GeoPoint.normalize(): GeoPointImpl
+
+// Usage
+val invalidPoint = GeoPointImpl.fromLatLong(100.0, 200.0) // Invalid coordinates
+val validPoint = invalidPoint.normalize() // Clamped to valid range
+```
+
+## Distance and Bearing Calculations
+
+### Distance Between Points
+
+```kotlin
+fun GeoPoint.distanceTo(other: GeoPoint): Double
+
+// Usage
+val sf = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+val nyc = GeoPointImpl.fromLatLong(40.7128, -74.0060)
+
+val distanceMeters = sf.distanceTo(nyc)
+val distanceKm = distanceMeters / 1000.0
+
+println("Distance SF to NYC: ${distanceKm}km")
+```
+
+### Bearing (Direction)
+
+```kotlin
+fun GeoPoint.headingTo(other: GeoPoint): Double
+
+// Usage
+val bearing = sf.headingTo(nyc) // Returns bearing in degrees (0-360)
+println("Bearing from SF to NYC: ${bearing}°")
+```
+
+### Offset Point
+
+```kotlin
+fun GeoPoint.offset(distance: Double, heading: Double): GeoPointImpl
+
+// Usage
+val sf = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+val pointNorth = sf.offset(1000.0, 0.0) // 1km north of SF
+val pointEast = sf.offset(1000.0, 90.0)  // 1km east of SF
+```
+
+## Interpolation
+
+### Spherical Interpolation
+
+Considers Earth's curvature (recommended for geographic calculations):
+
+```kotlin
+fun GeoPoint.interpolateTo(other: GeoPoint, fraction: Double): GeoPointImpl
+
+// Usage
+val sf = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+val nyc = GeoPointImpl.fromLatLong(40.7128, -74.0060)
+
+val halfway = sf.interpolateTo(nyc, 0.5) // Midpoint considering Earth's curvature
+val quarterWay = sf.interpolateTo(nyc, 0.25)
+```
+
+### Linear Interpolation
+
+Ignores Earth's curvature (faster but less accurate for long distances):
+
+```kotlin
+fun GeoPoint.linearInterpolateTo(other: GeoPoint, fraction: Double): GeoPointImpl
+
+// Usage
+val linearMidpoint = sf.linearInterpolateTo(nyc, 0.5)
+```
+
+## Practical Examples
+
+### Route Waypoints
+
+```kotlin
+@Composable
+fun RouteWithWaypoints() {
+    val start = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val end = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+
+    // Create waypoints along the route
+    val waypoints = (0..10).map { i ->
+        start.interpolateTo(end, i / 10.0)
+    }
+
+    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    MapView(state = mapViewState) {
+        // Draw route
+        Polyline(
+            points = waypoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 3.dp
+        )
+
+        // Waypoint markers
+        waypoints.forEachIndexed { index, point ->
+            Marker(
+                position = point,
+                icon = DefaultIcon(
+                    label = "$index",
+                    scale = 0.7f
+                )
+            )
+        }
+    }
+}
+```
+
+### Proximity Detection
+
+```kotlin
+@Composable
+fun ProximityExample() {
+    val userLocation = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val poi = GeoPointImpl.fromLatLong(37.7759, -122.4184)
+
+    val distance = userLocation.distanceTo(poi)
+    val isNearby = distance < 100.0 // Within 100 meters
+
+    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    MapView(state = mapViewState) {
+        Marker(
+            position = userLocation,
+            icon = DefaultIcon(
+                fillColor = Color.Blue,
+                label = "You"
+            )
+        )
+
+        Marker(
+            position = poi,
+            icon = DefaultIcon(
+                fillColor = if (isNearby) Color.Green else Color.Red,
+                label = "POI"
+            )
+        )
+
+        // Proximity circle
+        Circle(
+            center = poi,
+            radius = 100.0,
+            strokeColor = Color.Green.copy(alpha = 0.5f),
+            fillColor = Color.Green.copy(alpha = 0.1f)
+        )
+    }
+}
+```
+
+### Dynamic Position Updates
+
+```kotlin
+@Composable
+fun MovingMarkerExample() {
+    val path = listOf(
+        GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        GeoPointImpl.fromLatLong(37.7759, -122.4184),
+        GeoPointImpl.fromLatLong(37.7769, -122.4174)
+    )
+
+    var currentPosition by remember { mutableStateOf(path.first()) }
+    var pathIndex by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2000)
+            pathIndex = (pathIndex + 1) % path.size
+            currentPosition = path[pathIndex]
+        }
+    }
+
+    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    MapView(state = mapViewState) {
+        // Moving marker
+        Marker(
+            position = currentPosition,
+            icon = DefaultIcon(
+                fillColor = Color.Red,
+                label = "📍"
+            )
+        )
+
+        // Path preview
+        Polyline(
+            points = path,
+            strokeColor = Color.Gray,
+            strokeWidth = 2.dp
+        )
+    }
+}
+```
+
+## Equality and Hashing
+
+`GeoPointImpl` uses tolerance-based equality to handle floating-point precision issues:
+
+```kotlin
+val point1 = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+val point2 = GeoPointImpl.fromLatLong(37.7749000001, -122.4194000001)
+
+println(point1 == point2) // true - within tolerance
+```
+
+The tolerance is set to `1e-7` degrees, which is approximately 1 centimeter at the equator.
+
+## URL Formatting
+
+```kotlin
+fun toUrlValue(precision: Int = 6): String
+
+// Usage
+val point = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+val urlString = point.toUrlValue() // "37.774900,-122.419400"
+val preciseString = point.toUrlValue(precision = 8) // More decimal places
+```
+
+## Best Practices
+
+1. **Use Factory Methods**: Prefer `fromLatLong()` for clarity about parameter order
+2. **Validate Input**: Check coordinates are within valid ranges when accepting user input
+3. **Consider Earth's Curvature**: Use spherical interpolation for geographic accuracy
+4. **Performance**: Use linear interpolation for frequent calculations where precision is less critical
+5. **Altitude**: Include altitude for 3D applications, use 0.0 for 2D mapping
+6. **Immutability**: GeoPointImpl is immutable - create new instances for different coordinates

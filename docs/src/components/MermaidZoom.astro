@@ -1,0 +1,124 @@
+---
+// Mermaid Zoom functionality
+---
+
+<script>
+  function initMermaidZoom() {
+    const overlayId = 'mermaid-zoom-overlay';
+
+    const ensureOverlay = () => {
+      let overlay = document.getElementById(overlayId);
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = overlayId;
+        overlay.className = 'mermaid-zoom-overlay';
+        overlay.addEventListener('click', () => {
+          overlay.classList.remove('mermaid-zoom-overlay--visible');
+        });
+        document.body.appendChild(overlay);
+      }
+      return overlay;
+    };
+
+    const showOverlay = (svg: SVGElement) => {
+      const overlay = ensureOverlay();
+
+      // Clone the SVG to avoid modifying the original
+      const clonedSvg = svg.cloneNode(true) as SVGElement;
+
+      // Get original dimensions
+      let viewBox = svg.getAttribute('viewBox');
+      if (!viewBox) {
+        try {
+          const bbox = svg.getBBox();
+          viewBox = `0 0 ${bbox.width} ${bbox.height}`;
+        } catch (e) {
+          const width = svg.getAttribute('width') || '800';
+          const height = svg.getAttribute('height') || '600';
+          viewBox = `0 0 ${width} ${height}`;
+        }
+      }
+
+      // Set viewBox for proper scaling
+      clonedSvg.setAttribute('viewBox', viewBox);
+      clonedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+      // Remove fixed dimensions
+      clonedSvg.removeAttribute('width');
+      clonedSvg.removeAttribute('height');
+
+      // Calculate scale
+      const originalWidth = svg.getBoundingClientRect().width;
+      const minWidth = window.innerWidth * 0.6;
+      const scale = Math.max(2, minWidth / originalWidth);
+
+      // Set scaled width
+      const newWidth = Math.min(originalWidth * scale, window.innerWidth * 0.9);
+      clonedSvg.style.width = newWidth + 'px';
+      clonedSvg.style.height = 'auto';
+
+      const inner = document.createElement('div');
+      inner.className = 'mermaid-zoom-overlay__inner';
+      inner.appendChild(clonedSvg);
+
+      overlay.innerHTML = '';
+      overlay.appendChild(inner);
+      overlay.classList.add('mermaid-zoom-overlay--visible');
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        const overlay = document.getElementById(overlayId);
+        if (overlay) {
+          overlay.classList.remove('mermaid-zoom-overlay--visible');
+        }
+      }
+    };
+
+    const handleClick = (event: Event) => {
+      const target = event.currentTarget as HTMLElement;
+      const svg = target.querySelector('svg');
+      if (svg) {
+        showOverlay(svg);
+      }
+    };
+
+    const enhanceDiagrams = () => {
+      const diagrams = document.querySelectorAll('.mermaid, pre.mermaid');
+      diagrams.forEach((diagram) => {
+        const element = diagram as HTMLElement;
+        if (element.dataset.zoomable === 'true') {
+          return;
+        }
+        element.dataset.zoomable = 'true';
+        element.classList.add('mermaid--zoomable');
+        element.setAttribute('role', 'button');
+        element.setAttribute('tabindex', '0');
+        element.addEventListener('click', handleClick);
+        element.addEventListener('keydown', (event: Event) => {
+          const keyEvent = event as KeyboardEvent;
+          if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+            keyEvent.preventDefault();
+            handleClick(event);
+          }
+        });
+      });
+    };
+
+    // Run on page load and after navigation
+    enhanceDiagrams();
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Re-run after view transitions (Astro's navigation)
+    document.addEventListener('astro:page-load', () => {
+      setTimeout(enhanceDiagrams, 300);
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMermaidZoom);
+  } else {
+    initMermaidZoom();
+  }
+</script>

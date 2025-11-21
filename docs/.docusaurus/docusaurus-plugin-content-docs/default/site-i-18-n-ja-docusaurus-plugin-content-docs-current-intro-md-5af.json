@@ -1,0 +1,23 @@
+{
+  "id": "intro",
+  "title": "MapConductor 概要",
+  "description": "MapConductor は、複数の Android 向け地図 SDK を単一のわかりやすい API でまとめて扱えるオープンソースの SDK です。地図プロバイダを変更するたびにアプリのコードを書き直すのではなく、各ベンダー固有の癖ではなくアプリ本体に集中できるようにすることを目指しています。",
+  "source": "@site/i18n/ja/docusaurus-plugin-content-docs/current/intro.md",
+  "sourceDirName": ".",
+  "slug": "/intro",
+  "permalink": "/ja/docs/intro",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "intro",
+    "title": "MapConductor 概要",
+    "sidebar_label": "概要"
+  },
+  "sidebar": "docs",
+  "next": {
+    "title": "アーキテクチャ",
+    "permalink": "/ja/docs/architecture"
+  }
+}

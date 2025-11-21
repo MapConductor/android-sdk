@@ -1,0 +1,27 @@
+{
+  "id": "roadmap",
+  "title": "ロードマップとコミュニティ",
+  "description": "MapConductor は、まだ初期段階にありながらも活発に開発が進んでいるプロジェクトです。短期的な優先事項は、Android SDK を実用レベルまで安定させることと、初心者でも扱いやすいシンプルな API を保つことです。",
+  "source": "@site/i18n/ja/docusaurus-plugin-content-docs/current/roadmap.md",
+  "sourceDirName": ".",
+  "slug": "/roadmap",
+  "permalink": "/ja/docs/roadmap",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "roadmap",
+    "title": "ロードマップとコミュニティ",
+    "sidebar_label": "ロードマップとコミュニティ"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "開発者向け",
+    "permalink": "/ja/docs/developers"
+  },
+  "next": {
+    "title": "チーム",
+    "permalink": "/ja/docs/team"
+  }
+}
