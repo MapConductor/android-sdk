@@ -28,19 +28,10 @@ const content = {
   <Hero title={content.title} subtitle={content.subtitle} heroMessage={content.heroMessage} />
 
   <div class="sl-markdown-content home-summary">
-    <p>MapConductor (マップコンダクター) は、乱立する地図SDKの差異を吸収し、開発の複雑さを解消します。
-      各地図SDKのAPIの細かい実装方法に気を配ることなく、地図の上にどのようにデータを表示したいのか、というビジネスロジックに集中して開発をすることができます。
-      そう、サポートする地図SDKなら、どれでも同じように扱える。まるでオーケストラの指揮者のように、複数の地図SDKを扱える。それがMapConductor (マップコンダクター) が目指す世界です。</p>
+    <p>MapConductor (マップコンダクター) は、複数の地図SDKを統一した地図SDKのAPIを提供します。Android開発者はサポートしている地図SDKなら、どれでも同じように扱うことができます。
+    現在はGoogle Maps, ArcGIS, Mapbox, Here, MapLibreをJetpack Composeから扱うことができます。</p>
   </div>
   
-  <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-    <a class="sl-link-button" href="/ja/intro" style="padding: 0.75rem 1.5rem; background: var(--sl-color-accent); color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 600;">
-      {content.buttons.getStarted}
-    </a>
-    <a class="sl-link-button" href="/ja/developers" style="padding: 0.75rem 1.5rem; background: transparent; color: var(--sl-color-accent); text-decoration: none; border-radius: 0.5rem; border: 2px solid var(--sl-color-accent); font-weight: 600;">
-      {content.buttons.developers}
-    </a>
-  </div>
 
   <h2>プロモーションビデオ</h2>
   <YouTube id="https://youtu.be/Sh2GAsM7Qe8" 
