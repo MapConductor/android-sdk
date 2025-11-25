@@ -11,7 +11,7 @@ MapConductor Android SDK は複数のモジュールから構成されており�
 すべてのモジュールは `mapconductor-bom` でバージョンを一括管理できます。BOM を利用することで、異なるモジュール間でバージョンの不整合が起きるのを防げます。
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
+val mapconductorVersion = "1.1.1"
 
 dependencies {
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))

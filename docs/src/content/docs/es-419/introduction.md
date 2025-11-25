@@ -136,16 +136,22 @@ val mapLibreState = rememberMapLibreMapViewState()
 
 El resto de tu código permanece igual: todos los componentes funcionan de forma consistente entre proveedores.
 
+## Novedades de la versión v1.1.1
+
+En comparación con la versión 1.1.0, los cambios principales de la v1.1.1 incluyen:
+
+- Se corrigió un error donde la posición de visualización de InfoBubble no se recalculaba al mover el área visible del mapa
+
 ## Novedades de la versión v1.1.0
 
 En comparación con la versión 1.0.0, los cambios principales de la v1.1.0 incluyen:
 
-- Manejo unificado de eventos de movimiento de cámara (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) en todos los proveedores.
-- Mejoras en la gestión de la posición de la cámara de `MapViewState` y su integración con `VisibleRegion`.
-- Interfaces de control de marcadores refactorizadas para integraciones de proveedores más claras.
-- Ejemplos ampliados en la app de ejemplo para demostrar flujos avanzados de cámara y `VisibleRegion`.
+- Manejo unificado de eventos de movimiento de cámara (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) en todos los proveedores
+- Mejoras en la gestión de la posición de la cámara de `MapViewState` y su integración con `VisibleRegion`
+- Interfaces de control de marcadores refactorizadas para integraciones de proveedores más claras
+- Ejemplos ampliados en la app de ejemplo para demostrar flujos avanzados de cámara y `VisibleRegion`
 
-## Documentos relacionados
+## Documentación relacionada
 
 - [Instalación](/es-419/installation/)
 - [Módulos](/es-419/modules/)

@@ -16,7 +16,7 @@ title: Google Maps セットアップ
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-googlemaps")
     // Google Maps Android SDK 本体の依存関係も追加
@@ -68,6 +68,7 @@ fun GoogleMapsExample() {
     }
 }
 ```
+![簡単なGoogleMapsの例](/img/basic-googlemaps.jpg)
 
 より詳しい API の使い方は、[MapView コンポーネント](/ja/components/mapviewcomponent) と [Marker コンポーネント](/ja/components/marker) を参照してください。
 

@@ -15,7 +15,7 @@ title: ArcGIS セットアップ
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-arcgis")
     // ArcGIS Maps SDK for Kotlin / Android の依存関係も追加
@@ -51,6 +51,7 @@ fun ArcGISExample() {
     }
 }
 ```
+![簡単なArcGISの例](/img/basic-arcgis.jpg)
 
 ArcGIS 固有のレイヤー機能やジオプロセシング機能と組み合わせることで、より高度な地図アプリケーションを構築できます。
 

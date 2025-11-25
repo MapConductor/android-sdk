@@ -1,56 +1,33 @@
 ---
-title: Installation and Versions
+title: Installation
 ---
 
-This page provides complete installation instructions and version information for all MapConductor Android SDK modules.
+# Installation and Versions
 
-## Current Version
+This page explains how to add MapConductor Android SDK to a Gradle project and recommended version settings.
 
-**Latest Release**: `1.1.0`
+## Adding Dependencies
 
-## Versioning Strategy
-
-MapConductor follows a unified versioning approach across all modules:
-
-### Major Version Alignment
-
-- All modules share the same **major version** to ensure compatibility
-- When any core module requires breaking changes, all modules increment their major version together
-
-### Core Module Versioning
-
-- **Minor version** increments when:
-  - Map provider SDKs receive major updates requiring significant API changes
-  - New core components are added due to expanded map provider capabilities
-  - Significant new features are introduced to the unified API
-- **Patch version** increments for:
-  - Bug fixes and stability improvements
-  - Performance optimizations
-  - Documentation updates
-
-### Experimental Module Versioning
-
-- **Major version** increments when:
-  - New significant features or icon types are added
-  - Breaking API changes are introduced
-  - Module graduates from experimental to stable
-- **Patch version** increments for:
-  - Minor bug fixes and improvements
-  - Small additions that don't break existing APIs
-
-## Core Modules
-
-### BOM
-
-#### `mapconductor-bom`
-
-The BOM module containing version information for all published artifacts.
+MapConductor is distributed from Maven Central as `mapconductor-bom` and individual modules. Using the BOM allows you to manage all MapConductor module versions centrally.
 
 ```kotlin
-implementation("com.mapconductor:mapconductor-bom:1.1.0")
-```
+val mapconductorVersion = "1.1.0"
 
-Use this BOM in combination with Gradle’s platform support to keep all modules on the same version.
+dependencies {
+    // Use BOM to unify versions
+    implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
+
+    // Core module
+    implementation("com.mapconductor:core")
+
+    // Add the map provider modules you need
+    implementation("com.mapconductor:for-googlemaps")
+    // implementation("com.mapconductor:for-mapbox")
+    // implementation("com.mapconductor:for-here")
+    // implementation("com.mapconductor:for-arcgis")
+    // implementation("com.mapconductor:for-maplibre")
+}
+```
 
 ### Core Runtime
 
@@ -217,42 +194,24 @@ For release builds, add these rules:
 
 ### Checking for Updates
 
-To check for the latest MapConductor version:
+You can check for the latest MapConductor version at:
 
-1. GitHub Releases: check the `android-sdk` releases page.
-2. Maven Central: search for `com.mapconductor`.
-3. Gradle tools: use your dependency update checker plugin of choice.
+1. GitHub Releases: `android-sdk` releases page
+2. Maven Central: search for `com.mapconductor`
+3. Gradle plugins: dependency update checker plugins, etc.
 
-### Updating Versions
+### Updating with BOM
 
-To update to a new MapConductor version using the BOM:
+To update to a new MapConductor version, change the BOM version:
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
+val mapconductorVersion = "1.1.1"
 
 dependencies {
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-googlemaps")
-    // ... other modules as needed
+    // Add other modules as needed
 }
 ```
-
-## Release Notes (Summary)
-
-### Version 1.1.0 (Current)
-
-- Unified camera move event handling across providers (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`)
-- Improved `MapViewState` camera position handling and `VisibleRegion` integration
-- Refactored marker controller interfaces for clearer provider integrations
-- Expanded example app to demonstrate advanced camera and visible region workflows
-
-### Version 1.0.0 (Previous)
-
-- Initial stable release
-- Support for Google Maps, Mapbox, HERE, and ArcGIS
-- Core components: Marker, Circle, Polyline, Polygon, GroundImage
-- Experimental modules: Icons, Marker Strategy, Native Strategy
-- Jetpack Compose integration
-- Android 8.0+ support
 

@@ -11,7 +11,7 @@ title: "Advanced Usage（応用例）"
 fun AdvancedMapScreen() {
     val camera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        zoom = 12.0
+        zoom = 15.0
     )
     val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
 
@@ -30,7 +30,7 @@ fun AdvancedMapScreen() {
         // Circle
         Circle(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radiusMeters = 1000.0,
+            radius = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -45,6 +45,8 @@ fun AdvancedMapScreen() {
     }
 }
 ```
+
+![Marker, Circle, Polylineの例](/img/examples/marker-circle-polyline.jpg)
 
 さらに高度な例については、リポジトリの `example-app` のコードも参照してください。
 

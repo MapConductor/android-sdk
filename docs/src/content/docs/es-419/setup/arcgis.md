@@ -15,7 +15,7 @@ En esta página se explica cómo configurar ArcGIS para usarlo con MapConductor.
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-arcgis")
     // Añade también las dependencias de ArcGIS Maps SDK for Kotlin / Android
@@ -51,6 +51,7 @@ fun ArcGISExample() {
     }
 }
 ```
+![Ejemplo sencillo de ArcGIS](/img/basic-arcgis.jpg)
 
 Combina MapConductor con funcionalidades avanzadas de ArcGIS (capas, análisis, etc.) para construir aplicaciones de mapas más complejas.
 

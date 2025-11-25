@@ -4,7 +4,7 @@ title: Introduction
 
 # MapConductor Android SDK Documentation
 
-MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and now MapLibre. This documentation covers the public API components available through Maven distribution for **v1.1.0**.
+MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and MapLibre. This documentation covers the public API components available through Maven distribution for **v1.1.0**.
 
 ## Overview
 
@@ -135,19 +135,24 @@ val mapLibreState = rememberMapLibreMapViewState()
 
 The rest of your code remains the same – all components work consistently across providers.
 
-## What’s New in v1.1.0
+## What's New in v1.1.1
+
+Compared to v1.1.0, v1.1.1 includes:
+
+- Fixed a bug where InfoBubble display position was not recalculated when moving the map's visible region
+
+## What's New in v1.1.0
 
 Compared to v1.0.0, v1.1.0 includes:
 
-- Unified camera move callbacks (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) exposed via map view components and `MapViewContainer`
-- Improved `MapViewState` camera handling with explicit `MapCameraPositionImpl`
-- Refined marker and overlay controller interfaces (`MarkerCapable`, `MarkerOverlayRenderer`) for better provider-specific implementations
-- Example app updates demonstrating camera events, visible region inspection, and advanced marker strategies
+- Unified camera move event handling (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) across all providers
+- Improved `MapViewState` camera position handling and `VisibleRegion` integration
+- Refactored marker controller interfaces for clearer provider integrations
+- Expanded example app with advanced camera control and `VisibleRegion` usage examples
 
-## Next Steps
+## Related Documentation
 
-Explore the detailed documentation for:
-
-- [Modules Overview](/modules)
-- [Installation and Versions](/installation)
-- Provider setup, core components, state classes, and examples.
+- [Installation](/installation/)
+- [Modules Overview](/modules/)
+- [SDK Version Compatibility](/sdk-version-compatibility/)
+- [Provider Compatibility](/provider-compatibility/)

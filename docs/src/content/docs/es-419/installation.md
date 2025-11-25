@@ -202,16 +202,16 @@ Puedes comprobar la última versión de MapConductor en:
 
 ### Actualizar con el BOM
 
-Para actualizar a una nueva versión de MapConductor usando el BOM:
+Para actualizar a una nueva versión de MapConductor, cambia la versión del BOM:
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
+val mapconductorVersion = "1.1.1"
 
 dependencies {
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-googlemaps")
-    // ... otros módulos según necesidad
+    // Añade otros módulos según necesidad
 }
 ```
 

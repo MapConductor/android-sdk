@@ -10,7 +10,7 @@ title: "Circle（円）"
 @Composable
 fun MapViewScope.Circle(
     center: GeoPoint,
-    radiusMeters: Double,
+    radius: Double,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
@@ -22,7 +22,7 @@ fun MapViewScope.Circle(
 ```
 
 - **`center`**: 円の中心（`GeoPoint`）
-- **`radiusMeters`**: 半径（メートル単位）
+- **`radius`**: 半径（メートル単位）
 - **`strokeColor` / `strokeWidth`**: 枠線の色と太さ
 - **`fillColor`**: 塗りつぶし色
 - **`clickable`**: クリックイベントを受け取るかどうか
@@ -34,7 +34,7 @@ fun MapViewScope.Circle(
 ```kotlin
 val circleState = CircleState(
     center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    radiusMeters = 1000.0,
+    radius = 1000.0,
     strokeColor = Color.Blue,
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )

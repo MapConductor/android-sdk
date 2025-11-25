@@ -9,7 +9,7 @@ Este ejemplo combina varios tipos de overlays y eventos de mapa.
 fun AdvancedMapScreen() {
     val camera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        zoom = 12.0
+        zoom = 15.0
     )
     val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
 
@@ -26,7 +26,7 @@ fun AdvancedMapScreen() {
 
         Circle(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radiusMeters = 1000.0,
+            radius = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -40,4 +40,6 @@ fun AdvancedMapScreen() {
     }
 }
 ```
+
+![Ejemplo de Marker, Circle y Polyline](/img/examples/marker-circle-polyline.jpg)
 

@@ -15,7 +15,7 @@ title: HERE Maps セットアップ
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-here")
     // HERE SDK for Android の依存関係も追加
@@ -51,6 +51,7 @@ fun HereMapsExample() {
     }
 }
 ```
+![簡単なHereの例](/img/basic-here.jpg)
 
 HERE 固有の機能（交通情報レイヤーやオフラインマップなど）と併用する場合は、HERE SDK のドキュメントも参照してください。
 

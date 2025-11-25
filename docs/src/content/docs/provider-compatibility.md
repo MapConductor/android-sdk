@@ -32,7 +32,7 @@ All map providers support the basic map view functionality including:
 - Map styling and appearance
 - Event handling (tap, long press, camera move events)
 
-In v1.1.0 the following camera callbacks are available (where the underlying SDK exposes them):
+In v1.1.1 the following camera callbacks are available (where the underlying SDK exposes them):
 
 - `onCameraMoveStart`
 - `onCameraMove`

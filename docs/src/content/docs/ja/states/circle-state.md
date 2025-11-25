@@ -9,7 +9,7 @@ title: "CircleState（円の状態）"
 ```kotlin
 CircleState(
     center: GeoPoint,
-    radiusMeters: Double,
+    radius: Double,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
@@ -23,7 +23,7 @@ CircleState(
 ## 主なプロパティ
 
 - **`center`**: 円の中心座標
-- **`radiusMeters`**: 半径（メートル）
+- **`radius`**: 半径（メートル）
 - **`strokeColor` / `strokeWidth`**: 枠線の色と太さ
 - **`fillColor`**: 塗りつぶし色
 - **`clickable`**: クリック可否

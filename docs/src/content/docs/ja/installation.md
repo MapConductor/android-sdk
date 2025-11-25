@@ -39,7 +39,7 @@ dependencies {
 implementation("com.mapconductor:core")
 ```
 
-**必須**: すべての MapConductor 利用時に必要です。  
+**必須**: すべての MapConductor 利用時に必要です。
 **依存先**: Jetpack Compose, Kotlin Coroutines など。
 
 ### 地図プロバイダモジュール
@@ -205,7 +205,7 @@ android {
 新しい MapConductor バージョンへ更新する場合は、BOM のバージョンを変更します。
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
+val mapconductorVersion = "1.1.1"
 
 dependencies {
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))

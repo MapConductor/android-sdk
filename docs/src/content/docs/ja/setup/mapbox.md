@@ -16,7 +16,7 @@ title: Mapbox セットアップ
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-mapbox")
     // Mapbox Maps SDK for Android の依存関係も追加
@@ -45,7 +45,7 @@ class MyApp : Application() {
 fun MapboxExample() {
     val camera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(40.7128, -74.0060),
-        zoom = 12.0,
+        zoom = 6.0,
     )
 
     val mapViewState = rememberMapboxMapViewState(
@@ -66,6 +66,7 @@ fun MapboxExample() {
     }
 }
 ```
+![簡単なMapboxの例](/img/basic-mapbox.jpg)
 
 Mapbox 固有の機能（スタイルレイヤーの操作など）が必要な場合は、Mapbox SDK の機能と併用してください。
 

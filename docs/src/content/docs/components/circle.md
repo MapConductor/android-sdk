@@ -80,7 +80,7 @@ fun InteractiveCircleExample() {
 
     val circleState = CircleState(
         center = centerPosition,
-        radiusMeters = radius,
+        radius = radius,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         clickable = true
@@ -255,7 +255,7 @@ MapView(
 
         println("Circle clicked:")
         println("  Center: ${circle.center}")
-        println("  Radius: ${circle.radiusMeters}m")
+        println("  Radius: ${circle.radius}m")
         println("  Click point: ${clickPoint}")
         println("  Extra data: ${circle.extra}")
     }

@@ -14,7 +14,7 @@ title: MapLibre セットアップ
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-maplibre")
     // MapLibre Native / GL for Android の依存関係も追加
@@ -30,7 +30,7 @@ MapLibre 本体の依存関係やタイルサーバーの設定は、MapLibre �
 fun MapLibreExample() {
     val camera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(51.5074, -0.1278),
-        zoom = 12.0,
+        zoom = 6.0,
     )
 
     val mapViewState = rememberMapLibreMapViewState(
@@ -46,11 +46,13 @@ fun MapLibreExample() {
     ) {
         Marker(
             position = GeoPointImpl.fromLatLong(51.5074, -0.1278),
-            icon = DefaultIcon(label = "London"),
+            icon = DefaultIcon(label = "L"),
         )
     }
 }
 ```
+
+![簡単なMapLibreの例](/img/basic-maplibre.jpg)
 
 オープンなタイルソースや独自スタイルを組み合わせることで、柔軟な地図表現が可能です。
 

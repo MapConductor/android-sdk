@@ -8,7 +8,7 @@ title: SDK バージョン互換性
 
 ## 対応バージョンの概要
 
-MapConductor v1.1.0 は、以下の環境を前提に設計されています。
+MapConductor v1.1.1 は、以下の環境を前提に設計されています。
 
 - **Android**: 最低 SDK バージョン 26、ターゲット SDK 35
 - **Kotlin**: 1.9.25
