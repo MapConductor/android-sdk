@@ -3,6 +3,7 @@ package com.mapconductor.here
 import HerePolygonOverlayRenderer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
@@ -14,6 +15,7 @@ import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -60,9 +62,11 @@ fun HereMapView(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         sdkInitialize = {
             HereMapViewControllerStore.initSDK(context.applicationContext)
@@ -128,14 +132,17 @@ fun HereMapView(
             return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
                 controller.setCameraMoveListener {
                     controller.setCameraMoveStartListener {
+                        cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMoveStart?.invoke(it)
                     }
                     controller.setCameraMoveListener {
+                        cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMove?.invoke(it)
                     }
                     controller.setCameraMoveEndListener {
+                        cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMoveEnd?.invoke(it)
                     }

@@ -2,6 +2,7 @@ package com.mapconductor.googlemaps
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -14,6 +15,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -59,9 +61,11 @@ fun GoogleMapsView(
     val scope = remember { GoogleMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         viewProvider = {
             val cameraPosition =
@@ -117,14 +121,17 @@ fun GoogleMapsView(
             ).also { controller ->
                 state.setController(controller)
                 controller.setCameraMoveStartListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
                 controller.setCameraMoveListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
                 controller.setCameraMoveEndListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }

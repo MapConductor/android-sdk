@@ -51,7 +51,7 @@ class MapLibreViewStateImpl(
     ) {
         val newPosition =
             this.cameraPosition?.let { currentPosition ->
-                MapCameraPositionImpl.from(currentPosition).copy(
+                MapCameraPositionImpl.Companion.from(currentPosition).copy(
                     position = position,
                 )
             } ?: MapCameraPositionImpl(

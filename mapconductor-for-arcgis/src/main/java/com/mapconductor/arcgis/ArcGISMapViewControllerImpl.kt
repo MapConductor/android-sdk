@@ -2,6 +2,7 @@ package com.mapconductor.arcgis
 
 import androidx.compose.ui.geometry.Offset
 import com.arcgismaps.mapping.Basemap
+import com.arcgismaps.mapping.view.Camera
 import com.arcgismaps.mapping.view.LongPressEvent
 import com.arcgismaps.mapping.view.PanChangeEvent
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
@@ -17,8 +18,10 @@ import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
+import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapPaddingsImpl
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler

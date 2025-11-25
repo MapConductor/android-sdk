@@ -1,6 +1,7 @@
 package com.mapconductor.arcgis
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,6 +22,7 @@ import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -65,9 +67,11 @@ fun ArcGISMapView(
     val owner = LocalLifecycleOwner.current
     owner.lifecycle
     val basemapStyle = remember { ArcGISDesign.toBasemapStyle(state.mapDesignType) }
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         viewProvider = {
             val sceneView = SceneView(context)
@@ -144,14 +148,17 @@ fun ArcGISMapView(
                 circleController = circleController,
             ).also { controller ->
                 controller.setCameraMoveStartListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
                 controller.setCameraMoveListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
                 controller.setCameraMoveEndListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }

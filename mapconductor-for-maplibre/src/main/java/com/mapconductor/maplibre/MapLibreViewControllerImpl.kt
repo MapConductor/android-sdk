@@ -25,7 +25,14 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.expressions.Expression
+import org.maplibre.android.style.layers.FillLayer
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.Property
+import org.maplibre.android.style.layers.PropertyFactory
 import android.graphics.PointF
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlinx.coroutines.CoroutineScope
@@ -50,12 +57,12 @@ class MapLibreViewControllerImpl(
     MapLibreMap.OnCameraMoveListener,
     MapLibreMap.OnCameraIdleListener {
     // Keep reference to the style instance to avoid getting a new one
-    private var styleInstance: org.maplibre.android.maps.Style? = null
+    private var styleInstance: Style? = null
     private var wasScrollEnabledBeforeDrag: Boolean? = null
     private var dragTouchInterceptor: View.OnTouchListener? = null
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
 
-    private fun setupStyle(style: org.maplibre.android.maps.Style) {
+    private fun setupStyle(style: Style) {
         // Store the style instance for future use
         styleInstance = style
 
@@ -180,14 +187,14 @@ class MapLibreViewControllerImpl(
     override fun setMapDesignType(value: MapLibreMapDesignType) {
         coroutine.launch {
             holder.map.setStyle(value.styleJsonURL) { newStyle ->
-                android.util.Log.d("MapLibre", "Style changed to ${value.styleJsonURL}")
+                Log.d("MapLibre", "Style changed to ${value.styleJsonURL}")
                 setupStyle(newStyle)
             }
         }
     }
 
     // Provide access to the style instance
-    fun getStyleInstance(): org.maplibre.android.maps.Style? = styleInstance
+    fun getStyleInstance(): Style? = styleInstance
 
     override fun setMapDesignTypeChangeListener(listener: MapLibreDesignTypeChangeHandler) {
         mapDesignTypeChangeListener = listener
@@ -315,7 +322,7 @@ class MapLibreViewControllerImpl(
                     wasScrollEnabledBeforeDrag = ui.isScrollGesturesEnabled
                     ui.isScrollGesturesEnabled = false
                 } catch (e: Exception) {
-                    android.util.Log.w("MapLibre", "Failed to disable scroll gestures: ${e.message}")
+                    Log.w("MapLibre", "Failed to disable scroll gestures: ${e.message}")
                 }
                 markerController.selectedMarker = entity
                 markerController.markerManager.removeEntity(entity.state.id)
@@ -373,7 +380,7 @@ class MapLibreViewControllerImpl(
                 val ui = holder.map.uiSettings
                 ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
             } catch (e: Exception) {
-                android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
+                Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
             } finally {
                 wasScrollEnabledBeforeDrag = null
             }
@@ -407,7 +414,7 @@ class MapLibreViewControllerImpl(
                             val ui = holder.map.uiSettings
                             ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
                         } catch (e: Exception) {
-                            android.util.Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
+                            Log.w("MapLibre", "Failed to re-enable scroll gestures: ${e.message}")
                         } finally {
                             wasScrollEnabledBeforeDrag = null
                         }
@@ -482,13 +489,13 @@ class MapLibreViewControllerImpl(
                 farRight = farRight,
             )
         val mapCameraPosition =
-            MapCameraPositionImpl.from(camera).copy(
+            MapCameraPositionImpl.Companion.from(camera).copy(
                 visibleRegion = visibleRegion,
             )
         return mapCameraPosition
     }
 
-    private fun ensurePolygonZLayers(style: org.maplibre.android.maps.Style) {
+    private fun ensurePolygonZLayers(style: Style) {
         val fillSourceId = polygonController.polygonOverlay.layer.sourceId
         val outlineSourceId = polygonController.polylineOverlay.layer.sourceId
         val anchorId = polylineController.renderer.layer.layerId
@@ -521,18 +528,18 @@ class MapLibreViewControllerImpl(
 
             if (style.getLayer(fillId) == null) {
                 val fill =
-                    org.maplibre.android.style.layers.FillLayer(fillId, fillSourceId).apply {
+                    FillLayer(fillId, fillSourceId).apply {
                         setFilter(
-                            org.maplibre.android.style.expressions.Expression.eq(
-                                org.maplibre.android.style.expressions.Expression
+                            Expression.eq(
+                                Expression
                                     .get("zIndex"),
-                                org.maplibre.android.style.expressions.Expression
+                                Expression
                                     .literal(z),
                             ),
                         )
                         setProperties(
-                            org.maplibre.android.style.layers.PropertyFactory.fillColor(
-                                org.maplibre.android.style.expressions.Expression
+                            PropertyFactory.fillColor(
+                                Expression
                                     .get("fillColor"),
                             ),
                         )
@@ -546,26 +553,26 @@ class MapLibreViewControllerImpl(
 
             if (style.getLayer(outlineId) == null) {
                 val outline =
-                    org.maplibre.android.style.layers.LineLayer(outlineId, outlineSourceId).apply {
+                    LineLayer(outlineId, outlineSourceId).apply {
                         setFilter(
-                            org.maplibre.android.style.expressions.Expression.eq(
-                                org.maplibre.android.style.expressions.Expression
+                            Expression.eq(
+                                Expression
                                     .get("zIndex"),
-                                org.maplibre.android.style.expressions.Expression
+                                Expression
                                     .literal(z),
                             ),
                         )
                         setProperties(
-                            org.maplibre.android.style.layers.PropertyFactory
-                                .lineJoin(org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND),
-                            org.maplibre.android.style.layers.PropertyFactory
-                                .lineCap(org.maplibre.android.style.layers.Property.LINE_CAP_ROUND),
-                            org.maplibre.android.style.layers.PropertyFactory.lineColor(
-                                org.maplibre.android.style.expressions.Expression
+                            PropertyFactory
+                                .lineJoin(Property.LINE_JOIN_ROUND),
+                            PropertyFactory
+                                .lineCap(Property.LINE_CAP_ROUND),
+                            PropertyFactory.lineColor(
+                                Expression
                                     .get("strokeColor"),
                             ),
-                            org.maplibre.android.style.layers.PropertyFactory.lineWidth(
-                                org.maplibre.android.style.expressions.Expression
+                            PropertyFactory.lineWidth(
+                                Expression
                                     .get("strokeWidth"),
                             ),
                         )

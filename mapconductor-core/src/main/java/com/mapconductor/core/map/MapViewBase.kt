@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -78,6 +79,7 @@ fun <
     SpecificHolder : MapViewHolder<ActualMapView, ActualMap>,
 > MapViewBase(
     state: SpecificState,
+    cameraState: MutableState<MapCameraPosition?>,
     modifier: Modifier = Modifier,
     viewProvider: () -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
@@ -241,7 +243,7 @@ fun <
 
                     // InfoBubble など、Map の座標→スクリーン座標変換が必要なもの
                     // を mapSize 確定後に描画
-                    if (bubbles.isNotEmpty()) {
+                    if (bubbles.isNotEmpty() && cameraState.value != null) {
                         Box(
                             modifier =
                                 Modifier

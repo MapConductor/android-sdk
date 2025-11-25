@@ -2,6 +2,7 @@
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
@@ -13,6 +14,7 @@ import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -69,9 +71,11 @@ fun MapboxMapView(
     val scope = remember { MapboxMapViewScope() }
     val registry = remember { scope.buildRegistry() }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         viewProvider = {
             val cameraOptions =
@@ -113,14 +117,17 @@ fun MapboxMapView(
                 circleController = circleController,
             ).also { controller ->
                 controller.setCameraMoveStartListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
                 controller.setCameraMoveListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
                 controller.setCameraMoveEndListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }
