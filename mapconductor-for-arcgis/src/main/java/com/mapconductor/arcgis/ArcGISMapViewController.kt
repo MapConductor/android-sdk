@@ -1,4 +1,4 @@
-package com.mapconductor.arcgis
+package com.mapconductor.arcgis.map
 
 import com.mapconductor.core.circle.CircleCapable
 import com.mapconductor.core.controller.MapViewController

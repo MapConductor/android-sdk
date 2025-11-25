@@ -1,4 +1,4 @@
-package com.mapconductor.arcgis
+package com.mapconductor.arcgis.map
 
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.LifecycleOwner
@@ -11,6 +11,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import com.mapconductor.arcgis.toGeoPoint
+import com.mapconductor.arcgis.toPoint
 import kotlinx.coroutines.runBlocking
 
 class WrapSceneView : FrameLayout {
