@@ -1,11 +1,13 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -64,9 +66,11 @@ fun MapLibreMapView(
     val context = LocalContext.current
     val scope = remember { MapLibreMapViewScope() }
     val registry = remember { scope.buildRegistry() }
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         viewProvider = {
             val cameraPosition =
@@ -122,14 +126,17 @@ fun MapLibreMapView(
                 // Store controller reference in holder
                 holder.setController(controller)
                 controller.setCameraMoveStartListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
                 controller.setCameraMoveListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
                 controller.setCameraMoveEndListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }

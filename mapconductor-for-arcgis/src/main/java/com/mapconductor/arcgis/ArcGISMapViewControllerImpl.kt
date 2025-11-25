@@ -1,4 +1,4 @@
-package com.mapconductor.arcgis
+package com.mapconductor.arcgis.map
 
 import androidx.compose.ui.geometry.Offset
 import com.arcgismaps.mapping.Basemap
@@ -30,6 +30,14 @@ import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.settings.Settings
 import android.view.MotionEvent
+import com.arcgismaps.mapping.view.Camera
+import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.calculateCameraForOrbitParameters
+import com.mapconductor.arcgis.fromLongLat
+import com.mapconductor.arcgis.toGeoPoint
+import com.mapconductor.arcgis.toPoint
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapPaddingsImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -173,12 +181,12 @@ class ArcGISMapViewControllerImpl(
         val camera =
             MapCameraPositionImpl(
                 position =
-                    com.mapconductor.core.features.GeoPointImpl
+                    GeoPointImpl
                         .fromLongLat(lon, lat, alt),
                 zoom = zoom,
                 bearing = bearing,
                 tilt = tilt,
-                paddings = com.mapconductor.core.map.MapPaddingsImpl.Zeros,
+                paddings = MapPaddingsImpl.Zeros,
                 visibleRegion = visibleRegion,
             )
         return camera
@@ -366,9 +374,9 @@ class ArcGISMapViewControllerImpl(
         return ZoomAltitudeConverter.computeZoom0DistanceForView(h, fovVerticalDegrees)
     }
 
-    private fun toCameraWithView(position: MapCameraPositionImpl): com.arcgismaps.mapping.view.Camera {
+    private fun toCameraWithView(position: MapCameraPositionImpl): Camera {
         val targetPoint =
-            com.mapconductor.core.features.GeoPointImpl
+            GeoPointImpl
                 .from(position.position)
                 .toPoint()
         // Use calibrated constant instead of dynamic calculation
