@@ -20,7 +20,6 @@ data class MapCameraPositionImpl(
 - **`zoom`**: ズームレベル
 - **`tilt`**: 傾き（度）
 - **`bearing`**: 方位（度、北を 0 とした時計回り）
-- **`paddings`**: UI の余白を考慮したパディング（[Zoom Levels / Paddings](/ja/core/zoom-levels) も参照）
 
 ## カメラ位置の指定例
 
@@ -34,21 +33,6 @@ val camera = MapCameraPositionImpl(
 
 val mapViewState = rememberGoogleMapViewState(
     cameraPosition = camera
-)
-```
-
-## パディングを利用した UI 対応
-
-```kotlin
-val paddings = MapPaddingsImpl(
-    top = 80.0,
-    bottom = 160.0
-)
-
-val paddedCamera = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    zoom = 15.0,
-    paddings = paddings
 )
 ```
 

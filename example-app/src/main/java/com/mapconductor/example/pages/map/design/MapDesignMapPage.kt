@@ -21,8 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.ArcGISDesignType
-import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.arcgis.map.ArcGISDesignType
+import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
@@ -33,6 +33,8 @@ import com.mapconductor.here.HereMapDesignType
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxDesignType
 import com.mapconductor.mapbox.MapboxViewState
+import com.mapconductor.maplibre.MapLibreDesignType
+import com.mapconductor.maplibre.MapLibreViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,6 +108,10 @@ fun MapDesignTypeSelector(
             is MapboxViewState -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as MapboxDesignType
+            }
+            is MapLibreViewState -> {
+                @Suppress("UNCHECKED_CAST")
+                state.mapDesignType = mapDesignOption.design as MapLibreDesignType
             }
             else -> throw IllegalArgumentException("Not implemented yet")
         }

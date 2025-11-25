@@ -3,8 +3,8 @@ package com.mapconductor.example
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapView
-import com.mapconductor.arcgis.ArcGISMapViewStateImpl
+import com.mapconductor.arcgis.map.ArcGISMapView
+import com.mapconductor.arcgis.map.ArcGISMapViewStateImpl
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler

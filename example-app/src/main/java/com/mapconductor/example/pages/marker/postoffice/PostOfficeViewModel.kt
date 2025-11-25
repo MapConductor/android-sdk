@@ -2,7 +2,7 @@ package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.lifecycle.ViewModel
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState

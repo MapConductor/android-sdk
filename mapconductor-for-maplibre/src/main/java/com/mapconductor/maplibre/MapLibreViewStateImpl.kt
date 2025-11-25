@@ -100,13 +100,13 @@ class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
         MapLibreViewStateImpl(
             id = stateId,
             mapDesignType =
-                MapLibreMapDesign(
+                MapLibreDesignType(
                     id =
                         mapDesignBundle?.getString("id")
-                            ?: MapLibreMapDesign.DemoTiles.id,
+                            ?: MapLibreDesignType.DemoTiles.id,
                     styleJsonURL =
                         mapDesignBundle?.getString("styleJsonURL")
-                            ?: MapLibreMapDesign.DemoTiles.styleJsonURL,
+                            ?: MapLibreDesignType.DemoTiles.styleJsonURL,
                 ),
             cameraPosition = cameraPosition,
         )
@@ -116,7 +116,7 @@ class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
 
 @Composable
 fun rememberMapLibreMapViewState(
-    mapDesign: MapLibreMapDesignType = MapLibreMapDesign.DemoTiles,
+    mapDesign: MapLibreMapDesignType = MapLibreDesignType.DemoTiles,
     cameraPosition: MapCameraPosition = MapCameraPositionImpl.Default,
 ): MapLibreViewStateImpl {
     val stateId by rememberSaveable {

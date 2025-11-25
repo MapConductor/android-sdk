@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.from
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.MapCameraPosition
@@ -17,8 +19,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
-import com.mapconductor.arcgis.ArcGISMapViewHolder
-import com.mapconductor.arcgis.from
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

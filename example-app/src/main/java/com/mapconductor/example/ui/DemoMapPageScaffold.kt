@@ -26,9 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.ArcGISDesign
-import com.mapconductor.arcgis.ArcGISMapViewStateImpl
-import com.mapconductor.arcgis.rememberArcGISMapViewState
+import com.mapconductor.arcgis.map.ArcGISDesign
+import com.mapconductor.arcgis.map.ArcGISMapViewStateImpl
+import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateImpl
@@ -42,7 +42,7 @@ import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateImpl
 import com.mapconductor.mapbox.rememberMapboxMapViewState
-import com.mapconductor.maplibre.MapLibreMapDesign
+import com.mapconductor.maplibre.MapLibreDesignType
 import com.mapconductor.maplibre.MapLibreViewStateImpl
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 
@@ -118,7 +118,7 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMap
 fun GetMapLibreViewItem(initCameraPosition: MapCameraPosition): IconItem<MapLibreViewStateImpl> {
     val mapLibreMapState =
         rememberMapLibreMapViewState(
-            mapDesign = MapLibreMapDesign.DemoTiles,
+            mapDesign = MapLibreDesignType.DemoTiles,
             cameraPosition = initCameraPosition,
         )
     return IconItem(

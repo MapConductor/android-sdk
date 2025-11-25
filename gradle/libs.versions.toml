@@ -37,6 +37,7 @@ material = "1.10.0"
 mapLibreSdk = "12.0.0"
 mapLibreAnnotation = "3.0.2"
 runtime = "1.9.3"
+runtimeVersion = "1.9.5"
 
 [libraries]
 # Android 基本
@@ -99,6 +100,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 
 net-sf-geographiclib = { group = "net.sf.geographiclib", name="GeographicLib-Java", version.ref="geographiclib"}
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
