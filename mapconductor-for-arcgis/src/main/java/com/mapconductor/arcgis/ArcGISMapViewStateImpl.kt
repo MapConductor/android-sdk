@@ -1,4 +1,4 @@
-package com.mapconductor.arcgis
+package com.mapconductor.arcgis.map
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +17,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
+import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.from
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -62,7 +64,7 @@ class ArcGISMapViewStateImpl(
         durationMs: Long?,
     ) {
         controller?.let { ctrl ->
-            val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
+            val dstCameraPosition = MapCameraPositionImpl.Companion.from(cameraPosition)
             if (durationMs == null || durationMs == 0L) {
                 ctrl.moveCamera(dstCameraPosition)
             } else {
