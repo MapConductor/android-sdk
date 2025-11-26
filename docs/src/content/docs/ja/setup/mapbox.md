@@ -138,6 +138,7 @@ fun TestMapbox() {
     }
 }
 ```
+![TestMapboxの実行結果](/img/examples/basic-setupMapbox.jpg)
 
 ## トラブルシューティング
 

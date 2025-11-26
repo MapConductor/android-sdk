@@ -119,6 +119,7 @@ fun TestGoogleMaps() {
     }
 }
 ```
+![TestGoogleMapsの実行結果](/img/examples/basic-setupGoogleMaps.jpg)
 
 ## トラブルシューティング
 
