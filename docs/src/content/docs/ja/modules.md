@@ -2,72 +2,128 @@
 title: モジュール構成
 ---
 
-# モジュール構成
+MapConductor は複数の Gradle モジュールに分割されているため、必要なものだけに依存できます。このページでは、v1.1.0 の各 `mapconductor-xxx` モジュールを要約します。
 
-MapConductor Android SDK は複数のモジュールから構成されており、必要な機能だけを選択して利用できます。このページでは、各モジュールの役割と依存関係の概要を説明します。
+## コアと BOM
 
-## BOM とバージョン管理
+### `mapconductor-bom`
 
-すべてのモジュールは `mapconductor-bom` でバージョンを一括管理できます。BOM を利用することで、異なるモジュール間でバージョンの不整合が起きるのを防げます。
+すべての MapConductor アーティファクトの Bill of Materials です。
+
+- すべてのモジュール間でバージョンを調整します
+- すべてのプロジェクトに推奨されます
 
 ```kotlin
-val mapconductorVersion = "1.1.1"
-
-dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-    // 必要に応じて他のモジュールを追加
-}
+implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
 ```
-
-## コアランタイム
 
 ### `mapconductor-core`
 
-共通の抽象クラスやユーティリティを提供する中核モジュールです。
+コアランタイムと共有抽象化:
 
-- 地理座標やカメラ位置などのコアクラス
-- MapView の状態管理とイベントハンドリング
-- マーカーや円などのオーバーレイコンポーネントの共通インターフェース
+- ジオメトリ型: `GeoPoint`, `GeoRectBounds`
+- カメラ型: `MapCameraPosition`, `VisibleRegion`
+- マップ抽象化: `MapViewState`, `MapViewController`, `MapViewBase`
+- オーバーレイプリミティブ: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
-ほとんどの機能で必須となるモジュールです。
+他のすべてのモジュールは `mapconductor-core` の上に構築されています。
 
-## 地図プロバイダモジュール
+## 地図プロバイダ統合
 
-各地図プロバイダごとに、`mapconductor-core` を実装するモジュールが用意されています。
+プロバイダ固有のモジュールは、各 SDK に統一 API を実装します:
 
-- `mapconductor-for-googlemaps`
-- `mapconductor-for-mapbox`
-- `mapconductor-for-here`
-- `mapconductor-for-arcgis`
-- `mapconductor-for-maplibre`
+### `mapconductor-for-googlemaps`
 
-これらのモジュールは、共通 API に準拠したマップビューやステートクラスを提供し、Google Maps や Mapbox などの実際の SDK と橋渡しをします。
+- `GoogleMapsView` Composable
+- `GoogleMapViewStateImpl`
+- Google Maps 固有のオーバーレイコントローラ
 
-## サポートモジュール
+### `mapconductor-for-mapbox`
+
+- `MapboxMapView` Composable
+- `MapboxViewStateImpl`
+
+### `mapconductor-for-here`
+
+- `HereMapView` Composable
+- `HereViewStateImpl`
+
+### `mapconductor-for-arcgis`
+
+- `ArcGISMapView` Composable
+- `ArcGISMapViewStateImpl`
+
+### `mapconductor-for-maplibre`
+
+- `MapLibreMapView` Composable
+- `MapLibreViewStateImpl`
+
+各プロバイダモジュールは:
+
+- `MapViewState` とコントローラバインディングを実装します
+- プロバイダ固有のカメラと表示可能領域を `MapCameraPosition` にマッピングします
+- オーバーレイコントローラ（マーカー、ポリライン、ポリゴン、円、サポートされている場合はグラウンドイメージ）を公開します
+
+## 実験的 / ユーティリティモジュール
 
 ### `mapconductor-icons`
 
-カスタムマーカーアイコンを提供するモジュールです。円形アイコンやフラグアイコンなど、地図上の情報を視覚的に表現するためのコンポーネントが含まれています。
+純粋な Compose で実装された Composable マーカーアイコン:
 
-## 実験的モジュール
+- `CircleIcon`, `FlagIcon`
+- 情報バブルスタイル（丸、尾付きなど）
 
-> **注意**: 実験的モジュールは API が変更される可能性があります。本番環境で利用する場合はリリースノートを確認してください。
+プロバイダ固有の drawable に依存せずに、プロバイダ間で一貫したマーカービジュアルが必要な場合に便利です。
 
 ### `mapconductor-marker-strategy`
 
-大量のマーカーを効率的に扱うための戦略パターンを提供します。クラスタリングやネイティブレンダリングなど、パフォーマンスを重視した実装が含まれます。
+高レベルのマーカーレンダリング戦略:
+
+- 空間 / クラスタリングのような戦略
+- リモート駆動型マーカーセットの抽象化
+
+共有マーカーインターフェースを介して任意のプロバイダモジュールと連携するように設計されています。
 
 ### `mapconductor-marker-native-strategy`
 
-ネイティブ側の最適化を活用したマーカー描画戦略を提供します。大量のマーカーを表示するユースケースを想定しています。
+非常に大きなマーカーセットのためのネイティブアクセラレーテッド戦略:
 
-## 例示アプリ
+- 大規模なパフォーマンスに焦点を当てる
+- 通常、`mapconductor-marker-strategy` と組み合わせて使用されます
 
-リポジトリには、MapConductor の主要機能を確認できる例示アプリが含まれています。
+## 例示アプリケーション
 
-- `example-app`: 複数のプロバイダで MapConductor を利用するサンプル
+### `example-app`
 
-セットアップ方法やビルド手順は、[インストール](/ja/installation/) および README を参照してください。
+以下を実証するショーケースアプリケーション:
 
+- 基本的なマップ使用とプロバイダの切り替え
+- カメラ処理と表示可能領域（`VisibleRegionPage`, `ZoomCalibrationPage`）
+- ポリライン、ポリゴン、円、グラウンドイメージ
+- 情報バブルとカスタムマーカーアイコン
+
+### `simple-map-app`
+
+クイック統合テストとデバッグのための最小限の例です。
+
+## モジュールの選択方法
+
+典型的な構成:
+
+```kotlin
+// 最小限: Google Maps のみ
+implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation("com.mapconductor:core")
+implementation("com.mapconductor:for-googlemaps")
+```
+```
+// アイコンと戦略を使用したマルチプロバイダ
+implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation("com.mapconductor:core")
+implementation("com.mapconductor:for-googlemaps")
+implementation("com.mapconductor:for-mapbox")
+implementation("com.mapconductor:icons")
+implementation("com.mapconductor:marker-strategy")
+```
+
+このページを高レベルのマップとして使用してください。各領域（コア、コンポーネント、状態、実験的）の詳細な API 情報は、既存の mdBook セクション（`docs/src/core`, `docs/src/components` など）から移行できます。

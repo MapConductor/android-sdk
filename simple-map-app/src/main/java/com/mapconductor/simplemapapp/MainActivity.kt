@@ -63,58 +63,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val locations = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // San Francisco
-        GeoPointImpl.fromLatLong(40.7128, -74.0060),  // New York
-        GeoPointImpl.fromLatLong(51.5074, -0.1278)    // London
+    val cameraPosition = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(35.0, 135.0),
+        zoom = 12.0,
     )
 
-    val mapViewState = rememberHereMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = locations[0],
-            zoom = 6.0
-        ),
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = cameraPosition,
     )
 
-    var currentIndex by remember { mutableStateOf(0) }
-
-    // Animate to next location every 5 seconds
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(5000)
-            currentIndex = (currentIndex + 1) % locations.size
-
-            val targetPosition = MapCameraPositionImpl(
-                position = locations[currentIndex],
-                zoom = 6.0,
-                bearing = 0.0,
-                tilt = 0.0
-            )
-            mapViewState.moveCameraTo(targetPosition, 1000)
-        }
-    }
-
-
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    HereMapView(
+    GoogleMapsView(
         state = mapViewState,
         modifier = modifier,
     ) {
-        // Add markers for each location
-        locations.forEachIndexed { index, location ->
-            Marker(
-                position = location,
-                icon = DefaultIcon(
-                    fillColor = if (index == currentIndex) Color.Red else Color.Gray,
-                    label = when (index) {
-                        0 -> "SF"
-                        1 -> "NYC"
-                        2 -> "LON"
-                        else -> "$index"
-                    }
-                )
-            )
-        }
+        // Marker / Circle / Polyline などを追加
     }
 }
 

@@ -1,20 +1,22 @@
 ---
 title: MapConductor Android SDK
-head:
-  - tag: title
-    content: Starlight 🌟 Build documentation sites with Astro
-description: Starlight helps you build beautiful, high-performance documentation websites with Astro.
-template: doc
-editUrl: false
-lastUpdated: false
+description: 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK
+template: splash
+hero:
+  image:
+    html: <img src="/img/top-banner.jpg" alt="複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK" />
+  tagline: Google Maps / Mapbox / HERE / ArcGIS / MapLibre を単一のAPIで扱えるAndroid向けSDK
+  actions:
+    - text: はじめる
+      link: /ja/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: GitHubを見る
+      link: https://github.com/MapConductor/android-sdk
+      icon: external
 ---
 
-import { CardGrid, Card } from '@astrojs/starlight/components';
-import { Image } from 'astro:assets';
-import topBanner from '~/assets/top-banner.png';
-
-<Image src={topBanner} alt="hello" />
-
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## なぜ MapConductor なのか
 
@@ -35,51 +37,24 @@ import topBanner from '~/assets/top-banner.png';
 
 ## クイックサンプル
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+```kotlin
+@Composable
+fun MyMap() {
+    val mapViewState = rememberGoogleMapViewState()
 
-<Tabs>
-  <TabItem label="GoogleMaps">
-    ```kotlin
-    @Composable
-    fun MyMap() {
-        val mapViewState = rememberGoogleMapViewState()
-
-        GoogleMapsView(
-            state = mapViewState,
-            onMapClick = { geoPoint ->
-                println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-            }
-        ) {
-            Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(label = "SF")
-            )
+    GoogleMapsView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
         }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(label = "SF")
+        )
     }
-    ```
-  </TabItem>
-  <TabItem label="Mapbox">
-    ```kotlin
-    @Composable
-    fun MyMap() {
-        val mapViewState = rememberMapboxMapViewState()
-
-        MapboxMapView(
-            state = mapViewState,
-            onMapClick = { geoPoint ->
-                println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-            }
-        ) {
-            Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(label = "SF")
-            )
-        }
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+}
+```
 
 Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `rememberMapboxMapViewState()` に、`GoogleMapsView` を `MapboxMapView` に変更するだけです。それ以外のコードはそのままです。
 

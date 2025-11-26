@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightMermaid from '@pasqal-io/starlight-client-mermaid';
+import { fileURLToPath } from 'node:url';
 
 // https://astro.build/config
 export default defineConfig({
@@ -32,6 +33,9 @@ export default defineConfig({
 			components: {
 				Head: './src/components/overrides/Head.astro',
 			},
+			social: [
+				{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' },
+			],
 			sidebar: [
 				{
 					label: 'Getting Started',
@@ -145,4 +149,12 @@ export default defineConfig({
 			],
 		}),
 	],
+	vite: {
+		resolve: {
+			// Match Starlight docs behavior so `~/` points to `src/`
+			alias: {
+				'~': fileURLToPath(new URL('./src', import.meta.url)),
+			},
+		},
+	},
 });
