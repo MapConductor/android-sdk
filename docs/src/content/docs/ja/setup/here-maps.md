@@ -124,6 +124,7 @@ fun TestHERE() {
     }
 }
 ```
+![TestHEREの実行結果](/img/examples/basic-setupHere.jpg)
 
 ## トラブルシューティング
 
