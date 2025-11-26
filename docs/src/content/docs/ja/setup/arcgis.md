@@ -141,6 +141,7 @@ fun TestArcGIS() {
     }
 }
 ```
+![TestArcGISの実行結果](/img/examples/basic-setupArcgis.jpg)
 
 ## トラブルシューティング
 
