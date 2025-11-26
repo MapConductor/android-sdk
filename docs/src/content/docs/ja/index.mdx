@@ -1,9 +1,9 @@
 ---
 title: MapConductor Android SDK
+description: 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK
 head:
   - tag: title
-    content: Starlight 🌟 Build documentation sites with Astro
-description: Starlight helps you build beautiful, high-performance documentation websites with Astro.
+    content: description
 template: doc
 editUrl: false
 lastUpdated: false
@@ -12,11 +12,11 @@ lastUpdated: false
 import { CardGrid, Card } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import topBanner from '~/assets/top-banner.png';
+import QuickExampleTabs from '~/components/QuickExampleTabs.mdx';
 
-<Image src={topBanner} alt="hello" />
+<Image src={topBanner} alt="MapConductor(マップコンダクター) ♪ 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK" />
 
-
-## なぜ MapConductor なのか
+## MapConductor(マップコンダクター) とは何か
 
 <CardGrid>
   <Card title="統一されたAPI" icon="puzzle">
@@ -35,51 +35,7 @@ import topBanner from '~/assets/top-banner.png';
 
 ## クイックサンプル
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
-<Tabs>
-  <TabItem label="GoogleMaps">
-    ```kotlin
-    @Composable
-    fun MyMap() {
-        val mapViewState = rememberGoogleMapViewState()
-
-        GoogleMapsView(
-            state = mapViewState,
-            onMapClick = { geoPoint ->
-                println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-            }
-        ) {
-            Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(label = "SF")
-            )
-        }
-    }
-    ```
-  </TabItem>
-  <TabItem label="Mapbox">
-    ```kotlin
-    @Composable
-    fun MyMap() {
-        val mapViewState = rememberMapboxMapViewState()
-
-        MapboxMapView(
-            state = mapViewState,
-            onMapClick = { geoPoint ->
-                println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-            }
-        ) {
-            Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(label = "SF")
-            )
-        }
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+<QuickExampleTabs />
 
 Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `rememberMapboxMapViewState()` に、`GoogleMapsView` を `MapboxMapView` に変更するだけです。それ以外のコードはそのままです。
 

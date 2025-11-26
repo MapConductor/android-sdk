@@ -1,20 +1,16 @@
 ---
 title: MapConductor Android SDK
-description: A unified map SDK for Android that provides a common API for multiple map providers
-template: splash
-hero:
-  tagline: Use a single API to work with Google Maps, Mapbox, HERE, ArcGIS, and MapLibre in your Android app
-  actions:
-    - text: Get Started
-      link: /introduction/
-      icon: right-arrow
-      variant: primary
-    - text: View on GitHub
-      link: https://github.com/MapConductor/android-sdk
-      icon: external
+head:
+  - tag: title
+    content: Starlight 🌟 Build documentation sites with Astro
+description: Starlight helps you build beautiful, high-performance documentation websites with Astro.
+template: doc
+editUrl: false
+lastUpdated: false
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
+import QuickExampleTabs from '~/components/QuickExampleTabs.mdx';
 
 ![MapConductor Android SDK for Jetpack Compose](/img/top-banner.jpg)
 
@@ -37,24 +33,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Quick Example
 
-```kotlin
-@Composable
-fun MyMap() {
-    val mapViewState = rememberGoogleMapViewState()
-
-    GoogleMapsView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF")
-        )
-    }
-}
-```
+<QuickExampleTabs />
 
 Switch to Mapbox? Just change `rememberGoogleMapViewState()` to `rememberMapboxMapViewState()` and `GoogleMapsView` to `MapboxMapView`. Everything else stays the same.
 
