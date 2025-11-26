@@ -3,29 +3,72 @@ title: "Event Handlers"
 ---
 
 MapConductor provides comprehensive event handling for user interactions with the map and its components. All events are handled through the `MapViewContainer` component.
+All event listeners are passed through MapView component.
+
+```kotlin
+MapView(
+    ...,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    onGroundImageClick: OnGroundImageEventHandler? = null,
+) { }
+```
 
 ## Map Events
 
 ### Map Initialization
 
-```kotlin
-onMapViewInitialized: OnMapViewInitializedHandler? = null
-```
-Called when the map view is first initialized.
+- Called when the map has finished loading and is ready for interaction.
 
-```kotlin
-onMapLoaded: OnMapLoadedHandler? = null
-```
-Called when the map has finished loading and is ready for interaction.
+    ```kotlin
+    onMapLoaded: OnMapLoadedHandler? = null
+    ```
+
+-  Example
+    ```kotlin
+    MapView(
+        ...
+        onMapLoaded: {
+            println("Map loaded")
+        },
+    ) {
+        ...
+    }
+    ```
 
 ### Map Interaction
 
-```kotlin
-onMapClick: OnMapEventHandler? = null
-```
-Called when the user taps on the map (not on any overlay).
+- Called when the user taps on the map (not on any overlay).
 
+    ```kotlin
+    onMapClick: OnMapEventHandler? = null
+    ```
 **Event Data**: `GeoPoint` - the geographic coordinates of the tap
+
+
+-  Example
+    ```kotlin
+    MapView(
+        ...
+        onMapClick = { geoPoint ->
+            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        ...
+    }
+    ```
 
 ## Marker Events
 
@@ -33,61 +76,124 @@ All marker events receive a `MarkerState` object containing the marker's current
 
 ### Click Events
 
-```kotlin
-onMarkerClick: OnMarkerEventHandler? = null
-```
-Called when a marker is tapped.
+- Called when a marker is tapped.
+    ```kotlin
+    onMarkerClick: OnMarkerEventHandler? = null
+    ```
+
+-  Example
+    ```kotlin
+    MapView(
+        ...
+        onMarkerClick = { markerState ->
+            println("Marker clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        },
+    ) {
+        ...
+    }
+    ```
 
 ### Drag Events
-
-```kotlin
-onMarkerDragStart: OnMarkerEventHandler? = null
-onMarkerDrag: OnMarkerEventHandler? = null
-onMarkerDragEnd: OnMarkerEventHandler? = null
-```
 
 - **`onMarkerDragStart`**: Called when dragging begins
 - **`onMarkerDrag`**: Called continuously during dragging
 - **`onMarkerDragEnd`**: Called when dragging ends
 
+    ```kotlin
+    onMarkerDragStart: OnMarkerEventHandler? = null
+    onMarkerDrag: OnMarkerEventHandler? = null
+    onMarkerDragEnd: OnMarkerEventHandler? = null
+    ```
+
+    ```kotlin
+    MapView(
+        ...
+            onMarkerDragStart = { draggedMarker ->
+                println("Drag started: ${draggedMarker.id}")
+            },
+            onMarkerDrag = { draggedMarker ->
+                if (draggedMarker.id == markerState.id) {
+                    markerState = markerState.copy(position = draggedMarker.position)
+                }
+            },
+            onMarkerDragEnd = { draggedMarker ->
+                println("Drag ended: ${draggedMarker.id}")
+            },
+    ) { }
+    ```
+
 ### Animation Events
 
-```kotlin
-onMarkerAnimateStart: OnMarkerEventHandler? = null
-onMarkerAnimateEnd: OnMarkerEventHandler? = null
-```
+- Called when marker animations start and end.
+    ```kotlin
+    onMarkerAnimateStart: OnMarkerEventHandler? = null
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null
+    ```
 
-Called when marker animations start and end.
 
 ## Overlay Events
 
 ### Circle Events
 
-```kotlin
-onCircleClick: OnCircleEventHandler? = null
-```
+- Called when a circle is tapped.
 
-**Event Data**: `CircleEvent`
-```kotlin
-data class CircleEvent(
-    val state: CircleState,
-    val clicked: GeoPoint
-)
-```
+    ```kotlin
+    onCircleClick: OnCircleEventHandler? = null
+    ```
+
+    **Event Data**: `CircleEvent`
+
+    ```kotlin
+    data class CircleEvent(
+        val state: CircleState,
+        val clicked: GeoPoint
+    )
+    ```
+
+- example
+    ```
+
+    MapView(
+        ...
+            onCircleClick = { event ->
+                println("A circle clicked at: ${event.clicked.latitude}, ${event.clicked.longitude}")
+
+                event.state.fillColor = Color.Red.copy(
+                    opacity = 0.7f,
+                )
+            },
+    ) { }
+    ```
 
 ### Polyline Events
 
-```kotlin
-onPolylineClick: OnPolylineEventHandler? = null
-```
+- Called when a polyline is tapped.
 
-**Event Data**: `PolylineEvent`
-```kotlin
-data class PolylineEvent(
-    val state: PolylineState,
-    val clicked: GeoPoint
-)
-```
+    ```kotlin
+    onPolylineClick: OnPolylineEventHandler? = null
+    ```
+
+    **Event Data**: `PolylineEvent`
+    ```kotlin
+    data class PolylineEvent(
+        val state: PolylineState,
+        val clicked: GeoPoint
+    )
+    ```
+
+- example
+    ```
+    MapView(
+        ...
+            onPolylineClick = { event ->
+                println("A circle clicked at: ${event.clicked.latitude}, ${event.clicked.longitude}")
+
+                event.state.fillColor = Color.Red.copy(
+                    opacity = 0.7f,
+                )
+            },
+    ) { }
+    ```
 
 ### Polygon Events
 
@@ -301,10 +407,14 @@ MapView(
 
 ## Event Handler Types
 
-```kotlin
-typealias OnMapViewInitializedHandler = () -> Unit
-typealias OnMapLoadedHandler = () -> Unit
-typealias OnMapEventHandler = (GeoPoint) -> Unit
+### OnMapEventHandler
+
+- Definition
+    ```kotlin
+    typealias OnMapEventHandler = (GeoPoint) -> Unit
+    ```
+
+```
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 typealias OnCircleEventHandler = (CircleEvent) -> Unit
 typealias OnPolylineEventHandler = (PolylineEvent) -> Unit
