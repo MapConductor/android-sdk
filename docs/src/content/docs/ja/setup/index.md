@@ -49,6 +49,7 @@ fun MyMap() {
     }
 }
 ```
+![MyMapの実行結果](/img/examples/basic-example.jpg)
 
 Mapbox など別のプロバイダに切り替える場合は、`rememberMapboxMapViewState` と `MapboxMapView` に置き換えれば同じコードパスで動作します。
 

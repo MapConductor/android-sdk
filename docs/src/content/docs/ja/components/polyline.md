@@ -1,49 +1,398 @@
 ---
-title: "Polyline（ポリライン）"
+title: "Polyline"
 ---
 
-`Polyline` コンポーネントは、複数の `GeoPoint` を結んだ線分を地図上に描画するために使用します。ルート表示や軌跡表示に適しています。
+ポリラインは、複数の地理的ポイントを接続する線分のシーケンスです。ルート、パス、境界、または地図上の線形フィーチャーに一般的に使用されます。
 
-## 基本的な使い方
+## Composable 関数
+
+### 基本的な Polyline
 
 ```kotlin
 @Composable
 fun MapViewScope.Polyline(
     points: List<GeoPoint>,
-    clickable: Boolean = false,
-    color: Color = Color.Blue,
-    width: Dp = 2.dp,
-    zIndex: Int? = null,
     id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    geodesic: Boolean = false,
     extra: Serializable? = null
 )
 ```
 
-- **`points`**: 線分を構成する座標のリスト
-- **`color` / `width`**: 線の色と太さ
-- **`clickable`**: 線をクリックできるかどうか
-
-## 利用例
+### State を使用した Polyline
 
 ```kotlin
-val route = listOf(
-    GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    GeoPointImpl.fromLatLong(37.7849, -122.4094),
-    GeoPointImpl.fromLatLong(37.7949, -122.3994),
-)
+@Composable
+fun MapViewScope.Polyline(state: PolylineState)
+```
 
-MapView(
-    state = mapViewState,
-    onPolylineClick = { event ->
-        println("Polyline clicked: ${event.state.extra}")
-    }
-) {
+## パラメータ
+
+- **`points`**: 線分を定義する地理座標のリスト（`List<GeoPoint>`）
+- **`id`**: ポリラインのオプションの一意識別子（`String?`）
+- **`strokeColor`**: 線の色（デフォルト: `Color.Black`）
+- **`strokeWidth`**: 線の幅（デフォルト: `1.dp`）
+- **`geodesic`**: 測地線（地球の曲率に沿う）を描画するかどうか（デフォルト: `false`）
+- **`extra`**: ポリラインに付加する追加データ（`Serializable?`）
+
+## 使用例
+
+### 基本的な Polyline
+
+```kotlin
+// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(state = mapViewState) {
+    val routePoints = listOf(
+        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
+        GeoPointImpl.fromLatLong(37.7849, -122.4094), // ポイント 2
+        GeoPointImpl.fromLatLong(37.7949, -122.3994), // ポイント 3
+        GeoPointImpl.fromLatLong(37.8049, -122.3894)  // ポイント 4
+    )
+
     Polyline(
-        points = route,
-        color = Color.Cyan,
-        width = 3.dp,
-        extra = "Route A"
+        points = routePoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 3.dp
     )
 }
 ```
 
+### ウェイポイントマーカー付きのインタラクティブな Polyline
+
+サンプルアプリのパターンに基づいた例:
+
+```kotlin
+@Composable
+fun InteractivePolylineExample() {
+    var waypoints by remember {
+        mutableStateOf(
+            listOf(
+                GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                GeoPointImpl.fromLatLong(37.7949, -122.3994)
+            )
+        )
+    }
+
+    val polylineState = PolylineState(
+        points = waypoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 4.dp,
+        geodesic = true
+    )
+
+    val waypointMarkers = waypoints.mapIndexed { index, point ->
+        MarkerState(
+            position = point,
+            icon = DefaultIcon(
+                fillColor = Color.Blue,
+                label = "${index + 1}"
+            ),
+            draggable = true,
+            extra = "Waypoint $index"
+        )
+    }
+
+    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(
+        state = mapViewState,
+        onMarkerDrag = { markerState ->
+            val markerIndex = markerState.extra.toString().substringAfter("Waypoint ").toIntOrNull()
+            markerIndex?.let { index ->
+                waypoints = waypoints.toMutableList().apply {
+                    if (index < size) {
+                        set(index, markerState.position)
+                    }
+                }
+            }
+        }
+    ) {
+        // ポリラインを描画
+        Polyline(polylineState)
+
+        // ウェイポイントマーカーを描画
+        waypointMarkers.forEach { marker ->
+            Marker(marker)
+        }
+    }
+}
+```
+
+### 異なるスタイルの複数の Polyline
+
+```kotlin
+// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(state = mapViewState) {
+    // ルート 1 - 高速道路（太い青い線）
+    Polyline(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            GeoPointImpl.fromLatLong(37.7949, -122.3994)
+        ),
+        strokeColor = Color.Blue,
+        strokeWidth = 6.dp,
+        geodesic = true,
+        extra = "Highway route"
+    )
+
+    // ルート 2 - 歩行者用パス（細い緑の線）
+    Polyline(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7799, -122.4144),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094)
+        ),
+        strokeColor = Color.Green,
+        strokeWidth = 2.dp,
+        geodesic = false,
+        extra = "Walking path"
+    )
+
+    // ルート 3 - 自転車用パス（破線風の赤い線）
+    Polyline(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7729, -122.4174),
+            GeoPointImpl.fromLatLong(37.7709, -122.4154)
+        ),
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        extra = "Bike path"
+    )
+}
+```
+
+### 動的なポリライン構築
+
+```kotlin
+@Composable
+fun DynamicPolylineExample() {
+    var points by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+    var isDrawing by remember { mutableStateOf(false) }
+
+    Column {
+        Row {
+            Button(
+                onClick = { isDrawing = !isDrawing }
+            ) {
+                Text(if (isDrawing) "Stop Drawing" else "Start Drawing")
+            }
+
+            Button(
+                onClick = { points = emptyList() }
+            ) {
+                Text("Clear")
+            }
+        }
+
+        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(
+            state = mapViewState,
+            onMapClick = { geoPoint ->
+                if (isDrawing) {
+                    points = points + geoPoint
+                }
+            }
+        ) {
+            if (points.isNotEmpty()) {
+                Polyline(
+                    points = points,
+                    strokeColor = Color.Red,
+                    strokeWidth = 3.dp
+                )
+
+                // 各ポイントにマーカーを追加
+                points.forEachIndexed { index, point ->
+                    Marker(
+                        position = point,
+                        icon = DefaultIcon(
+                            fillColor = if (index == 0) Color.Green
+                                      else if (index == points.size - 1) Color.Red
+                                      else Color.Blue,
+                            label = "${index + 1}",
+                            scale = 0.8f
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+```
+
+### 測地線 vs 標準線
+
+```kotlin
+// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(state = mapViewState) {
+    val longDistancePoints = listOf(
+        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
+        GeoPointImpl.fromLatLong(40.7128, -74.0060)   // ニューヨーク
+    )
+
+    // 標準線（地図投影上で直線）
+    Polyline(
+        points = longDistancePoints,
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        geodesic = false,
+        extra = "Straight line"
+    )
+
+    // 測地線（地球の曲率に沿う）
+    Polyline(
+        points = longDistancePoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 3.dp,
+        geodesic = true,
+        extra = "Geodesic line"
+    )
+}
+```
+
+### アニメーション化されたルート進行
+
+```kotlin
+@Composable
+fun AnimatedRouteExample() {
+    val fullRoute = remember {
+        listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            GeoPointImpl.fromLatLong(37.7949, -122.3994),
+            GeoPointImpl.fromLatLong(37.8049, -122.3894)
+        )
+    }
+
+    var progress by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(100)
+            progress = (progress + 0.01f) % 1f
+        }
+    }
+
+    val currentPointCount = (fullRoute.size * progress).toInt().coerceAtLeast(2)
+    val visibleRoute = fullRoute.take(currentPointCount)
+
+    Column {
+        LinearProgressIndicator(
+            progress = progress,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(state = mapViewState) {
+            if (visibleRoute.size >= 2) {
+                // 完了したルート（グレー）
+                Polyline(
+                    points = visibleRoute,
+                    strokeColor = Color.Blue,
+                    strokeWidth = 4.dp
+                )
+
+                // 現在位置マーカー
+                Marker(
+                    position = visibleRoute.last(),
+                    icon = DefaultIcon(
+                        fillColor = Color.Red,
+                        label = "🚗"
+                    )
+                )
+            }
+
+            // フルルートのプレビュー（薄いグレー）
+            Polyline(
+                points = fullRoute,
+                strokeColor = Color.LightGray,
+                strokeWidth = 2.dp
+            )
+        }
+    }
+}
+```
+
+## イベント処理
+
+Polyline のインタラクションは、マッププロバイダコンポーネントで処理されます:
+
+```kotlin
+// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+MapView(
+    state = mapViewState,
+    onPolylineClick = { polylineEvent ->
+        val polyline = polylineEvent.state
+        val clickPoint = polylineEvent.clicked
+
+        println("Polyline clicked:")
+        println("  Points count: ${polyline.points.size}")
+        println("  Click location: ${clickPoint}")
+        println("  Extra data: ${polyline.extra}")
+    }
+) {
+    Polyline(
+        points = routePoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 4.dp,
+        extra = "Interactive route"
+    )
+}
+```
+
+## スタイルオプション
+
+### 線の幅のバリエーション
+
+```kotlin
+// 細い線
+Polyline(
+    points = points,
+    strokeWidth = 1.dp
+)
+
+// 中程度の線
+Polyline(
+    points = points,
+    strokeWidth = 3.dp
+)
+
+// 太い線
+Polyline(
+    points = points,
+    strokeWidth = 8.dp
+)
+```
+
+### 色のバリエーション
+
+```kotlin
+// ソリッドカラー
+Polyline(points = points, strokeColor = Color.Red)
+Polyline(points = points, strokeColor = Color.Blue)
+Polyline(points = points, strokeColor = Color.Green)
+
+// 半透明
+Polyline(points = points, strokeColor = Color.Red.copy(alpha = 0.7f))
+
+// カスタムカラー
+Polyline(
+    points = points,
+    strokeColor = Color(0xFF4CAF50) // マテリアルグリーン
+)
+```
+
+## ベストプラクティス
+
+1. **ポイント密度**: 詳細とパフォーマンスのバランスを取る - ポイントが多すぎるとレンダリングが遅くなる可能性があります
+2. **測地線**: 長距離ルートには測地線を使用して正確なパスを表示してください
+3. **視覚的階層**: 異なる色と幅を使用して、さまざまな種類のルートを区別してください
+4. **インタラクティブなフィードバック**: ポリラインがクリック可能な場合は、視覚的なフィードバックを提供してください
+5. **パフォーマンス**: 特定のズームレベルで複雑なポリラインの簡略化されたジオメトリの使用を検討してください
+6. **色のコントラスト**: ポリラインの色が地図の背景に対して目立つことを確認してください
+7. **ルートの方向**: ルートに沿って方向を示すために矢印やマーカーを追加することを検討してください
+8. **状態管理**: ポリラインデータを効率的に保存し、必要に応じてリアクティブに更新してください

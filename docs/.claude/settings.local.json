@@ -10,7 +10,12 @@
       "Bash(npm search:*)",
       "Bash(cat:*)",
       "WebFetch(domain:localhost)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(for f in src/content/docs/*.md src/content/docs/**/*.md)",
+      "Bash(do if [ -f \"$f\" ])",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(for f in src/content/docs/ja/**/*.md src/content/docs/ja/*.md)"
     ],
     "deny": [],
     "ask": []
