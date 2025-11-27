@@ -4,7 +4,7 @@ title: イントロダクション
 
 # MapConductor Android SDK ドキュメント
 
-MapConductor は、Google Maps、Mapbox、HERE、ArcGIS、そして MapLibre を含む複数の地図プロバイダに対して、共通の API を提供する統一地図 SDK です。このドキュメントでは、Maven から配布される **v1.1.0** 向けの公開 API コンポーネントについて説明します。
+MapConductor は、Google Maps、Mapbox、HERE、ArcGIS、そして MapLibre を含む複数の地図プロバイダに対して、共通の API を提供する統一地図 SDK です。このドキュメントでは、Maven から配布される **v{BOM_MODULE_VERSION}** 向けの公開 API コンポーネントについて説明します。
 
 ## 概要
 
@@ -43,7 +43,7 @@ MapConductor をプロジェクトで利用するには、次のステップに�
 
 ### 1. インストール
 
-依存関係やバージョンの詳細は、[インストールとバージョン](/ja/installation/) を参照してください。
+依存関係やバージョンの詳細は、[チュートリアル](/ja/get-started/) を参照してください。
 
 ### 2. 各地図 SDK のセットアップ
 
@@ -111,7 +111,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
 }
 ```
 
-![マーカーと円が描画された地図](/img/introduction/basic-googlemaps-example.jpg)
+![マーカーと円が描画された地図](~/assets/introduction/basic-googlemaps-example.png)
 
 ### 4. マッププロバイダの切り替え
 
@@ -153,7 +153,7 @@ v1.0.0 と比較した v1.1.0 の主な改善点は次のとおりです。
 
 ## 関連ドキュメント
 
-- [インストール](/ja/installation/)
+- [チュートリアル](/ja/get-started/)
 - [モジュール構成](/ja/modules/)
 - [SDK バージョン互換性](/ja/sdk-version-compatibility/)
 - [プロバイダ互換性](/ja/provider-compatibility/)

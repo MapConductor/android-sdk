@@ -2,7 +2,7 @@
 title: モジュール構成
 ---
 
-MapConductor は複数の Gradle モジュールに分割されているため、必要なものだけに依存できます。このページでは、v1.1.0 の各 `mapconductor-xxx` モジュールを要約します。
+MapConductor は複数の Gradle モジュールに分割されているため、必要なものだけに依存できます。このページでは、v{BOM_MODULE_VERSION} の各 `mapconductor-xxx` モジュールを要約します。
 
 ## コアと BOM
 
@@ -14,7 +14,7 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 - すべてのプロジェクトに推奨されます
 
 ```kotlin
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 ```
 
 ### `mapconductor-core`

@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightMermaid from '@pasqal-io/starlight-client-mermaid';
 import { fileURLToPath } from 'node:url';
+import remarkVersionPlaceholder from './src/remark/versionPlaceholder.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -44,7 +45,7 @@ export default defineConfig({
 					},
 					items: [
 						{ slug: 'introduction' },
-						{ slug: 'installation' },
+						{ slug: 'get-started' },
 						{ slug: 'modules' },
 						{ slug: 'sdk-version-compatibility' },
 						{ slug: 'provider-compatibility' },
@@ -180,5 +181,8 @@ export default defineConfig({
 				'~': fileURLToPath(new URL('./src', import.meta.url)),
 			},
 		},
+	},
+	markdown: {
+		remarkPlugins: [remarkVersionPlaceholder],
 	},
 });

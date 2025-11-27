@@ -14,7 +14,7 @@ MapConductor を利用する前に、次の前提条件を満たしている必�
 - Kotlin と Jetpack Compose を利用する設定が完了している
 - それぞれの地図 SDK に必要な API キー / 認証情報を取得済み
 
-プロジェクトの Gradle 設定例は [インストール](/ja/installation/) を参照してください。
+プロジェクトの Gradle 設定例は [チュートリアル](/ja/get-started/) を参照してください。
 
 ## プロバイダごとのセットアップ
 

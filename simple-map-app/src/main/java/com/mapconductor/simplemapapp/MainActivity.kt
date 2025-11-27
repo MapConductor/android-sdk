@@ -63,20 +63,39 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val cameraPosition = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(35.0, 135.0),
-        zoom = 12.0,
+    // 東京タワーとスカイツリーの座標
+    val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
+    val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
+
+    // カメラの初期位置
+    val initialCamera = MapCameraPositionImpl(
+        position = tokyoTower,
+        zoom = 11.0
     )
 
     val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = cameraPosition,
+        cameraPosition = initialCamera
     )
 
     GoogleMapsView(
+        modifier = modifier.fillMaxSize(),
         state = mapViewState,
-        modifier = modifier,
+        onMarkerClick = { markerState ->
+            println("マーカーがクリックされました: ${markerState.extra}")
+        }
     ) {
-        // Marker / Circle / Polyline などを追加
+        // マーカーを追加
+        Marker(
+            position = tokyoTower,
+            icon = DefaultIcon(label = "東京タワー"),
+            extra = "tokyo_tower"
+        )
+
+        Marker(
+            position = skyTree,
+            icon = DefaultIcon(label = "スカイツリー"),
+            extra = "sky_tree"
+        )
     }
 }
 

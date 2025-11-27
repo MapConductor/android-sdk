@@ -10,7 +10,7 @@ lastUpdated: false
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
-import QuickExampleTabs from '~/components/QuickExampleTabs.mdx';
+import QuickExampleTabs from '~/components/QuickExampleTabs.astro';
 
 ![MapConductor Android SDK for Jetpack Compose](/img/top-banner.jpg)
 
@@ -33,7 +33,11 @@ import QuickExampleTabs from '~/components/QuickExampleTabs.mdx';
 
 ## Quick Example
 
-<QuickExampleTabs />
+<QuickExampleTabs
+  markerLabel="Tokyo"
+  googleMapsAlt="Google Maps example"
+  mapboxAlt="Mapbox example"
+/>
 
 Switch to Mapbox? Just change `rememberGoogleMapViewState()` to `rememberMapboxMapViewState()` and `GoogleMapsView` to `MapboxMapView`. Everything else stays the same.
 
