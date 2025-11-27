@@ -92,10 +92,8 @@ class GoogleMapMarkerRenderer(
                     val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                     marker.setIcon(bitmapDescriptor)
                 }
-                if (params.current.state.position != params.prev.state.position) {
-                    marker.position =
+                marker.position =
                         GeoPointImpl.from(params.current.state.position).toLatLng()
-                }
                 marker.isVisible = params.current.visible
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

@@ -139,10 +139,8 @@ class ArcGISMarkerRenderer(
                         marker.symbol = pictureSymbolFuture
                     }
 
-                    if (params.current.state.position != params.prev.state.position) {
-                        marker.geometry =
-                            GeoPointImpl.from(params.current.state.position).toPoint()
-                    }
+                    marker.geometry =
+                        GeoPointImpl.from(params.current.state.position).toPoint()
                     // Always set visibility explicitly like Google Maps (remove conditional check)
                     marker.isVisible = params.current.visible
 

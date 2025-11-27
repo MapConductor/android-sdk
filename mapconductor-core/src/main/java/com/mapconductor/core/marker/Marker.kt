@@ -68,10 +68,17 @@ class MarkerState(
 
     internal fun getAnimation(): MarkerAnimation? = internalAnimation
 
-    var position by mutableStateOf(position)
+    private val currentPosition = mutableStateOf(position)
+    var position: GeoPoint
+        get() {
+            return internalPosition
+        }
+        set(value) {
+            currentPosition.value = value
+        }
 
     internal val internalPosition by derivedStateOf {
-        if (isDragging) dragPosition else position
+        if (isDragging) dragPosition else currentPosition.value
     }
 
     fun copy(
@@ -100,7 +107,9 @@ class MarkerState(
         var result = extra?.hashCode() ?: 0
         result = 31 * result + clickable.hashCode()
         result = 31 * result + draggable.hashCode()
-        result = 31 * result + position.hashCode()
+        result = 31 * result + internalPosition.latitude.hashCode()
+        result = 31 * result + internalPosition.longitude.hashCode()
+        result = 31 * result + internalPosition.altitude.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
         return result
     }
@@ -111,7 +120,8 @@ class MarkerState(
             icon.hashCode(),
             clickable.hashCode(),
             draggable.hashCode(),
-            internalPosition.hashCode(),
+            internalPosition.latitude.hashCode(),
+            internalPosition.longitude.hashCode(),
             internalAnimation?.hashCode() ?: 1,
         )
 
@@ -123,7 +133,8 @@ data class MarkerFingerPrint(
     val icon: Int?,
     val clickable: Int,
     val draggable: Int,
-    val position: Int,
+    val latitude: Int,
+    val longitude: Int,
     val animation: Int?,
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
