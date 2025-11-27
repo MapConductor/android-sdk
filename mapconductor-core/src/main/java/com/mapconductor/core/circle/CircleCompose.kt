@@ -28,7 +28,7 @@ fun MapViewScope.Circle(state: CircleState) {
 @Composable
 fun MapViewScope.Circle(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     id: String? = null,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
@@ -39,7 +39,7 @@ fun MapViewScope.Circle(
         CircleState(
             id = id,
             center = center,
-            radiusMeters = radius,
+            radiusMeters = radiusMeters,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             fillColor = fillColor,
