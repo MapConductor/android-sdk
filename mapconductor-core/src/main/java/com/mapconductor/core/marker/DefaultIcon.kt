@@ -83,31 +83,67 @@ abstract class AbstractDefaultIcon(
 
         // Calculate canvas size with scale applied
         val baseCanvasSize = ResourceProvider.dpToPxForBitmap(iconSize.value)
-        val canvasSize = (baseCanvasSize * scale).toInt()
+        val markerSize = (baseCanvasSize * scale).toInt()
 
-        val bitmap = createBitmap(canvasSize, canvasSize)
+        // ラベルの幅を測定
+        var labelWidth = 0f
+        var labelHeight = 0f
+        label?.let { labelText ->
+            val baseTextSize = convertTextUnitToPx(labelTextSize, 1f)
+            val textPaint =
+                Paint().apply {
+                    textSize = baseTextSize
+                    textAlign = Paint.Align.CENTER
+                    typeface = labelTypeFace
+                    isAntiAlias = true
+                }
+            labelWidth = textPaint.measureText(labelText)
+            val metrics = textPaint.fontMetrics
+            labelHeight = metrics.descent - metrics.ascent
+        }
+
+        // ビットマップのサイズを決定（マーカーとラベルの両方が収まるように）
+        // 横幅: マーカーまたはラベルの大きい方 + 余白
+        val padding = markerSize * 0.1f // 左右に5%ずつの余白
+        val bitmapWidth = max(markerSize.toFloat(), labelWidth + padding).toInt()
+        // 高さ: マーカーの高さを基準（ラベルはマーカー内に収まる想定）
+        val bitmapHeight = markerSize
+
+        val bitmap = createBitmap(bitmapWidth, bitmapHeight)
         // Set bitmap density based on override (e.g., 1.0 for MapLibre to prevent auto-scaling)
         ResourceProvider.getBitmapDensity().let { density ->
             bitmap.density = (density * android.util.DisplayMetrics.DENSITY_DEFAULT).toInt()
         }
         val canvas = Canvas(bitmap)
 
-        // Draw marker (scale is already applied in canvasSize)
-        drawMarker(canvas, canvasSize.toFloat(), scale)
+        // マーカーを中央に配置するためのオフセット
+        val markerOffsetX = (bitmapWidth - markerSize) / 2f
+
+        // Draw marker (scale is already applied in markerSize)
+        drawMarker(
+            canvas = canvas,
+            canvasSize = markerSize.toFloat(),
+            iconScale = scale,
+            offsetX = markerOffsetX,
+        )
 
         // Draw label
         drawLabel(
             canvas = canvas,
-            canvasSize = canvasSize.toFloat(),
+            canvasSize = markerSize.toFloat(),
             iconScale = scale,
             textSize = labelTextSize,
+            offsetX = markerOffsetX,
         )
+
+        // アンカーを調整（マーカーの底部中央）
+        val adjustedAnchor = Offset(0.5f, 1f)
 
         val result =
             BitmapIcon(
                 bitmap = bitmap,
-                anchor = anchor,
-                size = Size(canvasSize.toFloat(), canvasSize.toFloat()),
+                anchor = adjustedAnchor,
+                size = Size(bitmapWidth.toFloat(), bitmapHeight.toFloat()),
             )
         BitmapIconCache.put(id, result)
         return result
@@ -120,8 +156,9 @@ abstract class AbstractDefaultIcon(
         canvas: Canvas,
         canvasSize: Float,
         iconScale: Float,
+        offsetX: Float = 0f,
     ) {
-        val strokePath = createMarkerPath(canvasSize, iconScale)
+        val strokePath = createMarkerPath(canvasSize, iconScale, offsetX)
 
         // デバッグ用の枠描画
         if (debug) {
@@ -142,6 +179,7 @@ abstract class AbstractDefaultIcon(
     protected fun createMarkerPath(
         canvasSize: Float,
         iconScale: Float,
+        horizontalOffset: Float = 0f,
     ): Path {
         val originalSize = Size(23.5f, 25.6f)
 
@@ -171,7 +209,7 @@ abstract class AbstractDefaultIcon(
 
         // Center horizontally, align bottom point to canvas edge
         // The path's bottom point should touch the canvas bottom, the stroke will extend beyond
-        val offsetX = (canvasSize - scaledWidth) / 2f
+        val offsetX = (canvasSize - scaledWidth) / 2f + horizontalOffset
         val offsetY = (canvasSize - scaledHeight + (strokeWidth.value * markerScale)) / 2f
 
         return Path().apply {
@@ -265,6 +303,7 @@ abstract class AbstractDefaultIcon(
         canvasSize: Float,
         iconScale: Float,
         textSize: TextUnit,
+        offsetX: Float = 0f,
     ) {
         label?.let { labelText ->
             // 基本テキストサイズを計算（スケーリング適用）
@@ -281,7 +320,7 @@ abstract class AbstractDefaultIcon(
                 }
 
             // マーカーの円形部分の中心に配置
-            val markerCenterX = canvasSize / 2f
+            val markerCenterX = canvasSize / 2f + offsetX
             val markerCenterY = canvasSize * 0.35f // 円形部分の中心
 
             val metrics = textPaint.fontMetrics
