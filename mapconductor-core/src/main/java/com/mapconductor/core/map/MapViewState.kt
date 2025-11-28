@@ -20,12 +20,12 @@ interface MapViewState<ActualMapDesignType> {
 
     fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
-        durationMs: Long? = 0,
+        durationMills: Long? = 0,
     )
 
     fun moveCameraTo(
         position: GeoPointImpl,
-        durationMs: Long? = 0,
+        durationMills: Long? = 0,
     )
 
     fun getMapViewHolder(): MapViewHolder<*, *>?

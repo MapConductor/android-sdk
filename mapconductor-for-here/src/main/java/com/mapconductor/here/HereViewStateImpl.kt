@@ -43,14 +43,14 @@ class HereViewStateImpl(
 
     override fun moveCameraTo(
         position: GeoPointImpl,
-        durationMs: Long?,
+        durationMills: Long?,
     ) {
         val currentPosition = this.cameraPosition
         val newPosition =
             currentPosition.copy(
                 position = position,
             )
-        this.moveCameraTo(newPosition, durationMs)
+        this.moveCameraTo(newPosition, durationMills)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -58,14 +58,14 @@ class HereViewStateImpl(
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
-        durationMs: Long?,
+        durationMills: Long?,
     ) {
         controller?.let { ctrl ->
             val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
-            if (durationMs == null || durationMs == 0L) {
+            if (durationMills == null || durationMills == 0L) {
                 ctrl.moveCamera(dstCameraPosition)
             } else {
-                ctrl.animateCamera(dstCameraPosition, durationMs)
+                ctrl.animateCamera(dstCameraPosition, durationMills)
             }
             return@let
         }
