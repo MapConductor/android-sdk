@@ -88,7 +88,7 @@ class MapDesignPageViewModelImpl :
     private val hereMapDesigns =
         listOf(
             MapDesignOption(label = "NormalDay", design = HereMapDesign.NormalDay),
-            MapDesignOption(label = "NormalNigh", design = HereMapDesign.NormalNigh),
+            MapDesignOption(label = "NormalNigh", design = HereMapDesign.NormalNight),
             MapDesignOption(label = "Satellite", design = HereMapDesign.Satellite),
             MapDesignOption(label = "HybridDay", design = HereMapDesign.HybridDay),
             MapDesignOption(label = "HybridNight", design = HereMapDesign.HybridNight),
