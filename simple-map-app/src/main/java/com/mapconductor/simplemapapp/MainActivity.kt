@@ -3,44 +3,43 @@ package com.mapconductor.simplemapapp
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.circle.Circle
 import com.mapconductor.core.circle.CircleState
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
-import com.mapconductor.here.HereMapView
-import com.mapconductor.here.rememberHereMapViewState
-import com.mapconductor.mapbox.MapboxMapView
-import com.mapconductor.mapbox.rememberMapboxMapViewState
-import com.mapconductor.maplibre.MapLibreDesignType
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import android.os.Bundle
-import kotlinx.coroutines.delay
+import android.widget.Toast
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,39 +62,70 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    // 東京タワーとスカイツリーの座標
-    val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
-    val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
-
-    // カメラの初期位置
-    val initialCamera = MapCameraPositionImpl(
-        position = tokyoTower,
-        zoom = 11.0
-    )
-
+    val context = LocalContext.current
+    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
     val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = initialCamera
+        cameraPosition = MapCameraPositionImpl(
+            position = center,
+            zoom = 13.0,
+        ),
     )
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+    val markerState1 by remember { mutableStateOf(MarkerState(
+        id = "marker1",
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(
+            fillColor = if (selectedMarker?.id == "marker1") Color.Yellow else Color.Blue,
+            label = "1"
+        ),
+        draggable = true,
+        extra = "Draggable marker 1"
+    )) }
+    val markerState2 by remember { mutableStateOf( MarkerState(
+        id = "marker2",
+        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        icon = DefaultIcon(
+            fillColor = if (selectedMarker?.id == "marker2") Color.Yellow else Color.Red,
+            label = "2"
+        ),
+        extra = "Clickable marker 2"
+    )) }
 
     GoogleMapsView(
-        modifier = modifier.fillMaxSize(),
         state = mapViewState,
+        onMapLoaded = {
+            println("Map loaded and ready")
+        },
+        onMapClick = { geoPoint ->
+            selectedMarker = null // 地図クリックで選択解除
+        },
         onMarkerClick = { markerState ->
-            println("マーカーがクリックされました: ${markerState.extra}")
+            selectedMarker = markerState
+        },
+        onMarkerDragStart = { markerState ->
+            println("Started dragging marker: ${markerState.id}")
+        },
+        onMarkerDrag = { markerState ->
+            println("Dragging marker to: ${markerState.position}")
+        },
+        onMarkerDragEnd = { markerState ->
+            println("Finished dragging marker: ${markerState.id}")
         }
     ) {
-        // マーカーを追加
-        Marker(
-            position = tokyoTower,
-            icon = DefaultIcon(label = "東京タワー"),
-            extra = "tokyo_tower"
-        )
+        // インタラクティブなマーカーを持つ地図コンテンツ
+        Marker(markerState1)
+        Marker(markerState2)
 
-        Marker(
-            position = skyTree,
-            icon = DefaultIcon(label = "スカイツリー"),
-            extra = "sky_tree"
-        )
+        // 選択されたマーカーの情報を表示
+        selectedMarker?.let { marker ->
+            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
+            InfoBubble(
+                marker = marker,
+            ) {
+                Text(text)
+            }
+        }
     }
 }
 

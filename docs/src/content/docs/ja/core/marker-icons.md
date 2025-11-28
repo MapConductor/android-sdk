@@ -2,7 +2,7 @@
 title: "Marker Icons（マーカーアイコン）"
 ---
 
-MapConductor は、地図上のマーカーの外観をカスタマイズするためのいくつかのマーカーアイコンタイプを提供します。すべてのマーカーアイコンは `MarkerIcon` インターフェースを実装しており、どの地図プロバイダでも使用できます。
+MapConductor は、地図上のマーカーの外観をカスタマイズするためのいくつかのマーカーアイコンタイプを提供します。すべてのマーカーアイコンは `MarkerIcon` インターフェースを実装しており、どの地図SDKでも使用できます。
 
 ## MarkerIcon インターフェース
 
@@ -49,7 +49,7 @@ DefaultIcon(
 #### 使用例
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
 MapView(state = mapViewState) {
     // 基本的な赤いマーカー
     Marker(
@@ -109,7 +109,7 @@ DrawableDefaultIcon(
 fun DrawableIconExamples() {
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // カスタムドローアブルマーカー
         AppCompatResources.getDrawable(context, R.drawable.custom_marker)?.let { drawable ->
@@ -167,7 +167,7 @@ ImageDefaultIcon(
 fun ImageIconExamples() {
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // 下中心アンカーの気象観測所アイコン
         AppCompatResources.getDrawable(context, R.drawable.weather_station)?.let { icon ->
@@ -206,7 +206,7 @@ fun DynamicIconExample() {
     val iconType by remember { mutableStateOf("default") }
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         val icon = when (iconType) {
             "default" -> DefaultIcon(

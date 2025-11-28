@@ -6,7 +6,9 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 このセクションでは、Google Maps SDK と MapConductor を統合するためのセットアップ手順について説明します。
 
-> **重要**: MapConductor は既存の地図 SDK 上に統一された API レイヤーを提供します。MapConductor の Google Maps 統合を使用する前に、Google Maps SDK を独立してセットアップする必要があります。
+:::tip
+MapConductor は既存の地図 SDK 上に統一された API レイヤーを提供します。MapConductor の Google Maps 統合を使用する前に、Google Maps SDK を独立してセットアップする必要があります。
+:::
 
 ## 前提条件
 
@@ -124,22 +126,23 @@ Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み
 
 ### 4. API キーの設定
 
-`secrets.properties` ファイルに実際の API キーを追加します（存在しない場合は作成します）:
+- `secrets.properties` ファイルに実際の API キーを追加します（存在しない場合は作成します）。
+- Secrets Gradle Plugin は、このファイルの実際の値で `AndroidManifest.xml` の `${GOOGLE_MAPS_API_KEY}` を自動的に置き換えます。
+- CI/CD ビルドの場合は、環境変数または他の安全な方法を使用してこれらの値を提供できます。
 
 ```properties
 # secrets.properties
 GOOGLE_MAPS_API_KEY=実際のAPIキー
 ```
 
-**重要**:
-
-- `secrets.properties` ファイルをバージョン管理にコミットしないでください。`.gitignore` に追加してください。
-    ```
-    # .gitignore
-    secrets.properties
-    ```
-- Secrets Gradle Plugin は、このファイルの実際の値で `AndroidManifest.xml` の `${GOOGLE_MAPS_API_KEY}` を自動的に置き換えます。
-- CI/CD ビルドの場合は、環境変数または他の安全な方法を使用してこれらの値を提供できます。
+:::caution
+`secrets.properties` ファイルをバージョン管理にコミットしないでください。
+`.gitignore` に追加すると、不注意でコミットすることを避けることができます。
+```
+# .gitignore
+secrets.properties
+```
+:::
 
 ### 5. ProGuard / R8 の設定（該当する場合）
 

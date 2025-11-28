@@ -19,7 +19,8 @@
       "Bash(rm:*)",
       "Bash(cat:*)",
       "Read(//Users/masashi/.gradle/caches/**)",
-      "Bash(xargs jar tf:*)"
+      "Bash(xargs jar tf:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

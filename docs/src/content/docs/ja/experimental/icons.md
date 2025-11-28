@@ -12,7 +12,7 @@ icons モジュールは、Canvas 描画操作を使用して高品質なマー�
 - **スケーラブルベクターグラフィックス**: アイコンはあらゆるサイズで滑らかにスケールします
 - **実行時カスタマイズ**: 色、サイズ、プロパティを動的に変更できます
 - **最適化されたキャッシング**: パフォーマンスのための自動ビットマップキャッシング
-- **一貫した外観**: すべての地図プロバイダで同じビジュアルスタイル
+- **一貫した外観**: すべての地図SDKで同じビジュアルスタイル
 
 ## インストール
 
@@ -27,7 +27,7 @@ dependencies {
     // 必須: Core モジュール
     implementation "com.mapconductor:core"
 
-    // 地図プロバイダを選択
+    // 地図SDKを選択
     implementation "com.mapconductor:for-googlemaps"
 }
 ```
@@ -109,7 +109,7 @@ fun BasicIconExample() {
         strokeColor = Color.Black
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -154,7 +154,7 @@ fun DynamicIconExample() {
         )
         Text("Size: ${iconSize.value.toInt()}dp")
 
-        // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -191,7 +191,7 @@ fun CategoryIconExample() {
         else -> CircleIcon(fillColor = Color.Gray, strokeColor = Color.White)
     }
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         pois.forEach { poi ->
             Marker(
@@ -247,7 +247,7 @@ fun ThemedIconExample() {
         strokeWidth = theme.strokeWidth
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -304,7 +304,7 @@ fun AnimatedIconExample() {
         scale = scale
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -325,7 +325,7 @@ fun AnimatedIconExample() {
 
 ### 情報ウィンドウアンカー
 
-情報ウィンドウ（プロバイダがサポートしている場合）は異なるポイントにアンカーされます:
+情報ウィンドウ（地図SDKがサポートしている場合）は異なるポイントにアンカーされます:
 
 - **CircleIcon**: 円の中心 (0.5, 0.5)
 - **FlagIcon**: フラグの上部 (0.5, 0.0)
@@ -364,7 +364,7 @@ fun DebugIconExample() {
         debug = true  // デバッグアウトラインと十字線を表示
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -430,13 +430,13 @@ class CustomIcon(
 2. **色のアクセシビリティ**: 塗りつぶしとストロークの色の間に十分なコントラストを確保する
 3. **パフォーマンス**: キャッシングの恩恵を受けるために、同一のアイコンインスタンスを再利用する
 4. **適切なスケール**: アイコンサイズを選択する際は、地図のズームレベルを考慮する
-5. **プロバイダ間でのテスト**: すべてのターゲット地図プロバイダでアイコンの外観を確認する
+5. **地図SDK間でのテスト**: すべてのターゲット地図SDKでアイコンの外観を確認する
 
 ## 制限事項
 
 1. **限定的なアイコンセット**: 現在、CircleIcon と FlagIcon のみが利用可能
 2. **静的な形状**: アイコンはプログラムで描画され、ベクターファイルからではありません
-3. **プロバイダ間の違い**: 地図プロバイダ間でわずかなレンダリングの違いが発生する可能性があります
+3. **地図SDK間の違い**: 地図SDK間でわずかなレンダリングの違いが発生する可能性があります
 4. **メモリ使用量**: 大きなアイコンや多くのユニークなアイコンバリエーションは、より多くのメモリを消費します
 
 ## 移行と互換性
@@ -448,4 +448,4 @@ class CustomIcon(
 3. 重要な機能にはフォールバックオプションを用意する
 4. モジュールの改善に役立つように問題を報告する
 
-icons モジュールは、プロバイダ間で統一された MapConductor API を維持しながら、カスタムマーカースタイリングの基盤を提供します。
+icons モジュールは、地図SDK間で統一された MapConductor API を維持しながら、カスタムマーカースタイリングの基盤を提供します。

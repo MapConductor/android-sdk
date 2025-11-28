@@ -48,18 +48,6 @@ class MarkerState(
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
 
-    private var dragPosition: GeoPoint = position
-    private var _isDragging by mutableStateOf(false)
-    var isDragging: Boolean
-        get() = _isDragging
-        internal set(value) {
-            _isDragging = value
-
-            Snapshot.withoutReadObservation {
-                dragPosition = position
-            }
-        }
-
     private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
 
     fun animate(animation: MarkerAnimation?) {
@@ -71,15 +59,11 @@ class MarkerState(
     private val currentPosition = mutableStateOf(position)
     var position: GeoPoint
         get() {
-            return internalPosition
+            return currentPosition.value
         }
         set(value) {
             currentPosition.value = value
         }
-
-    internal val internalPosition by derivedStateOf {
-        if (isDragging) dragPosition else currentPosition.value
-    }
 
     fun copy(
         id: String? = this.id,
@@ -107,9 +91,9 @@ class MarkerState(
         var result = extra?.hashCode() ?: 0
         result = 31 * result + clickable.hashCode()
         result = 31 * result + draggable.hashCode()
-        result = 31 * result + internalPosition.latitude.hashCode()
-        result = 31 * result + internalPosition.longitude.hashCode()
-        result = 31 * result + internalPosition.altitude.hashCode()
+        result = 31 * result + currentPosition.value.latitude.hashCode()
+        result = 31 * result + currentPosition.value.longitude.hashCode()
+        result = 31 * result + currentPosition.value.altitude.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
         return result
     }
@@ -120,8 +104,8 @@ class MarkerState(
             icon.hashCode(),
             clickable.hashCode(),
             draggable.hashCode(),
-            internalPosition.latitude.hashCode(),
-            internalPosition.longitude.hashCode(),
+            currentPosition.value.latitude.hashCode(),
+            currentPosition.value.longitude.hashCode(),
             internalAnimation?.hashCode() ?: 1,
         )
 

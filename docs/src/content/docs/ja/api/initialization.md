@@ -2,7 +2,7 @@
 title: "初期化"
 ---
 
-このセクションでは、異なる地図プロバイダに対して MapConductor を適切に初期化および設定する方法について説明します。
+このセクションでは、異なる地図SDKに対して MapConductor を適切に初期化および設定する方法について説明します。
 
 ## 基本的な初期化
 
@@ -15,7 +15,7 @@ dependencies {
     implementation "com.mapconductor:mapconductor-bom:$version"
     implementation "com.mapconductor:core"
 
-    // 地図プロバイダを選択
+    // 地図SDKを選択
     implementation "com.mapconductor:for-googlemaps"
     implementation "com.mapconductor:for-mapbox"
     implementation "com.mapconductor:for-here"
@@ -23,9 +23,9 @@ dependencies {
 }
 ```
 
-### 地図プロバイダのセットアップ
+### 地図SDKのセットアップ
 
-各地図プロバイダには、特定のセットアップと API キーが必要です。
+各地図SDKには、特定のセットアップと API キーが必要です。
 
 #### Google Maps
 
@@ -35,7 +35,7 @@ dependencies {
 fun GoogleMapsExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -49,7 +49,7 @@ fun GoogleMapsExample() {
 fun MapboxExample() {
     val mapViewState = rememberMapboxMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -63,7 +63,7 @@ fun MapboxExample() {
 fun HereExample() {
     val mapViewState = rememberHereMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -77,7 +77,7 @@ fun HereExample() {
 fun ArcGISExample() {
     val mapViewState = rememberArcGISMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -106,12 +106,9 @@ fun CustomMapConfiguration() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
-        onMapViewInitialized = {
-            println("Map view initialized")
-        },
         onMapLoaded = {
             println("Map loaded and ready")
         }
@@ -121,7 +118,7 @@ fun CustomMapConfiguration() {
 }
 ```
 
-### 実行時のプロバイダ選択
+### 実行時の地図SDK選択
 
 ```kotlin
 @Composable
@@ -139,7 +136,7 @@ fun DynamicProviderSelection() {
     }
 
     Column {
-        // プロバイダ選択 UI
+        // 地図SDK選択 UI
         LazyRow {
             items(listOf("google", "mapbox", "here", "arcgis")) { provider ->
                 Button(
@@ -155,8 +152,8 @@ fun DynamicProviderSelection() {
             }
         }
 
-        // 選択されたプロバイダでマップを表示
-        // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+        // 選択された地図SDKでマップを表示
+        // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -204,7 +201,7 @@ fun InitializationStateExample() {
 
         InitState.Initialized -> {
             // マップを表示
-            // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+            // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
             MapView(state = mapViewState) {
                 // マップはコンテンツを表示する準備ができています
                 Marker(
@@ -259,7 +256,7 @@ fun DeferredInitializationExample() {
         }
 
         if (shouldInitialize) {
-            // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+            // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
             MapView(
                 state = mapViewState,
                 shouldInitialize = shouldInitialize
@@ -294,7 +291,7 @@ fun CustomRenderingExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         renderingStrategy = customStrategy
@@ -370,7 +367,7 @@ fun RobustInitializationExample() {
             }
         }
         else -> {
-            // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+            // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
             MapView(state = mapViewState) {
                 // マップコンテンツ
             }
@@ -412,6 +409,6 @@ fun LoadingScreen(message: String) {
 2. **状態の処理**: すべての初期化状態を適切に処理する
 3. **エラー回復**: 失敗した初期化に対して再試行ロジックを実装する
 4. **リソース管理**: SDK にライフサイクル管理を任せる
-5. **API キー**: 各プロバイダの適切な API キー設定を確認する
+5. **API キー**: 各地図SDKの適切な API キー設定を確認する
 6. **パフォーマンス**: アプリ起動を高速化するために遅延初期化を検討する
-7. **テスト**: 互換性を確保するために異なるプロバイダでテストする
+7. **テスト**: 互換性を確保するために異なる地図SDKでテストする

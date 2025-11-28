@@ -4,13 +4,13 @@ title: イントロダクション
 
 # MapConductor Android SDK ドキュメント
 
-MapConductor は、Google Maps、Mapbox、HERE、ArcGIS、そして MapLibre を含む複数の地図プロバイダに対して、共通の API を提供する統一地図 SDK です。このドキュメントでは、Maven から配布される **v{BOM_MODULE_VERSION}** 向けの公開 API コンポーネントについて説明します。
+MapConductor は、Google Maps、Mapbox、HERE、ArcGIS、そして MapLibre を含む複数の地図SDKに対して、共通の API を提供する統一地図 SDK です。このドキュメントでは、Maven から配布される **v{BOM_MODULE_VERSION}** 向けの公開 API コンポーネントについて説明します。
 
 ## 概要
 
-MapConductor SDK を使うと、単一の API で複数の地図プロバイダを扱えるようになります。各プロバイダ固有の実装は SDK 側で吸収され、アプリケーションからは一貫したインターフェースで操作できます。
+MapConductor SDK を使うと、単一の API で複数の地図SDKを扱えるようになります。各地図SDK固有の実装は SDK 側で吸収され、アプリケーションからは一貫したインターフェースで操作できます。
 
-### サポートされている地図プロバイダ
+### サポートされている地図SDK
 
 - **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
 - **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
@@ -30,7 +30,7 @@ SDK は、以下のような基本的な地理情報クラスを提供します�
 
 SDK は次のようなコアコンポーネントを提供します。
 
-1. **マップビューコンポーネント**: プロバイダ別のマップビュー（GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView）
+1. **マップビューコンポーネント**: 地図SDK別のマップビュー（GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView）
 2. **Marker**: カスタマイズ可能なアイコンやインタラクションを持つポイントマーカー
 3. **Circle**: スタイル指定可能な円形オーバーレイ
 4. **Polyline**: 複数点を結ぶ線分
@@ -49,7 +49,7 @@ MapConductor をプロジェクトで利用するには、次のステップに�
 
 > **重要**: MapConductor は既存の地図 SDK の上に統一 API レイヤーを提供するライブラリです。そのため、MapConductor を利用する前に、各地図 SDK を個別にセットアップする必要があります。
 
-各地図プロバイダは、それぞれ API キー、パーミッション、設定などの準備が必要です。
+各地図SDKは、それぞれ API キー、パーミッション、設定などの準備が必要です。
 
 - **[Google Maps のセットアップ](/ja/setup/google-maps)** – Google Maps SDK の API キーやパーミッションの設定
 - **[Mapbox のセットアップ](/ja/setup/mapbox)** – Mapbox のアクセストークンやスタイル設定
@@ -79,7 +79,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         cameraPosition = camera,
     )
 
-    // MapView も利用するプロバイダに応じて切り替えます
+    // MapView も利用する地図SDKに応じて切り替えます
     // - Google Maps -> GoogleMapsView
     // - Mapbox -> MapboxMapView
     // ... など
@@ -113,9 +113,9 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
 
 ![マーカーと円が描画された地図](~/assets/introduction/basic-googlemaps-example.png)
 
-### 4. マッププロバイダの切り替え
+### 4. マップ地図SDKの切り替え
 
-マッププロバイダを切り替えるには、`MapViewState` の実装を変更するだけです。
+マップ地図SDKを切り替えるには、`MapViewState` の実装を変更するだけです。
 
 ```kotlin
 // Google Maps
@@ -134,11 +134,11 @@ val arcgisState = rememberArcGISMapViewState()
 val mapLibreState = rememberMapLibreMapViewState()
 ```
 
-その他のコードは共通で、すべてのコンポーネントをプロバイダ間で同じように扱えます。
+その他のコードは共通で、すべてのコンポーネントを地図SDK間で同じように扱えます。
 
-## v1.1.1 での主な変更点
+## v{BOM_MODULE_VERSION} での主な変更点
 
-v1.1.0 と比較した v1.1.1 の主な改善点は次のとおりです。
+v1.1.0 と比較した v{BOM_MODULE_VERSION} の主な改善点は次のとおりです。
 
 - 地図の表示範囲を移動させたときにInfoBubbleの表示位置が再計算されないバグを修正
 
@@ -146,9 +146,9 @@ v1.1.0 と比較した v1.1.1 の主な改善点は次のとおりです。
 
 v1.0.0 と比較した v1.1.0 の主な改善点は次のとおりです。
 
-- 各プロバイダでカメラ移動イベント (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) を統一
+- 各地図SDKでカメラ移動イベント (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) を統一
 - `MapViewState` のカメラ位置と `VisibleRegion` 連携の改善
-- マーカーコントローラのインターフェースを整理し、プロバイダ実装を明確化
+- マーカーコントローラのインターフェースを整理し、地図SDK実装を明確化
 - 例示アプリに高度なカメラ制御と `VisibleRegion` の利用例を追加
 
 ## 関連ドキュメント
@@ -156,5 +156,5 @@ v1.0.0 と比較した v1.1.0 の主な改善点は次のとおりです。
 - [チュートリアル](/ja/get-started/)
 - [モジュール構成](/ja/modules/)
 - [SDK バージョン互換性](/ja/sdk-version-compatibility/)
-- [プロバイダ互換性](/ja/provider-compatibility/)
+- [地図SDK互換性](/ja/provider-compatibility/)
 

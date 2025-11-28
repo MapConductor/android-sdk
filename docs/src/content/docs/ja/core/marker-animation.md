@@ -53,7 +53,7 @@ fun AnimatedMarkerExample() {
         markerState.setAnimation(animation)
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { clickedPosition ->
@@ -108,7 +108,7 @@ fun ScaleAnimationExample() {
         markerState.setAnimation(animation)
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMarkerClick = {
@@ -169,7 +169,7 @@ fun FadeAnimationExample() {
             Text(if (markersVisible) "マーカーを隠す" else "マーカーを表示")
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             markerStates.forEach { markerState ->
                 Marker(markerState)
@@ -216,7 +216,7 @@ fun BounceAnimationExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMarkerClick = {
@@ -277,7 +277,7 @@ fun SequentialAnimationExample() {
         markerState.setAnimation(sequentialAnimation)
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(markerState)
     }
@@ -336,7 +336,7 @@ fun PathAnimationExample() {
         markerState.setAnimation(pathAnimation)
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // パスを表示
         Polyline(
@@ -370,7 +370,7 @@ fun PathAnimationExample() {
 地図コンポーネントでアニメーションライフサイクルイベントを処理します:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onMarkerAnimateStart = { markerState ->

@@ -162,7 +162,7 @@ fun AnimatedRoute() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // ルートを表示
         Polyline(
@@ -250,7 +250,7 @@ fun ProximityAlert() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // ターゲット位置
         Marker(
@@ -346,7 +346,7 @@ fun RouteProgress() {
         Text("ルート進捗: ${(progress * 100).toInt()}%")
         LinearProgressIndicator(progress = progress.toFloat())
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             // ルートを表示
             Polyline(
@@ -384,7 +384,7 @@ fun GeofenceExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // ジオフェンス境界
         Circle(

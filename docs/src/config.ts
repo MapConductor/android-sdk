@@ -13,4 +13,8 @@ export const MAPBOX_SDK_VERSION = '11.14.3';
 export const HERE_EXPLORER_SDK_VERSION = '19.2.0';
 export const ARCGIS_SDK_VERSION = '19.2.0';
 export const MAPLBRE_SDK_VERSION = '19.2.0';
-
+export const KOTLIN_VERSION = '1.9.25';
+export const ANDROID_MIN_SDK_VERSION = '26';
+export const ANDROID_TARGET_SDK_VERSION = '35';
+export const JETPACK_COMPOSE_VERSION = '35';
+export const JAVA_VERSION = '17';

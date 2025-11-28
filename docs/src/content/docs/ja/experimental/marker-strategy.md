@@ -28,7 +28,7 @@ dependencies {
     // 必須: Core モジュール
     implementation "com.mapconductor:core"
 
-    // 地図プロバイダを選択
+    // 地図SDKを選択
     implementation "com.mapconductor:for-googlemaps"
 }
 ```
@@ -37,7 +37,7 @@ dependencies {
 
 ### DefaultMarkerStrategy
 
-追加/削除操作を効率的に処理する Google Maps と ArcGIS プロバイダに最適:
+追加/削除操作を効率的に処理する Google Maps と ArcGIS 地図SDKに最適:
 
 ```kotlin
 import com.mapconductor.marker.strategy.DefaultMarkerStrategy
@@ -57,7 +57,7 @@ val defaultStrategy = DefaultMarkerStrategy<GoogleMapActualMarker>(
 
 ### SimpleMarkerStrategy
 
-小規模なデータセットまたは異なるパフォーマンス特性を持つプロバイダ向けの軽量戦略:
+小規模なデータセットまたは異なるパフォーマンス特性を持つ地図SDK向けの軽量戦略:
 
 ```kotlin
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
@@ -71,7 +71,7 @@ val simpleStrategy = SimpleMarkerStrategy<MapboxActualMarker>(
 #### 主な機能
 - **簡略化されたロジック**: より複雑でないビューポート管理
 - **低オーバーヘッド**: 最小限の計算オーバーヘッド
-- **Mapbox に適している**: よりシンプルなマーカー管理を好むプロバイダ向けに最適化
+- **Mapbox に適している**: よりシンプルなマーカー管理を好む地図SDK向けに最適化
 
 ### SpatialMarkerStrategy
 
@@ -111,11 +111,11 @@ fun DefaultStrategyExample() {
 
     // マップコントローラで戦略を設定
     LaunchedEffect(mapViewState) {
-        // 戦略の設定は地図プロバイダの実装に依存します
-        // これは通常、地図プロバイダのマーカーコントローラによって処理されます
+        // 戦略の設定は地図SDKの実装に依存します
+        // これは通常、地図SDKのマーカーコントローラによって処理されます
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     GoogleMapsView(state = mapViewState) {
         // マーカーは戦略によって管理されます
         // 戦略を通じてプログラムでマーカーを追加します
@@ -150,7 +150,7 @@ fun StrategyMarkerManagement() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     GoogleMapsView(state = mapViewState) {
         // 戦略がマーカーレンダリングを自動的に処理します
     }
@@ -196,7 +196,7 @@ fun DynamicLoadingExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     GoogleMapsView(
         state = mapViewState,
         onCameraMove = { cameraPosition ->
@@ -249,7 +249,7 @@ fun ClusteringStrategyExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     GoogleMapsView(state = mapViewState) {
         // クラスタリング戦略が近くのマーカーを自動的にグループ化します
     }
@@ -275,7 +275,7 @@ fun RemoteSpatialExample() {
         // 手動でのマーカー読み込みは不要です
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     GoogleMapsView(state = mapViewState) {
         // リモート戦略がサーバーからのすべてのマーカー読み込みを処理します
     }
@@ -423,7 +423,7 @@ fun StrategyPerformanceMonitoring() {
     Column {
         Text(performanceStats)
 
-        // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+        // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
         GoogleMapsView(state = mapViewState) {
             // 戦略管理されたマーカー
         }
@@ -433,7 +433,7 @@ fun StrategyPerformanceMonitoring() {
 
 ## ベストプラクティス
 
-1. **戦略の選択**: 特定のユースケースと地図プロバイダに基づいて戦略を選択する
+1. **戦略の選択**: 特定のユースケースと地図SDKに基づいて戦略を選択する
 2. **ビューポートマージン**: 事前読み込み（より大きなマージン）とパフォーマンス（より小さなマージン）のバランスを取る
 3. **空間設定**: データ密度に合わせてジオセルパラメータを調整する
 4. **メモリ監視**: 特に大規模なデータセットでは、本番環境でメモリ使用量を監視する
@@ -444,7 +444,7 @@ fun StrategyPerformanceMonitoring() {
 
 1. **過剰設計**: シンプルなマーカーシナリオに複雑な戦略を使用しない
 2. **メモリリーク**: 戦略リソースの適切なクリーンアップを確保する
-3. **プロバイダの不一致**: 地図プロバイダに間違った戦略を使用すると、パフォーマンスが低下する可能性がある
+3. **地図SDKの不一致**: 地図SDKに間違った戦略を使用すると、パフォーマンスが低下する可能性がある
 4. **過剰な事前読み込み**: 大きな拡張マージンはメモリ圧迫を引き起こす可能性がある
 5. **スレッドセーフティ**: 戦略は並行性を処理しますが、外部の変更には注意が必要
 

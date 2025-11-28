@@ -40,7 +40,7 @@ dependencies {
     // 必須: Core モジュール
     implementation "com.mapconductor:core"
 
-    // 地図プロバイダを選択
+    // 地図SDKを選択
     implementation "com.mapconductor:for-googlemaps"
 }
 ```
@@ -125,7 +125,7 @@ fun BasicNativeExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マーカーはネイティブストラテジで管理されます
         // Marker コンポーザブルを手動で追加する必要はありません
@@ -168,7 +168,7 @@ fun NativePerformanceExample() {
             Text("Pure Native: ${s.usesPureNativeIndex}")
         }
 
-        // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             // ネイティブ管理されたマーカー
         }
@@ -198,11 +198,11 @@ fun ParallelRenderingExample() {
     LaunchedEffect(mapViewState) {
         mapViewState.getMapViewHolder()?.let { holder ->
             // マップコントローラーで並列ストラテジをセットアップ
-            // 実装は地図プロバイダに依存
+            // 実装は地図SDKに依存
         }
     }
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // 並列レンダリングされたマーカー
     }
@@ -234,7 +234,7 @@ fun DynamicNativeLoadingExample() {
     Column {
         Text("Visible Markers: ${visibleMarkers.size}")
 
-        // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(
             state = mapViewState,
             onCameraMove = { cameraPosition ->
@@ -287,7 +287,7 @@ fun NativeClusteringExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // ネイティブクラスタリングは近くのマーカーを自動的にグループ化
     }
@@ -382,7 +382,7 @@ fun ResourceManagementExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // ネイティブ管理されたマーカー
     }

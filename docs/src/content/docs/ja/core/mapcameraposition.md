@@ -89,7 +89,7 @@ val paddedView = MapCameraPositionImpl(
 
 ## ズームレベル
 
-MapConductor のズームレベルは、おおよそ Google Maps のスケールに従いますが、プロバイダ間で若干異なる場合があります:
+MapConductor のズームレベルは、おおよそ Google Maps のスケールに従いますが、地図SDK間で若干異なる場合があります:
 
 - **0-2**: 世界ビュー、大陸が表示される
 - **3-5**: 国レベル
@@ -223,7 +223,7 @@ data class VisibleRegion(
 fun VisibleRegionExample() {
     var cameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
     ) {
@@ -293,7 +293,7 @@ fun AnimatedCameraExample() {
     }
 
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     HereMapView(
         state = mapViewState,
         modifier = modifier,
@@ -386,7 +386,7 @@ fun CameraControlExample(modifier: Modifier = Modifier) {
             valueRange = 0f..80f
         )
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapLibreMapView(
             state = mapViewState,
         ) {

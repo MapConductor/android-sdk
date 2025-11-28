@@ -2,11 +2,11 @@
 title: "MapViewHolder"
 ---
 
-`MapViewHolder` は、MapConductor の統一 API でカバーされていない特定のプロバイダ機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolder がこのギャップを埋めます。
+`MapViewHolder` は、MapConductor の統一 API でカバーされていない特定の地図SDK機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolder がこのギャップを埋めます。
 
 ## 概要
 
-MapConductor は地図プロバイダ間で統一された API を提供することを目指していますが、完全な機能パリティは必ずしも可能ではありません。MapViewHolder を使用すると、開発者はプロバイダ固有の機能が必要な場合に、基盤となるネイティブ地図インスタンスにアクセスできます。
+MapConductor は地図SDK間で統一された API を提供することを目指していますが、完全な機能パリティは必ずしも可能ではありません。MapViewHolder を使用すると、開発者は地図SDK固有の機能が必要な場合に、基盤となるネイティブ地図インスタンスにアクセスできます。
 
 ```kotlin
 interface MapViewHolder<ActualMapViewType, ActualMapType> {
@@ -17,7 +17,7 @@ interface MapViewHolder<ActualMapViewType, ActualMapType> {
 
 ## MapViewHolder へのアクセス
 
-各地図プロバイダの `MapViewState` 実装は、その特定の `MapViewHolder` へのアクセスを提供します:
+各地図SDKの `MapViewState` 実装は、その特定の `MapViewHolder` へのアクセスを提供します:
 
 ```kotlin
 // Google Maps
@@ -37,7 +37,7 @@ val arcgisState = ArcGISMapViewStateImpl()
 val arcgisHolder: ArcGISMapViewHolder? = arcgisState.getMapViewHolder()
 ```
 
-## プロバイダ固有の実装
+## 地図SDK固有の実装
 
 ### Google Maps
 
@@ -155,7 +155,7 @@ fun CustomStyledMap() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     GoogleMapsView(state = mapViewState) {
         // MapConductor コンポーネント
     }
@@ -358,18 +358,18 @@ fun SafeNativeAccess() {
 
 1. **初期化チェック**: ネイティブ API にアクセスする前に、`getMapViewHolder()` が非 null を返すことを常に確認
 2. **ライフサイクル認識**: ネイティブ API を使用する際は、地図のライフサイクルイベントを適切に処理
-3. **エラー処理**: プロバイダ API が例外をスローする可能性があるため、ネイティブ API 呼び出しを try-catch ブロックでラップ
-4. **ドキュメント**: ネイティブ API の使用については、各プロバイダの公式ドキュメントを参照
-5. **テスト**: ネイティブ API を使用する際は、すべてのターゲット地図プロバイダで徹底的にテスト
+3. **エラー処理**: 地図SDK API が例外をスローする可能性があるため、ネイティブ API 呼び出しを try-catch ブロックでラップ
+4. **ドキュメント**: ネイティブ API の使用については、各地図SDKの公式ドキュメントを参照
+5. **テスト**: ネイティブ API を使用する際は、すべてのターゲット地図SDKで徹底的にテスト
 6. **フォールバック**: ネイティブ機能が利用できない場合のフォールバック動作を提供
 7. **バージョン互換性**: ネイティブ API の使用が、ターゲットとしている SDK バージョンと互換性があることを確認
 
 ## 制限と考慮事項
 
-1. **プラットフォーム依存性**: ネイティブ API の使用は、特定の地図プロバイダにコードを結び付けます
-2. **メンテナンスオーバーヘッド**: プロバイダ API の変更により、ネイティブ API の使用を更新する必要があります
-3. **テストの複雑性**: プロバイダ固有のコードパスをカバーするため、より複雑なテストが必要
-4. **機能パリティ**: すべてのプロバイダが同等のネイティブ機能をサポートしているわけではありません
+1. **プラットフォーム依存性**: ネイティブ API の使用は、特定の地図SDKにコードを結び付けます
+2. **メンテナンスオーバーヘッド**: 地図SDK API の変更により、ネイティブ API の使用を更新する必要があります
+3. **テストの複雑性**: 地図SDK固有のコードパスをカバーするため、より複雑なテストが必要
+4. **機能パリティ**: すべての地図SDKが同等のネイティブ機能をサポートしているわけではありません
 5. **MapConductor 統合**: ネイティブの変更は MapConductor の状態管理と統合されない可能性があります
 
 MapViewHolder は高度なユースケースのための強力なエスケープハッチですが、MapConductor の統一 API アプローチの利点を維持するために慎重に使用する必要があります。

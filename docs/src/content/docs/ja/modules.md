@@ -28,9 +28,9 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 
 他のすべてのモジュールは `mapconductor-core` の上に構築されています。
 
-## 地図プロバイダ統合
+## 地図SDK統合
 
-プロバイダ固有のモジュールは、各 SDK に統一 API を実装します:
+地図SDK固有のモジュールは、各 SDK に統一 API を実装します:
 
 ### `mapconductor-for-googlemaps`
 
@@ -58,10 +58,10 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 - `MapLibreMapView` Composable
 - `MapLibreViewStateImpl`
 
-各プロバイダモジュールは:
+各地図SDKモジュールは:
 
 - `MapViewState` とコントローラバインディングを実装します
-- プロバイダ固有のカメラと表示可能領域を `MapCameraPosition` にマッピングします
+- 地図SDK固有のカメラと表示可能領域を `MapCameraPosition` にマッピングします
 - オーバーレイコントローラ（マーカー、ポリライン、ポリゴン、円、サポートされている場合はグラウンドイメージ）を公開します
 
 ## 実験的 / ユーティリティモジュール
@@ -73,7 +73,7 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 - `CircleIcon`, `FlagIcon`
 - 情報バブルスタイル（丸、尾付きなど）
 
-プロバイダ固有の drawable に依存せずに、プロバイダ間で一貫したマーカービジュアルが必要な場合に便利です。
+地図SDK固有の drawable に依存せずに、地図SDK間で一貫したマーカービジュアルが必要な場合に便利です。
 
 ### `mapconductor-marker-strategy`
 
@@ -82,7 +82,7 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 - 空間 / クラスタリングのような戦略
 - リモート駆動型マーカーセットの抽象化
 
-共有マーカーインターフェースを介して任意のプロバイダモジュールと連携するように設計されています。
+共有マーカーインターフェースを介して任意の地図SDKモジュールと連携するように設計されています。
 
 ### `mapconductor-marker-native-strategy`
 
@@ -97,7 +97,7 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 
 以下を実証するショーケースアプリケーション:
 
-- 基本的なマップ使用とプロバイダの切り替え
+- 基本的なマップ使用と地図SDKの切り替え
 - カメラ処理と表示可能領域（`VisibleRegionPage`, `ZoomCalibrationPage`）
 - ポリライン、ポリゴン、円、グラウンドイメージ
 - 情報バブルとカスタムマーカーアイコン
@@ -117,7 +117,7 @@ implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
 ```
 ```
-// アイコンと戦略を使用したマルチプロバイダ
+// アイコンと戦略を使用したマルチ地図SDK
 implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")

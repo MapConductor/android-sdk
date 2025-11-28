@@ -43,7 +43,7 @@ fun SimpleInfoBubbleExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -81,7 +81,7 @@ fun StyledInfoBubbleExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val isDarkTheme = isSystemInDarkTheme()
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -133,7 +133,7 @@ fun RichContentBubbleExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -215,7 +215,7 @@ fun InteractiveBubbleExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -338,7 +338,7 @@ fun MultipleBubblesExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = {
@@ -446,7 +446,7 @@ fun ManualLifecycleExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(markerState)
 

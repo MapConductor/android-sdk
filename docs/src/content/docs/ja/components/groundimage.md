@@ -43,7 +43,7 @@ fun MapViewScope.GroundImage(state: GroundImageState)
 fun BasicGroundImageExample() {
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
         AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
             GroundImage(
@@ -120,7 +120,7 @@ fun InteractiveGroundImageExample() {
         )
         Text("Opacity: ${(opacity * 100).toInt()}%", modifier = Modifier.padding(horizontal = 16.dp))
 
-        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
             state = mapViewState,
             onMarkerDrag = { markerState ->
@@ -168,7 +168,7 @@ MapView(
 fun MultipleGroundImagesExample() {
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
         // ベース衛星画像（低い不透明度）
         AppCompatResources.getDrawable(context, R.drawable.satellite_base)?.let { drawable ->
@@ -247,7 +247,7 @@ fun DynamicGroundImageExample() {
             modifier = Modifier.padding(16.dp)
         )
 
-        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             if (isVisible && imageDrawable != null) {
                 GroundImage(
@@ -300,7 +300,7 @@ fun AnimatedGroundImageExample() {
 
         Text("Current opacity: ${(opacity * 100).toInt()}%")
 
-        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             AppCompatResources.getDrawable(context, R.drawable.animated_overlay)?.let { drawable ->
                 GroundImage(
@@ -325,7 +325,7 @@ MapView(state = mapViewState) {
 fun FloorPlanExample() {
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
         // 建物のフロアプラン
         AppCompatResources.getDrawable(context, R.drawable.building_floor_plan)?.let { drawable ->
@@ -364,10 +364,10 @@ MapView(state = mapViewState) {
 
 ## イベント処理
 
-GroundImage のインタラクションは、マッププロバイダコンポーネントで処理されます:
+GroundImage のインタラクションは、マップ地図SDKコンポーネントで処理されます:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onGroundImageClick = { groundImageEvent ->

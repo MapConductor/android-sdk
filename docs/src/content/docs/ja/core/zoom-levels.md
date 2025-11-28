@@ -2,7 +2,7 @@
 title: "Zoom Levels（ズームレベル）"
 ---
 
-MapConductor はズームレベルを使用して地図表示のスケールと詳細度を制御します。ズームレベルシステムはおおよそ Google Maps の規約に従いますが、基盤となる実装の違いにより地図プロバイダ間で若干異なる場合があります。
+MapConductor はズームレベルを使用して地図表示のスケールと詳細度を制御します。ズームレベルシステムはおおよそ Google Maps の規約に従いますが、基盤となる実装の違いにより地図SDK間で若干異なる場合があります。
 
 ## ズームレベルの理解
 
@@ -149,9 +149,9 @@ val maximumDetail = MapCameraPositionImpl(
 - 屋内マッピング
 - 詳細な測量
 
-## プロバイダのバリエーション
+## 地図SDKのバリエーション
 
-MapConductor はプロバイダ間でズームレベルを正規化しますが、微妙な違いがある可能性があります:
+MapConductor は地図SDK間でズームレベルを正規化しますが、微妙な違いがある可能性があります:
 
 ### Google Maps
 - 参照スケールに厳密に従う
@@ -212,7 +212,7 @@ fun ContentBasedZoom() {
         zoom = appropriateZoom
     )
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -261,7 +261,7 @@ fun ZoomControls() {
             Button(onClick = { currentZoom = 18.0 }) { Text("建物") }
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(
             state = mapViewState,
             cameraPosition = MapCameraPositionImpl(
@@ -315,7 +315,7 @@ fun PerformanceAdaptiveZoom() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -362,7 +362,7 @@ fun ContextAwareZoom() {
         zoom = contextualZoom
     )
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -391,7 +391,7 @@ fun ContextAwareZoom() {
 1. **コンテンツ駆動**: 表示したいものに基づいてズームを選択
 2. **ユーザーコンテキスト**: ユーザーの現在のタスクと位置を考慮
 3. **パフォーマンス**: 高いズームレベルはより多くの詳細レンダリングが必要
-4. **プロバイダの制限**: すべてのターゲット地図プロバイダでテスト
+4. **地図SDKの制限**: すべてのターゲット地図SDKでテスト
 
 ### スムーズな遷移
 
@@ -419,7 +419,7 @@ fun ResponsiveZoom() {
     // 画面サイズに合わせてズームを調整
     val baseZoom = if (isTablet) 14.0 else 16.0
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = MapCameraPositionImpl(
@@ -434,10 +434,10 @@ fun ResponsiveZoom() {
 
 ## 一般的な落とし穴
 
-1. **プロバイダの不一致**: すべてのターゲットプロバイダでズームレベルをテスト
+1. **地図SDKの不一致**: すべてのターゲット地図SDKでズームレベルをテスト
 2. **パフォーマンスへの影響**: 高いズームレベルはレンダリングコストが増加
-3. **小数ズーム**: すべてのプロバイダが小数ズームを同様に処理するわけではありません
-4. **最小/最大**: プロバイダ固有のズーム制限を尊重
+3. **小数ズーム**: すべての地図SDKが小数ズームを同様に処理するわけではありません
+4. **最小/最大**: 地図SDK固有のズーム制限を尊重
 5. **ジェスチャーの競合**: ユーザーのズームジェスチャー vs プログラマティックズームを考慮
 
 ## ズームレベルのテスト
@@ -459,7 +459,7 @@ fun ZoomLevelTester() {
             Text("次のズームレベル")
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図プロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(
             state = mapViewState,
             cameraPosition = MapCameraPositionImpl(

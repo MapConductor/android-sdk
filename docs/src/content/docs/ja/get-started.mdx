@@ -16,7 +16,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 - マーカー、円、ポリラインなどの追加方法
 - ユーザーのタップやクリックイベントの処理
 - カメラ位置の制御
-- 地図プロバイダの切り替え方法
+- 地図SDKの切り替え方法
 
 ## 前提条件
 
@@ -162,12 +162,12 @@ android {
 </TabItem>
 </Tabs>
 
-### 1-3. 地図プロバイダのセットアップ
+### 1-3. 地図SDKのセットアップ
 
 
 > **重要**: MapConductor は既存の地図 SDK の上に統一 API レイヤーを提供するライブラリです。そのため、MapConductor を利用する前に、各地図 SDK を個別にセットアップする必要があります。
 
-各地図プロバイダは、それぞれ API キー、パーミッション、設定などの準備が必要です。
+各地図SDKは、それぞれ API キー、パーミッション、設定などの準備が必要です。
 
 - **[Google Maps のセットアップ](/ja/setup/google-maps)** – Google Maps SDK の API キーやパーミッションの設定
 - **[Mapbox のセットアップ](/ja/setup/mapbox)** – Mapbox のアクセストークンやスタイル設定
@@ -527,9 +527,9 @@ GoogleMapsView(
 }
 ```
 
-## ステップ7: 地図プロバイダを切り替える
+## ステップ7: 地図SDKを切り替える
 
-MapConductor の最大の利点は、わずかな変更で地図プロバイダを切り替えられることです。
+MapConductor の最大の利点は、わずかな変更で地図SDKを切り替えられることです。
 
 ### Google Maps から Mapbox への切り替え
 
@@ -575,7 +575,7 @@ fun MyMap() {
 
 マーカーや円、ポリラインなどのコンポーネントは、**まったく同じコード**で動作します。
 
-### プロバイダ切り替え対応表
+### 地図SDK切り替え対応表
 
 | 地図SDK | MapViewState | MapView |
 |---------|--------------|---------|
@@ -739,7 +739,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
 さらに詳しく学びたい場合は、以下のドキュメントを参照してください:
 
 - [モジュール構成](/ja/modules/) - 各モジュールの詳細な説明
-- [プロバイダ互換性](/ja/provider-compatibility/) - 各地図プロバイダの機能対応表
+- [地図SDK互換性](/ja/provider-compatibility/) - 各地図SDKの機能対応表
 - [SDK バージョン互換性](/ja/sdk-version-compatibility/) - サポートされている SDK バージョン
 
 ## トラブルシューティング

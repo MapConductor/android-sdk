@@ -46,7 +46,7 @@ fun AdvancedMapScreen() {
 }
 ```
 
-![Marker, Circle, Polylineの例](/img/examples/marker-circle-polyline.jpg)
+![Marker, Circle, Polylineの例](~/assets/examples/marker-circle-polyline.jpg)
 
 さらに高度な例については、リポジトリの `example-app` のコードも参照してください。
 

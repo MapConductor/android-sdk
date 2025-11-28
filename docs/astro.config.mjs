@@ -185,4 +185,7 @@ export default defineConfig({
 	markdown: {
 		remarkPlugins: [remarkVersionPlaceholder],
 	},
+	mdx: {
+		remarkPlugins: [remarkVersionPlaceholder],
+	},
 });

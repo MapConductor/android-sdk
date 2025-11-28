@@ -2,107 +2,122 @@
 title: "MapViewComponent"
 ---
 
-MapConductor は、アプリケーションで地図を表示するための基盤となる、プロバイダ固有の地図ビューコンポーネントを提供します。各地図プロバイダには独自の実装がありますが、一貫した API インターフェースを維持しています。
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-## プロバイダ固有のコンポーネント
+MapConductor は、アプリケーションで地図を表示するための基盤となる、地図SDK固有の地図ビューコンポーネントを提供します。各地図SDKには独自の実装がありますが、一貫した API インターフェースを維持しています。
 
-MapConductor は複数の地図プロバイダをサポートしており、それぞれに専用のコンポーネントがあります:
+## 地図SDK固有のコンポーネント
 
-### GoogleMapsView
-Google Maps 統合用:
+MapConductor は複数の地図SDKをサポートしており、それぞれに専用のコンポーネントがあります。
+地図上には通常、複数のオブジェクト（マーカーやポリラインなど）が配置されるため、個々のオブジェクトにイベントコールバックを設定するのではなく、
+地図SDK固有のコンポーネントにイベントコールバックを設定します。
+
+各地図SDK固有の特殊なイベントコールバックについては、v{BOM_MODULE_VERSION} ではまだサポートされていません。
+
+<Tabs>
+<TabItem label="GoogleMaps">
+
 ```kotlin
 GoogleMapsView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null
 )
 ```
-
-### MapboxMapView
-Mapbox 統合用:
+</TabItem>
+<TabItem label="Mapbox">
 ```kotlin
 MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null
 )
 ```
+</TabItem>
 
-### HereMapView
-HERE Maps 統合用:
+<TabItem label="HERE">
+
 ```kotlin
 HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null
 )
 ```
+</TabItem>
 
-### ArcGISMapView
-ArcGIS 統合用:
+<TabItem label="ArcGIS">
 ```kotlin
 ArcGISMapView(
     state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
     onMarkerClick: OnMarkerEventHandler? = null,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
     onMarkerAnimateStart: OnMarkerEventHandler? = null,
     onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
     onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null
 )
 ```
+</TabItem>
 
-### MapLibreMapView
-MapLibre 統合用:
+<TabItem label="MapLibre">
 ```kotlin
 MapLibreMapView(
     state: MapLibreViewStateImpl,
@@ -125,6 +140,9 @@ MapLibreMapView(
     content: (@Composable MapLibreMapViewScope.() -> Unit)? = null
 )
 ```
+</TabItem>
+</Tabs>
+
 
 ## 共通パラメータ
 
@@ -133,12 +151,11 @@ MapLibreMapView(
 ### コアパラメータ
 
 - **`modifier`**: スタイリングとレイアウトのための Compose modifier
-- **`state`**: プロバイダ固有の地図ビュー状態実装
+- **`state`**: 地図SDK固有の地図ビュー状態実装
 - **`content`**: 地図オーバーレイ（マーカー、円など）を含む Composable コンテンツ
 
 ### イベントハンドラ
 
-- **`onMapViewInitialized`**: 地図ビューが最初に初期化されたときに呼び出されます
 - **`onMapLoaded`**: 地図の読み込みが完了したときに呼び出されます
 - **`onMapClick`**: ユーザーが地図をタップしたときに呼び出されます
 - **カメライベント**: `onCameraMoveStart`、`onCameraMove`、`onCameraMoveEnd`
@@ -151,8 +168,8 @@ MapLibreMapView(
 
 ## 使用例
 
-### 基本的な Google Maps の実装
-
+<Tabs>
+<TabItem label="Google Maps の実装">
 ```kotlin
 @Composable
 fun GoogleMapsExample() {
@@ -182,14 +199,22 @@ fun GoogleMapsExample() {
     }
 }
 ```
-![](/img/introduction/basic-googlemaps-example.jpg)
-
-### 基本的な Mapbox の実装
+![](~/assets/introduction/basic-googlemaps-example.png)
+</TabItem>
+<TabItem label="Mapbox の実装">
 
 ```kotlin
 @Composable
 fun MapboxExample() {
-    val mapViewState = remember { MapboxViewStateImpl() }
+    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val camera = MapCameraPositionImpl(
+        position = center,
+        zoom = 13.0,
+    )
+
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = camera,
+    )
 
     MapboxMapView(
         state = mapViewState,
@@ -215,11 +240,15 @@ fun MapboxExample() {
     }
 }
 ```
-![](/img/introduction/basic-mapbox-example.jpg)
+![](~/assets/introduction/basic-mapbox-example.png)
+</TabItem>
+</Tabs>
 
-### プロバイダに依存しないパターン
 
-各プロバイダには特定のコンポーネントが必要ですが、プロバイダに依存しないコンテンツを作成できます:
+
+### 地図SDKに依存しないパターン
+
+各地図SDKには特定のコンポーネントが必要ですが、地図SDKに依存しないコンテンツを作成できます:
 
 ```kotlin
 @Composable
@@ -250,7 +279,7 @@ fun GoogleMapsScreen() {
 fun MapboxScreen() {
     val state = remember { MapboxViewStateImpl() }
     MapboxMapView(state = state) {
-        MapContent() // 同じコンテンツ、異なるプロバイダ
+        MapContent() // 同じコンテンツ、異なる地図SDK
     }
 }
 ```
@@ -265,9 +294,6 @@ fun AdvancedMapExample() {
 
     GoogleMapsView(
         state = mapViewState,
-        onMapViewInitialized = {
-            println("Map initialized successfully")
-        },
         onMapLoaded = {
             println("Map loaded and ready")
         },
@@ -315,14 +341,14 @@ fun AdvancedMapExample() {
 }
 ```
 
-## プロバイダの違い
+## 地図SDKの違い
 
-API は全プロバイダで一貫していますが、以下の点で違いがあります:
+API は全地図SDKで一貫していますが、以下の点で違いがあります:
 
 ### サポートされる機能
 - **GroundImage**: 現在 Google Maps と ArcGIS でサポートされています
 - **マーカーアニメーション**: Google Maps と Mapbox で利用可能
-- **カスタムスタイリング**: 各プロバイダには異なる地図スタイルオプションがあります
+- **カスタムスタイリング**: 各地図SDKには異なる地図スタイルオプションがあります
 
 ### パフォーマンス特性
 - **Google Maps**: 一般的な使用に優れており、優れたマーカーパフォーマンス
@@ -331,14 +357,14 @@ API は全プロバイダで一貫していますが、以下の点で違いが�
 - **ArcGIS**: GIS およびエンタープライズアプリケーションに最適
 
 ### プラットフォーム統合
-各プロバイダには、API キー、パーミッション、プラットフォームセットアップに関して異なる要件がある場合があります。プロバイダ固有のセットアップについては、初期化ドキュメントを参照してください。
+各地図SDKには、API キー、パーミッション、プラットフォームセットアップに関して異なる要件がある場合があります。地図SDK固有のセットアップについては、初期化ドキュメントを参照してください。
 
 ## ベストプラクティス
 
-1. **適切なプロバイダを選択**: アプリの特定のニーズに基づいて選択してください（スタイリング、パフォーマンス、機能）
-2. **一貫した状態管理**: プロバイダに関係なく、同じ状態パターンを使用してください
-3. **再利用可能なコンテンツ**: 可能な限りプロバイダに依存しない Composable コンテンツを作成してください
+1. **適切な地図SDKを選択**: アプリの特定のニーズに基づいて選択してください（スタイリング、パフォーマンス、機能）
+2. **一貫した状態管理**: 地図SDKに関係なく、同じ状態パターンを使用してください
+3. **再利用可能なコンテンツ**: 可能な限り地図SDKに依存しない Composable コンテンツを作成してください
 4. **イベント処理**: より良いユーザーエクスペリエンスのために包括的なイベント処理を実装してください
 5. **エラー処理**: 常に初期化の失敗を処理し、フォールバック UI を提供してください
 6. **パフォーマンス**: 大量のマーカーに対してはカスタムレンダリング戦略の使用を検討してください
-7. **テスト**: 互換性を確保するために、複数のプロバイダでアプリケーションをテストしてください
+7. **テスト**: 互換性を確保するために、複数の地図SDKでアプリケーションをテストしてください

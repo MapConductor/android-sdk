@@ -228,7 +228,7 @@ data class GroundImageEvent(
 ### 基本的なイベント処理
 
 ```kotlin
-// GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+// GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onMapClick = { geoPoint ->
@@ -253,7 +253,7 @@ fun AdvancedEventHandlingExample() {
     var selectedItem by remember { mutableStateOf<String?>(null) }
     var draggedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -305,7 +305,7 @@ fun ConditionalEventExample() {
     var editMode by remember { mutableStateOf(false) }
     var selectedMarkers by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -357,7 +357,7 @@ fun DebouncedEventExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -384,14 +384,14 @@ fun DebouncedEventExample() {
 fun GestureEventExample() {
     var gestureInfo by remember { mutableStateOf("No gesture") }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図プロバイダに置き換えてください
+    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
             gestureInfo = "Single tap at: $geoPoint"
         },
         // 注: 長押しやその他のジェスチャーは、
-        // 基盤となるマッププロバイダのジェスチャーシステムを通じて処理されます
+        // 基盤となるマップ地図SDKのジェスチャーシステムを通じて処理されます
     ) {
         // ジェスチャー情報を表示
         Text(

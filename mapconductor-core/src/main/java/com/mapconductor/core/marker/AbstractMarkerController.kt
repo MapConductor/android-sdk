@@ -79,7 +79,6 @@ abstract class AbstractMarkerController<ActualMarker>(
     ) {
         // Since this "isDragging" property is internal accessor,
         // childViewControllers must call this method instead of "isDragging = true/false".
-        markerState.isDragging = dragging
     }
 
     override suspend fun add(data: List<MarkerState>) {

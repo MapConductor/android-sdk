@@ -56,7 +56,7 @@ val polygonState = PolygonState(
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
 
-// MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+// MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
     Polygon(polygonState)
 }
@@ -82,7 +82,7 @@ fun EditablePolygonExample() {
         )
     }
 
-    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(
         state = mapViewState,
         onPolygonClick = { event ->
@@ -135,7 +135,7 @@ val zonePolygons = listOf(
     )
 )
 
-// MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+// MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
     zonePolygons.forEach { zone ->
         Polygon(zone)
@@ -170,7 +170,7 @@ fun ComplexPolygonExample() {
         )
     }
 
-    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
         Polygon(starPolygon)
     }

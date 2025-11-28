@@ -55,7 +55,7 @@ fun BasicGroundImageExample() {
         )
     }
 
-    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
         groundImageState?.let { state ->
             GroundImage(state)
@@ -98,7 +98,7 @@ fun InteractiveGroundImageExample() {
         )
         Text("Opacity: ${(opacity * 100).toInt()}%")
 
-        // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+        // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(
             state = mapViewState,
             onGroundImageClick = { event ->
@@ -140,7 +140,7 @@ fun MultiLayerGroundImageExample() {
         }
     }
 
-    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
         overlayStates.forEach { state ->
             GroundImage(state)
@@ -173,7 +173,7 @@ fun DynamicBoundsExample() {
         )
     }
 
-    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+    // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -242,7 +242,7 @@ fun AnimatedGroundImageExample() {
             Text(if (isAnimating) "Stop" else "Animate")
         }
 
-        // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図プロバイダーに置き換えてください
+        // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
             groundImageState?.let { state ->
                 GroundImage(state)

@@ -43,7 +43,7 @@ fun MapViewScope.Circle(state: CircleState)
 ### 基本的な Circle
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -104,7 +104,7 @@ fun InteractiveCircleExample() {
         draggable = true
     )
 
-    // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -128,7 +128,7 @@ MapView(
 ### 異なるスタイルの複数の Circle
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     // ソリッドな赤い円
     Circle(
@@ -192,7 +192,7 @@ fun DynamicCircleExample() {
         }
 
         // 動的な円を持つマップ
-        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             Circle(
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -217,7 +217,7 @@ MapView(state = mapViewState) {
 ### Z-Index を使った重なり合う Circle
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     val centerPoint = GeoPointImpl.fromLatLong(37.7749, -122.4194)
 
@@ -243,10 +243,10 @@ MapView(state = mapViewState) {
 
 ## イベント処理
 
-Circle のインタラクションは、マッププロバイダコンポーネントで処理されます:
+Circle のインタラクションは、マップ地図SDKコンポーネントで処理されます:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onCircleClick = { circleEvent ->

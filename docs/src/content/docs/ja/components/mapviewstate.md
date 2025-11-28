@@ -2,11 +2,11 @@
 title: "MapViewState"
 ---
 
-`MapViewState` は、地図の初期化、カメラ位置、および全体的な地図状態を管理するコアコンポーネントです。各地図プロバイダには独自の実装がありますが、一貫したインターフェースを維持しています。
+`MapViewState` は、地図の初期化、カメラ位置、および全体的な地図状態を管理するコアコンポーネントです。各地図SDKには独自の実装がありますが、一貫したインターフェースを維持しています。
 
-## プロバイダ実装
+## 地図SDK実装
 
-MapConductor は4つの地図プロバイダをサポートしており、それぞれに独自の `MapViewState` 実装があります:
+MapConductor は4つの地図SDKをサポートしており、それぞれに独自の `MapViewState` 実装があります:
 
 - `GoogleMapViewStateImpl` - Google Maps
 - `MapboxViewStateImpl` - Mapbox Maps
@@ -30,7 +30,7 @@ MapConductor は4つの地図プロバイダをサポートしており、それ
 
 ### 地図デザイン
 
-- **`mapDesignType: ActualMapDesignType`**: 地図のスタイル/デザイン（プロバイダ固有）
+- **`mapDesignType: ActualMapDesignType`**: 地図のスタイル/デザイン（地図SDK固有）
 
 ## コアメソッド
 
@@ -73,7 +73,7 @@ fun moveCameraTo(
 ```kotlin
 @Composable
 fun MapExample() {
-    // 地図状態を作成（プロバイダを選択）
+    // 地図状態を作成（地図SDKを選択）
     val mapViewState = rememberGoogleMapViewState()
 
     // 初期化状態を監視
@@ -83,7 +83,7 @@ fun MapExample() {
         InitState.NotStarted -> Text("Map not started")
         InitState.Initializing -> CircularProgressIndicator()
         InitState.Initialized -> {
-            // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+            // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
                 // ここに地図コンテンツを追加
             }
@@ -118,7 +118,7 @@ fun CameraControlExample() {
             Text("Move to San Francisco")
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             // 地図コンテンツ
         }
@@ -126,7 +126,7 @@ MapView(state = mapViewState) {
 }
 ```
 
-### プロバイダの切り替え
+### 地図SDKの切り替え
 
 ```kotlin
 @Composable
@@ -159,7 +159,7 @@ fun ProviderSwitchExample() {
             }
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -172,15 +172,12 @@ MapView(state = mapViewState) {
 
 ## イベント処理
 
-`MapViewState` は選択した地図プロバイダコンポーネントと連携して、包括的なイベント処理を提供します:
+`MapViewState` は選択した地図SDKコンポーネントと連携して、包括的なイベント処理を提供します:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマッププロバイダに置き換えてください
+// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
     state = mapViewState,
-    onMapViewInitialized = {
-        println("Map view initialized")
-    },
     onMapLoaded = {
         println("Map loaded successfully")
     },
@@ -197,5 +194,5 @@ MapView(
 1. **状態を記憶**: リコンポジション全体で状態を維持するために、常に `remember` を使用してください
 2. **初期化を監視**: コンテンツを追加する前に初期化状態を確認してください
 3. **失敗を処理**: 初期化失敗のためのフォールバック UI を提供してください
-4. **プロバイダの抽象化**: すべてのプロバイダ実装で動作するコードを書いてください
+4. **地図SDKの抽象化**: すべての地図SDK実装で動作するコードを書いてください
 5. **リソース管理**: SDK がライフサイクル管理を自動的に処理することを許可してください
