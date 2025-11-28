@@ -51,7 +51,7 @@ Resets the initialization state to `NotStarted`.
 ```kotlin
 fun moveCameraTo(
     cameraPosition: MapCameraPositionImpl,
-    durationMs: Long? = 0,
+    durationMills: Long? = 0,
     listener: MoveCameraCallback? = null
 )
 ```
@@ -60,7 +60,7 @@ Moves the camera to a specific position with optional animation.
 ```kotlin
 fun moveCameraTo(
     position: GeoPointImpl,
-    durationMs: Long? = 0,
+    durationMills: Long? = 0,
     listener: MoveCameraCallback? = null
 )
 ```
@@ -106,7 +106,7 @@ fun CameraControlExample() {
                 val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
                 mapViewState.moveCameraTo(
                     position = sanFrancisco,
-                    durationMs = 1000,
+                    durationMills = 1000,
                     listener = object : MapViewState.MoveCameraCallback {
                         override fun onComplete() {
                             println("Camera movement completed")

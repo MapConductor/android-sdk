@@ -283,7 +283,7 @@ Marker(
         textColor = Color.White
     ),
     extra = "tokyo_tower",
-    anchor = Offset(0.5f, 1.0f)  // x = 0.0(左)～1.0(右), y = 0.0(上)～1.0(下) 
+    anchor = Offset(0.5f, 1.0f)  // x = 0.0(左)～1.0(右), y = 0.0(上)～1.0(下)
 )
 ```
 
@@ -469,7 +469,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
                             position = tokyoTower,
                             zoom = 15.0
                         ),
-                        durationMs = 1000
+                        durationMills = 1000
                     )
                 }
             }) {
@@ -483,7 +483,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
                             position = skyTree,
                             zoom = 15.0
                         ),
-                        durationMs = 1000
+                        durationMills = 1000
                     )
                 }
             }) {
@@ -635,7 +635,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 scope.launch {
                     mapViewState.moveCameraTo(
                         MapCameraPositionImpl(position = tokyoTower, zoom = 15.0),
-                        durationMs = 1000
+                        durationMills = 1000
                     )
                 }
             }) {
@@ -646,7 +646,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 scope.launch {
                     mapViewState.moveCameraTo(
                         MapCameraPositionImpl(position = skyTree, zoom = 15.0),
-                        durationMs = 1000
+                        durationMills = 1000
                     )
                 }
             }) {

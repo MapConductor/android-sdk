@@ -21,8 +21,14 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -37,6 +43,9 @@ import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import com.mapconductor.here.HereMapDesign
+import com.mapconductor.here.HereMapView
+import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreMapView
@@ -65,75 +74,58 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = center,
-            zoom = 13.0,
-        ),
+    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPositionImpl(
+        position = london,
+        zoom = 8.0,
+    )
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = camera,
+        mapDesign = HereMapDesign.NormalDay,
     )
 
-    // Recompositionでマーカーを再生成しないように、rememberで囲む
-    val markerState1 by remember { mutableStateOf(MarkerState(
-        id = "marker1",
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(
-            fillColor = Color.Blue,
-            label = "1"
-        ),
-        // marker1 はドラッグできるようにする
-        draggable = true,
-    )) }
-    val markerState2 by remember { mutableStateOf( MarkerState(
-        id = "marker2",
-        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        icon = DefaultIcon(
-            fillColor = Color.Red,
-            label = "2"
-        ),
-    )) }
-
-    // 選択されたマーカーを保持
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-
-    GoogleMapView(
-        state = mapViewState,
-        onMapLoaded = {
-            println("Map loaded and ready")
-        },
-        onMapClick = { geoPoint ->
-            selectedMarker = null // 地図クリックで選択解除
-        },
-        onMarkerClick = { markerState ->
-            selectedMarker = markerState  // クリックされたマーカーを保持する
-        },
-        onMarkerDragStart = { markerState ->
-            println("Started dragging marker: ${markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("Dragging marker to: ${markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("Finished dragging marker: ${markerState.id}")
-        }
+    Column(
+        modifier = modifier,
     ) {
-        // インタラクティブなマーカーを持つ地図コンテンツ
-        Marker(markerState1)
-        Marker(markerState2)
-
-        // 選択されたマーカーの情報を表示
-        selectedMarker?.let { marker ->
-            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
-
-            // InfoBubbleは関連付けられたマーカーのpositionを自動で追尾する
-            InfoBubble(
-                marker = marker,
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.NormalDay
+                }
             ) {
-                Text(
-                    text = text,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Text("NormalDay")
             }
+            Spacer(
+                modifier = Modifier.width(20.dp),
+            )
+
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.NormalNight
+                }
+            ) {
+                Text("NormalNight")
+            }
+
+            Spacer(
+                modifier = Modifier.width(20.dp),
+            )
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.HybridDay
+                }
+            ) {
+                Text("HYBRID_DAY")
+            }
+        }
+
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+        HereMapView(
+            state = mapViewState,
+        ) {
+            // 地図コンテンツ
         }
     }
 }
