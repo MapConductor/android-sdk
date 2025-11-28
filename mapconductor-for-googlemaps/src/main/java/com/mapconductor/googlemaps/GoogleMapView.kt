@@ -37,7 +37,7 @@ import android.view.ViewGroup
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
-fun GoogleMapsView(
+fun GoogleMapView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,

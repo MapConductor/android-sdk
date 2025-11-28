@@ -18,7 +18,7 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewStateImpl
-import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.HereViewStateImpl
@@ -54,7 +54,7 @@ fun MapViewContainer(
     @Suppress("UNCHECKED_CAST")
     when (state) {
         is GoogleMapViewStateImpl ->
-            GoogleMapsView(
+            GoogleMapView(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,
