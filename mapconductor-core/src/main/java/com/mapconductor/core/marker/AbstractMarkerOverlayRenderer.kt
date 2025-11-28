@@ -94,7 +94,7 @@ abstract class AbstractMarkerOverlayRenderer<
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             entity.state.position = target
-            entity.state.setAnimation(null)
+            entity.state.animate(null)
             animateEndListener?.invoke(entity.state)
         }.launchIn(CoroutineScope(Dispatchers.Main))
     }
@@ -128,7 +128,7 @@ abstract class AbstractMarkerOverlayRenderer<
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）
             entity.state.position = target
-            entity.state.setAnimation(null)
+            entity.state.animate(null)
             animateEndListener?.invoke(entity.state)
         }.launchIn(coroutine)
     }

@@ -97,6 +97,6 @@ class AnimationPageViewModelImpl :
 
     override fun onMarkerClick(clicked: MarkerState) {
         // When you want to activate the marker, set the animation for the marker.
-        clicked.setAnimation(clicked.extra as? MarkerAnimation)
+        clicked.animate(clicked.extra as? MarkerAnimation)
     }
 }

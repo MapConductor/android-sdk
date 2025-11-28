@@ -62,7 +62,7 @@ class MarkerState(
 
     private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
 
-    fun setAnimation(animation: MarkerAnimation?) {
+    fun animate(animation: MarkerAnimation?) {
         internalAnimation = animation
     }
 

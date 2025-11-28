@@ -164,31 +164,16 @@ android {
 
 ### 1-3. 地図プロバイダのセットアップ
 
-MapConductor を使用する前に、利用する地図プロバイダの SDK をセットアップする必要があります。
 
-#### Google Maps の場合
+> **重要**: MapConductor は既存の地図 SDK の上に統一 API レイヤーを提供するライブラリです。そのため、MapConductor を利用する前に、各地図 SDK を個別にセットアップする必要があります。
 
-`AndroidManifest.xml` に API キーを追加します。
+各地図プロバイダは、それぞれ API キー、パーミッション、設定などの準備が必要です。
 
-```xml
-<application>
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="YOUR_GOOGLE_MAPS_API_KEY" />
-</application>
-```
-
-#### Mapbox の場合
-
-`strings.xml` にアクセストークンを追加します。
-
-```xml
-<resources>
-    <string name="mapbox_access_token">YOUR_MAPBOX_ACCESS_TOKEN</string>
-</resources>
-```
-
-> 他の地図プロバイダのセットアップ方法については、[イントロダクション](/ja/introduction/)を参照してください。
+- **[Google Maps のセットアップ](/ja/setup/google-maps)** – Google Maps SDK の API キーやパーミッションの設定
+- **[Mapbox のセットアップ](/ja/setup/mapbox)** – Mapbox のアクセストークンやスタイル設定
+- **[HERE Maps のセットアップ](/ja/setup/here-maps)** – HERE SDK の API キーやライセンス設定
+- **[ArcGIS のセットアップ](/ja/setup/arcgis)** – ArcGIS SDK の API キーやライセンス設定
+- **[MapLibre のセットアップ](/ja/setup/maplibre/)** – タイルやスタイル情報の設定
 
 ## ステップ2: シンプルな地図の表示
 
@@ -227,7 +212,7 @@ fun MyFirstMap(modifier: Modifier = Modifier) {
 }
 ```
 
-![MyFirstMapの実行結果](~/assets/get-started/my-first-map.png)
+![実行結果](~/assets/get-started/my-first-map.png)
 Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 これで、東京を中心とした地図が表示されます。
@@ -282,7 +267,7 @@ fun MapWithMarkers(modifier: Modifier = Modifier) {
     }
 }
 ```
-![MyFirstMapの実行結果](~/assets/get-started/map-with-markers.png)
+![実行結果](~/assets/get-started/map-with-markers.png)
 Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 ### マーカーのカスタマイズ
@@ -327,11 +312,13 @@ GoogleMapsView(
         center = tokyoTower,
         radiusMeters = 1000.0,  // メートル単位
         strokeColor = Color.Blue,
-        strokeWidth = 3f,
+        strokeWidth = 3.dp,  // Dp単位
         fillColor = Color.Blue.copy(alpha = 0.2f)
     )
 }
 ```
+![実行結果](~/assets/get-started/marker-with-circle.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 ### 4-2. ポリラインの追加
 
@@ -350,10 +337,12 @@ GoogleMapsView(
     Polyline(
         points = listOf(tokyoTower, skyTree),
         strokeColor = Color.Red,
-        strokeWidth = 5f
+        strokeWidth = 5.dp
     )
 }
 ```
+![実行結果](~/assets/get-started/marker-with-polyline.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 ## ステップ5: ユーザーインタラクションを処理する
 
@@ -397,10 +386,18 @@ fun InteractiveMap(modifier: Modifier = Modifier) {
     }
 }
 ```
+<video width="720" height="480" controls>
+ <source src="/get-started/interactive-map1.webm" type="video/webm" />
+ <source src="/get-started/interactive-map1.mp4" type="video/mp4" />
+</video>
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 ### 5-2. マーカーのクリックイベント
 
 ```kotlin
+val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
+val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
+
 GoogleMapsView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState,
@@ -408,10 +405,10 @@ GoogleMapsView(
         // マーカーがクリックされたときの処理
         when (markerState.extra) {
             "tokyo_tower" -> {
-                println("東京タワーがクリックされました")
+                markerState.animate(MarkerAnimation.Drop)
             }
             "sky_tree" -> {
-                println("スカイツリーがクリックされました")
+                markerState.animate(MarkerAnimation.Bounce)
             }
         }
     }
@@ -428,6 +425,11 @@ GoogleMapsView(
     )
 }
 ```
+<video width="720" height="480" controls>
+ <source src="/get-started/interactive-map2.webm" type="video/webm" />
+ <source src="/get-started/interactive-map2.mp4" type="video/mp4" />
+</video>
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 ## ステップ6: カメラを操作する
 
@@ -462,7 +464,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
         ) {
             Button(onClick = {
                 scope.launch {
-                    mapViewState.animateCamera(
+                    mapViewState.moveCameraTo(
                         MapCameraPositionImpl(
                             position = tokyoTower,
                             zoom = 15.0
@@ -471,12 +473,12 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
                     )
                 }
             }) {
-                Text("東京タワーへ")
+                Text("Tokyo Tower")
             }
 
             Button(onClick = {
                 scope.launch {
-                    mapViewState.animateCamera(
+                    mapViewState.moveCameraTo(
                         MapCameraPositionImpl(
                             position = skyTree,
                             zoom = 15.0
@@ -485,7 +487,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
                     )
                 }
             }) {
-                Text("スカイツリーへ")
+                Text("Sky Tree")
             }
         }
 
@@ -500,6 +502,10 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
     }
 }
 ```
+<video width="720" height="480" controls>
+ <source src="/get-started/manipulate-camera.webm" type="video/webm" />
+ <source src="/get-started/manipulate-camera.mp4" type="video/mp4" />
+</video>
 
 ### 6-2. カメラの移動イベントを監視する
 
@@ -598,6 +604,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CompleteSample(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
     // 位置情報
     val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
     val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
@@ -605,14 +613,14 @@ fun CompleteSample(modifier: Modifier = Modifier) {
     // クリックされた位置を保存
     var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
 
-    // 地図の状態
-    val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = tokyoTower,
-            zoom = 11.0
-        )
+    val initialCamera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+        zoom = 12.0
     )
 
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -625,24 +633,24 @@ fun CompleteSample(modifier: Modifier = Modifier) {
         ) {
             Button(onClick = {
                 scope.launch {
-                    mapViewState.animateCamera(
+                    mapViewState.moveCameraTo(
                         MapCameraPositionImpl(position = tokyoTower, zoom = 15.0),
                         durationMs = 1000
                     )
                 }
             }) {
-                Text("東京タワー")
+                Text("Tokyo Tower")
             }
 
             Button(onClick = {
                 scope.launch {
-                    mapViewState.animateCamera(
+                    mapViewState.moveCameraTo(
                         MapCameraPositionImpl(position = skyTree, zoom = 15.0),
                         durationMs = 1000
                     )
                 }
             }) {
-                Text("スカイツリー")
+                Text("Sky Tree")
             }
         }
 
@@ -654,19 +662,31 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 clickedPosition = geoPoint
             },
             onMarkerClick = { markerState ->
-                println("マーカークリック: ${markerState.extra}")
+                Toast
+                    .makeText(
+                        context,
+                        "clicked: ${markerState.extra}",
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
             }
         ) {
             // マーカー
             Marker(
                 position = tokyoTower,
-                icon = DefaultIcon(label = "TT", backgroundColor = Color.Red),
+                icon = DefaultIcon(
+                    label = "TT",
+                    fillColor = Color.Red,
+                ),
                 extra = "tokyo_tower"
             )
 
             Marker(
                 position = skyTree,
-                icon = DefaultIcon(label = "ST", backgroundColor = Color.Blue),
+                icon = DefaultIcon(
+                    label = "ST",
+                    fillColor = Color.Blue
+                ),
                 extra = "sky_tree"
             )
 
@@ -674,7 +694,10 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             clickedPosition?.let { position ->
                 Marker(
                     position = position,
-                    icon = DefaultIcon(label = "!", backgroundColor = Color.Green),
+                    icon = DefaultIcon(
+                        label = "!",
+                        fillColor = Color.Green
+                    ),
                     extra = "clicked"
                 )
             }
@@ -698,12 +721,16 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             Polyline(
                 points = listOf(tokyoTower, skyTree),
                 strokeColor = Color.Magenta,
-                strokeWidth = 3f
+                strokeWidth = 3.dp
             )
         }
     }
 }
 ```
+<video width="720" height="480" controls>
+ <source src="/get-started/complete-example.webm" type="video/webm" />
+ <source src="/get-started/complete-example.mp4" type="video/mp4" />
+</video>
 
 ## 次のステップ
 
