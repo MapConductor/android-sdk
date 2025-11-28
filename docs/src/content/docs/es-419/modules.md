@@ -69,5 +69,5 @@ El repositorio incluye una aplicación de ejemplo que demuestra las capacidades 
 
 - `example-app`: ejemplo de cómo usar MapConductor con varios proveedores.
 
-Consulta [Instalación](/es-419/installation/) y el README del repositorio para saber cómo compilar y ejecutar la app de ejemplo.
+Consulta [Comenzar](/es-419/get-started/) y el README del repositorio para saber cómo compilar y ejecutar la app de ejemplo.
 

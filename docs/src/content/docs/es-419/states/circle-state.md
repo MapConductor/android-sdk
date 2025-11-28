@@ -9,7 +9,7 @@ title: "CircleState"
 ```kotlin
 CircleState(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,

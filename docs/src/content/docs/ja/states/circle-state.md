@@ -9,7 +9,7 @@ title: "CircleState（円の状態）"
 ```kotlin
 CircleState(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
@@ -25,7 +25,7 @@ CircleState(
 ### 基本プロパティ
 - **`id: String`**: 一意の識別子（指定されていない場合は自動生成）
 - **`center: GeoPoint`**: 円の地理的中心
-- **`radius: Double`**: 半径（メートル単位）
+- **`radiusMeters: Double`**: 半径（メートル単位）
 - **`clickable: Boolean`**: 円がクリックイベントに応答するかどうか
 - **`extra: Serializable?`**: 円に付加される追加データ
 
@@ -50,7 +50,7 @@ fun asFlow(): Flow<CircleFingerPrint> // リアクティブ更新
 ```kotlin
 val circleState = CircleState(
     center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    radius = 1000.0,
+    radiusMeters = 1000.0,
     strokeColor = Color.Blue,
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
@@ -70,7 +70,7 @@ fun InteractiveCircleExample() {
         mutableStateOf(
             CircleState(
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                radius = 500.0,
+                radiusMeters = 500.0,
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f),
                 clickable = true
@@ -80,9 +80,9 @@ fun InteractiveCircleExample() {
 
     Column {
         Slider(
-            value = circleState.radius.toFloat(),
+            value = circleState.radiusMeters.toFloat(),
             onValueChange = {
-                circleState = circleState.copy(radius = it.toDouble())
+                circleState = circleState.copy(radiusMeters = it.toDouble())
             },
             valueRange = 100f..2000f
         )
@@ -106,13 +106,13 @@ MapView(
 val circles = listOf(
     CircleState(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         fillColor = Color.Red.copy(alpha = 0.3f),
         zIndex = 1
     ),
     CircleState(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 500.0,
+        radiusMeters = 500.0,
         fillColor = Color.Blue.copy(alpha = 0.5f),
         zIndex = 2
     )

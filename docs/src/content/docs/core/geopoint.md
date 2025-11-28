@@ -250,7 +250,7 @@ fun ProximityExample() {
         // Proximity circle
         Circle(
             center = poi,
-            radius = 100.0,
+            radiusMeters = 100.0,
             strokeColor = Color.Green.copy(alpha = 0.5f),
             fillColor = Color.Green.copy(alpha = 0.1f)
         )

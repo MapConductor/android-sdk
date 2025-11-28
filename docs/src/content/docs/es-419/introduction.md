@@ -43,7 +43,7 @@ Para usar MapConductor en tu proyecto, sigue estos pasos.
 
 ### 1. Instalación
 
-Consulta la página de [Instalación y versiones](/es-419/installation/) para ver toda la información sobre dependencias y versiones.
+Consulta la página de [Comenzar](/es-419/get-started/) para ver toda la información sobre dependencias y versiones.
 
 ### 2. Configuración de cada SDK de mapas
 
@@ -103,7 +103,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         // Añadir un círculo
         Circle(
             center = sanFrancisco,
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -153,7 +153,7 @@ En comparación con la versión 1.0.0, los cambios principales de la v1.1.0 incl
 
 ## Documentación relacionada
 
-- [Instalación](/es-419/installation/)
+- [Comenzar](/es-419/get-started/)
 - [Módulos](/es-419/modules/)
 - [Compatibilidad de versiones del SDK](/es-419/sdk-version-compatibility/)
 - [Compatibilidad de proveedores](/es-419/provider-compatibility/)

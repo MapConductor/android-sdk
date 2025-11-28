@@ -227,8 +227,10 @@ fun MyFirstMap(modifier: Modifier = Modifier) {
 }
 ```
 
-![MyFirstMapの実行結果](~/assets/introduction/my-first-map.png)
+![MyFirstMapの実行結果](~/assets/get-started/my-first-map.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
+これで、東京を中心とした地図が表示されます。
 
 ## ステップ3: マーカーを追加する
 
@@ -268,18 +270,20 @@ fun MapWithMarkers(modifier: Modifier = Modifier) {
         // マーカーを追加
         Marker(
             position = tokyoTower,
-            icon = DefaultIcon(label = "東京タワー"),
+            icon = DefaultIcon(label = "Tokyo Tower"),
             extra = "tokyo_tower"
         )
 
         Marker(
             position = skyTree,
-            icon = DefaultIcon(label = "スカイツリー"),
+            icon = DefaultIcon(label = "Sky Tree"),
             extra = "sky_tree"
         )
     }
 }
 ```
+![MyFirstMapの実行結果](~/assets/get-started/map-with-markers.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
 
 ### マーカーのカスタマイズ
 
@@ -294,8 +298,7 @@ Marker(
         textColor = Color.White
     ),
     extra = "tokyo_tower",
-    anchorU = 0.5f,  // 水平方向のアンカー(中央)
-    anchorV = 1.0f   // 垂直方向のアンカー(下部)
+    anchor = Offset(0.5f, 1.0f)  // x = 0.0(左)～1.0(右), y = 0.0(上)～1.0(下) 
 )
 ```
 
@@ -322,7 +325,7 @@ GoogleMapsView(
     // 東京タワーの周りに半径1kmの円を描画
     Circle(
         center = tokyoTower,
-        radius = 1000.0,  // メートル単位
+        radiusMeters = 1000.0,  // メートル単位
         strokeColor = Color.Blue,
         strokeWidth = 3f,
         fillColor = Color.Blue.copy(alpha = 0.2f)
@@ -679,14 +682,14 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             // 円
             Circle(
                 center = tokyoTower,
-                radius = 1000.0,
+                radiusMeters = 1000.0,
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f)
             )
 
             Circle(
                 center = skyTree,
-                radius = 1000.0,
+                radiusMeters = 1000.0,
                 strokeColor = Color.Blue,
                 fillColor = Color.Blue.copy(alpha = 0.2f)
             )

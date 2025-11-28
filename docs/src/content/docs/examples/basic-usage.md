@@ -242,7 +242,7 @@ MapView(state = mapViewState) {
         dataPoints.forEach { (point, intensity, id) ->
             Circle(
                 center = point,
-                radius = intensity * 200.0,
+                radiusMeters = intensity * 200.0,
                 strokeColor = Color.Transparent,
                 fillColor = Color.Red.copy(alpha = intensity * 0.5f),
                 extra = "Data point $id"
@@ -359,7 +359,7 @@ MapView(state = mapViewState) {
         // Accuracy circle
         Circle(
             center = currentPosition,
-            radius = 50.0,
+            radiusMeters = 50.0,
             strokeColor = Color.Blue.copy(alpha = 0.5f),
             fillColor = Color.Blue.copy(alpha = 0.1f)
         )

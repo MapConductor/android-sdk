@@ -10,7 +10,7 @@ El componente `Circle` dibuja una superposición circular en el mapa. Puedes esp
 @Composable
 fun MapViewScope.Circle(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
@@ -22,7 +22,7 @@ fun MapViewScope.Circle(
 ```
 
 - **`center`**: Centro del círculo (`GeoPoint`).
-- **`radius`**: Radio en metros.
+- **`radiusMeters`**: Radio en metros.
 - **`strokeColor` / `strokeWidth`**: Color y grosor del borde.
 - **`fillColor`**: Color de relleno.
 
@@ -33,7 +33,7 @@ Combinado con `CircleState`, puedes actualizar el círculo de forma reactiva (co
 ```kotlin
 val circleState = CircleState(
     center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    radius = 1000.0,
+    radiusMeters = 1000.0,
     strokeColor = Color.Blue,
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )

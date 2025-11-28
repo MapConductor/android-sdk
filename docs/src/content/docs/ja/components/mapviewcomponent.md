@@ -175,7 +175,7 @@ fun GoogleMapsExample() {
 
         Circle(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -232,7 +232,7 @@ fun MapContent() {
 
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 500.0,
+        radiusMeters = 500.0,
         strokeColor = Color.Green,
         fillColor = Color.Green.copy(alpha = 0.2f)
     )

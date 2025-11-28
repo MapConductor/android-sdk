@@ -199,9 +199,9 @@ fun ComplexPolygonExample() {
         buildList {
             for (i in 0 until 10) {
                 val angle = (i * 36.0) * Math.PI / 180.0
-                val radius = if (i % 2 == 0) outerRadius else innerRadius
-                val lat = centerLat + radius * cos(angle)
-                val lng = centerLng + radius * sin(angle)
+                val radiusMeters = if (i % 2 == 0) outerRadius else innerRadius
+                val lat = centerLat + radiusMeters * cos(angle)
+                val lng = centerLng + radiusMeters * sin(angle)
                 add(GeoPointImpl.fromLatLong(lat, lng))
             }
             // ポリゴンを閉じる

@@ -103,7 +103,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         // 円を追加
         Circle(
             center = sanFrancisco,
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )

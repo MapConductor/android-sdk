@@ -2,6 +2,8 @@
 title: MapLibre セットアップ
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 このセクションでは、MapLibre Native Android と MapConductor を統合するためのセットアップ手順について説明します。
 
 > **重要**: MapConductor は既存の地図 SDK 上に統一された API レイヤーを提供します。MapConductor の MapLibre 統合を使用する前に、MapLibre Native Android SDK を独立してセットアップする必要があります。
@@ -32,16 +34,19 @@ MapLibre は、タイルサーバーを必要とするオープンソースの�
 
 ### 2. Gradle の設定
 
-アプリの `build.gradle.kts` に依存関係を追加します:
+アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加します:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
 
 ```kotlin
-// App build.gradle.kts
+// App/build.gradle.kts
 dependencies {
     // MapLibre Native Android SDK (version managed via libs.versions.toml)
     implementation(libs.maplibre.android)
 
     // MapConductor BOM for version management (v1.1.1)
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 
     // MapConductor modules (versions managed by BOM)
     implementation("com.mapconductor:core")
@@ -49,9 +54,34 @@ dependencies {
 }
 ```
 
-MapLibre SDK は Maven Central から利用できます。`settings.gradle.kts` に既に設定されているはずです:
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
+
+```groovy
+// App/build.gradle
+dependencies {
+    // MapLibre Native Android SDK (version managed via libs.versions.toml)
+    implementation libs.maplibre.android
+
+    // MapConductor BOM for version management (v1.1.1)
+    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+
+    // MapConductor modules (versions managed by BOM)
+    implementation "com.mapconductor:core"
+    implementation "com.mapconductor:for-maplibre"
+}
+```
+
+</TabItem>
+</Tabs>
+
+MapLibre SDK は Maven Central から利用できます。`settings.gradle.kts` または `settings.gradle` に既に設定されているはずです:
+
+<Tabs>
+<TabItem label="Kotlin (settings.gradle.kts)">
 
 ```kotlin
+// settings.gradle.kts
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -61,11 +91,29 @@ dependencyResolutionManagement {
 }
 ```
 
+</TabItem>
+<TabItem label="Groovy (settings.gradle)">
+
+```groovy
+// settings.gradle
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
 ### 3. Android Manifest の設定
 
 `AndroidManifest.xml` に必要なパーミッションを追加します:
 
 ```xml
+<!-- AndroidManifest.xml -->
 <application>
     <!-- Add internet permission for tile loading -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -78,93 +126,35 @@ dependencyResolutionManagement {
 
 MapLibre は、マップの見た目を定義するためにスタイル JSON が必要です。ホストされたスタイルを使用するか、カスタムのものを提供できます。
 
-#### オプション A: ホストされたスタイルの使用（推奨）
+#### オプション A: デモ用スタイル
 
 Maptiler などの商用タイルプロバイダーを使用する場合:
 
 ```kotlin
-val styleUrl = "https://api.maptiler.com/maps/streets/style.json?key=YOUR_API_KEY"
+val mapDesign = MapLibreDesignType.DemoTiles
 ```
 
-#### オプション B: OpenStreetMap スタイルの使用
+#### オプション B: ホストされたスタイルの使用
+
+Maptiler などの商用タイルプロバイダーを使用する場合:
+
+```kotlin
+val mapDesign = MapLibreDesignType(
+    "basic map",
+    "https://api.maptiler.com/maps/base-v4/style.json?key=YOUR_API_KEY",
+)
+```
+
+#### オプション C: OpenStreetMap スタイルの使用
 
 無料の OpenStreetMap ベースのスタイルの場合:
 
 ```kotlin
 // Example using OSM Liberty style
-val styleUrl = "https://tiles.openfreemap.org/styles/liberty"
-```
-
-#### オプション C: カスタムスタイル JSON
-
-独自のスタイルをインラインで定義するか、アセットから読み込むこともできます:
-
-```kotlin
-val customStyle = """
-{
-  "version": 8,
-  "sources": {
-    "osm": {
-      "type": "raster",
-      "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-      "tileSize": 256,
-      "attribution": "© OpenStreetMap contributors"
-    }
-  },
-  "layers": [{
-    "id": "osm",
-    "type": "raster",
-    "source": "osm"
-  }]
-}
-""".trimIndent()
-```
-
-### 5. API キーの設定（必要な場合）
-
-タイルプロバイダーが API キーを必要とする場合（例：Maptiler）、`secrets.properties` に追加します:
-
-```properties
-# secrets.properties
-MAPLIBRE_API_KEY=your_api_key_here
-```
-
-ルート `build.gradle.kts` に Secrets Gradle Plugin を設定します:
-
-```kotlin
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
-
-アプリの `build.gradle.kts` にプラグインを適用します:
-
-```kotlin
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-```
-
-**重要**:
-- `secrets.properties` ファイルをバージョン管理にコミットしないでください。`.gitignore` に追加してください。
-- 多くの MapLibre タイルソースは無料ですが、適切な帰属表示が必要です
-
-### 6. スタイル URL の設定
-
-MapConductor の MapLibre 統合を使用する場合、状態を通じてスタイル URL を設定します:
-
-```kotlin
-@Composable
-fun MapLibreExample() {
-    val mapState = rememberMapLibreMapViewState(
-        styleUrl = "https://tiles.openfreemap.org/styles/liberty"
-    )
-
-    MapLibreMapView(state = mapState) {
-        // Your map content
-    }
-}
+val mapDesign = MapLibreDesignType(
+    "OpenStreetMap",
+    "https://tiles.openfreemap.org/styles/liberty",
+)
 ```
 
 ## 検証
@@ -179,15 +169,27 @@ MapLibre のセットアップを確認するには:
 ```kotlin
 @Composable
 fun TestMapLibre() {
-    val mapState = rememberMapLibreMapViewState(
-        styleUrl = "https://tiles.openfreemap.org/styles/liberty"
+    val state = rememberMapLibreMapViewState(
+        cameraPosition =
+            MapCameraPositionImpl(
+                position = GeoPointImpl.fromLatLong(0.0, 0.0),
+                zoom = 3.0,
+            ),
+        mapDesign = MapLibreDesignType(
+            "basic map",
+            "https://api.maptiler.com/maps/base-v4/style.json?key=4r6LzxCATqEODtxKcIBj",
+        ),
     )
 
-    MapLibreMapView(state = mapState) {
-        // If this displays correctly, your setup is working
+    MapLibreMapView(
+        modifier = modifier,
+        state = state,
+    ) {
+        // もし地図が表示されれば、セットアップが正しくできています
     }
 }
 ```
+![TestMapLibreの実行結果](~/assets/setup/basic-setup-maplibre.png)
 
 ## トラブルシューティング
 

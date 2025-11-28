@@ -230,7 +230,7 @@ fun ClusteringStrategyExample() {
         val denseMarkers = generateDenseMarkerSet(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
             count = 500,
-            radius = 200.0  // 200-meter radius
+            radiusMeters = 200.0  // 200-meter radius
         )
 
         denseMarkers.forEach { markerData ->

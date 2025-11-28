@@ -272,7 +272,7 @@ fun NativeClusteringExample() {
         val denseMarkers = generateDenseMarkerCluster(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
             count = 1000,
-            radius = 500.0 // 500メートル
+            radiusMeters = 500.0 // 500メートル
         )
 
         denseMarkers.forEach { markerData ->

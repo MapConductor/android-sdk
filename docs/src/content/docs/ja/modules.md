@@ -112,13 +112,13 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 
 ```kotlin
 // 最小限: Google Maps のみ
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
 ```
 ```
 // アイコンと戦略を使用したマルチプロバイダ
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
 implementation("com.mapconductor:for-mapbox")

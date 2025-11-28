@@ -264,7 +264,7 @@ fun ProximityAlert() {
         // Alert radius
         Circle(
             center = targetLocation,
-            radius = alertRadius,
+            radiusMeters = alertRadius,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.2f)
         )
@@ -389,7 +389,7 @@ fun GeofenceExample() {
         // Geofence boundary
         Circle(
             center = geofenceCenter,
-            radius = geofenceRadius,
+            radiusMeters = geofenceRadius,
             strokeColor = if (insideGeofence) Color.Green else Color.Red,
             strokeWidth = 3.dp,
             fillColor = Color.Blue.copy(alpha = 0.1f)

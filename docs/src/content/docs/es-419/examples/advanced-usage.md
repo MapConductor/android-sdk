@@ -26,7 +26,7 @@ fun AdvancedMapScreen() {
 
         Circle(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )

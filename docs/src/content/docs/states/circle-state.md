@@ -2,14 +2,14 @@
 title: "CircleState"
 ---
 
-`CircleState` manages the configuration and behavior of circular overlays on the map. It provides reactive properties for center position, radius, styling, and interaction settings.
+`CircleState` manages the configuration and behavior of circular overlays on the map. It provides reactive properties for center position, radiusMeters, styling, and interaction settings.
 
 ## Constructor
 
 ```kotlin
 CircleState(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     clickable: Boolean = true,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 1.dp,
@@ -25,7 +25,7 @@ CircleState(
 ### Core Properties
 - **`id: String`**: Unique identifier (auto-generated if not provided)
 - **`center: GeoPoint`**: Geographic center of the circle
-- **`radius: Double`**: Radius in meters
+- **`radiusMeters: Double`**: radiusMeters in meters
 - **`clickable: Boolean`**: Whether the circle responds to click events
 - **`extra: Serializable?`**: Additional data attached to the circle
 
@@ -50,7 +50,7 @@ fun asFlow(): Flow<CircleFingerPrint> // Reactive updates
 ```kotlin
 val circleState = CircleState(
     center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    radius = 1000.0,
+    radiusMeters = 1000.0,
     strokeColor = Color.Blue,
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
@@ -70,7 +70,7 @@ fun InteractiveCircleExample() {
         mutableStateOf(
             CircleState(
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                radius = 500.0,
+                radiusMeters = 500.0,
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f),
                 clickable = true
@@ -80,9 +80,9 @@ fun InteractiveCircleExample() {
 
     Column {
         Slider(
-            value = circleState.radius.toFloat(),
+            value = circleState.radiusMeters.toFloat(),
             onValueChange = {
-                circleState = circleState.copy(radius = it.toDouble())
+                circleState = circleState.copy(radiusMeters = it.toDouble())
             },
             valueRange = 100f..2000f
         )
@@ -106,13 +106,13 @@ MapView(
 val circles = listOf(
     CircleState(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         fillColor = Color.Red.copy(alpha = 0.3f),
         zIndex = 1
     ),
     CircleState(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 500.0,
+        radiusMeters = 500.0,
         fillColor = Color.Blue.copy(alpha = 0.5f),
         zIndex = 2
     )

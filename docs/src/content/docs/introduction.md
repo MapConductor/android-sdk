@@ -43,7 +43,7 @@ To use MapConductor in your project:
 
 ### 1. Installation
 
-See the [Installation and Versions](/installation) page for complete dependency information and version details.
+See the [Get Started](/get-started) page for complete dependency information and version details.
 
 ### 2. SDK-Specific Setup
 
@@ -103,7 +103,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         // Add a circle
         Circle(
             center = sanFrancisco,
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -152,7 +152,7 @@ Compared to v1.0.0, v1.1.0 includes:
 
 ## Related Documentation
 
-- [Installation](/installation/)
+- [Get Started](/get-started/)
 - [Modules Overview](/modules/)
 - [SDK Version Compatibility](/sdk-version-compatibility/)
 - [Provider Compatibility](/provider-compatibility/)

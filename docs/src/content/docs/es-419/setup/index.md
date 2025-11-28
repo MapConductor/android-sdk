@@ -14,7 +14,7 @@ Antes de usar MapConductor, asegúrate de cumplir estos requisitos:
 - Kotlin y Jetpack Compose habilitados en el proyecto.
 - Claves de API y credenciales necesarias para cada SDK de mapas.
 
-Puedes encontrar un ejemplo de configuración de Gradle en la sección de [Instalación](/es-419/installation/).
+Puedes encontrar un ejemplo de configuración de Gradle en la sección de [Comenzar](/es-419/get-started/).
 
 ## Configuración por proveedor
 

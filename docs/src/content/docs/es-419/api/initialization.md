@@ -6,7 +6,7 @@ Esta página describe el flujo básico de inicialización de MapConductor y cóm
 
 ## Pasos
 
-1. Añadir dependencias en Gradle ([Instalación](/es-419/installation/)).
+1. Añadir dependencias en Gradle ([Comenzar](/es-419/get-started/)).
 2. Configurar los SDK de mapas necesarios ([Configuración](/es-419/setup/)).
 3. Crear un `MapViewState`.
 4. Renderizar el componente `MapView` correspondiente en Compose.

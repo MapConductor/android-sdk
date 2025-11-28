@@ -9,6 +9,11 @@ import {
     ICON_MODULE_VERSION,
     MARKER_NATIVE_STRATEGY_MODULE_VERSION,
     MARKER_STRATEGY_MODULE_VERSION,
+    GOOGLE_MAPS_SDK_VERSION,
+    MAPBOX_SDK_VERSION,
+    HERE_EXPLORER_SDK_VERSION,
+    ARCGIS_SDK_VERSION,
+    MAPLBRE_SDK_VERSION,
 } from '../config.ts';
 import { visit } from 'unist-util-visit';
 
@@ -29,6 +34,11 @@ export default function remarkVersionPlaceholder() {
                 node.value = node.value.replaceAll('{ICON_MODULE_VERSION}', ICON_MODULE_VERSION);
                 node.value = node.value.replaceAll('{MARKER_NATIVE_STRATEGY_MODULE_VERSION}', MARKER_NATIVE_STRATEGY_MODULE_VERSION);
                 node.value = node.value.replaceAll('{MARKER_STRATEGY_MODULE_VERSION}', MARKER_STRATEGY_MODULE_VERSION);
+                node.value = node.value.replaceAll('{GOOGLE_MAPS_SDK_VERSION}', GOOGLE_MAPS_SDK_VERSION);
+                node.value = node.value.replaceAll('{MAPBOX_SDK_VERSION}', MAPBOX_SDK_VERSION);
+                node.value = node.value.replaceAll('{HERE_EXPLORER_SDK_VERSION}', HERE_EXPLORER_SDK_VERSION);
+                node.value = node.value.replaceAll('{ARCGIS_SDK_VERSION}', ARCGIS_SDK_VERSION);
+                node.value = node.value.replaceAll('{MAPLBRE_SDK_VERSION}', MAPLBRE_SDK_VERSION);
             }
         });
     };

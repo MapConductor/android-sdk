@@ -12,7 +12,7 @@ title: "Circle"
 @Composable
 fun MapViewScope.Circle(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
@@ -31,7 +31,7 @@ fun MapViewScope.Circle(state: CircleState)
 ## パラメータ
 
 - **`center`**: 円の地理的中心点（`GeoPoint`）
-- **`radius`**: 半径（メートル単位、`Double`）
+- **`radiusMeters`**: 半径（メートル単位、`Double`）
 - **`strokeColor`**: 円の境界線の色（デフォルト: `Color.Red`）
 - **`strokeWidth`**: 境界線の幅（デフォルト: `2.dp`）
 - **`fillColor`**: 円の内部の塗りつぶし色（デフォルト: 半透明の白）
@@ -47,7 +47,7 @@ fun MapViewScope.Circle(state: CircleState)
 MapView(state = mapViewState) {
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0, // 半径1km
+        radiusMeters = 1000.0, // 半径1km
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         id = "downtown-area"
@@ -65,13 +65,13 @@ fun InteractiveCircleExample() {
     var centerPosition by remember {
         mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
     }
-    var radius by remember { mutableStateOf(1000.0) }
+    var radiusMeters by remember { mutableStateOf(1000.0) }
 
     // エッジマーカーの位置を計算
-    val edgePosition = remember(centerPosition, radius) {
-        // 中心から 'radius' メートル離れた点を計算
+    val edgePosition = remember(centerPosition, radiusMeters) {
+        // 中心から 'radiusMeters' メートル離れた点を計算
         // これは簡略化されています - 実際の計算では地球の曲率を考慮します
-        val latOffset = radius / 111000.0 // 緯度1度あたりのおおよそのメートル数
+        val latOffset = radiusMeters / 111000.0 // 緯度1度あたりのおおよそのメートル数
         GeoPointImpl.fromLatLong(
             centerPosition.latitude + latOffset,
             centerPosition.longitude
@@ -80,7 +80,7 @@ fun InteractiveCircleExample() {
 
     val circleState = CircleState(
         center = centerPosition,
-        radius = radius,
+        radiusMeters = radiusMeters,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         clickable = true
@@ -111,7 +111,7 @@ MapView(
             if (markerState.id == edgeMarker.id) {
                 // エッジマーカーの位置に基づいて新しい半径を計算
                 val distance = calculateDistance(centerPosition, markerState.position)
-                radius = distance
+                radiusMeters = distance
             }
         },
         onCircleClick = { circleEvent ->
@@ -133,7 +133,7 @@ MapView(state = mapViewState) {
     // ソリッドな赤い円
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 500.0,
+        radiusMeters = 500.0,
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
         fillColor = Color.Red.copy(alpha = 0.2f),
@@ -143,7 +143,7 @@ MapView(state = mapViewState) {
     // 太い境界線の青い円
     Circle(
         center = GeoPointImpl.fromLatLong(37.7849, -122.4194),
-        radius = 750.0,
+        radiusMeters = 750.0,
         strokeColor = Color.Blue,
         strokeWidth = 5.dp,
         fillColor = Color.Transparent,
@@ -153,7 +153,7 @@ MapView(state = mapViewState) {
     // パターン付きの緑の円
     Circle(
         center = GeoPointImpl.fromLatLong(37.7649, -122.4194),
-        radius = 300.0,
+        radiusMeters = 300.0,
         strokeColor = Color.Green,
         strokeWidth = 2.dp,
         fillColor = Color.Green.copy(alpha = 0.4f),
@@ -196,7 +196,7 @@ fun DynamicCircleExample() {
 MapView(state = mapViewState) {
             Circle(
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                radius = circleRadius,
+                radiusMeters = circleRadius,
                 strokeColor = circleColor,
                 fillColor = circleColor.copy(alpha = 0.3f)
             )
@@ -224,7 +224,7 @@ MapView(state = mapViewState) {
     // 背景の円（より大きく、低い z-index）
     Circle(
         center = centerPoint,
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         strokeColor = Color.Red,
         fillColor = Color.Red.copy(alpha = 0.2f),
         extra = CircleData(zIndex = 1, name = "Outer circle")
@@ -233,7 +233,7 @@ MapView(state = mapViewState) {
     // 前景の円（より小さく、高い z-index）
     Circle(
         center = centerPoint,
-        radius = 500.0,
+        radiusMeters = 500.0,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.4f),
         extra = CircleData(zIndex = 2, name = "Inner circle")
@@ -255,14 +255,14 @@ MapView(
 
         println("Circle clicked:")
         println("  Center: ${circle.center}")
-        println("  Radius: ${circle.radius}m")
+        println("  Radius: ${circle.radiusMeters}m")
         println("  Click point: ${clickPoint}")
         println("  Extra data: ${circle.extra}")
     }
 ) {
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         clickable = true,
         extra = "Clickable circle"
     )
@@ -277,7 +277,7 @@ MapView(
 // 細い境界線
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     strokeColor = Color.Black,
     strokeWidth = 1.dp
 )
@@ -285,7 +285,7 @@ Circle(
 // 太い境界線
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     strokeColor = Color.Black,
     strokeWidth = 5.dp
 )
@@ -293,7 +293,7 @@ Circle(
 // 境界線なし
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     strokeColor = Color.Transparent,
     strokeWidth = 0.dp
 )
@@ -305,21 +305,21 @@ Circle(
 // ソリッドな塗りつぶし
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     fillColor = Color.Red
 )
 
 // 半透明の塗りつぶし
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     fillColor = Color.Red.copy(alpha = 0.5f)
 )
 
 // 塗りつぶしなし
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     fillColor = Color.Transparent
 )
 ```
@@ -335,14 +335,14 @@ Circle(
 val circles = listOf(
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         strokeColor = Color.Red,
         fillColor = Color.Red.copy(alpha = 0.3f),
         id = "zone-a"
     ),
     Circle(
         center = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        radius = 1500.0,
+        radiusMeters = 1500.0,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         id = "zone-b"
