@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import android.os.Bundle
 import android.widget.Toast
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +64,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
     val mapViewState = rememberGoogleMapViewState(
         cameraPosition = MapCameraPositionImpl(
@@ -76,20 +77,18 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         id = "marker1",
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
         icon = DefaultIcon(
-            fillColor = if (selectedMarker?.id == "marker1") Color.Yellow else Color.Blue,
+            fillColor = Color.Blue,
             label = "1"
         ),
         draggable = true,
-        extra = "Draggable marker 1"
     )) }
     val markerState2 by remember { mutableStateOf( MarkerState(
         id = "marker2",
         position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
         icon = DefaultIcon(
-            fillColor = if (selectedMarker?.id == "marker2") Color.Yellow else Color.Red,
+            fillColor = Color.Red,
             label = "2"
         ),
-        extra = "Clickable marker 2"
     )) }
 
     GoogleMapsView(
