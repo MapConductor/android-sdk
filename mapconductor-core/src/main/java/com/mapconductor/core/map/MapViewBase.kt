@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -256,17 +257,20 @@ fun <
                                 val position = marker.position
                                 val posOffset = holderRef.value?.toScreenOffset(position)
                                 if (posOffset != null) {
-                                    val icon = marker.icon ?: DefaultIcon()
-                                    val iconScale = icon.scale
-                                    val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
-                                    InfoBubbleOverlay(
-                                        positionOffset = posOffset,
-                                        tailOffset = entry.tailOffset,
-                                        content = entry.content,
-                                        iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
-                                        iconOffset = icon.anchor,
-                                        infoAnchorOffset = icon.infoAnchor,
-                                    )
+                                    // Keep a stable key per marker id; avoid using Flow as a key.
+                                    key(marker.id) {
+                                        val icon = marker.icon ?: DefaultIcon()
+                                        val iconScale = icon.scale
+                                        val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
+                                        InfoBubbleOverlay(
+                                            positionOffset = posOffset,
+                                            tailOffset = entry.tailOffset,
+                                            content = entry.content,
+                                            iconSize = Size(iconSize.toFloat(), iconSize.toFloat()),
+                                            iconOffset = icon.anchor,
+                                            infoAnchorOffset = icon.infoAnchor,
+                                        )
+                                    }
                                 }
                             }
                         }
