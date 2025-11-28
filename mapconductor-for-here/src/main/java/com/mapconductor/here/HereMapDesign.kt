@@ -10,7 +10,7 @@ sealed class HereMapDesign(
 ) : HereMapDesignType {
     object NormalDay : HereMapDesign(MapScheme.NORMAL_DAY) // 通常の昼モード
 
-    object NormalNigh : HereMapDesign(MapScheme.NORMAL_NIGHT) // 通常の夜モード
+    object NormalNight : HereMapDesign(MapScheme.NORMAL_NIGHT) // 通常の夜モード
 
     object Satellite : HereMapDesign(MapScheme.SATELLITE) // サテライト（衛星写真）モード
 
@@ -42,7 +42,7 @@ sealed class HereMapDesign(
         fun CreateById(id: Int): HereMapDesign =
             when (id) {
                 NormalDay.id.value -> NormalDay
-                NormalNigh.id.value -> NormalNigh
+                NormalNight.id.value -> NormalNight
                 Satellite.id.value -> Satellite
                 HybridDay.id.value -> HybridDay
                 HybridNight.id.value -> HybridNight
@@ -61,7 +61,7 @@ sealed class HereMapDesign(
         fun Create(id: MapScheme): HereMapDesign =
             when (id) {
                 NormalDay.id -> NormalDay
-                NormalNigh.id -> NormalNigh
+                NormalNight.id -> NormalNight
                 Satellite.id -> Satellite
                 HybridDay.id -> HybridDay
                 HybridNight.id -> HybridNight
