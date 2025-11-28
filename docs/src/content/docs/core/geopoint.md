@@ -52,7 +52,7 @@ GeoPointImpl(latitude = 37.7749, longitude = -122.4194, altitude = 100.0)
 // Basic marker positioning
 val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Marker(
         position = sanFrancisco,
@@ -195,7 +195,7 @@ fun RouteWithWaypoints() {
         start.interpolateTo(end, i / 10.0)
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Draw route
         Polyline(
@@ -229,7 +229,7 @@ fun ProximityExample() {
     val distance = userLocation.distanceTo(poi)
     val isNearby = distance < 100.0 // Within 100 meters
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(
             position = userLocation,
@@ -280,7 +280,7 @@ fun MovingMarkerExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Moving marker
         Marker(

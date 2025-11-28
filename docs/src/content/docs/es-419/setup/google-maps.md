@@ -55,7 +55,7 @@ fun GoogleMapsExample() {
         cameraPosition = camera,
     )
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { point ->
             println("Clicked: ${point.latitude}, ${point.longitude}")

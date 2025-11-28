@@ -13,7 +13,7 @@ This section provides practical examples of using MapConductor components in com
 fun SimpleMapExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -49,7 +49,7 @@ fun MultiProviderExample() {
             Button(onClick = { provider = "arcgis" }) { Text("ArcGIS") }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -69,7 +69,7 @@ MapView(state = mapViewState) {
 fun ClickToAddMarkersExample() {
     var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -102,7 +102,7 @@ MapView(
 fun RoutePlanningExample() {
     var waypoints by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -182,7 +182,7 @@ fun ZoneDrawingExample() {
             }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
@@ -237,7 +237,7 @@ fun HeatMapExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         dataPoints.forEach { (point, intensity, id) ->
             Circle(
@@ -294,7 +294,7 @@ fun ClusteringExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         clusteredMarkers.forEach { (position, count) ->
             Marker(
@@ -335,7 +335,7 @@ fun LiveTrackingExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Trail
         if (trail.size >= 2) {

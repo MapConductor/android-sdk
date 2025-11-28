@@ -26,7 +26,7 @@ fun rememberDefaultMapViewState(): GoogleMapViewStateImpl =
 fun BasicMapScreen() {
     val mapViewState = rememberDefaultMapViewState()
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { point ->
             println("Clicked at: ${point.latitude}, ${point.longitude}")

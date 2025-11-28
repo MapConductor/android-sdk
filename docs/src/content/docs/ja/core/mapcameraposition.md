@@ -223,7 +223,7 @@ data class VisibleRegion(
 fun VisibleRegionExample() {
     var cameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
     ) {
@@ -293,7 +293,7 @@ fun AnimatedCameraExample() {
     }
 
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     HereMapView(
         state = mapViewState,
         modifier = modifier,
@@ -386,7 +386,7 @@ fun CameraControlExample(modifier: Modifier = Modifier) {
             valueRange = 0f..80f
         )
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapLibreMapView(
             state = mapViewState,
         ) {

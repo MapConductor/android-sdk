@@ -91,7 +91,7 @@ fun CompatibilityAwareMap() {
     val mapViewState = rememberGoogleMapViewState()
     val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // 常にサポートされているコンポーネント
         Marker(

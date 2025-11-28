@@ -12,7 +12,7 @@ MapConductor SDK を使うと、単一の API で複数の地図SDKを扱える�
 
 ### サポートされている地図SDK
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
+- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
 - **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
 - **HERE Maps**: `HereViewStateImpl` / `HereMapView`
 - **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
@@ -30,7 +30,7 @@ SDK は、以下のような基本的な地理情報クラスを提供します�
 
 SDK は次のようなコアコンポーネントを提供します。
 
-1. **マップビューコンポーネント**: 地図SDK別のマップビュー（GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView）
+1. **マップビューコンポーネント**: 地図SDK別のマップビュー（GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView）
 2. **Marker**: カスタマイズ可能なアイコンやインタラクションを持つポイントマーカー
 3. **Circle**: スタイル指定可能な円形オーバーレイ
 4. **Polyline**: 複数点を結ぶ線分
@@ -80,10 +80,10 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     )
 
     // MapView も利用する地図SDKに応じて切り替えます
-    // - Google Maps -> GoogleMapsView
+    // - Google Maps -> GoogleMapView
     // - Mapbox -> MapboxMapView
     // ... など
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { geoPoint ->

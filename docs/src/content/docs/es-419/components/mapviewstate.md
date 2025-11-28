@@ -28,7 +28,7 @@ val mapViewState = rememberGoogleMapViewState(
 ## Uso con eventos de cámara
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     state = mapViewState,
     onCameraMoveEnd = { event ->
         println("Camera position: ${event.cameraPosition}")

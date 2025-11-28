@@ -44,7 +44,7 @@ fun MyMap() {
         cameraPosition = cameraPosition,
     )
 
-    GoogleMapsView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         // Marker / Circle / Polyline などを追加
     }
 }

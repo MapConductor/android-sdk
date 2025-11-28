@@ -27,7 +27,7 @@ val mapViewState = rememberGoogleMapViewState(
 ## Usar el MapView
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     state = mapViewState,
     onMapLoaded = { println("Map loaded") }
 ) {

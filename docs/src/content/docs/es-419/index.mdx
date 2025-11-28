@@ -40,7 +40,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 fun MyMap() {
     val mapViewState = rememberGoogleMapViewState()
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
             println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
@@ -54,7 +54,7 @@ fun MyMap() {
 }
 ```
 
-¿Quieres cambiar a Mapbox? Solo sustituye `rememberGoogleMapViewState()` por `rememberMapboxMapViewState()` y `GoogleMapsView` por `MapboxMapView`. El resto del código permanece igual.
+¿Quieres cambiar a Mapbox? Solo sustituye `rememberGoogleMapViewState()` por `rememberMapboxMapViewState()` y `GoogleMapView` por `MapboxMapView`. El resto del código permanece igual.
 
 ## Funcionalidades compatibles
 

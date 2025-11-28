@@ -2,11 +2,11 @@
 title: "InfoBubble"
 ---
 
-InfoBubble は、地図上のマーカーに吹き出し形式でカスタムコンテンツを表示するコンポーネントです。地図インターフェースを乱雑にすることなく、マーカーに関する詳細情報を表示する方法を提供します。
+InfoBubble は、地図上のマーカーに吹き出し形式でカスタムコンテンツを表示するコンポーネントです。マーカーに関する詳細情報を表示する方法を提供します。
 
 ## 概要
 
-InfoBubble は、特定のマーカーの上に表示される浮動オーバーレイを作成し、カスタマイズ可能なスタイルとコンテンツを持ちます。バブルは自動的にマーカーに対して相対的に配置され、地図がパンまたはズームされたときにマーカーの位置に追従します。
+InfoBubble は、特定のマーカーの上に表示されます。InfoBubble内に表示するコンテンツはComposableを与えることができるので、自由なデザインを実現できます。
 
 ## Composable 関数
 
@@ -43,8 +43,8 @@ fun SimpleInfoBubbleExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
         onMarkerClick = { markerState -> selectedMarker = markerState }
@@ -71,6 +71,7 @@ fun SimpleInfoBubbleExample() {
     }
 }
 ```
+![実行結果](~/assets/mapstate/simple-info-bubble-example.png)
 
 ### カスタムスタイルのバブル
 
@@ -81,7 +82,7 @@ fun StyledInfoBubbleExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val isDarkTheme = isSystemInDarkTheme()
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -133,7 +134,7 @@ fun RichContentBubbleExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -215,7 +216,7 @@ fun InteractiveBubbleExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val context = LocalContext.current
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -338,7 +339,7 @@ fun MultipleBubblesExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = {
@@ -446,7 +447,7 @@ fun ManualLifecycleExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(markerState)
 

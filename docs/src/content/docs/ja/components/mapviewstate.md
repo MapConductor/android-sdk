@@ -83,7 +83,7 @@ fun MapExample() {
         InitState.NotStarted -> Text("Map not started")
         InitState.Initializing -> CircularProgressIndicator()
         InitState.Initialized -> {
-            // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+            // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
                 // ここに地図コンテンツを追加
             }
@@ -118,7 +118,7 @@ fun CameraControlExample() {
             Text("Move to San Francisco")
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             // 地図コンテンツ
         }
@@ -159,7 +159,7 @@ fun ProviderSwitchExample() {
             }
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -175,7 +175,7 @@ MapView(state = mapViewState) {
 `MapViewState` は選択した地図SDKコンポーネントと連携して、包括的なイベント処理を提供します:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onMapLoaded = {

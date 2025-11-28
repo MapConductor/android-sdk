@@ -15,7 +15,7 @@ fun AdvancedMapScreen() {
     )
     val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMarkerClick = { markerState ->
             println("Marker: ${markerState.extra}")

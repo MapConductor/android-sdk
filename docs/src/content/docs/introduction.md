@@ -12,7 +12,7 @@ The MapConductor SDK allows you to use a single API to work with different map p
 
 ### Supported Map Providers
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
+- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
 - **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
 - **HERE Maps**: `HereViewStateImpl` / `HereMapView`
 - **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
@@ -30,7 +30,7 @@ The SDK provides fundamental geographic classes:
 
 The SDK provides the following core components:
 
-1. **Map View Components**: Provider-specific map view components (GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView)
+1. **Map View Components**: Provider-specific map view components (GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView)
 2. **Marker**: Point markers with customizable icons and interactions
 3. **Circle**: Circular overlays with styling options
 4. **Polyline**: Line segments connecting multiple points
@@ -80,10 +80,10 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     )
 
     // Replace MapView with your chosen map provider
-    // - Google Maps -> GoogleMapsView
+    // - Google Maps -> GoogleMapView
     // - Mapbox -> MapboxMapView
     // ... and so on
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { geoPoint ->

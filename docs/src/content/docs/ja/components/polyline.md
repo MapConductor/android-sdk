@@ -41,7 +41,7 @@ fun MapViewScope.Polyline(state: PolylineState)
 ### 基本的な Polyline
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     val routePoints = listOf(
         GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
@@ -94,7 +94,7 @@ fun InteractivePolylineExample() {
         )
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -122,7 +122,7 @@ MapView(
 ### 異なるスタイルの複数の Polyline
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     // ルート 1 - 高速道路（太い青い線）
     Polyline(
@@ -187,7 +187,7 @@ fun DynamicPolylineExample() {
             }
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
@@ -225,7 +225,7 @@ MapView(
 ### 測地線 vs 標準線
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     val longDistancePoints = listOf(
         GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
@@ -286,7 +286,7 @@ fun AnimatedRouteExample() {
                 .padding(16.dp)
         )
 
-        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
             if (visibleRoute.size >= 2) {
                 // 完了したルート（グレー）
@@ -322,7 +322,7 @@ MapView(state = mapViewState) {
 Polyline のインタラクションは、マップ地図SDKコンポーネントで処理されます:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onPolylineClick = { polylineEvent ->

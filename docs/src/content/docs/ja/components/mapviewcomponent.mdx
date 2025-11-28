@@ -18,7 +18,7 @@ MapConductor は複数の地図SDKをサポートしており、それぞれに�
 <TabItem label="GoogleMaps">
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
@@ -175,7 +175,7 @@ MapLibreMapView(
 fun GoogleMapsExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
             println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
@@ -270,7 +270,7 @@ fun MapContent() {
 @Composable
 fun GoogleMapsScreen() {
     val state = rememberGoogleMapViewState()
-    GoogleMapsView(state = state) {
+    GoogleMapView(state = state) {
         MapContent() // 再利用可能なコンテンツ
     }
 }
@@ -289,10 +289,38 @@ fun MapboxScreen() {
 ```kotlin
 @Composable
 fun AdvancedMapExample() {
-    val mapViewState = rememberGoogleMapViewState()
+    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = center,
+            zoom = 13.0,
+        ),
+    )
+
+    // Recompositionでマーカーを再生成しないように、rememberで囲む
+    val markerState1 by remember { mutableStateOf(MarkerState(
+        id = "marker1",
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(
+            fillColor = Color.Blue,
+            label = "1"
+        ),
+        // marker1 はドラッグできるようにする
+        draggable = true,
+    )) }
+    val markerState2 by remember { mutableStateOf( MarkerState(
+        id = "marker2",
+        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        icon = DefaultIcon(
+            fillColor = Color.Red,
+            label = "2"
+        ),
+    )) }
+
+    // 選択されたマーカーを保持
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapLoaded = {
             println("Map loaded and ready")
@@ -301,7 +329,7 @@ fun AdvancedMapExample() {
             selectedMarker = null // 地図クリックで選択解除
         },
         onMarkerClick = { markerState ->
-            selectedMarker = markerState
+            selectedMarker = markerState  // クリックされたマーカーを保持する
         },
         onMarkerDragStart = { markerState ->
             println("Started dragging marker: ${markerState.id}")
@@ -314,32 +342,28 @@ fun AdvancedMapExample() {
         }
     ) {
         // インタラクティブなマーカーを持つ地図コンテンツ
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(
-                fillColor = if (selectedMarker?.id == "marker1") Color.Yellow else Color.Blue,
-                label = "1"
-            ),
-            draggable = true,
-            extra = "Draggable marker 1"
-        )
-
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-            icon = DefaultIcon(
-                fillColor = if (selectedMarker?.id == "marker2") Color.Yellow else Color.Red,
-                label = "2"
-            ),
-            extra = "Clickable marker 2"
-        )
+        Marker(markerState1)
+        Marker(markerState2)
 
         // 選択されたマーカーの情報を表示
         selectedMarker?.let { marker ->
-            // ここで InfoBubble やその他の UI を表示できます
+            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
+
+            // InfoBubbleは関連付けられたマーカーのpositionを自動で追尾する
+            InfoBubble(
+                marker = marker,
+            ) {
+                Text(text)
+            }
         }
     }
 }
 ```
+
+<video width="720" height="480" controls>
+ <source src="/mapviewcomponent/advanced-map-example.webm" type="video/webm" />
+ <source src="/mapviewcomponent/advanced-map-example.mp4" type="video/mp4" />
+</video>
 
 ## 地図SDKの違い
 

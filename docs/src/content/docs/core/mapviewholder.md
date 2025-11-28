@@ -155,8 +155,8 @@ fun CustomStyledMap() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    GoogleMapsView(state = mapViewState) {
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    GoogleMapView(state = mapViewState) {
         // Your MapConductor components
     }
 }
@@ -295,7 +295,7 @@ fun LifecycleAwareMap() {
         }
     }
 
-    GoogleMapsView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         // Your MapConductor components
     }
 }

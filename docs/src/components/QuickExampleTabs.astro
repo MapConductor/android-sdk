@@ -35,7 +35,7 @@ fun MyMap() {
         cameraPosition = initCamera,
     )
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
             println("Clicked: \${geoPoint.latitude}, \${geoPoint.longitude}")

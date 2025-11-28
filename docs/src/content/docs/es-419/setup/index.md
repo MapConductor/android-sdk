@@ -44,11 +44,11 @@ fun MyMap() {
         cameraPosition = cameraPosition,
     )
 
-    GoogleMapsView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         // Añade Marker / Circle / Polyline según necesites
     }
 }
 ```
 
-Para cambiar a otro proveedor, sustituye `rememberGoogleMapViewState` y `GoogleMapsView` por las versiones correspondientes, como `rememberMapboxMapViewState` y `MapboxMapView`.
+Para cambiar a otro proveedor, sustituye `rememberGoogleMapViewState` y `GoogleMapView` por las versiones correspondientes, como `rememberMapboxMapViewState` y `MapboxMapView`.
 

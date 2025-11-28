@@ -185,7 +185,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.GeoPointImpl
 import com.mapconductor.core.MapCameraPositionImpl
-import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
 @Composable
@@ -205,7 +205,7 @@ fun MyFirstMap(modifier: Modifier = Modifier) {
     )
 
     // 地図を表示
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier,
         state = mapViewState
     )
@@ -226,7 +226,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.core.*
-import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
 @Composable
@@ -245,7 +245,7 @@ fun MapWithMarkers(modifier: Modifier = Modifier) {
         cameraPosition = initialCamera
     )
 
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier.fillMaxSize(),
         state = mapViewState,
         onMarkerClick = { markerState ->
@@ -296,7 +296,7 @@ Marker(
 ```kotlin
 import androidx.compose.ui.graphics.Color
 
-GoogleMapsView(
+GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState
 ) {
@@ -325,7 +325,7 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
 2つのポイントを線で結んでみましょう。
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState
 ) {
@@ -366,7 +366,7 @@ fun InteractiveMap(modifier: Modifier = Modifier) {
         cameraPosition = initialCamera
     )
 
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier.fillMaxSize(),
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -398,7 +398,7 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
 val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
 val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
 
-GoogleMapsView(
+GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState,
     onMarkerClick = { markerState ->
@@ -492,7 +492,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
         }
 
         // 地図
-        GoogleMapsView(
+        GoogleMapView(
             modifier = Modifier.fillMaxSize(),
             state = mapViewState
         ) {
@@ -510,7 +510,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
 ### 6-2. カメラの移動イベントを監視する
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState,
     onCameraMoveStart = {
@@ -536,7 +536,7 @@ MapConductor の最大の利点は、わずかな変更で地図SDKを切り替�
 **変更前(Google Maps):**
 
 ```kotlin
-import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
 @Composable
@@ -545,7 +545,7 @@ fun MyMap() {
         cameraPosition = initialCamera
     )
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState
     ) {
         // マーカーやその他のコンポーネント
@@ -579,7 +579,7 @@ fun MyMap() {
 
 | 地図SDK | MapViewState | MapView |
 |---------|--------------|---------|
-| Google Maps | `rememberGoogleMapViewState` | `GoogleMapsView` |
+| Google Maps | `rememberGoogleMapViewState` | `GoogleMapView` |
 | Mapbox | `rememberMapboxViewState` | `MapboxMapView` |
 | HERE Maps | `rememberHereMapViewState` | `HereMapView` |
 | ArcGIS | `rememberArcGISMapViewState` | `ArcGISMapView` |
@@ -598,7 +598,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.*
-import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import kotlinx.coroutines.launch
 
@@ -655,7 +655,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
         }
 
         // 地図
-        GoogleMapsView(
+        GoogleMapView(
             modifier = Modifier.fillMaxSize(),
             state = mapViewState,
             onMapClick = { geoPoint ->

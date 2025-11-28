@@ -55,7 +55,7 @@ val circleState = CircleState(
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Circle(circleState)
 }
@@ -87,7 +87,7 @@ fun InteractiveCircleExample() {
             valueRange = 100f..2000f
         )
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onCircleClick = { event ->
@@ -118,7 +118,7 @@ val circles = listOf(
     )
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     circles.forEach { circleState ->
         Circle(circleState)

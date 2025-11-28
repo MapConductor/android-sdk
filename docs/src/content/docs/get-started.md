@@ -54,7 +54,7 @@ Google Maps integration module.
 implementation("com.mapconductor:for-googlemaps")
 ```
 
-Provides `GoogleMapsView` and `GoogleMapViewStateImpl`. Requires Google Maps SDK setup.
+Provides `GoogleMapView` and `GoogleMapViewStateImpl`. Requires Google Maps SDK setup.
 
 #### `mapconductor-for-mapbox`
 

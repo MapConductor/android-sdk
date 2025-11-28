@@ -56,7 +56,7 @@ val polygonState = PolygonState(
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Polygon(polygonState)
 }
@@ -82,7 +82,7 @@ fun EditablePolygonExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onPolygonClick = { event ->
@@ -135,7 +135,7 @@ val zonePolygons = listOf(
     )
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     zonePolygons.forEach { zone ->
         Polygon(zone)
@@ -170,7 +170,7 @@ fun ComplexPolygonExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         Polygon(starPolygon)
     }

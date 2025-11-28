@@ -35,7 +35,7 @@ dependencies {
 fun GoogleMapsExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -49,7 +49,7 @@ fun GoogleMapsExample() {
 fun MapboxExample() {
     val mapViewState = rememberMapboxMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -63,7 +63,7 @@ fun MapboxExample() {
 fun HereExample() {
     val mapViewState = rememberHereMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -77,7 +77,7 @@ fun HereExample() {
 fun ArcGISExample() {
     val mapViewState = rememberArcGISMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // マップコンテンツ
     }
@@ -106,7 +106,7 @@ fun CustomMapConfiguration() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapLoaded = {
@@ -153,7 +153,7 @@ fun DynamicProviderSelection() {
         }
 
         // 選択された地図SDKでマップを表示
-        // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+        // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -201,7 +201,7 @@ fun InitializationStateExample() {
 
         InitState.Initialized -> {
             // マップを表示
-            // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+            // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
             MapView(state = mapViewState) {
                 // マップはコンテンツを表示する準備ができています
                 Marker(
@@ -256,7 +256,7 @@ fun DeferredInitializationExample() {
         }
 
         if (shouldInitialize) {
-            // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+            // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
             MapView(
                 state = mapViewState,
                 shouldInitialize = shouldInitialize
@@ -291,7 +291,7 @@ fun CustomRenderingExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         renderingStrategy = customStrategy
@@ -367,7 +367,7 @@ fun RobustInitializationExample() {
             }
         }
         else -> {
-            // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+            // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
             MapView(state = mapViewState) {
                 // マップコンテンツ
             }

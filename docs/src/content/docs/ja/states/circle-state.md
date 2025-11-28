@@ -55,7 +55,7 @@ val circleState = CircleState(
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
 
-// MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
+// MapViewは、GoogleMapView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
     Circle(circleState)
 }
@@ -87,7 +87,7 @@ fun InteractiveCircleExample() {
             valueRange = 100f..2000f
         )
 
-        // MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
+        // MapViewは、GoogleMapView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(
             state = mapViewState,
             onCircleClick = { event ->
@@ -118,7 +118,7 @@ val circles = listOf(
     )
 )
 
-// MapViewは、GoogleMapsView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
+// MapViewは、GoogleMapView、MapboxMapViewなど、選択した地図SDKーに置き換えてください
 MapView(state = mapViewState) {
     circles.forEach { circleState ->
         Circle(circleState)

@@ -155,8 +155,8 @@ fun CustomStyledMap() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
-    GoogleMapsView(state = mapViewState) {
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
+    GoogleMapView(state = mapViewState) {
         // MapConductor コンポーネント
     }
 }
@@ -295,7 +295,7 @@ fun LifecycleAwareMap() {
         }
     }
 
-    GoogleMapsView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         // MapConductor コンポーネント
     }
 }

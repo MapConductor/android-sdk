@@ -54,7 +54,7 @@ Integración con Google Maps.
 implementation("com.mapconductor:for-googlemaps")
 ```
 
-Proporciona `GoogleMapsView` y `GoogleMapViewStateImpl`. Requiere configurar el SDK de Google Maps.
+Proporciona `GoogleMapView` y `GoogleMapViewStateImpl`. Requiere configurar el SDK de Google Maps.
 
 #### `mapconductor-for-mapbox`
 

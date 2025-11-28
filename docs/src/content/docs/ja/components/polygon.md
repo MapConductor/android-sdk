@@ -43,7 +43,7 @@ fun MapViewScope.Polygon(state: PolygonState)
 ### 基本的な Polygon
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     val trianglePoints = listOf(
         GeoPointImpl.fromLatLong(37.7749, -122.4194), // ポイント 1
@@ -104,7 +104,7 @@ fun InteractivePolygonExample() {
         )
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -135,7 +135,7 @@ MapView(
 ### 異なるスタイルの複数の Polygon
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
     // ソリッドな塗りつぶしのポリゴン
     Polygon(
@@ -209,7 +209,7 @@ fun ComplexPolygonExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(state = mapViewState) {
         Polygon(
             points = starPoints,
@@ -262,7 +262,7 @@ fun DynamicPolygonExample() {
 
         Text("Points: ${polygonPoints.size}")
 
-        // MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
@@ -309,7 +309,7 @@ MapView(
 Polygon のインタラクションは、マップ地図SDKコンポーネントで処理されます:
 
 ```kotlin
-// MapView を GoogleMapsView、MapboxMapView などのマップ地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
 MapView(
     state = mapViewState,
     onPolygonClick = { polygonEvent ->

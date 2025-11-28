@@ -109,7 +109,7 @@ fun BasicIconExample() {
         strokeColor = Color.Black
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -154,7 +154,7 @@ fun DynamicIconExample() {
         )
         Text("Size: ${iconSize.value.toInt()}dp")
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -191,7 +191,7 @@ fun CategoryIconExample() {
         else -> CircleIcon(fillColor = Color.Gray, strokeColor = Color.White)
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         pois.forEach { poi ->
             Marker(
@@ -247,7 +247,7 @@ fun ThemedIconExample() {
         strokeWidth = theme.strokeWidth
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -304,7 +304,7 @@ fun AnimatedIconExample() {
         scale = scale
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -364,7 +364,7 @@ fun DebugIconExample() {
         debug = true  // Show debug outline and crosshairs
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),

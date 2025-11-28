@@ -55,7 +55,7 @@ fun BasicGroundImageExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         groundImageState?.let { state ->
             GroundImage(state)
@@ -98,7 +98,7 @@ fun InteractiveGroundImageExample() {
         )
         Text("Opacity: ${(opacity * 100).toInt()}%")
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onGroundImageClick = { event ->
@@ -140,7 +140,7 @@ fun MultiLayerGroundImageExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         overlayStates.forEach { state ->
             GroundImage(state)
@@ -173,7 +173,7 @@ fun DynamicBoundsExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -242,7 +242,7 @@ fun AnimatedGroundImageExample() {
             Text(if (isAnimating) "Stop" else "Animate")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             groundImageState?.let { state ->
                 GroundImage(state)

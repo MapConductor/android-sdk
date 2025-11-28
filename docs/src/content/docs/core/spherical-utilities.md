@@ -162,7 +162,7 @@ fun AnimatedRoute() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Show route
         Polyline(
@@ -250,7 +250,7 @@ fun ProximityAlert() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Target location
         Marker(
@@ -346,7 +346,7 @@ fun RouteProgress() {
         Text("Route Progress: ${(progress * 100).toInt()}%")
         LinearProgressIndicator(progress = progress.toFloat())
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(state = mapViewState) {
             // Show route
             Polyline(
@@ -384,7 +384,7 @@ fun GeofenceExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Geofence boundary
         Circle(

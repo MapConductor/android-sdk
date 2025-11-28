@@ -52,7 +52,7 @@ GeoPointImpl(latitude = 37.7749, longitude = -122.4194, altitude = 100.0)
 // 基本的なマーカー配置
 val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
 
-// MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+// MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
 MapView(state = mapViewState) {
     Marker(
         position = sanFrancisco,
@@ -195,7 +195,7 @@ fun RouteWithWaypoints() {
         start.interpolateTo(end, i / 10.0)
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // ルートを描画
         Polyline(
@@ -229,7 +229,7 @@ fun ProximityExample() {
     val distance = userLocation.distanceTo(poi)
     val isNearby = distance < 100.0 // 100メートル以内
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = userLocation,
@@ -280,7 +280,7 @@ fun MovingMarkerExample() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // 移動マーカー
         Marker(

@@ -228,7 +228,7 @@ data class GroundImageEvent(
 ### Basic Event Handling
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onMapClick = { geoPoint ->
@@ -253,7 +253,7 @@ fun AdvancedEventHandlingExample() {
     var selectedItem by remember { mutableStateOf<String?>(null) }
     var draggedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -305,7 +305,7 @@ fun ConditionalEventExample() {
     var editMode by remember { mutableStateOf(false) }
     var selectedMarkers by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -357,7 +357,7 @@ fun DebouncedEventExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -384,7 +384,7 @@ MapView(
 fun GestureEventExample() {
     var gestureInfo by remember { mutableStateOf("No gesture") }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->

@@ -83,7 +83,7 @@ fun MapExample() {
         InitState.NotStarted -> Text("Map not started")
         InitState.Initializing -> CircularProgressIndicator()
         InitState.Initialized -> {
-            // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+            // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
                 // Add map content here
             }
@@ -118,7 +118,7 @@ fun CameraControlExample() {
             Text("Move to San Francisco")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             // Map content
         }
@@ -159,7 +159,7 @@ fun ProviderSwitchExample() {
             }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -175,7 +175,7 @@ MapView(state = mapViewState) {
 The `MapViewState` works with your chosen map provider component to provide comprehensive event handling:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onMapViewInitialized = {

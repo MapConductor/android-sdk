@@ -51,7 +51,7 @@ fun GroundImageExample() {
         northEast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
     )
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         val context = LocalContext.current
         AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
@@ -168,7 +168,7 @@ fun ViewportBoundsExample() {
         viewportBounds = bounds
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // すべてのマーカーを表示
         markers.forEach { position ->
@@ -250,7 +250,7 @@ fun BoundsBasedLoadingExample() {
             Text("ビューポートを設定")
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             // 境界内のマーカーのみを表示
             markersInBounds.forEach { position ->
@@ -302,7 +302,7 @@ fun BoundsEditorExample() {
         )
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->

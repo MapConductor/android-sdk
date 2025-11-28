@@ -114,7 +114,7 @@ To verify your Google Maps setup:
 fun TestGoogleMaps() {
     val mapState = rememberGoogleMapViewState()
 
-    GoogleMapsView(state = mapState) {
+    GoogleMapView(state = mapState) {
         // If this displays correctly, your setup is working
     }
 }
@@ -144,5 +144,5 @@ fun TestGoogleMaps() {
 
 ## Next Steps
 
-Once Google Maps SDK is properly configured, you can use MapConductor's `GoogleMapsView` component as described in the Map View component documentation.
+Once Google Maps SDK is properly configured, you can use MapConductor's `GoogleMapView` component as described in the Map View component documentation.
 

@@ -223,7 +223,7 @@ While `bounds` provides a simple rectangular boundary, the corner points (`nearL
 fun VisibleRegionExample() {
     var cameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
     ) {
@@ -293,7 +293,7 @@ fun AnimatedCameraExample() {
     }
 
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     HereMapView(
         state = mapViewState,
         modifier = modifier,
@@ -386,7 +386,7 @@ fun CameraControlExample(modifier: Modifier = Modifier) {
             valueRange = 0f..80f
         )
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapLibreMapView(
             state = mapViewState,
         ) {

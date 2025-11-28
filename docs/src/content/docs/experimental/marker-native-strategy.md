@@ -125,7 +125,7 @@ fun BasicNativeExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Markers are managed by native strategy
         // No need to manually add Marker composables
@@ -168,7 +168,7 @@ fun NativePerformanceExample() {
             Text("Pure Native: ${s.usesPureNativeIndex}")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(state = mapViewState) {
             // Native-managed markers
         }
@@ -202,7 +202,7 @@ fun ParallelRenderingExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Parallel-rendered markers
     }
@@ -234,7 +234,7 @@ fun DynamicNativeLoadingExample() {
     Column {
         Text("Visible Markers: ${visibleMarkers.size}")
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(
             state = mapViewState,
             onCameraMove = { cameraPosition ->
@@ -287,7 +287,7 @@ fun NativeClusteringExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Native clustering automatically groups nearby markers
     }
@@ -382,7 +382,7 @@ fun ResourceManagementExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Native-managed markers
     }

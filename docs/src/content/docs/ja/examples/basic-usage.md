@@ -13,7 +13,7 @@ title: "基本的な使い方"
 fun SimpleMapExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -49,7 +49,7 @@ fun MultiProviderExample() {
             Button(onClick = { provider = "arcgis" }) { Text("ArcGIS") }
         }
 
-        // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+        // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -69,7 +69,7 @@ fun MultiProviderExample() {
 fun ClickToAddMarkersExample() {
     var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -102,7 +102,7 @@ fun ClickToAddMarkersExample() {
 fun RoutePlanningExample() {
     var waypoints by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -182,7 +182,7 @@ fun ZoneDrawingExample() {
             }
         }
 
-        // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+        // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
         MapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
@@ -237,7 +237,7 @@ fun HeatMapExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         dataPoints.forEach { (point, intensity, id) ->
             Circle(
@@ -294,7 +294,7 @@ fun ClusteringExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         clusteredMarkers.forEach { (position, count) ->
             Marker(
@@ -335,7 +335,7 @@ fun LiveTrackingExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         // 軌跡
         if (trail.size >= 2) {

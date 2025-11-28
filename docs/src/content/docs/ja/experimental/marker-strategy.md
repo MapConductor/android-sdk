@@ -115,8 +115,8 @@ fun DefaultStrategyExample() {
         // これは通常、地図SDKのマーカーコントローラによって処理されます
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
-    GoogleMapsView(state = mapViewState) {
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
+    GoogleMapView(state = mapViewState) {
         // マーカーは戦略によって管理されます
         // 戦略を通じてプログラムでマーカーを追加します
     }
@@ -150,8 +150,8 @@ fun StrategyMarkerManagement() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
-    GoogleMapsView(state = mapViewState) {
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
+    GoogleMapView(state = mapViewState) {
         // 戦略がマーカーレンダリングを自動的に処理します
     }
 }
@@ -196,8 +196,8 @@ fun DynamicLoadingExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
-    GoogleMapsView(
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
+    GoogleMapView(
         state = mapViewState,
         onCameraMove = { cameraPosition ->
             currentBounds = cameraPosition.visibleRegion?.bounds
@@ -249,8 +249,8 @@ fun ClusteringStrategyExample() {
         }
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
-    GoogleMapsView(state = mapViewState) {
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
+    GoogleMapView(state = mapViewState) {
         // クラスタリング戦略が近くのマーカーを自動的にグループ化します
     }
 }
@@ -275,8 +275,8 @@ fun RemoteSpatialExample() {
         // 手動でのマーカー読み込みは不要です
     }
 
-    // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
-    GoogleMapsView(state = mapViewState) {
+    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
+    GoogleMapView(state = mapViewState) {
         // リモート戦略がサーバーからのすべてのマーカー読み込みを処理します
     }
 }
@@ -423,8 +423,8 @@ fun StrategyPerformanceMonitoring() {
     Column {
         Text(performanceStats)
 
-        // GoogleMapsView、MapboxMapView など、選択した地図SDKに置き換えてください
-        GoogleMapsView(state = mapViewState) {
+        // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
+        GoogleMapView(state = mapViewState) {
             // 戦略管理されたマーカー
         }
     }

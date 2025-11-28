@@ -115,8 +115,8 @@ fun DefaultStrategyExample() {
         // This is typically handled by the map provider's marker controller
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    GoogleMapsView(state = mapViewState) {
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    GoogleMapView(state = mapViewState) {
         // Markers are managed by the strategy
         // Add markers programmatically through the strategy
     }
@@ -150,8 +150,8 @@ fun StrategyMarkerManagement() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    GoogleMapsView(state = mapViewState) {
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    GoogleMapView(state = mapViewState) {
         // Strategy handles marker rendering automatically
     }
 }
@@ -196,8 +196,8 @@ fun DynamicLoadingExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    GoogleMapsView(
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    GoogleMapView(
         state = mapViewState,
         onCameraMove = { cameraPosition ->
             currentBounds = cameraPosition.visibleRegion?.bounds
@@ -249,8 +249,8 @@ fun ClusteringStrategyExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    GoogleMapsView(state = mapViewState) {
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    GoogleMapView(state = mapViewState) {
         // Clustering strategy automatically groups nearby markers
     }
 }
@@ -275,8 +275,8 @@ fun RemoteSpatialExample() {
         // No manual marker loading required
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    GoogleMapsView(state = mapViewState) {
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    GoogleMapView(state = mapViewState) {
         // Remote strategy handles all marker loading from server
     }
 }
@@ -423,8 +423,8 @@ fun StrategyPerformanceMonitoring() {
     Column {
         Text(performanceStats)
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-        GoogleMapsView(state = mapViewState) {
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+        GoogleMapView(state = mapViewState) {
             // Strategy-managed markers
         }
     }

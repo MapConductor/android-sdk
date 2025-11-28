@@ -12,7 +12,7 @@ MapConductor te permite trabajar con diferentes proveedores de mapas utilizando 
 
 ### Proveedores de mapas compatibles
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
+- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
 - **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
 - **HERE Maps**: `HereViewStateImpl` / `HereMapView`
 - **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
@@ -30,7 +30,7 @@ El SDK proporciona clases geográficas fundamentales:
 
 El SDK ofrece los siguientes componentes principales:
 
-1. **Componentes de vista de mapa**: Componentes específicos por proveedor (GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView).
+1. **Componentes de vista de mapa**: Componentes específicos por proveedor (GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView).
 2. **Marker**: Marcadores de punto con iconos e interacciones personalizables.
 3. **Circle**: Superposiciones circulares con opciones de estilo.
 4. **Polyline**: Segmentos de línea que conectan múltiples puntos.
@@ -80,10 +80,10 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     )
 
     // Cambia también la vista de mapa según el proveedor elegido
-    // - Google Maps -> GoogleMapsView
+    // - Google Maps -> GoogleMapView
     // - Mapbox -> MapboxMapView
     // ... etc.
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { geoPoint ->

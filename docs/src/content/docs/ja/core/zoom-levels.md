@@ -212,7 +212,7 @@ fun ContentBasedZoom() {
         zoom = appropriateZoom
     )
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -261,7 +261,7 @@ fun ZoomControls() {
             Button(onClick = { currentZoom = 18.0 }) { Text("建物") }
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(
             state = mapViewState,
             cameraPosition = MapCameraPositionImpl(
@@ -315,7 +315,7 @@ fun PerformanceAdaptiveZoom() {
         }
     }
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -362,7 +362,7 @@ fun ContextAwareZoom() {
         zoom = contextualZoom
     )
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -419,7 +419,7 @@ fun ResponsiveZoom() {
     // 画面サイズに合わせてズームを調整
     val baseZoom = if (isTablet) 14.0 else 16.0
 
-    // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(
         state = mapViewState,
         cameraPosition = MapCameraPositionImpl(
@@ -459,7 +459,7 @@ fun ZoomLevelTester() {
             Text("次のズームレベル")
         }
 
-        // MapView を GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+        // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(
             state = mapViewState,
             cameraPosition = MapCameraPositionImpl(

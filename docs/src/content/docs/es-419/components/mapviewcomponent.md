@@ -6,7 +6,7 @@ MapConductor proporciona un componente de vista de mapa para cada proveedor. Aun
 
 ## Componentes por proveedor
 
-- `GoogleMapsView` (Google Maps)
+- `GoogleMapView` (Google Maps)
 - `MapboxMapView` (Mapbox)
 - `HereMapView` (HERE Maps)
 - `ArcGISMapView` (ArcGIS)
@@ -14,10 +14,10 @@ MapConductor proporciona un componente de vista de mapa para cada proveedor. Aun
 
 Todos aceptan un `state` específico de proveedor y exponen manejadores de eventos comunes como `onMapClick`, `onMarkerClick`, etc.
 
-## Ejemplo con GoogleMapsView
+## Ejemplo con GoogleMapView
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     state = googleMapViewState,
     onMapLoaded = { println("Map loaded") },
     onMapClick = { geoPoint ->

@@ -87,7 +87,7 @@ val markerState = MarkerState(
     extra = "San Francisco marker"
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Marker(markerState)
 }
@@ -108,7 +108,7 @@ val customMarkerState = MarkerState(
     extra = "Draggable San Francisco marker"
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onMarkerClick = { markerState ->
@@ -155,7 +155,7 @@ fun DynamicMarkerExample() {
             Text("Update Marker ($counter)")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Marker(markerState)
         }
@@ -190,7 +190,7 @@ fun AnimatedMarkerExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         Marker(markerState)
     }
@@ -223,7 +223,7 @@ fun DraggableMarkerExample() {
         Text("Lng: ${markerState.position.longitude}")
         Text("Is Dragging: ${markerState.isDragging}")
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onMarkerDragStart = { draggedMarker ->
@@ -288,7 +288,7 @@ fun MultipleMarkersExample() {
             }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onMarkerClick = { clickedMarker ->
@@ -349,7 +349,7 @@ fun CustomIconMarkerExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         markerStates.forEach { markerState ->
             Marker(markerState)
@@ -381,7 +381,7 @@ fun MarkerStateObserver() {
         println("Marker state changed: $markerFingerprint")
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         Marker(markerState)
     }

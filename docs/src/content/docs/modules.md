@@ -34,7 +34,7 @@ Provider-specific modules implement the unified APIs for each SDK:
 
 ### `mapconductor-for-googlemaps`
 
-- `GoogleMapsView` composable
+- `GoogleMapView` composable
 - `GoogleMapViewStateImpl`
 - Google Maps–specific overlay controllers
 

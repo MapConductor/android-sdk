@@ -8,10 +8,10 @@ MapConductor provides provider-specific map view components that serve as the fo
 
 MapConductor supports multiple map providers, each with their dedicated component:
 
-### GoogleMapsView
+### GoogleMapView
 For Google Maps integration:
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
@@ -158,7 +158,7 @@ All map view components share the following parameters:
 fun GoogleMapsExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
             println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
@@ -241,7 +241,7 @@ fun MapContent() {
 @Composable
 fun GoogleMapsScreen() {
     val state = rememberGoogleMapViewState()
-    GoogleMapsView(state = state) {
+    GoogleMapView(state = state) {
         MapContent() // Reusable content
     }
 }
@@ -263,7 +263,7 @@ fun AdvancedMapExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapViewInitialized = {
             println("Map initialized successfully")

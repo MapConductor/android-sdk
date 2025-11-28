@@ -43,7 +43,7 @@ fun MapViewScope.GroundImage(state: GroundImageState)
 fun BasicGroundImageExample() {
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
             GroundImage(
@@ -120,7 +120,7 @@ fun InteractiveGroundImageExample() {
         )
         Text("Opacity: ${(opacity * 100).toInt()}%", modifier = Modifier.padding(horizontal = 16.dp))
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onMarkerDrag = { markerState ->
@@ -168,7 +168,7 @@ MapView(
 fun MultipleGroundImagesExample() {
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Base satellite image (low opacity)
         AppCompatResources.getDrawable(context, R.drawable.satellite_base)?.let { drawable ->
@@ -247,7 +247,7 @@ fun DynamicGroundImageExample() {
             modifier = Modifier.padding(16.dp)
         )
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             if (isVisible && imageDrawable != null) {
                 GroundImage(
@@ -300,7 +300,7 @@ fun AnimatedGroundImageExample() {
 
         Text("Current opacity: ${(opacity * 100).toInt()}%")
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             AppCompatResources.getDrawable(context, R.drawable.animated_overlay)?.let { drawable ->
                 GroundImage(
@@ -325,7 +325,7 @@ MapView(state = mapViewState) {
 fun FloorPlanExample() {
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Building floor plan
         AppCompatResources.getDrawable(context, R.drawable.building_floor_plan)?.let { drawable ->
@@ -367,7 +367,7 @@ MapView(state = mapViewState) {
 GroundImage interactions are handled with your map provider component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onGroundImageClick = { groundImageEvent ->

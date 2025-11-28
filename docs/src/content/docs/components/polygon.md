@@ -43,7 +43,7 @@ fun MapViewScope.Polygon(state: PolygonState)
 ### Basic Polygon
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     val trianglePoints = listOf(
         GeoPointImpl.fromLatLong(37.7749, -122.4194), // Point 1
@@ -104,7 +104,7 @@ fun InteractivePolygonExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -135,7 +135,7 @@ MapView(
 ### Multiple Polygons with Different Styles
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     // Solid filled polygon
     Polygon(
@@ -209,7 +209,7 @@ fun ComplexPolygonExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         Polygon(
             points = starPoints,
@@ -262,7 +262,7 @@ fun DynamicPolygonExample() {
 
         Text("Points: ${polygonPoints.size}")
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
@@ -309,7 +309,7 @@ MapView(
 Polygon interactions are handled with your map provider component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onPolygonClick = { polygonEvent ->

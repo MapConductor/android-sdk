@@ -34,7 +34,7 @@ implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"
 
 ### `mapconductor-for-googlemaps`
 
-- `GoogleMapsView` Composable
+- `GoogleMapView` Composable
 - `GoogleMapViewStateImpl`
 - Google Maps 固有のオーバーレイコントローラ
 

@@ -43,7 +43,7 @@ fun SimpleInfoBubbleExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -81,7 +81,7 @@ fun StyledInfoBubbleExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val isDarkTheme = isSystemInDarkTheme()
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -133,7 +133,7 @@ fun RichContentBubbleExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -215,7 +215,7 @@ fun InteractiveBubbleExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -338,7 +338,7 @@ fun MultipleBubblesExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMapClick = {
@@ -446,7 +446,7 @@ fun ManualLifecycleExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(markerState)
 

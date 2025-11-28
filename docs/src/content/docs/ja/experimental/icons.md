@@ -109,7 +109,7 @@ fun BasicIconExample() {
         strokeColor = Color.Black
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -154,7 +154,7 @@ fun DynamicIconExample() {
         )
         Text("Size: ${iconSize.value.toInt()}dp")
 
-        // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+        // GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
         MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -191,7 +191,7 @@ fun CategoryIconExample() {
         else -> CircleIcon(fillColor = Color.Gray, strokeColor = Color.White)
     }
 
-    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         pois.forEach { poi ->
             Marker(
@@ -247,7 +247,7 @@ fun ThemedIconExample() {
         strokeWidth = theme.strokeWidth
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -304,7 +304,7 @@ fun AnimatedIconExample() {
         scale = scale
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -364,7 +364,7 @@ fun DebugIconExample() {
         debug = true  // デバッグアウトラインと十字線を表示
     )
 
-    // GoogleMapsView、MapboxMapView などの選択した地図SDKに置き換えてください
+    // GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
     MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),

@@ -43,7 +43,7 @@ fun MapViewScope.Circle(state: CircleState)
 ### Basic Circle
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -104,7 +104,7 @@ fun InteractiveCircleExample() {
         draggable = true
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -128,7 +128,7 @@ MapView(
 ### Multiple Circles with Different Styles
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     // Solid red circle
     Circle(
@@ -192,7 +192,7 @@ fun DynamicCircleExample() {
         }
 
         // Map with dynamic circle
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Circle(
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -217,7 +217,7 @@ MapView(state = mapViewState) {
 ### Overlapping Circles with Z-Index
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     val centerPoint = GeoPointImpl.fromLatLong(37.7749, -122.4194)
 
@@ -246,7 +246,7 @@ MapView(state = mapViewState) {
 Circle interactions are handled with your map provider component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onCircleClick = { circleEvent ->

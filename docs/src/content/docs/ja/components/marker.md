@@ -85,7 +85,7 @@ ImageIcon(
 ### 基本的なマーカー
 
 ```kotlin
-// MapView には GoogleMapsView や MapboxMapView など、利用する地図SDKのコンポーネントを指定します
+// MapView には GoogleMapView や MapboxMapView など、利用する地図SDKのコンポーネントを指定します
 MapView(state = mapViewState) {
     Marker(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),

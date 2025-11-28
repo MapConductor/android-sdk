@@ -78,7 +78,7 @@ fun CompatibilityAwareMap() {
     val mapViewState = rememberGoogleMapViewState()
     val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Always supported components
         Marker(
