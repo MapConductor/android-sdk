@@ -145,6 +145,9 @@ fun HereMapView(
 
             return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
                 controller.setCameraMoveListener {
+                    if (cont.isCompleted) {
+                        return@setCameraMoveListener
+                    }
                     controller.setCameraMoveStartListener {
                         cameraState.value = it
                         state.updateCameraPosition(it)
