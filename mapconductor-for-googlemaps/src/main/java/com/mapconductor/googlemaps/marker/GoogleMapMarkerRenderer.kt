@@ -93,7 +93,7 @@ class GoogleMapMarkerRenderer(
                     marker.setIcon(bitmapDescriptor)
                 }
                 marker.position =
-                        GeoPointImpl.from(params.current.state.position).toLatLng()
+                    GeoPointImpl.from(params.current.state.position).toLatLng()
                 marker.isVisible = params.current.visible
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

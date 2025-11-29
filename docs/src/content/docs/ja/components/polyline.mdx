@@ -2,15 +2,21 @@
 title: "Polyline"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ポリラインは、複数の地理的ポイントを接続する線分のシーケンスです。ルート、パス、境界、または地図上の線形フィーチャーに一般的に使用されます。
 
 ## Composable 関数
 
-### 基本的な Polyline
+<Tabs>
+<TabItem label="基本的な Polyline">
+
+ポリラインの数が少ない場合、オプションを直接指定すると簡単に扱えます。
+`id` を指定すると、不要な Recomposition を抑えることができます。
 
 ```kotlin
 @Composable
-fun MapViewScope.Polyline(
+fun Polyline(
     points: List<GeoPoint>,
     id: String? = null,
     strokeColor: Color = Color.Black,
@@ -20,12 +26,27 @@ fun MapViewScope.Polyline(
 )
 ```
 
-### State を使用した Polyline
+</TabItem>
+<TabItem label="State を利用した Polyline">
+
+ポリラインの数が多い場合、ポリラインを移動させるような場合、こちらを使用することを推奨します。
+`id` を指定すると、不要な Recomposition を抑えることができます。
 
 ```kotlin
+PolylineState(
+    points: List<GeoPoint>,
+    id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    geodesic: Boolean = false,
+    extra: Serializable? = null
+)
+
 @Composable
-fun MapViewScope.Polyline(state: PolylineState)
+fun Polyline(state: PolylineState)
 ```
+</TabItem>
+</Tabs>
 
 ## パラメータ
 
@@ -84,21 +105,22 @@ fun InteractivePolylineExample() {
 
     val waypointMarkers = waypoints.mapIndexed { index, point ->
         MarkerState(
+            id = "marker-${index}",
             position = point,
             icon = DefaultIcon(
                 fillColor = Color.Blue,
                 label = "${index + 1}"
             ),
             draggable = true,
-            extra = "Waypoint $index"
+            extra = index
         )
     }
 
     // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(
+    MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
-            val markerIndex = markerState.extra.toString().substringAfter("Waypoint ").toIntOrNull()
+            val markerIndex = markerState.extra as Int
             markerIndex?.let { index ->
                 waypoints = waypoints.toMutableList().apply {
                     if (index < size) {
@@ -249,71 +271,6 @@ MapView(state = mapViewState) {
         geodesic = true,
         extra = "Geodesic line"
     )
-}
-```
-
-### アニメーション化されたルート進行
-
-```kotlin
-@Composable
-fun AnimatedRouteExample() {
-    val fullRoute = remember {
-        listOf(
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7849, -122.4094),
-            GeoPointImpl.fromLatLong(37.7949, -122.3994),
-            GeoPointImpl.fromLatLong(37.8049, -122.3894)
-        )
-    }
-
-    var progress by remember { mutableStateOf(0f) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(100)
-            progress = (progress + 0.01f) % 1f
-        }
-    }
-
-    val currentPointCount = (fullRoute.size * progress).toInt().coerceAtLeast(2)
-    val visibleRoute = fullRoute.take(currentPointCount)
-
-    Column {
-        LinearProgressIndicator(
-            progress = progress,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-            if (visibleRoute.size >= 2) {
-                // 完了したルート（グレー）
-                Polyline(
-                    points = visibleRoute,
-                    strokeColor = Color.Blue,
-                    strokeWidth = 4.dp
-                )
-
-                // 現在位置マーカー
-                Marker(
-                    position = visibleRoute.last(),
-                    icon = DefaultIcon(
-                        fillColor = Color.Red,
-                        label = "🚗"
-                    )
-                )
-            }
-
-            // フルルートのプレビュー（薄いグレー）
-            Polyline(
-                points = fullRoute,
-                strokeColor = Color.LightGray,
-                strokeWidth = 2.dp
-            )
-        }
-    }
 }
 ```
 

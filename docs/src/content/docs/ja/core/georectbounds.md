@@ -52,7 +52,7 @@ fun GroundImageExample() {
     )
 
     // MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください
-    MapView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         val context = LocalContext.current
         AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
             GroundImage(

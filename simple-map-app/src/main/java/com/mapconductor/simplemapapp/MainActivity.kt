@@ -30,8 +30,15 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.mapconductor.arcgis.map.ArcGISMapView
+import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.circle.Circle
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPointImpl
@@ -41,6 +48,10 @@ import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
+import com.mapconductor.core.spherical.WGS84Geodesic
+import com.mapconductor.core.spherical.calculatePositionAtDistance
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
@@ -74,59 +85,50 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
+    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+
+    // 地図の作成
     val camera = MapCameraPositionImpl(
-        position = london,
-        zoom = 8.0,
+        position = center,
+        zoom = 2.0,
     )
-    val mapViewState = rememberHereMapViewState(
+    val mapViewState = rememberGoogleMapViewState(
         cameraPosition = camera,
-        mapDesign = HereMapDesign.NormalDay,
     )
 
-    Column(
+    var circleState = remember {
+        CircleState(
+            id = "circle",
+            center = center,
+            radiusMeters = 5_000_000.0,
+            strokeColor = Color.Red.copy(alpha = 0.3f),
+            fillColor = Color.Red.copy(alpha = 0.5f),
+            geodesic = true
+        )
+    }
+
+    var markerState = remember {
+        MarkerState(
+            id = "marker",
+            position = center,
+            draggable = true
+        )
+    }
+
+    // 動的な円を持つマップ
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+    GoogleMapView(
         modifier = modifier,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Button(
-                onClick = {
-                    mapViewState.mapDesignType = HereMapDesign.NormalDay
-                }
-            ) {
-                Text("NormalDay")
-            }
-            Spacer(
-                modifier = Modifier.width(20.dp),
-            )
+        state = mapViewState,
+        onMarkerDrag = { markerState ->
+            circleState.center = markerState.position
+            println("position = ${(markerState.position as GeoPointImpl).toUrlValue(6)}")
+        }) {
 
-            Button(
-                onClick = {
-                    mapViewState.mapDesignType = HereMapDesign.NormalNight
-                }
-            ) {
-                Text("NormalNight")
-            }
+        Circle(circleState)
 
-            Spacer(
-                modifier = Modifier.width(20.dp),
-            )
-            Button(
-                onClick = {
-                    mapViewState.mapDesignType = HereMapDesign.HybridDay
-                }
-            ) {
-                Text("HYBRID_DAY")
-            }
-        }
-
-        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-        HereMapView(
-            state = mapViewState,
-        ) {
-            // 地図コンテンツ
-        }
+        // 中心マーカー
+        Marker(markerState)
     }
 }
 

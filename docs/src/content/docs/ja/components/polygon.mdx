@@ -2,15 +2,18 @@
 title: "Polygon"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ポリゴンは、カスタマイズ可能なストロークと塗りつぶしプロパティを持つエリアを定義する閉じた形状です。ゾーン、地域、境界、またはエリアベースの機能を表現するのに便利です。
 
 ## Composable 関数
 
-### 基本的な Polygon
+<Tabs>
+<TabItem label="基本的な Polygon">
 
 ```kotlin
 @Composable
-fun MapViewScope.Polygon(
+fun Polygon(
     points: List<GeoPoint>,
     id: String? = null,
     strokeColor: Color = Color.Black,
@@ -20,13 +23,25 @@ fun MapViewScope.Polygon(
     extra: Serializable? = null
 )
 ```
-
-### State を使用した Polygon
+</TabItem>
+<TabItem label="State を利用した Polygon">
 
 ```kotlin
+PolygonState(
+    points: List<GeoPoint>,
+    id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    fillColor: Color = Color.Transparent,
+    geodesic: Boolean = false,
+    extra: Serializable? = null
+)
+
 @Composable
-fun MapViewScope.Polygon(state: PolygonState)
+fun Polygon(state: PolygonState)
 ```
+</TabItem>
+</Tabs>
 
 ## パラメータ
 

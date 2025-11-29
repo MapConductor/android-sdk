@@ -1,13 +1,12 @@
 package com.mapconductor.googlemaps
 
-import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.GroundOverlay
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
 
 typealias GoogleMapActualMarker = Marker
-typealias GoogleMapActualCircle = Circle
+typealias GoogleMapActualCircle = Polygon // Using Polygon to support geodesic circles
 typealias GoogleMapActualPolyline = Polyline
 typealias GoogleMapActualPolygon = Polygon
 typealias GoogleMapActualGroundImage = GroundOverlay
