@@ -37,6 +37,8 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
 
 ### カメラ移動
 
+<Tabs>
+<TabItem label="シンプルに移動">
 - `moveCameraTo(GeoPointImpl, Long?)`
 
     ```kotlin
@@ -48,8 +50,8 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
 
     - `position` で指定した位置に、カメラを移動します。ズームや傾き角度は `moveCameraTo`を実行したときの値を維持します。
     - `durationMills`にミリ秒を指定すると、アニメーション付きでカメラを移動します。
-
-
+</TabItem>
+<TabItem label="カメラオプションを指定して移動">
 - `moveCameraTo(MapCameraPositionImpl, Long?)`
 
     ```kotlin
@@ -61,7 +63,8 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
 
     - `MapCameraPositionImpl` を指定して、カメラを特定の位置に移動します。ズームや傾きなどを同時に指定することができます。省略したプロパティは、`moveCameraTo`を実行したときの値を維持します。
     - `durationMills`にミリ秒を指定すると、アニメーション付きでカメラを移動します。
-
+</TabItem>
+</Tabs>
 
 ## 使用例
 

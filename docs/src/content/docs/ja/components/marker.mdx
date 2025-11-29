@@ -2,15 +2,21 @@
 title: "Marker（マーカー）"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 Marker は、特定の地理位置に配置できるポイント型の注釈です。カスタムアイコン、インタラクション、アニメーションに対応しています。
 
 ## Composable 関数
 
-### 基本的な Marker
+<Tabs>
+<TabItem label="基本的な Marker">
+
+マーカーの数が少ない場合、オプションを直接指定すると簡単に扱えます。
+`id` を指定すると、不要な Recomposition を抑えることができます。
 
 ```kotlin
 @Composable
-fun MapViewScope.Marker(
+fun Marker(
     position: GeoPoint,
     clickable: Boolean = true,
     draggable: Boolean = false,
@@ -19,13 +25,27 @@ fun MapViewScope.Marker(
     id: String? = null
 )
 ```
+</TabItem>
+<TabItem label="State を利用した Marker">
 
-### State を利用した Marker
+マーカーの数が多い場合、マーカーを移動させるような場合、こちらを使用することを推奨します。
+`id` を指定すると、不要な Recomposition を抑えることができます。
 
 ```kotlin
+MarkerState(
+    position: GeoPoint,
+    clickable: Boolean = true,
+    draggable: Boolean = false,
+    icon: MarkerIcon? = null,
+    extra: Serializable? = null,
+    id: String? = null
+)
+
 @Composable
 fun MapViewScope.Marker(state: MarkerState)
 ```
+</TabItem>
+</Tabs>
 
 ## パラメータ
 
@@ -119,27 +139,30 @@ MapView(state = mapViewState) {
 ```kotlin
 @Composable
 fun DraggableMarkerExample() {
-    var markerPosition by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
-    }
+    val markerState = MarkerState(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        draggable = true,
+        icon = DefaultIcon(
+            label = "Drag me",
+            fillColor = Color.Green
+        ),
+    )
 
     MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
-            markerPosition = markerState.position
+            println("position: ${GeoPointImpl.from(markerState.position).toUrlValue(6)}")
         }
     ) {
-        Marker(
-            position = markerPosition,
-            draggable = true,
-            icon = DefaultIcon(
-                label = "Drag me",
-                fillColor = Color.Green
-            )
-        )
+        Marker(markerState)
     }
 }
 ```
+
+<video width="720" height="480" controls>
+ <source src="/marker/draggable-marker-example.webm" type="video/webm" />
+ <source src="/marker/draggable-marker-example.mp4" type="video/mp4" />
+</video>
 
 ### 異なるアイコンを持つ複数マーカー
 

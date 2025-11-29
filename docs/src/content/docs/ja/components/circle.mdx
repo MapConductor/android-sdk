@@ -2,17 +2,24 @@
 title: "Circle"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 円は、カスタマイズ可能な半径、ストローク、塗りつぶしプロパティを持つ円形のオーバーレイで、地図上に描画できます。エリア、範囲、またはゾーンを表現するのに便利です。
 
 ## Composable 関数
 
-### 基本的な Circle
+<Tabs>
+<TabItem label="基本的な Circle">
+
+円の数が少ない場合、オプションを直接指定すると簡単に扱えます。
+`id` を指定すると、不要な Recomposition を抑えることができます。
 
 ```kotlin
 @Composable
-fun MapViewScope.Circle(
+fun Circle(
     center: GeoPoint,
     radiusMeters: Double,
+    geodesic: Boolean = false,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
@@ -21,17 +28,35 @@ fun MapViewScope.Circle(
 )
 ```
 
-### State を使用した Circle
+</TabItem>
+<TabItem label="State を利用した Circle">
+円の数が多い場合、円を移動させるような場合、こちらを使用することを推奨します。
+`id` を指定すると、不要な Recomposition を抑えることができます。
+
 
 ```kotlin
+CircleState(
+    center: GeoPoint,
+    radiusMeters: Double,
+    geodesic: Boolean = false,
+    strokeColor: Color = Color.Red,
+    strokeWidth: Dp = 2.dp,
+    fillColor: Color = Color.White.copy(alpha = 0.5f),
+    extra: Serializable? = null,
+    id: String? = null
+)
+
 @Composable
-fun MapViewScope.Circle(state: CircleState)
+fun Circle(state: CircleState)
 ```
+</TabItem>
+</Tabs>
 
 ## パラメータ
 
 - **`center`**: 円の地理的中心点（`GeoPoint`）
 - **`radiusMeters`**: 半径（メートル単位、`Double`）
+- **`geodesic`**: 測地線（地球の曲率に沿う）を描画するかどうか（デフォルト: `false`）
 - **`strokeColor`**: 円の境界線の色（デフォルト: `Color.Red`）
 - **`strokeWidth`**: 境界線の幅（デフォルト: `2.dp`）
 - **`fillColor`**: 円の内部の塗りつぶし色（デフォルト: 半透明の白）
@@ -42,90 +67,6 @@ fun MapViewScope.Circle(state: CircleState)
 
 ### 基本的な Circle
 
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    Circle(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radiusMeters = 1000.0, // 半径1km
-        strokeColor = Color.Blue,
-        fillColor = Color.Blue.copy(alpha = 0.3f),
-        id = "downtown-area"
-    )
-}
-```
-
-### マーカーを使ったインタラクティブな Circle
-
-サンプルアプリに基づいて、ドラッグ可能なマーカーを使ったインタラクティブな円の作成方法を示します:
-
-```kotlin
-@Composable
-fun InteractiveCircleExample() {
-    var centerPosition by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
-    }
-    var radiusMeters by remember { mutableStateOf(1000.0) }
-
-    // エッジマーカーの位置を計算
-    val edgePosition = remember(centerPosition, radiusMeters) {
-        // 中心から 'radiusMeters' メートル離れた点を計算
-        // これは簡略化されています - 実際の計算では地球の曲率を考慮します
-        val latOffset = radiusMeters / 111000.0 // 緯度1度あたりのおおよそのメートル数
-        GeoPointImpl.fromLatLong(
-            centerPosition.latitude + latOffset,
-            centerPosition.longitude
-        )
-    }
-
-    val circleState = CircleState(
-        center = centerPosition,
-        radiusMeters = radiusMeters,
-        strokeColor = Color.Blue,
-        fillColor = Color.Blue.copy(alpha = 0.3f),
-        clickable = true
-    )
-
-    val centerMarker = MarkerState(
-        position = centerPosition,
-        icon = DefaultIcon(
-            fillColor = Color.Blue,
-            label = "C"
-        ),
-        draggable = false
-    )
-
-    val edgeMarker = MarkerState(
-        position = edgePosition,
-        icon = DefaultIcon(
-            fillColor = Color.Green,
-            label = "E"
-        ),
-        draggable = true
-    )
-
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            if (markerState.id == edgeMarker.id) {
-                // エッジマーカーの位置に基づいて新しい半径を計算
-                val distance = calculateDistance(centerPosition, markerState.position)
-                radiusMeters = distance
-            }
-        },
-        onCircleClick = { circleEvent ->
-            println("Circle clicked at: ${circleEvent.clicked}")
-        }
-    ) {
-        Circle(circleState)
-        Marker(centerMarker)
-        Marker(edgeMarker)
-    }
-}
-```
-
-### 異なるスタイルの複数の Circle
 
 ```kotlin
 // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
@@ -162,6 +103,90 @@ MapView(state = mapViewState) {
 }
 ```
 
+### マーカーを使ったインタラクティブな Circle
+
+ドラッグ可能なマーカーを使ったインタラクティブな円の作成方法を示します。
+
+```kotlin
+@Composable
+fun InteractiveCircleExample() {
+    val circleCenter = GeoPointImpl.fromLatLong(21.382314, -157.933097)
+
+    // calculatePositionAtDistance は MapConductor が提供するユーティリティ関数
+    // circleCenter から 1000m 離れて、時計回りに 180 度回転した位置を計算
+    val edgeMarkerPosition = calculatePositionAtDistance(
+        center = circleCenter,
+        distanceMeters = 1000.0,
+        bearingDegrees = 180.0,
+    )
+
+    // 円のエッジに設置するマーカー
+    val edgeMarkerState = MarkerState(
+        id = "edge_marker",
+        position = edgeMarkerPosition,
+        icon =
+            DefaultIcon(
+                fillColor = Color.Green,
+                strokeColor = Color.White,
+                label = "Drag me",
+            ),
+        draggable = true,
+    )
+
+    // CircleState の作成
+    val circleState = remember {
+        CircleState(
+            id = "circle",
+            center = circleCenter,
+            radiusMeters = 1000.0,
+        )
+    }
+
+    // 円の半径を更新することで、Recomposition により円を再描画
+    // このときに circleState.id を指定していないと、新しい円が作成されてしまう
+    val onMarkerMove: OnMarkerEventHandler = { markerState ->
+        circleState.radiusMeters = computeDistanceBetween(circleCenter, markerState.position)
+    }
+    LaunchedEffect(Unit) {
+        onMarkerMove(edgeMarkerState)
+    }
+
+    // 地図の作成
+    val camera = MapCameraPositionImpl(
+        position = circleCenter,
+        zoom = 13.0,
+    )
+    val mapViewState = rememberMapLibreMapViewState(
+        cameraPosition = camera,
+    )
+
+    MapLibreMapView(
+        modifier = modifier,
+        state = mapViewState,
+        onMarkerDragStart = onMarkerMove,
+        onMarkerDrag = onMarkerMove,
+        onMarkerDragEnd = onMarkerMove,
+    ) {
+        // Circle
+        Circle(circleState)
+
+        // Center marker (not draggable)
+        Marker(
+            position = circleCenter,
+        )
+
+        // Edge marker (draggable)
+        Marker(edgeMarkerState)
+    }
+}
+```
+
+<video width="720" height="480" controls>
+ <source src="/circle/interactive-circle-example.webm" type="video/webm" />
+ <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
+</video>
+
+
 ### 動的な Circle の更新
 
 ```kotlin
@@ -193,8 +218,9 @@ fun DynamicCircleExample() {
 
         // 動的な円を持つマップ
         // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
+        MapView(state = mapViewState) {
             Circle(
+                id = "circle",
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
                 radiusMeters = circleRadius,
                 strokeColor = circleColor,
@@ -203,6 +229,7 @@ MapView(state = mapViewState) {
 
             // 中心マーカー
             Marker(
+                id = "center-marker",
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
                 icon = DefaultIcon(
                     fillColor = circleColor,
@@ -214,32 +241,12 @@ MapView(state = mapViewState) {
 }
 ```
 
-### Z-Index を使った重なり合う Circle
+<video width="720" height="480" controls>
+ <source src="/circle/dynamic-circle-example.webm" type="video/webm" />
+ <source src="/circle/dynamic-circle-example.mp4" type="video/mp4" />
+</video>
 
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    val centerPoint = GeoPointImpl.fromLatLong(37.7749, -122.4194)
 
-    // 背景の円（より大きく、低い z-index）
-    Circle(
-        center = centerPoint,
-        radiusMeters = 1000.0,
-        strokeColor = Color.Red,
-        fillColor = Color.Red.copy(alpha = 0.2f),
-        extra = CircleData(zIndex = 1, name = "Outer circle")
-    )
-
-    // 前景の円（より小さく、高い z-index）
-    Circle(
-        center = centerPoint,
-        radiusMeters = 500.0,
-        strokeColor = Color.Blue,
-        fillColor = Color.Blue.copy(alpha = 0.4f),
-        extra = CircleData(zIndex = 2, name = "Inner circle")
-    )
-}
-```
 
 ## イベント処理
 
@@ -364,20 +371,3 @@ MapView(
 }
 ```
 
-### ID 使用のメリット
-
-- **一意の識別**: 似たプロパティを持つ円でも区別できます
-- **イベント処理**: クリックイベント処理とエリア固有のロジックを簡素化します
-- **状態管理**: 効率的な更新と選択管理を可能にします
-- **パフォーマンス**: 最適化されたレンダリングと更新を促進します
-
-## ベストプラクティス
-
-1. **適切な半径を使用**: 円の半径を設定する際は、マップのズームレベルを考慮してください
-2. **一意の ID を提供**: 複数の円を扱う場合は、常に一意の `id` 値を設定してください
-3. **色のコントラスト**: ストロークと塗りつぶしの色が地図上で良好な視認性を提供することを確認してください
-4. **パフォーマンス**: 大きな円を多数作成すると、レンダリングパフォーマンスに影響を与える可能性があるため避けてください
-5. **インタラクティブなフィードバック**: 円がクリック可能な場合は、視覚的なフィードバックを提供してください
-6. **一貫したスタイル**: アプリケーション全体で一貫した円のスタイルを維持してください
-7. **追加データ**: `extra` パラメータを使用して、イベント処理のためのメタデータを保存してください
-8. **Z-Index の管理**: 円が重なる場合は、描画順序を考慮してください
