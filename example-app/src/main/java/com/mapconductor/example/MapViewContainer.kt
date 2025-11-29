@@ -17,8 +17,8 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewStateImpl
 import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.GoogleMapViewStateImpl
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.HereViewStateImpl

@@ -92,11 +92,12 @@ fun HereMapView(
         holderProvider = { mapView ->
             val camera = state.cameraPosition
 
-            val lookAt = MapCameraUpdateFactory.lookAt(
-                GeoPointImpl.from(camera.position).toGeoCoordinates().toUpdate(),
-                GeoOrientation(camera.bearing, camera.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, camera.zoom + ZOOM_ADJUST_VALUE),
-            )
+            val lookAt =
+                MapCameraUpdateFactory.lookAt(
+                    GeoPointImpl.from(camera.position).toGeoCoordinates().toUpdate(),
+                    GeoOrientation(camera.bearing, camera.tilt).toUpdate(),
+                    MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, camera.zoom + ZOOM_ADJUST_VALUE),
+                )
             mapView.camera.applyUpdate(lookAt)
 
             HereViewHolderImpl(mapView, mapView.mapScene)
