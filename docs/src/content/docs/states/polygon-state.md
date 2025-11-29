@@ -56,7 +56,7 @@ val polygonState = PolygonState(
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Polygon(polygonState)
 }
@@ -82,7 +82,7 @@ fun EditablePolygonExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onPolygonClick = { event ->
@@ -135,7 +135,7 @@ val zonePolygons = listOf(
     )
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     zonePolygons.forEach { zone ->
         Polygon(zone)
@@ -155,9 +155,9 @@ fun ComplexPolygonExample() {
 
         for (i in 0 until 10) {
             val angle = (i * 36.0) * Math.PI / 180.0
-            val radius = if (i % 2 == 0) 0.01 else 0.005
-            val lat = center.latitude + radius * cos(angle)
-            val lng = center.longitude + radius * sin(angle)
+            val radiusMeters = if (i % 2 == 0) 0.01 else 0.005
+            val lat = center.latitude + radiusMeters * cos(angle)
+            val lng = center.longitude + radiusMeters * sin(angle)
             points.add(GeoPointImpl.fromLatLong(lat, lng))
         }
         points.add(points.first()) // Close the polygon
@@ -170,7 +170,7 @@ fun ComplexPolygonExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         Polygon(starPolygon)
     }

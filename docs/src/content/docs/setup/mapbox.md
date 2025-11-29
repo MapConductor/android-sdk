@@ -62,8 +62,8 @@ dependencies {
     // Mapbox Maps SDK (NDK27 variant, version managed via libs.versions.toml)
     implementation(libs.mapbox.android)
 
-    // MapConductor BOM for version management (v1.1.0)
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    // MapConductor BOM for version management (v1.1.1)
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
 
     // MapConductor modules (versions managed by BOM)
     implementation("com.mapconductor:core")

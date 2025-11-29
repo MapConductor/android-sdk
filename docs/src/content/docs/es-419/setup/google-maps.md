@@ -16,7 +16,7 @@ En esta página se explica cómo configurar el SDK de Google Maps para Android j
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-googlemaps")
     // Añade también las dependencias del SDK de Google Maps para Android
@@ -55,7 +55,7 @@ fun GoogleMapsExample() {
         cameraPosition = camera,
     )
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMapClick = { point ->
             println("Clicked: ${point.latitude}, ${point.longitude}")
@@ -68,6 +68,7 @@ fun GoogleMapsExample() {
     }
 }
 ```
+![Ejemplo sencillo de GoogleMaps](/img/basic-googlemaps.jpg)
 
 Consulta [MapView Component](/es-419/components/mapviewcomponent) y [Marker](/es-419/components/marker) para ver más detalles sobre estas APIs.
 

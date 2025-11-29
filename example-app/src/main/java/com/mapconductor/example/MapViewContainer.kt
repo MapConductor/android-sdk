@@ -3,8 +3,8 @@ package com.mapconductor.example
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapView
-import com.mapconductor.arcgis.ArcGISMapViewStateImpl
+import com.mapconductor.arcgis.map.ArcGISMapView
+import com.mapconductor.arcgis.map.ArcGISMapViewStateImpl
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
@@ -17,8 +17,8 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.GoogleMapViewStateImpl
-import com.mapconductor.googlemaps.GoogleMapsView
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.HereViewStateImpl
@@ -54,7 +54,7 @@ fun MapViewContainer(
     @Suppress("UNCHECKED_CAST")
     when (state) {
         is GoogleMapViewStateImpl ->
-            GoogleMapsView(
+            GoogleMapView(
                 modifier = modifier,
                 markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,

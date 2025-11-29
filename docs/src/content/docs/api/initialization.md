@@ -35,7 +35,7 @@ Each map provider requires specific setup and API keys.
 fun GoogleMapsExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Map content
     }
@@ -49,7 +49,7 @@ MapView(state = mapViewState) {
 fun MapboxExample() {
     val mapViewState = rememberMapboxMapViewState()
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Map content
     }
@@ -63,7 +63,7 @@ MapView(state = mapViewState) {
 fun HereExample() {
     val mapViewState = rememberHereMapViewState()
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Map content
     }
@@ -77,7 +77,7 @@ MapView(state = mapViewState) {
 fun ArcGISExample() {
     val mapViewState = rememberArcGISMapViewState()
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         // Map content
     }
@@ -106,7 +106,7 @@ fun CustomMapConfiguration() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapViewInitialized = {
@@ -156,7 +156,7 @@ fun DynamicProviderSelection() {
         }
 
         // Map with selected provider
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -204,7 +204,7 @@ fun InitializationStateExample() {
 
         InitState.Initialized -> {
             // Show the map
-            // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+            // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
                 // Map is ready for content
                 Marker(
@@ -259,7 +259,7 @@ fun DeferredInitializationExample() {
         }
 
         if (shouldInitialize) {
-            // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+            // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
                 state = mapViewState,
                 shouldInitialize = shouldInitialize
@@ -294,7 +294,7 @@ fun CustomRenderingExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         renderingStrategy = customStrategy
@@ -370,7 +370,7 @@ fun RobustInitializationExample() {
             }
         }
         else -> {
-            // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+            // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
                 // Map content
             }

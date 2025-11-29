@@ -242,7 +242,7 @@ class FlyToPageViewModelImpl(
 
                 mapState.moveCameraTo(
                     cameraPosition = newCameraPosition,
-                    durationMs = 1500,
+                    durationMills = 1500,
                 )
             }
         }

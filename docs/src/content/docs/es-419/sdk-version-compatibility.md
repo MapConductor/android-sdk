@@ -8,7 +8,7 @@ En esta página se describe la compatibilidad entre MapConductor, los distintos 
 
 ## Resumen de versiones compatibles
 
-MapConductor v1.1.0 está diseñado para el siguiente entorno:
+MapConductor v1.1.1 está diseñado para el siguiente entorno:
 
 - **Android**: minSdk 26, targetSdk 35.
 - **Kotlin**: 1.9.25.

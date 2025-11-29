@@ -32,7 +32,7 @@ All map providers support the basic map view functionality including:
 - Map styling and appearance
 - Event handling (tap, long press, camera move events)
 
-In v1.1.0 the following camera callbacks are available (where the underlying SDK exposes them):
+In v1.1.1 the following camera callbacks are available (where the underlying SDK exposes them):
 
 - `onCameraMoveStart`
 - `onCameraMove`
@@ -78,7 +78,7 @@ fun CompatibilityAwareMap() {
     val mapViewState = rememberGoogleMapViewState()
     val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Always supported components
         Marker(
@@ -88,7 +88,7 @@ fun CompatibilityAwareMap() {
 
         Circle(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
 

@@ -3,6 +3,7 @@ package com.mapconductor.here
 import HerePolygonOverlayRenderer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
@@ -10,10 +11,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.here.sdk.core.GeoOrientation
+import com.here.sdk.mapview.MapCameraUpdateFactory
+import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -22,6 +28,7 @@ import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.here.HereMapViewControllerImpl.Companion.ZOOM_ADJUST_VALUE
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
@@ -60,9 +67,11 @@ fun HereMapView(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         sdkInitialize = {
             HereMapViewControllerStore.initSDK(context.applicationContext)
@@ -81,6 +90,16 @@ fun HereMapView(
             }
         },
         holderProvider = { mapView ->
+            val camera = state.cameraPosition
+
+            val lookAt =
+                MapCameraUpdateFactory.lookAt(
+                    GeoPointImpl.from(camera.position).toGeoCoordinates().toUpdate(),
+                    GeoOrientation(camera.bearing, camera.tilt).toUpdate(),
+                    MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, camera.zoom + ZOOM_ADJUST_VALUE),
+                )
+            mapView.camera.applyUpdate(lookAt)
+
             HereViewHolderImpl(mapView, mapView.mapScene)
         },
         controllerProvider = { holder ->
@@ -127,15 +146,21 @@ fun HereMapView(
 
             return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
                 controller.setCameraMoveListener {
+                    if (cont.isCompleted) {
+                        return@setCameraMoveListener
+                    }
                     controller.setCameraMoveStartListener {
+                        cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMoveStart?.invoke(it)
                     }
                     controller.setCameraMoveListener {
+                        cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMove?.invoke(it)
                     }
                     controller.setCameraMoveEndListener {
+                        cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMoveEnd?.invoke(it)
                     }
@@ -185,7 +210,7 @@ fun HereMapView(
             }
         },
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
-        // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
+        // or handle it here if it's specific to HereMapView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
     )

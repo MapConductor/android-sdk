@@ -161,7 +161,7 @@ fun MapLibreMapView(
             true
         },
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
-        // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
+        // or handle it here if it's specific to MapLibreMapView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
     )

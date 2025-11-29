@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.from
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.MapCameraPosition
@@ -17,8 +19,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
-import com.mapconductor.arcgis.ArcGISMapViewHolder
-import com.mapconductor.arcgis.from
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,14 +61,14 @@ class ArcGISMapViewStateImpl(
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
-        durationMs: Long?,
+        durationMills: Long?,
     ) {
         controller?.let { ctrl ->
             val dstCameraPosition = MapCameraPositionImpl.Companion.from(cameraPosition)
-            if (durationMs == null || durationMs == 0L) {
+            if (durationMills == null || durationMills == 0L) {
                 ctrl.moveCamera(dstCameraPosition)
             } else {
-                ctrl.animateCamera(dstCameraPosition, durationMs)
+                ctrl.animateCamera(dstCameraPosition, durationMills)
             }
             return@let
         }
@@ -77,14 +77,14 @@ class ArcGISMapViewStateImpl(
 
     override fun moveCameraTo(
         position: GeoPointImpl,
-        durationMs: Long?,
+        durationMills: Long?,
     ) {
         val currentPosition = this.cameraPosition
         val newPosition =
             currentPosition.copy(
                 position = position,
             )
-        this.moveCameraTo(newPosition, durationMs)
+        this.moveCameraTo(newPosition, durationMills)
     }
 
     @Suppress("UNCHECKED_CAST")

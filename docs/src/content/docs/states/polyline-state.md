@@ -52,7 +52,7 @@ val polylineState = PolylineState(
     strokeWidth = 3.dp
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Polyline(polylineState)
 }
@@ -76,7 +76,7 @@ fun DynamicPolylineExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -133,7 +133,7 @@ fun RouteExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
         routeSegments.forEach { segment ->
             Polyline(segment)

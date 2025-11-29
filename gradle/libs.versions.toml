@@ -37,6 +37,7 @@ material = "1.10.0"
 mapLibreSdk = "12.0.0"
 mapLibreAnnotation = "3.0.2"
 runtime = "1.9.3"
+runtimeVersion = "1.9.5"
 
 [libraries]
 # Android 基本
@@ -62,7 +63,6 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
 
-# Mapbox
 mapconductor-core = { module = "com.mapconductor:core" }
 mapconductor-icons = { module = "com.mapconductor:icons" }
 mapconductor-googlemaps = { module = "com.mapconductor:for-googlemaps" }
@@ -72,6 +72,8 @@ mapconductor-arcgis = { module = "com.mapconductor:for-arcgis" }
 mapconductor-maplibre = { module = "com.mapconductor:for-maplibre" }
 mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
 mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
+
+# Mapbox
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
 
 # MapLibre
@@ -99,6 +101,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 
 net-sf-geographiclib = { group = "net.sf.geographiclib", name="GeographicLib-Java", version.ref="geographiclib"}
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -12,7 +12,7 @@ MapConductor te permite trabajar con diferentes proveedores de mapas utilizando 
 
 ### Proveedores de mapas compatibles
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
+- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
 - **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
 - **HERE Maps**: `HereViewStateImpl` / `HereMapView`
 - **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
@@ -30,7 +30,7 @@ El SDK proporciona clases geográficas fundamentales:
 
 El SDK ofrece los siguientes componentes principales:
 
-1. **Componentes de vista de mapa**: Componentes específicos por proveedor (GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView).
+1. **Componentes de vista de mapa**: Componentes específicos por proveedor (GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView).
 2. **Marker**: Marcadores de punto con iconos e interacciones personalizables.
 3. **Circle**: Superposiciones circulares con opciones de estilo.
 4. **Polyline**: Segmentos de línea que conectan múltiples puntos.
@@ -43,7 +43,7 @@ Para usar MapConductor en tu proyecto, sigue estos pasos.
 
 ### 1. Instalación
 
-Consulta la página de [Instalación y versiones](/es-419/installation/) para ver toda la información sobre dependencias y versiones.
+Consulta la página de [Comenzar](/es-419/get-started/) para ver toda la información sobre dependencias y versiones.
 
 ### 2. Configuración de cada SDK de mapas
 
@@ -80,10 +80,10 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     )
 
     // Cambia también la vista de mapa según el proveedor elegido
-    // - Google Maps -> GoogleMapsView
+    // - Google Maps -> GoogleMapView
     // - Mapbox -> MapboxMapView
     // ... etc.
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -103,7 +103,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         // Añadir un círculo
         Circle(
             center = sanFrancisco,
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -136,18 +136,24 @@ val mapLibreState = rememberMapLibreMapViewState()
 
 El resto de tu código permanece igual: todos los componentes funcionan de forma consistente entre proveedores.
 
+## Novedades de la versión v1.1.1
+
+En comparación con la versión 1.1.0, los cambios principales de la v1.1.1 incluyen:
+
+- Se corrigió un error donde la posición de visualización de InfoBubble no se recalculaba al mover el área visible del mapa
+
 ## Novedades de la versión v1.1.0
 
 En comparación con la versión 1.0.0, los cambios principales de la v1.1.0 incluyen:
 
-- Manejo unificado de eventos de movimiento de cámara (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) en todos los proveedores.
-- Mejoras en la gestión de la posición de la cámara de `MapViewState` y su integración con `VisibleRegion`.
-- Interfaces de control de marcadores refactorizadas para integraciones de proveedores más claras.
-- Ejemplos ampliados en la app de ejemplo para demostrar flujos avanzados de cámara y `VisibleRegion`.
+- Manejo unificado de eventos de movimiento de cámara (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) en todos los proveedores
+- Mejoras en la gestión de la posición de la cámara de `MapViewState` y su integración con `VisibleRegion`
+- Interfaces de control de marcadores refactorizadas para integraciones de proveedores más claras
+- Ejemplos ampliados en la app de ejemplo para demostrar flujos avanzados de cámara y `VisibleRegion`
 
-## Documentos relacionados
+## Documentación relacionada
 
-- [Instalación](/es-419/installation/)
+- [Comenzar](/es-419/get-started/)
 - [Módulos](/es-419/modules/)
 - [Compatibilidad de versiones del SDK](/es-419/sdk-version-compatibility/)
 - [Compatibilidad de proveedores](/es-419/provider-compatibility/)

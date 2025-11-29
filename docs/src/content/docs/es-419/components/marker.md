@@ -85,7 +85,7 @@ ImageIcon(
 ### Marker básico
 
 ```kotlin
-// Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapsView o MapboxMapView
+// Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapView o MapboxMapView
 MapView(state = mapViewState) {
     Marker(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),

@@ -12,7 +12,7 @@ Circles are circular overlays that can be drawn on the map with customizable rad
 @Composable
 fun MapViewScope.Circle(
     center: GeoPoint,
-    radius: Double,
+    radiusMeters: Double,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
@@ -31,7 +31,7 @@ fun MapViewScope.Circle(state: CircleState)
 ## Parameters
 
 - **`center`**: Geographic center point of the circle (`GeoPoint`)
-- **`radius`**: Radius in meters (`Double`)
+- **`radiusMeters`**: Radius in meters (`Double`)
 - **`strokeColor`**: Color of the circle's border (default: `Color.Red`)
 - **`strokeWidth`**: Width of the border line (default: `2.dp`)
 - **`fillColor`**: Fill color of the circle interior (default: semi-transparent white)
@@ -43,11 +43,11 @@ fun MapViewScope.Circle(state: CircleState)
 ### Basic Circle
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0, // 1km radius
+        radiusMeters = 1000.0, // 1km radius
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         id = "downtown-area"
@@ -65,13 +65,13 @@ fun InteractiveCircleExample() {
     var centerPosition by remember {
         mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
     }
-    var radius by remember { mutableStateOf(1000.0) }
+    var radiusMeters by remember { mutableStateOf(1000.0) }
 
     // Calculate edge marker position
-    val edgePosition = remember(centerPosition, radius) {
-        // Calculate a point that's 'radius' meters away from center
+    val edgePosition = remember(centerPosition, radiusMeters) {
+        // Calculate a point that's 'radiusMeters' meters away from center
         // This is simplified - actual calculation would consider Earth's curvature
-        val latOffset = radius / 111000.0 // Rough meters per degree latitude
+        val latOffset = radiusMeters / 111000.0 // Rough meters per degree latitude
         GeoPointImpl.fromLatLong(
             centerPosition.latitude + latOffset,
             centerPosition.longitude
@@ -80,7 +80,7 @@ fun InteractiveCircleExample() {
 
     val circleState = CircleState(
         center = centerPosition,
-        radiusMeters = radius,
+        radiusMeters = radiusMeters,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         clickable = true
@@ -104,14 +104,14 @@ fun InteractiveCircleExample() {
         draggable = true
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
             if (markerState.id == edgeMarker.id) {
                 // Calculate new radius based on edge marker position
                 val distance = calculateDistance(centerPosition, markerState.position)
-                radius = distance
+                radiusMeters = distance
             }
         },
         onCircleClick = { circleEvent ->
@@ -128,12 +128,12 @@ MapView(
 ### Multiple Circles with Different Styles
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     // Solid red circle
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 500.0,
+        radiusMeters = 500.0,
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
         fillColor = Color.Red.copy(alpha = 0.2f),
@@ -143,7 +143,7 @@ MapView(state = mapViewState) {
     // Blue circle with thick border
     Circle(
         center = GeoPointImpl.fromLatLong(37.7849, -122.4194),
-        radius = 750.0,
+        radiusMeters = 750.0,
         strokeColor = Color.Blue,
         strokeWidth = 5.dp,
         fillColor = Color.Transparent,
@@ -153,7 +153,7 @@ MapView(state = mapViewState) {
     // Green circle with pattern
     Circle(
         center = GeoPointImpl.fromLatLong(37.7649, -122.4194),
-        radius = 300.0,
+        radiusMeters = 300.0,
         strokeColor = Color.Green,
         strokeWidth = 2.dp,
         fillColor = Color.Green.copy(alpha = 0.4f),
@@ -192,11 +192,11 @@ fun DynamicCircleExample() {
         }
 
         // Map with dynamic circle
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Circle(
                 center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                radius = circleRadius,
+                radiusMeters = circleRadius,
                 strokeColor = circleColor,
                 fillColor = circleColor.copy(alpha = 0.3f)
             )
@@ -217,14 +217,14 @@ MapView(state = mapViewState) {
 ### Overlapping Circles with Z-Index
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     val centerPoint = GeoPointImpl.fromLatLong(37.7749, -122.4194)
 
     // Background circle (larger, lower z-index)
     Circle(
         center = centerPoint,
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         strokeColor = Color.Red,
         fillColor = Color.Red.copy(alpha = 0.2f),
         extra = CircleData(zIndex = 1, name = "Outer circle")
@@ -233,7 +233,7 @@ MapView(state = mapViewState) {
     // Foreground circle (smaller, higher z-index)
     Circle(
         center = centerPoint,
-        radius = 500.0,
+        radiusMeters = 500.0,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.4f),
         extra = CircleData(zIndex = 2, name = "Inner circle")
@@ -246,7 +246,7 @@ MapView(state = mapViewState) {
 Circle interactions are handled with your map provider component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onCircleClick = { circleEvent ->
@@ -277,7 +277,7 @@ MapView(
 // Thin border
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     strokeColor = Color.Black,
     strokeWidth = 1.dp
 )
@@ -285,7 +285,7 @@ Circle(
 // Thick border
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     strokeColor = Color.Black,
     strokeWidth = 5.dp
 )
@@ -293,7 +293,7 @@ Circle(
 // No border
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     strokeColor = Color.Transparent,
     strokeWidth = 0.dp
 )
@@ -305,21 +305,21 @@ Circle(
 // Solid fill
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     fillColor = Color.Red
 )
 
 // Semi-transparent fill
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     fillColor = Color.Red.copy(alpha = 0.5f)
 )
 
 // No fill
 Circle(
     center = center,
-    radius = 500.0,
+    radiusMeters = 500.0,
     fillColor = Color.Transparent
 )
 ```
@@ -335,14 +335,14 @@ The `id` property provides a unique identifier for circles, enabling efficient t
 val circles = listOf(
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         strokeColor = Color.Red,
         fillColor = Color.Red.copy(alpha = 0.3f),
         id = "zone-a"
     ),
     Circle(
         center = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        radius = 1500.0,
+        radiusMeters = 1500.0,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
         id = "zone-b"

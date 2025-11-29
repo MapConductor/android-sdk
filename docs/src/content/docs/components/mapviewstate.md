@@ -51,7 +51,7 @@ Resets the initialization state to `NotStarted`.
 ```kotlin
 fun moveCameraTo(
     cameraPosition: MapCameraPositionImpl,
-    durationMs: Long? = 0,
+    durationMills: Long? = 0,
     listener: MoveCameraCallback? = null
 )
 ```
@@ -60,7 +60,7 @@ Moves the camera to a specific position with optional animation.
 ```kotlin
 fun moveCameraTo(
     position: GeoPointImpl,
-    durationMs: Long? = 0,
+    durationMills: Long? = 0,
     listener: MoveCameraCallback? = null
 )
 ```
@@ -83,7 +83,7 @@ fun MapExample() {
         InitState.NotStarted -> Text("Map not started")
         InitState.Initializing -> CircularProgressIndicator()
         InitState.Initialized -> {
-            // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+            // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
                 // Add map content here
             }
@@ -106,7 +106,7 @@ fun CameraControlExample() {
                 val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
                 mapViewState.moveCameraTo(
                     position = sanFrancisco,
-                    durationMs = 1000,
+                    durationMills = 1000,
                     listener = object : MapViewState.MoveCameraCallback {
                         override fun onComplete() {
                             println("Camera movement completed")
@@ -118,7 +118,7 @@ fun CameraControlExample() {
             Text("Move to San Francisco")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             // Map content
         }
@@ -159,7 +159,7 @@ fun ProviderSwitchExample() {
             }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             Marker(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -175,7 +175,7 @@ MapView(state = mapViewState) {
 The `MapViewState` works with your chosen map provider component to provide comprehensive event handling:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onMapViewInitialized = {

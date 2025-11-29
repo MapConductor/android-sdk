@@ -1,22 +1,22 @@
 ---
 title: MapConductor Android SDK
 description: 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK
-template: splash
-hero:
-  tagline: Google Maps / Mapbox / HERE / ArcGIS / MapLibre を単一のAPIで扱えるAndroid向けSDK
-  actions:
-    - text: はじめる
-      link: /ja/introduction/
-      icon: right-arrow
-      variant: primary
-    - text: GitHubを見る
-      link: https://github.com/MapConductor/android-sdk
-      icon: external
+head:
+  - tag: title
+    content: description
+template: doc
+editUrl: false
+lastUpdated: false
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { CardGrid, Card } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import topBanner from '~/assets/top-banner.png';
+import QuickExampleTabs from '~/components/QuickExampleTabs.astro';
 
-## なぜ MapConductor なのか
+<Image src={topBanner} alt="MapConductor(マップコンダクター) ♪ 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK" />
+
+## MapConductor(マップコンダクター) とは何か
 
 <CardGrid>
   <Card title="統一されたAPI" icon="puzzle">
@@ -35,26 +35,30 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## クイックサンプル
 
-```kotlin
-@Composable
-fun MyMap() {
-    val mapViewState = rememberGoogleMapViewState()
+MapConductorの使い方は簡単です。`rememberXxxxViewState`と`XxxxView`を組み合わせて使います。
+`Xxxx`の部分が`GoogleMap`や`Mapbox`などに切り替わります。
+Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `rememberMapboxMapViewState()` に、
+`GoogleMapView` を `MapboxMapView` に変更するだけです。
+それ以外のコードはそのままです。
 
-    GoogleMapsView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF")
-        )
-    }
-}
-```
+| 地図SDK | mapViewState | mapView |
+|--------|---------------|--------|
+| GoogleMaps | rememberGoogleMapViewState | GoogleMapView |
+| Mapbox | rememberMapboxViewState | MapboxMapView |
+| MapLibre | rememberMapLibreViewState | MapLibreView |
+| HERE | rememberHereMapViewState | HereMapView |
+| ArcGIS | rememberArcGISMapViewState | ArcGISMapView |
+ 
 
-Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `rememberMapboxMapViewState()` に、`GoogleMapsView` を `MapboxMapView` に変更するだけです。それ以外のコードはそのままです。
+
+<QuickExampleTabs
+  commentForInit="地図の初期表示位置"
+  commentForMapViewState="このmapViewStateを通じて、地図の表示状態を操作します"
+  googleMapsAlt="Google Maps の実行例"
+  mapboxAlt="Mapbox の実行例"
+  hereAlt="HERE の実行例"
+/>
+
 
 ## サポートされている機能
 
@@ -69,5 +73,4 @@ Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `reme
 
 ## 次のステップ
 
-Android アプリに MapConductor を導入する準備ができたら、[イントロダクション](/ja/introduction/) と [インストール方法](/ja/installation/) を参照してください。
-
+Android アプリに MapConductor を導入する準備ができたら、[イントロダクション](/ja/introduction/) と [チュートリアル](/ja/get-started/) を参照してください。

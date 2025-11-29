@@ -47,17 +47,17 @@ class MapLibreViewStateImpl(
 
     override fun moveCameraTo(
         position: GeoPointImpl,
-        durationMs: Long?,
+        durationMills: Long?,
     ) {
         val newPosition =
             this.cameraPosition?.let { currentPosition ->
-                MapCameraPositionImpl.from(currentPosition).copy(
+                MapCameraPositionImpl.Companion.from(currentPosition).copy(
                     position = position,
                 )
             } ?: MapCameraPositionImpl(
                 position = position,
             )
-        this.moveCameraTo(newPosition, durationMs)
+        this.moveCameraTo(newPosition, durationMills)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -65,14 +65,14 @@ class MapLibreViewStateImpl(
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
-        durationMs: Long?,
+        durationMills: Long?,
     ) {
         controller?.let { ctrl ->
             val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
-            if (durationMs == null || durationMs == 0L) {
+            if (durationMills == null || durationMills == 0L) {
                 ctrl.moveCamera(dstCameraPosition)
             } else {
-                ctrl.animateCamera(dstCameraPosition, durationMs)
+                ctrl.animateCamera(dstCameraPosition, durationMills)
             }
             return@let
         }
@@ -100,13 +100,13 @@ class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
         MapLibreViewStateImpl(
             id = stateId,
             mapDesignType =
-                MapLibreMapDesign(
+                MapLibreDesignType(
                     id =
                         mapDesignBundle?.getString("id")
-                            ?: MapLibreMapDesign.DemoTiles.id,
+                            ?: MapLibreDesignType.DemoTiles.id,
                     styleJsonURL =
                         mapDesignBundle?.getString("styleJsonURL")
-                            ?: MapLibreMapDesign.DemoTiles.styleJsonURL,
+                            ?: MapLibreDesignType.DemoTiles.styleJsonURL,
                 ),
             cameraPosition = cameraPosition,
         )
@@ -116,7 +116,7 @@ class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
 
 @Composable
 fun rememberMapLibreMapViewState(
-    mapDesign: MapLibreMapDesignType = MapLibreMapDesign.DemoTiles,
+    mapDesign: MapLibreMapDesignType = MapLibreDesignType.DemoTiles,
     cameraPosition: MapCameraPosition = MapCameraPositionImpl.Default,
 ): MapLibreViewStateImpl {
     val stateId by rememberSaveable {

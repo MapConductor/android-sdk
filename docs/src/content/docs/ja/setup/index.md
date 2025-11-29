@@ -14,7 +14,7 @@ MapConductor を利用する前に、次の前提条件を満たしている必�
 - Kotlin と Jetpack Compose を利用する設定が完了している
 - それぞれの地図 SDK に必要な API キー / 認証情報を取得済み
 
-プロジェクトの Gradle 設定例は [インストール](/ja/installation/) を参照してください。
+プロジェクトの Gradle 設定例は [チュートリアル](/ja/get-started/) を参照してください。
 
 ## プロバイダごとのセットアップ
 
@@ -44,11 +44,12 @@ fun MyMap() {
         cameraPosition = cameraPosition,
     )
 
-    GoogleMapsView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         // Marker / Circle / Polyline などを追加
     }
 }
 ```
+![MyMapの実行結果](~/assets/examples/basic-example.jpg)
 
 Mapbox など別のプロバイダに切り替える場合は、`rememberMapboxMapViewState` と `MapboxMapView` に置き換えれば同じコードパスで動作します。
 

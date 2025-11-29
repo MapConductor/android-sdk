@@ -11,11 +11,11 @@ title: "Advanced Usage（応用例）"
 fun AdvancedMapScreen() {
     val camera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        zoom = 12.0
+        zoom = 15.0
     )
     val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
 
-    GoogleMapsView(
+    GoogleMapView(
         state = mapViewState,
         onMarkerClick = { markerState ->
             println("Marker: ${markerState.extra}")
@@ -45,6 +45,8 @@ fun AdvancedMapScreen() {
     }
 }
 ```
+
+![Marker, Circle, Polylineの例](~/assets/examples/marker-circle-polyline.jpg)
 
 さらに高度な例については、リポジトリの `example-app` のコードも参照してください。
 

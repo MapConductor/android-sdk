@@ -1,7 +1,7 @@
 package com.mapconductor.googlemaps.circle
 
 import androidx.compose.ui.graphics.toArgb
-import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntity
@@ -22,15 +22,22 @@ class GoogleMapCircleOverlayRenderer(
     override suspend fun createCircle(state: CircleState): GoogleMapActualCircle? =
         withContext(coroutine.coroutineContext) {
             val center = GeoPointImpl.from(state.center).toLatLng()
+            val circlePoints =
+                CirclePolygonHelper.generateCirclePoints(
+                    center = center,
+                    radiusMeters = state.radiusMeters,
+                    geodesic = state.geodesic,
+                )
+
             val options =
-                CircleOptions()
-                    .center(center)
-                    .radius(state.radiusMeters)
+                PolygonOptions()
+                    .addAll(circlePoints)
                     .strokeColor(state.strokeColor.toArgb())
                     .strokeWidth(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                     .fillColor(state.fillColor.toArgb())
                     .clickable(false)
-            holder.map.addCircle(options).also {
+                    .geodesic(state.geodesic)
+            holder.map.addPolygon(options).also {
                 it.tag = state.id
             }
         }
@@ -50,22 +57,32 @@ class GoogleMapCircleOverlayRenderer(
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
 
-            if (finger.center != prevFinger.center) {
-                circle.center = GeoPointImpl.from(current.state.center).toLatLng()
+            // If center, radius, or geodesic changed, we need to regenerate the polygon points
+            val needsRegeneration =
+                finger.center != prevFinger.center ||
+                    finger.radiusMeters != prevFinger.radiusMeters ||
+                    finger.geodesic != prevFinger.geodesic
+
+            if (needsRegeneration) {
+                val center = GeoPointImpl.from(current.state.center).toLatLng()
+                val circlePoints =
+                    CirclePolygonHelper.generateCirclePoints(
+                        center = center,
+                        radiusMeters = current.state.radiusMeters,
+                        geodesic = current.state.geodesic,
+                    )
+                circle.points = circlePoints
+                circle.isGeodesic = current.state.geodesic
             }
-            if (finger.radiusMeters != prevFinger.radiusMeters) {
-                circle.radius = current.state.radiusMeters
-            }
+
             if (finger.strokeColor != prevFinger.strokeColor) {
-                circle.strokeColor =
-                    current.state.strokeColor.toArgb()
+                circle.strokeColor = current.state.strokeColor.toArgb()
             }
             if (finger.strokeWidth != prevFinger.strokeWidth) {
                 circle.strokeWidth = ResourceProvider.dpToPx(current.state.strokeWidth).toFloat()
             }
             if (finger.fillColor != prevFinger.fillColor) {
-                circle.fillColor =
-                    current.state.fillColor.toArgb()
+                circle.fillColor = current.state.fillColor.toArgb()
             }
             circle
         }

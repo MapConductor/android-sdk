@@ -1,8 +1,8 @@
 package com.mapconductor.example.pages.map.design
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.ArcGISDesign
-import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.arcgis.map.ArcGISDesign
+import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapDesignType
@@ -13,6 +13,8 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewState
+import com.mapconductor.maplibre.MapLibreDesignType
+import com.mapconductor.maplibre.MapLibreViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,6 +70,9 @@ class MapDesignPageViewModelImpl :
             is ArcGISMapViewState -> {
                 _mapDesignOptions.value = arcGISMapDesigns
             }
+            is MapLibreViewState -> {
+                _mapDesignOptions.value = mapLibreDesigns
+            }
         }
     }
 
@@ -83,7 +88,7 @@ class MapDesignPageViewModelImpl :
     private val hereMapDesigns =
         listOf(
             MapDesignOption(label = "NormalDay", design = HereMapDesign.NormalDay),
-            MapDesignOption(label = "NormalNigh", design = HereMapDesign.NormalNigh),
+            MapDesignOption(label = "NormalNigh", design = HereMapDesign.NormalNight),
             MapDesignOption(label = "Satellite", design = HereMapDesign.Satellite),
             MapDesignOption(label = "HybridDay", design = HereMapDesign.HybridDay),
             MapDesignOption(label = "HybridNight", design = HereMapDesign.HybridNight),
@@ -182,5 +187,15 @@ class MapDesignPageViewModelImpl :
             MapDesignOption(label = "OsmHybridDetail", design = ArcGISDesign.Companion.OsmHybridDetail),
             MapDesignOption(label = "OsmNavigation", design = ArcGISDesign.Companion.OsmNavigation),
             MapDesignOption(label = "OsmNavigationDark", design = ArcGISDesign.Companion.OsmNavigationDark),
+        )
+
+    private val mapLibreDesigns =
+        listOf(
+            MapDesignOption(label = "Normal", design = MapLibreDesignType.DemoTiles),
+            // TODO: check the reason to inspect crashing
+//            MapDesignOption(label = "OSM", design = MapLibreDesignType(
+//                "OSM",
+//                "https://demotiles.maplibre.org/styles/osm-bright-gl-style/style.json",
+//            )),
         )
 }

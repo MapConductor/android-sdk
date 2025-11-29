@@ -4,6 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.LifecycleOwner
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.ScreenCoordinate
+import com.mapconductor.arcgis.toGeoPoint
+import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
@@ -11,8 +13,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.AttributeSet
 import android.widget.FrameLayout
-import com.mapconductor.arcgis.toGeoPoint
-import com.mapconductor.arcgis.toPoint
 import kotlinx.coroutines.runBlocking
 
 class WrapSceneView : FrameLayout {

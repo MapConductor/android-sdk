@@ -212,7 +212,7 @@ fun ContentBasedZoom() {
         zoom = appropriateZoom
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -261,7 +261,7 @@ fun ZoomControls() {
             Button(onClick = { currentZoom = 18.0 }) { Text("Building") }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(
             state = mapViewState,
             cameraPosition = MapCameraPositionImpl(
@@ -315,7 +315,7 @@ fun PerformanceAdaptiveZoom() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -362,7 +362,7 @@ fun ContextAwareZoom() {
         zoom = contextualZoom
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         cameraPosition = cameraPosition
@@ -419,7 +419,7 @@ fun ResponsiveZoom() {
     // Adjust zoom for screen size
     val baseZoom = if (isTablet) 14.0 else 16.0
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         cameraPosition = MapCameraPositionImpl(
@@ -459,7 +459,7 @@ fun ZoomLevelTester() {
             Text("Next Zoom Level")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(
             state = mapViewState,
             cameraPosition = MapCameraPositionImpl(

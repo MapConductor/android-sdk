@@ -4,7 +4,7 @@ title: Introduction
 
 # MapConductor Android SDK Documentation
 
-MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and now MapLibre. This documentation covers the public API components available through Maven distribution for **v1.1.0**.
+MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and MapLibre. This documentation covers the public API components available through Maven distribution for **v1.1.0**.
 
 ## Overview
 
@@ -12,7 +12,7 @@ The MapConductor SDK allows you to use a single API to work with different map p
 
 ### Supported Map Providers
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapsView`
+- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
 - **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
 - **HERE Maps**: `HereViewStateImpl` / `HereMapView`
 - **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
@@ -30,7 +30,7 @@ The SDK provides fundamental geographic classes:
 
 The SDK provides the following core components:
 
-1. **Map View Components**: Provider-specific map view components (GoogleMapsView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView)
+1. **Map View Components**: Provider-specific map view components (GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView)
 2. **Marker**: Point markers with customizable icons and interactions
 3. **Circle**: Circular overlays with styling options
 4. **Polyline**: Line segments connecting multiple points
@@ -43,7 +43,7 @@ To use MapConductor in your project:
 
 ### 1. Installation
 
-See the [Installation and Versions](/installation) page for complete dependency information and version details.
+See the [Get Started](/get-started) page for complete dependency information and version details.
 
 ### 2. SDK-Specific Setup
 
@@ -80,10 +80,10 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     )
 
     // Replace MapView with your chosen map provider
-    // - Google Maps -> GoogleMapsView
+    // - Google Maps -> GoogleMapView
     // - Mapbox -> MapboxMapView
     // ... and so on
-    GoogleMapsView(
+    GoogleMapView(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -103,7 +103,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         // Add a circle
         Circle(
             center = sanFrancisco,
-            radius = 1000.0,
+            radiusMeters = 1000.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
@@ -135,19 +135,24 @@ val mapLibreState = rememberMapLibreMapViewState()
 
 The rest of your code remains the same – all components work consistently across providers.
 
-## What’s New in v1.1.0
+## What's New in v1.1.1
+
+Compared to v1.1.0, v1.1.1 includes:
+
+- Fixed a bug where InfoBubble display position was not recalculated when moving the map's visible region
+
+## What's New in v1.1.0
 
 Compared to v1.0.0, v1.1.0 includes:
 
-- Unified camera move callbacks (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) exposed via map view components and `MapViewContainer`
-- Improved `MapViewState` camera handling with explicit `MapCameraPositionImpl`
-- Refined marker and overlay controller interfaces (`MarkerCapable`, `MarkerOverlayRenderer`) for better provider-specific implementations
-- Example app updates demonstrating camera events, visible region inspection, and advanced marker strategies
+- Unified camera move event handling (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) across all providers
+- Improved `MapViewState` camera position handling and `VisibleRegion` integration
+- Refactored marker controller interfaces for clearer provider integrations
+- Expanded example app with advanced camera control and `VisibleRegion` usage examples
 
-## Next Steps
+## Related Documentation
 
-Explore the detailed documentation for:
-
-- [Modules Overview](/modules)
-- [Installation and Versions](/installation)
-- Provider setup, core components, state classes, and examples.
+- [Get Started](/get-started/)
+- [Modules Overview](/modules/)
+- [SDK Version Compatibility](/sdk-version-compatibility/)
+- [Provider Compatibility](/provider-compatibility/)

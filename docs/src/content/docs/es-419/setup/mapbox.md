@@ -16,7 +16,7 @@ En esta página se explica cómo configurar Mapbox para usarlo con MapConductor.
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-mapbox")
     // Añade también las dependencias de Mapbox Maps SDK for Android
@@ -45,7 +45,7 @@ class MyApp : Application() {
 fun MapboxExample() {
     val camera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(40.7128, -74.0060),
-        zoom = 12.0,
+        zoom = 6.0,
     )
 
     val mapViewState = rememberMapboxMapViewState(
@@ -66,6 +66,7 @@ fun MapboxExample() {
     }
 }
 ```
+![Ejemplo sencillo de Mapbox](/img/basic-mapbox.jpg)
 
 Para funcionalidades avanzadas específicas de Mapbox (como manipular capas de estilo), combínalas con las APIs nativas del SDK.
 

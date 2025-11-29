@@ -53,7 +53,7 @@ fun AnimatedMarkerExample() {
         markerState.setAnimation(animation)
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMapClick = { clickedPosition ->
@@ -108,7 +108,7 @@ fun ScaleAnimationExample() {
         markerState.setAnimation(animation)
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMarkerClick = {
@@ -169,7 +169,7 @@ fun FadeAnimationExample() {
             Text(if (markersVisible) "Hide Markers" else "Show Markers")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(state = mapViewState) {
             markerStates.forEach { markerState ->
                 Marker(markerState)
@@ -216,7 +216,7 @@ fun BounceAnimationExample() {
         }
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMarkerClick = {
@@ -277,7 +277,7 @@ fun SequentialAnimationExample() {
         markerState.setAnimation(sequentialAnimation)
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         Marker(markerState)
     }
@@ -336,7 +336,7 @@ fun PathAnimationExample() {
         markerState.setAnimation(pathAnimation)
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Show path
         Polyline(
@@ -370,7 +370,7 @@ fun PathAnimationExample() {
 Handle animation lifecycle events in your map component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onMarkerAnimateStart = { markerState ->

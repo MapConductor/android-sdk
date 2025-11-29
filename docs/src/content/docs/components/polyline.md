@@ -41,7 +41,7 @@ fun MapViewScope.Polyline(state: PolylineState)
 ### Basic Polyline
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     val routePoints = listOf(
         GeoPointImpl.fromLatLong(37.7749, -122.4194), // San Francisco
@@ -94,7 +94,7 @@ fun InteractivePolylineExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -122,7 +122,7 @@ MapView(
 ### Multiple Polylines with Different Styles
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     // Route 1 - Highway (thick blue line)
     Polyline(
@@ -187,7 +187,7 @@ fun DynamicPolylineExample() {
             }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
@@ -225,7 +225,7 @@ MapView(
 ### Geodesic vs Standard Lines
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     val longDistancePoints = listOf(
         GeoPointImpl.fromLatLong(37.7749, -122.4194), // San Francisco
@@ -286,7 +286,7 @@ fun AnimatedRouteExample() {
                 .padding(16.dp)
         )
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
             if (visibleRoute.size >= 2) {
                 // Completed route (gray)
@@ -322,7 +322,7 @@ MapView(state = mapViewState) {
 Polyline interactions are handled with your map provider component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onPolylineClick = { polylineEvent ->

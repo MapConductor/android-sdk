@@ -2,7 +2,7 @@
 title: "CircleState"
 ---
 
-`CircleState` manages the configuration and behavior of circular overlays on the map. It provides reactive properties for center position, radius, styling, and interaction settings.
+`CircleState` manages the configuration and behavior of circular overlays on the map. It provides reactive properties for center position, radiusMeters, styling, and interaction settings.
 
 ## Constructor
 
@@ -25,7 +25,7 @@ CircleState(
 ### Core Properties
 - **`id: String`**: Unique identifier (auto-generated if not provided)
 - **`center: GeoPoint`**: Geographic center of the circle
-- **`radiusMeters: Double`**: Radius in meters
+- **`radiusMeters: Double`**: radiusMeters in meters
 - **`clickable: Boolean`**: Whether the circle responds to click events
 - **`extra: Serializable?`**: Additional data attached to the circle
 
@@ -55,7 +55,7 @@ val circleState = CircleState(
     fillColor = Color.Blue.copy(alpha = 0.3f)
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Circle(circleState)
 }
@@ -87,7 +87,7 @@ fun InteractiveCircleExample() {
             valueRange = 100f..2000f
         )
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
             state = mapViewState,
             onCircleClick = { event ->
@@ -118,7 +118,7 @@ val circles = listOf(
     )
 )
 
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     circles.forEach { circleState ->
         Circle(circleState)

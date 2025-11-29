@@ -58,8 +58,8 @@ dependencies {
     // HERE SDK (local AAR)
     implementation(files("${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar"))
 
-    // MapConductor BOM for version management (v1.1.0)
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+    // MapConductor BOM for version management (v1.1.1)
+    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
 
     // MapConductor modules (versions managed by BOM)
     implementation("com.mapconductor:core")

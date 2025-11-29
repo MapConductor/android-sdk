@@ -51,7 +51,7 @@ fun GroundImageExample() {
         northEast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
     )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         val context = LocalContext.current
         AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
@@ -168,7 +168,7 @@ fun ViewportBoundsExample() {
         viewportBounds = bounds
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Show all markers
         markers.forEach { position ->
@@ -250,7 +250,7 @@ fun BoundsBasedLoadingExample() {
             Text("Set Viewport")
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
         MapView(state = mapViewState) {
             // Show only markers within bounds
             markersInBounds.forEach { position ->
@@ -302,7 +302,7 @@ fun BoundsEditorExample() {
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->

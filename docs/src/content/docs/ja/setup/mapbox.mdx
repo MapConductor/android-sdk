@@ -1,0 +1,245 @@
+---
+title: Mapbox セットアップ
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+このセクションでは、Mapbox Maps SDK と MapConductor を統合するためのセットアップ手順について説明します。
+
+:::tip
+MapConductor は既存の地図 SDK 上に統一された API レイヤーを提供します。MapConductor の Mapbox 統合を使用する前に、Mapbox Maps SDK を独立してセットアップする必要があります。
+:::
+
+## 前提条件
+
+- Android 開発環境
+- Mapbox アカウント
+- Mapbox アクセストークン
+
+## セットアップ手順
+
+### 1. Mapbox アカウントの設定
+
+1. [Mapbox アカウント](https://www.mapbox.com/)にサインアップします
+2. [Mapbox Account Dashboard](https://account.mapbox.com/) にアクセスします
+3. **Access tokens** に移動します
+4. 新しいアクセストークンを作成するか、デフォルトの公開トークンを使用します
+5. アプリで使用するためにアクセストークンをコピーします
+
+### 2. Gradle の設定
+
+Mapbox Maven リポジトリが設定されていることを確認します（このリポジトリでは `settings.gradle.kts` に既に含まれています）:
+
+<Tabs>
+<TabItem label="Kotlin (settings.gradle.kts)">
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+
+        // Mapbox Maven repository
+        maven {
+            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy (settings.gradle)">
+
+```groovy
+// settings.gradle
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        google()
+        mavenCentral()
+
+        // Mapbox Maven repository
+        maven {
+            url "https://api.mapbox.com/downloads/v2/releases/maven"
+        }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+プロジェクトのルート `build.gradle.kts` または `build.gradle` に Secrets Gradle Plugin を追加します:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
+}
+```
+
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
+
+```groovy
+// build.gradle
+plugins {
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
+}
+```
+
+</TabItem>
+</Tabs>
+
+次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
+
+```kotlin
+// App/build.gradle.kts
+plugins {
+    // ... other plugins
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+dependencies {
+    // Mapbox Maps SDK (NDK27 variant)
+    implementation("com.mapbox.maps:android-ndk27:{MAPBOX_SDK_VERSION}")
+
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+
+    // MapConductor modules (versions managed by BOM)
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-mapbox")
+}
+```
+
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
+
+```groovy
+// App/build.gradle
+plugins {
+    // ... other plugins
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+}
+
+dependencies {
+    // Mapbox Maps SDK (NDK27 variant)
+    implementation "com.mapbox.maps:android-ndk27:{MAPBOX_SDK_VERSION}"
+
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+
+    // MapConductor modules (versions managed by BOM)
+    implementation "com.mapconductor:core"
+    implementation "com.mapconductor:for-mapbox"
+}
+```
+
+</TabItem>
+</Tabs>
+
+Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み取り、ビルド時に値を `AndroidManifest.xml` に注入します。
+
+### 3. Android Manifest の設定
+
+`AndroidManifest.xml` に Mapbox アクセストークンのプレースホルダーを追加します:
+
+```xml
+<!-- AndroidManifest.xml -->
+<application>
+    <!-- Mapbox Access Token -->
+    <meta-data
+        android:name="MAPBOX_ACCESS_TOKEN"
+        android:value="${MAPBOX_ACCESS_TOKEN}" />
+
+    <!-- Add internet and location permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+</application>
+```
+
+### 4. アクセストークンの設定
+
+`secrets.properties` ファイルに実際のアクセストークンを追加します。
+- Secrets Gradle Plugin は、このファイルの実際の値で `AndroidManifest.xml` の `${MAPBOX_ACCESS_TOKEN}` を自動的に置き換えます。
+- CI/CD ビルドの場合は、環境変数または他の安全な方法を使用してこれらの値を提供できます。
+
+```properties
+# secrets.properties
+MAPBOX_ACCESS_TOKEN=実際のアクセストークン
+```
+
+:::caution
+`secrets.properties` ファイルをバージョン管理にコミットしないでください。
+`.gitignore` に追加すると、不注意でコミットすることを避けることができます。
+```
+# .gitignore
+secrets.properties
+```
+:::
+
+## 検証
+
+Mapbox のセットアップを確認するには:
+
+1. アプリをビルドして実行します
+2. マップが Mapbox スタイルで表示されることを確認します
+3. マップ操作（ズーム、パン、回転）をテストします
+
+```kotlin
+@Composable
+fun TestMapbox() {
+    val state =
+        rememberMapboxMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl.fromLatLong(0.0, 0.0),
+                    zoom = 3.0,
+                ),
+        )
+
+    MapboxMapView(
+        modifier = modifier,
+        state = state,
+    ) {
+        // もし地図が表示されれば、セットアップが正しくできています
+    }
+}
+```
+![TestMapboxの実行結果](~/assets/setup/basic-setup-mapbox.png)
+
+## トラブルシューティング
+
+### よくある問題
+
+**マップが表示されない（空白の画面）**
+
+- `secrets.properties` のアクセストークンが正しいことを確認してください
+- トークンの有効期限が切れていないことを確認してください
+- タイルの読み込みのためのインターネット接続を確認してください
+
+**アクセストークンエラー**
+
+- トークンの値を再確認してください（通常は `pk.` で始まります）
+- Mapbox アカウントダッシュボードでトークンのパーミッションを確認してください
+- トークンスコープに必要なパーミッションが含まれていることを確認してください
+
+**ビルドエラー**
+
+- Mapbox SDK の座標がプロジェクト設定と一致していることを確認してください
+- NDK27 バリアントが使用されていることを確認してください
+- `secrets.properties` ファイルが存在し、トークンが含まれていることを確認してください
+
+## 次のステップ
+
+Mapbox Maps SDK が適切に設定されたら、統一 API を使用して MapConductor の `MapboxMapView` コンポーネントを使用できます。

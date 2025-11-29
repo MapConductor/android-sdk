@@ -85,7 +85,7 @@ ImageIcon(
 ### Basic Marker
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Marker(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -98,7 +98,7 @@ MapView(state = mapViewState) {
 ### Custom Icon Marker
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     Marker(
         position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
@@ -124,7 +124,7 @@ fun DraggableMarkerExample() {
         mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
@@ -146,7 +146,7 @@ MapView(
 ### Multiple Markers with Different Icons
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     // Default icon with different scales
     Marker(
@@ -196,7 +196,7 @@ MapView(state = mapViewState) {
 fun MarkerWithInfoExample() {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
         state = mapViewState,
         onMapClick = { selectedMarker = null },
@@ -229,7 +229,7 @@ MapView(
 ### Image Icon Marker
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     val context = LocalContext.current
     AppCompatResources.getDrawable(context, R.drawable.weather_icon)?.let { icon ->
@@ -251,7 +251,7 @@ MapView(state = mapViewState) {
 Marker events are handled with your map provider component:
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(
     state = mapViewState,
     onMarkerClick = { markerState ->

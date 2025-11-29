@@ -1,0 +1,118 @@
+---
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import GoogleMapsPreview from '~/assets/quick-example/googlemap.png';
+import MapBoxPreview from '~/assets/quick-example/mapbox.png';
+import HerePreview from '~/assets/quick-example/here.png';
+
+interface Props {
+  commentForInit?: string;
+  commentForMapViewState?: string;
+  googleMapsAlt?: string;
+  mapboxAlt?: string;
+  hereAlt?: string;
+}
+
+const {
+  commentForInit = "Sets the initial camera position",
+  commentForMapViewState = "Manipulates the map through this mapViewState",
+  googleMapsAlt = "Google Maps example",
+  mapboxAlt = "Mapbox example",
+  hereAlt = "Here example"
+} = Astro.props;
+
+// Generate code snippets with the marker label
+const googleMapsCode = `@Composable
+fun MyMap() {
+    // ${commentForInit}
+    val targetPosition = GeoPointImpl.fromLatLong(37.7749, -122.419)
+    val initCamera = MapCameraPositionImpl(
+        position = targetPosition,
+        zoom = 12.0,
+    )
+    // ${commentForMapViewState}
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initCamera,
+    )
+
+    GoogleMapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = targetPosition,
+            icon = DefaultIcon(label = "SF")
+        )
+    }
+}`;
+
+const mapboxCode = `@Composable
+fun MyMap() {
+    // ${commentForInit}
+    val targetPosition = GeoPointImpl.fromLatLong(38.911254, -77.033458)
+    val initCamera = MapCameraPositionImpl(
+        position = targetPosition,
+        zoom = 12.0,
+    )
+    // ${commentForMapViewState}
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = initCamera,
+    )
+
+    MapboxMapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = targetPosition,
+            icon = DefaultIcon(label = "WA")
+        )
+    }
+}`;
+
+
+const hereCode = `@Composable
+fun MyMap() {
+    // ${commentForInit}
+    val targetPosition = GeoPointImpl.fromLatLong(51.43901, 5.47191)
+    val initCamera = MapCameraPositionImpl(
+        position = targetPosition,
+        zoom = 12.0,
+    )
+    // ${commentForMapViewState}
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = initCamera,
+    )
+
+    HereMapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Clicked: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = targetPosition,
+            icon = DefaultIcon(label = "EIN")
+        )
+    }
+}`;
+---
+
+<Tabs>
+  <TabItem label="GoogleMaps">
+    <Code code={googleMapsCode} lang="kotlin" />
+    <Image src={GoogleMapsPreview} alt={googleMapsAlt} />
+  </TabItem>
+  <TabItem label="Mapbox">
+    <Code code={mapboxCode} lang="kotlin" />
+    <Image src={MapBoxPreview} alt={mapboxAlt} />
+  </TabItem>
+  <TabItem label="Here">
+    <Code code={hereCode} lang="kotlin" />
+    <Image src={HerePreview} alt={hereAlt} />
+  </TabItem>
+</Tabs>

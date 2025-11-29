@@ -49,7 +49,7 @@ DefaultIcon(
 #### Usage Examples
 
 ```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
 MapView(state = mapViewState) {
     // Basic red marker
     Marker(
@@ -109,7 +109,7 @@ DrawableDefaultIcon(
 fun DrawableIconExamples() {
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Custom drawable marker
         AppCompatResources.getDrawable(context, R.drawable.custom_marker)?.let { drawable ->
@@ -167,7 +167,7 @@ ImageDefaultIcon(
 fun ImageIconExamples() {
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         // Weather station icon with bottom center anchor
         AppCompatResources.getDrawable(context, R.drawable.weather_station)?.let { icon ->
@@ -206,7 +206,7 @@ fun DynamicIconExample() {
     val iconType by remember { mutableStateOf("default") }
     val context = LocalContext.current
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(state = mapViewState) {
         val icon = when (iconType) {
             "default" -> DefaultIcon(

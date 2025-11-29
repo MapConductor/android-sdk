@@ -57,7 +57,7 @@ class HereMapViewControllerImpl(
     TapListener,
     LongPressListener {
     companion object {
-        private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
+        internal const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
 
     override suspend fun clearOverlays() {
@@ -150,7 +150,7 @@ class HereMapViewControllerImpl(
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
-        durationMs: Long,
+        durationMills: Long,
     ) {
         val camera = this.holder.mapView.camera
 
@@ -164,7 +164,7 @@ class HereMapViewControllerImpl(
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
-                Duration.ofMillis(durationMs),
+                Duration.ofMillis(durationMills),
             )
         coroutine.launch {
             camera.startAnimation(animation) { animState ->

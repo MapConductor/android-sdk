@@ -14,7 +14,7 @@ Bill of Materials for all MapConductor artifacts.
 - Recommended for all projects
 
 ```kotlin
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
 ```
 
 ### `mapconductor-core`
@@ -34,7 +34,7 @@ Provider-specific modules implement the unified APIs for each SDK:
 
 ### `mapconductor-for-googlemaps`
 
-- `GoogleMapsView` composable
+- `GoogleMapView` composable
 - `GoogleMapViewStateImpl`
 - Google Maps–specific overlay controllers
 
@@ -112,12 +112,13 @@ Typical configurations:
 
 ```kotlin
 // Minimal: Google Maps only
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
-
+```
+```
 // Multi-provider with icons and strategies
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.0"))
+implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
 implementation("com.mapconductor:for-mapbox")

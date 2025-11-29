@@ -11,7 +11,7 @@ MapConductor expone varios manejadores de eventos para reaccionar a interaccione
 - `onMapClick`
 
 ```kotlin
-GoogleMapsView(
+GoogleMapView(
     state = mapViewState,
     onMapClick = { geoPoint ->
         println("Clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")

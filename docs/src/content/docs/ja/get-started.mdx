@@ -1,0 +1,762 @@
+---
+title: チュートリアル
+description: MapConductor Android SDKの基本的な使い方を学ぶ実践的なチュートリアル
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+# MapConductor チュートリアル
+
+このチュートリアルでは、MapConductor Android SDK を使って、地図を表示し、マーカーや図形を追加し、ユーザーインタラクションを処理する方法を学びます。
+
+## このチュートリアルで学べること
+
+- MapConductor SDK のインストールと初期設定
+- 地図を表示する方法
+- マーカー、円、ポリラインなどの追加方法
+- ユーザーのタップやクリックイベントの処理
+- カメラ位置の制御
+- 地図SDKの切り替え方法
+
+## 前提条件
+
+- Android Studio がインストールされていること
+- Jetpack Compose の基本的な知識
+- Kotlin の基礎知識
+
+## ステップ1: プロジェクトのセットアップ
+
+### 1-1. 依存関係の追加
+
+モジュールレベルの `build.gradle.kts` または `build.gradle` に MapConductor の依存関係を追加します。
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
+
+```kotlin
+dependencies {
+    val mapconductorVersion = "{BOM_MODULE_VERSION}"
+
+    // BOM を利用してバージョンを統一
+    implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
+
+    // コアモジュール(必須)
+    implementation("com.mapconductor:core")
+
+    // Google Maps を使う場合
+    implementation("com.mapconductor:for-googlemaps")
+
+    // または Mapbox を使う場合
+    // implementation("com.mapconductor:for-mapbox")
+
+    // または HERE Maps を使う場合
+    // implementation("com.mapconductor:for-here")
+
+    // または ArcGIS を使う場合
+    // implementation("com.mapconductor:for-arcgis")
+
+    // または MapLibre を使う場合
+    // implementation("com.mapconductor:for-maplibre")
+}
+```
+
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
+
+```groovy
+dependencies {
+    def mapconductorVersion = "{BOM_MODULE_VERSION}"
+
+    // BOM を利用してバージョンを統一
+    implementation platform("com.mapconductor:mapconductor-bom:$mapconductorVersion")
+
+    // コアモジュール(必須)
+    implementation "com.mapconductor:core"
+
+    // Google Maps を使う場合
+    implementation "com.mapconductor:for-googlemaps"
+
+    // または Mapbox を使う場合
+    // implementation "com.mapconductor:for-mapbox"
+
+    // または HERE Maps を使う場合
+    // implementation "com.mapconductor:for-here"
+
+    // または ArcGIS を使う場合
+    // implementation "com.mapconductor:for-arcgis"
+
+    // または MapLibre を使う場合
+    // implementation "com.mapconductor:for-maplibre"
+}
+```
+
+</TabItem>
+</Tabs>
+
+### 1-2. Android 設定
+
+`build.gradle.kts` または `build.gradle` に以下の設定を追加します。
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
+
+```kotlin
+android {
+    compileSdk = 35
+
+    defaultConfig {
+        minSdk = 26
+        targetSdk = 35
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.7.1"
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
+
+```groovy
+android {
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 26
+        targetSdk 35
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.7.1"
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### 1-3. 地図SDKのセットアップ
+
+
+> **重要**: MapConductor は既存の地図 SDK の上に統一 API レイヤーを提供するライブラリです。そのため、MapConductor を利用する前に、各地図 SDK を個別にセットアップする必要があります。
+
+各地図SDKは、それぞれ API キー、パーミッション、設定などの準備が必要です。
+
+- **[Google Maps のセットアップ](/ja/setup/google-maps)** – Google Maps SDK の API キーやパーミッションの設定
+- **[Mapbox のセットアップ](/ja/setup/mapbox)** – Mapbox のアクセストークンやスタイル設定
+- **[HERE Maps のセットアップ](/ja/setup/here-maps)** – HERE SDK の API キーやライセンス設定
+- **[ArcGIS のセットアップ](/ja/setup/arcgis)** – ArcGIS SDK の API キーやライセンス設定
+- **[MapLibre のセットアップ](/ja/setup/maplibre/)** – タイルやスタイル情報の設定
+
+## ステップ2: シンプルな地図の表示
+
+まずは、最もシンプルな地図を表示してみましょう。
+これで、東京を中心とした地図が表示されます。
+
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.mapconductor.core.GeoPointImpl
+import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+
+@Composable
+fun MyFirstMap(modifier: Modifier = Modifier) {
+    // 東京の座標
+    val tokyo = GeoPointImpl.fromLatLong(35.6812, 139.7671)
+
+    // カメラの初期位置を設定
+    val initialCamera = MapCameraPositionImpl(
+        position = tokyo,
+        zoom = 12.0
+    )
+
+    // 地図の状態を管理するstateオブジェクトを作成
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+
+    // 地図を表示
+    GoogleMapView(
+        modifier = modifier,
+        state = mapViewState
+    )
+}
+```
+
+![実行結果](~/assets/get-started/my-first-map.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
+
+これで、東京を中心とした地図が表示されます。
+
+## ステップ3: マーカーを追加する
+
+地図上にマーカーを表示してみましょう。
+
+```kotlin
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.mapconductor.core.*
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+
+@Composable
+fun MapWithMarkers(modifier: Modifier = Modifier) {
+    // 東京タワーとスカイツリーの座標
+    val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
+    val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
+
+    // カメラの初期位置
+    val initialCamera = MapCameraPositionImpl(
+        position = tokyoTower,
+        zoom = 11.0
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+
+    GoogleMapView(
+        modifier = modifier.fillMaxSize(),
+        state = mapViewState,
+        onMarkerClick = { markerState ->
+            println("マーカーがクリックされました: ${markerState.extra}")
+        }
+    ) {
+        // マーカーを追加
+        Marker(
+            position = tokyoTower,
+            icon = DefaultIcon(label = "Tokyo Tower"),
+            extra = "tokyo_tower"
+        )
+
+        Marker(
+            position = skyTree,
+            icon = DefaultIcon(label = "Sky Tree"),
+            extra = "sky_tree"
+        )
+    }
+}
+```
+![実行結果](~/assets/get-started/map-with-markers.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
+
+### マーカーのカスタマイズ
+
+マーカーをさらにカスタマイズすることもできます。
+
+```kotlin
+Marker(
+    position = tokyoTower,
+    icon = DefaultIcon(
+        label = "TT",
+        backgroundColor = Color.Red,
+        textColor = Color.White
+    ),
+    extra = "tokyo_tower",
+    anchor = Offset(0.5f, 1.0f)  // x = 0.0(左)～1.0(右), y = 0.0(上)～1.0(下)
+)
+```
+
+## ステップ4: 円とポリラインを追加する
+
+### 4-1. 円の追加
+
+マーカーの周りに円を描画してみましょう。
+
+```kotlin
+import androidx.compose.ui.graphics.Color
+
+GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState
+) {
+    // マーカー
+    Marker(
+        position = tokyoTower,
+        icon = DefaultIcon(label = "TT"),
+        extra = "tokyo_tower"
+    )
+
+    // 東京タワーの周りに半径1kmの円を描画
+    Circle(
+        center = tokyoTower,
+        radiusMeters = 1000.0,  // メートル単位
+        strokeColor = Color.Blue,
+        strokeWidth = 3.dp,  // Dp単位
+        fillColor = Color.Blue.copy(alpha = 0.2f)
+    )
+}
+```
+![実行結果](~/assets/get-started/marker-with-circle.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
+
+### 4-2. ポリラインの追加
+
+2つのポイントを線で結んでみましょう。
+
+```kotlin
+GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState
+) {
+    // マーカー
+    Marker(position = tokyoTower, icon = DefaultIcon(label = "TT"))
+    Marker(position = skyTree, icon = DefaultIcon(label = "ST"))
+
+    // 2つのポイントを結ぶ線
+    Polyline(
+        points = listOf(tokyoTower, skyTree),
+        strokeColor = Color.Red,
+        strokeWidth = 5.dp
+    )
+}
+```
+![実行結果](~/assets/get-started/marker-with-polyline.png)
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
+
+## ステップ5: ユーザーインタラクションを処理する
+
+### 5-1. 地図のクリックイベント
+
+ユーザーが地図をタップしたときの処理を追加できます。
+
+```kotlin
+import androidx.compose.runtime.*
+
+@Composable
+fun InteractiveMap(modifier: Modifier = Modifier) {
+    var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
+
+    val initialCamera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+        zoom = 12.0
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+
+    GoogleMapView(
+        modifier = modifier.fillMaxSize(),
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            // 地図がクリックされたときの処理
+            clickedPosition = geoPoint
+            println("クリック位置: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        // クリックした位置にマーカーを表示
+        clickedPosition?.let { position ->
+            Marker(
+                position = position,
+                icon = DefaultIcon(label = "!"),
+                extra = "clicked_marker"
+            )
+        }
+    }
+}
+```
+<video width="720" height="480" controls>
+ <source src="/get-started/interactive-map1.webm" type="video/webm" />
+ <source src="/get-started/interactive-map1.mp4" type="video/mp4" />
+</video>
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
+
+### 5-2. マーカーのクリックイベント
+
+```kotlin
+val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
+val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
+
+GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState,
+    onMarkerClick = { markerState ->
+        // マーカーがクリックされたときの処理
+        when (markerState.extra) {
+            "tokyo_tower" -> {
+                markerState.animate(MarkerAnimation.Drop)
+            }
+            "sky_tree" -> {
+                markerState.animate(MarkerAnimation.Bounce)
+            }
+        }
+    }
+) {
+    Marker(
+        position = tokyoTower,
+        icon = DefaultIcon(label = "TT"),
+        extra = "tokyo_tower"
+    )
+    Marker(
+        position = skyTree,
+        icon = DefaultIcon(label = "ST"),
+        extra = "sky_tree"
+    )
+}
+```
+<video width="720" height="480" controls>
+ <source src="/get-started/interactive-map2.webm" type="video/webm" />
+ <source src="/get-started/interactive-map2.mp4" type="video/mp4" />
+</video>
+Note: デモを見やすくするために、地図のデザインをデフォルトから変更しています
+
+## ステップ6: カメラを操作する
+
+### 6-1. ボタンで特定の位置に移動する
+
+```kotlin
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+
+@Composable
+fun MapWithCameraControl(modifier: Modifier = Modifier) {
+    val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
+    val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = tokyoTower,
+            zoom = 12.0
+        )
+    )
+
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // ボタン
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPositionImpl(
+                            position = tokyoTower,
+                            zoom = 15.0
+                        ),
+                        durationMills = 1000
+                    )
+                }
+            }) {
+                Text("Tokyo Tower")
+            }
+
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPositionImpl(
+                            position = skyTree,
+                            zoom = 15.0
+                        ),
+                        durationMills = 1000
+                    )
+                }
+            }) {
+                Text("Sky Tree")
+            }
+        }
+
+        // 地図
+        GoogleMapView(
+            modifier = Modifier.fillMaxSize(),
+            state = mapViewState
+        ) {
+            Marker(position = tokyoTower, icon = DefaultIcon(label = "TT"))
+            Marker(position = skyTree, icon = DefaultIcon(label = "ST"))
+        }
+    }
+}
+```
+<video width="720" height="480" controls>
+ <source src="/get-started/manipulate-camera.webm" type="video/webm" />
+ <source src="/get-started/manipulate-camera.mp4" type="video/mp4" />
+</video>
+
+### 6-2. カメラの移動イベントを監視する
+
+```kotlin
+GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState,
+    onCameraMoveStart = {
+        println("カメラの移動が開始されました")
+    },
+    onCameraMove = { cameraPosition ->
+        println("カメラ位置: ${cameraPosition.position.latitude}, ${cameraPosition.position.longitude}")
+    },
+    onCameraMoveEnd = {
+        println("カメラの移動が終了しました")
+    }
+) {
+    // マーカーなど
+}
+```
+
+## ステップ7: 地図SDKを切り替える
+
+MapConductor の最大の利点は、わずかな変更で地図SDKを切り替えられることです。
+
+### Google Maps から Mapbox への切り替え
+
+**変更前(Google Maps):**
+
+```kotlin
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+
+@Composable
+fun MyMap() {
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+
+    GoogleMapView(
+        state = mapViewState
+    ) {
+        // マーカーやその他のコンポーネント
+    }
+}
+```
+
+**変更後(Mapbox):**
+
+```kotlin
+import com.mapconductor.mapbox.MapboxMapView
+import com.mapconductor.mapbox.rememberMapboxViewState
+
+@Composable
+fun MyMap() {
+    val mapViewState = rememberMapboxViewState(
+        cameraPosition = initialCamera
+    )
+
+    MapboxMapView(
+        state = mapViewState
+    ) {
+        // マーカーやその他のコンポーネント(変更なし!)
+    }
+}
+```
+
+マーカーや円、ポリラインなどのコンポーネントは、**まったく同じコード**で動作します。
+
+### 地図SDK切り替え対応表
+
+| 地図SDK | MapViewState | MapView |
+|---------|--------------|---------|
+| Google Maps | `rememberGoogleMapViewState` | `GoogleMapView` |
+| Mapbox | `rememberMapboxViewState` | `MapboxMapView` |
+| HERE Maps | `rememberHereMapViewState` | `HereMapView` |
+| ArcGIS | `rememberArcGISMapViewState` | `ArcGISMapView` |
+| MapLibre | `rememberMapLibreViewState` | `MapLibreMapView` |
+
+## 完全なサンプルコード
+
+これまで学んだことをまとめた、完全なサンプルコードです。
+
+```kotlin
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.mapconductor.core.*
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import kotlinx.coroutines.launch
+
+@Composable
+fun CompleteSample(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    // 位置情報
+    val tokyoTower = GeoPointImpl.fromLatLong(35.6586, 139.7454)
+    val skyTree = GeoPointImpl.fromLatLong(35.7101, 139.8107)
+
+    // クリックされた位置を保存
+    var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
+
+    val initialCamera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+        zoom = 12.0
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // コントロールボタン
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPositionImpl(position = tokyoTower, zoom = 15.0),
+                        durationMills = 1000
+                    )
+                }
+            }) {
+                Text("Tokyo Tower")
+            }
+
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPositionImpl(position = skyTree, zoom = 15.0),
+                        durationMills = 1000
+                    )
+                }
+            }) {
+                Text("Sky Tree")
+            }
+        }
+
+        // 地図
+        GoogleMapView(
+            modifier = Modifier.fillMaxSize(),
+            state = mapViewState,
+            onMapClick = { geoPoint ->
+                clickedPosition = geoPoint
+            },
+            onMarkerClick = { markerState ->
+                Toast
+                    .makeText(
+                        context,
+                        "clicked: ${markerState.extra}",
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+            }
+        ) {
+            // マーカー
+            Marker(
+                position = tokyoTower,
+                icon = DefaultIcon(
+                    label = "TT",
+                    fillColor = Color.Red,
+                ),
+                extra = "tokyo_tower"
+            )
+
+            Marker(
+                position = skyTree,
+                icon = DefaultIcon(
+                    label = "ST",
+                    fillColor = Color.Blue
+                ),
+                extra = "sky_tree"
+            )
+
+            // クリックされた位置のマーカー
+            clickedPosition?.let { position ->
+                Marker(
+                    position = position,
+                    icon = DefaultIcon(
+                        label = "!",
+                        fillColor = Color.Green
+                    ),
+                    extra = "clicked"
+                )
+            }
+
+            // 円
+            Circle(
+                center = tokyoTower,
+                radiusMeters = 1000.0,
+                strokeColor = Color.Red,
+                fillColor = Color.Red.copy(alpha = 0.2f)
+            )
+
+            Circle(
+                center = skyTree,
+                radiusMeters = 1000.0,
+                strokeColor = Color.Blue,
+                fillColor = Color.Blue.copy(alpha = 0.2f)
+            )
+
+            // ポリライン
+            Polyline(
+                points = listOf(tokyoTower, skyTree),
+                strokeColor = Color.Magenta,
+                strokeWidth = 3.dp
+            )
+        }
+    }
+}
+```
+<video width="720" height="480" controls>
+ <source src="/get-started/complete-example.webm" type="video/webm" />
+ <source src="/get-started/complete-example.mp4" type="video/mp4" />
+</video>
+
+## 次のステップ
+
+このチュートリアルで、MapConductor SDK の基本的な使い方を学びました。
+
+さらに詳しく学びたい場合は、以下のドキュメントを参照してください:
+
+- [モジュール構成](/ja/modules/) - 各モジュールの詳細な説明
+- [地図SDK互換性](/ja/provider-compatibility/) - 各地図SDKの機能対応表
+- [SDK バージョン互換性](/ja/sdk-version-compatibility/) - サポートされている SDK バージョン
+
+## トラブルシューティング
+
+### 地図が表示されない
+
+- API キーが正しく設定されているか確認してください
+- インターネット接続を確認してください
+- 必要な権限が `AndroidManifest.xml` に追加されているか確認してください
+
+### ビルドエラーが発生する
+
+- `minSdk` が 26 以上に設定されているか確認してください
+- Kotlin と Compose のバージョンが互換性があるか確認してください
+- 依存関係が正しく追加されているか確認してください
+
+### マーカーがクリックできない
+
+- `onMarkerClick` が正しく設定されているか確認してください
+- マーカーに `extra` プロパティが設定されているか確認してください

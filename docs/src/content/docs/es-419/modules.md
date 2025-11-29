@@ -11,7 +11,7 @@ MapConductor Android SDK se compone de varios módulos para que puedas usar solo
 Todos los módulos se gestionan a través de `mapconductor-bom`. Usar el BOM evita inconsistencias de versión entre módulos.
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
+val mapconductorVersion = "1.1.1"
 
 dependencies {
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
@@ -69,5 +69,5 @@ El repositorio incluye una aplicación de ejemplo que demuestra las capacidades 
 
 - `example-app`: ejemplo de cómo usar MapConductor con varios proveedores.
 
-Consulta [Instalación](/es-419/installation/) y el README del repositorio para saber cómo compilar y ejecutar la app de ejemplo.
+Consulta [Comenzar](/es-419/get-started/) y el README del repositorio para saber cómo compilar y ejecutar la app de ejemplo.
 

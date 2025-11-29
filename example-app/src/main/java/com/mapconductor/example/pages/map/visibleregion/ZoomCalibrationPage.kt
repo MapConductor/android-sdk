@@ -32,12 +32,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mapconductor.arcgis.ArcGISMapView
-import com.mapconductor.arcgis.rememberArcGISMapViewState
+import com.mapconductor.arcgis.map.ArcGISMapView
+import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
-import com.mapconductor.googlemaps.GoogleMapsView
+import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import android.annotation.SuppressLint
 
@@ -159,7 +159,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
-                GoogleMapsView(
+                GoogleMapView(
                     state = googleMapViewState,
                     modifier = Modifier.fillMaxSize(),
                 )

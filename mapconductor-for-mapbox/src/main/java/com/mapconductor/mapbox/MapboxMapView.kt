@@ -2,6 +2,7 @@
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.Ref
@@ -13,6 +14,7 @@ import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapconductor.core.circle.CircleManagerImpl
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -69,9 +71,11 @@ fun MapboxMapView(
     val scope = remember { MapboxMapViewScope() }
     val registry = remember { scope.buildRegistry() }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
+        cameraState = cameraState,
         modifier = modifier,
         viewProvider = {
             val cameraOptions =
@@ -113,14 +117,17 @@ fun MapboxMapView(
                 circleController = circleController,
             ).also { controller ->
                 controller.setCameraMoveStartListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
                 controller.setCameraMoveListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
                 controller.setCameraMoveEndListener {
+                    cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }
@@ -152,7 +159,7 @@ fun MapboxMapView(
         },
         onMapLoaded = onMapLoaded,
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
-        // or handle it here if it's specific to GoogleMapsView structure before calling MapViewBase.
+        // or handle it here if it's specific to MapboxMapView structure before calling MapViewBase.
         // For now, assuming content relates to overlay definitions.
         content = content, // This might need adjustment based on how overlays are handled
         customDisposableEffect = { initState, holderRef ->

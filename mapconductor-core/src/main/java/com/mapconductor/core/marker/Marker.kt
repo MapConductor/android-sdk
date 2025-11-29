@@ -1,11 +1,9 @@
 package com.mapconductor.core.marker
 
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.mapconductor.core.features.GeoPoint
@@ -48,31 +46,22 @@ class MarkerState(
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
 
-    private var dragPosition: GeoPoint = position
-    private var _isDragging by mutableStateOf(false)
-    var isDragging: Boolean
-        get() = _isDragging
-        internal set(value) {
-            _isDragging = value
-
-            Snapshot.withoutReadObservation {
-                dragPosition = position
-            }
-        }
-
     private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
 
-    fun setAnimation(animation: MarkerAnimation?) {
+    fun animate(animation: MarkerAnimation?) {
         internalAnimation = animation
     }
 
     internal fun getAnimation(): MarkerAnimation? = internalAnimation
 
-    var position by mutableStateOf(position)
-
-    internal val internalPosition by derivedStateOf {
-        if (isDragging) dragPosition else position
-    }
+    private val currentPosition = mutableStateOf(position)
+    var position: GeoPoint
+        get() {
+            return currentPosition.value
+        }
+        set(value) {
+            currentPosition.value = value
+        }
 
     fun copy(
         id: String? = this.id,
@@ -100,7 +89,9 @@ class MarkerState(
         var result = extra?.hashCode() ?: 0
         result = 31 * result + clickable.hashCode()
         result = 31 * result + draggable.hashCode()
-        result = 31 * result + position.hashCode()
+        result = 31 * result + currentPosition.value.latitude.hashCode()
+        result = 31 * result + currentPosition.value.longitude.hashCode()
+        result = 31 * result + currentPosition.value.altitude.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
         return result
     }
@@ -111,7 +102,8 @@ class MarkerState(
             icon.hashCode(),
             clickable.hashCode(),
             draggable.hashCode(),
-            internalPosition.hashCode(),
+            currentPosition.value.latitude.hashCode(),
+            currentPosition.value.longitude.hashCode(),
             internalAnimation?.hashCode() ?: 1,
         )
 
@@ -123,7 +115,8 @@ data class MarkerFingerPrint(
     val icon: Int?,
     val clickable: Int,
     val draggable: Int,
-    val position: Int,
+    val latitude: Int,
+    val longitude: Int,
     val animation: Int?,
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit

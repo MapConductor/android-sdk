@@ -1,0 +1,201 @@
+---
+title: "MapViewState"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`MapViewState` は、地図の初期化、カメラ位置、および全体的な地図状態を管理するコアコンポーネントです。
+各地図SDKには独自の実装がありますが、MapConductorがそれらを統一したAPIを提供しています。
+
+## 地図SDK実装
+
+MapConductor は5つの地図SDKをサポートしており、それぞれに独自の `MapViewState` 実装があります:
+
+- `GoogleMapViewStateImpl` - Google Maps
+- `MapboxViewStateImpl` - Mapbox Map
+- `HereViewStateImpl` - HERE Map
+- `ArcGISMapViewStateImpl` - ArcGIS Map
+- `MapLibreViewStateImpl` - MapLibre Map
+
+## コアプロパティ
+
+### 初期化状態
+
+- **`isInitialized: StateFlow<InitState>`**: 地図の初期化状態を追跡します
+  - `NotStarted`: 地図の初期化が開始されていません
+  - `Initializing`: 地図は現在初期化中です
+  - `Initialized`: 地図は使用準備ができています
+  - `Failed`: 初期化が失敗しました
+
+### カメラ管理
+
+- **`cameraPosition: MapCameraPositionImpl`**: 現在のカメラ位置, 地図読み込み時の初期カメラ位置
+
+### 地図デザイン
+
+- **`mapDesignType: ActualMapDesignType`**: 地図のスタイル/デザイン（地図SDK固有）
+
+### カメラ移動
+
+<Tabs>
+<TabItem label="シンプルに移動">
+- `moveCameraTo(GeoPointImpl, Long?)`
+
+    ```kotlin
+    fun moveCameraTo(
+        position: GeoPointImpl,
+        durationMills: Long? = 0,
+    )
+    ```
+
+    - `position` で指定した位置に、カメラを移動します。ズームや傾き角度は `moveCameraTo`を実行したときの値を維持します。
+    - `durationMills`にミリ秒を指定すると、アニメーション付きでカメラを移動します。
+</TabItem>
+<TabItem label="カメラオプションを指定して移動">
+- `moveCameraTo(MapCameraPositionImpl, Long?)`
+
+    ```kotlin
+    fun moveCameraTo(
+        cameraPosition: MapCameraPositionImpl,
+        durationMills: Long? = 0,
+    )
+    ```
+
+    - `MapCameraPositionImpl` を指定して、カメラを特定の位置に移動します。ズームや傾きなどを同時に指定することができます。省略したプロパティは、`moveCameraTo`を実行したときの値を維持します。
+    - `durationMills`にミリ秒を指定すると、アニメーション付きでカメラを移動します。
+</TabItem>
+</Tabs>
+
+## 使用例
+
+### カメラコントロール
+
+```kotlin
+@Composable
+fun CameraControlExample() {
+    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPositionImpl(
+        position = london,
+        zoom = 8.0,
+    )
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = camera,
+    )
+
+    Column(
+        modifier = modifier,
+    ) {
+        Button(
+            onClick = {
+                val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+                mapViewState.moveCameraTo(
+                    position = sanFrancisco,
+                    durationMills = 3000
+                )
+            }
+        ) {
+            Text("Move to San Francisco")
+        }
+
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+        HereMapView(
+            state = mapViewState,
+            onCameraMoveEnd = {
+                println("Camera movement completed")
+            }
+        ) {
+            // 地図コンテンツ
+        }
+    }
+}
+```
+
+<video width="720" height="480" controls>
+ <source src="/mapviewstate/camera-control-example.webm" type="video/webm" />
+ <source src="/mapviewstate/camera-control-example.mp4" type="video/mp4" />
+</video>
+
+### 地図デザインの切り替え
+
+```kotlin
+@Composable
+fun MapDesignSwitchExample() {
+    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPositionImpl(
+        position = london,
+        zoom = 8.0,
+    )
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = camera,
+        mapDesign = HereMapDesign.NormalDay,
+    )
+
+    Column(
+        modifier = modifier,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.NormalDay
+                }
+            ) {
+                Text("NormalDay")
+            }
+            Spacer(
+                modifier = Modifier.width(20.dp),
+            )
+
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.NormalNight
+                }
+            ) {
+                Text("NormalNight")
+            }
+
+            Spacer(
+                modifier = Modifier.width(20.dp),
+            )
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.HybridDay
+                }
+            ) {
+                Text("HYBRID_DAY")
+            }
+        }
+
+        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+        HereMapView(
+            state = mapViewState,
+        ) {
+            // 地図コンテンツ
+        }
+    }
+}
+```
+
+<video width="720" height="480" controls>
+ <source src="/mapviewstate/map-design-example.webm" type="video/webm" />
+ <source src="/mapviewstate/map-design-example.mp4" type="video/mp4" />
+</video>
+## イベント処理
+
+`MapViewState` は選択した地図SDKコンポーネントと連携して、包括的なイベント処理を提供します:
+
+```kotlin
+// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+MapView(
+    state = mapViewState,
+    onMapLoaded = {
+        println("Map loaded successfully")
+    },
+    onMapClick = { geoPoint ->
+        println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+    }
+) {
+    // 地図コンテンツ
+}
+```

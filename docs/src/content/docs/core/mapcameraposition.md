@@ -171,36 +171,6 @@ val streetLevel = MapCameraPositionImpl(
 )
 ```
 
-## Map Paddings
-
-Map paddings adjust the effective viewport without changing the camera position:
-
-```kotlin
-// Padding for bottom navigation bar
-val navigationPadding = MapPaddingsImpl(
-    bottom = 120.0  // Reserve space for navigation
-)
-
-// Padding for side panel
-val sidePanelPadding = MapPaddingsImpl(
-    left = 300.0   // Reserve space for side panel
-)
-
-// Complex UI layout padding
-val complexPadding = MapPaddingsImpl(
-    top = 80.0,     // Status bar + toolbar
-    left = 60.0,    // Side menu button area
-    bottom = 160.0, // Bottom sheet + navigation
-    right = 40.0    // Action button area
-)
-
-val paddedCamera = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    zoom = 15.0,
-    paddings = complexPadding
-)
-```
-
 ## Visible Region
 
 The visible region describes the actual geographic area shown on screen after considering camera position, zoom level, bearing, tilt, and viewport padding.
@@ -253,12 +223,9 @@ While `bounds` provides a simple rectangular boundary, the corner points (`nearL
 fun VisibleRegionExample() {
     var cameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
         state = mapViewState,
-        onCameraMove = { newPosition ->
-            cameraPosition = newPosition
-        }
     ) {
         // Display visible region info
         cameraPosition?.visibleRegion?.let { region ->
@@ -300,6 +267,13 @@ fun AnimatedCameraExample() {
         GeoPointImpl.fromLatLong(51.5074, -0.1278)    // London
     )
 
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = locations[0],
+            zoom = 6.0
+        ),
+    )
+
     var currentIndex by remember { mutableStateOf(0) }
 
     // Animate to next location every 5 seconds
@@ -307,20 +281,22 @@ fun AnimatedCameraExample() {
         while (true) {
             delay(5000)
             currentIndex = (currentIndex + 1) % locations.size
+
+            val targetPosition = MapCameraPositionImpl(
+                position = locations[currentIndex],
+                zoom = 6.0,
+                bearing = 0.0,
+                tilt = 0.0
+            )
+            mapViewState.moveCameraTo(targetPosition, 1000)
         }
     }
 
-    val targetPosition = MapCameraPositionImpl(
-        position = locations[currentIndex],
-        zoom = 12.0,
-        bearing = 0.0,
-        tilt = 0.0
-    )
 
-    // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-    MapView(
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    HereMapView(
         state = mapViewState,
-        cameraPosition = targetPosition
+        modifier = modifier,
     ) {
         // Add markers for each location
         locations.forEachIndexed { index, location ->
@@ -345,24 +321,30 @@ fun AnimatedCameraExample() {
 
 ```kotlin
 @Composable
-fun CameraControlExample() {
-    var cameraPosition by remember {
-        mutableStateOf(
-            MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                zoom = 15.0
-            )
-        )
-    }
+fun CameraControlExample(modifier: Modifier = Modifier) {
+    val mapViewState = rememberMapLibreMapViewState(
+        mapDesign = MapLibreDesignType(
+            id = "debug-tiles",
+            styleJsonURL = "https://demotiles.maplibre.org/debug-tiles/style.json",
+        ),
+        cameraPosition = MapCameraPositionImpl(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            zoom = 15.0
+        ),
+    )
 
-    Column {
+    Column(
+        modifier = modifier,
+    ) {
         // Camera controls
         Row {
             Button(
                 onClick = {
-                    cameraPosition = cameraPosition.copy(
-                        zoom = (cameraPosition.zoom + 1).coerceAtMost(21.0)
+                    val newZoom = mapViewState.cameraPosition.copy(
+                        zoom = (mapViewState.cameraPosition.zoom + 1)
+                            .coerceAtMost(21.0),
                     )
+                    mapViewState.moveCameraTo(newZoom, 500)
                 }
             ) {
                 Text("Zoom In")
@@ -370,9 +352,11 @@ fun CameraControlExample() {
 
             Button(
                 onClick = {
-                    cameraPosition = cameraPosition.copy(
-                        zoom = (cameraPosition.zoom - 1).coerceAtLeast(0.0)
+                    val newZoom = mapViewState.cameraPosition.copy(
+                        zoom = (mapViewState.cameraPosition.zoom - 1)
+                            .coerceAtMost(21.0),
                     )
+                    mapViewState.moveCameraTo(newZoom, 500)
                 }
             ) {
                 Text("Zoom Out")
@@ -380,9 +364,10 @@ fun CameraControlExample() {
 
             Button(
                 onClick = {
-                    cameraPosition = cameraPosition.copy(
-                        bearing = (cameraPosition.bearing + 45) % 360
+                    val newZoom = mapViewState.cameraPosition.copy(
+                        bearing = (mapViewState.cameraPosition.bearing + 45) % 360,
                     )
+                    mapViewState.moveCameraTo(newZoom, 500)
                 }
             ) {
                 Text("Rotate")
@@ -391,23 +376,22 @@ fun CameraControlExample() {
 
         // Tilt slider
         Slider(
-            value = cameraPosition.tilt.toFloat(),
+            value = mapViewState.cameraPosition.tilt.toFloat(),
             onValueChange = { tilt ->
-                cameraPosition = cameraPosition.copy(tilt = tilt.toDouble())
+                val newZoom = mapViewState.cameraPosition.copy(
+                    tilt = tilt.toDouble(),
+                )
+                mapViewState.moveCameraTo(newZoom)
             },
             valueRange = 0f..80f
         )
 
-        // Replace MapView with your chosen map provider, such as GoogleMapsView, MapboxMapView
-        MapView(
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+        MapLibreMapView(
             state = mapViewState,
-            cameraPosition = cameraPosition,
-            onCameraMove = { newPosition ->
-                cameraPosition = newPosition
-            }
         ) {
             Marker(
-                position = cameraPosition.position,
+                position = mapViewState.cameraPosition.position,
                 icon = DefaultIcon(fillColor = Color.Red)
             )
         }

@@ -85,10 +85,8 @@ class HereMarkerRenderer(
                 marker.image = params.bitmapIcon.toMapImage()
                 marker.anchor = params.bitmapIcon.toAnchor2D()
             }
-            if (params.current.state.position != params.prev.state.position) {
-                marker.coordinates =
-                    GeoPointImpl.from(params.current.state.position).toGeoCoordinates()
-            }
+            marker.coordinates =
+                GeoPointImpl.from(params.current.state.position).toGeoCoordinates()
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
             marker
