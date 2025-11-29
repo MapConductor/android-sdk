@@ -377,50 +377,56 @@ fun DebouncedEventExample() {
 }
 ```
 
-### マルチタッチジェスチャーイベント
-
-```kotlin
-@Composable
-fun GestureEventExample() {
-    var gestureInfo by remember { mutableStateOf("No gesture") }
-
-    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
-    MapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            gestureInfo = "Single tap at: $geoPoint"
-        },
-        // 注: 長押しやその他のジェスチャーは、
-        // 基盤となるマップ地図SDKのジェスチャーシステムを通じて処理されます
-    ) {
-        // ジェスチャー情報を表示
-        Text(
-            text = gestureInfo,
-            modifier = Modifier
-                .background(Color.Black.copy(alpha = 0.7f))
-                .padding(8.dp),
-            color = Color.White
-        )
-    }
-}
-```
 
 ## イベントハンドラの型
 
 ### OnMapEventHandler
+
+- MapViewに発生したイベントを伝えます
 
 - 定義
     ```kotlin
     typealias OnMapEventHandler = (GeoPoint) -> Unit
     ```
 
-```
-typealias OnMarkerEventHandler = (MarkerState) -> Unit
-typealias OnCircleEventHandler = (CircleEvent) -> Unit
-typealias OnPolylineEventHandler = (PolylineEvent) -> Unit
-typealias OnPolygonEventHandler = (PolygonEvent) -> Unit
-typealias OnGroundImageEventHandler = (GroundImageEvent) -> Unit
-```
+### OnMarkerEventHandler
+
+- Markerに発生したイベントを伝えます
+- 定義
+    ```
+    typealias OnMarkerEventHandler = (MarkerState) -> Unit
+    ```
+
+### OnCircleEventHandler
+
+- Circleに発生したイベントを伝えます。CircleEventはイベントが発生した位置情報を含みます。
+- 定義
+    ```
+    typealias OnCircleEventHandler = (CircleEvent) -> Unit
+    ```
+
+### OnPolylineEventHandler
+
+- Polylineに発生したイベントを伝えます。PolylineEventはイベントが発生した位置情報を含みます。
+- 定義
+    ```
+    typealias OnPolylineEventHandler = (PolylineEvent) -> Unit
+    ```
+
+### OnPolygonEventHandler
+
+- Polygonに発生したイベントを伝えます。PolygonEventはイベントが発生した位置情報を含みます。
+- 定義
+    ```
+    typealias OnPolygonEventHandler = (PolygonEvent) -> Unit
+    ```
+### OnPolygonEventHandler
+
+- GroundImageに発生したイベントを伝えます。GroundImageEventはイベントが発生した位置情報を含みます。
+- 定義
+    ```
+    typealias OnGroundImageEventHandler = (GroundImageEvent) -> Unit
+    ```
 
 ## ベストプラクティス
 
