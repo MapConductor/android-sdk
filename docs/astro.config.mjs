@@ -35,7 +35,7 @@ export default defineConfig({
 				Head: './src/components/overrides/Head.astro',
 			},
 			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' },
+				{ icon: 'github', label: 'GitHub', href: 'https://github.com/MapConductor/android-sdk' },
 			],
 			sidebar: [
 				{
