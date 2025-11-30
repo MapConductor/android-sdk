@@ -120,27 +120,27 @@ export default defineConfig({
 						{ slug: 'api/event-handlers' },
 					],
 				},
-				{
-					label: 'Examples',
-					translations: {
-						ja: 'サンプル',
-					},
-					items: [
-						{ slug: 'examples/basic-usage' },
-						{ slug: 'examples/advanced-usage' },
-					],
-				},
-				{
-					label: 'Experimental',
-					translations: {
-						ja: '実験的機能',
-					},
-					items: [
-						{ slug: 'experimental/icons' },
-						{ slug: 'experimental/marker-strategy' },
-						{ slug: 'experimental/marker-native-strategy' },
-					],
-				},
+				// {
+				// 	label: 'Examples',
+				// 	translations: {
+				// 		ja: 'サンプル',
+				// 	},
+				// 	items: [
+				// 		{ slug: 'examples/basic-usage' },
+				// 		{ slug: 'examples/advanced-usage' },
+				// 	],
+				// },
+				// {
+				// 	label: 'Experimental',
+				// 	translations: {
+				// 		ja: '実験的機能',
+				// 	},
+				// 	items: [
+				// 		{ slug: 'experimental/icons' },
+				// 		{ slug: 'experimental/marker-strategy' },
+				// 		{ slug: 'experimental/marker-native-strategy' },
+				// 	],
+				// },
 			],
 			plugins: [
 				starlightMermaid({
