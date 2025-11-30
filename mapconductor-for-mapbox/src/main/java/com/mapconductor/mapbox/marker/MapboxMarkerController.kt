@@ -6,7 +6,6 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.settings.Settings
 
@@ -54,7 +53,8 @@ class MapboxMarkerController(
         val markerScreen = renderer.holder.toScreenOffset(nearest.state.position) ?: return null
 
         val tolerancePx =
-            Settings.Default.tapTolerance.value.toDouble() *
+            Settings.Default.tapTolerance.value
+                .toDouble() *
                 ResourceProvider.getDensity().toDouble()
 
         val icon = nearest.state.icon

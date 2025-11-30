@@ -5,7 +5,6 @@ import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.ArcGISMapViewHolder
-import com.mapconductor.arcgis.getZoomLevel
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
@@ -13,7 +12,6 @@ import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.settings.Settings
 
 internal data class SelectedMarker(
@@ -56,7 +54,8 @@ class ArcGISMarkerController private constructor(
 
         // 画面上のタップ許容マージン（px）
         val tolerancePx =
-            Settings.Default.tapTolerance.value.toDouble() *
+            Settings.Default.tapTolerance.value
+                .toDouble() *
                 ResourceProvider.getDensity().toDouble()
 
         val icon = nearest.state.icon
