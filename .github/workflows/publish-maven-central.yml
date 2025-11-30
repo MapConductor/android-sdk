@@ -25,7 +25,8 @@ jobs:
 
       - name: Determine modules to publish and deploy to Maven Central
         run: |
-          set -euo pipefail
+          # Fail on undefined variables and on pipeline failures, but don't exit on every non-zero status
+          set -uo pipefail
 
           PUBLISHABLE_MODULES=(
             mapconductor-bom
@@ -81,7 +82,7 @@ jobs:
             if [[ -n "$remote_version" && "$local_version" == "$remote_version" ]]; then
               echo "  Already published (remote version ${remote_version}); skipping."
             else
-              echo "  Will publish (remote='${remote_version}')."
+              echo "  Will publish local version ${local_version} (remote='${remote_version}')."
               publish_tasks+=(":${module}:publishAllPublicationsToNmcpReleaseRepository")
             fi
           done
@@ -93,4 +94,3 @@ jobs:
 
           echo "Publishing modules with tasks: ${publish_tasks[*]}"
           ./gradlew --no-daemon "${publish_tasks[@]}"
-
