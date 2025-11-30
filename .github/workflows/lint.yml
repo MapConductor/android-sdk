@@ -82,11 +82,13 @@ jobs:
 
       - name: Detect changed modules by hashing
         id: detect
+        env:
+          MODULES: ${{ steps.define.outputs.modules }}
         run: |
           changed_modules=""
           mkdir -p .lint-hash-cache
 
-          for module in ${{ steps.define.outputs.modules }}; do
+          for module in $MODULES; do
             if [ "$module" != "mapconductor-bom" ]; then
               # src配下のKotlinとXMLファイルのハッシュを計算
               if [ -d "$module/src" ]; then
