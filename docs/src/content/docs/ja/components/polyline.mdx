@@ -265,32 +265,69 @@ fun DynamicPolylineExample() {
 ### 測地線 vs 標準線
 
 ```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    val longDistancePoints = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
-        GeoPointImpl.fromLatLong(40.7128, -74.0060)   // ニューヨーク
+@Composable
+fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(36.0, -160.0)
+    val camera = MapCameraPositionImpl(
+        position = center,
+        zoom = 4.0,
     )
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = camera,
+    )
+    var markers by remember {
+        mutableStateOf<List<MarkerState>>(emptyList())
+    }
 
-    // 標準線（地図投影上で直線）
-    Polyline(
-        points = longDistancePoints,
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        geodesic = false,
-        extra = "Straight line"
-    )
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier,
+        onPolylineClick = { polylineEvent ->
+            markers = markers + MarkerState(
+                icon = DefaultIcon(
+                    fillColor = polylineEvent.state.strokeColor,
+                ),
+                position = polylineEvent.clicked,
+            )
+        }
+    ) {
+        val longDistancePoints = listOf(
+            GeoPointImpl.fromLatLong(35.548852, 139.784086), // 羽田空港
+            GeoPointImpl.fromLatLong(37.615223, -122.389979)   // サンフランシスコ空港
+        )
 
-    // 測地線（地球の曲率に沿う）
-    Polyline(
-        points = longDistancePoints,
-        strokeColor = Color.Blue,
-        strokeWidth = 3.dp,
-        geodesic = true,
-        extra = "Geodesic line"
-    )
+        // 標準線（地図投影上で直線）
+        Polyline(
+            id = "straight-line",
+            points = longDistancePoints,
+            strokeColor = Color.Red,
+            strokeWidth = 3.dp,
+            geodesic = false,
+            extra = "Straight line"
+        )
+
+        // 測地線（地球の曲率に沿う）
+        Polyline(
+            id = "geodesic-line",
+            points = longDistancePoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 3.dp,
+            geodesic = true,
+            extra = "Geodesic line"
+        )
+
+        markers.forEach { markerState ->
+            Marker(markerState)
+        }
+    }
 }
 ```
+
+<video width="720" height="450" controls>
+ <source src="/polyline/geodesic-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/geodesic-polyline-example.mp4" type="video/mp4" />
+</video>
 
 ## イベント処理
 
