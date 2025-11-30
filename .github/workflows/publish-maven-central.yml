@@ -36,8 +36,6 @@ jobs:
             mapconductor-for-here
             mapconductor-for-mapbox
             mapconductor-icons
-            mapconductor-marker-native-strategy
-            mapconductor-marker-strategy
           )
 
           GROUP_ID="com.mapconductor"
