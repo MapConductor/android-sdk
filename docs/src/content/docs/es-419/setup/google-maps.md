@@ -16,7 +16,7 @@ En esta página se explica cómo configurar el SDK de Google Maps para Android j
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-googlemaps")
     // Añade también las dependencias del SDK de Google Maps para Android

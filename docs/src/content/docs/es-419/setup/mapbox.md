@@ -16,7 +16,7 @@ En esta página se explica cómo configurar Mapbox para usarlo con MapConductor.
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-mapbox")
     // Añade también las dependencias de Mapbox Maps SDK for Android

@@ -65,8 +65,8 @@ dependencies {
     implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
-    // MapConductor BOM for version management (v1.1.1)
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 
     // MapConductor modules (versions managed by BOM)
     implementation("com.mapconductor:core")

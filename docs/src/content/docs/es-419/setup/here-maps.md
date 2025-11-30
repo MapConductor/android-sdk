@@ -15,7 +15,7 @@ En esta página se explica cómo configurar HERE Maps SDK para usarlo con MapCon
 
 ```kotlin
 dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-here")
     // Añade también las dependencias de HERE SDK for Android
