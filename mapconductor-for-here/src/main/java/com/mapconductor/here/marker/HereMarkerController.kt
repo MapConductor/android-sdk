@@ -6,7 +6,6 @@ import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.settings.Settings
@@ -44,7 +43,8 @@ class HereMarkerController private constructor(
         val markerScreen = renderer.holder.toScreenOffset(nearest.state.position) ?: return null
 
         val tolerancePx =
-            Settings.Default.tapTolerance.value.toDouble() *
+            Settings.Default.tapTolerance.value
+                .toDouble() *
                 ResourceProvider.getDensity().toDouble()
 
         val icon = nearest.state.icon
