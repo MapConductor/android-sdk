@@ -20,6 +20,7 @@ dependencies {
     implementation "com.mapconductor:for-mapbox"
     implementation "com.mapconductor:for-here"
     implementation "com.mapconductor:for-arcgis"
+    implementation "com.mapconductor:for-maplibre"
 }
 ```
 
@@ -30,13 +31,11 @@ Cada SDK de mapas requiere una configuración específica y claves de API.
 #### Google Maps
 
 ```kotlin
-// En tu Activity o Fragment
 @Composable
 fun GoogleMapsExample() {
     val mapViewState = rememberGoogleMapViewState()
 
-    // Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView
-MapView(state = mapViewState) {
+    GoogleMapView(state = mapViewState) {
         // Contenido del mapa
     }
 }
@@ -49,8 +48,7 @@ MapView(state = mapViewState) {
 fun MapboxExample() {
     val mapViewState = rememberMapboxMapViewState()
 
-    // Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView
-MapView(state = mapViewState) {
+    MapboxMapView(state = mapViewState) {
         // Contenido del mapa
     }
 }
@@ -63,8 +61,7 @@ MapView(state = mapViewState) {
 fun HereExample() {
     val mapViewState = rememberHereMapViewState()
 
-    // Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView
-MapView(state = mapViewState) {
+    HereMapView(state = mapViewState) {
         // Contenido del mapa
     }
 }
@@ -77,16 +74,26 @@ MapView(state = mapViewState) {
 fun ArcGISExample() {
     val mapViewState = rememberArcGISMapViewState()
 
-    // Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView
-MapView(state = mapViewState) {
+    ArcGISMapView(state = mapViewState) {
         // Contenido del mapa
     }
 }
 ```
 
-## Inicialización avanzada
+#### MapLibre
 
-### Configuración personalizada del mapa
+```kotlin
+@Composable
+fun GoogleMapsExample() {
+    val mapViewState = rememberMapLibreViewState()
+
+    MapLibreView(state = mapViewState) {
+        // Contenido del mapa
+    }
+}
+```
+
+## Inicialización
 
 ```kotlin
 @Composable
@@ -107,11 +114,8 @@ fun CustomMapConfiguration() {
     }
 
     // Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView
-MapView(
+    GoogleMapView(
         state = mapViewState,
-        onMapViewInitialized = {
-            println("Map view initialized")
-        },
         onMapLoaded = {
             println("Map loaded and ready")
         }
@@ -120,45 +124,3 @@ MapView(
     }
 }
 ```
-
-### Manejo de estados de carga y error
-
-```kotlin
-@Composable
-fun ErrorScreen(onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Error al cargar el mapa")
-        Button(onClick = onRetry) {
-            Text("Reintentar")
-        }
-    }
-}
-
-@Composable
-fun LoadingScreen(message: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator()
-            Text(message)
-        }
-    }
-}
-```
-
-## Buenas prácticas
-
-1. **Usar remember**: envuelve siempre la creación de `MapViewState` con `remember`.
-2. **Manejar estados**: gestiona correctamente todos los estados de inicialización.
-3. **Recuperación de errores**: implementa lógica de reintento cuando falle la inicialización.
-4. **Gestión de recursos**: delega la gestión del ciclo de vida al SDK de mapas.
-5. **Claves de API**: asegúrate de configurar correctamente las claves de API de cada SDK.
-6. **Rendimiento**: considera la inicialización diferida para mejorar el tiempo de arranque de la app.
-7. **Pruebas**: prueba con distintos SDK de mapas para garantizar la compatibilidad.
-
