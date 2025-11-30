@@ -12,6 +12,8 @@ jobs:
     env:
       OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
       OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+      GPR_USER: ${{ secrets.GPR_USER }}
+      GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
       NDK_VERSION: 27.3.13750724
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_HOME: /usr/local/lib/android/sdk
@@ -37,6 +39,11 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > "$HOME/secring.gpg"
+          gpg --batch --import "$HOME/secring.gpg"
+
       - name: Install Android NDK $NDK_VERSION
         uses: android-actions/setup-android@v3
         with:
@@ -57,6 +64,10 @@ jobs:
           fi
 
       - name: Determine modules to publish and deploy to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_signing.keyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signing.password: ${{ secrets.GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_signing.secretKeyRingFile: ${{ format('{0}/secring.gpg', env.HOME) }}
         run: |
           # Disable -e from the default shell so we can handle failures explicitly.
           # Keep -u (undefined vars) and pipefail (pipeline errors).
