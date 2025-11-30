@@ -12,9 +12,23 @@ jobs:
     env:
       OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
       OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+      NDK_VERSION: 27.3.13750724
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Write gradle.properties
+        run: |
+          {
+            echo "android.ndkVersion=${NDK_VERSION}"
+          } >> gradle.properties
+
+      - name: Set NDK environment
+        run: |
+          echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
+          echo "NDK_VERSION=${NDK_VERSION}" >> $GITHUB_ENV
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -23,19 +37,43 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Install Android NDK $NDK_VERSION
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "build-tools;36.0.0 ndk;${{ env.NDK_VERSION }} platform-tools platforms;android-35"
+
+      - name: Fetch HERE SDK mock artifact
+        if: steps.detect.outputs.changed_modules != ''
+        run: |
+          mkdir -p libs
+          target_path="libs/heresdk-explore-mock-4.23.2.0.210004.jar"
+          echo "Downloading HERE SDK mock artifact to $target_path"
+          curl --fail --show-error --silent --location \
+            -u "$GPR_USER:$GPR_TOKEN" \
+            -o "$target_path" \
+            "https://raw.githubusercontent.com/MapConductor/here-sdk-mocks/main/heresdk-explore-mock-4.23.2.0.210004.jar"
+          if [ ! -s "$target_path" ]; then
+            echo "Failed to download HERE SDK mock artifact"
+            exit 1
+          fi
+          
       - name: Determine modules to publish and deploy to Maven Central
         run: |
-          # Fail on undefined variables and on pipeline failures, but don't exit on every non-zero status
+          # Disable -e from the default shell so we can handle failures explicitly.
+          # Keep -u (undefined vars) and pipefail (pipeline errors).
+          set +e
           set -uo pipefail
 
           PUBLISHABLE_MODULES=(
+            mapconductor-icons
+            mapconductor-marker-native-strategy
+            mapconductor-marker-strategy
             mapconductor-bom
             mapconductor-core
             mapconductor-for-arcgis
             mapconductor-for-googlemaps
             mapconductor-for-here
             mapconductor-for-mapbox
-            mapconductor-icons
           )
 
           GROUP_ID="com.mapconductor"
@@ -85,13 +123,16 @@ jobs:
             fi
           done
 
-          # Check array length safely with set -u by temporarily disabling it
-          set +u
+          # If no modules need publishing, exit successfully
           if [[ "${#publish_tasks[@]}" -eq 0 ]]; then
             echo "No modules require publishing."
             exit 0
           fi
-          set -u
 
           echo "Publishing modules with tasks: ${publish_tasks[*]}"
           ./gradlew --no-daemon "${publish_tasks[@]}"
+          gradle_exit=$?
+          if [[ $gradle_exit -ne 0 ]]; then
+            echo "Gradle publish failed with exit code $gradle_exit"
+            exit $gradle_exit
+          fi
