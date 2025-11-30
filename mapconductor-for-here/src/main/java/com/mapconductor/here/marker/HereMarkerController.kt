@@ -6,7 +6,6 @@ import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.settings.Settings
@@ -38,19 +37,48 @@ class HereMarkerController private constructor(
         get() = internalSelectedMarker
 
     override fun find(position: GeoPoint): MarkerEntity<HereActualMarker>? {
-        return markerManager.findNearest(position)?.let { nearest ->
-            val zoom = renderer.holder.mapView.camera.state.zoomLevel - ZOOM_ADJUST_VALUE
-            val tolerance =
-                Settings.Default.tapTolerance.value
-                    .toDouble() * ResourceProvider.getDensity()
-            val meterInMapPixel = renderer.zoomToMetersPerPixel(zoom, 256)
-            val radius = tolerance * meterInMapPixel
-            val distance = computeDistanceBetween(position, nearest.state.position)
-            return if (distance <= radius) {
+        val nearest = markerManager.findNearest(position) ?: return null
+
+        val touchScreen = renderer.holder.toScreenOffset(position) ?: return null
+        val markerScreen = renderer.holder.toScreenOffset(nearest.state.position) ?: return null
+
+        val tolerancePx =
+            Settings.Default.tapTolerance.value
+                .toDouble() *
+                ResourceProvider.getDensity().toDouble()
+
+        val icon = nearest.state.icon
+
+        if (icon == null) {
+            val dx = (touchScreen.x - markerScreen.x).toDouble()
+            val dy = (touchScreen.y - markerScreen.y).toDouble()
+            val distancePx = kotlin.math.hypot(dx, dy)
+            return if (distancePx <= tolerancePx) {
                 nearest
             } else {
                 null
             }
+        }
+
+        val baseSizePx = ResourceProvider.dpToPxForBitmap(icon.iconSize).toDouble()
+        val iconWidthPx = baseSizePx * icon.scale.toDouble()
+        val iconHeightPx = baseSizePx * icon.scale.toDouble()
+
+        val anchorX = icon.anchor.x.toDouble()
+        val anchorY = icon.anchor.y.toDouble()
+
+        val dx = (touchScreen.x - markerScreen.x).toDouble()
+        val dy = (touchScreen.y - markerScreen.y).toDouble()
+
+        val left = -anchorX * iconWidthPx - tolerancePx
+        val right = (1.0 - anchorX) * iconWidthPx + tolerancePx
+        val top = -anchorY * iconHeightPx - tolerancePx
+        val bottom = (1.0 - anchorY) * iconHeightPx + tolerancePx
+
+        return if (dx in left..right && dy in top..bottom) {
+            nearest
+        } else {
+            null
         }
     }
 

@@ -2,7 +2,7 @@
 title: Modules Overview
 ---
 
-MapConductor is split into multiple Gradle modules so that you can depend only on what you need. This page summarizes each `mapconductor-xxx` module in v1.1.0.
+MapConductor is split into multiple Gradle modules so that you can depend only on what you need. This page summarizes each `mapconductor-xxx` module in v{BOM_MODULE_VERSION}.
 
 ## Core and BOM
 
@@ -14,7 +14,7 @@ Bill of Materials for all MapConductor artifacts.
 - Recommended for all projects
 
 ```kotlin
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 ```
 
 ### `mapconductor-core`
@@ -112,13 +112,13 @@ Typical configurations:
 
 ```kotlin
 // Minimal: Google Maps only
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
 ```
-```
+```kotlin
 // Multi-provider with icons and strategies
-implementation(platform("com.mapconductor:mapconductor-bom:1.1.1"))
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 implementation("com.mapconductor:core")
 implementation("com.mapconductor:for-googlemaps")
 implementation("com.mapconductor:for-mapbox")
@@ -127,4 +127,3 @@ implementation("com.mapconductor:marker-strategy")
 ```
 
 Use this page as a high-level map; detailed API information for each area (core, components, states, experimental) can be migrated from the existing mdBook sections (`docs/src/core`, `docs/src/components`, etc.).
-

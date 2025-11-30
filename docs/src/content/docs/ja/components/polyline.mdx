@@ -62,40 +62,79 @@ fun Polyline(state: PolylineState)
 ### 基本的な Polyline
 
 ```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
+@Composable
+fun BasicPolylineExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(53.566853, 9.988269)
+
+    // 地図の作成
+    val camera =
+        MapCameraPositionImpl(
+            position = center,
+            zoom = 14.0,
+        )
+    val mapViewState =
+        rememberMapboxMapViewState(
+            cameraPosition = camera,
+        )
     val routePoints = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
-        GeoPointImpl.fromLatLong(37.7849, -122.4094), // ポイント 2
-        GeoPointImpl.fromLatLong(37.7949, -122.3994), // ポイント 3
-        GeoPointImpl.fromLatLong(37.8049, -122.3894)  // ポイント 4
+        GeoPointImpl.fromLatLong(53.561011,9.989448),
+        GeoPointImpl.fromLatLong(53.563203,9.985800),
+        GeoPointImpl.fromLatLong(53.564579,9.983525),
+        GeoPointImpl.fromLatLong(53.566873,9.980822),
+        GeoPointImpl.fromLatLong(53.567943,9.982152),
+        GeoPointImpl.fromLatLong(53.570186,9.984813),
+        GeoPointImpl.fromLatLong(53.572683,9.986143),
+        GeoPointImpl.fromLatLong(53.572658,9.988675),
+        GeoPointImpl.fromLatLong(53.572709,9.990392)
     )
 
-    Polyline(
-        points = routePoints,
-        strokeColor = Color.Blue,
-        strokeWidth = 3.dp
-    )
+    // MapView を GoogleMapView、HereMapView などのマップ地図SDKに置き換えてください
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        Polyline(
+            points = routePoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 9.dp
+        )
+    }
 }
 ```
+![実行結果](~/assets/polyline/basic-polyline-example.png)
 
 ### ウェイポイントマーカー付きのインタラクティブな Polyline
-
-サンプルアプリのパターンに基づいた例:
 
 ```kotlin
 @Composable
 fun InteractivePolylineExample() {
+    val center = GeoPointImpl.fromLatLong(53.566853, 9.988269)
+
+    // 地図の作成
+    val camera =
+        MapCameraPositionImpl(
+            position = center,
+            zoom = 14.0,
+        )
+    val mapViewState =
+        rememberMapboxMapViewState(
+            cameraPosition = camera,
+        )
     var waypoints by remember {
         mutableStateOf(
             listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7949, -122.3994)
+                GeoPointImpl.fromLatLong(53.561011, 9.989448),
+                GeoPointImpl.fromLatLong(53.563203, 9.985800),
+                GeoPointImpl.fromLatLong(53.564579, 9.983525),
+                GeoPointImpl.fromLatLong(53.566873, 9.980822),
+                GeoPointImpl.fromLatLong(53.567943, 9.982152),
+                GeoPointImpl.fromLatLong(53.570186, 9.984813),
+                GeoPointImpl.fromLatLong(53.572683, 9.986143),
+                GeoPointImpl.fromLatLong(53.572658, 9.988675),
+                GeoPointImpl.fromLatLong(53.572709, 9.990392)
             )
         )
     }
-
     val polylineState = PolylineState(
         points = waypoints,
         strokeColor = Color.Blue,
@@ -108,23 +147,22 @@ fun InteractivePolylineExample() {
             id = "marker-${index}",
             position = point,
             icon = DefaultIcon(
-                fillColor = Color.Blue,
-                label = "${index + 1}"
+                label = "${index + 1}",
+                scale = 0.7f,
             ),
             draggable = true,
             extra = index
         )
     }
 
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(
+    MapboxMapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
             val markerIndex = markerState.extra as Int
             markerIndex?.let { index ->
                 waypoints = waypoints.toMutableList().apply {
                     if (index < size) {
-                        set(index, markerState.position)
+                        set(index, markerState.position as GeoPointImpl)
                     }
                 }
             }
@@ -141,60 +179,33 @@ fun InteractivePolylineExample() {
 }
 ```
 
-### 異なるスタイルの複数の Polyline
+<video width="720" height="480" controls>
+ <source src="/polyline/interactive-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/interactive-polyline-example.mp4" type="video/mp4" />
+</video>
 
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    // ルート 1 - 高速道路（太い青い線）
-    Polyline(
-        points = listOf(
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7849, -122.4094),
-            GeoPointImpl.fromLatLong(37.7949, -122.3994)
-        ),
-        strokeColor = Color.Blue,
-        strokeWidth = 6.dp,
-        geodesic = true,
-        extra = "Highway route"
-    )
-
-    // ルート 2 - 歩行者用パス（細い緑の線）
-    Polyline(
-        points = listOf(
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7799, -122.4144),
-            GeoPointImpl.fromLatLong(37.7849, -122.4094)
-        ),
-        strokeColor = Color.Green,
-        strokeWidth = 2.dp,
-        geodesic = false,
-        extra = "Walking path"
-    )
-
-    // ルート 3 - 自転車用パス（破線風の赤い線）
-    Polyline(
-        points = listOf(
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7729, -122.4174),
-            GeoPointImpl.fromLatLong(37.7709, -122.4154)
-        ),
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        extra = "Bike path"
-    )
-}
-```
 
 ### 動的なポリライン構築
 
 ```kotlin
 @Composable
 fun DynamicPolylineExample() {
+    val center = GeoPointImpl.fromLatLong(53.566853, 9.988269)
+
+    // 地図の作成
+    val camera =
+        MapCameraPositionImpl(
+            position = center,
+            zoom = 14.0,
+        )
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition = camera,
+        )
     var points by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
     var isDrawing by remember { mutableStateOf(false) }
 
-    Column {
+    Column(modifier = modifier) {
         Row {
             Button(
                 onClick = { isDrawing = !isDrawing }
@@ -210,7 +221,7 @@ fun DynamicPolylineExample() {
         }
 
         // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(
+        MapLibreMapView(
             state = mapViewState,
             onMapClick = { geoPoint ->
                 if (isDrawing) {
@@ -231,8 +242,8 @@ MapView(
                         position = point,
                         icon = DefaultIcon(
                             fillColor = if (index == 0) Color.Green
-                                      else if (index == points.size - 1) Color.Red
-                                      else Color.Blue,
+                            else if (index == points.size - 1) Color.Red
+                            else Color.Blue,
                             label = "${index + 1}",
                             scale = 0.8f
                         )
@@ -242,37 +253,81 @@ MapView(
         }
     }
 }
+
 ```
+
+<video width="720" height="480" controls>
+ <source src="/polyline/dynamic-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/dynamic-polyline-example.mp4" type="video/mp4" />
+</video>
+
 
 ### 測地線 vs 標準線
 
 ```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    val longDistancePoints = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
-        GeoPointImpl.fromLatLong(40.7128, -74.0060)   // ニューヨーク
+@Composable
+fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(36.0, -160.0)
+    val camera = MapCameraPositionImpl(
+        position = center,
+        zoom = 4.0,
     )
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = camera,
+    )
+    var markers by remember {
+        mutableStateOf<List<MarkerState>>(emptyList())
+    }
 
-    // 標準線（地図投影上で直線）
-    Polyline(
-        points = longDistancePoints,
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        geodesic = false,
-        extra = "Straight line"
-    )
+    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier,
+        onPolylineClick = { polylineEvent ->
+            markers = markers + MarkerState(
+                icon = DefaultIcon(
+                    fillColor = polylineEvent.state.strokeColor,
+                ),
+                position = polylineEvent.clicked,
+            )
+        }
+    ) {
+        val longDistancePoints = listOf(
+            GeoPointImpl.fromLatLong(35.548852, 139.784086), // 羽田空港
+            GeoPointImpl.fromLatLong(37.615223, -122.389979)   // サンフランシスコ空港
+        )
 
-    // 測地線（地球の曲率に沿う）
-    Polyline(
-        points = longDistancePoints,
-        strokeColor = Color.Blue,
-        strokeWidth = 3.dp,
-        geodesic = true,
-        extra = "Geodesic line"
-    )
+        // 標準線（地図投影上で直線）
+        Polyline(
+            id = "straight-line",
+            points = longDistancePoints,
+            strokeColor = Color.Red,
+            strokeWidth = 3.dp,
+            geodesic = false,
+            extra = "Straight line"
+        )
+
+        // 測地線（地球の曲率に沿う）
+        Polyline(
+            id = "geodesic-line",
+            points = longDistancePoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 3.dp,
+            geodesic = true,
+            extra = "Geodesic line"
+        )
+
+        markers.forEach { markerState ->
+            Marker(markerState)
+        }
+    }
 }
 ```
+
+<video width="720" height="450" controls>
+ <source src="/polyline/geodesic-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/geodesic-polyline-example.mp4" type="video/mp4" />
+</video>
 
 ## イベント処理
 

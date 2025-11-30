@@ -1,164 +1,120 @@
 ---
-title: Instalación
+title: Tutorial
 ---
 
-# Instalación y versiones
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-En esta página se explica cómo añadir MapConductor Android SDK a un proyecto Gradle y qué configuración de versiones se recomienda.
+# Tutorial de MapConductor
 
-## Añadir dependencias
+En este tutorial aprenderás a usar MapConductor Android SDK para mostrar un mapa, añadir marcadores y figuras, y manejar interacciones de usuario.
 
-MapConductor se publica en Maven Central como `mapconductor-bom` junto con varios módulos. Usar el BOM te permite gestionar de forma centralizada la versión de todos los módulos de MapConductor.
+## Qué aprenderás
+
+- Cómo instalar y configurar el SDK de MapConductor.
+- Cómo mostrar un mapa.
+- Cómo añadir marcadores, círculos y polilíneas.
+- Cómo manejar eventos de tap/clic.
+- Cómo controlar la posición de la cámara.
+- Cómo cambiar entre distintos SDK de mapas.
+
+## Requisitos previos
+
+- Android Studio instalado.
+- Conocimientos básicos de Jetpack Compose.
+- Conocimientos básicos de Kotlin.
+
+## Paso 1: Configuración del proyecto
+
+### 1-1. Añadir dependencias
+
+Añade las dependencias de MapConductor en `build.gradle.kts` o `build.gradle` del módulo:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
-
 dependencies {
-    // Usar el BOM para unificar versiones
+    val mapconductorVersion = "{BOM_MODULE_VERSION}"
+
+    // Usar BOM para unificar versiones
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
 
-    // Módulo principal
+    // Módulo core (obligatorio)
     implementation("com.mapconductor:core")
 
-    // Añadir los módulos de proveedor de mapas que necesites
+    // Usar Google Maps
     implementation("com.mapconductor:for-googlemaps")
+
+    // O Mapbox
     // implementation("com.mapconductor:for-mapbox")
+
+    // O HERE Maps
     // implementation("com.mapconductor:for-here")
+
+    // O ArcGIS
     // implementation("com.mapconductor:for-arcgis")
+
+    // O MapLibre
     // implementation("com.mapconductor:for-maplibre")
 }
 ```
 
-### Runtime principal
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
 
-#### `mapconductor-core`
+```groovy
+dependencies {
+    def mapconductorVersion = "{BOM_MODULE_VERSION}"
 
-Módulo principal que contiene clases base y funcionalidad compartida.
+    // Usar BOM para unificar versiones
+    implementation platform("com.mapconductor:mapconductor-bom:$mapconductorVersion")
 
-```kotlin
-implementation("com.mapconductor:core")
-```
+    // Módulo core (obligatorio)
+    implementation "com.mapconductor:core"
 
-**Requerido para**: Cualquier uso de MapConductor.  
-**Depende de**: Jetpack Compose, Kotlin Coroutines, etc.
+    // Usar Google Maps
+    implementation "com.mapconductor:for-googlemaps"
 
-### Módulos de proveedor de mapas
+    // O Mapbox
+    // implementation "com.mapconductor:for-mapbox"
 
-En función de tus necesidades, añade uno o varios de los siguientes módulos:
+    // O HERE Maps
+    // implementation "com.mapconductor:for-here"
 
-#### `mapconductor-for-googlemaps`
+    // O ArcGIS
+    // implementation "com.mapconductor:for-arcgis"
 
-Integración con Google Maps.
-
-```kotlin
-implementation("com.mapconductor:for-googlemaps")
-```
-
-Proporciona `GoogleMapView` y `GoogleMapViewStateImpl`. Requiere configurar el SDK de Google Maps.
-
-#### `mapconductor-for-mapbox`
-
-Integración con Mapbox.
-
-```kotlin
-implementation("com.mapconductor:for-mapbox")
-```
-
-Proporciona `MapboxMapView` y `MapboxViewStateImpl`. Requiere configurar el SDK de Mapbox.
-
-#### `mapconductor-for-here`
-
-Integración con HERE Maps.
-
-```kotlin
-implementation("com.mapconductor:for-here")
-```
-
-Proporciona `HereMapView` y `HereViewStateImpl`. Requiere configurar el SDK de HERE.
-
-#### `mapconductor-for-arcgis`
-
-Integración con ArcGIS.
-
-```kotlin
-implementation("com.mapconductor:for-arcgis")
-```
-
-Proporciona `ArcGISMapView` y `ArcGISMapViewStateImpl`. Requiere configurar el SDK de ArcGIS.
-
-#### `mapconductor-for-maplibre`
-
-Integración con MapLibre.
-
-```kotlin
-implementation("com.mapconductor:for-maplibre")
-```
-
-Proporciona `MapLibreMapView` y `MapLibreViewStateImpl`. Requiere configurar MapLibre (mosaicos, estilos, etc.).
-
-### Módulos experimentales
-
-> **Experimental**: Estos módulos son experimentales y su API puede cambiar en futuras versiones.
-
-#### `mapconductor-icons`
-
-Ofrece iconos de marcadores personalizados con estilo configurable desde el código.
-
-```kotlin
-implementation("com.mapconductor:icons")
-```
-
-Incluye componentes como `CircleIcon`, `FlagIcon` y distintos iconos de info bubble.
-
-#### `mapconductor-marker-strategy`
-
-Proporciona estrategias avanzadas de renderizado de marcadores para optimizar el rendimiento (por ejemplo, clustering o estrategias del lado del servidor).
-
-```kotlin
-implementation("com.mapconductor:marker-strategy")
-```
-
-#### `mapconductor-marker-native-strategy`
-
-Incluye estrategias aceleradas de forma nativa para representar un gran número de marcadores.
-
-```kotlin
-implementation("com.mapconductor:marker-native-strategy")
-```
-
-## Configuración de Gradle
-
-### `build.gradle` / `build.gradle.kts` a nivel de proyecto
-
-Se recomienda configurar las versiones de Kotlin y Compose siguiendo el ejemplo de la app de ejemplo.
-
-```kotlin
-buildscript {
-    ext {
-        compose_version = "1.7.1"
-        kotlin_version = "1.9.25"
-    }
+    // O MapLibre
+    // implementation "com.mapconductor:for-maplibre"
 }
 ```
 
-### `build.gradle` / `build.gradle.kts` a nivel de módulo
+</TabItem>
+</Tabs>
+
+### 1-2. Configuración de Android
+
+Añade la siguiente configuración en `build.gradle.kts` o `build.gradle`:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
 
 ```kotlin
 android {
-    compileSdk = 35
+    compileSdk = {ANDROID_TARGET_SDK_VERSION}
 
     defaultConfig {
-        minSdk = 26
-        targetSdk = 35
+        minSdk = {ANDROID_MIN_SDK_VERSION}
+        targetSdk = {ANDROID_TARGET_SDK_VERSION}
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
+        targetCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "{JAVA_VERSION}"
     }
 
     buildFeatures {
@@ -166,52 +122,188 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = compose_version
+        kotlinCompilerExtensionVersion = "{JETPACK_COMPOSE_VERSION}"
     }
 }
 ```
 
-### Configuración de ProGuard / R8
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
 
-Para builds de release, añade las siguientes reglas:
+```groovy
+android {
+    compileSdk {ANDROID_TARGET_SDK_VERSION}
 
-```proguard
-# MapConductor Core
--keep class com.mapconductor.core.** { *; }
+    defaultConfig {
+        minSdk {ANDROID_MIN_SDK_VERSION}
+        targetSdk {ANDROID_TARGET_SDK_VERSION}
+    }
 
-# Map Provider Specific
--keep class com.mapconductor.googlemaps.** { *; }
--keep class com.mapconductor.mapbox.** { *; }
--keep class com.mapconductor.here.** { *; }
--keep class com.mapconductor.arcgis.** { *; }
--keep class com.mapconductor.maplibre.** { *; }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_{JAVA_VERSION}
+        targetCompatibility JavaVersion.VERSION_{JAVA_VERSION}
+    }
 
-# Native Strategy (if using)
--keep class com.mapconductor.marker.nativestrategy.** { *; }
-```
+    kotlinOptions {
+        jvmTarget = '{JAVA_VERSION}'
+    }
 
-## Actualización de versiones
+    buildFeatures {
+        compose true
+    }
 
-### Comprobar la última versión
-
-Puedes comprobar la última versión de MapConductor en:
-
-1. GitHub Releases: página de lanzamientos de `android-sdk`.
-2. Maven Central: buscando `com.mapconductor`.
-3. Herramientas de Gradle: plugins de actualización de dependencias, etc.
-
-### Actualizar con el BOM
-
-Para actualizar a una nueva versión de MapConductor, cambia la versión del BOM:
-
-```kotlin
-val mapconductorVersion = "1.1.1"
-
-dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-    // Añade otros módulos según necesidad
+    composeOptions {
+        kotlinCompilerExtensionVersion = "{JETPACK_COMPOSE_VERSION}"
+    }
 }
 ```
 
+</TabItem>
+</Tabs>
+
+### 1-3. Configuración de los SDK de mapas
+
+> **Importante**: MapConductor es una capa de API unificada sobre SDKs de mapas existentes. Debes configurar cada SDK de mapas de forma independiente antes de usar la integración de MapConductor.
+
+Cada SDK requiere sus propias claves de API, permisos y configuración:
+
+- **[Configuración de Google Maps](/es-419/setup/google-maps)** – claves de API y permisos del SDK de Google Maps.
+- **[Configuración de Mapbox](/es-419/setup/mapbox)** – tokens de acceso de Mapbox y estilos.
+- **[Configuración de HERE Maps](/es-419/setup/here-maps)** – claves de API y licencias de HERE SDK.
+- **[Configuración de ArcGIS](/es-419/setup/arcgis)** – claves de API y licencias de ArcGIS SDK.
+- **[Configuración de MapLibre](/es-419/setup/maplibre/)** – configuración de mosaicos y estilos.
+
+## Paso 2: Mostrar un mapa
+
+### 2-1. MapView básico
+
+```kotlin
+@Composable
+fun BasicMapExample(modifier: Modifier = Modifier) {
+    val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val camera = MapCameraPositionImpl(
+        position = sanFrancisco,
+        zoom = 13.0,
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = camera,
+    )
+
+    GoogleMapView(
+        modifier = modifier,
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        // Contenido del mapa
+    }
+}
+```
+
+## Paso 3: Añadir marcadores y figuras
+
+### 3-1. Añadir un marcador
+
+```kotlin
+GoogleMapView(
+    state = mapViewState
+) {
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(label = "SF"),
+        extra = "San Francisco marker"
+    )
+}
+```
+
+### 3-2. Añadir círculos y polilíneas
+
+```kotlin
+GoogleMapView(
+    state = mapViewState
+) {
+    // Círculo
+    Circle(
+        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        radiusMeters = 1000.0,
+        strokeColor = Color.Blue,
+        fillColor = Color.Blue.copy(alpha = 0.3f)
+    )
+
+    // Polilínea
+    Polyline(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        ),
+        strokeColor = Color.Magenta,
+        strokeWidth = 3.dp
+    )
+}
+```
+
+## Paso 4: Manejo de interacciones de usuario
+
+### 4-1. Eventos de clic en el mapa
+
+```kotlin
+GoogleMapView(
+    state = mapViewState,
+    onMapClick = { geoPoint ->
+        println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+    }
+) {
+    // Contenido
+}
+```
+
+### 4-2. Eventos de clic en marcadores
+
+```kotlin
+GoogleMapView(
+    state = mapViewState,
+    onMarkerClick = { markerState ->
+        println("Marker clicked: ${markerState.extra}")
+    }
+) {
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(label = "SF"),
+        extra = "San Francisco marker"
+    )
+}
+```
+
+## Paso 5: Cambiar de SDK de mapas
+
+Para cambiar de Google Maps a Mapbox, solo cambia los tipos de estado y vista:
+
+```kotlin
+// Google Maps
+val googleMapState = rememberGoogleMapViewState()
+GoogleMapView(state = googleMapState) { /* contenido */ }
+
+// Mapbox
+val mapboxState = rememberMapboxMapViewState()
+MapboxMapView(state = mapboxState) { /* mismo contenido */ }
+```
+
+Todos los overlays (`Marker`, `Circle`, `Polyline`, etc.) pueden reutilizarse entre proveedores siempre que intercambies el `MapViewState` y el composable de vista de mapa.
+
+## Siguientes pasos
+
+En este tutorial has visto los conceptos básicos de MapConductor:
+
+- Cómo instalar y configurar dependencias.
+- Cómo mostrar un mapa.
+- Cómo añadir marcadores y figuras.
+- Cómo manejar interacciones de usuario.
+- Cómo cambiar entre distintos SDK de mapas.
+
+Para profundizar más, consulta:
+
+- [Módulos](/es-419/modules/)
+- [Compatibilidad de proveedores](/es-419/provider-compatibility/)
+- [Compatibilidad de versiones del SDK](/es-419/sdk-version-compatibility/)

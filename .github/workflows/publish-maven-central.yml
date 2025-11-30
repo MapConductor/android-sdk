@@ -1,0 +1,96 @@
+name: Publish to Maven Central
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+      OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Determine modules to publish and deploy to Maven Central
+        run: |
+          set -euo pipefail
+
+          PUBLISHABLE_MODULES=(
+            mapconductor-bom
+            mapconductor-core
+            mapconductor-for-arcgis
+            mapconductor-for-googlemaps
+            mapconductor-for-here
+            mapconductor-for-mapbox
+            mapconductor-icons
+            mapconductor-marker-native-strategy
+            mapconductor-marker-strategy
+          )
+
+          GROUP_ID="com.mapconductor"
+          GROUP_PATH="${GROUP_ID//./\/}"
+
+          publish_tasks=()
+
+          for module in "${PUBLISHABLE_MODULES[@]}"; do
+            props_file="$module/gradle.properties"
+            if [[ ! -f "$props_file" ]]; then
+              echo "Skipping $module: gradle.properties not found"
+              continue
+            fi
+
+            local_version=$(grep '^libraryVersion=' "$props_file" | cut -d'=' -f2 | tr -d '\r')
+            if [[ -z "$local_version" ]]; then
+              echo "Skipping $module: libraryVersion not found"
+              continue
+            fi
+
+            artifactId=$(grep -m1 'libraryArtifactId' "$module/build.gradle.kts" | sed -E 's/.*\"(.+)\".*/\1/' | tr -d '\r')
+            if [[ -z "$artifactId" ]]; then
+              echo "Skipping $module: libraryArtifactId not found"
+              continue
+            fi
+
+            metadata_url="https://repo1.maven.org/maven2/${GROUP_PATH}/${artifactId}/maven-metadata.xml"
+            echo "Checking ${GROUP_ID}:${artifactId} (local version ${local_version})"
+
+            remote_version=""
+            if curl -fsSL "$metadata_url" -o metadata.xml; then
+              # Prefer <release>, fall back to last <version>
+              remote_version=$(grep '<release>' metadata.xml | head -n1 | sed -E 's/.*<release>([^<]+)<\/release>.*/\1/' || true)
+              if [[ -z "$remote_version" ]]; then
+                remote_version=$(grep '<version>' metadata.xml | sed -E 's/.*<version>([^<]+)<\/version>.*/\1/' | tail -n1 || true)
+              fi
+              rm -f metadata.xml
+            else
+              echo "  No metadata found on Maven Central (likely not published yet)."
+            fi
+
+            if [[ -n "$remote_version" && "$local_version" == "$remote_version" ]]; then
+              echo "  Already published (remote version ${remote_version}); skipping."
+            else
+              echo "  Will publish (remote='${remote_version}')."
+              publish_tasks+=(":${module}:publishAllPublicationsToNmcpReleaseRepository")
+            fi
+          done
+
+          if [[ "${#publish_tasks[@]}" -eq 0 ]]; then
+            echo "No modules require publishing."
+            exit 0
+          fi
+
+          echo "Publishing modules with tasks: ${publish_tasks[*]}"
+          ./gradlew --no-daemon "${publish_tasks[@]}"
+

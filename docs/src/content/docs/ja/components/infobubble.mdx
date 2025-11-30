@@ -40,58 +40,31 @@ fun MapViewScope.InfoBubble(
 ```kotlin
 @Composable
 fun SimpleInfoBubbleExample() {
-    val mapViewState = rememberGoogleMapViewState()
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+    val center = GeoPointImpl.fromLatLong(52.5163, 13.3777)
 
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    GoogleMapView(
-        state = mapViewState,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
-    ) {
-        val markerState = MarkerState(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(fillColor = Color.Blue, label = "SF"),
-            extra = "San Francisco - The Golden Gate City",
-            id = "sf-marker"
+    // 地図の作成
+    val camera =
+        MapCameraPositionImpl(
+            position = center,
+            zoom = 13.0,
         )
-
-        Marker(markerState)
-
-        // 選択されたマーカーの情報バブルを表示
-        selectedMarker?.let { marker ->
-            InfoBubble(marker = marker) {
-                Text(
-                    text = marker.extra as? String ?: "No information",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(4.dp)
-                )
-            }
-        }
-    }
-}
-```
-![実行結果](~/assets/mapstate/simple-info-bubble-example.png)
-
-### カスタムスタイルのバブル
-
-```kotlin
-@Composable
-fun StyledInfoBubbleExample() {
-    val mapViewState = rememberGoogleMapViewState()
+    val mapViewState =
+        rememberHereMapViewState(
+            cameraPosition = camera,
+        )
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-    val isDarkTheme = isSystemInDarkTheme()
 
     // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(
+    HereMapView(
+        modifier = modifier,
         state = mapViewState,
         onMapClick = { selectedMarker = null },
         onMarkerClick = { markerState -> selectedMarker = markerState }
     ) {
         val markerState = MarkerState(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            position = center,
             icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
-            extra = "Point of Interest",
+            extra = "Brandenburg Gate",
             id = "poi-marker"
         )
 
@@ -100,15 +73,13 @@ fun StyledInfoBubbleExample() {
         selectedMarker?.let { marker ->
             InfoBubble(
                 marker = marker,
-                bubbleColor = if (isDarkTheme) Color.Black else Color.White,
-                borderColor = if (isDarkTheme) Color.Gray else Color.Black,
                 contentPadding = 12.dp,
                 cornerRadius = 8.dp,
                 tailSize = 10.dp
             ) {
                 Text(
                     text = marker.extra as? String ?: "",
-                    color = if (isDarkTheme) Color.White else Color.Black,
+                    color = Color.Black,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -116,10 +87,9 @@ fun StyledInfoBubbleExample() {
     }
 }
 ```
+![実行結果](~/assets/info-bubble/simple-info-bubble-example.png)
 
-## 高度な使用方法
-
-### リッチコンテンツバブル
+### カスタムスタイルのバブル
 
 ```kotlin
 data class LocationInfo(
@@ -131,11 +101,23 @@ data class LocationInfo(
 
 @Composable
 fun RichContentBubbleExample() {
-    val mapViewState = rememberGoogleMapViewState()
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
+    val center = GeoPointImpl.fromLatLong(37.7694, -122.4862)
+
+    // 地図の作成
+    val camera =
+        MapCameraPositionImpl(
+            position = center,
+            zoom = 13.0,
+        )
+    val mapViewState =
+        rememberHereMapViewState(
+            cameraPosition = camera,
+        )
     // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(
+    HereMapView(
+        modifier = modifier,
         state = mapViewState,
         onMapClick = { selectedMarker = null },
         onMarkerClick = { markerState -> selectedMarker = markerState }
@@ -160,7 +142,7 @@ fun RichContentBubbleExample() {
             info?.let {
                 InfoBubble(
                     marker = marker,
-                    bubbleColor = Color.White,
+                    bubbleColor = MaterialTheme.colorScheme.background,
                     borderColor = Color.Gray,
                     contentPadding = 16.dp,
                     cornerRadius = 12.dp
@@ -171,6 +153,7 @@ fun RichContentBubbleExample() {
                         Text(
                             text = info.name,
                             style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
 
@@ -179,7 +162,7 @@ fun RichContentBubbleExample() {
                         Text(
                             text = info.description,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.primary,
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -195,6 +178,7 @@ fun RichContentBubbleExample() {
                             }
                             Text(
                                 text = " ${info.rating}/5",
+                                color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 4.dp)
                             )
@@ -206,31 +190,47 @@ fun RichContentBubbleExample() {
     }
 }
 ```
+![実行結果](~/assets/info-bubble/rich-content-info-bubble-example.png)
 
 ### アクション付きのインタラクティブバブル
 
 ```kotlin
+data class StoreInfo(
+    val name: String,
+    val address: String,
+    val phone: String,
+    val type: String
+) : java.io.Serializable
+
 @Composable
-fun InteractiveBubbleExample() {
-    val mapViewState = rememberGoogleMapViewState()
+fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(35.70662, 139.76378)
+    val camera = MapCameraPositionImpl(
+        position = center,
+        zoom = 16.0,
+    )
+    val mapViewState = rememberArcGISMapViewState(
+        cameraPosition = camera,
+    )
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val context = LocalContext.current
 
     // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(
+    ArcGISMapView(
         state = mapViewState,
+        modifier = modifier,
         onMapClick = { selectedMarker = null },
         onMarkerClick = { markerState -> selectedMarker = markerState }
     ) {
         val storeInfo = StoreInfo(
             name = "Coffee Shop",
-            address = "123 Main St, San Francisco",
-            phone = "+1 (555) 123-4567",
+            address = "1-4, Hongo 4-Chome, Bunkyo-Ku",
+            phone = "+81 (555) 123-4567",
             type = "coffee"
         )
 
         val markerState = MarkerState(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            position = GeoPointImpl.fromLatLong(35.708106, 139.760823),
             icon = DefaultIcon(fillColor = Color(0xFF8B4513), label = "☕"),
             extra = storeInfo,
             id = "coffee-shop-marker"
@@ -276,7 +276,7 @@ fun InteractiveBubbleExample() {
                                     }
                                     context.startActivity(intent)
                                 },
-                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
                             ) {
                                 Icon(Icons.Default.Phone, contentDescription = "Call")
                                 Text("Call", modifier = Modifier.padding(start = 4.dp))
@@ -291,9 +291,9 @@ fun InteractiveBubbleExample() {
                                     mapIntent.setPackage("com.google.android.apps.maps")
                                     context.startActivity(mapIntent)
                                 },
-                                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
                             ) {
-                                Icon(Icons.Default.Directions, contentDescription = "Directions")
+                                Icon(Icons.Default.LocationOn, contentDescription = "Directions")
                                 Text("Go", modifier = Modifier.padding(start = 4.dp))
                             }
                         }
@@ -303,14 +303,12 @@ fun InteractiveBubbleExample() {
         }
     }
 }
-
-data class StoreInfo(
-    val name: String,
-    val address: String,
-    val phone: String,
-    val type: String
-) : java.io.Serializable
 ```
+
+<video width="720" height="480" controls>
+ <source src="/info-bubble/interactive-bubble-example.webm" type="video/webm" />
+ <source src="/info-bubble/interactive-bubble-example.mp4" type="video/mp4" />
+</video>
 
 ### 複数のバブル管理
 
@@ -381,6 +379,212 @@ fun MultipleBubblesExample() {
     }
 }
 ```
+
+<video width="720" height="480" controls>
+ <source src="/info-bubble/multiple-bubbles-example.webm" type="video/webm" />
+ <source src="/info-bubble/multiple-bubbles-example.mp4" type="video/mp4" />
+</video>
+
+
+### カスタムデザイン
+
+```kotlin
+
+@Composable
+fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = center,
+                    zoom = 13.0,
+                ),
+        )
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+    val markerState1 by remember {
+        mutableStateOf(
+            MarkerState(
+                id = "marker1",
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon =
+                    DefaultIcon(
+                        fillColor = Color.Blue,
+                        infoAnchor = Offset(0.5f, 0.25f),
+                        label = "1",
+                    ),
+                draggable = true,
+            ),
+        )
+    }
+    val markerState2 by remember {
+        mutableStateOf(
+            MarkerState(
+                id = "marker2",
+                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                icon =
+                    DefaultIcon(
+                        fillColor = Color.Red,
+                        infoAnchor = Offset(0.5f, 0.25f),
+                        label = "2",
+                    ),
+            ),
+        )
+    }
+
+    MapLibreMapView(
+        state = mapViewState,
+        onMapLoaded = {
+            println("Map loaded and ready")
+        },
+        onMapClick = { geoPoint ->
+            selectedMarker = null // 地図クリックで選択解除
+        },
+        onMarkerClick = { markerState ->
+            selectedMarker = markerState
+        },
+        onMarkerDragStart = { markerState ->
+            println("Started dragging marker: ${markerState.id}")
+        },
+        onMarkerDrag = { markerState ->
+            println("Dragging marker to: ${markerState.position}")
+        },
+        onMarkerDragEnd = { markerState ->
+            println("Finished dragging marker: ${markerState.id}")
+        },
+    ) {
+        // インタラクティブなマーカーを持つ地図コンテンツ
+        Marker(markerState1)
+        Marker(markerState2)
+
+        // 選択されたマーカーの情報を表示
+        selectedMarker?.let { marker ->
+            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
+            // Example: custom bubble with right-side tail
+            InfoBubbleCustom(
+                marker = marker,
+                tailOffset = Offset(0f, 0.5f), // attach at center-left of the bubble
+            ) {
+                RightTailInfoBubble(
+                    bubbleColor = Color.White,
+                    borderColor = Color.Black,
+                ) {
+                    Text(
+                        text = text,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RightTailInfoBubble(
+    bubbleColor: Color,
+    borderColor: Color,
+    contentPadding: androidx.compose.ui.unit.Dp = 8.dp,
+    cornerRadius: androidx.compose.ui.unit.Dp = 4.dp,
+    tailSize: androidx.compose.ui.unit.Dp = 8.dp,
+    content: @Composable () -> Unit,
+) {
+    Box(modifier = Modifier.wrapContentSize()) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val width = size.width
+            val height = size.height
+            val tail = tailSize.toPx()
+            val corner = cornerRadius.toPx()
+
+            val path =
+                Path().apply {
+                    // start at top-left (after tail area)
+                    moveTo(tail + 2 * corner, 0f)
+                    lineTo(width - 2 * corner, 0f)
+                    // top-right corner
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(width - 2 * corner, 0f),
+                                bottomRight = Offset(width, 2 * corner),
+                            ),
+                        startAngleDegrees = -90f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    // right edge
+                    lineTo(width, height - 2 * corner)
+                    // bottom-right corner
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(width - 2 * corner, height - 2 * corner),
+                                bottomRight = Offset(width, height),
+                            ),
+                        startAngleDegrees = 0f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    // bottom edge towards left (before tail)
+                    lineTo(tail + 2 * corner, height)
+                    // bottom-left corner (before tail)
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(tail, height - 2 * corner),
+                                bottomRight = Offset(tail + 2 * corner, height),
+                            ),
+                        startAngleDegrees = 90f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    // left edge up to tail bottom
+                    lineTo(tail, height / 2 + tail / 2)
+                    // Tail on left side
+                    lineTo(0f, height / 2)
+                    lineTo(tail, height / 2 - tail / 2)
+                    // left edge up to top-left corner
+                    lineTo(tail, 2 * corner)
+                    // top-left corner
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(tail, 0f),
+                                bottomRight = Offset(tail + 2 * corner, 2 * corner),
+                            ),
+                        startAngleDegrees = 180f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    close()
+                }
+
+            drawPath(path, color = bubbleColor, style = Fill)
+            drawPath(path, color = borderColor, style = Stroke(width = 2f))
+        }
+
+        Box(
+            modifier =
+                Modifier
+                    .padding(
+                        start = contentPadding + tailSize,
+                        top = contentPadding,
+                        bottom = contentPadding,
+                        end = contentPadding,
+                    ).wrapContentSize()
+                    .clip(RoundedCornerShape(cornerRadius)),
+        ) {
+            content()
+        }
+    }
+}
+```
+
+<video width="720" height="480" controls>
+ <source src="/info-bubble/right-info-bubble-map-example.webm" type="video/webm" />
+ <source src="/info-bubble/right-info-bubble-map-example.mp4" type="video/mp4" />
+</video>
+
 
 ## 配置と動作
 

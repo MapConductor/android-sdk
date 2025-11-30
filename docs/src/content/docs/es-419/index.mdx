@@ -14,60 +14,60 @@ hero:
       icon: external
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { CardGrid, Card } from '@astrojs/starlight/components';
+import QuickExampleTabs from '~/components/QuickExampleTabs.astro';
 
-## ¿Por qué MapConductor?
+## ¿Qué es MapConductor?
 
 <CardGrid>
   <Card title="API unificada" icon="puzzle">
-    Escribe tu código una vez y cambia de proveedor de mapas cuando quieras. No necesitas reescribir grandes partes del código al pasar de Google Maps a Mapbox u otro proveedor.
+    Escribe el código relacionado con mapas una sola vez y cambia de proveedor cuando lo necesites. Incluso si pasas de Google Maps a Mapbox, no tendrás que reescribir grandes partes de tu base de código.
   </Card>
-  <Card title="Listo para Jetpack Compose" icon="rocket">
-    Diseñado para el desarrollo moderno de Android, con soporte completo para Jetpack Compose.
+  <Card title="Optimizado para Jetpack Compose" icon="rocket">
+    Diseñado para el desarrollo moderno en Android, con una API pensada específicamente para Jetpack Compose.
   </Card>
-  <Card title="Múltiples proveedores" icon="setting">
-    Soporte para Google Maps, Mapbox, HERE Maps, ArcGIS y MapLibre con un comportamiento consistente.
+  <Card title="Varios proveedores compatibles" icon="setting">
+    Ofrece un comportamiento consistente con Google Maps, Mapbox, HERE Maps, ArcGIS y MapLibre.
   </Card>
   <Card title="Código abierto" icon="github">
-    Proyecto gratuito y de código abierto bajo la licencia Apache 2.0, desarrollado por la comunidad.
+    Proyecto de código abierto bajo licencia Apache 2.0, desarrollado por la comunidad.
   </Card>
 </CardGrid>
 
 ## Ejemplo rápido
 
-```kotlin
-@Composable
-fun MyMap() {
-    val mapViewState = rememberGoogleMapViewState()
+Usar MapConductor es sencillo: combinas `rememberXxxxViewState` con `XxxxView`.
+La parte `Xxxx` cambia entre `GoogleMap`, `Mapbox` y otros proveedores.
+Si quieres cambiar a Mapbox, basta con sustituir `rememberGoogleMapViewState()` por `rememberMapboxMapViewState()`
+y `GoogleMapView` por `MapboxMapView`. El resto del código permanece igual.
 
-    GoogleMapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Clicked: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF")
-        )
-    }
-}
-```
+| SDK de mapas | hook `mapViewState`              | composable de mapa |
+|-------------|-----------------------------------|--------------------|
+| GoogleMaps  | `rememberGoogleMapViewState`      | `GoogleMapView`    |
+| Mapbox      | `rememberMapboxViewState`         | `MapboxMapView`    |
+| MapLibre    | `rememberMapLibreViewState`       | `MapLibreView`     |
+| HERE        | `rememberHereMapViewState`        | `HereMapView`      |
+| ArcGIS      | `rememberArcGISMapViewState`      | `ArcGISMapView`    |
 
-¿Quieres cambiar a Mapbox? Solo sustituye `rememberGoogleMapViewState()` por `rememberMapboxMapViewState()` y `GoogleMapView` por `MapboxMapView`. El resto del código permanece igual.
+<QuickExampleTabs
+  commentForInit="Posición inicial de la cámara en el mapa"
+  commentForMapViewState="Controla el estado visible del mapa a través de este mapViewState"
+  googleMapsAlt="Ejemplo con Google Maps"
+  mapboxAlt="Ejemplo con Mapbox"
+  hereAlt="Ejemplo con HERE"
+/>
 
 ## Funcionalidades compatibles
 
-| Función | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
-|--------|-------------|--------|------|--------|----------|
-| Mapa | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Marcador | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Círculo | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Polilínea | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Polígono | ✓ | ✓ | ✓ | ✓ | ✓ |
-| GroundImage | ✓ | N/A | N/A | N/A | N/A |
+| Función    | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
+|-----------|-------------|--------|------|--------|----------|
+| Mapa      | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Marcador  | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Círculo   | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Polilínea | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Polígono  | ✓           | ✓      | ✓    | ✓      | ✓        |
+| GroundImage | ✓         | N/A    | N/A  | N/A    | N/A      |
 
 ## Empezar
 
-Cuando estés listo para integrar MapConductor en tu app Android, consulta las secciones de [Introducción](/es-419/introduction/) y [Comenzar](/es-419/get-started/).
-
+Cuando estés listo para integrar MapConductor en tu app Android, consulta la [Introducción](/es-419/introduction/) y el [Tutorial](/es-419/get-started/).

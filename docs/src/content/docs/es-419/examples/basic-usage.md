@@ -1,42 +1,61 @@
 ---
-title: "Basic Usage"
+title: "Ejemplos de uso básico"
 ---
 
-En esta página se muestra cómo construir una pantalla de mapa sencilla con MapConductor.
+En esta sección se muestran ejemplos prácticos de cómo utilizar los componentes de MapConductor en escenarios habituales.
 
-## Preparar MapViewState
+## Introducción
 
-```kotlin
-@Composable
-fun rememberDefaultCamera(): MapCameraPosition =
-    MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        zoom = 13.0
-    )
-
-@Composable
-fun rememberDefaultMapViewState(): GoogleMapViewStateImpl =
-    rememberGoogleMapViewState(cameraPosition = rememberDefaultCamera())
-```
-
-## Renderizar el mapa
+### Mapa sencillo con marcador
 
 ```kotlin
 @Composable
-fun BasicMapScreen() {
-    val mapViewState = rememberDefaultMapViewState()
+fun SimpleMapExample() {
+    val mapViewState = rememberGoogleMapViewState()
 
-    GoogleMapView(
-        state = mapViewState,
-        onMapClick = { point ->
-            println("Clicked at: ${point.latitude}, ${point.longitude}")
-        }
-    ) {
+    // Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView
+MapView(state = mapViewState) {
         Marker(
             position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF")
+            icon = DefaultIcon(label = "SF"),
+            extra = "San Francisco"
         )
     }
 }
 ```
 
+### Mapa multi proveedor
+
+```kotlin
+@Composable
+fun MultiProviderExample() {
+    var provider by remember { mutableStateOf("google") }
+
+    val mapViewState = remember(provider) {
+        when (provider) {
+            "google" -> rememberGoogleMapViewState()
+            "mapbox" -> rememberMapboxMapViewState()
+            "here" -> rememberHereMapViewState()
+            "arcgis" -> rememberArcGISMapViewState()
+            else -> rememberGoogleMapViewState()
+        }
+    }
+
+    Column {
+        Row {
+            Button(onClick = { provider = "google" }) { Text("Google") }
+            Button(onClick = { provider = "mapbox" }) { Text("Mapbox") }
+            Button(onClick = { provider = "here" }) { Text("HERE") }
+            Button(onClick = { provider = "arcgis" }) { Text("ArcGIS") }
+        }
+
+        // Sustituye MapView por la vista del proveedor elegido, por ejemplo GoogleMapView o MapboxMapView
+MapView(state = mapViewState) {
+            Marker(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon = DefaultIcon(label = provider.uppercase())
+            )
+        }
+    }
+}
+```
