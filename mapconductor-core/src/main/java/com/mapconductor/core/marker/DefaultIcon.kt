@@ -42,6 +42,7 @@ abstract class AbstractDefaultIcon(
         val labelTextSize: TextUnit,
         val labelTypeFace: Typeface,
         val labelStrokeColor: Color,
+        val infoAnchor: Offset,
         val iconSize: Dp,
         val debug: Boolean,
     )
@@ -57,7 +58,7 @@ abstract class AbstractDefaultIcon(
     val labelStrokeColor: Color by baseProperties::labelStrokeColor
     final override val iconSize: Dp by baseProperties::iconSize
     final override val anchor: Offset = Offset(0.5f, 1f)
-    final override val infoAnchor: Offset = Offset(0.5f, 0f)
+    final override val infoAnchor: Offset by baseProperties::infoAnchor
     final override val debug: Boolean by baseProperties::debug
 
     /**
@@ -403,6 +404,7 @@ class ColorDefaultIcon(
         labelTextSize: TextUnit = 18.sp,
         labelTypeFace: Typeface = Typeface.DEFAULT,
         labelStrokeColor: Color = Color.White,
+        infoAnchor: Offset = Offset(0.5f, 0f),
         iconSize: Dp = Settings.Default.iconSize,
         debug: Boolean = false,
     ) : this(
@@ -417,6 +419,7 @@ class ColorDefaultIcon(
                 labelTextSize = labelTextSize,
                 labelTypeFace = labelTypeFace,
                 labelStrokeColor = labelStrokeColor,
+                infoAnchor = infoAnchor,
                 iconSize = iconSize,
                 debug = debug,
             ),
@@ -492,6 +495,7 @@ class ImageDefaultIcon(
         labelTextSize: TextUnit = 18.sp,
         labelTypeFace: Typeface = Typeface.DEFAULT,
         labelStrokeColor: Color = Color.White,
+        infoAnchor: Offset = Offset(0.5f, 0f),
         iconSize: Dp = Settings.Default.iconSize,
         debug: Boolean = false,
     ) : this(
@@ -506,6 +510,7 @@ class ImageDefaultIcon(
                 labelTextSize = labelTextSize,
                 labelTypeFace = labelTypeFace,
                 labelStrokeColor = labelStrokeColor,
+                infoAnchor = infoAnchor,
                 iconSize = iconSize,
                 debug = debug,
             ),
@@ -613,6 +618,7 @@ class DrawableDefaultIcon(
         labelTextSize: TextUnit = 18.sp,
         labelTypeFace: Typeface = Typeface.DEFAULT,
         labelStrokeColor: Color = Color.White,
+        infoAnchor: Offset = Offset(0.5f, 0f),
         iconSize: Dp = Settings.Default.iconSize,
         debug: Boolean = false,
     ) : this(
@@ -627,6 +633,7 @@ class DrawableDefaultIcon(
                 labelTextSize = labelTextSize,
                 labelTypeFace = labelTypeFace,
                 labelStrokeColor = labelStrokeColor,
+                infoAnchor = infoAnchor,
                 iconSize = iconSize,
                 debug = debug,
             ),
