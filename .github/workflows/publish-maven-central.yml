@@ -87,10 +87,13 @@ jobs:
             fi
           done
 
+          # Check array length safely with set -u by temporarily disabling it
+          set +u
           if [[ "${#publish_tasks[@]}" -eq 0 ]]; then
             echo "No modules require publishing."
             exit 0
           fi
-          
+          set -u
+
           echo "Publishing modules with tasks: ${publish_tasks[*]}"
-          ./gradlew --no-daemon "${publish_tasks[@]}" --stacktrace --info
+          ./gradlew --no-daemon "${publish_tasks[@]}"
