@@ -1,164 +1,120 @@
 ---
-title: Installation
+title: Tutorial
 ---
 
-# Installation and Versions
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This page explains how to add MapConductor Android SDK to a Gradle project and recommended version settings.
+# MapConductor Tutorial
 
-## Adding Dependencies
+This tutorial walks you through how to use the MapConductor Android SDK to display a map, add markers and shapes, and handle user interactions.
 
-MapConductor is distributed from Maven Central as `mapconductor-bom` and individual modules. Using the BOM allows you to manage all MapConductor module versions centrally.
+## What you’ll learn
+
+- Installing and configuring the MapConductor SDK
+- Displaying a map
+- Adding markers, circles, and polylines
+- Handling tap and click events
+- Controlling camera position
+- Switching map SDKs
+
+## Prerequisites
+
+- Android Studio installed
+- Basic knowledge of Jetpack Compose
+- Basic Kotlin knowledge
+
+## Step 1: Project Setup
+
+### 1-1. Add dependencies
+
+Add MapConductor dependencies to your module-level `build.gradle.kts` or `build.gradle`:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
 
 ```kotlin
-val mapconductorVersion = "1.1.0"
-
 dependencies {
+    val mapconductorVersion = "{BOM_MODULE_VERSION}"
+
     // Use BOM to unify versions
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
 
-    // Core module
+    // Core module (required)
     implementation("com.mapconductor:core")
 
-    // Add the map provider modules you need
+    // Use Google Maps
     implementation("com.mapconductor:for-googlemaps")
+
+    // Or Mapbox
     // implementation("com.mapconductor:for-mapbox")
+
+    // Or HERE Maps
     // implementation("com.mapconductor:for-here")
+
+    // Or ArcGIS
     // implementation("com.mapconductor:for-arcgis")
+
+    // Or MapLibre
     // implementation("com.mapconductor:for-maplibre")
 }
 ```
 
-### Core Runtime
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
 
-#### `mapconductor-core`
+```groovy
+dependencies {
+    def mapconductorVersion = "{BOM_MODULE_VERSION}"
 
-The core module containing shared functionality and base classes.
+    // Use BOM to unify versions
+    implementation platform("com.mapconductor:mapconductor-bom:$mapconductorVersion")
 
-```kotlin
-implementation("com.mapconductor:core")
-```
+    // Core module (required)
+    implementation "com.mapconductor:core"
 
-**Required for**: All MapConductor usage  
-**Depends on**: Jetpack Compose, Kotlin Coroutines
+    // Use Google Maps
+    implementation "com.mapconductor:for-googlemaps"
 
-### Map Provider Modules
+    // Or Mapbox
+    // implementation "com.mapconductor:for-mapbox"
 
-Choose one or more map provider modules based on your needs:
+    // Or HERE Maps
+    // implementation "com.mapconductor:for-here"
 
-#### `mapconductor-for-googlemaps`
+    // Or ArcGIS
+    // implementation "com.mapconductor:for-arcgis"
 
-Google Maps integration module.
-
-```kotlin
-implementation("com.mapconductor:for-googlemaps")
-```
-
-Provides `GoogleMapView` and `GoogleMapViewStateImpl`. Requires Google Maps SDK setup.
-
-#### `mapconductor-for-mapbox`
-
-Mapbox integration module.
-
-```kotlin
-implementation("com.mapconductor:for-mapbox")
-```
-
-Provides `MapboxMapView` and `MapboxViewStateImpl`. Requires Mapbox SDK setup.
-
-#### `mapconductor-for-here`
-
-HERE Maps integration module.
-
-```kotlin
-implementation("com.mapconductor:for-here")
-```
-
-Provides `HereMapView` and `HereViewStateImpl`. Requires HERE SDK setup.
-
-#### `mapconductor-for-arcgis`
-
-ArcGIS integration module.
-
-```kotlin
-implementation("com.mapconductor:for-arcgis")
-```
-
-Provides `ArcGISMapView` and `ArcGISMapViewStateImpl`. Requires ArcGIS SDK setup.
-
-#### `mapconductor-for-maplibre`
-
-MapLibre integration module.
-
-```kotlin
-implementation("com.mapconductor:for-maplibre")
-```
-
-Provides `MapLibreMapView` and `MapLibreViewStateImpl`. Requires MapLibre setup (tiles, styles).
-
-## Experimental Modules
-
-> **Experimental**: These modules are experimental and may change in future versions.
-
-### `mapconductor-icons`
-
-Custom marker icons with programmatic styling.
-
-```kotlin
-implementation("com.mapconductor:icons")
-```
-
-Provides icon components such as `CircleIcon`, `FlagIcon`, and info bubble icons.
-
-### `mapconductor-marker-strategy`
-
-Advanced marker rendering strategies for performance optimization (e.g., clustering, server-side strategies).
-
-```kotlin
-implementation("com.mapconductor:marker-strategy")
-```
-
-### `mapconductor-marker-native-strategy`
-
-Native-accelerated strategies for large-scale marker rendering.
-
-```kotlin
-implementation("com.mapconductor:marker-native-strategy")
-```
-
-## Gradle Configuration
-
-### Project-level `build.gradle` / `build.gradle.kts`
-
-Configure Kotlin and Compose versions according to the example app:
-
-```kotlin
-buildscript {
-    ext {
-        compose_version = "1.7.1"
-        kotlin_version = "1.9.25"
-    }
+    // Or MapLibre
+    // implementation "com.mapconductor:for-maplibre"
 }
 ```
 
-### Module-level `build.gradle` / `build.gradle.kts`
+</TabItem>
+</Tabs>
+
+### 1-2. Android configuration
+
+Add the following configuration to `build.gradle.kts` or `build.gradle`:
+
+<Tabs>
+<TabItem label="Kotlin (build.gradle.kts)">
 
 ```kotlin
 android {
-    compileSdk = 35
+    compileSdk = {ANDROID_TARGET_SDK_VERSION}
 
     defaultConfig {
-        minSdk = 26
-        targetSdk = 35
+        minSdk = {ANDROID_MIN_SDK_VERSION}
+        targetSdk = {ANDROID_TARGET_SDK_VERSION}
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
+        targetCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "{JAVA_VERSION}"
     }
 
     buildFeatures {
@@ -166,52 +122,188 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = compose_version
+        kotlinCompilerExtensionVersion = "{JETPACK_COMPOSE_VERSION}"
     }
 }
 ```
 
-### ProGuard / R8 Configuration
+</TabItem>
+<TabItem label="Groovy (build.gradle)">
 
-For release builds, add these rules:
+```groovy
+android {
+    compileSdk {ANDROID_TARGET_SDK_VERSION}
 
-```proguard
-# MapConductor Core
--keep class com.mapconductor.core.** { *; }
+    defaultConfig {
+        minSdk {ANDROID_MIN_SDK_VERSION}
+        targetSdk {ANDROID_TARGET_SDK_VERSION}
+    }
 
-# Map Provider Specific
--keep class com.mapconductor.googlemaps.** { *; }
--keep class com.mapconductor.mapbox.** { *; }
--keep class com.mapconductor.here.** { *; }
--keep class com.mapconductor.arcgis.** { *; }
--keep class com.mapconductor.maplibre.** { *; }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_{JAVA_VERSION}
+        targetCompatibility JavaVersion.VERSION_{JAVA_VERSION}
+    }
 
-# Native Strategy (if using)
--keep class com.mapconductor.marker.nativestrategy.** { *; }
-```
+    kotlinOptions {
+        jvmTarget = '{JAVA_VERSION}'
+    }
 
-## Version Updates
+    buildFeatures {
+        compose true
+    }
 
-### Checking for Updates
-
-You can check for the latest MapConductor version at:
-
-1. GitHub Releases: `android-sdk` releases page
-2. Maven Central: search for `com.mapconductor`
-3. Gradle plugins: dependency update checker plugins, etc.
-
-### Updating with BOM
-
-To update to a new MapConductor version, change the BOM version:
-
-```kotlin
-val mapconductorVersion = "1.1.1"
-
-dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-    // Add other modules as needed
+    composeOptions {
+        kotlinCompilerExtensionVersion = "{JETPACK_COMPOSE_VERSION}"
+    }
 }
 ```
 
+</TabItem>
+</Tabs>
+
+### 1-3. Map SDK setup
+
+> **Important**: MapConductor is a unified API layer on top of existing map SDKs. You must configure each map SDK independently before using MapConductor.
+
+Each map SDK requires its own API keys, permissions, and configuration:
+
+- **[Google Maps Setup](/setup/google-maps)** – API keys and permissions for Google Maps SDK
+- **[Mapbox Setup](/setup/mapbox)** – Mapbox access tokens and style configuration
+- **[HERE Maps Setup](/setup/here-maps)** – HERE SDK API keys and licensing
+- **[ArcGIS Setup](/setup/arcgis)** – ArcGIS SDK API keys and licensing
+- **[MapLibre Setup](/setup/maplibre/)** – Tile and style configuration
+
+## Step 2: Displaying a map
+
+### 2-1. Basic MapView
+
+```kotlin
+@Composable
+fun BasicMapExample(modifier: Modifier = Modifier) {
+    val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val camera = MapCameraPositionImpl(
+        position = sanFrancisco,
+        zoom = 13.0,
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = camera,
+    )
+
+    GoogleMapView(
+        modifier = modifier,
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+        }
+    ) {
+        // Map content goes here
+    }
+}
+```
+
+## Step 3: Adding markers and shapes
+
+### 3-1. Add a marker
+
+```kotlin
+GoogleMapView(
+    state = mapViewState
+) {
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(label = "SF"),
+        extra = "San Francisco marker"
+    )
+}
+```
+
+### 3-2. Add circles and polylines
+
+```kotlin
+GoogleMapView(
+    state = mapViewState
+) {
+    // Circle
+    Circle(
+        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        radiusMeters = 1000.0,
+        strokeColor = Color.Blue,
+        fillColor = Color.Blue.copy(alpha = 0.3f)
+    )
+
+    // Polyline
+    Polyline(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        ),
+        strokeColor = Color.Magenta,
+        strokeWidth = 3.dp
+    )
+}
+```
+
+## Step 4: Handling user interactions
+
+### 4-1. Map click events
+
+```kotlin
+GoogleMapView(
+    state = mapViewState,
+    onMapClick = { geoPoint ->
+        println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
+    }
+) {
+    // Content
+}
+```
+
+### 4-2. Marker click events
+
+```kotlin
+GoogleMapView(
+    state = mapViewState,
+    onMarkerClick = { markerState ->
+        println("Marker clicked: ${markerState.extra}")
+    }
+) {
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(label = "SF"),
+        extra = "San Francisco marker"
+    )
+}
+```
+
+## Step 5: Switching map SDKs
+
+To switch from Google Maps to Mapbox, just change the state and view types:
+
+```kotlin
+// Google Maps
+val googleMapState = rememberGoogleMapViewState()
+GoogleMapView(state = googleMapState) { /* content */ }
+
+// Mapbox
+val mapboxState = rememberMapboxMapViewState()
+MapboxMapView(state = mapboxState) { /* same content */ }
+```
+
+All overlay components (`Marker`, `Circle`, `Polyline`, etc.) can be reused across providers as long as you swap out the `MapViewState` and map view composable.
+
+## Next Steps
+
+In this tutorial, you learned the basics of using the MapConductor SDK:
+
+- How to install and configure dependencies
+- How to display a map
+- How to add markers and shapes
+- How to handle user interactions
+- How to switch between map SDKs
+
+To dive deeper, check out:
+
+- [Modules Overview](/modules/)
++- [Provider Compatibility](/provider-compatibility/)
+- [SDK Version Compatibility](/sdk-version-compatibility/)

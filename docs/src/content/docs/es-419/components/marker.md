@@ -4,7 +4,7 @@ title: "Marker"
 
 Los marcadores son anotaciones de punto que se colocan en el mapa en ubicaciones geográficas concretas. Admiten iconos personalizados, interacciones y animaciones.
 
-## Funciones Composable
+## Funciones composable
 
 ### Marker básico
 
@@ -34,7 +34,7 @@ fun MapViewScope.Marker(state: MarkerState)
 - **`draggable`**: Indica si el marcador se puede arrastrar (por defecto: `false`).
 - **`icon`**: Icono personalizado del marcador (`MarkerIcon?`).
 - **`extra`**: Datos adicionales asociados al marcador (`Serializable?`).
-- **`id`**: Identificador único del marcador (`String?`).
+- **`id`**: Identificador único del marcador (`String?`, se genera automáticamente si no se proporciona).
 
 ## Tipos de icono
 
@@ -186,7 +186,6 @@ MapView(state = mapViewState) {
 }
 ```
 
-### Marker con Info Bubble
+### Marker con InfoBubble
 
 Puedes combinar `Marker` con `InfoBubble` para mostrar información detallada al hacer clic en el marcador. Consulta [InfoBubble](/es-419/components/infobubble) para ver un ejemplo completo.
-

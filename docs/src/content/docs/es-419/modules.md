@@ -2,72 +2,128 @@
 title: Módulos
 ---
 
-# Arquitectura de módulos
+MapConductor está dividido en varios módulos de Gradle para que solo tengas que depender de lo que realmente necesitas. En esta página se resume cada módulo `mapconductor-xxx` en la versión v{BOM_MODULE_VERSION}.
 
-MapConductor Android SDK se compone de varios módulos para que puedas usar solo lo que necesitas. En esta página se describen los roles y dependencias de cada módulo.
+## Núcleo y BOM
 
-## BOM y gestión de versiones
+### `mapconductor-bom`
 
-Todos los módulos se gestionan a través de `mapconductor-bom`. Usar el BOM evita inconsistencias de versión entre módulos.
+Bill of Materials para todos los artefactos de MapConductor.
+
+- Alinea las versiones entre todos los módulos
+- Recomendado para todos los proyectos
 
 ```kotlin
-val mapconductorVersion = "1.1.1"
-
-dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-    // Añade otros módulos según necesidad
-}
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
 ```
-
-## Runtime principal
 
 ### `mapconductor-core`
 
-Módulo central que proporciona abstracciones compartidas y utilidades:
+Runtime central y abstracciones compartidas:
 
-- Clases básicas de geolocalización y cámara
-- Gestión de estado de MapView y eventos
-- Interfaces comunes para componentes como marcadores, círculos y polilíneas
+- Tipos de geometría: `GeoPoint`, `GeoRectBounds`
+- Tipos de cámara: `MapCameraPosition`, `VisibleRegion`
+- Abstracciones de mapa: `MapViewState`, `MapViewController`, `MapViewBase`
+- Primitivas de overlay: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
-Este módulo es obligatorio para la mayoría de los casos de uso.
+Todos los demás módulos se construyen sobre `mapconductor-core`.
 
-## Módulos de proveedor de mapas
+## Integraciones de proveedores de mapas
 
-Cada proveedor de mapas dispone de un módulo que implementa `mapconductor-core`:
+Los módulos específicos de cada SDK implementan la API unificada:
 
-- `mapconductor-for-googlemaps`
-- `mapconductor-for-mapbox`
-- `mapconductor-for-here`
-- `mapconductor-for-arcgis`
-- `mapconductor-for-maplibre`
+### `mapconductor-for-googlemaps`
 
-Estos módulos proporcionan vistas de mapa y clases de estado específicas por proveedor, y actúan como puente entre el SDK nativo y la API unificada de MapConductor.
+- Composable `GoogleMapView`
+- `GoogleMapViewStateImpl`
+- Controladores de overlays específicos de Google Maps
 
-## Módulos de soporte
+### `mapconductor-for-mapbox`
+
+- Composable `MapboxMapView`
+- `MapboxViewStateImpl`
+
+### `mapconductor-for-here`
+
+- Composable `HereMapView`
+- `HereViewStateImpl`
+
+### `mapconductor-for-arcgis`
+
+- Composable `ArcGISMapView`
+- `ArcGISMapViewStateImpl`
+
+### `mapconductor-for-maplibre`
+
+- Composable `MapLibreMapView`
+- `MapLibreViewStateImpl`
+
+Cada módulo de proveedor:
+
+- Implementa `MapViewState` y los bindings del controlador
+- Mapea la cámara y región visible específicas del proveedor a `MapCameraPosition`
+- Expone controladores de overlays (marcador, polilínea, polígono, círculo y ground image cuando se soporta)
+
+## Módulos experimentales / utilitarios
 
 ### `mapconductor-icons`
 
-Módulo que proporciona iconos personalizados de marcador, como iconos circulares o de bandera, para representar información en el mapa de forma visualmente clara.
+Iconos de marcador implementados en Compose puro:
 
-## Módulos experimentales
+- `CircleIcon`, `FlagIcon`
+- Estilos de burbuja de información (redonda, con cola, etc.)
 
-> **Nota**: Los módulos experimentales están sujetos a cambios. Consulta las notas de la versión si los usas en producción.
+Útiles cuando necesitas una apariencia de marcadores consistente entre proveedores sin depender de drawables específicos del SDK.
 
 ### `mapconductor-marker-strategy`
 
-Define estrategias para manejar de forma eficiente un gran número de marcadores, incluyendo clustering y otras optimizaciones de rendimiento.
+Estrategias de renderizado de marcadores de alto nivel:
+
+- Estrategias espaciales / similares a clustering
+- Abstracciones para conjuntos de marcadores controlados de forma remota
+
+Diseñado para funcionar con cualquier módulo de proveedor a través de interfaces compartidas.
 
 ### `mapconductor-marker-native-strategy`
 
-Ofrece estrategias de renderizado de marcadores aceleradas de forma nativa, pensadas para escenarios con muchos marcadores.
+Estrategias aceleradas de forma nativa para conjuntos muy grandes de marcadores:
 
-## App de ejemplo
+- Enfocadas en el rendimiento a gran escala
+- Normalmente se usan junto con `mapconductor-marker-strategy`
 
-El repositorio incluye una aplicación de ejemplo que demuestra las capacidades principales de MapConductor:
+## Aplicaciones de ejemplo
 
-- `example-app`: ejemplo de cómo usar MapConductor con varios proveedores.
+### `example-app`
 
-Consulta [Comenzar](/es-419/get-started/) y el README del repositorio para saber cómo compilar y ejecutar la app de ejemplo.
+Aplicación de demostración que muestra:
 
+- Uso básico del mapa y cambio de proveedor
+- Manejo de cámara y región visible (`VisibleRegionPage`, `ZoomCalibrationPage`)
+- Polilíneas, polígonos, círculos y ground images
+- Burbujas de información e iconos de marcador personalizados
+
+### `simple-map-app`
+
+Ejemplo mínimo para pruebas rápidas de integración y depuración.
+
+## Cómo elegir módulos
+
+Configuraciones típicas:
+
+```kotlin
+// Mínimo: solo Google Maps
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+implementation("com.mapconductor:core")
+implementation("com.mapconductor:for-googlemaps")
+```
+```kotlin
+// Varios proveedores con iconos y estrategias
+implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+implementation("com.mapconductor:core")
+implementation("com.mapconductor:for-googlemaps")
+implementation("com.mapconductor:for-mapbox")
+implementation("com.mapconductor:icons")
+implementation("com.mapconductor:marker-strategy")
+```
+
+Utiliza esta página como mapa de alto nivel. La información detallada de la API para cada área (núcleo, componentes, estados, módulos experimentales) puede migrarse desde las secciones existentes de mdBook (`docs/src/core`, `docs/src/components`, etc.).

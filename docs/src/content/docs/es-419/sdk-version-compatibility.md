@@ -8,12 +8,12 @@ En esta página se describe la compatibilidad entre MapConductor, los distintos 
 
 ## Resumen de versiones compatibles
 
-MapConductor v1.1.1 está diseñado para el siguiente entorno:
+MapConductor v{BOM_MODULE_VERSION} está diseñado para el siguiente entorno:
 
-- **Android**: minSdk 26, targetSdk 35.
-- **Kotlin**: 1.9.25.
-- **Jetpack Compose**: 1.7.1.
-- **Java**: 17.
+- **Android**: minSdk {ANDROID_MIN_SDK_VERSION}, targetSdk {ANDROID_TARGET_SDK_VERSION}.
+- **Kotlin**: {KOTLIN_VERSION}.
+- **Jetpack Compose**: {JETPACK_COMPOSE_VERSION}.
+- **Java**: {JAVA_VERSION}.
 
 Los módulos se prueban con estas versiones como base. Si usas versiones diferentes, verifica cuidadosamente la compatibilidad.
 
@@ -21,20 +21,20 @@ Los módulos se prueban con estas versiones como base. Si usas versiones diferen
 
 ```kotlin
 android {
-    compileSdk = 35
+    compileSdk = {ANDROID_TARGET_SDK_VERSION}
 
     defaultConfig {
-        minSdk = 26
-        targetSdk = 35
+        minSdk = {ANDROID_MIN_SDK_VERSION}
+        targetSdk = {ANDROID_TARGET_SDK_VERSION}
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
+        targetCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "{JAVA_VERSION}"
     }
 }
 ```
@@ -57,4 +57,3 @@ En el desarrollo de MapConductor se verifican combinaciones de versiones habitua
 - Los cambios que requieran refactorización de API se documentan en las notas de la versión.
 
 Para obtener la información más reciente, revisa las notas de lanzamiento en GitHub y el historial de versiones en Maven Central.
-

@@ -4,7 +4,7 @@ title: Introduction
 
 # MapConductor Android SDK Documentation
 
-MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and MapLibre. This documentation covers the public API components available through Maven distribution for **v1.1.0**.
+MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and MapLibre. This documentation covers the public API components available through Maven distribution for **v{BOM_MODULE_VERSION}**.
 
 ## Overview
 
@@ -135,9 +135,9 @@ val mapLibreState = rememberMapLibreMapViewState()
 
 The rest of your code remains the same – all components work consistently across providers.
 
-## What's New in v1.1.1
+## What's New in v{BOM_MODULE_VERSION}
 
-Compared to v1.1.0, v1.1.1 includes:
+Compared to v1.1.0, v{BOM_MODULE_VERSION} includes:
 
 - Fixed a bug where InfoBubble display position was not recalculated when moving the map's visible region
 

@@ -2,42 +2,113 @@
 title: Compatibilidad de proveedores
 ---
 
-# Compatibilidad de proveedores
+Esta página muestra qué componentes de MapConductor están soportados por cada proveedor de mapas. Aunque MapConductor intenta ofrecer una API unificada, algunas funciones no están disponibles en todos los proveedores debido a limitaciones de los SDK subyacentes.
 
-En esta página se describen las funciones que MapConductor admite en cada proveedor de mapas y las diferencias de comportamiento más relevantes.
+## Matriz de soporte de componentes
 
-## Resumen de compatibilidad
+| Componente        | Google Maps | Mapbox | HERE Maps | ArcGIS | MapLibre |
+|-------------------|-------------|--------|-----------|--------|----------|
+| **Map View**      | ✅         | ✅     | ✅        | ✅     | ✅       |
+| **Marker**        | ✅         | ✅     | ✅        | ✅     | ✅       |
+| **Circle**        | ✅         | ✅     | ✅        | ✅     | ✅       |
+| **Polyline**      | ✅         | ✅     | ✅        | ✅     | ✅       |
+| **Polygon**       | ✅         | ✅     | ✅        | ✅     | ✅       |
+| **GroundImage**   | ✅         | ❌     | ❌        | ❌     | ❌       |
 
-MapConductor es compatible con Google Maps, Mapbox, HERE, ArcGIS y MapLibre. Las funciones principales del mapa (marcadores, círculos, polilíneas, polígonos, etc.) están diseñadas para usarse mediante una API lo más común posible entre proveedores.
+### Leyenda
 
-Algunas funciones son específicas de ciertos proveedores, por ejemplo, `GroundImage` solo está disponible en Google Maps.
+- ✅ **Totalmente soportado**: la función está disponible y se ha probado
+- ❌ **No soportado**: la función no está disponible por limitaciones del SDK
+- ⚠️ **Soporte limitado**: la función está disponible con restricciones (actualmente ninguna)
 
-## Funciones principales y soporte
+## Componentes básicos (todos los proveedores)
 
-Ejemplos de compatibilidad por tipo de función:
+### Componentes de vista de mapa
 
-- **Mapa**: compatible en todos los proveedores.
-- **Marcador**: compatible en todos los proveedores (aunque la apariencia y animaciones pueden variar entre SDKs).
-- **Círculo / polilínea / polígono**: compatibles en todos los proveedores.
-- **GroundImage**: actualmente solo Google Maps.
+Todos los proveedores de mapas soportan, al menos, las siguientes capacidades básicas en la vista de mapa:
 
-Consulta también la documentación de cada componente, como [Marker](/es-419/components/marker) y [Polyline](/es-419/components/polyline), para ver detalles adicionales.
+- Posicionamiento y movimiento de la cámara
+- Interacción del usuario (pan, zoom, rotación, inclinación, cuando el SDK lo permite)
+- Estilo y apariencia del mapa
+- Manejo de eventos (tap, pulsación prolongada, eventos de movimiento de cámara)
 
-## Eventos e interacciones
+En v{BOM_MODULE_VERSION} están disponibles los siguientes callbacks de cámara (cuando el SDK subyacente los expone):
 
-Los eventos de interacción (como movimientos de cámara o toques sobre el mapa) se exponen a través de interfaces unificadas, pero pueden existir diferencias entre proveedores:
+- `onCameraMoveStart`
+- `onCameraMove`
+- `onCameraMoveEnd`
 
-- Algunos SDK no ofrecen ciertos eventos.
-- El momento o la frecuencia con la que se disparan los eventos puede variar.
+### Marker
 
-MapConductor intenta ofrecer un comportamiento coherente entre proveedores, pero para casos sensibles (como tracking preciso), se recomienda probar el comportamiento real en cada SDK.
+Todos los proveedores soportan funcionalidad de marcadores con:
 
-## Rendimiento y limitaciones
+- Iconos y colores personalizados
+- Eventos de clic e interacción
+- Arrastrar y soltar
+- Ventanas de información / info bubbles (cuando el proveedor las soporta)
 
-El rendimiento al mostrar grandes cantidades de marcadores o polígonos puede variar según el proveedor de mapas. Aunque MapConductor aplica optimizaciones en la medida de lo posible, ten en cuenta:
+### Circle, Polyline, Polygon
 
-- Las capacidades del dispositivo (CPU, GPU, memoria) influyen en el rendimiento.
-- Algunos proveedores imponen límites en el número de objetos o capas.
+Todos los proveedores soportan:
 
-Para optimizaciones avanzadas, consulta también [Experimental / Marker Strategy](/es-419/experimental/marker-strategy).
+- Overlays de círculo con centro y radio
+- Polilíneas que conectan múltiples puntos
+- Polígonos con estilos de relleno y borde
 
+La apariencia visual exacta puede variar ligeramente entre proveedores debido a las implementaciones de cada SDK.
+
+## Limitaciones específicas por proveedor
+
+### GroundImage (solo Google Maps)
+
+Los overlays de tipo GroundImage solo están soportados en Google Maps.
+
+- **Google Maps**: la API nativa `GroundOverlay` permite superponer imágenes con límites geográficos.
+- **Mapbox / HERE / ArcGIS / MapLibre**: los SDK móviles no ofrecen un equivalente sencillo y nativo. Es posible lograr resultados similares con capas personalizadas, pero MapConductor todavía no proporciona una abstracción unificada para ello.
+
+## Manejo de funciones no soportadas
+
+Si utilizas componentes que no están soportados en todos los proveedores, prioriza la detección en tiempo de ejecución y la degradación elegante.
+
+### Ejemplo de detección en tiempo de ejecución
+
+```kotlin
+@Composable
+fun CompatibilityAwareMap() {
+    val mapViewState = rememberGoogleMapViewState()
+    val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
+
+    // Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView
+    MapView(state = mapViewState) {
+        // Componentes siempre soportados
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon()
+        )
+
+        Circle(
+            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            radiusMeters = 1000.0,
+            fillColor = Color.Blue.copy(alpha = 0.3f)
+        )
+
+        // Componentes soportados de forma condicional
+        if (supportsGroundImage) {
+            GroundImage(
+                bounds = imageBounds,
+                image = overlayImage,
+                opacity = 0.7f
+            )
+        }
+    }
+}
+```
+
+## Buenas prácticas
+
+1. **Detección de capacidades** – comprueba las capacidades del proveedor antes de usar funciones específicas.
+2. **Degradación elegante** – ofrece alternativas (o desactiva controles) cuando una función no está soportada.
+3. **Documentación** – documenta qué proveedores soporta tu app y qué diferencias de funcionalidad existen.
+4. **Pruebas** – prueba tu app con todos los proveedores objetivo para detectar diferencias visuales o de comportamiento.
+
+A medida que se añadan nuevas funciones a MapConductor o a los SDK de los proveedores, esta página debería actualizarse para reflejar el estado de compatibilidad más reciente.

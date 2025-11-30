@@ -1,57 +1,72 @@
 ---
 title: MapConductor Android SDK
+description: A unified Android maps SDK that lets you work with multiple map providers through a single API.
 head:
   - tag: title
-    content: Starlight 🌟 Build documentation sites with Astro
-description: Starlight helps you build beautiful, high-performance documentation websites with Astro.
+    content: description
 template: doc
 editUrl: false
 lastUpdated: false
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { CardGrid, Card } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import topBanner from '~/assets/top-banner.png';
 import QuickExampleTabs from '~/components/QuickExampleTabs.astro';
 
-![MapConductor Android SDK for Jetpack Compose](/img/top-banner.jpg)
+<Image src={topBanner} alt="MapConductor — a unified Android maps SDK that lets you work with multiple map providers through a single API" />
 
-## Why MapConductor?
+## What is MapConductor?
 
 <CardGrid>
   <Card title="Unified API" icon="puzzle">
-    Write once, switch map providers anytime. No need to rewrite code when changing from Google Maps to Mapbox or any other provider.
+    Write your map code once and switch map providers whenever you like. Even if you migrate from Google Maps to Mapbox, you don’t need to rewrite large parts of your codebase.
   </Card>
-  <Card title="Jetpack Compose Ready" icon="rocket">
-    Built for modern Android development with full Jetpack Compose support.
+  <Card title="Optimized for Jetpack Compose" icon="rocket">
+    Designed for modern Android development, with an API built specifically around Jetpack Compose.
   </Card>
-  <Card title="Multiple Providers" icon="setting">
-    Support for Google Maps, Mapbox, HERE Maps, ArcGIS, and MapLibre with consistent behavior.
+  <Card title="Multiple Providers Supported" icon="setting">
+    Provides consistent behavior across Google Maps, Mapbox, HERE Maps, ArcGIS, and MapLibre.
   </Card>
   <Card title="Open Source" icon="github">
-    Free and open-source under Apache License 2.0. Community-driven development.
+    Open-source under the Apache License 2.0 and developed by the community.
   </Card>
 </CardGrid>
 
 ## Quick Example
 
+Using MapConductor is simple: you combine `rememberXxxxViewState` with `XxxxView`.
+The `Xxxx` part switches between `GoogleMap`, `Mapbox`, and other providers.
+To switch to Mapbox, just change `rememberGoogleMapViewState()` to `rememberMapboxMapViewState()`
+and `GoogleMapView` to `MapboxMapView`. Everything else stays the same.
+
+| Map SDK    | `mapViewState` hook          | `MapView` composable |
+|-----------|------------------------------|----------------------|
+| GoogleMaps | `rememberGoogleMapViewState` | `GoogleMapView`      |
+| Mapbox     | `rememberMapboxViewState`    | `MapboxMapView`      |
+| MapLibre   | `rememberMapLibreViewState`  | `MapLibreView`       |
+| HERE       | `rememberHereMapViewState`   | `HereMapView`        |
+| ArcGIS     | `rememberArcGISMapViewState` | `ArcGISMapView`      |
+
 <QuickExampleTabs
-  markerLabel="Tokyo"
+  commentForInit="Initial camera position on the map"
+  commentForMapViewState="Use this mapViewState to control the visible map state"
   googleMapsAlt="Google Maps example"
   mapboxAlt="Mapbox example"
+  hereAlt="HERE example"
 />
-
-Switch to Mapbox? Just change `rememberGoogleMapViewState()` to `rememberMapboxMapViewState()` and `GoogleMapView` to `MapboxMapView`. Everything else stays the same.
 
 ## Supported Features
 
-| Feature | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
-|---------|-------------|--------|------|--------|----------|
-| Map | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Marker | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Circle | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Polyline | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Polygon | ✓ | ✓ | ✓ | ✓ | ✓ |
-| GroundImage | ✓ | N/A | N/A | N/A | N/A |
+| Feature   | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
+|----------|-------------|--------|------|--------|----------|
+| Map      | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Marker   | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Circle   | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Polyline | ✓           | ✓      | ✓    | ✓      | ✓        |
+| Polygon  | ✓           | ✓      | ✓    | ✓      | ✓        |
+| GroundImage | ✓        | N/A    | N/A  | N/A    | N/A      |
 
-## Get Started
+## Next Steps
 
-Ready to integrate MapConductor into your Android app? Check out our [Introduction](/introduction/) and [Get Started](/get-started/) guides to begin.
+When you are ready to add MapConductor to your Android app, start with the [Introduction](/introduction/) and the [Tutorial](/get-started/) guides.

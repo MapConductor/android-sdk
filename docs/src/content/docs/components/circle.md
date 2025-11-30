@@ -13,6 +13,7 @@ Circles are circular overlays that can be drawn on the map with customizable rad
 fun MapViewScope.Circle(
     center: GeoPoint,
     radiusMeters: Double,
+    geodesic: Boolean = false,
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
@@ -32,6 +33,7 @@ fun MapViewScope.Circle(state: CircleState)
 
 - **`center`**: Geographic center point of the circle (`GeoPoint`)
 - **`radiusMeters`**: Radius in meters (`Double`)
+- **`geodesic`**: Whether to draw the circle using geodesic edges that follow the Earth’s curvature (default: `false`)
 - **`strokeColor`**: Color of the circle's border (default: `Color.Red`)
 - **`strokeWidth`**: Width of the border line (default: `2.dp`)
 - **`fillColor`**: Fill color of the circle interior (default: semi-transparent white)
@@ -262,7 +264,7 @@ MapView(
 ) {
     Circle(
         center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radius = 1000.0,
+        radiusMeters = 1000.0,
         clickable = true,
         extra = "Clickable circle"
     )
