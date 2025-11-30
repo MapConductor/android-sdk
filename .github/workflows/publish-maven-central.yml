@@ -91,6 +91,6 @@ jobs:
             echo "No modules require publishing."
             exit 0
           fi
-
+          
           echo "Publishing modules with tasks: ${publish_tasks[*]}"
-          ./gradlew --no-daemon "${publish_tasks[@]}"
+          ./gradlew --no-daemon "${publish_tasks[@]}" --stacktrace --info
