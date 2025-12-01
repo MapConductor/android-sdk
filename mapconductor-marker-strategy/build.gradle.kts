@@ -155,9 +155,9 @@ afterEvaluate {
         }
     }
 
-    if (project.hasProperty("signing.keyId")) {
-        signing {
-            sign(publishing.publications["release"])
-        }
+    signing {
+        // Require signing properties to be set
+        isRequired = true
+        sign(publishing.publications["release"])
     }
 }
