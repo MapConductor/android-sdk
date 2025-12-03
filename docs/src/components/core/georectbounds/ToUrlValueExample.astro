@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  defaultPrecision?: number;
+  highPrecision?: number;
+}
+
+const {
+  defaultPrecision = 6,
+  highPrecision = 8
+} = Astro.props;
+
+const code = `fun toUrlValue(precision: Int = ${defaultPrecision}): String
+
+// Usage for API calls
+val urlString = bounds.toUrlValue() // "37.764900,-122.429400,37.784900,-122.409400"
+val preciseString = bounds.toUrlValue(precision = ${highPrecision})`;
+---
+
+<Code code={code} lang="kotlin" />
+

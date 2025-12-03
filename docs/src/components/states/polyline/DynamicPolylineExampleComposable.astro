@@ -1,0 +1,32 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun DynamicPolylineExample() {
+    var polylineState by remember {
+        mutableStateOf(
+            PolylineState(
+                points = listOf(
+                    GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                    GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                ),
+                strokeColor = Color.Red,
+                strokeWidth = 4.dp
+            )
+        )
+    }
+
+    MapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            polylineState = polylineState.copy(
+                points = polylineState.points + geoPoint
+            )
+        }
+    ) {
+        Polyline(polylineState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

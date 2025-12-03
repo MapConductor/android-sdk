@@ -1,0 +1,58 @@
+---
+title: "Spherical Utilities"
+---
+
+import SphericalImportExample from '~/components/core/spherical-utilities/SphericalImportExample.astro';
+import ComputeDistanceBetweenSignature from '~/components/core/spherical-utilities/ComputeDistanceBetweenSignature.astro';
+import ComputeDistanceBetweenExample from '~/components/core/spherical-utilities/ComputeDistanceBetweenExample.astro';
+import ComputeLengthSignature from '~/components/core/spherical-utilities/ComputeLengthSignature.astro';
+import ComputeLengthExample from '~/components/core/spherical-utilities/ComputeLengthExample.astro';
+
+Las utilidades esféricas proporcionan cálculos geográficos precisos usando un modelo esférico de la Tierra. Estas funciones son esenciales para medir distancias, calcular rutas y realizar otras operaciones geográficas.
+
+## Visión general
+
+El objeto `Spherical` contiene funciones auxiliares para calcular distancias, rumbos y posiciones sobre la superficie terrestre. Usa un modelo esférico con el radio de la Tierra basado en el elipsoide WGS84.
+
+<SphericalImportExample />
+
+## Constantes principales
+
+- **Radio de la Tierra**: 6.378.137 metros (semieje mayor del elipsoide WGS84).
+- **Sistema de coordenadas**: coordenadas geográficas WGS84 (latitud/longitud).
+
+## Cálculo de distancias
+
+### Distancia entre puntos
+
+<ComputeDistanceBetweenSignature />
+
+Calcula la distancia más corta entre dos puntos usando la fórmula de Haversine:
+
+<ComputeDistanceBetweenExample
+  commentForFormulaUsage="Calcula la distancia más corta entre dos puntos usando la fórmula de Haversine"
+  fromLatitude={37.7749}
+  fromLongitude={-122.4194}
+  toLatitude={40.7128}
+  toLongitude={-74.006}
+/>
+
+### Longitud de un trayecto
+
+<ComputeLengthSignature />
+
+Calcula la longitud total de un trayecto compuesto por varios puntos:
+
+<ComputeLengthExample commentForRouteDescription="Calcula la longitud total de un trayecto compuesto por varios puntos" />
+
+## Otros casos de uso
+
+Las utilidades esféricas también son útiles para:
+
+- Encontrar puntos intermedios o realizar interpolaciones sobre rutas.
+- Calcular el rumbo (bearing) entre dos `GeoPoint`.
+- Animar la cámara a lo largo de un trayecto.
+- Filtrar elementos dentro de un radio o área concreta.
+
+Son especialmente prácticas cuando se trabaja con rutas, animaciones de cámara y lógica de filtrado geográfico basada en distancia.
+

@@ -1,0 +1,27 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForUsage?: string;
+  commentForInvalid?: string;
+  commentForValid?: string;
+  invalidLatitude?: number;
+  invalidLongitude?: number;
+}
+
+const {
+  commentForUsage = "Usage example",
+  commentForInvalid = "Invalid coordinates",
+  commentForValid = "Clamped to valid range",
+  invalidLatitude = 100.0,
+  invalidLongitude = 200.0
+} = Astro.props;
+
+const code = `fun GeoPoint.normalize(): GeoPointImpl
+
+// ${commentForUsage}
+val invalidPoint = GeoPointImpl.fromLatLong(${invalidLatitude}, ${invalidLongitude}) // ${commentForInvalid}
+val validPoint = invalidPoint.normalize() // ${commentForValid}`;
+---
+
+<Code code={code} lang="kotlin" />

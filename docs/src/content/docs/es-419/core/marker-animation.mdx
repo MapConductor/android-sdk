@@ -1,0 +1,54 @@
+---
+title: "Marker Animation"
+---
+
+import MarkerAnimationInterface from '~/components/core/marker-animation/MarkerAnimationInterface.astro';
+import PositionAnimationClass from '~/components/core/marker-animation/PositionAnimationClass.astro';
+import AnimatedMarkerExample from '~/components/core/marker-animation/AnimatedMarkerExample.astro';
+
+`MarkerAnimation` proporciona transiciones suaves y efectos visuales para los marcadores del mapa. Las animaciones pueden aplicarse a la apariencia del marcador, a cambios de posición y a eventos de ciclo de vida.
+
+## Interfaz MarkerAnimation
+
+<MarkerAnimationInterface />
+
+## Tipos de animación
+
+### Animaciones de posición
+
+Animan suavemente los cambios de posición de un marcador al actualizar sus coordenadas.
+
+<PositionAnimationClass defaultDuration={1000} />
+
+#### Ejemplo de uso
+
+<AnimatedMarkerExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  commentForAnimateMarker="Animar el marcador a una nueva posición"
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+  commentForClickTrigger="Dispara la animación"
+  commentForAnimateStart="Animación iniciada para el marcador"
+  commentForAnimateEnd="Animación finalizada para el marcador"
+  animationDuration={1000}
+/>
+
+### Animaciones de aparición/desaparición
+
+Dependiendo de la implementación concreta, también puedes animar la opacidad o escala del marcador (por ejemplo, “fade in/out”, “pop-in”, etc.).
+
+## Uso con MarkerState
+
+```kotlin
+val state = MarkerState(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    icon = DefaultIcon(label = "Animated"),
+)
+
+val animation = MarkerAnimation.FadeIn(durationMillis = 500)
+
+state.setAnimation(animation)
+```
+
+Consulta las clases concretas de `MarkerAnimation` para ver las opciones disponibles y combinarlas según tus necesidades de UX.
+

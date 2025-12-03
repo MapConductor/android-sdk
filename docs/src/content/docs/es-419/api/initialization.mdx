@@ -1,0 +1,72 @@
+---
+title: "Inicialización"
+---
+
+import GradleDependencies from '~/components/api/initialization/GradleDependencies.astro';
+import GoogleMapsExample from '~/components/api/initialization/GoogleMapsExample.astro';
+import MapboxExample from '~/components/api/initialization/MapboxExample.astro';
+import HereExample from '~/components/api/initialization/HereExample.astro';
+import ArcGISExample from '~/components/api/initialization/ArcGISExample.astro';
+import MapLibreExample from '~/components/api/initialization/MapLibreExample.astro';
+import CustomMapConfiguration from '~/components/api/initialization/CustomMapConfiguration.astro';
+
+En esta sección se explica cómo inicializar y configurar correctamente MapConductor para distintos SDK de mapas.
+
+## Inicialización básica
+
+### Dependencias Gradle
+
+Añade MapConductor a tu `build.gradle.kts`:
+
+<GradleDependencies
+  commentForChooseProvider="Elige tus SDK de mapas"
+  bomVersionPlaceholder="$version"
+/>
+
+### Configuración de los SDK de mapas
+
+Cada SDK de mapas requiere una configuración específica y claves de API.
+
+#### Google Maps
+
+<GoogleMapsExample
+  commentForMapContent="Contenido del mapa"
+  commentForUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+#### Mapbox
+
+<MapboxExample
+  commentForMapContent="Contenido del mapa"
+  commentForUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+#### HERE Maps
+
+<HereExample
+  commentForMapContent="Contenido del mapa"
+  commentForUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+#### ArcGIS
+
+<ArcGISExample
+  commentForMapContent="Contenido del mapa"
+  commentForUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+#### MapLibre
+
+<MapLibreExample
+  commentForMapContent="Contenido del mapa"
+  commentForUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+## Inicialización
+
+<CustomMapConfiguration
+  commentForCameraPosition="Establecer la posición inicial de la cámara"
+  commentForMapDesign="Configurar el diseño/estilo del mapa"
+  commentForUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+  commentForMapContent="Contenido del mapa"
+/>

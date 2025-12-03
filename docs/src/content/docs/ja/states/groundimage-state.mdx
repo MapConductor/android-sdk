@@ -1,0 +1,76 @@
+---
+title: "GroundImageState（画像オーバーレイ状態）"
+---
+
+import GroundImageStateConstructorExample from '~/components/states/groundimage/GroundImageStateConstructorExample.astro';
+import GroundImageStateMethodsExample from '~/components/states/groundimage/GroundImageStateMethodsExample.astro';
+import BasicGroundImageExampleComposable from '~/components/states/groundimage/BasicGroundImageExampleComposable.astro';
+import InteractiveGroundImageExampleComposable from '~/components/states/groundimage/InteractiveGroundImageExampleComposable.astro';
+import MultiLayerGroundImageExampleComposable from '~/components/states/groundimage/MultiLayerGroundImageExampleComposable.astro';
+import DynamicBoundsExampleComposable from '~/components/states/groundimage/DynamicBoundsExampleComposable.astro';
+import AnimatedGroundImageExampleComposable from '~/components/states/groundimage/AnimatedGroundImageExampleComposable.astro';
+import GroundImageEventTypesExample from '~/components/states/groundimage/GroundImageEventTypesExample.astro';
+import GroundImageResourceLoadingExample from '~/components/states/groundimage/GroundImageResourceLoadingExample.astro';
+
+`GroundImageState` は、地図上のグラウンドイメージオーバーレイの構成と動作を管理します。地理的境界、画像リソース、不透明度設定のためのリアクティブなプロパティを提供します。
+
+## コンストラクタ
+
+<GroundImageStateConstructorExample />
+
+## プロパティ
+
+### 基本プロパティ
+- **`id: String`**: 一意の識別子（指定されていない場合は自動生成）
+- **`bounds: GeoRectBounds`**: 画像配置のための地理的矩形境界
+- **`image: Drawable`**: 表示する描画可能画像
+- **`opacity: Float`**: 透明度レベル（0.0 = 透明、1.0 = 不透明）
+- **`extra: Serializable?`**: グラウンドイメージに付加される追加データ
+
+## メソッド
+
+<GroundImageStateMethodsExample />
+
+## 使用例
+
+### 基本的なグラウンドイメージ
+
+<BasicGroundImageExampleComposable />
+
+### インタラクティブなグラウンドイメージ
+
+<InteractiveGroundImageExampleComposable />
+
+### 複数のオーバーレイ
+
+<MultiLayerGroundImageExampleComposable />
+
+### 動的な境界
+
+<DynamicBoundsExampleComposable />
+
+### アニメーション付きオーバーレイ
+
+<AnimatedGroundImageExampleComposable />
+
+## イベント処理
+
+グラウンドイメージイベントは状態とクリック位置の両方を提供します：
+
+<GroundImageEventTypesExample />
+
+## 画像リソース管理
+
+### 異なるソースからの読み込み
+
+<GroundImageResourceLoadingExample />
+
+## ベストプラクティス
+
+1. **画像サイズ**: パフォーマンスのために画像解像度を最適化してください
+2. **境界の精度**: 正確な地理的配置を確保してください
+3. **不透明度**: 視認性のために適切な透明度を使用してください
+4. **リソース管理**: 描画可能リソースをキャッシュして再利用してください
+5. **レイヤー順序**: 複数のオーバーレイの描画順序を考慮してください
+6. **パフォーマンス**: 同時グラウンドイメージの数を制限してください
+7. **エラー処理**: 画像の読み込みに失敗した場合を処理してください

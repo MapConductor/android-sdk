@@ -1,0 +1,12 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class GroundImageEvent(
+    val state: GroundImageState,
+    val clicked: GeoPointImpl?
+)
+
+typealias OnGroundImageEventHandler = (GroundImageEvent) -> Unit`;
+---
+
+<Code code={code} lang="kotlin" />
+

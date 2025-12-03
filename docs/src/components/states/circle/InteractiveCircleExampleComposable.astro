@@ -1,0 +1,39 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun InteractiveCircleExample() {
+    var circleState by remember {
+        mutableStateOf(
+            CircleState(
+                center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                radiusMeters = 500.0,
+                strokeColor = Color.Red,
+                fillColor = Color.Red.copy(alpha = 0.2f),
+                clickable = true
+            )
+        )
+    }
+
+    Column {
+        Slider(
+            value = circleState.radiusMeters.toFloat(),
+            onValueChange = {
+                circleState = circleState.copy(radiusMeters = it.toDouble())
+            },
+            valueRange = 100f..2000f
+        )
+
+        MapView(
+            state = mapViewState,
+            onCircleClick = { event ->
+                println("Circle clicked at: \${event.clicked}")
+            }
+        ) {
+            Circle(circleState)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

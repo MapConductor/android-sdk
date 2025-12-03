@@ -1,0 +1,34 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun AnimatedMarkerExample() {
+    val startPosition = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val endPosition = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+
+    var markerState by remember {
+        mutableStateOf(
+            MarkerState(
+                position = startPosition,
+                icon = DefaultIcon(fillColor = Color.Green, label = "Moving"),
+                extra = "Animated marker"
+            )
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2000)
+            markerState = markerState.copy(
+                position = if (markerState.position == startPosition) endPosition else startPosition
+            )
+        }
+    }
+
+    MapView(state = mapViewState) {
+        Marker(markerState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

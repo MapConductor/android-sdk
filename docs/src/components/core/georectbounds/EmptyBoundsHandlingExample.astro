@@ -1,0 +1,26 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  extendLatitude?: number;
+  extendLongitude?: number;
+}
+
+const {
+  extendLatitude = 37.7749,
+  extendLongitude = -122.4194
+} = Astro.props;
+
+const code = `val emptyBounds = GeoRectBounds()
+
+println(emptyBounds.isEmpty) // true
+println(emptyBounds.center) // null
+println(emptyBounds.toSpan()) // null
+
+// Extending empty bounds
+emptyBounds.extend(GeoPointImpl.fromLatLong(${extendLatitude}, ${extendLongitude}))
+println(emptyBounds.isEmpty) // false`;
+---
+
+<Code code={code} lang="kotlin" />
+

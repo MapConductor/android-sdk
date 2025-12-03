@@ -1,0 +1,142 @@
+---
+title: "MapViewHolder"
+---
+
+import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
+import MapViewHolderAccessExample from '~/components/core/mapviewholder/MapViewHolderAccessExample.astro';
+import GoogleMapViewHolderExample from '~/components/core/mapviewholder/GoogleMapViewHolderExample.astro';
+import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
+import HereViewHolderExample from '~/components/core/mapviewholder/HereViewHolderExample.astro';
+import ArcGISMapViewHolderExample from '~/components/core/mapviewholder/ArcGISMapViewHolderExample.astro';
+import CustomStyledMapExample from '~/components/core/mapviewholder/CustomStyledMapExample.astro';
+import AnalyticsIntegrationExample from '~/components/core/mapviewholder/AnalyticsIntegrationExample.astro';
+import PerformanceOptimizedMapExample from '~/components/core/mapviewholder/PerformanceOptimizedMapExample.astro';
+import ThirdPartyIntegrationExample from '~/components/core/mapviewholder/ThirdPartyIntegrationExample.astro';
+import LifecycleAwareMapExample from '~/components/core/mapviewholder/LifecycleAwareMapExample.astro';
+import NullSafetyAccessExample from '~/components/core/mapviewholder/NullSafetyAccessExample.astro';
+import SafeNativeAccessExample from '~/components/core/mapviewholder/SafeNativeAccessExample.astro';
+
+`MapViewHolder` provides access to the native map SDK instances for advanced use cases where MapConductor's unified API doesn't cover specific provider functionality. While MapConductor provides a common interface, it doesn't completely wrap all native features, and MapViewHolder bridges this gap.
+
+## Overview
+
+MapConductor aims to provide a unified API across map providers, but complete feature parity is not always possible. MapViewHolder allows developers to access the underlying native map instances when they need provider-specific functionality.
+
+<MapViewHolderInterface />
+
+## Accessing MapViewHolder
+
+Each map provider's `MapViewState` implementation provides access to its specific `MapViewHolder`:
+
+<MapViewHolderAccessExample />
+
+## Provider-Specific Implementations
+
+### Google Maps
+
+<GoogleMapViewHolderExample
+  commentForAccessApis="Access native Google Maps APIs"
+  commentForUseFeatures="Use Google Maps specific features"
+  commentForHandlePoi="Handle Points of Interest clicks"
+/>
+
+### Mapbox
+
+<MapboxMapViewHolderExample
+  commentForAccessApis="Access native Mapbox APIs"
+  commentForUseFeatures="Use Mapbox specific features"
+  commentForAccessPlugins="Access Mapbox plugins"
+/>
+
+### HERE Maps
+
+<HereViewHolderExample
+  commentForAccessApis="Access native HERE SDK APIs"
+  commentForUseFeatures="Use HERE specific features"
+  commentForSearchResults="Handle HERE search results"
+  commentForRouting="Configure and use routing"
+/>
+
+### ArcGIS
+
+<ArcGISMapViewHolderExample
+  commentForAccessApis="Access native ArcGIS APIs"
+  commentForUseFeatures="Use ArcGIS specific features"
+  commentForAnalysis="Configure and use analysis tools"
+/>
+
+## Common Use Cases
+
+### Custom Styling
+
+<CustomStyledMapExample
+  commentForInitWait="Wait for map initialization"
+  commentForApplyStyle="Apply custom map style"
+  commentForConfigureUi="Configure map UI"
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Advanced Analytics
+
+<AnalyticsIntegrationExample
+  commentForTrackEvents="Track custom map events"
+  commentForTrackStyle="Track style changes"
+/>
+
+### Performance Optimization
+
+<PerformanceOptimizedMapExample
+  commentForPerformanceSettings="HERE-specific performance settings"
+  commentForOptimizeUseCase="Optimize for specific use case"
+  commentForLevelOfDetail="Custom level of detail settings"
+/>
+
+### Integration with Third-Party Services
+
+<ThirdPartyIntegrationExample
+  commentForIntegration="Integrate with ArcGIS Online services"
+  commentForQueryResults="Process feature query results"
+/>
+
+## Lifecycle Management
+
+### Map Lifecycle Events
+
+<LifecycleAwareMapExample commentForLifecycle="Handle map lifecycle events" />
+
+## Error Handling and Safety
+
+### Null Safety
+
+<NullSafetyAccessExample
+  commentForSafeAccess="Safe to access native APIs"
+  commentForUnavailable="Map not yet initialized or unavailable"
+/>
+
+### Initialization Timing
+
+<SafeNativeAccessExample
+  commentForPolling="Poll until map is ready"
+  commentForConfigureFeatures="Configure native features"
+/>
+
+## Best Practices
+
+1. **Initialization Check**: Always check if `getMapViewHolder()` returns non-null before accessing native APIs
+2. **Lifecycle Awareness**: Properly handle map lifecycle events when using native APIs
+3. **Error Handling**: Wrap native API calls in try-catch blocks as provider APIs may throw exceptions
+4. **Documentation**: Refer to each provider's official documentation for native API usage
+5. **Testing**: Test thoroughly across all target map providers when using native APIs
+6. **Fallback**: Provide fallback behavior when native features are unavailable
+7. **Version Compatibility**: Ensure native API usage is compatible with the SDK versions you're targeting
+
+## Limitations and Considerations
+
+1. **Platform Dependency**: Native API usage ties your code to specific map providers
+2. **Maintenance Overhead**: Provider API changes may require updates to native API usage
+3. **Testing Complexity**: More complex testing required to cover provider-specific code paths
+4. **Feature Parity**: Not all providers support equivalent native features
+5. **MapConductor Integration**: Native changes may not integrate with MapConductor's state management
+
+MapViewHolder is a powerful escape hatch for advanced use cases, but should be used judiciously to maintain the benefits of MapConductor's unified API approach.
+

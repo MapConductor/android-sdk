@@ -1,0 +1,52 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForDisplayRegion?: string;
+  commentForShowBounds?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForDisplayRegion = "Display visible region info",
+  commentForShowBounds = "Show bounds as a polygon"
+} = Astro.props;
+
+const code = `@Composable
+fun VisibleRegionExample() {
+    var cameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState,
+    ) {
+        // ${commentForDisplayRegion}
+        cameraPosition?.visibleRegion?.let { region ->
+            // ${commentForShowBounds}
+            region.bounds?.let { bounds ->
+                if (!bounds.isEmpty) {
+                    val sw = bounds.southWest!!
+                    val ne = bounds.northEast!!
+
+                    Polygon(
+                        points = listOf(
+                            sw,
+                            GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                            ne,
+                            GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                            sw
+                        ),
+                        strokeColor = Color.Blue,
+                        strokeWidth = 2.dp,
+                        fillColor = Color.Blue.copy(alpha = 0.1f)
+                    )
+                }
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

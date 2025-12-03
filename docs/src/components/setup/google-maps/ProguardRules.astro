@@ -1,0 +1,11 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `# proguard-rules.pro
+# Google Play Services
+-keep class com.google.android.gms.maps.** { *; }
+-keep interface com.google.android.gms.maps.** { *; }
+-dontwarn com.google.android.gms.**`;
+---
+
+<Code code={code} lang="proguard" />

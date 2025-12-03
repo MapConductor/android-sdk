@@ -1,0 +1,33 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForDefineArea?: string;
+  commentForEmptyBounds?: string;
+  southWestLatitude?: number;
+  southWestLongitude?: number;
+  northEastLatitude?: number;
+  northEastLongitude?: number;
+}
+
+const {
+  commentForDefineArea = "Define a rectangular area",
+  commentForEmptyBounds = "Empty bounds (to be extended later)",
+  southWestLatitude = 37.7649,
+  southWestLongitude = -122.4294,
+  northEastLatitude = 37.7849,
+  northEastLongitude = -122.4094
+} = Astro.props;
+
+const code = `// ${commentForDefineArea}
+val bounds = GeoRectBounds(
+    southWest = GeoPointImpl.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
+    northeast = GeoPointImpl.fromLatLong(${northEastLatitude}, ${northEastLongitude})
+)
+
+// ${commentForEmptyBounds}
+val bounds = GeoRectBounds()`;
+---
+
+<Code code={code} lang="kotlin" />
+

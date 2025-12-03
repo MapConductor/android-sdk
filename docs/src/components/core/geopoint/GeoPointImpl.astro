@@ -1,0 +1,11 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class GeoPointImpl(
+    override val latitude: Double,
+    override val longitude: Double,
+    override val altitude: Double = 0.0
+) : GeoPoint`;
+---
+
+<Code code={code} lang="kotlin" />

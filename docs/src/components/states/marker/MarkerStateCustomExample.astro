@@ -1,0 +1,29 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val customMarkerState = MarkerState(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    icon = DefaultIcon(
+        fillColor = Color.Blue,
+        label = "SF",
+        scale = 1.2f
+    ),
+    clickable = true,
+    draggable = true,
+    extra = "Draggable San Francisco marker"
+)
+
+MapView(
+    state = mapViewState,
+    onMarkerClick = { markerState ->
+        println("Clicked marker: \${markerState.extra}")
+    },
+    onMarkerDrag = { markerState ->
+        println("Marker dragged to: \${markerState.position}")
+    }
+) {
+    Marker(customMarkerState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

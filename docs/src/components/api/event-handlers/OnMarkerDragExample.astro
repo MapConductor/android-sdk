@@ -1,0 +1,30 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForDragStart?: string;
+  commentForDragEnd?: string;
+}
+
+const {
+  commentForDragStart = "Drag started:",
+  commentForDragEnd = "Drag ended:"
+} = Astro.props;
+
+const code = `MapView(
+    ...
+        onMarkerDragStart = { draggedMarker ->
+            println("${commentForDragStart} \${draggedMarker.id}")
+        },
+        onMarkerDrag = { draggedMarker ->
+            if (draggedMarker.id == markerState.id) {
+                markerState = markerState.copy(position = draggedMarker.position)
+            }
+        },
+        onMarkerDragEnd = { draggedMarker ->
+            println("${commentForDragEnd} \${draggedMarker.id}")
+        },
+) { }`;
+---
+
+<Code code={code} lang="kotlin" />

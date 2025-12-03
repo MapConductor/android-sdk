@@ -1,0 +1,62 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicCircleExample() {
+    var circleRadius by remember { mutableStateOf(500.0) }
+    var circleColor by remember { mutableStateOf(Color.Blue) }
+
+    Column {
+        // Controls
+        Slider(
+            value = circleRadius.toFloat(),
+            onValueChange = { circleRadius = it.toDouble() },
+            valueRange = 100f..2000f,
+            modifier = Modifier.padding(16.dp)
+        )
+
+        Row {
+            Button(onClick = { circleColor = Color.Red }) {
+                Text("Red")
+            }
+            Button(onClick = { circleColor = Color.Blue }) {
+                Text("Blue")
+            }
+            Button(onClick = { circleColor = Color.Green }) {
+                Text("Green")
+            }
+        }
+
+        // Map with dynamic circle
+        // ${commentForMapViewUsage}
+        MapView(state = mapViewState) {
+            Circle(
+                center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                radiusMeters = circleRadius,
+                strokeColor = circleColor,
+                fillColor = circleColor.copy(alpha = 0.3f)
+            )
+
+            // Center marker
+            Marker(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon = DefaultIcon(
+                    fillColor = circleColor,
+                    label = "${'${'}circleRadius.toInt()}m"
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

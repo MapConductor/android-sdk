@@ -1,0 +1,16 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val geodesicPolyline = PolylineState(
+    points = listOf(
+        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
+        GeoPointImpl.fromLatLong(40.7128, -74.0060)   // ニューヨーク
+    ),
+    strokeColor = Color.Green,
+    strokeWidth = 3.dp,
+    geodesic = true, // 地球の曲率に従う
+    extra = "Cross-country route"
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

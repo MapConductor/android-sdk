@@ -1,0 +1,35 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForAccessApis?: string;
+  commentForUseFeatures?: string;
+  commentForHandlePoi?: string;
+}
+
+const {
+  commentForAccessApis = "Access native Google Maps APIs",
+  commentForUseFeatures = "Use Google Maps specific features",
+  commentForHandlePoi = "Handle Points of Interest clicks"
+} = Astro.props;
+
+const code = `typealias GoogleMapViewHolder = MapViewHolder<MapView, GoogleMap>
+
+// ${commentForAccessApis}
+googleHolder?.let { holder ->
+    val nativeMapView: MapView = holder.mapView
+    val googleMap: GoogleMap = holder.map
+
+    // ${commentForUseFeatures}
+    googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.style_json))
+    googleMap.setOnPoiClickListener { poi ->
+        // ${commentForHandlePoi}
+    }
+
+    nativeMapView.onResume()
+    nativeMapView.onPause()
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

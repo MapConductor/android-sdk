@@ -1,0 +1,46 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForLifecycle?: string;
+}
+
+const {
+  commentForLifecycle = "Handle map lifecycle events"
+} = Astro.props;
+
+const code = `@Composable
+fun LifecycleAwareMap() {
+    val mapViewState = rememberGoogleMapViewState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            mapViewState.getMapViewHolder()?.let { holder ->
+                val mapView = holder.mapView
+
+                when (event) {
+                    Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                    Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                    Lifecycle.Event.ON_START -> mapView.onStart()
+                    Lifecycle.Event.ON_STOP -> mapView.onStop()
+                    Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                    else -> { }
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    GoogleMapView(state = mapViewState) {
+        // Your MapConductor components
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

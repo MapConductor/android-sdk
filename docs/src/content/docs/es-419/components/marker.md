@@ -2,30 +2,24 @@
 title: "Marker"
 ---
 
+import MarkerBasicSignature from '~/components/components/marker/MarkerBasicSignature.astro';
+import MarkerStateSignature from '~/components/components/marker/MarkerStateSignature.astro';
+import BasicMarkerExample from '~/components/components/marker/BasicMarkerExample.astro';
+import CustomIconMarkerExample from '~/components/components/marker/CustomIconMarkerExample.astro';
+import DraggableMarkerExample from '~/components/components/marker/DraggableMarkerExample.astro';
+import MultipleMarkersExample from '~/components/components/marker/MultipleMarkersExample.astro';
+
 Los marcadores son anotaciones de punto que se colocan en el mapa en ubicaciones geográficas concretas. Admiten iconos personalizados, interacciones y animaciones.
 
 ## Funciones composable
 
 ### Marker básico
 
-```kotlin
-@Composable
-fun MapViewScope.Marker(
-    position: GeoPoint,
-    clickable: Boolean = true,
-    draggable: Boolean = false,
-    icon: MarkerIcon? = null,
-    extra: Serializable? = null,
-    id: String? = null
-)
-```
+<MarkerBasicSignature />
 
 ### Marker con estado
 
-```kotlin
-@Composable
-fun MapViewScope.Marker(state: MarkerState)
-```
+<MarkerStateSignature />
 
 ## Parámetros
 
@@ -84,108 +78,24 @@ ImageIcon(
 
 ### Marker básico
 
-```kotlin
-// Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapView o MapboxMapView
-MapView(state = mapViewState) {
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        extra = "San Francisco",
-        id = "san-francisco-marker"
-    )
-}
-```
+<BasicMarkerExample
+  commentForMapViewUsage="Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapView o MapboxMapView"
+/>
 
 ### Marker con icono personalizado
 
-```kotlin
-MapView(state = mapViewState) {
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(
-            scale = 1.5f,
-            label = "SF",
-            fillColor = Color.Blue,
-            strokeColor = Color.White,
-            strokeWidth = 2.dp
-        ),
-        extra = "San Francisco with custom icon",
-        id = "custom-sf-marker"
-    )
-}
-```
+<CustomIconMarkerExample
+  commentForMapViewUsage="Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapView o MapboxMapView"
+/>
 
 ### Marker arrastrable
 
-```kotlin
-@Composable
-fun DraggableMarkerExample() {
-    var markerPosition by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
-    }
-
-    MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            markerPosition = markerState.position
-        }
-    ) {
-        Marker(
-            position = markerPosition,
-            draggable = true,
-            icon = DefaultIcon(
-                label = "Drag me",
-                fillColor = Color.Green
-            )
-        )
-    }
-}
-```
+<DraggableMarkerExample
+  commentForMapViewUsage="Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapView o MapboxMapView"
+/>
 
 ### Varios marcadores con distintos iconos
 
-```kotlin
-MapView(state = mapViewState) {
-    // Icono por defecto con distintas escalas
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(scale = 0.7f, label = "Small")
-    )
-
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        icon = DefaultIcon(scale = 1.0f, label = "Normal")
-    )
-
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7949, -122.3994),
-        icon = DefaultIcon(scale = 1.4f, label = "Large")
-    )
-
-    // Marcador con colores personalizados
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
-        icon = DefaultIcon(
-            fillColor = Color.Yellow,
-            strokeColor = Color.Black,
-            strokeWidth = 2.dp,
-            label = "Custom"
-        )
-    )
-
-    // Marcador con Drawable
-    val context = LocalContext.current
-    AppCompatResources.getDrawable(context, R.drawable.custom_icon)?.let { drawable ->
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7549, -122.4394),
-            icon = DrawableDefaultIcon(
-                backgroundDrawable = drawable,
-                scale = 1.2f
-            )
-        )
-    }
-}
-```
-
-### Marker con InfoBubble
-
-Puedes combinar `Marker` con `InfoBubble` para mostrar información detallada al hacer clic en el marcador. Consulta [InfoBubble](/es-419/components/infobubble) para ver un ejemplo completo.
+<MultipleMarkersExample
+  commentForMapViewUsage="Sustituye MapView por el componente del proveedor que utilices, por ejemplo GoogleMapView o MapboxMapView"
+/>

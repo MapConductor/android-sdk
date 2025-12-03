@@ -1,0 +1,65 @@
+---
+title: "PolylineState（ポリライン状態）"
+---
+
+import PolylineStateConstructorExample from '~/components/states/polyline/PolylineStateConstructorExample.astro';
+import PolylineStateMethodsExample from '~/components/states/polyline/PolylineStateMethodsExample.astro';
+import PolylineStateBasicExample from '~/components/states/polyline/PolylineStateBasicExample.astro';
+import DynamicPolylineExampleComposable from '~/components/states/polyline/DynamicPolylineExampleComposable.astro';
+import GeodesicPolylineExample from '~/components/states/polyline/GeodesicPolylineExample.astro';
+import RouteExampleComposable from '~/components/states/polyline/RouteExampleComposable.astro';
+import PolylineEventTypesExample from '~/components/states/polyline/PolylineEventTypesExample.astro';
+
+`PolylineState` は、地図上のポリライン（線分）の構成と動作を管理します。点、スタイル、測地線オプションのためのリアクティブなプロパティを提供します。
+
+## コンストラクタ
+
+<PolylineStateConstructorExample />
+
+## プロパティ
+
+### 基本プロパティ
+- **`id: String`**: 一意の識別子（指定されていない場合は自動生成）
+- **`points: List<GeoPoint>`**: 線を定義する地理座標のリスト
+- **`extra: Serializable?`**: ポリラインに付加される追加データ
+
+### ビジュアルプロパティ
+- **`strokeColor: Color`**: 線の色
+- **`strokeWidth: Dp`**: 線の太さ
+- **`geodesic: Boolean`**: 測地線（地球の曲率に従う線）を描画するかどうか
+
+## メソッド
+
+<PolylineStateMethodsExample />
+
+## 使用例
+
+### 基本的なポリライン
+
+<PolylineStateBasicExample />
+
+### 動的なポリライン
+
+<DynamicPolylineExampleComposable />
+
+### 測地線ポリライン
+
+<GeodesicPolylineExample />
+
+### 複数セグメントのルート
+
+<RouteExampleComposable />
+
+## イベント処理
+
+ポリラインイベントは状態とクリック位置の両方を提供します：
+
+<PolylineEventTypesExample />
+
+## ベストプラクティス
+
+1. **点の密度**: 詳細とパフォーマンスのバランスを取る - 過度な点は避けてください
+2. **測地線**: 長距離ルートの場合は正確な経路を示すために測地線を使用してください
+3. **色分け**: 異なる色を使用してルートタイプを区別してください
+4. **太さの階層**: ストロークの太さを使用して重要度を示してください
+5. **パフォーマンス**: 異なるズームレベルで複雑なポリラインの簡略化を検討してください

@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// These will share the same cached bitmap
+val icon1 = CircleIcon(fillColor = Color.Red, strokeColor = Color.White)
+val icon2 = CircleIcon(fillColor = Color.Red, strokeColor = Color.White)
+
+// This will create a new cached bitmap
+val icon3 = CircleIcon(fillColor = Color.Blue, strokeColor = Color.White)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,73 @@
+---
+title: "Ejemplos de uso básico"
+---
+
+import ClickToAddMarkersExample from '~/components/examples/basic-usage/ClickToAddMarkersExample.astro';
+
+En esta sección se muestran ejemplos prácticos de cómo utilizar los componentes de MapConductor en escenarios habituales.
+
+## Introducción
+
+### Mapa sencillo con marcador
+
+```kotlin
+@Composable
+fun SimpleMapExample() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    // Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView
+MapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(label = "SF"),
+            extra = "San Francisco"
+        )
+    }
+}
+```
+
+### Mapa multi proveedor
+
+```kotlin
+@Composable
+fun MultiProviderExample() {
+    var provider by remember { mutableStateOf("google") }
+
+    val mapViewState = remember(provider) {
+        when (provider) {
+            "google" -> rememberGoogleMapViewState()
+            "mapbox" -> rememberMapboxMapViewState()
+            "here" -> rememberHereMapViewState()
+            "arcgis" -> rememberArcGISMapViewState()
+            else -> rememberGoogleMapViewState()
+        }
+    }
+
+    Column {
+        Row {
+            Button(onClick = { provider = "google" }) { Text("Google") }
+            Button(onClick = { provider = "mapbox" }) { Text("Mapbox") }
+            Button(onClick = { provider = "here" }) { Text("HERE") }
+            Button(onClick = { provider = "arcgis" }) { Text("ArcGIS") }
+        }
+
+        // Sustituye MapView por la vista del proveedor elegido, por ejemplo GoogleMapView o MapboxMapView
+MapView(state = mapViewState) {
+            Marker(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon = DefaultIcon(label = provider.uppercase())
+            )
+        }
+    }
+}
+```
+
+## Ejemplos interactivos
+
+### Hacer clic y añadir marcadores
+
+<ClickToAddMarkersExample
+  commentForMapView="Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView"
+  commentForRemoveMarker="Eliminar el marcador clicado"
+  markerLabelPrefix="Marcador"
+/>

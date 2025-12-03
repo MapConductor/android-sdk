@@ -1,0 +1,157 @@
+---
+title: "Marker Icons"
+---
+
+import MarkerIconInterface from '~/components/core/marker-icons/MarkerIconInterface.astro';
+import DefaultIconSignature from '~/components/core/marker-icons/DefaultIconSignature.astro';
+import DefaultIconUsageExamples from '~/components/core/marker-icons/DefaultIconUsageExamples.astro';
+import DrawableDefaultIconSignature from '~/components/core/marker-icons/DrawableDefaultIconSignature.astro';
+import DrawableIconExamples from '~/components/core/marker-icons/DrawableIconExamples.astro';
+import ImageDefaultIconSignature from '~/components/core/marker-icons/ImageDefaultIconSignature.astro';
+import ImageIconExamples from '~/components/core/marker-icons/ImageIconExamples.astro';
+import DynamicIconExample from '~/components/core/marker-icons/DynamicIconExample.astro';
+import MarkerIconFactoryExample from '~/components/core/marker-icons/MarkerIconFactoryExample.astro';
+import PerformanceReuseIconsExample from '~/components/core/marker-icons/PerformanceReuseIconsExample.astro';
+import StatusIconExample from '~/components/core/marker-icons/StatusIconExample.astro';
+import PoiCategoryExample from '~/components/core/marker-icons/PoiCategoryExample.astro';
+import DebugImageIconExample from '~/components/core/marker-icons/DebugImageIconExample.astro';
+
+MapConductor provides several marker icon types to customize the appearance of markers on the map. All marker icons implement the `MarkerIcon` interface and can be used with any map provider.
+
+## MarkerIcon Interface
+
+The base interface for all marker icons:
+
+<MarkerIconInterface />
+
+## Icon Types
+
+### DefaultIcon (ColorDefaultIcon)
+
+The standard colored marker icon with customizable appearance and text labels.
+
+> **Note**: `DefaultIcon` is an alias for `ColorDefaultIcon`.
+
+<DefaultIconSignature />
+
+#### Parameters
+
+- **`scale`**: Size multiplier for the icon (1.0 = normal size, 0.5 = half size, 2.0 = double size)
+- **`label`**: Text displayed on the marker (optional)
+- **`fillColor`**: Background color of the marker
+- **`strokeColor`**: Border color of the marker
+- **`strokeWidth`**: Width of the border
+- **`labelTextColor`**: Color of the label text
+- **`labelStrokeColor`**: Optional outline color for label text
+- **`debug`**: Shows debug information when enabled
+
+#### Usage Examples
+
+<DefaultIconUsageExamples
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### DrawableDefaultIcon
+
+Uses a drawable resource as the background for the marker, with optional styling overlays.
+
+<DrawableDefaultIconSignature />
+
+#### Parameters
+
+- **`backgroundDrawable`**: The drawable resource used as the marker background
+- **`scale`**: Size multiplier for the icon
+- **`strokeColor`**: Optional border color overlay
+- **`strokeWidth`**: Width of the border overlay
+
+#### Usage Examples
+
+<DrawableIconExamples
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  commentForCustomDrawable="Custom drawable marker"
+  commentForCustomBorder="Drawable with custom border"
+/>
+
+### ImageDefaultIcon
+
+Uses a custom image drawable with precise anchor positioning control.
+
+<ImageDefaultIconSignature />
+
+#### Parameters
+
+- **`drawable`**: The image drawable to display
+- **`anchor`**: Anchor point relative to the image (0.0-1.0 range)
+  - `Offset(0.5f, 0.5f)`: Center anchor (default)
+  - `Offset(0.5f, 1.0f)`: Bottom center anchor
+  - `Offset(0.0f, 0.0f)`: Top left anchor
+  - `Offset(1.0f, 1.0f)`: Bottom right anchor
+- **`debug`**: Shows debug anchor visualization
+
+#### Usage Examples
+
+<ImageIconExamples
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  commentForWeatherStation="Weather station icon with bottom center anchor"
+  commentForDirectionArrow="Direction arrow with center anchor"
+/>
+
+## Advanced Usage
+
+### Dynamic Icon Selection
+
+<DynamicIconExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Icon Factory Pattern
+
+<MarkerIconFactoryExample />
+
+## Best Practices
+
+### Performance Considerations
+
+1. **Reuse Icon Instances**: Create icons once and reuse them for multiple markers
+2. **Optimize Drawable Resources**: Use appropriately sized drawable resources
+3. **Limit Custom Drawables**: Too many unique drawables can impact memory usage
+
+<PerformanceReuseIconsExample />
+
+### Visual Consistency
+
+1. **Consistent Scaling**: Use consistent scale values across your application
+2. **Color Schemes**: Maintain a consistent color palette for marker types
+3. **Anchor Points**: Use appropriate anchors for icon types (bottom center for pins, center for circles)
+
+### Accessibility
+
+1. **Meaningful Labels**: Provide descriptive labels when using `DefaultIcon`
+2. **Color Contrast**: Ensure good contrast between fill and stroke colors
+3. **Alternative Indicators**: Don't rely solely on color to convey information
+
+## Common Use Cases
+
+### Status Indicators
+
+<StatusIconExample />
+
+### Category Markers
+
+<PoiCategoryExample />
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Icons Not Displaying**: Verify drawable resources exist and are accessible
+2. **Incorrect Positioning**: Check anchor points for custom icons
+3. **Performance Issues**: Reduce number of unique icon instances
+4. **Scale Problems**: Ensure scale values are positive and reasonable (0.1 - 3.0)
+
+### Debug Mode
+
+Enable debug mode to visualize anchor points and icon bounds:
+
+<DebugImageIconExample />
+

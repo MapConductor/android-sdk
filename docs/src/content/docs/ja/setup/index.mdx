@@ -1,0 +1,39 @@
+---
+title: セットアップ概要
+---
+
+import MapConductorInitExample from '~/components/setup/MapConductorInitExample.astro';
+
+# セットアップ概要
+
+このページでは、各地図プロバイダで MapConductor を利用するために必要なセットアップの全体像を説明します。詳細な手順は、プロバイダごとのページを参照してください。
+
+## 共通の前提条件
+
+MapConductor を利用する前に、次の前提条件を満たしている必要があります。
+
+- Android プロジェクトが作成済み（Gradle 構成済み）
+- Kotlin と Jetpack Compose を利用する設定が完了している
+- それぞれの地図 SDK に必要な API キー / 認証情報を取得済み
+
+プロジェクトの Gradle 設定例は [チュートリアル](/ja/get-started/) を参照してください。
+
+## プロバイダごとのセットアップ
+
+各プロバイダのセットアップ手順は以下のページで解説しています。
+
+- [Google Maps のセットアップ](/ja/setup/google-maps)
+- [Mapbox のセットアップ](/ja/setup/mapbox)
+- [HERE Maps のセットアップ](/ja/setup/here-maps)
+- [ArcGIS のセットアップ](/ja/setup/arcgis)
+- [MapLibre のセットアップ](/ja/setup/maplibre)
+
+利用したいプロバイダのみセットアップすれば十分です。
+
+## MapConductor の初期化
+
+各地図 SDK の初期化が完了したら、MapConductor 側では対応する `MapViewState` とマップビューコンポーネントを利用するだけです。
+
+<MapConductorInitExample provider="Google" />
+
+Mapbox など別のプロバイダに切り替える場合は、`rememberMapboxMapViewState` と `MapboxMapView` に置き換えれば同じコードパスで動作します。

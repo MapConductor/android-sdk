@@ -1,0 +1,49 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun InteractiveGroundImageExample() {
+    var groundImageState by remember { mutableStateOf<GroundImageState?>(null) }
+    var opacity by remember { mutableStateOf(0.7f) }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(opacity) {
+        val drawable = AppCompatResources.getDrawable(context, R.drawable.map_overlay)
+        drawable?.let {
+            groundImageState = GroundImageState(
+                bounds = GeoRectBounds(
+                    southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+                    northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                ),
+                image = it,
+                opacity = opacity,
+                extra = "Interactive overlay"
+            )
+        }
+    }
+
+    Column {
+        Slider(
+            value = opacity,
+            onValueChange = { opacity = it },
+            valueRange = 0f..1f,
+            modifier = Modifier.padding(16.dp)
+        )
+        Text("Opacity: \${(opacity * 100).toInt()}%")
+
+        MapView(
+            state = mapViewState,
+            onGroundImageClick = { event ->
+                println("Ground image clicked at: \${event.clicked}")
+            }
+        ) {
+            groundImageState?.let { state ->
+                GroundImage(state)
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,73 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForProximity?: string;
+  commentForMapViewUsage?: string;
+  alertRadiusMeters?: number;
+  nearMessage?: string;
+}
+
+const {
+  commentForProximity = "Update proximity when user location changes",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  alertRadiusMeters = 500.0,
+  nearMessage = "You are near the target!"
+} = Astro.props;
+
+const code = `@Composable
+fun ProximityAlert() {
+    val targetLocation = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val alertRadius = ${alertRadiusMeters}  // 500 meters
+
+    var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
+    var isNearTarget by remember { mutableStateOf(false) }
+
+    // ${commentForProximity}
+    LaunchedEffect(userLocation) {
+        userLocation?.let { location ->
+            val distance = Spherical.computeDistanceBetween(location, targetLocation)
+            isNearTarget = distance <= alertRadius
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Target location
+        Marker(
+            position = targetLocation,
+            icon = DefaultIcon(
+                fillColor = if (isNearTarget) Color.Green else Color.Red,
+                label = "Target"
+            )
+        )
+
+        // Alert radius
+        Circle(
+            center = targetLocation,
+            radiusMeters = alertRadius,
+            strokeColor = Color.Blue,
+            fillColor = Color.Blue.copy(alpha = 0.2f)
+        )
+
+        // User location if available
+        userLocation?.let { location ->
+            Marker(
+                position = location,
+                icon = DefaultIcon(fillColor = Color.Blue, label = "You")
+            )
+        }
+    }
+
+    if (isNearTarget) {
+        Text(
+            text = "${nearMessage}",
+            color = Color.Green,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

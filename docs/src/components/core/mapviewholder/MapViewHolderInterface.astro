@@ -1,0 +1,11 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `interface MapViewHolder<ActualMapViewType, ActualMapType> {
+    val mapView: ActualMapViewType
+    val map: ActualMapType
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

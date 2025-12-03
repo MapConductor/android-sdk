@@ -1,0 +1,44 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForPerformanceSettings?: string;
+  commentForOptimizeUseCase?: string;
+  commentForLevelOfDetail?: string;
+}
+
+const {
+  commentForPerformanceSettings = "HERE-specific performance settings",
+  commentForOptimizeUseCase = "Optimize for specific use case",
+  commentForLevelOfDetail = "Custom level of detail settings"
+} = Astro.props;
+
+const code = `@Composable
+fun PerformanceOptimizedMap() {
+    val mapViewState = remember { HereViewStateImpl() }
+
+    LaunchedEffect(mapViewState) {
+        mapViewState.getMapViewHolder()?.let { holder ->
+            val mapScene = holder.map
+
+            // ${commentForPerformanceSettings}
+            mapScene.setLayerVisibility(MapScene.Layers.TRAFFIC_FLOW, VisibilityState.VISIBLE)
+
+            // ${commentForOptimizeUseCase}
+            val mapSettings = mapScene.mapSettings
+            mapSettings.isTiltGesturesEnabled = false
+            mapSettings.isRotateGesturesEnabled = false
+
+            // ${commentForLevelOfDetail}
+            mapScene.setLevelOfDetail(LevelOfDetail.HIGH)
+        }
+    }
+
+    HereMapView(state = mapViewState) {
+        // Your MapConductor components
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

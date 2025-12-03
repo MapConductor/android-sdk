@@ -1,0 +1,15 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// リソースから
+val drawable = AppCompatResources.getDrawable(context, R.drawable.overlay)
+
+// アセットから
+val inputStream = context.assets.open("overlays/map.png")
+val drawableFromAssets = Drawable.createFromStream(inputStream, null)
+
+// ネットワークから（画像読み込みライブラリを使用）
+// Coil、Glide、Picassoなどのライブラリをネットワーク画像に使用してください`;
+---
+
+<Code code={code} lang="kotlin" />
+

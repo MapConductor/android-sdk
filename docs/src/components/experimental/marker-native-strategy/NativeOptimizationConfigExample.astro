@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Optimal configuration for large datasets
+val optimizedGeocell = HexGeocellImpl(
+    baseHexSideLength = 500.0,  // Smaller cells for dense data
+    zoom = 18.0                 // Higher resolution
+)
+
+val optimizedManager = NativeMarkerManager<ActualMarker>(
+    hexGeocell = optimizedGeocell
+)
+
+// Optimal parallel strategy
+val optimizedStrategy = SimpleNativeParallelStrategy<ActualMarker>(
+    expandMargin = 0.1,         // Smaller expansion for performance
+    maxConcurrency = Runtime.getRuntime().availableProcessors(),
+    geocell = optimizedGeocell
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

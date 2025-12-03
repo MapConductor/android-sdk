@@ -1,0 +1,33 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForStartLog?: string;
+  commentForEndLog?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForStartLog = "Animation started for marker",
+  commentForEndLog = "Animation completed for marker"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(
+    state = mapViewState,
+    onMarkerAnimateStart = { markerState ->
+        println("${commentForStartLog}: ${'$'}{markerState.id}")
+        // Update UI state, start loading indicators, etc.
+    },
+    onMarkerAnimateEnd = { markerState ->
+        println("${commentForEndLog}: ${'$'}{markerState.id}")
+        // Clean up resources, update final state, etc.
+    }
+) {
+    // Markers with animations
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `class SequentialAnimation(
+    private val animations: List<MarkerAnimation>
+) : MarkerAnimation {
+    private var currentIndex = 0
+    private var currentAnimation: MarkerAnimation? = null
+
+    override val duration: Long = animations.sumOf { it.duration }
+    override val interpolator: TimeInterpolator? = null
+
+    fun playNext() {
+        if (currentIndex < animations.size) {
+            currentAnimation = animations[currentIndex++]
+            currentAnimation?.onStart()
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

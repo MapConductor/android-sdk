@@ -1,0 +1,9 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `fun copy(...): CircleState // 変更されたコピーを作成
+fun fingerPrint(): CircleFingerPrint // 変更検知
+fun asFlow(): Flow<CircleFingerPrint> // リアクティブ更新`;
+---
+
+<Code code={code} lang="kotlin" />
+

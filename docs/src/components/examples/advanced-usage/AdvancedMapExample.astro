@@ -1,0 +1,87 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLat?: number;
+  centerLong?: number;
+  zoom?: number;
+  markerLabel?: string;
+  commentForMarkerClick?: string;
+  circleRadiusMeters?: number;
+  circleStrokeColor?: string;
+  circleFillColor?: string;
+  polylinePoints?: Array<{lat: number, long: number}>;
+  polylineStrokeColor?: string;
+  polylineStrokeWidth?: string;
+  commentMarker?: string;
+  commentCircle?: string;
+  commentPolyline?: string;
+}
+
+const {
+  centerLat = 37.7749,
+  centerLong = -122.4194,
+  zoom = 15.0,
+  markerLabel = "Center",
+  commentForMarkerClick = "Marker: ${markerState.extra}",
+  circleRadiusMeters = 1000.0,
+  circleStrokeColor = "Color.Blue",
+  circleFillColor = "Color.Blue.copy(alpha = 0.3f)",
+  polylinePoints = [
+    {lat: 37.7749, long: -122.4194},
+    {lat: 37.7849, long: -122.4094},
+  ],
+  polylineStrokeColor = "",
+  polylineStrokeWidth = "",
+  commentMarker = "Marker",
+  commentCircle = "Circle",
+  commentPolyline = "Polyline"
+} = Astro.props;
+
+const polylinePointsStr = polylinePoints
+  .map(p => `                GeoPointImpl.fromLatLong(${p.lat}, ${p.long})`)
+  .join(',\n');
+
+const polylineStyleStr = polylineStrokeColor || polylineStrokeWidth
+  ? `,\n${polylineStrokeColor ? `            strokeColor = ${polylineStrokeColor}` : ''}${polylineStrokeColor && polylineStrokeWidth ? ',\n' : ''}${polylineStrokeWidth ? `            strokeWidth = ${polylineStrokeWidth}` : ''}`
+  : '';
+
+const code = `@Composable
+fun AdvancedMapScreen() {
+    val camera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+        zoom = ${zoom}
+    )
+    val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
+
+    GoogleMapView(
+        state = mapViewState,
+        onMarkerClick = { markerState ->
+            println("${commentForMarkerClick}")
+        }
+    ) {
+        // ${commentMarker}
+        Marker(
+            position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+            icon = DefaultIcon(label = "${markerLabel}")
+        )
+
+        // ${commentCircle}
+        Circle(
+            center = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+            radiusMeters = ${circleRadiusMeters},
+            strokeColor = ${circleStrokeColor},
+            fillColor = ${circleFillColor}
+        )
+
+        // ${commentPolyline}
+        Polyline(
+            points = listOf(
+${polylinePointsStr}
+            )${polylineStyleStr}
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

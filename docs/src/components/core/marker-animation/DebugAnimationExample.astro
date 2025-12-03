@@ -1,0 +1,36 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForStartLog?: string;
+  commentForProgressLog?: string;
+  commentForEndLog?: string;
+}
+
+const {
+  commentForStartLog = "Animation started",
+  commentForProgressLog = "Progress",
+  commentForEndLog = "Animation completed"
+} = Astro.props;
+
+const code = `// Enable animation debugging
+val debugAnimation = object : MarkerAnimation {
+    override val duration = 1000L
+    override val interpolator = AccelerateDecelerateInterpolator()
+
+    override fun onStart() {
+        Log.d("Animation", "${commentForStartLog}")
+    }
+
+    override fun onUpdate(progress: Float) {
+        Log.d("Animation", "${commentForProgressLog}: ${'$'}progress")
+    }
+
+    override fun onEnd() {
+        Log.d("Animation", "${commentForEndLog}")
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

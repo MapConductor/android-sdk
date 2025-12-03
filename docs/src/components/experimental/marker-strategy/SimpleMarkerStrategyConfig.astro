@@ -1,0 +1,21 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  expandMargin?: number;
+}
+
+const {
+  expandMargin = 0.15
+} = Astro.props;
+
+const code = `import com.mapconductor.marker.strategy.SimpleMarkerStrategy
+
+val simpleStrategy = SimpleMarkerStrategy<MapboxActualMarker>(
+    expandMargin = ${expandMargin},
+    geocell = HexGeocellImpl.defaultGeocell()
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

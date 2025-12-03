@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Examples of different zoom levels
+val worldView = 2.0        // See continents
+val countryView = 6.0      // See entire countries
+val cityView = 10.0        // See cities
+val streetView = 15.0      // See streets
+val buildingView = 18.0    // See individual buildings`;
+---
+
+<Code code={code} lang="kotlin" />
+

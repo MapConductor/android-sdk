@@ -1,0 +1,151 @@
+---
+title: "Marker Native Strategy (Experimental)"
+---
+
+import NativeMarkerGradleDependencies from '~/components/experimental/marker-native-strategy/NativeMarkerGradleDependencies.astro';
+import NativeMarkerNdkConfig from '~/components/experimental/marker-native-strategy/NativeMarkerNdkConfig.astro';
+import NativeMarkerManagerUsage from '~/components/experimental/marker-native-strategy/NativeMarkerManagerUsage.astro';
+import SimpleNativeParallelStrategyConfig from '~/components/experimental/marker-native-strategy/SimpleNativeParallelStrategyConfig.astro';
+import BasicNativeExampleComposable from '~/components/experimental/marker-native-strategy/BasicNativeExampleComposable.astro';
+import NativePerformanceExampleComposable from '~/components/experimental/marker-native-strategy/NativePerformanceExampleComposable.astro';
+import ParallelRenderingExampleComposable from '~/components/experimental/marker-native-strategy/ParallelRenderingExampleComposable.astro';
+import DynamicNativeLoadingExampleComposable from '~/components/experimental/marker-native-strategy/DynamicNativeLoadingExampleComposable.astro';
+import NativeClusteringExampleComposable from '~/components/experimental/marker-native-strategy/NativeClusteringExampleComposable.astro';
+import NativeDirectQueriesExample from '~/components/experimental/marker-native-strategy/NativeDirectQueriesExample.astro';
+import NativeBatchOperationsExample from '~/components/experimental/marker-native-strategy/NativeBatchOperationsExample.astro';
+import NativeResourceManagementExampleComposable from '~/components/experimental/marker-native-strategy/NativeResourceManagementExampleComposable.astro';
+import NativeOptimizationConfigExample from '~/components/experimental/marker-native-strategy/NativeOptimizationConfigExample.astro';
+import NativeBenchmarkExample from '~/components/experimental/marker-native-strategy/NativeBenchmarkExample.astro';
+import NativeLibraryFallbackExample from '~/components/experimental/marker-native-strategy/NativeLibraryFallbackExample.astro';
+import NativeMemoryLeakPreventionExample from '~/components/experimental/marker-native-strategy/NativeMemoryLeakPreventionExample.astro';
+
+The `mapconductor-marker-native-strategy` module provides high-performance marker management using native C++ spatial indexing. This experimental module dramatically improves performance for applications with large numbers of markers (10,000+).
+
+> **⚠️ Experimental Module**: This module is highly experimental and requires native library support. Use in production with extreme caution.
+
+## Overview
+
+The marker native strategy replaces Java-based spatial indexing with optimized C++ implementations, providing:
+- **90% Memory Reduction**: Compared to standard marker management
+- **Native Spatial Queries**: C++ spatial indexing for maximum performance
+- **Efficient Viewport Culling**: Only renders markers within the viewport
+- **Parallel Processing**: Multi-threaded marker operations
+- **Minimal Java Overhead**: Native code as single source of truth
+
+## Performance Characteristics
+
+### Memory Usage
+- **Standard MarkerManager**: ~1MB per 1,000 markers
+- **NativeMarkerManager**: ~100KB per 1,000 markers
+- **Optimized Storage**: No duplicate entity storage
+
+### Query Performance
+- **Standard Spatial Query**: O(log n) with Java overhead
+- **Native Spatial Query**: O(log n) with C++ optimization
+- **Large Dataset**: 10x-100x performance improvement for 100,000+ markers
+
+## Installation
+
+Add the native strategy module to your `build.gradle`:
+
+<NativeMarkerGradleDependencies />
+
+### Native Library Setup
+
+The module requires native C++ libraries. Ensure your app supports the required ABIs:
+
+<NativeMarkerNdkConfig />
+
+## Core Components
+
+### NativeMarkerManager
+
+High-performance marker manager using native spatial indexing:
+
+<NativeMarkerManagerUsage />
+
+### Native Rendering Strategies
+
+#### SimpleNativeParallelStrategy
+
+Parallel marker rendering with native indexing:
+
+<SimpleNativeParallelStrategyConfig />
+
+## Basic Usage
+
+### Simple Native Manager
+
+<BasicNativeExampleComposable />
+
+### Performance Monitoring
+
+<NativePerformanceExampleComposable />
+
+## Advanced Usage
+
+### Parallel Rendering Strategy
+
+<ParallelRenderingExampleComposable />
+
+### Dynamic Marker Loading
+
+<DynamicNativeLoadingExampleComposable />
+
+### Clustering with Native Strategy
+
+<NativeClusteringExampleComposable />
+
+## Native Index Operations
+
+### Direct Spatial Queries
+
+<NativeDirectQueriesExample />
+
+### Batch Operations
+
+<NativeBatchOperationsExample />
+
+## Memory Management
+
+### Resource Cleanup
+
+<NativeResourceManagementExampleComposable />
+
+## Performance Optimization
+
+### Configuration Tuning
+
+<NativeOptimizationConfigExample />
+
+### Benchmark Testing
+
+<NativeBenchmarkExample />
+
+## Best Practices
+
+1. **Resource Management**: Always call `destroy()` on NativeMarkerManager when done
+2. **Batch Operations**: Use batch registration for large datasets
+3. **Memory Monitoring**: Monitor native memory usage in production
+4. **Testing**: Thoroughly test with your specific data patterns
+5. **Fallback Strategy**: Have non-native fallback for unsupported devices
+
+## Limitations and Considerations
+
+1. **Platform Support**: Requires native library support for target ABIs
+2. **Memory Management**: Native memory is not garbage collected
+3. **Debugging**: Native crashes are harder to debug than Java crashes
+4. **Binary Size**: Increases APK size due to native libraries
+5. **Compatibility**: May not work on all devices/emulators
+
+## Troubleshooting
+
+### Native Library Loading Issues
+
+<NativeLibraryFallbackExample />
+
+### Memory Leak Prevention
+
+<NativeMemoryLeakPreventionExample />
+
+The marker native strategy module provides significant performance improvements for marker-heavy applications, but requires careful resource management and thorough testing due to its experimental nature.

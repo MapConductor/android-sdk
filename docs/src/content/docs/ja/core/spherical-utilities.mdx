@@ -1,0 +1,162 @@
+---
+title: "Spherical Utilities（球面ユーティリティ）"
+---
+
+import SphericalImportExample from '~/components/core/spherical-utilities/SphericalImportExample.astro';
+import ComputeDistanceBetweenSignature from '~/components/core/spherical-utilities/ComputeDistanceBetweenSignature.astro';
+import ComputeDistanceBetweenExample from '~/components/core/spherical-utilities/ComputeDistanceBetweenExample.astro';
+import ComputeLengthSignature from '~/components/core/spherical-utilities/ComputeLengthSignature.astro';
+import ComputeLengthExample from '~/components/core/spherical-utilities/ComputeLengthExample.astro';
+import ComputeHeadingSignature from '~/components/core/spherical-utilities/ComputeHeadingSignature.astro';
+import ComputeHeadingExample from '~/components/core/spherical-utilities/ComputeHeadingExample.astro';
+import ComputeOffsetSignature from '~/components/core/spherical-utilities/ComputeOffsetSignature.astro';
+import ComputeOffsetExample from '~/components/core/spherical-utilities/ComputeOffsetExample.astro';
+import ComputeOffsetOriginSignature from '~/components/core/spherical-utilities/ComputeOffsetOriginSignature.astro';
+import ComputeOffsetOriginExample from '~/components/core/spherical-utilities/ComputeOffsetOriginExample.astro';
+import InterpolateSignature from '~/components/core/spherical-utilities/InterpolateSignature.astro';
+import InterpolateExample from '~/components/core/spherical-utilities/InterpolateExample.astro';
+import LinearInterpolateSignature from '~/components/core/spherical-utilities/LinearInterpolateSignature.astro';
+import LinearInterpolateExample from '~/components/core/spherical-utilities/LinearInterpolateExample.astro';
+import ComputeAreaSignature from '~/components/core/spherical-utilities/ComputeAreaSignature.astro';
+import ComputeAreaExample from '~/components/core/spherical-utilities/ComputeAreaExample.astro';
+import ProximityAlertExample from '~/components/core/spherical-utilities/ProximityAlertExample.astro';
+import RouteProgressExample from '~/components/core/spherical-utilities/RouteProgressExample.astro';
+import GeofenceExample from '~/components/core/spherical-utilities/GeofenceExample.astro';
+
+球面ユーティリティは、球面地球モデルを使用した正確な地理計算を提供します。これらの関数は、距離測定、パス計算、地理的計算に不可欠です。
+
+## 概要
+
+`Spherical` オブジェクトには、地球の表面上の距離、方位角、位置を計算するためのユーティリティ関数が含まれています。WGS84 楕円体に基づく地球の半径を使用した球面地球モデルを使用します。
+
+<SphericalImportExample />
+
+## コア定数
+
+- **地球の半径**: 6,378,137 メートル（WGS84 楕円体の長半径）
+- **座標系**: WGS84 地理座標（緯度/経度）
+
+## 距離計算
+
+### 2点間の距離
+
+<ComputeDistanceBetweenSignature />
+
+ハバーサイン公式を使用して 2 点間の最短距離を計算します:
+
+<ComputeDistanceBetweenExample
+  commentForFormulaUsage="ハバーサイン公式を使用して 2 点間の最短距離を計算"
+  fromLatitude={37.7749}
+  fromLongitude={-122.4194}
+  toLatitude={40.7128}
+  toLongitude={-74.006}
+/>
+
+### パスの長さ
+
+<ComputeLengthSignature />
+
+複数の点で構成されるパスの総長を計算します:
+
+<ComputeLengthExample commentForRouteDescription="複数の点で構成されるパスの総長を計算" />
+
+## 方向と方位角
+
+### 方位角計算
+
+<ComputeHeadingSignature />
+
+ある点から別の点への初期方位角（方向）を計算します:
+
+<ComputeHeadingExample commentForBearingUsage="ある点から別の点への初期方位角（方向）を計算" />
+
+## 位置計算
+
+### 点からのオフセット
+
+<ComputeOffsetSignature />
+
+原点からの距離と方向を指定して新しい位置を計算します:
+
+<ComputeOffsetExample />
+
+### 逆計算
+
+<ComputeOffsetOriginSignature />
+
+目的地、距離、元の方位角を指定して原点を計算します:
+
+<ComputeOffsetOriginExample />
+
+## 補間
+
+### 大円補間
+
+<InterpolateSignature />
+
+2 点間の大円パスに沿って補間します:
+
+<InterpolateExample
+  commentForWaypoints="大円ルート沿いのウェイポイントを作成"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+### 線形補間
+
+<LinearInterpolateSignature />
+
+地球の曲率を考慮しない高速線形補間:
+
+<LinearInterpolateExample />
+
+## 面積計算
+
+### ポリゴン面積
+
+<ComputeAreaSignature />
+
+閉じたポリゴンの面積を計算します:
+
+<ComputeAreaExample />
+
+## 実用例
+
+### 近接検出
+
+<ProximityAlertExample
+  commentForProximity="ユーザー位置が変わったときに近接状態を更新"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  alertRadiusMeters={500.0}
+  nearMessage="ターゲットの近くにいます！"
+/>
+
+### ルート進捗追跡
+
+<RouteProgressExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+### ジオフェンシング
+
+<GeofenceExample
+  geofenceRadiusMeters={1000.0}
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  labelInside="内部"
+  labelOutside="外部"
+/>
+
+## パフォーマンスの考慮事項
+
+1. **適切なメソッドを選択**: 短距離と頻繁な計算には `linearInterpolate` を使用
+2. **結果をキャッシュ**: 可能な場合は計算された距離と方位角を保存
+3. **バッチ計算**: 複数の点をまとめて処理し、関数呼び出しのオーバーヘッドを削減
+4. **精度 vs パフォーマンス**: ユースケースに完全な球面精度が必要かどうかを検討
+
+## ベストプラクティス
+
+1. **座標検証**: 計算前に入力座標が有効であることを確認
+2. **エラー処理**: `computeOffsetOrigin` からの null 結果を確認
+3. **単位の一貫性**: すべての距離はメートル、すべての角度は度数
+4. **地球モデル**: これは球面地球モデルを使用し、より正確な楕円体モデルではありません
+5. **精度**: ほとんどのマッピングアプリケーションには十分な精度の結果ですが、高精度測量には小さな誤差がある可能性があります
+

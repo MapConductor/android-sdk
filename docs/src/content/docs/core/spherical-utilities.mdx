@@ -1,0 +1,162 @@
+---
+title: "Spherical Utilities"
+---
+
+import SphericalImportExample from '~/components/core/spherical-utilities/SphericalImportExample.astro';
+import ComputeDistanceBetweenSignature from '~/components/core/spherical-utilities/ComputeDistanceBetweenSignature.astro';
+import ComputeDistanceBetweenExample from '~/components/core/spherical-utilities/ComputeDistanceBetweenExample.astro';
+import ComputeLengthSignature from '~/components/core/spherical-utilities/ComputeLengthSignature.astro';
+import ComputeLengthExample from '~/components/core/spherical-utilities/ComputeLengthExample.astro';
+import ComputeHeadingSignature from '~/components/core/spherical-utilities/ComputeHeadingSignature.astro';
+import ComputeHeadingExample from '~/components/core/spherical-utilities/ComputeHeadingExample.astro';
+import ComputeOffsetSignature from '~/components/core/spherical-utilities/ComputeOffsetSignature.astro';
+import ComputeOffsetExample from '~/components/core/spherical-utilities/ComputeOffsetExample.astro';
+import ComputeOffsetOriginSignature from '~/components/core/spherical-utilities/ComputeOffsetOriginSignature.astro';
+import ComputeOffsetOriginExample from '~/components/core/spherical-utilities/ComputeOffsetOriginExample.astro';
+import InterpolateSignature from '~/components/core/spherical-utilities/InterpolateSignature.astro';
+import InterpolateExample from '~/components/core/spherical-utilities/InterpolateExample.astro';
+import LinearInterpolateSignature from '~/components/core/spherical-utilities/LinearInterpolateSignature.astro';
+import LinearInterpolateExample from '~/components/core/spherical-utilities/LinearInterpolateExample.astro';
+import ComputeAreaSignature from '~/components/core/spherical-utilities/ComputeAreaSignature.astro';
+import ComputeAreaExample from '~/components/core/spherical-utilities/ComputeAreaExample.astro';
+import ProximityAlertExample from '~/components/core/spherical-utilities/ProximityAlertExample.astro';
+import RouteProgressExample from '~/components/core/spherical-utilities/RouteProgressExample.astro';
+import GeofenceExample from '~/components/core/spherical-utilities/GeofenceExample.astro';
+
+The spherical utilities provide accurate geographic calculations using the spherical Earth model. These functions are essential for distance measurements, path calculations, and geographic computations.
+
+## Overview
+
+The `Spherical` object contains utility functions for calculating distances, headings, and positions on Earth's surface. It uses the spherical Earth model with Earth's radius based on the WGS84 ellipsoid.
+
+<SphericalImportExample />
+
+## Core Constants
+
+- **Earth Radius**: 6,378,137 meters (WGS84 ellipsoid semi-major axis)
+- **Coordinate System**: WGS84 geographic coordinates (latitude/longitude)
+
+## Distance Calculations
+
+### Distance Between Points
+
+<ComputeDistanceBetweenSignature />
+
+Calculate the shortest distance between two points using the haversine formula:
+
+<ComputeDistanceBetweenExample
+  commentForFormulaUsage="Calculate the shortest distance between two points using the haversine formula"
+  fromLatitude={37.7749}
+  fromLongitude={-122.4194}
+  toLatitude={40.7128}
+  toLongitude={-74.006}
+/>
+
+### Path Length
+
+<ComputeLengthSignature />
+
+Calculate the total length of a path consisting of multiple points:
+
+<ComputeLengthExample commentForRouteDescription="Calculate the total length of a path consisting of multiple points" />
+
+## Direction and Heading
+
+### Bearing Calculation
+
+<ComputeHeadingSignature />
+
+Calculate the initial bearing (direction) from one point to another:
+
+<ComputeHeadingExample commentForBearingUsage="Calculate the initial bearing (direction) from one point to another" />
+
+## Position Calculation
+
+### Offset from Point
+
+<ComputeOffsetSignature />
+
+Calculate a new position given distance and direction from an origin:
+
+<ComputeOffsetExample />
+
+### Reverse Calculation
+
+<ComputeOffsetOriginSignature />
+
+Calculate the origin point given destination, distance, and original heading:
+
+<ComputeOffsetOriginExample />
+
+## Interpolation
+
+### Great Circle Interpolation
+
+<InterpolateSignature />
+
+Interpolate along the great circle path between two points:
+
+<InterpolateExample
+  commentForWaypoints="Create waypoints along the great circle route"
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Linear Interpolation
+
+<LinearInterpolateSignature />
+
+Fast linear interpolation without considering Earth's curvature:
+
+<LinearInterpolateExample />
+
+## Area Calculations
+
+### Polygon Area
+
+<ComputeAreaSignature />
+
+Calculate the area of a closed polygon:
+
+<ComputeAreaExample />
+
+## Practical Examples
+
+### Proximity Detection
+
+<ProximityAlertExample
+  commentForProximity="Update proximity when user location changes"
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  alertRadiusMeters={500.0}
+  nearMessage="You are near the target!"
+/>
+
+### Route Progress Tracking
+
+<RouteProgressExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Geofencing
+
+<GeofenceExample
+  geofenceRadiusMeters={1000.0}
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  labelInside="Inside"
+  labelOutside="Outside"
+/>
+
+## Performance Considerations
+
+1. **Choose Appropriate Method**: Use `linearInterpolate` for short distances and frequent calculations
+2. **Cache Results**: Store computed distances and bearings when possible
+3. **Batch Calculations**: Process multiple points together to reduce function call overhead
+4. **Precision vs Performance**: Consider if full spherical accuracy is needed for your use case
+
+## Best Practices
+
+1. **Coordinate Validation**: Ensure input coordinates are valid before calculations
+2. **Error Handling**: Check for null results from `computeOffsetOrigin`
+3. **Unit Consistency**: All distances are in meters, all angles in degrees
+4. **Earth Model**: Remember this uses spherical Earth model, not the more accurate ellipsoidal model
+5. **Precision**: Results are accurate for most mapping applications but may have small errors for high-precision surveying
+

@@ -1,0 +1,71 @@
+---
+title: Configuración de Mapbox
+---
+
+# Configuración de Mapbox
+
+En esta página se explica cómo configurar el SDK de Mapbox para Android junto con MapConductor.
+
+## Requisitos previos
+
+- Cuenta de Mapbox creada.
+- Token de acceso de Mapbox generado.
+
+## Añadir dependencias en Gradle
+
+```kotlin
+dependencies {
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-mapbox")
+    // Añade también las dependencias del SDK de Mapbox
+}
+```
+
+Sigue la documentación oficial de Mapbox para añadir las dependencias del SDK de Mapbox.
+
+## Configuración en AndroidManifest
+
+Añade el token de acceso y los permisos necesarios en tu `AndroidManifest.xml`:
+
+```xml
+<manifest>
+    <application>
+        <meta-data
+            android:name="MAPBOX_ACCESS_TOKEN"
+            android:value="@string/mapbox_access_token" />
+    </application>
+</manifest>
+```
+
+Si utilizas funciones de localización, recuerda declarar permisos como `ACCESS_FINE_LOCATION` e `INTERNET`.
+
+## Ejemplo de uso con MapConductor
+
+```kotlin
+@Composable
+fun MapboxExample() {
+    val camera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+        zoom = 14.0,
+    )
+
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = camera,
+    )
+
+    MapboxMapView(
+        state = mapViewState,
+        onMapClick = { point ->
+            println("Clicked: ${point.latitude}, ${point.longitude}")
+        }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+            icon = DefaultIcon(label = "Tokyo"),
+        )
+    }
+}
+```
+
+Consulta [MapView Component](/es-419/components/mapviewcomponent) y [Marker](/es-419/components/marker) para ver más detalles sobre estas APIs.

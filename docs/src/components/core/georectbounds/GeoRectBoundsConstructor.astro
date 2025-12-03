@@ -1,0 +1,11 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `class GeoRectBounds(
+    southWest: GeoPointImpl? = null,
+    northEast: GeoPointImpl? = null
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

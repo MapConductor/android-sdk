@@ -1,0 +1,24 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `class MarkerActivity : ComponentActivity() {
+    private var nativeManager: NativeMarkerManager<ActualMarker>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        nativeManager = NativeMarkerManager(HexGeocellImpl.defaultGeocell())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Critical: cleanup native resources
+        nativeManager?.destroy()
+        nativeManager = null
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

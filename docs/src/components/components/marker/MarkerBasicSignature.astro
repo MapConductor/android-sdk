@@ -1,0 +1,16 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MapViewScope.Marker(
+    position: GeoPoint,
+    clickable: Boolean = true,
+    draggable: Boolean = false,
+    icon: MarkerIcon? = null,
+    extra: Serializable? = null,
+    id: String? = null
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

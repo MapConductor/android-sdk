@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class MapCameraPositionImpl(
+    override val position: GeoPointImpl,
+    override val zoom: Double = 0.0,
+    override val bearing: Double = 0.0,
+    override val tilt: Double = 0.0,
+    override val paddings: MapPaddings? = MapPaddingsImpl.Zeros,
+    override val visibleRegion: VisibleRegion? = null
+) : MapCameraPosition`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,46 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun EditablePolygonExample() {
+    var polygonState by remember {
+        mutableStateOf(
+            PolygonState(
+                points = listOf(
+                    GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                    GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                    GeoPointImpl.fromLatLong(37.7799, -122.3994),
+                    GeoPointImpl.fromLatLong(37.7749, -122.4194)
+                ),
+                strokeColor = Color.Red,
+                fillColor = Color.Red.copy(alpha = 0.2f)
+            )
+        )
+    }
+
+    MapView(
+        state = mapViewState,
+        onPolygonClick = { event ->
+            println("Polygon clicked at: \${event.clicked}")
+        }
+    ) {
+        Polygon(polygonState)
+
+        // 頂点マーカー（閉じる点を除く）
+        polygonState.points.dropLast(1).forEachIndexed { index, point ->
+            Marker(
+                position = point,
+                icon = DefaultIcon(
+                    fillColor = Color.Red,
+                    label = "\${index + 1}",
+                    scale = 0.8f
+                ),
+                draggable = true,
+                extra = "vertex_$index"
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

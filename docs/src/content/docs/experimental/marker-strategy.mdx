@@ -1,0 +1,223 @@
+---
+title: "Marker Strategy (Experimental)"
+---
+
+import MarkerStrategyGradleDependencies from '~/components/experimental/marker-strategy/MarkerStrategyGradleDependencies.astro';
+import DefaultMarkerStrategyConfig from '~/components/experimental/marker-strategy/DefaultMarkerStrategyConfig.astro';
+import SimpleMarkerStrategyConfig from '~/components/experimental/marker-strategy/SimpleMarkerStrategyConfig.astro';
+import SpatialMarkerStrategyConfig from '~/components/experimental/marker-strategy/SpatialMarkerStrategyConfig.astro';
+import DefaultStrategyExampleComposable from '~/components/experimental/marker-strategy/DefaultStrategyExampleComposable.astro';
+import StrategyMarkerManagementComposable from '~/components/experimental/marker-strategy/StrategyMarkerManagementComposable.astro';
+import DynamicLoadingExampleComposable from '~/components/experimental/marker-strategy/DynamicLoadingExampleComposable.astro';
+import ClusteringStrategyExampleComposable from '~/components/experimental/marker-strategy/ClusteringStrategyExampleComposable.astro';
+import PerformanceStrategyConfigExample from '~/components/experimental/marker-strategy/PerformanceStrategyConfigExample.astro';
+import StrategyPerformanceMonitoringComposable from '~/components/experimental/marker-strategy/StrategyPerformanceMonitoringComposable.astro';
+import MigrationBasicToStrategyComposable from '~/components/experimental/marker-strategy/MigrationBasicToStrategyComposable.astro';
+
+The `mapconductor-marker-strategy` module provides advanced marker rendering strategies for optimizing performance and user experience with large datasets. This experimental module offers multiple rendering approaches tailored to different use cases and performance requirements.
+
+> **⚠️ Experimental Module**: This module is experimental and APIs may change. Use in production with caution.
+
+## Overview
+
+The marker strategy module provides sophisticated rendering strategies that go beyond basic marker display:
+- **Viewport-Based Rendering**: Only render markers visible in the current viewport
+- **Dynamic Add/Remove**: Efficiently manage markers as the viewport changes
+- **Spatial Optimization**: Advanced spatial indexing for large datasets
+- **Remote Data Integration**: Support for server-side marker data
+- **Clustering Support**: Group nearby markers for better performance
+
+## Installation
+
+Add the marker strategy module to your `build.gradle`:
+
+<MarkerStrategyGradleDependencies />
+
+## Core Strategies
+
+### DefaultMarkerStrategy
+
+Optimal for Google Maps and ArcGIS providers that handle add/remove operations efficiently:
+
+<DefaultMarkerStrategyConfig />
+
+#### Key Features
+- **Dynamic Add/Remove**: Adds markers entering viewport, removes markers leaving viewport
+- **Viewport Expansion**: Preloads markers slightly outside visible area
+- **Memory Efficient**: Only keeps visible markers in memory
+- **Smooth Scrolling**: Reduces pop-in/pop-out during map movement
+
+### SimpleMarkerStrategy
+
+Lightweight strategy for smaller datasets or providers with different performance characteristics:
+
+<SimpleMarkerStrategyConfig />
+
+#### Key Features
+- **Simplified Logic**: Less complex viewport management
+- **Lower Overhead**: Minimal computational overhead
+- **Good for Mapbox**: Optimized for providers that prefer simpler marker management
+
+### SpatialMarkerStrategy
+
+Advanced strategy with spatial clustering and optimization:
+
+<SpatialMarkerStrategyConfig />
+
+#### Key Features
+- **Spatial Clustering**: Groups nearby markers into clusters
+- **Density Management**: Reduces visual clutter in dense areas
+- **Performance Scaling**: Handles very large datasets efficiently
+- **Customizable Clustering**: Configurable clustering parameters
+
+## Basic Usage
+
+### Setting Up Default Strategy
+
+<DefaultStrategyExampleComposable />
+
+### Adding Markers to Strategy
+
+<StrategyMarkerManagementComposable />
+
+## Advanced Usage
+
+### Dynamic Marker Loading
+
+<DynamicLoadingExampleComposable />
+
+### Clustering Strategy
+
+<ClusteringStrategyExampleComposable />
+
+### Remote Spatial Strategy
+
+// Inline in English docs for now (implementation specific)
+
+## Strategy Comparison
+
+### Performance Characteristics
+
+| Strategy | Best For | Memory Usage | Network | Complexity |
+|----------|----------|--------------|---------|------------|
+| DefaultMarkerStrategy | Google Maps, ArcGIS | Medium | None | Medium |
+| SimpleMarkerStrategy | Mapbox, HERE | Low | None | Low |
+| SpatialMarkerStrategy | Large datasets | High | None | High |
+| RemoteSpatialMarkerStrategy | Server-side data | Low | High | High |
+
+### Use Case Guidelines
+
+#### Choose DefaultMarkerStrategy when:
+- Using Google Maps or ArcGIS
+- Have moderate marker counts (1,000-50,000)
+- Want smooth viewport-based rendering
+- Markers are loaded locally
+
+#### Choose SimpleMarkerStrategy when:
+- Using Mapbox or HERE Maps
+- Have smaller marker counts (<10,000)
+- Want minimal overhead
+- Simple rendering requirements
+
+#### Choose SpatialMarkerStrategy when:
+- Have very large marker datasets (50,000+)
+- Need clustering functionality
+- Want advanced spatial optimization
+- Can afford higher memory usage
+
+#### Choose RemoteSpatialMarkerStrategy when:
+- Markers are stored server-side
+- Want on-demand loading
+- Have network connectivity
+- Need to minimize app memory usage
+
+## Custom Strategy Development
+
+### Extending AbstractViewportStrategy
+
+```kotlin
+class CustomMarkerStrategy<ActualMarker>(
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = HexGeocellImpl.defaultGeocell()
+) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
+
+    override suspend fun onCameraChanged(
+        cameraPosition: MapCameraPositionImpl,
+        renderer: MarkerOverlayRenderer<ActualMarker>
+    ) {
+        semaphore.withPermit {
+            // Custom rendering logic
+            val visibleBounds = cameraPosition.visibleRegion?.bounds ?: return
+
+            // Your custom marker management here
+            val markersToShow = determineVisibleMarkers(visibleBounds)
+            val markersToHide = determineHiddenMarkers(visibleBounds)
+
+            // Use renderer to update display
+            if (markersToHide.isNotEmpty()) {
+                renderer.onRemove(markersToHide)
+            }
+
+            if (markersToShow.isNotEmpty()) {
+                val addParams = markersToShow.map { entity ->
+                    object : MarkerOverlayRenderer.AddParams {
+                        override val state: MarkerState = entity.state
+                        override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                    }
+                }
+                renderer.onAdd(addParams)
+            }
+
+            renderer.onPostProcess()
+        }
+    }
+
+    private fun determineVisibleMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+        // Your custom logic to determine which markers should be visible
+        return markerManager.findMarkersInBounds(bounds)
+    }
+
+    private fun determineHiddenMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+        // Your custom logic to determine which markers should be hidden
+        return markerManager.allEntities().filter { entity ->
+            entity.isRendered && !bounds.contains(entity.state.position)
+        }
+    }
+}
+```
+
+## Performance Optimization
+
+### Strategy Configuration
+
+<PerformanceStrategyConfigExample />
+
+### Monitoring Performance
+
+<StrategyPerformanceMonitoringComposable />
+
+## Best Practices
+
+1. **Strategy Selection**: Choose strategy based on your specific use case and map provider
+2. **Viewport Margins**: Balance preloading (larger margin) vs performance (smaller margin)
+3. **Spatial Configuration**: Tune geocell parameters for your data density
+4. **Memory Monitoring**: Monitor memory usage in production, especially with large datasets
+5. **Testing**: Test with realistic data volumes and usage patterns
+6. **Fallback**: Have simpler strategy as fallback for performance issues
+
+## Common Pitfalls
+
+1. **Over-Engineering**: Don't use complex strategies for simple marker scenarios
+2. **Memory Leaks**: Ensure proper cleanup of strategy resources
+3. **Provider Mismatch**: Using wrong strategy for your map provider can hurt performance
+4. **Excessive Preloading**: Large expand margins can cause memory pressure
+5. **Thread Safety**: Strategies handle concurrency, but be careful with external modifications
+
+## Migration Guide
+
+### From Basic Marker Management
+
+<MigrationBasicToStrategyComposable />
+
+The marker strategy module provides sophisticated marker management capabilities for applications requiring high performance with large datasets or complex rendering requirements.
+

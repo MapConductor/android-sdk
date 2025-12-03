@@ -1,0 +1,47 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun AnimatedGroundImageExample() {
+    var isAnimating by remember { mutableStateOf(false) }
+    var opacity by remember { mutableStateOf(0.5f) }
+
+    LaunchedEffect(isAnimating) {
+        if (isAnimating) {
+            while (isAnimating) {
+                delay(100)
+                opacity = (sin(System.currentTimeMillis() / 1000.0).toFloat() + 1f) / 2f
+            }
+        }
+    }
+
+    val context = LocalContext.current
+    val drawable = AppCompatResources.getDrawable(context, R.drawable.animated_overlay)
+
+    val groundImageState = drawable?.let {
+        GroundImageState(
+            bounds = GeoRectBounds(
+                southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+                northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+            ),
+            image = it,
+            opacity = opacity,
+            extra = "Animated overlay"
+        )
+    }
+
+    Column {
+        Button(onClick = { isAnimating = !isAnimating }) {
+            Text(if (isAnimating) "Stop" else "Animate")
+        }
+
+        MapView(state = mapViewState) {
+            groundImageState?.let { state ->
+                GroundImage(state)
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

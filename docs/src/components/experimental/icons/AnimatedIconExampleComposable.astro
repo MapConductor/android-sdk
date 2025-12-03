@@ -1,0 +1,62 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun AnimatedIconExample() {
+    var scale by remember { mutableStateOf(1.0f) }
+    var color by remember { mutableStateOf(Color.Red) }
+
+    // Animate scale
+    LaunchedEffect(Unit) {
+        while (true) {
+            animate(
+                initialValue = 1.0f,
+                targetValue = 1.5f,
+                animationSpec = tween(1000)
+            ) { value, _ -> scale = value }
+
+            animate(
+                initialValue = 1.5f,
+                targetValue = 1.0f,
+                animationSpec = tween(1000)
+            ) { value, _ -> scale = value }
+        }
+    }
+
+    // Animate color
+    LaunchedEffect(Unit) {
+        val colors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow)
+        var index = 0
+        while (true) {
+            delay(2000)
+            index = (index + 1) % colors.size
+            color = colors[index]
+        }
+    }
+
+    val animatedIcon = CircleIcon(
+        fillColor = color,
+        strokeColor = Color.White,
+        scale = scale
+    )
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = animatedIcon
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

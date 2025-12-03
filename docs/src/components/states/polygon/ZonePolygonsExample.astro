@@ -1,0 +1,35 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val zonePolygons = listOf(
+    PolygonState(
+        points = restrictedZonePoints,
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        fillColor = Color.Red.copy(alpha = 0.2f),
+        extra = "Restricted Zone"
+    ),
+    PolygonState(
+        points = parkingZonePoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 2.dp,
+        fillColor = Color.Blue.copy(alpha = 0.2f),
+        extra = "Parking Zone"
+    ),
+    PolygonState(
+        points = safeZonePoints,
+        strokeColor = Color.Green,
+        strokeWidth = 2.dp,
+        fillColor = Color.Green.copy(alpha = 0.2f),
+        extra = "Safe Zone"
+    )
+)
+
+MapView(state = mapViewState) {
+    zonePolygons.forEach { zone ->
+        Polygon(zone)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

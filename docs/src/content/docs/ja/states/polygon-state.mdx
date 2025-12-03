@@ -1,0 +1,66 @@
+---
+title: "PolygonState（ポリゴン状態）"
+---
+
+import PolygonStateConstructorExample from '~/components/states/polygon/PolygonStateConstructorExample.astro';
+import PolygonStateMethodsExample from '~/components/states/polygon/PolygonStateMethodsExample.astro';
+import PolygonStateBasicExample from '~/components/states/polygon/PolygonStateBasicExample.astro';
+import EditablePolygonExampleComposable from '~/components/states/polygon/EditablePolygonExampleComposable.astro';
+import ZonePolygonsExample from '~/components/states/polygon/ZonePolygonsExample.astro';
+import ComplexPolygonExampleComposable from '~/components/states/polygon/ComplexPolygonExampleComposable.astro';
+import PolygonEventTypesExample from '~/components/states/polygon/PolygonEventTypesExample.astro';
+
+`PolygonState` は、地図上のポリゴン（塗りつぶされた領域）オーバーレイの構成と動作を管理します。頂点、ストローク、塗りつぶし、測地線オプションのためのリアクティブなプロパティを提供します。
+
+## コンストラクタ
+
+<PolygonStateConstructorExample />
+
+## プロパティ
+
+### 基本プロパティ
+- **`id: String`**: 一意の識別子（指定されていない場合は自動生成）
+- **`points: List<GeoPoint>`**: ポリゴンを定義する頂点のリスト（閉じている必要があります）
+- **`extra: Serializable?`**: ポリゴンに付加される追加データ
+
+### ビジュアルプロパティ
+- **`strokeColor: Color`**: 枠線の色
+- **`strokeWidth: Dp`**: 枠線の太さ
+- **`fillColor: Color`**: 内部の塗りつぶし色
+- **`geodesic: Boolean`**: 測地線エッジを描画するかどうか
+
+## メソッド
+
+<PolygonStateMethodsExample />
+
+## 使用例
+
+### 基本的なポリゴン
+
+<PolygonStateBasicExample />
+
+### インタラクティブなポリゴン
+
+<EditablePolygonExampleComposable />
+
+### ゾーンポリゴン
+
+<ZonePolygonsExample />
+
+### 複雑な形状
+
+<ComplexPolygonExampleComposable />
+
+## イベント処理
+
+ポリゴンイベントは状態とクリック位置の両方を提供します：
+
+<PolygonEventTypesExample />
+
+## ベストプラクティス
+
+1. **ポリゴンを閉じる**: 最初と最後の点が同じであることを確認してください
+2. **頂点の順序**: 一貫した順序（時計回り/反時計回り）を使用してください
+3. **パフォーマンス**: 多数の頂点を持つ過度に複雑なポリゴンは避けてください
+4. **ビジュアルデザイン**: 地図の視認性のために適切な塗りつぶし透過を使用してください
+5. **検証**: ポリゴンが有効な幾何学的形状を形成することを確認してください

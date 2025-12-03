@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `sealed class PoiCategory(val icon: MarkerIcon) {
+    object Restaurant : PoiCategory(DefaultIcon(fillColor = Color(0xFF4CAF50), label = "🍽️"))
+    object Hotel : PoiCategory(DefaultIcon(fillColor = Color(0xFF2196F3), label = "🏨"))
+    object GasStation : PoiCategory(DefaultIcon(fillColor = Color(0xFFFF9800), label = "⛽"))
+    object Hospital : PoiCategory(DefaultIcon(fillColor = Color(0xFFF44336), label = "🏥"))
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

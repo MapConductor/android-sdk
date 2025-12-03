@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForDefaultPosition?: string;
+}
+
+const {
+  commentForDefaultPosition = "Default camera position at origin"
+} = Astro.props;
+
+const code = `// ${commentForDefaultPosition}
+val defaultPosition = MapCameraPositionImpl.Default`;
+---
+
+<Code code={code} lang="kotlin" />
+

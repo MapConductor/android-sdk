@@ -1,0 +1,25 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun TestMapbox() {
+    val state =
+        rememberMapboxMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl.fromLatLong(0.0, 0.0),
+                    zoom = 3.0,
+                ),
+        )
+
+    MapboxMapView(
+        modifier = modifier,
+        state = state,
+    ) {
+        // もし地図が表示されれば、セットアップが正しくできています
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

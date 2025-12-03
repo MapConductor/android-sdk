@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Google Maps
+val googleMapState = GoogleMapViewStateImpl()
+val googleHolder: GoogleMapViewHolder? = googleMapState.getMapViewHolder()
+
+// Mapbox
+val mapboxState = MapboxViewStateImpl()
+val mapboxHolder: MapboxMapViewHolder? = mapboxState.getMapViewHolder()
+
+// HERE Maps
+val hereState = HereViewStateImpl()
+val hereHolder: HereViewHolder? = hereState.getMapViewHolder()
+
+// ArcGIS
+val arcgisState = ArcGISMapViewStateImpl()
+val arcgisHolder: ArcGISMapViewHolder? = arcgisState.getMapViewHolder()`;
+---
+
+<Code code={code} lang="kotlin" />
+

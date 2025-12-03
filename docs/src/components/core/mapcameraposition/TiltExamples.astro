@@ -1,0 +1,49 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  topDownTilt?: number;
+  angledTilt?: number;
+  angledZoom?: number;
+  streetTilt?: number;
+  streetBearing?: number;
+  streetZoom?: number;
+}
+
+const {
+  latitude = 37.7749,
+  longitude = -122.4194,
+  topDownTilt = 0.0,
+  angledTilt = 30.0,
+  angledZoom = 16.0,
+  streetTilt = 80.0,
+  streetBearing = 45.0,
+  streetZoom = 19.0
+} = Astro.props;
+
+const code = `// Top-down view (default)
+val topDown = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+    tilt = ${topDownTilt}
+)
+
+// Slight angle for depth
+val angled = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+    tilt = ${angledTilt},
+    zoom = ${angledZoom}
+)
+
+// Maximum tilt for street-level view
+val streetLevel = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+    tilt = ${streetTilt},
+    bearing = ${streetBearing},
+    zoom = ${streetZoom}
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,40 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `object MarkerIconFactory {
+    fun createLocationIcon(color: Color, label: String? = null): MarkerIcon {
+        return DefaultIcon(
+            fillColor = color,
+            strokeColor = Color.White,
+            strokeWidth = 2.dp,
+            label = label,
+            scale = 1.0f
+        )
+    }
+
+    fun createCustomIcon(context: Context, drawableRes: Int, scale: Float = 1.0f): MarkerIcon? {
+        return AppCompatResources.getDrawable(context, drawableRes)?.let {
+            DrawableDefaultIcon(
+                backgroundDrawable = it,
+                scale = scale
+            )
+        }
+    }
+
+    fun createDirectionalIcon(context: Context, direction: Float): MarkerIcon? {
+        return AppCompatResources.getDrawable(context, R.drawable.arrow)?.let { drawable ->
+            // Apply rotation to drawable if needed
+            val rotatedDrawable = drawable.mutate()
+            rotatedDrawable.setColorFilter(null)
+
+            ImageDefaultIcon(
+                drawable = rotatedDrawable,
+                anchor = Offset(0.5f, 0.5f)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

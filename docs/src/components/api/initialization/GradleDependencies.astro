@@ -1,0 +1,33 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForChooseProvider?: string;
+  bomVersionPlaceholder?: string;
+  includeMapLibre?: boolean;
+}
+
+const {
+  commentForChooseProvider = "Choose your map provider(s)",
+  bomVersionPlaceholder = "$version",
+  includeMapLibre = true
+} = Astro.props;
+
+const mapLibreLine = includeMapLibre
+  ? '\n    implementation "com.mapconductor:for-maplibre"'
+  : "";
+
+const code = `dependencies {
+    implementation "com.mapconductor:mapconductor-bom:${bomVersionPlaceholder}"
+    implementation "com.mapconductor:core"
+
+    // ${commentForChooseProvider}
+    implementation "com.mapconductor:for-googlemaps"
+    implementation "com.mapconductor:for-mapbox"
+    implementation "com.mapconductor:for-here"
+    implementation "com.mapconductor:for-arcgis"${mapLibreLine}
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

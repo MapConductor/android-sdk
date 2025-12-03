@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForAccessApis?: string;
+  commentForUseFeatures?: string;
+  commentForAnalysis?: string;
+}
+
+const {
+  commentForAccessApis = "Access native ArcGIS APIs",
+  commentForUseFeatures = "Use ArcGIS specific features",
+  commentForAnalysis = "Configure and use analysis tools"
+} = Astro.props;
+
+const code = `typealias ArcGISMapViewHolder = MapViewHolder<WrapSceneView, SceneView>
+
+// ${commentForAccessApis}
+arcgisHolder?.let { holder ->
+    val wrapSceneView: WrapSceneView = holder.mapView
+    val sceneView: SceneView = holder.map
+
+    // ${commentForUseFeatures}
+    val portal = Portal("https://www.arcgis.com/")
+    val portalItem = PortalItem(portal, "your-webmap-id")
+    val webMap = ArcGISMap(portalItem)
+
+    sceneView.map = webMap
+
+    // ArcGIS analysis tools
+    val serviceArea = ServiceAreaTask("https://route-api.arcgis.com/...")
+    // ${commentForAnalysis}
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

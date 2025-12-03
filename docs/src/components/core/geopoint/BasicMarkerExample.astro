@@ -1,0 +1,32 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForPosition?: string;
+  commentForMapView?: string;
+  latitude?: number;
+  longitude?: number;
+  label?: string;
+}
+
+const {
+  commentForPosition = "Basic marker placement",
+  commentForMapView = "Replace MapView with GoogleMapView, MapboxMapView, etc. for your chosen map SDK",
+  latitude = 37.7749,
+  longitude = -122.4194,
+  label = "SF"
+} = Astro.props;
+
+const code = `// ${commentForPosition}
+val sanFrancisco = GeoPointImpl.fromLatLong(${latitude}, ${longitude})
+
+// ${commentForMapView}
+MapView(state = mapViewState) {
+    Marker(
+        position = sanFrancisco,
+        icon = DefaultIcon(label = "${label}")
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

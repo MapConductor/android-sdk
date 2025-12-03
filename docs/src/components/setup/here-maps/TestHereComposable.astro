@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun TestHERE() {
+    val mapState = rememberHereMapViewState()
+
+    HereMapView(state = mapState) {
+        // If this displays correctly, your setup is working
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,75 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  stateComment?: string;
+  stateCommentLines?: string[];
+  viewComment?: string;
+  viewCommentLines?: string[];
+  markerComment?: string;
+  circleComment?: string;
+}
+
+const {
+  stateComment = '// Replace with your map SDK provider',
+  stateCommentLines = [
+    '// - Google Maps -> rememberGoogleMapViewState',
+    '// - Mapbox -> rememberMapboxViewState',
+    '// ... and so on',
+  ],
+  viewComment = '// Replace MapView with your chosen map provider',
+  viewCommentLines = [
+    '// - Google Maps -> GoogleMapView',
+    '// - Mapbox -> MapboxMapView',
+    '// ... and so on',
+  ],
+  markerComment = '// Add a marker',
+  circleComment = '// Add a circle',
+} = Astro.props;
+
+const stateCommentBlock = [stateComment, ...stateCommentLines].join('\n');
+const viewCommentBlock = [viewComment, ...viewCommentLines].join('\n');
+
+const code = `@Composable
+fun BasicMapExample(modifier: Modifier = Modifier) {
+    val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val camera = MapCameraPositionImpl(
+        position = sanFrancisco,
+        zoom = 13.0,
+    )
+    ${stateCommentBlock}
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = camera,
+    )
+
+    ${viewCommentBlock}
+    GoogleMapView(
+        modifier = modifier,
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("Map clicked at: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        },
+        onMarkerClick = { markerState ->
+            println("Marker clicked: \${markerState.extra}")
+        }
+    ) {
+        ${markerComment}
+        Marker(
+            position = sanFrancisco,
+            icon = DefaultIcon(label = "SF"),
+            extra = "San Francisco marker"
+        )
+
+        ${circleComment}
+        Circle(
+            center = sanFrancisco,
+            radiusMeters = 1000.0,
+            strokeColor = Color.Blue,
+            fillColor = Color.Blue.copy(alpha = 0.3f)
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

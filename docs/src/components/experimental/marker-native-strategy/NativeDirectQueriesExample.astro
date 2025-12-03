@@ -1,0 +1,24 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `fun performNativeQueries(nativeManager: NativeMarkerManager<ActualMarker>) {
+    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val bounds = GeoRectBounds(
+        southWest = GeoPointImpl.fromLatLong(37.7700, -122.4250),
+        northEast = GeoPointImpl.fromLatLong(37.7800, -122.4150)
+    )
+
+    // Native spatial queries are extremely fast
+    val nearestMarker = nativeManager.findNearest(center)
+    val boundedMarkers = nativeManager.findMarkersInBounds(bounds)
+    val totalMarkers = nativeManager.allEntities().size
+
+    // Memory and performance stats
+    val stats = nativeManager.getNativeMemoryStats()
+    println("Query performance: ${'$'}{stats.nativeIndexCount} indexed markers")
+    println("Memory usage: ${'$'}{stats.estimatedMemoryKB} KB")
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

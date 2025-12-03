@@ -1,0 +1,84 @@
+---
+title: Configuración de ArcGIS Maps
+---
+
+# Configuración de ArcGIS Maps
+
+En esta página se explica cómo configurar el SDK de ArcGIS Maps para Android junto con MapConductor.
+
+## Requisitos previos
+
+- Cuenta de desarrollador de ArcGIS creada.
+- Clave de API de ArcGIS generada.
+
+## Añadir dependencias en Gradle
+
+```kotlin
+dependencies {
+    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+    implementation(libs.arcgis.maps.kotlin)
+    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-arcgis")
+}
+```
+
+Asegúrate de configurar el repositorio de Esri en `settings.gradle.kts`:
+
+```kotlin
+maven {
+    url = uri("https://esri.jfrog.io/artifactory/arcgis")
+}
+```
+
+## Configuración en AndroidManifest
+
+Añade la clave de API y los permisos necesarios en tu `AndroidManifest.xml`:
+
+```xml
+<manifest>
+    <application>
+        <meta-data
+            android:name="ARCGIS_API_KEY"
+            android:value="@string/arcgis_api_key" />
+    </application>
+</manifest>
+```
+
+## Configuración de licencia
+
+Configura la clave de API en tu aplicación:
+
+```kotlin
+// En tu Application class o MainActivity
+ArcGISEnvironment.setApiKey("your_api_key_here")
+```
+
+## Ejemplo de uso con MapConductor
+
+```kotlin
+@Composable
+fun ArcGISExample() {
+    val camera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(34.0522, -118.2437),
+        zoom = 12.0,
+    )
+
+    val mapViewState = rememberArcGISMapViewState(
+        cameraPosition = camera,
+    )
+
+    ArcGISMapView(
+        state = mapViewState,
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(34.0522, -118.2437),
+            icon = DefaultIcon(label = "LA"),
+        )
+    }
+}
+```
+
+Consulta [MapView Component](/es-419/components/mapviewcomponent) para ver más detalles.

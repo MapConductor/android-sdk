@@ -1,0 +1,41 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun DynamicMarkerExample() {
+    var markerState by remember {
+        mutableStateOf(
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon = DefaultIcon(fillColor = Color.Red, label = "1"),
+                extra = "Counter: 1"
+            )
+        )
+    }
+
+    var counter by remember { mutableStateOf(1) }
+
+    Column {
+        Button(
+            onClick = {
+                counter++
+                markerState = markerState.copy(
+                    icon = DefaultIcon(
+                        fillColor = Color.Blue,
+                        label = counter.toString()
+                    ),
+                    extra = "Counter: $counter"
+                )
+            }
+        ) {
+            Text("Update Marker ($counter)")
+        }
+
+        MapView(state = mapViewState) {
+            Marker(markerState)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

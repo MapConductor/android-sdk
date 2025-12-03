@@ -1,0 +1,66 @@
+---
+title: "PolylineState"
+---
+
+import PolylineStateConstructorExample from '~/components/states/polyline/PolylineStateConstructorExample.astro';
+import PolylineStateMethodsExample from '~/components/states/polyline/PolylineStateMethodsExample.astro';
+import PolylineStateBasicExample from '~/components/states/polyline/PolylineStateBasicExample.astro';
+import DynamicPolylineExampleComposable from '~/components/states/polyline/DynamicPolylineExampleComposable.astro';
+import GeodesicPolylineExample from '~/components/states/polyline/GeodesicPolylineExample.astro';
+import RouteExampleComposable from '~/components/states/polyline/RouteExampleComposable.astro';
+import PolylineEventTypesExample from '~/components/states/polyline/PolylineEventTypesExample.astro';
+
+`PolylineState` manages the configuration and behavior of polylines (line segments) on the map. It provides reactive properties for points, styling, and geodesic options.
+
+## Constructor
+
+<PolylineStateConstructorExample />
+
+## Properties
+
+### Core Properties
+- **`id: String`**: Unique identifier (auto-generated if not provided)
+- **`points: List<GeoPoint>`**: List of geographic coordinates defining the line
+- **`extra: Serializable?`**: Additional data attached to the polyline
+
+### Visual Properties
+- **`strokeColor: Color`**: Line color
+- **`strokeWidth: Dp`**: Line width
+- **`geodesic: Boolean`**: Whether to draw geodesic lines (following Earth's curvature)
+
+## Methods
+
+<PolylineStateMethodsExample />
+
+## Usage Examples
+
+### Basic Polyline
+
+<PolylineStateBasicExample />
+
+### Dynamic Polyline
+
+<DynamicPolylineExampleComposable />
+
+### Geodesic Polyline
+
+<GeodesicPolylineExample />
+
+### Multi-segment Route
+
+<RouteExampleComposable />
+
+## Event Handling
+
+Polyline events provide both the state and click location:
+
+<PolylineEventTypesExample />
+
+## Best Practices
+
+1. **Point Density**: Balance detail with performance - avoid excessive points
+2. **Geodesic Lines**: Use for long-distance routes to show accurate paths
+3. **Color Coding**: Use different colors to distinguish route types
+4. **Width Hierarchy**: Use stroke width to indicate importance
+5. **Performance**: Consider simplification for complex polylines at different zoom levels
+

@@ -1,0 +1,26 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val circles = listOf(
+    CircleState(
+        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        radiusMeters = 1000.0,
+        fillColor = Color.Red.copy(alpha = 0.3f),
+        zIndex = 1
+    ),
+    CircleState(
+        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        radiusMeters = 500.0,
+        fillColor = Color.Blue.copy(alpha = 0.5f),
+        zIndex = 2
+    )
+)
+
+MapView(state = mapViewState) {
+    circles.forEach { circleState ->
+        Circle(circleState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

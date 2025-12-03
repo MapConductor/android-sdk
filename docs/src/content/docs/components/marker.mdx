@@ -1,0 +1,102 @@
+---
+title: "Marker"
+---
+
+import MarkerBasicSignature from '~/components/components/marker/MarkerBasicSignature.astro';
+import MarkerStateSignature from '~/components/components/marker/MarkerStateSignature.astro';
+import BasicMarkerExample from '~/components/components/marker/BasicMarkerExample.astro';
+import CustomIconMarkerExample from '~/components/components/marker/CustomIconMarkerExample.astro';
+import DraggableMarkerExample from '~/components/components/marker/DraggableMarkerExample.astro';
+import MultipleMarkersExample from '~/components/components/marker/MultipleMarkersExample.astro';
+
+Markers are point annotations that can be placed on the map at specific geographic locations. They support custom icons, interactions, and animations.
+
+## Composable Functions
+
+### Basic Marker
+
+<MarkerBasicSignature />
+
+### Marker with State
+
+<MarkerStateSignature />
+
+## Parameters
+
+- **`position`**: Geographic coordinates (`GeoPoint`)
+- **`clickable`**: Whether the marker responds to clicks (default: `true`)
+- **`draggable`**: Whether the marker can be dragged (default: `false`)
+- **`icon`**: Custom icon for the marker (`MarkerIcon?`)
+- **`extra`**: Additional data attached to the marker (`Serializable?`)
+- **`id`**: Unique identifier for the marker (`String?`)
+
+## Icon Types
+
+### DefaultIcon
+
+Standard marker with customizable appearance:
+
+```kotlin
+DefaultIcon(
+    scale: Float = 1.0f,
+    label: String? = null,
+    fillColor: Color = Color.Red,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    labelTextColor: Color = Color.White,
+    labelStrokeColor: Color? = null,
+    debug: Boolean = false
+)
+```
+
+### DrawableDefaultIcon
+
+Marker using a drawable resource as background:
+
+```kotlin
+DrawableDefaultIcon(
+    backgroundDrawable: Drawable,
+    scale: Float = 1.0f,
+    strokeColor: Color? = null,
+    strokeWidth: Dp = 1.dp
+)
+```
+
+### ImageIcon
+
+Marker using a custom drawable image:
+
+```kotlin
+ImageIcon(
+    drawable: Drawable,
+    anchor: Offset = Offset(0.5f, 0.5f),
+    debug: Boolean = false
+)
+```
+
+## Usage Examples
+
+### Basic Marker
+
+<BasicMarkerExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Custom Icon Marker
+
+<CustomIconMarkerExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Draggable Marker
+
+<DraggableMarkerExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Multiple Markers with Different Icons
+
+<MultipleMarkersExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+

@@ -1,0 +1,147 @@
+---
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+interface Props {
+  googleMapsLat?: number;
+  googleMapsLong?: number;
+  googleMapsLabel?: string;
+  googleMapsExtra?: string;
+  googleMapsImage?: string;
+  mapboxLat?: number;
+  mapboxLong?: number;
+  mapboxLabel?: string;
+  mapboxExtra?: string;
+  mapboxImage?: string;
+  hereLat?: number;
+  hereLong?: number;
+  hereLabel?: string;
+  hereExtra?: string;
+  hereImage?: string;
+  arcgisLat?: number;
+  arcgisLong?: number;
+  arcgisLabel?: string;
+  arcgisExtra?: string;
+  arcgisImage?: string;
+  maplibreLat?: number;
+  maplibreLong?: number;
+  maplibreLabel?: string;
+  maplibreExtra?: string;
+  maplibreImage?: string;
+}
+
+const {
+  googleMapsLat = 37.7749,
+  googleMapsLong = -122.4194,
+  googleMapsLabel = "SF",
+  googleMapsExtra = "San Francisco",
+  googleMapsImage = "~/assets/examples/basic-googlemaps.jpg",
+  mapboxLat = 38.911254,
+  mapboxLong = -77.033458,
+  mapboxLabel = "WA",
+  mapboxExtra = "San Francisco",
+  mapboxImage = "~/assets/examples/basic-mapbox.jpg",
+  hereLat = 51.43901,
+  hereLong = 5.47191,
+  hereLabel = "EIN",
+  hereExtra = "San Francisco",
+  hereImage = "~/assets/examples/basic-here.jpg",
+  arcgisLat = 37.7749,
+  arcgisLong = -122.4194,
+  arcgisLabel = "SF",
+  arcgisExtra = "San Francisco",
+  arcgisImage = "~/assets/examples/basic-arcgis.jpg",
+  maplibreLat = 37.7749,
+  maplibreLong = -122.4194,
+  maplibreLabel = "SF",
+  maplibreExtra = "San Francisco",
+  maplibreImage = "~/assets/examples/basic-maplibre.jpg",
+} = Astro.props;
+
+const googleMapsCode = `@Composable
+fun SimpleMapExample() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    GoogleMapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${googleMapsLat}, ${googleMapsLong}),
+            icon = DefaultIcon(label = "${googleMapsLabel}"),
+            extra = "${googleMapsExtra}"
+        )
+    }
+}`;
+
+const mapboxCode = `@Composable
+fun SimpleMapExample() {
+    val mapViewState = rememberMapboxMapViewState()
+
+    MapboxMapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${mapboxLat}, ${mapboxLong}),
+            icon = DefaultIcon(label = "${mapboxLabel}"),
+            extra = "${mapboxExtra}"
+        )
+    }
+}`;
+
+const hereCode = `@Composable
+fun SimpleMapExample() {
+    val mapViewState = rememberHereMapViewState()
+
+    HereMapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${hereLat}, ${hereLong}),
+            icon = DefaultIcon(label = "${hereLabel}"),
+            extra = "${hereExtra}"
+        )
+    }
+}`;
+
+const arcgisCode = `@Composable
+fun SimpleMapExample() {
+    val mapViewState = rememberArcGISViewState()
+
+    ArcGISMapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${arcgisLat}, ${arcgisLong}),
+            icon = DefaultIcon(label = "${arcgisLabel}"),
+            extra = "${arcgisExtra}"
+        )
+    }
+}`;
+
+const maplibreCode = `@Composable
+fun SimpleMapExample() {
+    val mapViewState = rememberMapLibreMapViewState()
+
+    MapLibreMapView(state = mapViewState) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${maplibreLat}, ${maplibreLong}),
+            icon = DefaultIcon(label = "${maplibreLabel}"),
+            extra = "${maplibreExtra}"
+        )
+    }
+}`;
+---
+
+<Tabs>
+<TabItem label="GoogleMaps">
+<Code code={googleMapsCode} lang="kotlin" />
+![実行結果]({googleMapsImage})
+</TabItem>
+<TabItem label="Mapbox">
+<Code code={mapboxCode} lang="kotlin" />
+![実行結果]({mapboxImage})
+</TabItem>
+<TabItem label="Here">
+<Code code={hereCode} lang="kotlin" />
+![実行結果]({hereImage})
+</TabItem>
+<TabItem label="ArcGIS">
+<Code code={arcgisCode} lang="kotlin" />
+![実行結果]({arcgisImage})
+</TabItem>
+<TabItem label="MapLibre">
+<Code code={maplibreCode} lang="kotlin" />
+![実行結果]({maplibreImage})
+</TabItem>
+</Tabs>

@@ -1,0 +1,79 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForStart?: string;
+  commentForWaypoint1?: string;
+  commentForWaypoint2?: string;
+  commentForEnd?: string;
+  commentForStartAnimation?: string;
+  commentForMapViewUsage?: string;
+  durationMillis?: number;
+}
+
+const {
+  commentForStart = "Start",
+  commentForWaypoint1 = "Waypoint 1",
+  commentForWaypoint2 = "Waypoint 2",
+  commentForEnd = "End",
+  commentForStartAnimation = "Start path animation",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  durationMillis = 5000
+} = Astro.props;
+
+const code = `@Composable
+fun PathAnimationExample() {
+    val waypoints = remember {
+        listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194), // ${commentForStart}
+            GeoPointImpl.fromLatLong(37.7849, -122.4094), // ${commentForWaypoint1}
+            GeoPointImpl.fromLatLong(37.7949, -122.3994), // ${commentForWaypoint2}
+            GeoPointImpl.fromLatLong(37.8049, -122.3894)  // ${commentForEnd}
+        )
+    }
+
+    val markerState = remember {
+        MarkerState(
+            position = waypoints.first(),
+            icon = DefaultIcon(fillColor = Color.Orange, label = "🚗")
+        )
+    }
+
+    // ${commentForStartAnimation}
+    LaunchedEffect(Unit) {
+        val pathAnimation = PathAnimation(
+            waypoints = waypoints,
+            duration = ${durationMillis} // 5 seconds to complete path
+        )
+        markerState.setAnimation(pathAnimation)
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Show path
+        Polyline(
+            points = waypoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 3.dp
+        )
+
+        // Animated marker
+        Marker(markerState)
+
+        // Waypoint markers
+        waypoints.forEachIndexed { index, point ->
+            Marker(
+                position = point,
+                icon = DefaultIcon(
+                    fillColor = Color.Gray,
+                    scale = 0.6f,
+                    label = "${'$'}index"
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

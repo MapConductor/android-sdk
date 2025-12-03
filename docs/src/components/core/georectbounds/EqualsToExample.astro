@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForUsage?: string;
+}
+
+const {
+  commentForUsage = "Usage"
+} = Astro.props;
+
+const code = `fun equalsTo(other: GeoRectBounds): Boolean
+
+// ${commentForUsage}
+val bounds1 = GeoRectBounds(/* ... */)
+val bounds2 = GeoRectBounds(/* ... */)
+
+val areEqual = bounds1.equalsTo(bounds2)`;
+---
+
+<Code code={code} lang="kotlin" />
+

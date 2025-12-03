@@ -1,0 +1,114 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForAllMarkersSimulation?: string;
+  baseLatitude?: number;
+  baseLongitude?: number;
+  latitudeStep?: number;
+  longitudeStep?: number;
+  viewportSouthWestLatitude?: number;
+  viewportSouthWestLongitude?: number;
+  viewportNorthEastLatitude?: number;
+  viewportNorthEastLongitude?: number;
+  commentForViewportSimulation?: string;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForAllMarkersSimulation = "Simulate all available markers",
+  baseLatitude = 37.7,
+  baseLongitude = -122.5,
+  latitudeStep = 0.01,
+  longitudeStep = 0.01,
+  viewportSouthWestLatitude = 37.70,
+  viewportSouthWestLongitude = -122.50,
+  viewportNorthEastLatitude = 37.75,
+  viewportNorthEastLongitude = -122.45,
+  commentForViewportSimulation = "Simulate setting viewport bounds",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun BoundsBasedLoadingExample() {
+    var currentBounds by remember { mutableStateOf<GeoRectBounds?>(null) }
+    var markersInBounds by remember { mutableStateOf<List<GeoPointImpl>>(emptyList()) }
+
+    // ${commentForAllMarkersSimulation}
+    val allMarkers = remember {
+        List(100) { i ->
+            GeoPointImpl.fromLatLong(
+                ${baseLatitude} + (i % 10) * ${latitudeStep},
+                ${baseLongitude} + (i / 10) * ${longitudeStep}
+            )
+        }
+    }
+
+    // Filter markers based on current bounds
+    LaunchedEffect(currentBounds) {
+        markersInBounds = currentBounds?.let { bounds ->
+            if (bounds.isEmpty) {
+                emptyList()
+            } else {
+                allMarkers.filter { marker ->
+                    bounds.contains(marker)
+                }
+            }
+        } ?: emptyList()
+    }
+
+    Column {
+        Text("Markers in bounds: ${'$'}{markersInBounds.size}/${'$'}{allMarkers.size}")
+
+        Button(
+            onClick = {
+                // ${commentForViewportSimulation}
+                currentBounds = GeoRectBounds(
+                    southWest = GeoPointImpl.fromLatLong(${viewportSouthWestLatitude}, ${viewportSouthWestLongitude}),
+                    northEast = GeoPointImpl.fromLatLong(${viewportNorthEastLatitude}, ${viewportNorthEastLongitude})
+                )
+            }
+        ) {
+            Text("Set Viewport")
+        }
+
+        // ${commentForMapViewUsage}
+        MapView(state = mapViewState) {
+            // Show only markers within bounds
+            markersInBounds.forEach { position ->
+                Marker(
+                    position = position,
+                    icon = DefaultIcon(
+                        fillColor = Color.Green,
+                        scale = 0.8f
+                    )
+                )
+            }
+
+            // Show current bounds
+            currentBounds?.let { bounds ->
+                if (!bounds.isEmpty) {
+                    val sw = bounds.southWest!!
+                    val ne = bounds.northEast!!
+
+                    Polygon(
+                        points = listOf(
+                            sw,
+                            GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                            ne,
+                            GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                            sw
+                        ),
+                        strokeColor = Color.Blue,
+                        strokeWidth = 3.dp,
+                        fillColor = Color.Blue.copy(alpha = 0.1f)
+                    )
+                }
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

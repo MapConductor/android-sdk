@@ -1,0 +1,53 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun ResourceManagementExample() {
+    val nativeManager = remember {
+        NativeMarkerManager<GoogleMapActualMarker>(
+            hexGeocell = HexGeocellImpl.defaultGeocell()
+        )
+    }
+
+    // Proper cleanup is crucial for native resources
+    DisposableEffect(nativeManager) {
+        onDispose {
+            // Cleanup native resources
+            nativeManager.destroy()
+        }
+    }
+
+    // Monitor memory usage
+    var memoryStats by remember { mutableStateOf<NativeMarkerManagerStats?>(null) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(10000) // Check every 10 seconds
+            memoryStats = nativeManager.getNativeMemoryStats()
+
+            // Log memory usage for monitoring
+            memoryStats?.let { stats ->
+                if (stats.estimatedMemoryKB > 10000) { // > 10MB
+                    println("High memory usage detected: ${'$'}{stats.estimatedMemoryKB} KB")
+                }
+            }
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Native-managed markers
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,12 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val start = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+val end = GeoPointImpl.fromLatLong(37.7849, -122.4094)  // Short distance
+
+// For small distances, linear interpolation is faster and sufficiently accurate
+val midpoint = Spherical.linearInterpolate(start, end, 0.5)`;
+---
+
+<Code code={code} lang="kotlin" />
+

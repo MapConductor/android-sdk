@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(state = mapViewState) {
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        extra = "San Francisco",
+        id = "san-francisco-marker"
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,93 @@
+---
+title: "MapCameraPosition"
+---
+
+import MapCameraPositionInterface from '~/components/core/mapcameraposition/MapCameraPositionInterface.astro';
+import MapCameraPositionImpl from '~/components/core/mapcameraposition/MapCameraPositionImpl.astro';
+import DefaultCameraPositionExample from '~/components/core/mapcameraposition/DefaultCameraPositionExample.astro';
+import CustomCameraPositionsExample from '~/components/core/mapcameraposition/CustomCameraPositionsExample.astro';
+import ZoomLevelsExample from '~/components/core/mapcameraposition/ZoomLevelsExample.astro';
+import BearingExamples from '~/components/core/mapcameraposition/BearingExamples.astro';
+import TiltExamples from '~/components/core/mapcameraposition/TiltExamples.astro';
+import VisibleRegionDataClass from '~/components/core/mapcameraposition/VisibleRegionDataClass.astro';
+import VisibleRegionExample from '~/components/core/mapcameraposition/VisibleRegionExample.astro';
+import AnimatedCameraExample from '~/components/core/mapcameraposition/AnimatedCameraExample.astro';
+import CameraControlExample from '~/components/core/mapcameraposition/CameraControlExample.astro';
+import UserLocationCameraExample from '~/components/core/mapcameraposition/UserLocationCameraExample.astro';
+import ShowMultiplePointsExample from '~/components/core/mapcameraposition/ShowMultiplePointsExample.astro';
+import NavigationCameraExample from '~/components/core/mapcameraposition/NavigationCameraExample.astro';
+
+`MapCameraPosition` representa la posición, orientación y área visible de la cámara en el mapa. Define hacia dónde mira la cámara, cuánto mapa se ve y desde qué perspectiva.
+
+## Interfaz e implementación
+
+### Interfaz MapCameraPosition
+
+<MapCameraPositionInterface />
+
+### MapCameraPositionImpl
+
+La implementación principal proporciona datos inmutables de la posición de la cámara:
+
+<MapCameraPositionImpl />
+
+## Propiedades
+
+### Posición de la cámara
+
+- **`position: GeoPoint`**: punto geográfico central de la vista de la cámara.
+- **`zoom: Double`**: nivel de zoom (aproximadamente alineado con la escala de Google Maps).
+- **`bearing: Double`**: rumbo en grados (0 = norte, 90 = este).
+- **`tilt: Double`**: ángulo de inclinación en grados (0 = vista cenital, 90 = horizontal).
+
+### Configuración de vista
+
+- **`paddings: MapPaddings?`**: márgenes del viewport que afectan a la región visible.
+- **`visibleRegion: VisibleRegion?`**: límites geográficos que realmente se ven en pantalla.
+
+## Formas de creación
+
+### Posición por defecto
+
+<DefaultCameraPositionExample commentForDefaultPosition="Posición de cámara por defecto en el origen" />
+
+### Posición personalizada
+
+<CustomCameraPositionsExample
+  commentForBasic="Posición básica de cámara"
+  commentForAerial="Cámara con rumbo e inclinación"
+  commentForPadded="Cámara con rellenos para dejar espacio a la UI"
+  latitude={37.7749}
+  longitude={-122.4194}
+  basicZoom={15.0}
+  aerialZoom={18.0}
+  aerialBearing={45.0}
+  aerialTilt={60.0}
+  paddedZoom={14.0}
+  paddingTop={200.0}
+  paddingLeft={0.0}
+  paddingBottom={0.0}
+  paddingRight={0.0}
+/>
+
+### Uso con MapViewState
+
+```kotlin
+val camera = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    zoom = 14.0,
+    tilt = 45.0,
+    bearing = 90.0
+)
+
+val mapViewState = rememberGoogleMapViewState(
+    cameraPosition = camera
+)
+```
+
+## Buenas prácticas
+
+- Ajusta el zoom en función del tipo de contenido que quieras mostrar (ciudad, país, mundo, etc.).
+- Usa `paddings` cuando tengas overlays de UI (como paneles o barras) que no deban tapar elementos importantes del mapa.
+- Combina `bearing` y `tilt` para crear vistas 3D atractivas, pero vuelve a valores neutros cuando la legibilidad sea prioritaria.
+

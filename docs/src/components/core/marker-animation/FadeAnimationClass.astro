@@ -1,0 +1,21 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  defaultDuration?: number;
+}
+
+const {
+  defaultDuration = 800
+} = Astro.props;
+
+const code = `class FadeAnimation(
+    val fromAlpha: Float,
+    val toAlpha: Float,
+    override val duration: Long = ${defaultDuration},
+    override val interpolator: TimeInterpolator? = AccelerateDecelerateInterpolator()
+) : MarkerAnimation`;
+---
+
+<Code code={code} lang="kotlin" />
+

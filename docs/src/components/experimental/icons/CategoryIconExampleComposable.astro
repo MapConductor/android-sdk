@@ -1,0 +1,47 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun CategoryIconExample() {
+    data class POI(
+        val name: String,
+        val category: String,
+        val position: GeoPoint
+    ) : java.io.Serializable
+
+    val pois = listOf(
+        POI("Restaurant", "food", GeoPointImpl.fromLatLong(37.7749, -122.4194)),
+        POI("Hotel", "lodging", GeoPointImpl.fromLatLong(37.7849, -122.4094)),
+        POI("Gas Station", "fuel", GeoPointImpl.fromLatLong(37.7649, -122.4294))
+    )
+
+    fun getIconForCategory(category: String) = when (category) {
+        "food" -> CircleIcon(fillColor = Color.Red, strokeColor = Color.White)
+        "lodging" -> FlagIcon(fillColor = Color.Blue, strokeColor = Color.White)
+        "fuel" -> CircleIcon(fillColor = Color.Yellow, strokeColor = Color.Black)
+        else -> CircleIcon(fillColor = Color.Gray, strokeColor = Color.White)
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        pois.forEach { poi ->
+            Marker(
+                position = poi.position,
+                icon = getIconForCategory(poi.category),
+                extra = poi.name
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

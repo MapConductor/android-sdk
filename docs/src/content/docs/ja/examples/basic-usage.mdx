@@ -2,7 +2,8 @@
 title: "基本的な使い方"
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import SimpleMapExampleTabs from '~/components/examples/basic-usage/SimpleMapExampleTabs.astro';
+import ClickToAddMarkersExample from '~/components/examples/basic-usage/ClickToAddMarkersExample.astro';
 
 このセクションでは、MapConductor コンポーネントを一般的なシナリオで使用する実践的な例を紹介します。
 
@@ -10,129 +11,11 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 ### シンプルなマップとマーカー
 
-<Tabs>
-<TabItem label="GoogleMaps">
-```kotlin
-@Composable
-fun SimpleMapExample() {
-    val mapViewState = rememberGoogleMapViewState()
-
-    GoogleMapView(state = mapViewState) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF"),
-            extra = "San Francisco"
-        )
-    }
-}
-```
-![実行結果](~/assets/examples/basic-googlemaps.jpg)
-</TabItem>
-<TabItem label="Mapbox">
-```kotlin
-@Composable
-fun SimpleMapExample() {
-    val mapViewState = rememberMapboxMapViewState()
-
-    MapboxMapView(state = mapViewState) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(38.911254, -77.033458),
-            icon = DefaultIcon(label = "WA"),
-            extra = "San Francisco"
-        )
-    }
-}
-```
-![実行結果](~/assets/examples/basic-mapbox.jpg)
-</TabItem>
-
-<TabItem label="Here">
-```kotlin
-@Composable
-fun SimpleMapExample() {
-    val mapViewState = rememberHereMapViewState()
-
-    HereMapView(state = mapViewState) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(51.43901, 5.47191),
-            icon = DefaultIcon(label = "EIN"),
-            extra = "San Francisco"
-        )
-    }
-}
-```
-![実行結果](~/assets/examples/basic-here.jpg)
-</TabItem>
-
-<TabItem label="ArcGIS">
-```kotlin
-@Composable
-fun SimpleMapExample() {
-    val mapViewState = rememberArcGISViewState()
-
-    ArcGISMapView(state = mapViewState) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF"),
-            extra = "San Francisco"
-        )
-    }
-}
-```
-![実行結果](~/assets/examples/basic-arcgis.jpg)
-</TabItem>
-
-<TabItem label="MapLibre">
-```kotlin
-@Composable
-fun SimpleMapExample() {
-    val mapViewState = rememberMapLibreMapViewState()
-
-    MapLibreMapView(state = mapViewState) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF"),
-            extra = "San Francisco"
-        )
-    }
-}
-```
-![実行結果](~/assets/examples/basic-maplibre.jpg)
-</TabItem>
-</Tabs>
+<SimpleMapExampleTabs />
 
 
 ## インタラクティブな例
 
 ### クリックしてマーカーを追加
 
-```kotlin
-@Composable
-fun ClickToAddMarkersExample() {
-    var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
-
-    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
-    MapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            val newMarker = MarkerState(
-                position = geoPoint,
-                icon = DefaultIcon(
-                    label = "${markers.size + 1}",
-                    fillColor = Color.Blue
-                ),
-                extra = "Marker ${markers.size + 1}"
-            )
-            markers = markers + newMarker
-        },
-        onMarkerClick = { markerState ->
-            // クリックされたマーカーを削除
-            markers = markers.filter { it.id != markerState.id }
-        }
-    ) {
-        markers.forEach { marker ->
-            Marker(marker)
-        }
-    }
-}
-```
+<ClickToAddMarkersExample />

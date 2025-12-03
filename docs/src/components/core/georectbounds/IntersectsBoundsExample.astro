@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForUsage?: string;
+}
+
+const {
+  commentForUsage = "Bounds intersect"
+} = Astro.props;
+
+const code = `fun intersects(other: GeoRectBounds): Boolean
+
+// Usage
+val bounds1 = GeoRectBounds(/* ... */)
+val bounds2 = GeoRectBounds(/* ... */)
+
+val doIntersect = bounds1.intersects(bounds2)
+println("Bounds intersect: $doIntersect")`;
+---
+
+<Code code={code} lang="kotlin" />
+

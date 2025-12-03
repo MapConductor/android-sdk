@@ -1,0 +1,16 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val circleState = CircleState(
+    center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    radiusMeters = 1000.0,
+    strokeColor = Color.Blue,
+    fillColor = Color.Blue.copy(alpha = 0.3f)
+)
+
+MapView(state = mapViewState) {
+    Circle(circleState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

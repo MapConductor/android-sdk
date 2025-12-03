@@ -1,0 +1,15 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `MarkerState(
+    position: GeoPoint,
+    id: String? = null,
+    extra: Serializable? = null,
+    icon: MarkerIcon? = null,
+    animation: MarkerAnimation? = null,
+    clickable: Boolean = true,
+    draggable: Boolean = false
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

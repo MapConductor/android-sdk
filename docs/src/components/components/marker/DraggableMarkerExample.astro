@@ -1,0 +1,38 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun DraggableMarkerExample() {
+    var markerPosition by remember {
+        mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState,
+        onMarkerDrag = { markerState ->
+            markerPosition = markerState.position
+        }
+    ) {
+        Marker(
+            position = markerPosition,
+            draggable = true,
+            icon = DefaultIcon(
+                label = "Drag me",
+                fillColor = Color.Green
+            )
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

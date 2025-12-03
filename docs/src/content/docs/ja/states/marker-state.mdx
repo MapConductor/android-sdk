@@ -1,0 +1,64 @@
+---
+title: "MarkerState（マーカー状態）"
+---
+
+import MarkerStateConstructorExample from '~/components/states/marker/MarkerStateConstructorExample.astro';
+import MarkerStateMethodsExample from '~/components/states/marker/MarkerStateMethodsExample.astro';
+import MarkerStateBasicExample from '~/components/states/marker/MarkerStateBasicExample.astro';
+import MarkerStateCustomExample from '~/components/states/marker/MarkerStateCustomExample.astro';
+import DynamicMarkerExampleComposable from '~/components/states/marker/DynamicMarkerExampleComposable.astro';
+import AnimatedMarkerExampleComposable from '~/components/states/marker/AnimatedMarkerExampleComposable.astro';
+import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/MarkerStateAdvancedExamplesComposable.astro';
+
+`MarkerState` はマーカーの位置や見た目、インタラクション設定を管理するための状態クラスです。Compose らしいリアクティブな更新と、効率的な差分検知の仕組みを提供します。
+
+## コンストラクタ
+
+<MarkerStateConstructorExample />
+
+## プロパティ
+
+### 基本プロパティ
+
+- **`id: String`**: マーカーの一意な ID（未指定の場合は自動生成）
+- **`position: GeoPoint`**: 現在のマーカー位置
+- **`extra: Serializable?`**: 追加情報など、任意の付帯データ
+
+### 表示に関するプロパティ
+
+- **`icon: MarkerIcon?`**: マーカーのアイコン（未指定の場合はデフォルトアイコン）
+- **`clickable: Boolean`**: マーカーがクリックイベントに反応するかどうか
+- **`draggable: Boolean`**: マーカーをユーザーがドラッグできるかどうか
+
+### インタラクション関連のプロパティ
+
+- **`isDragging: Boolean`**（読み取り専用）: 現在ドラッグ中かどうか
+- **`internalPosition: GeoPoint`**（読み取り専用）: 描画用に使用される内部位置（ドラッグ中の一時位置などを考慮）
+
+## 主なメソッド
+
+<MarkerStateMethodsExample />
+
+既存の状態を元に、一部プロパティだけを変えた新しい `MarkerState` を生成したり、差分検知のためのフィンガープリント（スナップショット）を生成したりできます。
+
+## 利用例
+
+### 基本的な MarkerState
+
+<MarkerStateBasicExample />
+
+### カスタマイズした MarkerState
+
+<MarkerStateCustomExample />
+
+### 動的に MarkerState を更新する
+
+<DynamicMarkerExampleComposable />
+
+### 位置をアニメーションさせる MarkerState
+
+<AnimatedMarkerExampleComposable />
+
+### 複数マーカーと監視の高度な例
+
+<MarkerStateAdvancedExamplesComposable />

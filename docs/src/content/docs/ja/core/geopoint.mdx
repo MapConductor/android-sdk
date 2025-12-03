@@ -1,0 +1,97 @@
+---
+title: "GeoPoint（地理座標）"
+---
+
+import GeoPointInterface from '~/components/core/geopoint/GeoPointInterface.astro';
+import GeoPointImpl from '~/components/core/geopoint/GeoPointImpl.astro';
+import GeoPointFactoryMethods from '~/components/core/geopoint/GeoPointFactoryMethods.astro';
+import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.astro';
+import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
+import ValidationExample from '~/components/core/geopoint/ValidationExample.astro';
+import NormalizationExample from '~/components/core/geopoint/NormalizationExample.astro';
+
+`GeoPoint` は、緯度・経度・高度（オプション）を持つ地理座標を表します。マーカー、サークル、その他の地図オーバーレイの配置における基本的な構成要素です。
+
+## インターフェースと実装
+
+### GeoPoint インターフェース
+
+<GeoPointInterface />
+
+### GeoPointImpl
+
+メイン実装は、不変の地理座標を提供します。
+
+<GeoPointImpl />
+
+## 生成メソッド
+
+### ファクトリーメソッド
+
+<GeoPointFactoryMethods
+  commentForFromLatLong="標準的な生成 - 緯度が先（一般的なパターン）"
+  commentForFromLongLat="代替 - 経度が先"
+  commentForFrom="既存の GeoPoint から生成"
+  commentForConstructor="直接コンストラクタ"
+  latitude={37.7749}
+  longitude={-122.4194}
+  altitude={100.0}
+/>
+
+### 使用例
+
+<BasicMarkerExample
+  commentForPosition="基本的なマーカー配置"
+  commentForMapView="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  latitude={37.7749}
+  longitude={-122.4194}
+  label="SF"
+/>
+
+<AltitudeExample
+  commentForAltitude="3D 配置のための高度を含める"
+  altitudeComment="メートル"
+  latitude={27.9881}
+  longitude={86.9250}
+  altitude={8848.0}
+/>
+
+## 座標系
+
+### 緯度（Latitude）
+- **範囲**: -90.0 から 90.0 度
+- **-90.0**: 南極
+- **0.0**: 赤道
+- **90.0**: 北極
+
+### 経度（Longitude）
+- **範囲**: -180.0 から 180.0 度
+- **-180.0**: 国際日付変更線（西側）
+- **0.0**: 本初子午線（グリニッジ）
+- **180.0**: 国際日付変更線（東側）
+
+### 高度（Altitude）
+- **オプション**: 2D 配置の場合、`null` または `0.0` にできます
+- **単位**: 海面からのメートル
+- **用途**: 3D 配置、標高データ
+
+## 検証と正規化
+
+### 検証
+
+<ValidationExample
+  commentForUsage="使用例"
+  commentForUse="ポイントを使用"
+  latitude={37.7749}
+  longitude={-122.4194}
+/>
+
+### 正規化
+
+<NormalizationExample
+  commentForUsage="使用例"
+  commentForInvalid="無効な座標"
+  commentForValid="有効な範囲にクランプされる"
+  invalidLatitude={100.0}
+  invalidLongitude={200.0}
+/>

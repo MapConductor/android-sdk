@@ -1,0 +1,39 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `suspend fun benchmarkNativePerformance() {
+    val standardManager = MarkerManager<ActualMarker>(HexGeocellImpl.defaultGeocell())
+    val nativeManager = NativeMarkerManager<ActualMarker>(HexGeocellImpl.defaultGeocell())
+
+    val testMarkers = generateTestDataset(50000) // 50,000 markers
+
+    // Benchmark registration
+    val standardTime = measureTimeMillis {
+        testMarkers.forEach { standardManager.registerEntity(it) }
+    }
+
+    val nativeTime = measureTimeMillis {
+        testMarkers.forEach { nativeManager.registerEntity(it) }
+    }
+
+    // Benchmark spatial queries
+    val testBounds = GeoRectBounds(
+        southWest = GeoPointImpl.fromLatLong(37.7700, -122.4250),
+        northEast = GeoPointImpl.fromLatLong(37.7800, -122.4150)
+    )
+
+    val standardQueryTime = measureTimeMillis {
+        repeat(1000) { standardManager.findMarkersInBounds(testBounds) }
+    }
+
+    val nativeQueryTime = measureTimeMillis {
+        repeat(1000) { nativeManager.findMarkersInBounds(testBounds) }
+    }
+
+    println("Registration - Standard: ${'$'}{standardTime}ms, Native: ${'$'}{nativeTime}ms")
+    println("Queries - Standard: ${'$'}{standardQueryTime}ms, Native: ${'$'}{nativeQueryTime}ms")
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,47 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForInitWait?: string;
+  commentForApplyStyle?: string;
+  commentForConfigureUi?: string;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForInitWait = "Wait for map initialization",
+  commentForApplyStyle = "Apply custom map style",
+  commentForConfigureUi = "Configure map UI",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun CustomStyledMap() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    LaunchedEffect(mapViewState) {
+        // ${commentForInitWait}
+        delay(1000)
+
+        mapViewState.getMapViewHolder()?.let { holder ->
+            val googleMap = holder.map
+
+            // ${commentForApplyStyle}
+            val styleJson = loadStyleFromAssets(context, "custom_style.json")
+            googleMap.setMapStyle(MapStyleOptions(styleJson))
+
+            // ${commentForConfigureUi}
+            googleMap.uiSettings.isMyLocationButtonEnabled = false
+            googleMap.uiSettings.isCompassEnabled = true
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    GoogleMapView(state = mapViewState) {
+        // Your MapConductor components
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

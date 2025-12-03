@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Building and detail level
+val buildingLevel = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    zoom = 19.0  // Shows individual buildings
+)
+
+val maximumDetail = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    zoom = 21.0  // Maximum zoom level
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

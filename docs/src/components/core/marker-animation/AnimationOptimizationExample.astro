@@ -1,0 +1,24 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Good: Reasonable animation count and duration
+val animations = markerStates.take(10).map { markerState ->
+    PositionAnimation(
+        fromPosition = markerState.position,
+        toPosition = newPosition,
+        duration = 800 // Reasonable duration
+    )
+}
+
+// Avoid: Too many long animations
+val badAnimations = markerStates.take(100).map { markerState ->
+    PositionAnimation(
+        fromPosition = markerState.position,
+        toPosition = newPosition,
+        duration = 5000 // Too long
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

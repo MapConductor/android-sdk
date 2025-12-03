@@ -1,0 +1,87 @@
+---
+title: Configuración de MapLibre
+---
+
+# Configuración de MapLibre
+
+En esta página se explica cómo configurar MapLibre Native Android junto con MapConductor.
+
+## Requisitos previos
+
+- URL del servidor de teselas (por ejemplo, OpenStreetMap, Maptiler o auto-hospedado).
+- URL del estilo JSON o configuración.
+
+## Añadir dependencias en Gradle
+
+```kotlin
+dependencies {
+    implementation(libs.maplibre.android)
+
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-maplibre")
+}
+```
+
+MapLibre está disponible en Maven Central, que debería estar configurado en tu `settings.gradle.kts`.
+
+## Configuración en AndroidManifest
+
+Añade los permisos necesarios en tu `AndroidManifest.xml`:
+
+```xml
+<manifest>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+</manifest>
+```
+
+## Configuración de estilo
+
+MapLibre requiere un JSON de estilo para definir cómo se ve el mapa. Puedes usar estilos alojados o personalizados:
+
+```kotlin
+// Usando un estilo de OpenStreetMap
+val styleUrl = "https://tiles.openfreemap.org/styles/liberty"
+
+// O usando Maptiler
+val styleUrl = "https://api.maptiler.com/maps/streets/style.json?key=YOUR_API_KEY"
+```
+
+## Ejemplo de uso con MapConductor
+
+```kotlin
+@Composable
+fun MapLibreExample() {
+    val camera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(40.7128, -74.0060),
+        zoom = 12.0,
+    )
+
+    val mapViewState = rememberMapLibreMapViewState(
+        cameraPosition = camera,
+        styleUrl = "https://tiles.openfreemap.org/styles/liberty"
+    )
+
+    MapLibreMapView(
+        state = mapViewState,
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(40.7128, -74.0060),
+            icon = DefaultIcon(label = "NYC"),
+        )
+    }
+}
+```
+
+## Requisitos de atribución
+
+Muchos servidores de teselas requieren atribución:
+
+- **OpenStreetMap**: "© OpenStreetMap contributors"
+- **Maptiler**: "© MapTiler © OpenStreetMap contributors"
+
+Asegúrate de mostrar las atribuciones requeridas en la interfaz de tu aplicación según los términos de tu proveedor.
+
+Consulta [MapView Component](/es-419/components/mapviewcomponent) para ver más detalles.

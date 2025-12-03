@@ -1,0 +1,45 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  latitude = 37.7749,
+  longitude = -122.4194,
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun SequentialAnimationExample() {
+    val markerState = remember {
+        MarkerState(
+            position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+            icon = DefaultIcon(fillColor = Color.Purple)
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        val sequentialAnimation = SequentialAnimation(
+            animations = listOf(
+                ScaleAnimation(fromScale = 0.5f, toScale = 1.5f, duration = 500),
+                FadeAnimation(fromAlpha = 1.0f, toAlpha = 0.3f, duration = 300),
+                FadeAnimation(fromAlpha = 0.3f, toAlpha = 1.0f, duration = 300),
+                ScaleAnimation(fromScale = 1.5f, toScale = 1.0f, duration = 400)
+            )
+        )
+        markerState.setAnimation(sequentialAnimation)
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        Marker(markerState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun DefaultStrategyExample() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    val markerStrategy = remember {
+        DefaultMarkerStrategy<GoogleMapActualMarker>(
+            expandMargin = 0.2
+        )
+    }
+
+    // Configure strategy with map controller
+    LaunchedEffect(mapViewState) {
+        // Strategy setup depends on map provider implementation
+        // This is typically handled by the map provider's marker controller
+    }
+
+    // ${commentForMapViewUsage}
+    GoogleMapView(state = mapViewState) {
+        // Markers are managed by the strategy
+        // Add markers programmatically through the strategy
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

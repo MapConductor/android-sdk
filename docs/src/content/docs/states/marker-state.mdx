@@ -1,0 +1,63 @@
+---
+title: "MarkerState"
+---
+
+import MarkerStateConstructorExample from '~/components/states/marker/MarkerStateConstructorExample.astro';
+import MarkerStateMethodsExample from '~/components/states/marker/MarkerStateMethodsExample.astro';
+import MarkerStateBasicExample from '~/components/states/marker/MarkerStateBasicExample.astro';
+import MarkerStateCustomExample from '~/components/states/marker/MarkerStateCustomExample.astro';
+import DynamicMarkerExampleComposable from '~/components/states/marker/DynamicMarkerExampleComposable.astro';
+import AnimatedMarkerExampleComposable from '~/components/states/marker/AnimatedMarkerExampleComposable.astro';
+import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/MarkerStateAdvancedExamplesComposable.astro';
+
+`MarkerState` manages the configuration and behavior of markers on the map. It provides reactive properties that automatically update the marker's appearance and position when modified.
+
+## Constructor
+
+<MarkerStateConstructorExample />
+
+## Properties
+
+### Core Properties
+
+- **`id: String`**: Unique identifier for the marker (auto-generated if not provided)
+- **`position: GeoPoint`**: Current geographic position of the marker
+- **`extra: Serializable?`**: Additional data attached to the marker
+
+### Visual Properties
+
+- **`icon: MarkerIcon?`**: Custom icon for the marker (uses default if null)
+- **`clickable: Boolean`**: Whether the marker responds to click events
+- **`draggable: Boolean`**: Whether the marker can be dragged by the user
+
+### Interactive Properties
+
+- **`isDragging: Boolean`** (read-only): Current dragging state
+- **`internalPosition: GeoPoint`** (read-only): Position used for rendering (accounts for drag state)
+
+## Methods
+
+<MarkerStateMethodsExample />
+
+## Usage Examples
+
+### Basic MarkerState
+
+<MarkerStateBasicExample />
+
+### Customized MarkerState
+
+<MarkerStateCustomExample />
+
+### Dynamic MarkerState Updates
+
+<DynamicMarkerExampleComposable />
+
+### MarkerState with Position Animation
+
+<AnimatedMarkerExampleComposable />
+
+### Marker lists, custom icons, and observation
+
+<MarkerStateAdvancedExamplesComposable />
+

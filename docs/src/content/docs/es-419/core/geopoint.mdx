@@ -1,0 +1,76 @@
+---
+title: "GeoPoint"
+---
+
+import GeoPointInterface from '~/components/core/geopoint/GeoPointInterface.astro';
+import GeoPointImpl from '~/components/core/geopoint/GeoPointImpl.astro';
+import GeoPointFactoryMethods from '~/components/core/geopoint/GeoPointFactoryMethods.astro';
+import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.astro';
+import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
+
+`GeoPoint` representa una coordenada geográfica con latitud, longitud y altitud opcional. Es la unidad básica que se utiliza para posicionar marcadores, círculos y otros overlays en el mapa.
+
+## Interfaz e implementación
+
+### Interfaz GeoPoint
+
+<GeoPointInterface />
+
+### GeoPointImpl
+
+La implementación principal proporciona coordenadas geográficas inmutables:
+
+<GeoPointImpl />
+
+## Formas de creación
+
+### Métodos de fábrica
+
+<GeoPointFactoryMethods
+  commentForFromLatLong="Creación estándar: latitud primero (patrón habitual)"
+  commentForFromLongLat="Alternativa: longitud primero"
+  commentForFrom="A partir de un GeoPoint existente"
+  commentForConstructor="Uso directo del constructor"
+  latitude={37.7749}
+  longitude={-122.4194}
+  altitude={100.0}
+/>
+
+### Ejemplos de uso
+
+<BasicMarkerExample
+  commentForPosition="Posicionamiento básico de un marcador"
+  commentForMapView="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+  latitude={37.7749}
+  longitude={-122.4194}
+  label="SF"
+/>
+
+<AltitudeExample
+  commentForAltitude="Con altitud para posicionamiento 3D"
+  altitudeComment="metros"
+  latitude={27.9881}
+  longitude={86.9250}
+  altitude={8848.0}
+/>
+
+## Sistema de coordenadas
+
+### Latitud
+- **Rango**: de -90.0 a 90.0 grados
+- **-90.0**: Polo Sur
+- **0.0**: Ecuador
+- **90.0**: Polo Norte
+
+### Longitud
+- **Rango**: de -180.0 a 180.0 grados
+- **Negativa**: hemisferio occidental
+- **Positiva**: hemisferio oriental
+
+### Altitud
+- Expresada normalmente en metros sobre el nivel del mar
+- Opcional en la mayoría de los casos de uso
+
+`GeoPoint` asume el sistema WGS84 (latitud/longitud). Incluso cuando internamente se utilizan otras proyecciones (por ejemplo, Web Mercator), la API pública siempre expone posiciones como `GeoPoint`.
+
+Para operaciones como cálculos de distancia o conversiones relacionadas, consulta también [Spherical Utilities](/es-419/core/spherical-utilities).

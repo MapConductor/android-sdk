@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Smooth zoom animation
+fun animateToZoom(targetZoom: Double) {
+    val animator = ValueAnimator.ofFloat(currentZoom.toFloat(), targetZoom.toFloat())
+    animator.duration = 1000
+    animator.addUpdateListener { animation ->
+        val newZoom = animation.animatedValue as Float
+        updateCameraPosition(currentPosition.copy(zoom = newZoom.toDouble()))
+    }
+    animator.start()
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,72 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude1?: number;
+  longitude1?: number;
+  latitude2?: number;
+  longitude2?: number;
+  commentForAnimateOpacity?: string;
+  buttonLabelWhenVisible?: string;
+  buttonLabelWhenHidden?: string;
+  commentForMapViewUsage?: string;
+  animationDuration?: number;
+}
+
+const {
+  latitude1 = 37.7749,
+  longitude1 = -122.4194,
+  latitude2 = 37.7849,
+  longitude2 = -122.4094,
+  commentForAnimateOpacity = "Animate opacity changes",
+  buttonLabelWhenVisible = "Hide Markers",
+  buttonLabelWhenHidden = "Show Markers",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  animationDuration = 600
+} = Astro.props;
+
+const code = `@Composable
+fun FadeAnimationExample() {
+    var markersVisible by remember { mutableStateOf(true) }
+    val markerStates = remember {
+        listOf(
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(${latitude1}, ${longitude1}),
+                icon = DefaultIcon(fillColor = Color.Red)
+            ),
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(${latitude2}, ${longitude2}),
+                icon = DefaultIcon(fillColor = Color.Blue)
+            )
+        )
+    }
+
+    // ${commentForAnimateOpacity}
+    LaunchedEffect(markersVisible) {
+        markerStates.forEach { markerState ->
+            val animation = FadeAnimation(
+                fromAlpha = if (markersVisible) 0.0f else 1.0f,
+                toAlpha = if (markersVisible) 1.0f else 0.0f,
+                duration = ${animationDuration}
+            )
+            markerState.setAnimation(animation)
+        }
+    }
+
+    Column {
+        Button(onClick = { markersVisible = !markersVisible }) {
+            Text(if (markersVisible) "${buttonLabelWhenVisible}" else "${buttonLabelWhenHidden}")
+        }
+
+        // ${commentForMapViewUsage}
+        MapView(state = mapViewState) {
+            markerStates.forEach { markerState ->
+                Marker(markerState)
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

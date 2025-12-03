@@ -1,0 +1,28 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForAltitude?: string;
+  altitudeComment?: string;
+  latitude?: number;
+  longitude?: number;
+  altitude?: number;
+}
+
+const {
+  commentForAltitude = "Include altitude for 3D placement",
+  altitudeComment = "meters",
+  latitude = 27.9881,
+  longitude = 86.9250,
+  altitude = 8848.0
+} = Astro.props;
+
+const code = `// ${commentForAltitude}
+val mountEverest = GeoPointImpl(
+    latitude = ${latitude},
+    longitude = ${longitude},
+    altitude = ${altitude} // ${altitudeComment}
+)`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,70 @@
+---
+title: Configuración de HERE Maps
+---
+
+# Configuración de HERE Maps
+
+En esta página se explica cómo configurar el SDK de HERE Maps para Android junto con MapConductor.
+
+## Requisitos previos
+
+- Cuenta de desarrollador de HERE creada.
+- Credenciales de API de HERE generadas (Access Key ID y Secret).
+- Archivo AAR del SDK de HERE descargado.
+
+## Añadir dependencias en Gradle
+
+```kotlin
+dependencies {
+    implementation(files("${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar"))
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-here")
+}
+```
+
+Coloca el archivo AAR del SDK de HERE en el directorio `libs/` de tu proyecto.
+
+## Configuración en AndroidManifest
+
+Añade las credenciales de API y los permisos necesarios en tu `AndroidManifest.xml`:
+
+```xml
+<manifest>
+    <application>
+        <meta-data
+            android:name="HERE_ACCESS_KEY_ID"
+            android:value="@string/here_access_key_id" />
+        <meta-data
+            android:name="HERE_ACCESS_KEY_SECRET"
+            android:value="@string/here_access_key_secret" />
+    </application>
+</manifest>
+```
+
+## Ejemplo de uso con MapConductor
+
+```kotlin
+@Composable
+fun HereExample() {
+    val camera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(52.5200, 13.4050),
+        zoom = 14.0,
+    )
+
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = camera,
+    )
+
+    HereMapView(
+        state = mapViewState,
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(52.5200, 13.4050),
+            icon = DefaultIcon(label = "Berlin"),
+        )
+    }
+}
+```
+
+Consulta [MapView Component](/es-419/components/mapviewcomponent) para ver más detalles.

@@ -1,0 +1,14 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class VisibleRegion(
+    val bounds: GeoRectBounds,        // Overall bounding rectangle
+    val nearLeft: GeoPoint?,          // Bottom-left corner (near to camera)
+    val nearRight: GeoPoint?,         // Bottom-right corner (near to camera)
+    val farLeft: GeoPoint?,           // Top-left corner (far from camera)
+    val farRight: GeoPoint?           // Top-right corner (far from camera)
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

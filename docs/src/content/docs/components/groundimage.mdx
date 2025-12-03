@@ -1,0 +1,98 @@
+---
+title: "GroundImage"
+---
+
+import GroundImageBasicSignature from '~/components/components/groundimage/GroundImageBasicSignature.astro';
+import GroundImageStateSignature from '~/components/components/groundimage/GroundImageStateSignature.astro';
+import BasicGroundImageExample from '~/components/components/groundimage/BasicGroundImageExample.astro';
+import InteractiveGroundImageExample from '~/components/components/groundimage/InteractiveGroundImageExample.astro';
+import MultipleGroundImagesExample from '~/components/components/groundimage/MultipleGroundImagesExample.astro';
+import DynamicGroundImageExample from '~/components/components/groundimage/DynamicGroundImageExample.astro';
+import AnimatedGroundImageExample from '~/components/components/groundimage/AnimatedGroundImageExample.astro';
+import FloorPlanOverlayExample from '~/components/components/groundimage/FloorPlanOverlayExample.astro';
+import GroundImageEventHandlingExample from '~/components/components/groundimage/GroundImageEventHandlingExample.astro';
+import GroundImageResourceLoadingExample from '~/components/components/groundimage/GroundImageResourceLoadingExample.astro';
+import GroundImageAssetsLoadingExample from '~/components/components/groundimage/GroundImageAssetsLoadingExample.astro';
+import GroundImageNetworkLoadingExample from '~/components/components/groundimage/GroundImageNetworkLoadingExample.astro';
+
+Ground images are image overlays that are positioned geographically on the map. They are useful for displaying floor plans, satellite imagery, weather overlays, or any image-based data that needs to be anchored to specific geographic coordinates.
+
+## Composable Functions
+
+### Basic GroundImage
+
+<GroundImageBasicSignature />
+
+### GroundImage with State
+
+<GroundImageStateSignature />
+
+## Parameters
+
+- **`bounds`**: Geographic rectangular bounds where the image should be positioned (`GeoRectBounds`)
+- **`image`**: The drawable image to display (`Drawable`)
+- **`opacity`**: Transparency level from 0.0 (transparent) to 1.0 (opaque) (default: `0.5f`)
+- **`id`**: Optional unique identifier for the ground image (`String?`)
+- **`extra`**: Additional data attached to the ground image (`Serializable?`)
+
+## Usage Examples
+
+### Basic GroundImage
+
+<BasicGroundImageExample />
+
+### Interactive GroundImage with Bounds Markers
+
+Based on the example app pattern:
+
+<InteractiveGroundImageExample />
+
+### Multiple GroundImages with Different Opacities
+
+<MultipleGroundImagesExample />
+
+### Dynamic GroundImage Loading
+
+<DynamicGroundImageExample />
+
+### Animated GroundImage
+
+<AnimatedGroundImageExample />
+
+### Floor Plan Overlay
+
+<FloorPlanOverlayExample />
+
+## Event Handling
+
+GroundImage interactions are handled with your map provider component:
+
+<GroundImageEventHandlingExample />
+
+## Image Resources
+
+### Loading from Resources
+
+<GroundImageResourceLoadingExample />
+
+### Loading from Assets
+
+<GroundImageAssetsLoadingExample />
+
+### Loading from Network (with caching)
+
+<GroundImageNetworkLoadingExample />
+
+## Best Practices
+
+1. **Image Size**: Use appropriately sized images to balance quality and performance
+2. **Opacity**: Use transparency to blend overlays naturally with the map
+3. **Bounds Accuracy**: Ensure ground image bounds are precisely aligned with geographic features
+4. **Resource Management**: Optimize image resources and consider memory usage
+5. **Layer Order**: Consider the drawing order when overlapping multiple ground images
+6. **Interactive Elements**: Provide clear visual feedback for interactive ground images
+7. **Caching**: Cache image resources efficiently, especially for network-loaded images
+8. **Error Handling**: Handle cases where images fail to load
+9. **Performance**: Avoid rendering too many large ground images simultaneously
+10. **User Experience**: Provide controls for opacity and visibility when appropriate
+

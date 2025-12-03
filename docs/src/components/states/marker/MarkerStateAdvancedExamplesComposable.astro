@@ -1,0 +1,126 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MarkerListExample() {
+    val markerStates = remember {
+        mutableStateListOf(
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                extra = "Marker 1"
+            ),
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                extra = "Marker 2"
+            ),
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+                extra = "Marker 3"
+            )
+        )
+    }
+
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+    Column {
+        selectedMarker?.let { marker ->
+            Card(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Selected: \${marker.extra}")
+                    Text("Position: \${marker.position.latitude}, \${marker.position.longitude}")
+                    Text("Draggable: \${marker.draggable}")
+                }
+            }
+        }
+
+        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+        MapView(
+            state = mapViewState,
+            onMarkerClick = { clickedMarker ->
+                selectedMarker = clickedMarker
+            },
+            onMapClick = {
+                selectedMarker = null
+            }
+        ) {
+            markerStates.forEach { markerState ->
+                Marker(markerState)
+            }
+        }
+    }
+}
+
+@Composable
+fun CustomIconMarkerExample() {
+    val context = LocalContext.current
+
+    val markerStates = remember {
+        listOf(
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon = DefaultIcon(
+                    scale = 1.5f,
+                    fillColor = Color.Red,
+                    strokeColor = Color.White,
+                    strokeWidth = 2.dp,
+                    label = "XL"
+                ),
+                extra = "Large default icon"
+            ),
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                icon = AppCompatResources.getDrawable(context, R.drawable.custom_pin)?.let { drawable ->
+                    DrawableDefaultIcon(
+                        backgroundDrawable = drawable,
+                        scale = 1.2f
+                    )
+                },
+                extra = "Custom drawable icon"
+            ),
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+                icon = AppCompatResources.getDrawable(context, R.drawable.weather_icon)?.let { drawable ->
+                    ImageIcon(
+                        drawable = drawable,
+                        anchor = Offset(0.5f, 1.0f)
+                    )
+                },
+                extra = "Weather image icon"
+            )
+        )
+    }
+
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    MapView(state = mapViewState) {
+        markerStates.forEach { markerState ->
+            Marker(markerState)
+        }
+    }
+}
+
+@Composable
+fun MarkerStateObserver() {
+    val markerState = remember {
+        MarkerState(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            extra = "Observed marker"
+        )
+    }
+
+    // Observe state changes
+    val markerFingerprint by markerState.asFlow().collectAsState(
+        initial = markerState.fingerPrint()
+    )
+
+    LaunchedEffect(markerFingerprint) {
+        println("Marker state changed: $markerFingerprint")
+    }
+
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    MapView(state = mapViewState) {
+        Marker(markerState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

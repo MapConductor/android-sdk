@@ -1,0 +1,47 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForIntegration?: string;
+  commentForQueryResults?: string;
+}
+
+const {
+  commentForIntegration = "Integrate with ArcGIS Online services",
+  commentForQueryResults = "Process feature query results"
+} = Astro.props;
+
+const code = `@Composable
+fun ThirdPartyIntegration() {
+    val mapViewState = rememberArcGISMapViewState()
+
+    LaunchedEffect(mapViewState) {
+        mapViewState.getMapViewHolder()?.let { holder ->
+            val sceneView = holder.map
+
+            // ${commentForIntegration}
+            val featureTable = ServiceFeatureTable("https://services.arcgis.com/...")
+            val featureLayer = FeatureLayer(featureTable)
+
+            sceneView.map.basemap.baseLayers.add(featureLayer)
+
+            // Query features
+            val queryParams = QueryParameters().apply {
+                whereClause = "STATE_NAME = 'California'"
+            }
+
+            featureTable.queryFeaturesAsync(queryParams).addDoneListener {
+                val results = it.result
+                // ${commentForQueryResults}
+            }
+        }
+    }
+
+    ArcGISMapView(state = mapViewState) {
+        // Your MapConductor components
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

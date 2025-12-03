@@ -1,0 +1,77 @@
+---
+title: "GroundImageState"
+---
+
+import GroundImageStateConstructorExample from '~/components/states/groundimage/GroundImageStateConstructorExample.astro';
+import GroundImageStateMethodsExample from '~/components/states/groundimage/GroundImageStateMethodsExample.astro';
+import BasicGroundImageExampleComposable from '~/components/states/groundimage/BasicGroundImageExampleComposable.astro';
+import InteractiveGroundImageExampleComposable from '~/components/states/groundimage/InteractiveGroundImageExampleComposable.astro';
+import MultiLayerGroundImageExampleComposable from '~/components/states/groundimage/MultiLayerGroundImageExampleComposable.astro';
+import DynamicBoundsExampleComposable from '~/components/states/groundimage/DynamicBoundsExampleComposable.astro';
+import AnimatedGroundImageExampleComposable from '~/components/states/groundimage/AnimatedGroundImageExampleComposable.astro';
+import GroundImageEventTypesExample from '~/components/states/groundimage/GroundImageEventTypesExample.astro';
+import GroundImageResourceLoadingExample from '~/components/states/groundimage/GroundImageResourceLoadingExample.astro';
+
+`GroundImageState` manages the configuration and behavior of ground image overlays on the map. It provides reactive properties for geographic bounds, image resources, and opacity settings.
+
+## Constructor
+
+<GroundImageStateConstructorExample />
+
+## Properties
+
+### Core Properties
+- **`id: String`**: Unique identifier (auto-generated if not provided)
+- **`bounds: GeoRectBounds`**: Geographic rectangular bounds for image placement
+- **`image: Drawable`**: The drawable image to display
+- **`opacity: Float`**: Transparency level (0.0 = transparent, 1.0 = opaque)
+- **`extra: Serializable?`**: Additional data attached to the ground image
+
+## Methods
+
+<GroundImageStateMethodsExample />
+
+## Usage Examples
+
+### Basic Ground Image
+
+<BasicGroundImageExampleComposable />
+
+### Interactive Ground Image
+
+<InteractiveGroundImageExampleComposable />
+
+### Multiple Overlays
+
+<MultiLayerGroundImageExampleComposable />
+
+### Dynamic Bounds
+
+<DynamicBoundsExampleComposable />
+
+### Animated Overlay
+
+<AnimatedGroundImageExampleComposable />
+
+## Event Handling
+
+Ground image events provide both the state and click location:
+
+<GroundImageEventTypesExample />
+
+## Image Resource Management
+
+### Loading from Different Sources
+
+<GroundImageResourceLoadingExample />
+
+## Best Practices
+
+1. **Image Size**: Optimize image resolution for performance
+2. **Bounds Accuracy**: Ensure precise geographic alignment
+3. **Opacity**: Use appropriate transparency for visibility
+4. **Resource Management**: Cache and reuse drawable resources
+5. **Layer Order**: Consider drawing order for multiple overlays
+6. **Performance**: Limit the number of simultaneous ground images
+7. **Error Handling**: Handle cases where images fail to load
+

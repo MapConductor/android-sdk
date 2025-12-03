@@ -1,0 +1,11 @@
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  code: string;
+  lang?: string;
+}
+
+const { code, lang = 'kotlin' } = Astro.props as Props;
+---
+
+<Code code={code} lang={lang} />

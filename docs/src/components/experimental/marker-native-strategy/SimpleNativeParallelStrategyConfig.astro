@@ -1,0 +1,24 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  expandMargin?: number;
+  maxConcurrency?: number;
+}
+
+const {
+  expandMargin = 0.2,
+  maxConcurrency = 4
+} = Astro.props;
+
+const code = `import com.mapconductor.marker.nativestrategy.SimpleNativeParallelStrategy
+
+val strategy = SimpleNativeParallelStrategy<ActualMarker>(
+    expandMargin = ${expandMargin},        // Viewport expansion
+    maxConcurrency = ${maxConcurrency},        // Parallel threads
+    geocell = HexGeocellImpl.defaultGeocell()
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

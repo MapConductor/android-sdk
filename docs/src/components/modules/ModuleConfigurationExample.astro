@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  bomVersion?: string;
+  modules?: Array<string>;
+  comment?: string;
+}
+
+const {
+  bomVersion = "{BOM_MODULE_VERSION}",
+  modules = ["core", "for-googlemaps"],
+  comment = "Minimal: Google Maps only"
+} = Astro.props;
+
+const moduleLines = modules.map(module => `implementation("com.mapconductor:${module}")`).join('\n');
+
+const code = `// ${comment}
+implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))
+${moduleLines}`;
+---
+
+<Code code={code} lang="kotlin" />

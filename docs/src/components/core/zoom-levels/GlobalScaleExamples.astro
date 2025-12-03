@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// World and continent level
+val worldLevel = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(0.0, 0.0),
+    zoom = 2.0  // Shows continents and oceans
+)
+
+val continentLevel = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(39.8283, -98.5795), // USA center
+    zoom = 4.0  // Shows entire continent
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

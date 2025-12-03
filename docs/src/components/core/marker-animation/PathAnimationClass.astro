@@ -1,0 +1,30 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  defaultDuration?: number;
+}
+
+const {
+  defaultDuration = 3000
+} = Astro.props;
+
+const code = `class PathAnimation(
+    val waypoints: List<GeoPoint>,
+    override val duration: Long = ${defaultDuration},
+    override val interpolator: TimeInterpolator? = LinearInterpolator()
+) : MarkerAnimation {
+
+    fun getPositionAtProgress(progress: Float): GeoPoint {
+        // Calculate position along path based on progress (0.0 to 1.0)
+        val totalDistance = calculateTotalDistance()
+        val targetDistance = totalDistance * progress
+
+        // Find segment and interpolate position
+        return interpolateAlongPath(targetDistance)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

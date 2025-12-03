@@ -1,0 +1,66 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun PerformanceAdaptiveZoom() {
+    val markerCount = 1000
+    var displayedMarkers by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+
+    val cameraPosition = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        zoom = 12.0
+    )
+
+    LaunchedEffect(cameraPosition) {
+        // Adapt marker display based on zoom level
+        displayedMarkers = when {
+            cameraPosition.zoom < 8.0 -> {
+                // Very low zoom: show only major markers
+                allMarkers.filter { it.importance > 0.8 }
+            }
+            cameraPosition.zoom < 12.0 -> {
+                // Medium zoom: show important markers
+                allMarkers.filter { it.importance > 0.5 }
+            }
+            cameraPosition.zoom < 16.0 -> {
+                // High zoom: show most markers
+                allMarkers.filter { it.importance > 0.2 }
+            }
+            else -> {
+                // Maximum zoom: show all markers
+                allMarkers
+            }
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState,
+        cameraPosition = cameraPosition
+    ) {
+        displayedMarkers.forEach { marker ->
+            Marker(
+                position = marker,
+                icon = DefaultIcon(
+                    scale = when {
+                        cameraPosition.zoom < 10.0 -> 1.2f
+                        cameraPosition.zoom < 15.0 -> 1.0f
+                        else -> 0.8f
+                    }
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

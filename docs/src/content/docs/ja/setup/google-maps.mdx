@@ -2,7 +2,13 @@
 title: Google Maps セットアップ
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import ProguardRules from '~/components/setup/google-maps/ProguardRules.astro';
+import ProviderVerificationExample from '~/components/setup/ProviderVerificationExample.astro';
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/google-maps/AppGradleTabs.astro';
 
 このセクションでは、Google Maps SDK と MapConductor を統合するためのセットアップ手順について説明します。
 
@@ -30,79 +36,11 @@ MapConductor は既存の地図 SDK 上に統一された API レイヤーを提
 
 まず、プロジェクトのルート `build.gradle.kts` または `build.gradle` に Secrets Gradle Plugin を追加します:
 
-<Tabs>
-<TabItem label="Kotlin (build.gradle.kts)">
-
-```kotlin
-// (root)/build.gradle.kts
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (build.gradle)">
-
-```groovy
-// (root)/build.gradle
-plugins {
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
-}
-```
-
-</TabItem>
-</Tabs>
+<SecretsPluginRootGradleTabs />
 
 次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
 
-<Tabs>
-<TabItem label="Kotlin (build.gradle.kts)">
-
-```kotlin
-// App/build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // Google Maps SDK (version managed via libs.versions.toml)
-    implementation("com.google.android.gms:play-services-maps:{GOOGLE_MAPS_SDK_VERSION}")
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (build.gradle)">
-
-```groovy
-// App/build.gradle
-plugins {
-    // ... other plugins
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
-}
-
-dependencies {
-    // Google Maps SDK (version managed via libs.versions.toml)
-    implementation "com.google.android.gms:play-services-maps:{GOOGLE_MAPS_SDK_VERSION}"
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
-
-    // MapConductor modules (versions managed by BOM)
-    implementation "com.mapconductor:core"
-    implementation "com.mapconductor:for-googlemaps"
-}
-```
-
-</TabItem>
-</Tabs>
+<AppGradleTabs />
 
 Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み取り、ビルド時に値を `AndroidManifest.xml` に注入します。
 
@@ -110,19 +48,15 @@ Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み
 
 `AndroidManifest.xml` に Google Maps API キーのプレースホルダーを追加します:
 
-```xml
-<!-- AndroidManifest.xml -->
-<application>
-    <!-- Google Maps API Key -->
-    <meta-data
-        android:name="com.google.android.geo.API_KEY"
-        android:value="${GOOGLE_MAPS_API_KEY}" />
-
-    <!-- Add location permissions -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-</application>
-```
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "com.google.android.geo.API_KEY", value: "${GOOGLE_MAPS_API_KEY}", comment: "Google Maps API Key"}
+  ]}
+  permissions={[
+    {name: "android.permission.ACCESS_COARSE_LOCATION", comment: "Add location permissions"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
 
 ### 4. API キーの設定
 
@@ -130,31 +64,23 @@ Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み
 - Secrets Gradle Plugin は、このファイルの実際の値で `AndroidManifest.xml` の `${GOOGLE_MAPS_API_KEY}` を自動的に置き換えます。
 - CI/CD ビルドの場合は、環境変数または他の安全な方法を使用してこれらの値を提供できます。
 
-```properties
-# secrets.properties
-GOOGLE_MAPS_API_KEY=実際のAPIキー
-```
+<SecretsPropertiesExample
+  entries={[
+    {key: "GOOGLE_MAPS_API_KEY", value: "実際のAPIキー"}
+  ]}
+/>
 
 :::caution
 `secrets.properties` ファイルをバージョン管理にコミットしないでください。
 `.gitignore` に追加すると、不注意でコミットすることを避けることができます。
-```
-# .gitignore
-secrets.properties
-```
+<GitignoreExample entries={["secrets.properties"]} />
 :::
 
 ### 5. ProGuard / R8 の設定（該当する場合）
 
 ProGuard/R8 を使用している場合は、`proguard-rules.pro` にこれらのルールを追加します:
 
-```proguard
-# proguard-rules.pro
-# Google Play Services
--keep class com.google.android.gms.maps.** { *; }
--keep interface com.google.android.gms.maps.** { *; }
--dontwarn com.google.android.gms.**
-```
+<ProguardRules />
 
 ## 検証
 
@@ -165,23 +91,11 @@ Google Maps のセットアップを確認するには:
 3. 位置情報のパーミッションが機能していることを確認します
 4. 基本的なマップ操作（ズーム、パン）をテストします
 
-```kotlin
-@Composable
-fun TestGoogleMaps() {
-    val mapState = rememberGoogleMapViewState(
-        cameraPosition =
-            MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(0.0, 0.0),
-                zoom = 3.0,
-            ),
-    )
-
-    GoogleMapView(state = mapState) {
-        // もし地図が表示されれば、セットアップが正しくできています
-    }
-}
-```
-![TestGoogleMapsの実行結果](~/assets/setup/basic-setup-google.png)
+<ProviderVerificationExample
+  provider="GoogleMap"
+  functionName="TestGoogleMaps"
+  imageUrl="~/assets/setup/basic-setup-google.png"
+/>
 
 ## トラブルシューティング
 

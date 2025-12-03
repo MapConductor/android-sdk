@@ -1,0 +1,67 @@
+---
+title: "PolygonState"
+---
+
+import PolygonStateConstructorExample from '~/components/states/polygon/PolygonStateConstructorExample.astro';
+import PolygonStateMethodsExample from '~/components/states/polygon/PolygonStateMethodsExample.astro';
+import PolygonStateBasicExample from '~/components/states/polygon/PolygonStateBasicExample.astro';
+import EditablePolygonExampleComposable from '~/components/states/polygon/EditablePolygonExampleComposable.astro';
+import ZonePolygonsExample from '~/components/states/polygon/ZonePolygonsExample.astro';
+import ComplexPolygonExampleComposable from '~/components/states/polygon/ComplexPolygonExampleComposable.astro';
+import PolygonEventTypesExample from '~/components/states/polygon/PolygonEventTypesExample.astro';
+
+`PolygonState` gestiona la configuración y el comportamiento de superposiciones poligonales (áreas rellenas) en el mapa. Proporciona propiedades reactivas para vértices, trazo, relleno y opciones geodésicas.
+
+## Constructor
+
+<PolygonStateConstructorExample />
+
+## Propiedades
+
+### Propiedades básicas
+- **`id: String`**: Identificador único (se genera automáticamente si no se proporciona).
+- **`points: List<GeoPoint>`**: Lista de vértices que definen el polígono (debe estar cerrado).
+- **`extra: Serializable?`**: Datos adicionales asociados al polígono.
+
+### Propiedades visuales
+- **`strokeColor: Color`**: Color del borde.
+- **`strokeWidth: Dp`**: Grosor del borde.
+- **`fillColor: Color`**: Color de relleno.
+- **`geodesic: Boolean`**: Indica si se dibujan aristas geodésicas.
+
+## Métodos
+
+<PolygonStateMethodsExample />
+
+## Ejemplos de uso
+
+### Polígono básico
+
+<PolygonStateBasicExample />
+
+### Polígono editable
+
+<EditablePolygonExampleComposable />
+
+### Polígonos de zona
+
+<ZonePolygonsExample />
+
+### Formas complejas
+
+<ComplexPolygonExampleComposable />
+
+## Manejo de eventos
+
+Los eventos de polígono proporcionan tanto el estado como la posición del clic:
+
+<PolygonEventTypesExample />
+
+## Buenas prácticas
+
+1. **Cerrar el polígono**: Asegúrate de que el primer y el último punto sean iguales.
+2. **Orden de los vértices**: Utiliza un orden consistente (en el sentido de las agujas del reloj / antihorario).
+3. **Rendimiento**: Evita polígonos excesivamente complejos con muchos vértices.
+4. **Diseño visual**: Usa transparencia adecuada en el relleno para mantener la visibilidad del mapa.
+5. **Validación**: Comprueba que el polígono forme una geometría válida.
+

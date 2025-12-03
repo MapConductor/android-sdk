@@ -1,0 +1,39 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  boundsSouthWestLatitude?: number;
+  boundsSouthWestLongitude?: number;
+  boundsNorthEastLatitude?: number;
+  boundsNorthEastLongitude?: number;
+  testPointLatitude?: number;
+  testPointLongitude?: number;
+  commentForUsage?: string;
+}
+
+const {
+  boundsSouthWestLatitude = 37.7649,
+  boundsSouthWestLongitude = -122.4294,
+  boundsNorthEastLatitude = 37.7849,
+  boundsNorthEastLongitude = -122.4094,
+  testPointLatitude = 37.7749,
+  testPointLongitude = -122.4194,
+  commentForUsage = "Point is inside bounds"
+} = Astro.props;
+
+const code = `fun contains(point: GeoPoint): Boolean
+
+// Usage
+val bounds = GeoRectBounds(
+    southWest = GeoPointImpl.fromLatLong(${boundsSouthWestLatitude}, ${boundsSouthWestLongitude}),
+    northEast = GeoPointImpl.fromLatLong(${boundsNorthEastLatitude}, ${boundsNorthEastLongitude})
+)
+
+val testPoint = GeoPointImpl.fromLatLong(${testPointLatitude}, ${testPointLongitude})
+val isInside = bounds.contains(testPoint)
+
+println("Point is inside bounds: $isInside")`;
+---
+
+<Code code={code} lang="kotlin" />
+

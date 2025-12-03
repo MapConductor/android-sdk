@@ -1,0 +1,53 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  datasetComment?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  datasetComment = "10,000+ markers"
+} = Astro.props;
+
+const code = `@Composable
+fun BasicNativeExample() {
+    // Create native marker manager
+    val nativeManager = remember {
+        NativeMarkerManager<GoogleMapActualMarker>(
+            hexGeocell = HexGeocellImpl.defaultGeocell()
+        )
+    }
+
+    // Add markers to native manager
+    LaunchedEffect(Unit) {
+        val markers = generateLargeMarkerDataset() // ${datasetComment}
+        markers.forEach { markerData ->
+            val entity = MarkerEntity(
+                state = MarkerState(
+                    id = markerData.id,
+                    position = markerData.position,
+                    icon = DefaultIcon()
+                )
+            )
+            nativeManager.registerEntity(entity)
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Markers are managed by native strategy
+        // No need to manually add Marker composables
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            nativeManager.destroy() // Important: cleanup native resources
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

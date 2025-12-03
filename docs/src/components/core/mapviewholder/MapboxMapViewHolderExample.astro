@@ -1,0 +1,36 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForAccessApis?: string;
+  commentForUseFeatures?: string;
+  commentForAccessPlugins?: string;
+}
+
+const {
+  commentForAccessApis = "Access native Mapbox APIs",
+  commentForUseFeatures = "Use Mapbox specific features",
+  commentForAccessPlugins = "Access Mapbox plugins"
+} = Astro.props;
+
+const code = `typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
+
+// ${commentForAccessApis}
+mapboxHolder?.let { holder ->
+    val mapboxMapView: MapView = holder.mapView
+    val mapboxMap: MapboxMap = holder.map
+
+    // ${commentForUseFeatures}
+    mapboxMap.getStyle { style ->
+        style.addSource(GeoJsonSource("custom-source", geoJsonData))
+        style.addLayer(FillLayer("custom-layer", "custom-source"))
+    }
+
+    // ${commentForAccessPlugins}
+    val locationComponent = mapboxMap.locationComponent
+    locationComponent.activateLocationComponent(context)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,14 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val markerState = MarkerState(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    extra = "San Francisco marker"
+)
+
+MapView(state = mapViewState) {
+    Marker(markerState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

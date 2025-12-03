@@ -1,0 +1,19 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Check native library availability
+try {
+    val nativeManager = NativeMarkerManager<ActualMarker>(
+        hexGeocell = HexGeocellImpl.defaultGeocell()
+    )
+    // Native library loaded successfully
+} catch (e: UnsatisfiedLinkError) {
+    // Fallback to standard marker manager
+    val standardManager = MarkerManager<ActualMarker>(
+        hexGeocell = HexGeocellImpl.defaultGeocell()
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,66 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForBoundsCalc?: string;
+  commentForZoomSelection?: string;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForBoundsCalc = "Calculate bounds containing all markers",
+  commentForZoomSelection = "Select appropriate zoom for content",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun ContentBasedZoom() {
+    val markers = remember {
+        listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            GeoPointImpl.fromLatLong(37.7949, -122.3994)
+        )
+    }
+
+    // ${commentForBoundsCalc}
+    val bounds = GeoRectBounds()
+    markers.forEach { bounds.extend(it) }
+
+    // ${commentForZoomSelection}
+    val appropriateZoom = when {
+        bounds.isEmpty -> 15.0  // Default for single point
+        else -> {
+            val span = bounds.toSpan()
+            when {
+                span?.latitude ?: 0.0 > 10.0 -> 4.0   // Large area
+                span?.latitude ?: 0.0 > 1.0 -> 8.0    // Medium area
+                span?.latitude ?: 0.0 > 0.1 -> 12.0   // Small area
+                span?.latitude ?: 0.0 > 0.01 -> 16.0  // Very small area
+                else -> 18.0                          // Minimal area
+            }
+        }
+    }
+
+    val cameraPosition = MapCameraPositionImpl(
+        position = bounds.center ?: markers.first(),
+        zoom = appropriateZoom
+    )
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState,
+        cameraPosition = cameraPosition
+    ) {
+        markers.forEach { position ->
+            Marker(
+                position = position,
+                icon = DefaultIcon(fillColor = Color.Blue)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

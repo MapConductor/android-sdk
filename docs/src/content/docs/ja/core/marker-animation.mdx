@@ -1,0 +1,204 @@
+---
+title: "Marker Animation（マーカーアニメーション）"
+---
+
+import MarkerAnimationInterface from '~/components/core/marker-animation/MarkerAnimationInterface.astro';
+import PositionAnimationClass from '~/components/core/marker-animation/PositionAnimationClass.astro';
+import AnimatedMarkerExample from '~/components/core/marker-animation/AnimatedMarkerExample.astro';
+import ScaleAnimationClass from '~/components/core/marker-animation/ScaleAnimationClass.astro';
+import ScaleAnimationExample from '~/components/core/marker-animation/ScaleAnimationExample.astro';
+import FadeAnimationClass from '~/components/core/marker-animation/FadeAnimationClass.astro';
+import FadeAnimationExample from '~/components/core/marker-animation/FadeAnimationExample.astro';
+import BounceAnimationClass from '~/components/core/marker-animation/BounceAnimationClass.astro';
+import BounceAnimationExample from '~/components/core/marker-animation/BounceAnimationExample.astro';
+import SequentialAnimationClass from '~/components/core/marker-animation/SequentialAnimationClass.astro';
+import SequentialAnimationExample from '~/components/core/marker-animation/SequentialAnimationExample.astro';
+import PathAnimationClass from '~/components/core/marker-animation/PathAnimationClass.astro';
+import PathAnimationExample from '~/components/core/marker-animation/PathAnimationExample.astro';
+import AnimationCallbacksExample from '~/components/core/marker-animation/AnimationCallbacksExample.astro';
+import ProgressTrackingAnimationExample from '~/components/core/marker-animation/ProgressTrackingAnimationExample.astro';
+import AnimationOptimizationExample from '~/components/core/marker-animation/AnimationOptimizationExample.astro';
+import AnimationMemoryManagementExample from '~/components/core/marker-animation/AnimationMemoryManagementExample.astro';
+import CommonPatternsExample from '~/components/core/marker-animation/CommonPatternsExample.astro';
+import DebugAnimationExample from '~/components/core/marker-animation/DebugAnimationExample.astro';
+
+MarkerAnimation は、地図上のマーカーに対するスムーズな遷移と視覚効果を提供します。アニメーションは、マーカーの外観、位置の変更、ライフサイクルイベントに適用できます。
+
+## MarkerAnimation インターフェース
+
+<MarkerAnimationInterface />
+
+## アニメーションタイプ
+
+### 位置アニメーション
+
+座標を更新する際に、マーカーの位置変更をスムーズにアニメーション化します。
+
+<PositionAnimationClass defaultDuration={1000} />
+
+#### 使用例
+
+<AnimatedMarkerExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  commentForAnimateMarker="マーカーを新しい位置にアニメーション"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  commentForClickTrigger="アニメーションをトリガー"
+  commentForAnimateStart="マーカーのアニメーション開始"
+  commentForAnimateEnd="マーカーのアニメーション終了"
+  animationDuration={1500}
+/>
+
+### スケールアニメーション
+
+強調や状態遷移のためにマーカーのサイズ変更をアニメーション化します。
+
+<ScaleAnimationClass defaultDuration={500} />
+
+#### 使用例
+
+<ScaleAnimationExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  initialScale={1.0}
+  commentForAnimateScale="スケール変更をアニメーション"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  expandScale={1.5}
+  collapsedScale={1.0}
+  animationDuration={300}
+/>
+
+### フェードアニメーション
+
+表示・非表示効果のためにマーカーの不透明度を制御します。
+
+<FadeAnimationClass defaultDuration={800} />
+
+#### 使用例
+
+<FadeAnimationExample
+  latitude1={37.7749}
+  longitude1={-122.4194}
+  latitude2={37.7849}
+  longitude2={-122.4094}
+  commentForAnimateOpacity="不透明度の変更をアニメーション"
+  buttonLabelWhenVisible="マーカーを隠す"
+  buttonLabelWhenHidden="マーカーを表示"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  animationDuration={600}
+/>
+
+### バウンスアニメーション
+
+マーカーが表示されるとき、または操作されるときにバウンス効果を作成します。
+
+<BounceAnimationClass defaultBounceHeight={50} defaultDuration={1000} />
+
+#### 使用例
+
+<BounceAnimationExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  label="バウンス!"
+  commentForTriggerBounce="バウンスアニメーションをトリガー"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  bounceHeight={30}
+  animationDuration={800}
+/>
+
+## 複雑なアニメーション
+
+### 連続アニメーション
+
+複雑な効果のために複数のアニメーションを連鎖させます。
+
+<SequentialAnimationClass />
+
+#### 使用例
+
+<SequentialAnimationExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+### パスアニメーション
+
+事前定義されたパスに沿ってマーカーをアニメーション化します。
+
+<PathAnimationClass defaultDuration={3000} />
+
+#### 使用例
+
+<PathAnimationExample
+  commentForStart="スタート"
+  commentForWaypoint1="ウェイポイント 1"
+  commentForWaypoint2="ウェイポイント 2"
+  commentForEnd="終点"
+  commentForStartAnimation="パスアニメーションを開始"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  durationMillis={5000}
+/>
+
+## アニメーションイベント処理
+
+### アニメーションコールバック
+
+地図コンポーネントでアニメーションライフサイクルイベントを処理します:
+
+<AnimationCallbacksExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  commentForStartLog="マーカーのアニメーション開始"
+  commentForEndLog="マーカーのアニメーション完了"
+/>
+
+### カスタムアニメーション進捗
+
+カスタム動作のためにアニメーション進捗を監視します:
+
+<ProgressTrackingAnimationExample />
+
+## パフォーマンスの考慮事項
+
+### アニメーション最適化
+
+1. **同時アニメーションを制限**: 同時アニメーションが多すぎるとパフォーマンスに影響
+2. **適切な期間を使用**: 非常に長いアニメーションは遅く感じる可能性があります
+3. **効率的なインターポレータを選択**: 一部のインターポレータは計算コストが高い
+
+<AnimationOptimizationExample />
+
+### メモリ管理
+
+<AnimationMemoryManagementExample />
+
+## ベストプラクティス
+
+### アニメーションガイドライン
+
+1. **フィードバックを提供**: アニメーションを使用してユーザーの操作に視覚的なフィードバックを提供
+2. **コンテキストを維持**: アニメーションはユーザーが空間的な関係を理解するのに役立つべきです
+3. **一貫性を保つ**: アプリケーション全体で類似したアニメーションスタイルを使用
+4. **アクセシビリティを考慮**: アニメーションを減らすまたは無効にするオプションを提供
+
+### 一般的なパターン
+
+<CommonPatternsExample />
+
+## トラブルシューティング
+
+### 一般的な問題
+
+1. **アニメーションが開始しない**: `MarkerState.setAnimation()` が呼び出されていることを確認
+2. **ギクシャクした動き**: インターポレータの選択とフレームレートを確認
+3. **メモリリーク**: マーカーが削除されたときにアニメーションをクリア
+4. **パフォーマンス問題**: 同時アニメーションを制限し、短い期間を使用
+
+### アニメーションのデバッグ
+
+<DebugAnimationExample
+  commentForStartLog="アニメーション開始"
+  commentForProgressLog="進捗"
+  commentForEndLog="アニメーション完了"
+/>
+

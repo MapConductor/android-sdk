@@ -1,0 +1,56 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun DynamicBoundsExample() {
+    var southwest by remember {
+        mutableStateOf(GeoPointImpl.fromLatLong(37.7649, -122.4294))
+    }
+    var northeast by remember {
+        mutableStateOf(GeoPointImpl.fromLatLong(37.7849, -122.4094))
+    }
+
+    val context = LocalContext.current
+    val drawable = AppCompatResources.getDrawable(context, R.drawable.floor_plan)
+
+    val groundImageState = drawable?.let {
+        GroundImageState(
+            bounds = GeoRectBounds(southwest = southwest, northeast = northeast),
+            image = it,
+            opacity = 0.8f,
+            extra = "Floor plan"
+        )
+    }
+
+    MapView(
+        state = mapViewState,
+        onMarkerDrag = { markerState ->
+            when (markerState.extra) {
+                "SW" -> southwest = markerState.position
+                "NE" -> northeast = markerState.position
+            }
+        }
+    ) {
+        groundImageState?.let { state ->
+            GroundImage(state)
+        }
+
+        // 角のマーカー
+        Marker(
+            position = southwest,
+            icon = DefaultIcon(fillColor = Color.Green, label = "SW"),
+            draggable = true,
+            extra = "SW"
+        )
+
+        Marker(
+            position = northeast,
+            icon = DefaultIcon(fillColor = Color.Red, label = "NE"),
+            draggable = true,
+            extra = "NE"
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

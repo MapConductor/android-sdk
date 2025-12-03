@@ -1,0 +1,49 @@
+---
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+const kotlinCode = `// App/build.gradle.kts
+plugins {
+    // ... other plugins
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+dependencies {
+    // Google Maps SDK (version managed via libs.versions.toml)
+    implementation("com.google.android.gms:play-services-maps:{GOOGLE_MAPS_SDK_VERSION}")
+
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+
+    // MapConductor modules (versions managed by BOM)
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-googlemaps")
+}`;
+
+const groovyCode = `// App/build.gradle
+plugins {
+    // ... other plugins
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+}
+
+dependencies {
+    // Google Maps SDK (version managed via libs.versions.toml)
+    implementation "com.google.android.gms:play-services-maps:{GOOGLE_MAPS_SDK_VERSION}"
+
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+
+    // MapConductor modules (versions managed by BOM)
+    implementation "com.mapconductor:core"
+    implementation "com.mapconductor:for-googlemaps"
+}`;
+---
+
+<Tabs>
+  <TabItem label="Kotlin (build.gradle.kts)">
+    <Code code={kotlinCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Groovy (build.gradle)">
+    <Code code={groovyCode} lang="groovy" />
+  </TabItem>
+</Tabs>
+

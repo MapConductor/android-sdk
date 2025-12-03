@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Clear animations when no longer needed
+LaunchedEffect(shouldClearAnimations) {
+    if (shouldClearAnimations) {
+        markerStates.forEach { it.setAnimation(null) }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

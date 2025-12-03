@@ -1,0 +1,35 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForSafeAccess?: string;
+  commentForUnavailable?: string;
+}
+
+const {
+  commentForSafeAccess = "Safe to access native APIs",
+  commentForUnavailable = "Map not yet initialized or unavailable"
+} = Astro.props;
+
+const code = `fun accessNativeMap(mapViewState: GoogleMapViewStateImpl) {
+    val holder = mapViewState.getMapViewHolder()
+
+    if (holder != null) {
+        // ${commentForSafeAccess}
+        val googleMap = holder.map
+        val mapView = holder.mapView
+
+        // Use native features
+        googleMap.setOnMarkerClickListener { marker ->
+            // Handle marker click
+            true
+        }
+    } else {
+        // ${commentForUnavailable}
+        Log.w("MapAccess", "MapViewHolder not available")
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

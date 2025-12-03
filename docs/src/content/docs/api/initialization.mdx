@@ -1,0 +1,48 @@
+---
+title: "Initialization"
+---
+
+import GradleDependencies from '~/components/api/initialization/GradleDependencies.astro';
+import GoogleMapsExample from '~/components/api/initialization/GoogleMapsExample.astro';
+import MapboxExample from '~/components/api/initialization/MapboxExample.astro';
+import HereExample from '~/components/api/initialization/HereExample.astro';
+import ArcGISExample from '~/components/api/initialization/ArcGISExample.astro';
+import CustomMapConfiguration from '~/components/api/initialization/CustomMapConfiguration.astro';
+
+This section covers how to properly initialize and configure MapConductor for different map providers.
+
+## Basic Initialization
+
+### Gradle Dependencies
+
+Add MapConductor to your `build.gradle.kts`:
+
+<GradleDependencies
+  commentForChooseProvider="Choose your map provider(s)"
+  bomVersionPlaceholder="$version"
+  includeMapLibre={false}
+/>
+
+### Map Provider Setup
+
+Each map provider requires specific setup and API keys.
+
+#### Google Maps
+
+<GoogleMapsExample />
+
+#### Mapbox
+
+<MapboxExample />
+
+#### HERE Maps
+
+<HereExample />
+
+#### ArcGIS
+
+<ArcGISExample />
+
+## Initialization
+
+<CustomMapConfiguration />

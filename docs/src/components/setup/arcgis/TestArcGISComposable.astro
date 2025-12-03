@@ -1,0 +1,24 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun TestArcGIS() {
+    val state = rememberArcGISMapViewState(
+        cameraPosition =
+            MapCameraPositionImpl(
+                position = GeoPointImpl.fromLatLong(0.0, 0.0),
+                zoom = 5.0,
+            ),
+    )
+
+    ArcGISMapView(
+        modifier = modifier,
+        state = state,
+    ) {
+        // もし地図が表示されれば、セットアップが正しくできています
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

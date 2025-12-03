@@ -1,0 +1,9 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `fun copy(...): PolygonState // 変更されたコピーを作成
+fun fingerPrint(): PolygonFingerPrint // 変更検知
+fun asFlow(): Flow<PolygonFingerPrint> // リアクティブ更新`;
+---
+
+<Code code={code} lang="kotlin" />
+

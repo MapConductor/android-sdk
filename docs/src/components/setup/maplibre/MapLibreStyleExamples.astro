@@ -1,0 +1,26 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const demoStyleCode = `val mapDesign = MapLibreDesignType.DemoTiles`;
+
+const hostedStyleCode = `val mapDesign = MapLibreDesignType(
+    "basic map",
+    "https://api.maptiler.com/maps/base-v4/style.json?key=YOUR_API_KEY",
+)`;
+
+const osmStyleCode = `// Example using OSM Liberty style
+val mapDesign = MapLibreDesignType(
+    "OpenStreetMap",
+    "https://tiles.openfreemap.org/styles/liberty",
+)`;
+---
+
+<section>
+  <h4>デモ用スタイル</h4>
+  <Code code={demoStyleCode} lang="kotlin" />
+  <h4>ホストされたスタイルの使用</h4>
+  <Code code={hostedStyleCode} lang="kotlin" />
+  <h4>OpenStreetMap スタイルの使用</h4>
+  <Code code={osmStyleCode} lang="kotlin" />
+</section>
+

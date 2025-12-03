@@ -1,0 +1,57 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun NativeClusteringExample() {
+    val clusteringStrategy = remember {
+        NativeSpatialMarkerStrategy<GoogleMapActualMarker>(
+            clusteringEnabled = true,
+            clusterThreshold = 50,     // Cluster when > 50 markers nearby
+            clusterRadius = 100.0,     // 100-meter clustering radius
+            geocell = HexGeocellImpl.defaultGeocell()
+        )
+    }
+
+    val nativeManager = remember {
+        NativeMarkerManager<GoogleMapActualMarker>(
+            hexGeocell = HexGeocellImpl.defaultGeocell()
+        )
+    }
+
+    // Add large dataset for clustering
+    LaunchedEffect(Unit) {
+        val denseMarkers = generateDenseMarkerCluster(
+            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            count = 1000,
+            radiusMeters = 500.0 // 500 meters
+        )
+
+        denseMarkers.forEach { markerData ->
+            val entity = MarkerEntity(
+                state = MarkerState(
+                    id = markerData.id,
+                    position = markerData.position,
+                    icon = DefaultIcon(fillColor = Color.Blue, scale = 0.8f)
+                )
+            )
+            nativeManager.registerEntity(entity)
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Native clustering automatically groups nearby markers
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

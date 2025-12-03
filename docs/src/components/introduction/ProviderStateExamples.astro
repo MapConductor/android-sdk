@@ -1,0 +1,20 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Google Maps
+val googleMapState = rememberGoogleMapViewState()
+
+// Mapbox
+val mapboxState = rememberMapboxMapViewState()
+
+// HERE Maps
+val hereState = rememberHereMapViewState()
+
+// ArcGIS
+val arcgisState = rememberArcGISMapViewState()
+
+// MapLibre
+val mapLibreState = rememberMapLibreMapViewState()`;
+---
+
+<Code code={code} lang="kotlin" />
+

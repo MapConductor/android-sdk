@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Street and block level
+val streetLevel = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    zoom = 16.0  // Shows street layout
+)
+
+val detailedStreetLevel = MapCameraPositionImpl(
+    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    zoom = 18.0  // Shows individual streets and small buildings
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

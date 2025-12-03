@@ -1,0 +1,19 @@
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val polylineState = PolylineState(
+    points = listOf(
+        GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        GeoPointImpl.fromLatLong(37.7949, -122.3994)
+    ),
+    strokeColor = Color.Blue,
+    strokeWidth = 3.dp
+)
+
+MapView(state = mapViewState) {
+    Polyline(polylineState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

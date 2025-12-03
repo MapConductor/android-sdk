@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  bomVersion?: string;
+}
+
+const {
+  bomVersion = "{BOM_MODULE_VERSION}"
+} = Astro.props;
+
+const code = `implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))`;
+---
+
+<Code code={code} lang="kotlin" />

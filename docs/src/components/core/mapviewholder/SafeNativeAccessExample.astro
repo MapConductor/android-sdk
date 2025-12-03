@@ -1,0 +1,40 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForPolling?: string;
+  commentForConfigureFeatures?: string;
+}
+
+const {
+  commentForPolling = "Poll until map is ready",
+  commentForConfigureFeatures = "Configure native features"
+} = Astro.props;
+
+const code = `@Composable
+fun SafeNativeAccess() {
+    val mapViewState = remember { MapboxViewStateImpl() }
+    var isMapReady by remember { mutableStateOf(false) }
+
+    LaunchedEffect(mapViewState) {
+        // ${commentForPolling}
+        while (!isMapReady) {
+            delay(100)
+            isMapReady = mapViewState.getMapViewHolder() != null
+        }
+
+        // Now safe to use native APIs
+        mapViewState.getMapViewHolder()?.let { holder ->
+            val mapboxMap = holder.map
+            // ${commentForConfigureFeatures}
+        }
+    }
+
+    MapboxMapView(state = mapViewState) {
+        // Your MapConductor components
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

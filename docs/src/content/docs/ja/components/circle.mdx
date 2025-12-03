@@ -3,6 +3,17 @@ title: "Circle"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CircleBasicSignature from '~/components/components/circle/CircleBasicSignature.astro';
+import CircleStateSignature from '~/components/components/circle/CircleStateSignature.astro';
+import BasicCircleExample from '~/components/components/circle/BasicCircleExample.astro';
+import InteractiveCircleExample from '~/components/components/circle/InteractiveCircleExample.astro';
+import MultipleCirclesExample from '~/components/components/circle/MultipleCirclesExample.astro';
+import DynamicCircleExample from '~/components/components/circle/DynamicCircleExample.astro';
+import OverlappingCirclesExample from '~/components/components/circle/OverlappingCirclesExample.astro';
+import CircleEventHandlingExample from '~/components/components/circle/CircleEventHandlingExample.astro';
+import CircleStrokeStylesExample from '~/components/components/circle/CircleStrokeStylesExample.astro';
+import CircleFillStylesExample from '~/components/components/circle/CircleFillStylesExample.astro';
+import CircleIdUsageExample from '~/components/components/circle/CircleIdUsageExample.astro';
 
 円は、カスタマイズ可能な半径、ストローク、塗りつぶしプロパティを持つ円形のオーバーレイで、地図上に描画できます。エリア、範囲、またはゾーンを表現するのに便利です。
 
@@ -14,41 +25,15 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 円の数が少ない場合、オプションを直接指定すると簡単に扱えます。
 `id` を指定すると、不要な Recomposition を抑えることができます。
 
-```kotlin
-@Composable
-fun Circle(
-    center: GeoPoint,
-    radiusMeters: Double,
-    geodesic: Boolean = false,
-    strokeColor: Color = Color.Red,
-    strokeWidth: Dp = 2.dp,
-    fillColor: Color = Color.White.copy(alpha = 0.5f),
-    extra: Serializable? = null,
-    id: String? = null
-)
-```
+<CircleBasicSignature />
 
 </TabItem>
 <TabItem label="State を利用した Circle">
 円の数が多い場合、円を移動させるような場合、こちらを使用することを推奨します。
 `id` を指定すると、不要な Recomposition を抑えることができます。
 
+<CircleStateSignature />
 
-```kotlin
-CircleState(
-    center: GeoPoint,
-    radiusMeters: Double,
-    geodesic: Boolean = false,
-    strokeColor: Color = Color.Red,
-    strokeWidth: Dp = 2.dp,
-    fillColor: Color = Color.White.copy(alpha = 0.5f),
-    extra: Serializable? = null,
-    id: String? = null
-)
-
-@Composable
-fun Circle(state: CircleState)
-```
 </TabItem>
 </Tabs>
 
@@ -67,17 +52,54 @@ fun Circle(state: CircleState)
 
 ### 基本的な Circle
 
+<BasicCircleExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
+/>
 
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    // ソリッドな赤い円
-    Circle(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radiusMeters = 500.0,
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        fillColor = Color.Red.copy(alpha = 0.2f),
+### 複数の Circle とスタイル
+
+<MultipleCirclesExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
+/>
+
+### 動的な Circle の更新
+
+<DynamicCircleExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
+/>
+
+### 円の重なりと Z-Index
+
+<OverlappingCirclesExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
+/>
+
+## イベント処理
+
+Circle のインタラクションは、マップ地図SDKコンポーネントで処理されます:
+
+<CircleEventHandlingExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
+/>
+
+## スタイルオプション
+
+### ストロークスタイル
+
+<CircleStrokeStylesExample />
+
+### 塗りつぶしスタイル
+
+<CircleFillStylesExample />
+
+## Circle の識別
+
+### ID プロパティの使用
+
+`id` プロパティは円に一意の識別子を提供し、効率的な追跡と管理を可能にします:
+
+<CircleIdUsageExample />
+*** End Patch ***!
         extra = "Red zone"
     )
 
@@ -370,4 +392,3 @@ MapView(
     circles.forEach { circle -> Circle(circle) }
 }
 ```
-

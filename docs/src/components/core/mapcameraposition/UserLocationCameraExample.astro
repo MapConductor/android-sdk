@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForZoom?: string;
+  zoomLevel?: number;
+}
+
+const {
+  commentForZoom = "Street level detail",
+  zoomLevel = 16.0
+} = Astro.props;
+
+const code = `val userLocationCamera = MapCameraPositionImpl(
+    position = userCurrentLocation,
+    zoom = ${zoomLevel},  // ${commentForZoom}
+    bearing = 0.0,
+    tilt = 0.0
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

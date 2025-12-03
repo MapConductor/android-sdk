@@ -1,0 +1,16 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  entries?: Array<string>;
+}
+
+const {
+  entries = ["secrets.properties"]
+} = Astro.props;
+
+const code = `# .gitignore
+${entries.join('\n')}`;
+---
+
+<Code code={code} lang="bash" />

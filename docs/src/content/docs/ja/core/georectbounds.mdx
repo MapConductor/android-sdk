@@ -1,0 +1,208 @@
+---
+title: "GeoRectBounds（矩形範囲）"
+---
+
+import GeoRectBoundsConstructor from '~/components/core/georectbounds/GeoRectBoundsConstructor.astro';
+import GeoRectBoundsCreationExample from '~/components/core/georectbounds/GeoRectBoundsCreationExample.astro';
+import GroundImageExample from '~/components/core/georectbounds/GroundImageExample.astro';
+import ExtendBoundsExample from '~/components/core/georectbounds/ExtendBoundsExample.astro';
+import UnionBoundsExample from '~/components/core/georectbounds/UnionBoundsExample.astro';
+import ContainsPointExample from '~/components/core/georectbounds/ContainsPointExample.astro';
+import IntersectsBoundsExample from '~/components/core/georectbounds/IntersectsBoundsExample.astro';
+import ViewportBoundsExample from '~/components/core/georectbounds/ViewportBoundsExample.astro';
+import BoundsBasedLoadingExample from '~/components/core/georectbounds/BoundsBasedLoadingExample.astro';
+import BoundsEditorExample from '~/components/core/georectbounds/BoundsEditorExample.astro';
+import DateLineCrossingExample from '~/components/core/georectbounds/DateLineCrossingExample.astro';
+import EmptyBoundsHandlingExample from '~/components/core/georectbounds/EmptyBoundsHandlingExample.astro';
+import BoundsToStringExample from '~/components/core/georectbounds/BoundsToStringExample.astro';
+import ToUrlValueExample from '~/components/core/georectbounds/ToUrlValueExample.astro';
+import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.astro';
+
+`GeoRectBounds` は、南西と北東の角の点で定義される矩形の地理的エリアを表します。地図領域の定義、グラウンドイメージの境界、ビューポート計算に使用されます。
+
+## コンストラクタ
+
+<GeoRectBoundsConstructor />
+
+## プロパティ
+
+### 角の点
+
+- **`southWest: GeoPointImpl?`**: 矩形の南西角（左下）
+- **`northEast: GeoPointImpl?`**: 矩形の北東角（右上）
+- **`isEmpty: Boolean`**: 境界が定義されていない場合は `true` を返します
+
+### 計算されるプロパティ
+
+- **`center: GeoPointImpl?`**: 境界の中心点
+- **`toSpan(): GeoPointImpl?`**: GeoPoint として範囲（幅/高さ）を返します
+
+## 基本的な使用方法
+
+### 境界の作成
+
+<GeoRectBoundsCreationExample
+  commentForDefineArea="矩形エリアを定義"
+  commentForEmptyBounds="空の境界（後で拡張）"
+  southWestLatitude={37.7649}
+  southWestLongitude={-122.4294}
+  northEastLatitude={37.7849}
+  northEastLongitude={-122.4094}
+/>
+
+### GroundImage での使用
+
+<GroundImageExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  southWestLatitude={37.7649}
+  southWestLongitude={-122.4294}
+  northEastLatitude={37.7849}
+  northEastLongitude={-122.4094}
+  overlayOpacity={0.7}
+/>
+
+## 動的な境界の構築
+
+### 境界の拡張
+
+境界は新しい点を含むように動的に拡張できます:
+
+<ExtendBoundsExample
+  commentForUsage="使用例"
+  commentForStartEmpty="空からスタート"
+  commentForBoundsGrow="各点を含むように境界が拡大"
+  commentForFinalBounds="最終境界"
+  firstPointLatitude={37.7749}
+  firstPointLongitude={-122.4194}
+  secondPointLatitude={37.7849}
+  secondPointLongitude={-122.4094}
+  thirdPointLatitude={37.7649}
+  thirdPointLongitude={-122.4294}
+/>
+
+### 境界の結合
+
+<UnionBoundsExample
+  firstSouthWestLatitude={37.7649}
+  firstSouthWestLongitude={-122.4294}
+  firstNorthEastLatitude={37.7749}
+  firstNorthEastLongitude={-122.4194}
+  secondSouthWestLatitude={37.7749}
+  secondSouthWestLongitude={-122.4194}
+  secondNorthEastLatitude={37.7849}
+  secondNorthEastLongitude={-122.4094}
+  commentForCombinedBounds="両方のエリアを含む"
+/>
+
+## 点と境界のテスト
+
+### 点を含むかどうか
+
+<ContainsPointExample
+  boundsSouthWestLatitude={37.7649}
+  boundsSouthWestLongitude={-122.4294}
+  boundsNorthEastLatitude={37.7849}
+  boundsNorthEastLongitude={-122.4094}
+  testPointLatitude={37.7749}
+  testPointLongitude={-122.4194}
+  commentForUsage="点は境界内"
+/>
+
+### 境界の交差
+
+<IntersectsBoundsExample commentForUsage="境界が交差" />
+
+## 実用例
+
+### ビューポート境界の計算
+
+<ViewportBoundsExample
+  commentForMarkerSimulation="表示されているマーカーからビューポートを計算"
+  firstMarkerLatitude={37.7749}
+  firstMarkerLongitude={-122.4194}
+  secondMarkerLatitude={37.7849}
+  secondMarkerLongitude={-122.4094}
+  thirdMarkerLatitude={37.7649}
+  thirdMarkerLongitude={-122.4294}
+  fourthMarkerLatitude={37.7949}
+  fourthMarkerLongitude={-122.3994}
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+### 境界ベースの読み込み
+
+<BoundsBasedLoadingExample
+  commentForAllMarkersSimulation="利用可能なすべてのマーカーをシミュレート"
+  baseLatitude={37.7}
+  baseLongitude={-122.5}
+  latitudeStep={0.01}
+  longitudeStep={0.01}
+  viewportSouthWestLatitude={37.7}
+  viewportSouthWestLongitude={-122.5}
+  viewportNorthEastLatitude={37.75}
+  viewportNorthEastLongitude={-122.45}
+  commentForViewportSimulation="ビューポート境界の設定をシミュレート"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+### インタラクティブな境界エディタ
+
+<BoundsEditorExample
+  initialSouthWestLatitude={37.7649}
+  initialSouthWestLongitude={-122.4294}
+  initialNorthEastLatitude={37.7849}
+  initialNorthEastLongitude={-122.4094}
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+## 特別な処理
+
+### 国際日付変更線
+
+`GeoRectBounds` は国際日付変更線（経度 ±180°）をまたぐ矩形を処理します:
+
+<DateLineCrossingExample
+  southWestLatitude={20.0}
+  southWestLongitude={170.0}
+  northEastLatitude={40.0}
+  northEastLongitude={-170.0}
+  pointLatitude={30.0}
+  pointLongitude={175.0}
+/>
+
+### 空の境界の処理
+
+<EmptyBoundsHandlingExample
+  extendLatitude={37.7749}
+  extendLongitude={-122.4194}
+/>
+
+## ユーティリティメソッド
+
+### 文字列表現
+
+<BoundsToStringExample
+  southWestLatitude={37.7649}
+  southWestLongitude={-122.4294}
+  northEastLatitude={37.7849}
+  northEastLongitude={-122.4094}
+/>
+
+### URL 値
+
+<ToUrlValueExample defaultPrecision={6} highPrecision={8} />
+
+### 等価性の比較
+
+<EqualsToExample commentForUsage="使用例" />
+
+## ベストプラクティス
+
+1. **座標の順序**: 一貫性のため常に南西（左下）と北東（右上）を使用
+2. **空の境界**: 計算に使用する前に `isEmpty` を確認
+3. **日付変更線の交差**: クラスは国際日付変更線の交差を自動的に処理
+4. **動的な構築**: 点のコレクションから境界を構築するには `extend()` を使用
+5. **パフォーマンス**: 頻繁にアクセスされる領域の境界計算をキャッシュ
+6. **検証**: 南西が実際に北東の南西であることを確認
+7. **精度**: ユースケースに基づいて URL 値に適切な精度を使用
+

@@ -1,0 +1,51 @@
+---
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+const kotlinCode = `// App build.gradle.kts
+plugins {
+    // ... other plugins
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+dependencies {
+    // HERE SDK (local AAR)
+    implementation(
+        files("\${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar")
+    )
+
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+
+    // MapConductor modules (versions managed by BOM)
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-here")
+}`;
+
+const groovyCode = `// App build.gradle
+plugins {
+    // ... other plugins
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+}
+
+dependencies {
+    // HERE SDK (local AAR)
+    implementation files("\${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar")
+
+    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
+    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+
+    // MapConductor modules (versions managed by BOM)
+    implementation "com.mapconductor:core"
+    implementation "com.mapconductor:for-here"
+}`;
+---
+
+<Tabs>
+  <TabItem label="Kotlin (build.gradle.kts)">
+    <Code code={kotlinCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Groovy (build.gradle)">
+    <Code code={groovyCode} lang="groovy" />
+  </TabItem>
+</Tabs>
+

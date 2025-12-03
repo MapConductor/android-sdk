@@ -1,0 +1,46 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(state = mapViewState) {
+    // Basic red marker
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon()
+    )
+
+    // Custom colored marker with label
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        icon = DefaultIcon(
+            scale = 1.2f,
+            label = "SF",
+            fillColor = Color.Blue,
+            strokeColor = Color.White,
+            strokeWidth = 2.dp
+        )
+    )
+
+    // Small marker with custom styling
+    Marker(
+        position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+        icon = DefaultIcon(
+            scale = 0.8f,
+            fillColor = Color.Green,
+            labelTextColor = Color.Black,
+            label = "POI"
+        )
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

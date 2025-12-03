@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  defaultBounceHeight?: number;
+  defaultDuration?: number;
+}
+
+const {
+  defaultBounceHeight = 50,
+  defaultDuration = 1000
+} = Astro.props;
+
+const code = `class BounceAnimation(
+    val bounceHeight: Float = ${defaultBounceHeight}f,
+    override val duration: Long = ${defaultDuration},
+    override val interpolator: TimeInterpolator? = BounceInterpolator()
+) : MarkerAnimation`;
+---
+
+<Code code={code} lang="kotlin" />
+

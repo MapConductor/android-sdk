@@ -1,0 +1,64 @@
+---
+title: "CircleState"
+---
+
+import CircleStateConstructorExample from '~/components/states/circle/CircleStateConstructorExample.astro';
+import CircleStateMethodsExample from '~/components/states/circle/CircleStateMethodsExample.astro';
+import CircleStateBasicExample from '~/components/states/circle/CircleStateBasicExample.astro';
+import InteractiveCircleExampleComposable from '~/components/states/circle/InteractiveCircleExampleComposable.astro';
+import MultipleCirclesZIndexExample from '~/components/states/circle/MultipleCirclesZIndexExample.astro';
+import CircleEventTypesExample from '~/components/states/circle/CircleEventTypesExample.astro';
+
+`CircleState` gestiona la configuración y el comportamiento de las superposiciones circulares en el mapa. Proporciona propiedades reactivas para la posición del centro, el radio, el estilo y la configuración de interacción.
+
+## Constructor
+
+<CircleStateConstructorExample />
+
+## Propiedades
+
+### Propiedades básicas
+- **`id: String`**: Identificador único (se genera automáticamente si no se proporciona).
+- **`center: GeoPoint`**: Centro geográfico del círculo.
+- **`radiusMeters: Double`**: Radio en metros.
+- **`clickable: Boolean`**: Indica si el círculo responde a eventos de clic.
+- **`extra: Serializable?`**: Datos adicionales asociados al círculo.
+
+### Propiedades visuales
+- **`strokeColor: Color`**: Color del borde.
+- **`strokeWidth: Dp`**: Grosor del borde.
+- **`fillColor: Color`**: Color de relleno.
+- **`zIndex: Int?`**: Orden de dibujo (valores más altos se dibujan por encima).
+
+## Métodos
+
+<CircleStateMethodsExample />
+
+## Ejemplos de uso
+
+### Círculo básico
+
+<CircleStateBasicExample />
+
+### Círculo interactivo
+
+<InteractiveCircleExampleComposable />
+
+### Varios círculos con Z-Index
+
+<MultipleCirclesZIndexExample />
+
+## Manejo de eventos
+
+Los eventos de círculo proporcionan tanto el estado como la posición del clic:
+
+<CircleEventTypesExample />
+
+## Buenas prácticas
+
+1. **Unidades del radio**: Utiliza siempre metros para el radio para mantener la consistencia.
+2. **Alfa del color**: Usa transparencia para mejorar la visibilidad del mapa.
+3. **Z-Index**: Utiliza z-index para controlar círculos superpuestos.
+4. **Rendimiento**: Evita crear demasiados círculos grandes.
+5. **Reactividad**: Actualiza las propiedades directamente para un renderizado eficiente.
+

@@ -1,0 +1,36 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  functionName?: string;
+  rememberStateFunction?: string;
+  mapViewType?: string;
+  commentForUsage?: string;
+  commentForMapContent?: string;
+}
+
+const {
+  functionName = "GoogleMapsExample",
+  rememberStateFunction = "rememberMapLibreViewState",
+  mapViewType = "MapLibreView",
+  commentForUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForMapContent = "Map content"
+} = Astro.props;
+
+const usageCommentLine =
+  commentForUsage && commentForUsage.trim().length > 0
+    ? `\n    // ${commentForUsage}`
+    : "";
+
+const code = `@Composable
+fun ${functionName}() {
+    val mapViewState = ${rememberStateFunction}()${usageCommentLine}
+
+    ${mapViewType}(state = mapViewState) {
+        // ${commentForMapContent}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+
