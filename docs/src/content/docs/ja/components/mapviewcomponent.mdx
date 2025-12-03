@@ -3,6 +3,11 @@ title: "MapViewComponent"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import GoogleMapsExample from '~/components/components/mapviewcomponent/GoogleMapsExample.astro';
+import MapboxExample from '~/components/components/mapviewcomponent/MapboxExample.astro';
+import AdvancedMapEventHandlingExample from '~/components/components/mapviewcomponent/AdvancedMapEventHandlingExample.astro';
+import MapViewComponentSignaturesTabs from '~/components/components/mapviewcomponent/MapViewComponentSignaturesTabs.astro';
+import ProviderIndependentMapContentExample from '~/components/components/mapviewcomponent/ProviderIndependentMapContentExample.astro';
 
 MapConductor は、アプリケーションで地図を表示するための基盤となる、地図SDK固有の地図ビューコンポーネントを提供します。各地図SDKには独自の実装がありますが、一貫した API インターフェースを維持しています。
 
@@ -14,134 +19,7 @@ MapConductor は複数の地図SDKをサポートしており、それぞれに�
 
 各地図SDK固有の特殊なイベントコールバックについては、v{BOM_MODULE_VERSION} ではまだサポートされていません。
 
-<Tabs>
-<TabItem label="GoogleMaps">
-
-```kotlin
-GoogleMapView(
-    state: GoogleMapViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    onGroundImageClick: OnGroundImageEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
-</TabItem>
-<TabItem label="Mapbox">
-```kotlin
-MapboxMapView(
-    state: MapboxViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
-</TabItem>
-
-<TabItem label="HERE">
-
-```kotlin
-HereMapView(
-    state: HereViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
-</TabItem>
-
-<TabItem label="ArcGIS">
-```kotlin
-ArcGISMapView(
-    state: ArcGISMapViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
-</TabItem>
-
-<TabItem label="MapLibre">
-```kotlin
-MapLibreMapView(
-    state: MapLibreViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapLibreMapViewScope.() -> Unit)? = null
-)
-```
-</TabItem>
-</Tabs>
+<MapViewComponentSignaturesTabs />
 
 
 ## 共通パラメータ
@@ -170,77 +48,10 @@ MapLibreMapView(
 
 <Tabs>
 <TabItem label="Google Maps の実装">
-```kotlin
-@Composable
-fun GoogleMapsExample() {
-    val mapViewState = rememberGoogleMapViewState()
-
-    GoogleMapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        },
-        onMarkerClick = { markerState ->
-            println("Marker clicked: ${markerState.extra}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF"),
-            extra = "San Francisco"
-        )
-
-        Circle(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radiusMeters = 1000.0,
-            strokeColor = Color.Blue,
-            fillColor = Color.Blue.copy(alpha = 0.3f)
-        )
-    }
-}
-```
-![](~/assets/introduction/basic-googlemaps-example.png)
+<GoogleMapsExample />
 </TabItem>
 <TabItem label="Mapbox の実装">
-
-```kotlin
-@Composable
-fun MapboxExample() {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val camera = MapCameraPositionImpl(
-        position = center,
-        zoom = 13.0,
-    )
-
-    val mapViewState = rememberMapboxMapViewState(
-        cameraPosition = camera,
-    )
-
-    MapboxMapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "MB"),
-            extra = "Mapbox marker"
-        )
-
-        Polyline(
-            points = listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7949, -122.3994)
-            ),
-            strokeColor = Color.Red,
-            strokeWidth = 3.dp
-        )
-    }
-}
-```
-![](~/assets/introduction/basic-mapbox-example.png)
+<MapboxExample />
 </TabItem>
 </Tabs>
 
@@ -250,120 +61,21 @@ fun MapboxExample() {
 
 各地図SDKには特定のコンポーネントが必要ですが、地図SDKに依存しないコンテンツを作成できます:
 
-```kotlin
-@Composable
-fun MapContent() {
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(label = "Point"),
-        extra = "Common marker"
-    )
-
-    Circle(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radiusMeters = 500.0,
-        strokeColor = Color.Green,
-        fillColor = Color.Green.copy(alpha = 0.2f)
-    )
-}
-
-@Composable
-fun GoogleMapsScreen() {
-    val state = rememberGoogleMapViewState()
-    GoogleMapView(state = state) {
-        MapContent() // 再利用可能なコンテンツ
-    }
-}
-
-@Composable
-fun MapboxScreen() {
-    val state = remember { MapboxViewStateImpl() }
-    MapboxMapView(state = state) {
-        MapContent() // 同じコンテンツ、異なる地図SDK
-    }
-}
-```
+<ProviderIndependentMapContentExample
+  markerLatitude={37.7749}
+  markerLongitude={-122.4194}
+  markerLabel="Point"
+  markerExtra="Common marker"
+  radiusMeters={500.0}
+  strokeColorExpr="Color.Green"
+  fillColorExpr="Color.Green.copy(alpha = 0.2f)"
+  commentForReusableContent="再利用可能なコンテンツ"
+  commentForSameContentDifferentSdk="同じコンテンツ、異なる地図SDK"
+/>
 
 ### 高度なイベント処理
 
-```kotlin
-@Composable
-fun AdvancedMapExample() {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = center,
-            zoom = 13.0,
-        ),
-    )
-
-    // Recompositionでマーカーを再生成しないように、rememberで囲む
-    val markerState1 by remember { mutableStateOf(MarkerState(
-        id = "marker1",
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(
-            fillColor = Color.Blue,
-            label = "1"
-        ),
-        // marker1 はドラッグできるようにする
-        draggable = true,
-    )) }
-    val markerState2 by remember { mutableStateOf( MarkerState(
-        id = "marker2",
-        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        icon = DefaultIcon(
-            fillColor = Color.Red,
-            label = "2"
-        ),
-    )) }
-
-    // 選択されたマーカーを保持
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-
-    GoogleMapView(
-        state = mapViewState,
-        onMapLoaded = {
-            println("Map loaded and ready")
-        },
-        onMapClick = { geoPoint ->
-            selectedMarker = null // 地図クリックで選択解除
-        },
-        onMarkerClick = { markerState ->
-            selectedMarker = markerState  // クリックされたマーカーを保持する
-        },
-        onMarkerDragStart = { markerState ->
-            println("Started dragging marker: ${markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("Dragging marker to: ${markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("Finished dragging marker: ${markerState.id}")
-        }
-    ) {
-        // インタラクティブなマーカーを持つ地図コンテンツ
-        Marker(markerState1)
-        Marker(markerState2)
-
-        // 選択されたマーカーの情報を表示
-        selectedMarker?.let { marker ->
-            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
-
-            // InfoBubbleは関連付けられたマーカーのpositionを自動で追尾する
-            InfoBubble(
-                marker = marker,
-            ) {
-                Text(text)
-            }
-        }
-    }
-}
-```
-
-<video width="720" height="480" controls>
- <source src="/mapviewcomponent/advanced-map-example.webm" type="video/webm" />
- <source src="/mapviewcomponent/advanced-map-example.mp4" type="video/mp4" />
-</video>
+<AdvancedMapEventHandlingExample />
 
 ## 地図SDKの違い
 

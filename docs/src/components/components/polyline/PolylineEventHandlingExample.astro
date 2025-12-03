@@ -1,0 +1,45 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  polylineClickedLabel?: string;
+  pointsCountLabel?: string;
+  clickLocationLabel?: string;
+  extraDataLabel?: string;
+  extraValue?: string;
+}
+
+const {
+  commentForMapViewUsage = 'Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView',
+  polylineClickedLabel = 'Polyline clicked:',
+  pointsCountLabel = 'Points count',
+  clickLocationLabel = 'Click location',
+  extraDataLabel = 'Extra data',
+  extraValue = 'Interactive route',
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(
+    state = mapViewState,
+    onPolylineClick = { polylineEvent ->
+        val polyline = polylineEvent.state
+        val clickPoint = polylineEvent.clicked
+
+        println("${polylineClickedLabel}")
+        println("  ${pointsCountLabel}: \${polyline.points.size}")
+        println("  ${clickLocationLabel}: \${clickPoint}")
+        println("  ${extraDataLabel}: \${polyline.extra}")
+    }
+) {
+    Polyline(
+        points = routePoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 4.dp,
+        extra = "${extraValue}"
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

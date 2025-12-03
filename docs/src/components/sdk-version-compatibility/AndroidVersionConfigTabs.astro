@@ -1,0 +1,65 @@
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  targetSdk?: string;
+  minSdk?: string;
+  javaVersion?: string;
+  kotlinVersion?: string;
+  composeVersion?: string;
+}
+
+const {
+  targetSdk = "{ANDROID_TARGET_SDK_VERSION}",
+  minSdk = "{ANDROID_MIN_SDK_VERSION}",
+  javaVersion = "{JAVA_VERSION}",
+  kotlinVersion = "{KOTLIN_VERSION}",
+  composeVersion = "{JETPACK_COMPOSE_VERSION}"
+} = Astro.props;
+
+const kotlinCode = `android {
+    compileSdk = ${targetSdk}
+
+    defaultConfig {
+        minSdk = ${minSdk}
+        targetSdk = ${targetSdk}
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_${javaVersion}
+        targetCompatibility = JavaVersion.VERSION_${javaVersion}
+    }
+
+    kotlinOptions {
+        jvmTarget = "${javaVersion}"
+    }
+}`;
+
+const groovyCode = `android {
+    compileSdk ${targetSdk}
+
+    defaultConfig {
+        minSdk ${minSdk}
+        targetSdk ${targetSdk}
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_${javaVersion}
+        targetCompatibility JavaVersion.VERSION_${javaVersion}
+    }
+
+    kotlinOptions {
+        jvmTarget = '${javaVersion}'
+    }
+}`;
+---
+
+<Tabs>
+  <TabItem label="build.gradle.kts">
+    <Code code={kotlinCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="build.gradle">
+    <Code code={groovyCode} lang="groovy" />
+  </TabItem>
+</Tabs>

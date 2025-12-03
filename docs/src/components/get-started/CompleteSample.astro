@@ -1,0 +1,166 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  marker1Label?: string;
+  marker1Lat?: number;
+  marker1Long?: number;
+  marker2Label?: string;
+  marker2Lat?: number;
+  marker2Long?: number;
+  centerLat?: number;
+  centerLong?: number;
+  circleRadiusMeters?: number;
+}
+
+const {
+  marker1Label = "TT",
+  marker1Lat = 35.6586,
+  marker1Long = 139.7454,
+  marker2Label = "ST",
+  marker2Lat = 35.7101,
+  marker2Long = 139.8107,
+  centerLat = 35.6812,
+  centerLong = 139.7671,
+  circleRadiusMeters = 1000.0
+} = Astro.props;
+
+const code = `import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.mapconductor.core.*
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import kotlinx.coroutines.launch
+
+@Composable
+fun CompleteSample(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    // 位置情報
+    val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
+    val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
+
+    // クリックされた位置を保存
+    var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
+
+    val initialCamera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+        zoom = 12.0
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // コントロールボタン
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPositionImpl(position = marker1, zoom = 15.0),
+                        durationMills = 1000
+                    )
+                }
+            }) {
+                Text("${marker1Label}")
+            }
+
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPositionImpl(position = marker2, zoom = 15.0),
+                        durationMills = 1000
+                    )
+                }
+            }) {
+                Text("${marker2Label}")
+            }
+        }
+
+        // 地図
+        GoogleMapView(
+            modifier = Modifier.fillMaxSize(),
+            state = mapViewState,
+            onMapClick = { geoPoint ->
+                clickedPosition = geoPoint
+            },
+            onMarkerClick = { markerState ->
+                Toast
+                    .makeText(
+                        context,
+                        "clicked: \${markerState.extra}",
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+            }
+        ) {
+            // マーカー
+            Marker(
+                position = marker1,
+                icon = DefaultIcon(
+                    label = "${marker1Label}",
+                    fillColor = Color.Red,
+                ),
+                extra = "marker1"
+            )
+
+            Marker(
+                position = marker2,
+                icon = DefaultIcon(
+                    label = "${marker2Label}",
+                    fillColor = Color.Blue
+                ),
+                extra = "marker2"
+            )
+
+            // クリックされた位置のマーカー
+            clickedPosition?.let { position ->
+                Marker(
+                    position = position,
+                    icon = DefaultIcon(
+                        label = "!",
+                        fillColor = Color.Green
+                    ),
+                    extra = "clicked"
+                )
+            }
+
+            // 円
+            Circle(
+                center = marker1,
+                radiusMeters = ${circleRadiusMeters},
+                strokeColor = Color.Red,
+                fillColor = Color.Red.copy(alpha = 0.2f)
+            )
+
+            Circle(
+                center = marker2,
+                radiusMeters = ${circleRadiusMeters},
+                strokeColor = Color.Blue,
+                fillColor = Color.Blue.copy(alpha = 0.2f)
+            )
+
+            // ポリライン
+            Polyline(
+                points = listOf(marker1, marker2),
+                strokeColor = Color.Magenta,
+                strokeWidth = 3.dp
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

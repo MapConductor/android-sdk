@@ -1,0 +1,51 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MapDesignSwitchExample() {
+    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPositionImpl(position = london, zoom = 8.0)
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = camera,
+        mapDesign = HereMapDesign.NormalDay
+    )
+
+    Column(modifier = modifier) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.NormalDay
+                }
+            ) {
+                Text("NormalDay")
+            }
+            Spacer(modifier = Modifier.width(20.dp))
+
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.NormalNight
+                }
+            ) {
+                Text("NormalNight")
+            }
+
+            Spacer(modifier = Modifier.width(20.dp))
+            Button(
+                onClick = {
+                    mapViewState.mapDesignType = HereMapDesign.HybridDay
+                }
+            ) {
+                Text("HYBRID_DAY")
+            }
+        }
+
+        HereMapView(
+            state = mapViewState
+        ) {
+            // 地図コンテンツ
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

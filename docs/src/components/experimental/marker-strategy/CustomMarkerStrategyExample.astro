@@ -1,0 +1,71 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForCustomRenderingLogic?: string;
+  commentForManagementLogic?: string;
+  commentForUseRenderer?: string;
+  commentForVisibleLogic?: string;
+  commentForHiddenLogic?: string;
+}
+
+const {
+  commentForCustomRenderingLogic = 'Custom rendering logic',
+  commentForManagementLogic = 'Your custom marker management here',
+  commentForUseRenderer = 'Use renderer to update display',
+  commentForVisibleLogic = 'Your custom logic to determine which markers should be visible',
+  commentForHiddenLogic = 'Your custom logic to determine which markers should be hidden',
+} = Astro.props;
+
+const code = `class CustomMarkerStrategy<ActualMarker>(
+    semaphore: Semaphore = Semaphore(1),
+    geocell: HexGeocell = HexGeocellImpl.defaultGeocell()
+) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
+
+    override suspend fun onCameraChanged(
+        cameraPosition: MapCameraPositionImpl,
+        renderer: MarkerOverlayRenderer<ActualMarker>
+    ) {
+        semaphore.withPermit {
+            // ${commentForCustomRenderingLogic}
+            val visibleBounds = cameraPosition.visibleRegion?.bounds ?: return
+
+            // ${commentForManagementLogic}
+            val markersToShow = determineVisibleMarkers(visibleBounds)
+            val markersToHide = determineHiddenMarkers(visibleBounds)
+
+            // ${commentForUseRenderer}
+            if (markersToHide.isNotEmpty()) {
+                renderer.onRemove(markersToHide)
+            }
+
+            if (markersToShow.isNotEmpty()) {
+                val addParams = markersToShow.map { entity ->
+                    object : MarkerOverlayRenderer.AddParams {
+                        override val state: MarkerState = entity.state
+                        override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                    }
+                }
+                renderer.onAdd(addParams)
+            }
+
+            renderer.onPostProcess()
+        }
+    }
+
+    private fun determineVisibleMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+        // ${commentForVisibleLogic}
+        return markerManager.findMarkersInBounds(bounds)
+    }
+
+    private fun determineHiddenMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+        // ${commentForHiddenLogic}
+        return markerManager.allEntities().filter { entity ->
+            entity.isRendered && !bounds.contains(entity.state.position)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

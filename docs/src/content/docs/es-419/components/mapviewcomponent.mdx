@@ -1,0 +1,106 @@
+---
+title: "MapViewComponent"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import GoogleMapsExample from '~/components/components/mapviewcomponent/GoogleMapsExample.astro';
+import MapboxExample from '~/components/components/mapviewcomponent/MapboxExample.astro';
+import AdvancedMapEventHandlingExample from '~/components/components/mapviewcomponent/AdvancedMapEventHandlingExample.astro';
+import MapViewComponentSignaturesTabs from '~/components/components/mapviewcomponent/MapViewComponentSignaturesTabs.astro';
+import ProviderIndependentMapContentExample from '~/components/components/mapviewcomponent/ProviderIndependentMapContentExample.astro';
+
+MapConductor proporciona componentes de vista de mapa específicos del proveedor de mapas que sirven como base para mostrar mapas en su aplicación. Cada SDK de mapa tiene su propia implementación, pero se mantiene una interfaz de API consistente en todos los proveedores.
+
+## Componentes Específicos del Proveedor de Mapas
+
+MapConductor admite múltiples SDKs de mapa, cada uno con un componente dedicado.
+Típicamente, se colocan múltiples objetos (marcadores, polilíneas, etc.) en un mapa, por lo que en lugar de configurar devoluciones de llamada de eventos en objetos individuales,
+se configuran devoluciones de llamada de eventos en el componente específico del proveedor de mapas.
+
+Las devoluciones de llamada de eventos especiales específicas del proveedor aún no se admiten en v{BOM_MODULE_VERSION}.
+
+<MapViewComponentSignaturesTabs />
+
+
+## Parámetros Comunes
+
+Todos los componentes de vista de mapa comparten los siguientes parámetros:
+
+### Parámetros Principales
+
+- **`modifier`**: Modificador de Compose para estilo y diseño
+- **`state`**: Implementación de estado de vista de mapa específica del proveedor de mapas
+- **`content`**: Contenido Composable que contiene superposiciones de mapa (marcadores, círculos, etc.)
+
+### Controladores de Eventos
+
+- **`onMapLoaded`**: Se llama cuando el mapa ha terminado de cargar
+- **`onMapClick`**: Se llama cuando el usuario toca el mapa
+- **Eventos de cámara**: `onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`
+- **Eventos de marcador**: `onMarkerClick`, `onMarkerDragStart`, `onMarkerDrag`, `onMarkerDragEnd`, `onMarkerAnimateStart`, `onMarkerAnimateEnd`
+- **Eventos de superposición**: `onCircleClick`, `onPolylineClick`, `onPolygonClick`, `onGroundImageClick`
+
+### Parámetros Avanzados
+
+- **`markerRenderingStrategy`**: Estrategia de renderizado de marcador personalizado para optimización de rendimiento
+
+## Ejemplos de Uso
+
+<Tabs>
+<TabItem label="Implementación de Google Maps">
+<GoogleMapsExample />
+</TabItem>
+<TabItem label="Implementación de Mapbox">
+<MapboxExample />
+</TabItem>
+</Tabs>
+
+
+
+### Patrón Independiente del Proveedor de Mapas
+
+Aunque se requieren componentes específicos de mapa para cada SDK, puede crear contenido independiente del proveedor:
+
+<ProviderIndependentMapContentExample
+  markerLatitude={37.7749}
+  markerLongitude={-122.4194}
+  markerLabel="Punto"
+  markerExtra="Marcador común"
+  radiusMeters={500.0}
+  strokeColorExpr="Color.Green"
+  fillColorExpr="Color.Green.copy(alpha = 0.2f)"
+  commentForReusableContent="Contenido reutilizable"
+  commentForSameContentDifferentSdk="Mismo contenido, diferente SDK de mapa"
+/>
+
+### Manejo de Eventos Avanzado
+
+<AdvancedMapEventHandlingExample />
+
+## Diferencias de SDK de Mapa
+
+Aunque la API es consistente en todos los SDKs de mapa, hay diferencias en las siguientes áreas:
+
+### Características Soportadas
+- **GroundImage**: Actualmente soportado en Google Maps y ArcGIS
+- **Animación de Marcador**: Disponible en Google Maps y Mapbox
+- **Estilo Personalizado**: Cada SDK de mapa tiene diferentes opciones de estilo de mapa
+
+### Características de Rendimiento
+- **Google Maps**: Excelente para uso general con excelente rendimiento de marcadores
+- **Mapbox**: Óptimo para estilo personalizado y conjuntos de datos grandes
+- **HERE Maps**: Optimizado para integración de servicios de ubicación
+- **ArcGIS**: Óptimo para aplicaciones GIS y empresariales
+
+### Integración de Plataforma
+Cada SDK de mapa puede tener diferentes requisitos respecto a claves de API, permisos y configuración de plataforma. Consulte la documentación de configuración específica del proveedor para más detalles.
+
+## Mejores Prácticas
+
+1. **Elegir el SDK Correcto**: Seleccionar basándose en las necesidades específicas de su aplicación (estilo, rendimiento, características)
+2. **Gestión Consistente del Estado**: Usar los mismos patrones de estado independientemente del SDK de mapa
+3. **Contenido Reutilizable**: Crear contenido Composable independiente del proveedor cuando sea posible
+4. **Manejo de Eventos**: Implementar manejo de eventos integral para mejor experiencia del usuario
+5. **Manejo de Errores**: Siempre manejar fallos de inicialización y proporcionar interfaz de usuario de respaldo
+6. **Rendimiento**: Considerar estrategias de renderizado personalizado para grandes conjuntos de marcadores
+7. **Pruebas**: Probar su aplicación con múltiples SDKs de mapa para asegurar compatibilidad

@@ -1,0 +1,33 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForMapContent?: string;
+  mapLoadedMessage?: string;
+  mapClickPrefix?: string;
+}
+
+const {
+  commentForMapViewUsage = 'Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView',
+  commentForMapContent = 'Map content',
+  mapLoadedMessage = 'Map loaded successfully',
+  mapClickPrefix = 'Map clicked at',
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(
+    state = mapViewState,
+    onMapLoaded = {
+        println("${mapLoadedMessage}")
+    },
+    onMapClick = { geoPoint ->
+        println("${mapClickPrefix}: \${geoPoint.latitude}, \${geoPoint.longitude}")
+    }
+) {
+    // ${commentForMapContent}
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,36 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForThinLine?: string;
+  commentForMediumLine?: string;
+  commentForThickLine?: string;
+}
+
+const {
+  commentForThinLine = 'Thin line',
+  commentForMediumLine = 'Medium line',
+  commentForThickLine = 'Thick line',
+} = Astro.props;
+
+const code = `// ${commentForThinLine}
+Polyline(
+    points = points,
+    strokeWidth = 1.dp
+)
+
+// ${commentForMediumLine}
+Polyline(
+    points = points,
+    strokeWidth = 3.dp
+)
+
+// ${commentForThickLine}
+Polyline(
+    points = points,
+    strokeWidth = 8.dp
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

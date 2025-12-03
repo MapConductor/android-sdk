@@ -1,0 +1,42 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForSolidFill?: string;
+  commentForSemiTransparentFill?: string;
+  commentForNoFill?: string;
+  commentForGradientEffect?: string;
+}
+
+const {
+  commentForSolidFill = 'Solid fill',
+  commentForSemiTransparentFill = 'Semi-transparent fill',
+  commentForNoFill = 'No fill (outline only)',
+  commentForGradientEffect = 'Gradient-like effect using multiple polygons',
+} = Astro.props;
+
+const code = `// ${commentForSolidFill}
+Polygon(
+    points = points,
+    fillColor = Color.Red
+)
+
+// ${commentForSemiTransparentFill}
+Polygon(
+    points = points,
+    fillColor = Color.Red.copy(alpha = 0.5f)
+)
+
+// ${commentForNoFill}
+Polygon(
+    points = points,
+    fillColor = Color.Transparent
+)
+
+// ${commentForGradientEffect}
+Polygon(points = points, fillColor = Color.Blue.copy(alpha = 0.1f))
+Polygon(points = smallerPoints, fillColor = Color.Blue.copy(alpha = 0.2f))`;
+---
+
+<Code code={code} lang="kotlin" />
+

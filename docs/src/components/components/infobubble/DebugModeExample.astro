@@ -1,0 +1,38 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForDebugLogging?: string;
+  commentForHighlight?: string;
+  markerIdLabelPrefix?: string;
+  positionLabelPrefix?: string;
+  commentForActualContent?: string;
+  debugBubbleColorExpr?: string;
+  debugBorderColorExpr?: string;
+}
+
+const {
+  commentForDebugLogging = "Enable debug logging for InfoBubble positioning",
+  commentForHighlight = "Highlight for debugging",
+  markerIdLabelPrefix = "Marker ID",
+  positionLabelPrefix = "Position",
+  commentForActualContent = "Actual content",
+  debugBubbleColorExpr = "Color.Yellow.copy(alpha = 0.8f)",
+  debugBorderColorExpr = "Color.Red"
+} = Astro.props;
+
+const code = `// ${commentForDebugLogging}
+InfoBubble(
+    marker = marker,
+    bubbleColor = ${debugBubbleColorExpr}, // ${commentForHighlight}
+    borderColor = ${debugBorderColorExpr}
+) {
+    Column {
+        Text("${markerIdLabelPrefix}: \${marker.id}")
+        Text("${positionLabelPrefix}: \${marker.position}")
+        // ${commentForActualContent}
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

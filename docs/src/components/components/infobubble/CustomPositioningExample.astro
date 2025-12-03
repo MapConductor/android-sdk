@@ -1,0 +1,45 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForBottomAnchorIntro?: string;
+  commentForBottomAnchorAnchor?: string;
+  commentForCenterAnchorIntro?: string;
+  commentForCenterAnchorAnchor?: string;
+  bottomAnchorX?: number;
+  bottomAnchorY?: number;
+  centerAnchorX?: number;
+  centerAnchorY?: number;
+}
+
+const {
+  commentForBottomAnchorIntro = "Marker with bottom-center anchor - bubble will appear above",
+  commentForBottomAnchorAnchor = "Bottom center",
+  commentForCenterAnchorIntro = "Marker with center anchor - bubble will appear above center",
+  commentForCenterAnchorAnchor = "Center",
+  bottomAnchorX = 0.5,
+  bottomAnchorY = 1.0,
+  centerAnchorX = 0.5,
+  centerAnchorY = 0.5
+} = Astro.props;
+
+const code = `// ${commentForBottomAnchorIntro}
+val markerWithBottomAnchor = MarkerState(
+    position = position,
+    icon = ImageDefaultIcon(
+        drawable = customIcon,
+        anchor = Offset(${bottomAnchorX}f, ${bottomAnchorY}f) // ${commentForBottomAnchorAnchor}
+    )
+)
+
+// ${commentForCenterAnchorIntro}
+val markerWithCenterAnchor = MarkerState(
+    position = position,
+    icon = ImageDefaultIcon(
+        drawable = customIcon,
+        anchor = Offset(${centerAnchorX}f, ${centerAnchorY}f) // ${commentForCenterAnchorAnchor}
+    )
+)`;
+---
+
+<pre><code set:html={code}></code></pre>

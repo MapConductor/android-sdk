@@ -1,0 +1,54 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  lat?: number;
+  long?: number;
+  zoom?: number;
+  clickLabelIcon?: string;
+}
+
+const {
+  lat = 35.6812,
+  long = 139.7671,
+  zoom = 12.0,
+  clickLabelIcon = "!"
+} = Astro.props;
+
+const code = `import androidx.compose.runtime.*
+
+@Composable
+fun InteractiveMap(modifier: Modifier = Modifier) {
+    var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
+
+    val initialCamera = MapCameraPositionImpl(
+        position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+        zoom = ${zoom}
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+
+    GoogleMapView(
+        modifier = modifier.fillMaxSize(),
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            // 地図がクリックされたときの処理
+            clickedPosition = geoPoint
+            println("クリック位置: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        }
+    ) {
+        // クリックした位置にマーカーを表示
+        clickedPosition?.let { position ->
+            Marker(
+                position = position,
+                icon = DefaultIcon(label = "${clickLabelIcon}"),
+                extra = "clicked_marker"
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

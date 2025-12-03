@@ -1,0 +1,54 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun CircleIdentificationExample() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    // Create circles with unique IDs
+    val circles = listOf(
+        Circle(
+            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            radiusMeters = 1000.0,
+            strokeColor = Color.Red,
+            fillColor = Color.Red.copy(alpha = 0.3f),
+            id = "zone-a"
+        ),
+        Circle(
+            center = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            radiusMeters = 1500.0,
+            strokeColor = Color.Blue,
+            fillColor = Color.Blue.copy(alpha = 0.3f),
+            id = "zone-b"
+        )
+    )
+
+    // Use ID in event handling
+    MapView(
+        state = mapViewState,
+        onCircleClick = { circleEvent ->
+            when (circleEvent.state.id) {
+                "zone-a" -> handleZoneA()
+                "zone-b" -> handleZoneB()
+                else -> handleUnknownZone()
+            }
+        }
+    ) {
+        circles.forEach { circle -> Circle(circle) }
+    }
+}
+
+private fun handleZoneA() {
+    println("Zone A clicked")
+}
+
+private fun handleZoneB() {
+    println("Zone B clicked")
+}
+
+private fun handleUnknownZone() {
+    println("Unknown zone clicked")
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

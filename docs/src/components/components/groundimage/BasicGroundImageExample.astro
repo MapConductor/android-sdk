@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun BasicGroundImageExample() {
+    val context = LocalContext.current
+
+    MapView(state = mapViewState) {
+        AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
+            GroundImage(
+                bounds = GeoRectBounds(
+                    southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+                    northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                ),
+                image = drawable,
+                opacity = 0.7f
+            )
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

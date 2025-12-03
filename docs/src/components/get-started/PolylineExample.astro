@@ -1,0 +1,44 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  marker1Label?: string;
+  marker1Lat?: number;
+  marker1Long?: number;
+  marker2Label?: string;
+  marker2Lat?: number;
+  marker2Long?: number;
+  strokeWidth?: string;
+}
+
+const {
+  marker1Label = "TT",
+  marker1Lat = 35.6586,
+  marker1Long = 139.7454,
+  marker2Label = "ST",
+  marker2Lat = 35.7101,
+  marker2Long = 139.8107,
+  strokeWidth = "5.dp"
+} = Astro.props;
+
+const code = `GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState
+) {
+    // マーカー
+    Marker(position = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long}), icon = DefaultIcon(label = "${marker1Label}"))
+    Marker(position = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long}), icon = DefaultIcon(label = "${marker2Label}"))
+
+    // 2つのポイントを結ぶ線
+    Polyline(
+        points = listOf(
+            GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long}),
+            GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
+        ),
+        strokeColor = Color.Red,
+        strokeWidth = ${strokeWidth}
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

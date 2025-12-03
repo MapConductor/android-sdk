@@ -1,0 +1,45 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun ComplexPolygonExample() {
+    // 星形のポリゴン
+    val starPoints = remember {
+        val centerLat = 37.7749
+        val centerLng = -122.4194
+        val outerRadius = 0.01
+        val innerRadius = 0.005
+
+        buildList {
+            for (i in 0 until 10) {
+                val angle = (i * 36.0) * Math.PI / 180.0
+                val radiusMeters = if (i % 2 == 0) outerRadius else innerRadius
+                val lat = centerLat + radiusMeters * cos(angle)
+                val lng = centerLng + radiusMeters * sin(angle)
+                add(GeoPointImpl.fromLatLong(lat, lng))
+            }
+            add(first())
+        }
+    }
+
+    MapView(state = mapViewState) {
+        Polygon(
+            points = starPoints,
+            strokeColor = Color.Magenta,
+            strokeWidth = 2.dp,
+            fillColor = Color.Magenta.copy(alpha = 0.3f),
+            extra = "Star polygon"
+        )
+
+        Marker(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(
+                fillColor = Color.Magenta,
+                label = "⭐"
+            )
+        )
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

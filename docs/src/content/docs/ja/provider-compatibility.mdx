@@ -2,6 +2,8 @@
 title: 地図SDK互換性
 ---
 
+import CompatibilityAwareMapExample from '~/components/provider-compatibility/CompatibilityAwareMapExample.astro';
+
 このページでは、各地図SDKがサポートしている MapConductor コンポーネントを示します。MapConductor は統一 API の提供を目指していますが、一部の機能は基盤となる SDK の制限により、すべての地図SDKで利用できるわけではありません。
 
 ## コンポーネントサポートマトリックス
@@ -40,7 +42,7 @@ v{BOM_MODULE_VERSION} では、以下のカメラコールバックが利用可�
 
 ### ズームレベルの互換性
 
-各地図SDKごとにズームレベルの定義が異なります。MapConductorでは、”おおよそ”Google Mapsに近くなるように調整されていますが、完璧ではありません。
+各地図SDKごとにズームレベルの定義が異なります。MapConductorでは、"おおよそ"Google Mapsに近くなるように調整されていますが、完璧ではありません。
 
 
 ### Marker
@@ -85,37 +87,12 @@ GroundImage オーバーレイは Google Maps でのみサポートされてい�
 
 ### 実行時検出の例
 
-```kotlin
-@Composable
-fun CompatibilityAwareMap() {
-    val mapViewState = rememberGoogleMapViewState()
-    val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
-
-    // GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください
-    MapView(state = mapViewState) {
-        // 常にサポートされているコンポーネント
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon()
-        )
-
-        Circle(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radiusMeters = 1000.0,
-            fillColor = Color.Blue.copy(alpha = 0.3f)
-        )
-
-        // 条件付きでサポートされているコンポーネント
-        if (supportsGroundImage) {
-            GroundImage(
-                bounds = imageBounds,
-                image = overlayImage,
-                opacity = 0.7f
-            )
-        }
-    }
-}
-```
+<CompatibilityAwareMapExample
+  lat={37.7749}
+  long={-122.4194}
+  mapProvider="GoogleMapView"
+  comment="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
 
 ## ベストプラクティス
 

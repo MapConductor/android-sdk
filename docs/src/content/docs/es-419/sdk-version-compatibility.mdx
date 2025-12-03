@@ -2,6 +2,8 @@
 title: Compatibilidad de versiones del SDK
 ---
 
+import AndroidVersionConfigTabs from '~/components/sdk-version-compatibility/AndroidVersionConfigTabs.astro';
+
 # Compatibilidad de versiones del SDK
 
 En esta página se describe la compatibilidad entre MapConductor, los distintos SDK de mapas y el entorno Android/Kotlin/Compose.
@@ -19,25 +21,13 @@ Los módulos se prueban con estas versiones como base. Si usas versiones diferen
 
 ## Ejemplo de configuración de Gradle
 
-```kotlin
-android {
-    compileSdk = {ANDROID_TARGET_SDK_VERSION}
-
-    defaultConfig {
-        minSdk = {ANDROID_MIN_SDK_VERSION}
-        targetSdk = {ANDROID_TARGET_SDK_VERSION}
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
-        targetCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
-    }
-
-    kotlinOptions {
-        jvmTarget = "{JAVA_VERSION}"
-    }
-}
-```
+<AndroidVersionConfigTabs
+  targetSdk="{ANDROID_TARGET_SDK_VERSION}"
+  minSdk="{ANDROID_MIN_SDK_VERSION}"
+  javaVersion="{JAVA_VERSION}"
+  kotlinVersion="{KOTLIN_VERSION}"
+  composeVersion="{JETPACK_COMPOSE_VERSION}"
+/>
 
 ## MapConductor y los SDK de mapas
 

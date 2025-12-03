@@ -1,0 +1,62 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun InteractivePolygonExample() {
+    var vertices by remember {
+        mutableStateOf(
+            listOf(
+                GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                GeoPointImpl.fromLatLong(37.7799, -122.3994),
+                GeoPointImpl.fromLatLong(37.7649, -122.4094)
+            )
+        )
+    }
+
+    val closedVertices = vertices + vertices.first()
+
+    val polygonState = PolygonState(
+        points = closedVertices,
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        fillColor = Color.Red.copy(alpha = 0.2f)
+    )
+
+    val vertexMarkers = vertices.mapIndexed { index, point ->
+        MarkerState(
+            position = point,
+            icon = DefaultIcon(
+                fillColor = Color.Red,
+                strokeColor = Color.White,
+                label = "\${index + 1}",
+                scale = 0.8f
+            ),
+            draggable = true,
+            extra = "Vertex \$index"
+        )
+    }
+
+    MapView(
+        state = mapViewState,
+        onMarkerDrag = { markerState ->
+            val vertexIndex = markerState.extra.toString().substringAfter("Vertex ").toIntOrNull()
+            vertexIndex?.let { index ->
+                vertices = vertices.toMutableList().apply {
+                    if (index < size) set(index, markerState.position)
+                }
+            }
+        },
+        onPolygonClick = { polygonEvent ->
+            println("Polygon clicked at: \${polygonEvent.clicked}")
+        }
+    ) {
+        Polygon(polygonState)
+        vertexMarkers.forEach { marker ->
+            Marker(marker)
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

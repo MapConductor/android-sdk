@@ -1,0 +1,117 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForTapToClose?: string;
+  marker1Latitude?: number;
+  marker1Longitude?: number;
+  marker1Name?: string;
+  marker1ColorExpr?: string;
+  marker2Latitude?: number;
+  marker2Longitude?: number;
+  marker2Name?: string;
+  marker2ColorExpr?: string;
+  marker3Latitude?: number;
+  marker3Longitude?: number;
+  marker3Name?: string;
+  marker3ColorExpr?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForTapToClose = "Tap to close",
+  marker1Latitude = 37.7749,
+  marker1Longitude = -122.4194,
+  marker1Name = "Restaurant A",
+  marker1ColorExpr = "Color.Red",
+  marker2Latitude = 37.7849,
+  marker2Longitude = -122.4094,
+  marker2Name = "Hotel B",
+  marker2ColorExpr = "Color.Blue",
+  marker3Latitude = 37.7649,
+  marker3Longitude = -122.4294,
+  marker3Name = "Shop C",
+  marker3ColorExpr = "Color.Green"
+} = Astro.props;
+
+const code = `@Composable
+fun MultipleBubblesExample() {
+    val mapViewState = rememberGoogleMapViewState()
+    var selectedMarkers by remember { mutableStateOf(setOf<String>()) }
+
+    val markerData = remember {
+        listOf(
+            Triple(
+                GeoPointImpl.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
+                "${marker1Name}",
+                ${marker1ColorExpr}
+            ),
+            Triple(
+                GeoPointImpl.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
+                "${marker2Name}",
+                ${marker2ColorExpr}
+            ),
+            Triple(
+                GeoPointImpl.fromLatLong(${marker3Latitude}, ${marker3Longitude}),
+                "${marker3Name}",
+                ${marker3ColorExpr}
+            )
+        )
+    }
+
+    val markerStates = remember {
+        markerData.mapIndexed { index, (position, name, color) ->
+            MarkerState(
+                id = "marker_\$index",
+                position = position,
+                icon = DefaultIcon(fillColor = color, label = "\${index + 1}"),
+                extra = name
+            )
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState,
+        onMapClick = {
+            selectedMarkers = emptySet() // Clear all selections
+        },
+        onMarkerClick = { markerState ->
+            selectedMarkers = if (selectedMarkers.contains(markerState.id)) {
+                selectedMarkers - markerState.id // Deselect
+            } else {
+                selectedMarkers + markerState.id // Select
+            }
+        }
+    ) {
+        markerStates.forEach { markerState ->
+            Marker(markerState)
+
+            // Show bubble if marker is selected
+            if (selectedMarkers.contains(markerState.id)) {
+                InfoBubble(
+                    marker = markerState,
+                    bubbleColor = Color.White,
+                    borderColor = Color.Black
+                ) {
+                    Column {
+                        Text(
+                            text = markerState.extra as String,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "${commentForTapToClose}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

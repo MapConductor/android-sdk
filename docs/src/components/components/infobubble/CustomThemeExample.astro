@@ -1,0 +1,79 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  defaultBackgroundColorExpr?: string;
+  defaultBorderColorExpr?: string;
+  defaultTextColorExpr?: string;
+  defaultContentPaddingDp?: number;
+  defaultCornerRadiusDp?: number;
+  defaultTailSizeDp?: number;
+  darkBackgroundColorExpr?: string;
+  darkBorderColorExpr?: string;
+  darkTextColorExpr?: string;
+  darkContentPaddingDp?: number;
+  darkCornerRadiusDp?: number;
+  darkTailSizeDp?: number;
+}
+
+const {
+  defaultBackgroundColorExpr = "Color.White",
+  defaultBorderColorExpr = "Color.Black",
+  defaultTextColorExpr = "Color.Black",
+  defaultContentPaddingDp = 8,
+  defaultCornerRadiusDp = 4,
+  defaultTailSizeDp = 8,
+  darkBackgroundColorExpr = "Color(0xFF2D2D2D)",
+  darkBorderColorExpr = "Color(0xFF555555)",
+  darkTextColorExpr = "Color.White",
+  darkContentPaddingDp = 12,
+  darkCornerRadiusDp = 8,
+  darkTailSizeDp = 10
+} = Astro.props;
+
+const code = `data class BubbleTheme(
+    val backgroundColor: Color,
+    val borderColor: Color,
+    val textColor: Color,
+    val contentPadding: Dp,
+    val cornerRadius: Dp,
+    val tailSize: Dp
+) : java.io.Serializable
+
+val DefaultBubbleTheme = BubbleTheme(
+    backgroundColor = ${defaultBackgroundColorExpr},
+    borderColor = ${defaultBorderColorExpr},
+    textColor = ${defaultTextColorExpr},
+    contentPadding = ${defaultContentPaddingDp}.dp,
+    cornerRadius = ${defaultCornerRadiusDp}.dp,
+    tailSize = ${defaultTailSizeDp}.dp
+)
+
+val DarkBubbleTheme = BubbleTheme(
+    backgroundColor = ${darkBackgroundColorExpr},
+    borderColor = ${darkBorderColorExpr},
+    textColor = ${darkTextColorExpr},
+    contentPadding = ${darkContentPaddingDp}.dp,
+    cornerRadius = ${darkCornerRadiusDp}.dp,
+    tailSize = ${darkTailSizeDp}.dp
+)
+
+@Composable
+fun ThemedInfoBubble(
+    marker: MarkerState,
+    theme: BubbleTheme = DefaultBubbleTheme,
+    content: @Composable () -> Unit
+) {
+    InfoBubble(
+        marker = marker,
+        bubbleColor = theme.backgroundColor,
+        borderColor = theme.borderColor,
+        contentPadding = theme.contentPadding,
+        cornerRadius = theme.cornerRadius,
+        tailSize = theme.tailSize,
+        content = content
+    )
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

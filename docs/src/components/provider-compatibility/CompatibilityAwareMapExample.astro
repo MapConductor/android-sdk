@@ -1,0 +1,49 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  lat?: number;
+  long?: number;
+  mapProvider?: string;
+  comment?: string;
+}
+
+const {
+  lat = 37.7749,
+  long = -122.4194,
+  mapProvider = "GoogleMapView",
+  comment = "選択した地図SDKに置き換えてください"
+} = Astro.props;
+
+const code = `@Composable
+fun CompatibilityAwareMap() {
+    val mapViewState = rememberGoogleMapViewState()
+    val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
+
+    // ${comment}
+    ${mapProvider}(state = mapViewState) {
+        // 常にサポートされているコンポーネント
+        Marker(
+            position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+            icon = DefaultIcon()
+        )
+
+        Circle(
+            center = GeoPointImpl.fromLatLong(${lat}, ${long}),
+            radiusMeters = 1000.0,
+            fillColor = Color.Blue.copy(alpha = 0.3f)
+        )
+
+        // 条件付きでサポートされているコンポーネント
+        if (supportsGroundImage) {
+            GroundImage(
+                bounds = imageBounds,
+                image = overlayImage,
+                opacity = 0.7f
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,119 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  storeName?: string;
+  storeAddress?: string;
+  storePhone?: string;
+  storeType?: string;
+  cameraLatitude?: number;
+  cameraLongitude?: number;
+  markerLatitude?: number;
+  markerLongitude?: number;
+  markerColor?: string;
+  markerLabel?: string;
+  markerId?: string;
+  zoomLevel?: number;
+}
+
+const {
+  storeName = "Coffee Shop",
+  storeAddress = "1-4, Hongo 4-Chome, Bunkyo-Ku",
+  storePhone = "+81 (555) 123-4567",
+  storeType = "coffee",
+  cameraLatitude = 35.70662,
+  cameraLongitude = 139.76378,
+  markerLatitude = 35.708106,
+  markerLongitude = 139.760823,
+  markerColor = "0xFF8B4513",
+  markerLabel = "☕",
+  markerId = "coffee-shop-marker",
+  zoomLevel = 16.0
+} = Astro.props;
+
+const code = `data class StoreInfo(
+    val name: String,
+    val address: String,
+    val phone: String,
+    val type: String
+) : java.io.Serializable
+
+@Composable
+fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(${cameraLatitude}, ${cameraLongitude})
+    val camera = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
+    val mapViewState = rememberArcGISMapViewState(cameraPosition = camera)
+
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+    val context = LocalContext.current
+
+    ArcGISMapView(
+        state = mapViewState,
+        modifier = modifier,
+        onMapClick = { selectedMarker = null },
+        onMarkerClick = { markerState -> selectedMarker = markerState }
+    ) {
+        val storeInfo = StoreInfo(
+            name = "${storeName}",
+            address = "${storeAddress}",
+            phone = "${storePhone}",
+            type = "${storeType}"
+        )
+
+        val markerState = MarkerState(
+            position = GeoPointImpl.fromLatLong(${markerLatitude}, ${markerLongitude}),
+            icon = DefaultIcon(fillColor = Color(${markerColor}), label = "${markerLabel}"),
+            extra = storeInfo,
+            id = "${markerId}"
+        )
+
+        Marker(markerState)
+
+        selectedMarker?.let { marker ->
+            val store = marker.extra as? StoreInfo
+            store?.let {
+                InfoBubble(
+                    marker = marker,
+                    bubbleColor = Color.White,
+                    borderColor = Color.Black,
+                    contentPadding = 12.dp,
+                    cornerRadius = 8.dp
+                ) {
+                    Column(modifier = Modifier.width(250.dp)) {
+                        Text(
+                            text = store.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = store.address,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                                        data = Uri.parse("tel:\${store.phone}")
+                                    }
+                                    context.startActivity(intent)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
+                            ) {
+                                Icon(Icons.Default.Phone, contentDescription = "Call")
+                                Text("Call", modifier = Modifier.padding(start = 4.dp))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

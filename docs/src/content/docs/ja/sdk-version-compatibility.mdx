@@ -2,7 +2,7 @@
 title: SDK バージョン互換性
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import AndroidVersionConfigTabs from '~/components/sdk-version-compatibility/AndroidVersionConfigTabs.astro';
 
 # SDK バージョン互換性
 
@@ -21,50 +21,13 @@ MapConductor v{BOM_MODULE_VERSION} は、以下の環境を前提に設計され
 
 ## Gradle 設定の一例
 
-<Tabs>
-  <TabItem label="build.gradle.kts">
-```kotlin
-android {
-    compileSdk = {ANDROID_TARGET_SDK_VERSION}
-
-    defaultConfig {
-        minSdk = {ANDROID_MIN_SDK_VERSION}
-        targetSdk = {ANDROID_TARGET_SDK_VERSION}
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
-        targetCompatibility = JavaVersion.VERSION_{JAVA_VERSION}
-    }
-
-    kotlinOptions {
-        jvmTarget = "{JAVA_VERSION}"
-    }
-}
-```
-  </TabItem>
-  <TabItem label="build.gradle">
-```groovy
-android {
-    compileSdk {ANDROID_TARGET_SDK_VERSION}
-
-    defaultConfig {
-        minSdk {ANDROID_MIN_SDK_VERSION}
-        targetSdk {ANDROID_TARGET_SDK_VERSION}
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_{JAVA_VERSION}
-        targetCompatibility JavaVersion.VERSION_{JAVA_VERSION}
-    }
-
-    kotlinOptions {
-        jvmTarget = '{JAVA_VERSION}'
-    }
-}
-```
-  </TabItem>
-</Tabs>
+<AndroidVersionConfigTabs
+  targetSdk="{ANDROID_TARGET_SDK_VERSION}"
+  minSdk="{ANDROID_MIN_SDK_VERSION}"
+  javaVersion="{JAVA_VERSION}"
+  kotlinVersion="{KOTLIN_VERSION}"
+  composeVersion="{JETPACK_COMPOSE_VERSION}"
+/>
 
 ## MapConductor と地図 SDK
 

@@ -8,6 +8,9 @@ import BasicMarkerExample from '~/components/components/marker/BasicMarkerExampl
 import CustomIconMarkerExample from '~/components/components/marker/CustomIconMarkerExample.astro';
 import DraggableMarkerExample from '~/components/components/marker/DraggableMarkerExample.astro';
 import MultipleMarkersExample from '~/components/components/marker/MultipleMarkersExample.astro';
+import DefaultIconSignature from '~/components/components/marker/DefaultIconSignature.astro';
+import DrawableDefaultIconSignature from '~/components/components/marker/DrawableDefaultIconSignature.astro';
+import ImageIconSignature from '~/components/components/marker/ImageIconSignature.astro';
 
 Los marcadores son anotaciones de punto que se colocan en el mapa en ubicaciones geográficas concretas. Admiten iconos personalizados, interacciones y animaciones.
 
@@ -36,43 +39,19 @@ Los marcadores son anotaciones de punto que se colocan en el mapa en ubicaciones
 
 Icono estándar de marcador con apariencia configurable:
 
-```kotlin
-DefaultIcon(
-    scale: Float = 1.0f,
-    label: String? = null,
-    fillColor: Color = Color.Red,
-    strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 1.dp,
-    labelTextColor: Color = Color.White,
-    labelStrokeColor: Color? = null,
-    debug: Boolean = false
-)
-```
+<DefaultIconSignature />
 
 ### DrawableDefaultIcon
 
 Marcador que utiliza un recurso `Drawable` como fondo:
 
-```kotlin
-DrawableDefaultIcon(
-    backgroundDrawable: Drawable,
-    scale: Float = 1.0f,
-    strokeColor: Color? = null,
-    strokeWidth: Dp = 1.dp
-)
-```
+<DrawableDefaultIconSignature />
 
 ### ImageIcon
 
 Marcador que utiliza una imagen `Drawable` personalizada:
 
-```kotlin
-ImageIcon(
-    drawable: Drawable,
-    anchor: Offset = Offset(0.5f, 0.5f),
-    debug: Boolean = false
-)
-```
+<ImageIconSignature />
 
 ## Ejemplos de uso
 

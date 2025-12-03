@@ -16,7 +16,8 @@
       "Bash(fi)",
       "Bash(done)",
       "Bash(for f in src/content/docs/ja/**/*.md src/content/docs/ja/*.md)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(dir \"C:\\Users\\masashi\\Desktop\\android-sdk\\docs\\src\\content\\docs\\components\"\")"
     ],
     "deny": [],
     "ask": []

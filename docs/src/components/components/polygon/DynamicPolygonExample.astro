@@ -1,0 +1,66 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun DynamicPolygonExample() {
+    var polygonPoints by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+    var isCreating by remember { mutableStateOf(false) }
+
+    Column {
+        Row {
+            Button(
+                onClick = {
+                    isCreating = !isCreating
+                    if (!isCreating && polygonPoints.isNotEmpty()) {
+                        polygonPoints = polygonPoints + polygonPoints.first()
+                    }
+                }
+            ) {
+                Text(if (isCreating) "Finish Polygon" else "Create Polygon")
+            }
+
+            Button(onClick = { polygonPoints = emptyList() }) {
+                Text("Clear")
+            }
+        }
+
+        Text("Points: \${polygonPoints.size}")
+
+        MapView(
+            state = mapViewState,
+            onMapClick = { geoPoint ->
+                if (isCreating) {
+                    polygonPoints = polygonPoints + geoPoint
+                }
+            }
+        ) {
+            if (polygonPoints.size >= 3) {
+                Polygon(
+                    points = polygonPoints,
+                    strokeColor = Color.Purple,
+                    strokeWidth = 2.dp,
+                    fillColor = if (isCreating)
+                        Color.Purple.copy(alpha = 0.1f)
+                    else
+                        Color.Purple.copy(alpha = 0.3f)
+                )
+            }
+
+            polygonPoints.forEachIndexed { index, point ->
+                Marker(
+                    position = point,
+                    icon = DefaultIcon(
+                        fillColor = if (index == 0) Color.Green
+                                  else if (index == polygonPoints.size - 1 && !isCreating) Color.Red
+                                  else Color.Blue,
+                        label = "\${index + 1}",
+                        scale = 0.7f
+                    )
+                )
+            }
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

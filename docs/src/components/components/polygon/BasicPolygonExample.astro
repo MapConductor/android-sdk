@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// MapView を GoogleMapView、MapboxMapView などに置き換えてください
+MapView(state = mapViewState) {
+    val trianglePoints = listOf(
+        GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        GeoPointImpl.fromLatLong(37.7749, -122.3994),
+        GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    )
+
+    Polygon(
+        points = trianglePoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 2.dp,
+        fillColor = Color.Blue.copy(alpha = 0.3f)
+    )
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

@@ -1,0 +1,21 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState,
+    onCameraMoveStart = {
+        println("カメラの移動が開始されました")
+    },
+    onCameraMove = { cameraPosition ->
+        println("カメラ位置: \${cameraPosition.position.latitude}, \${cameraPosition.position.longitude}")
+    },
+    onCameraMoveEnd = {
+        println("カメラの移動が終了しました")
+    }
+) {
+    // マーカーなど
+}`;
+---
+
+<Code code={code} lang="kotlin" />

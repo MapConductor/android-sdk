@@ -1,0 +1,153 @@
+---
+title: "InfoBubble"
+---
+
+import SimpleInfoBubbleExample from '~/components/components/infobubble/SimpleInfoBubbleExample.astro';
+import RichContentInfoBubbleExample from '~/components/components/infobubble/RichContentInfoBubbleExample.astro';
+import InteractiveBubbleExample from '~/components/components/infobubble/InteractiveBubbleExample.astro';
+import InfoBubbleSignature from '~/components/components/infobubble/InfoBubbleSignature.astro';
+import CustomPositioningExample from '~/components/components/infobubble/CustomPositioningExample.astro';
+import LifecycleManagementExample from '~/components/components/infobubble/LifecycleManagementExample.astro';
+import ManualLifecycleExample from '~/components/components/infobubble/ManualLifecycleExample.astro';
+import DarkModeInfoBubbleExample from '~/components/components/infobubble/DarkModeInfoBubbleExample.astro';
+import CustomThemeExample from '~/components/components/infobubble/CustomThemeExample.astro';
+import EfficientUpdatesExample from '~/components/components/infobubble/EfficientUpdatesExample.astro';
+import MemoryManagementExample from '~/components/components/infobubble/MemoryManagementExample.astro';
+import ImplementationTipsExample from '~/components/components/infobubble/ImplementationTipsExample.astro';
+import DebugModeExample from '~/components/components/infobubble/DebugModeExample.astro';
+
+Una InfoBubble es un componente que muestra contenido personalizado en un formato de callout adjunto a marcadores en un mapa. Proporciona un método para mostrar información detallada sobre marcadores.
+
+## Descripción General
+
+Una InfoBubble se muestra encima de un marcador específico. El contenido mostrado en la InfoBubble puede ser cualquier Composable, permitiendo diseños flexibles y personalizados.
+
+## Función Composable
+
+<InfoBubbleSignature />
+
+## Parámetros
+
+- **`marker`**: El `MarkerState` al que se adjunta la burbuja
+- **`bubbleColor`**: Color de fondo de la burbuja (predeterminado: White)
+- **`borderColor`**: Color del borde de la burbuja (predeterminado: Black)
+- **`contentPadding`**: Espaciado interno alrededor del contenido (predeterminado: 8dp)
+- **`cornerRadius`**: Radio de las esquinas redondeadas de la burbuja (predeterminado: 4dp)
+- **`tailSize`**: Tamaño de la cola que apunta al marcador (predeterminado: 8dp)
+- **`content`**: Contenido Composable para mostrar dentro de la burbuja
+
+## Uso Básico
+
+### Burbuja de Texto Simple
+
+<SimpleInfoBubbleExample />
+
+### Burbuja con Estilo Personalizado
+
+<RichContentInfoBubbleExample
+  locationName="Golden Gate Park"
+  locationDescription="A large urban park with gardens, museums, and recreational areas."
+  locationRating={4.5}
+  latitude={37.7694}
+  longitude={-122.4862}
+  markerLabel="🌳"
+  markerId="park-marker"
+  zoomLevel={13.0}
+  markerFillColorExpr="Color.Green"
+/>
+
+### Burbuja Interactiva con Acciones
+
+<InteractiveBubbleExample
+  storeName="Coffee Shop"
+  storeAddress="1-4, Hongo 4-Chome, Bunkyo-Ku"
+  storePhone="+81 (555) 123-4567"
+  storeType="coffee"
+  cameraLatitude={35.70662}
+  cameraLongitude={139.76378}
+  markerLatitude={35.708106}
+  markerLongitude={139.760823}
+  markerColor="0xFF8B4513"
+  markerLabel="☕"
+  markerId="coffee-shop-marker"
+  zoomLevel={16.0}
+/>
+
+## Posicionamiento y Comportamiento
+
+### Posicionamiento Automático
+
+La InfoBubble se posiciona automáticamente encima de su marcador asociado:
+
+- La cola de la burbuja apunta al centro del marcador
+- La burbuja ajusta su posición para permanecer visible en el viewport del mapa
+- La burbuja sigue al marcador mientras se realiza pan o zoom en el mapa
+
+### Posicionamiento Personalizado
+
+Aunque InfoBubble maneja el posicionamiento automáticamente, puede influir en él a través del ancla del icono del marcador:
+
+<CustomPositioningExample />
+
+## Gestión del Ciclo de Vida
+
+La InfoBubble gestiona automáticamente su ciclo de vida:
+
+<LifecycleManagementExample />
+
+### Control Manual del Ciclo de Vida
+
+<ManualLifecycleExample />
+
+## Estilo y Temas
+
+### Soporte de Modo Oscuro
+
+<DarkModeInfoBubbleExample />
+
+### Tema Personalizado
+
+<CustomThemeExample />
+
+## Consideraciones de Rendimiento
+
+### Actualizaciones Eficientes
+
+<EfficientUpdatesExample />
+
+### Gestión de Memoria
+
+<MemoryManagementExample />
+
+## Mejores Prácticas
+
+### Directrices de Diseño
+
+1. **Contenido Conciso**: La InfoBubble debe proporcionar información esencial sin abrumar al usuario
+2. **Tamaño Apropiado**: Limitar el ancho de la burbuja para mantener la legibilidad en dispositivos móviles
+3. **Acciones Claras**: Si se incluyen botones, aclarar su propósito
+4. **Objetivos táctiles**: Asegurar que los elementos interactivos cumplan con los tamaños mínimos de objetivo táctil
+
+### Experiencia del Usuario
+
+1. **Comportamiento de Cierre**: Permitir que los usuarios cierren la burbuja tocando el mapa o marcadores
+2. **Estado de Carga**: Mostrar un indicador de carga para contenido que requiere solicitudes de red
+3. **Manejo de Errores**: Manejar datos faltantes o inválidos apropiadamente
+4. **Accesibilidad**: Proporcionar descripciones de contenido para lectores de pantalla
+
+### Consejos de Implementación
+
+<ImplementationTipsExample />
+
+## Solución de Problemas
+
+### Problemas Comunes
+
+1. **La burbuja no aparece**: Verificar que el marcador esté configurado correctamente y que la InfoBubble esté dentro de un MapViewScope
+2. **La burbuja no se cierra**: Verificar que el renderizado condicional responda adecuadamente a los cambios de estado
+3. **Degradación del rendimiento**: Limitar el número de burbujas mostradas simultáneamente y optimizar la composición del contenido
+4. **Problemas de diseño**: Usar restricciones de tamaño apropiadas y probar en diversos tamaños de pantalla
+
+### Modo de Depuración
+
+<DebugModeExample />

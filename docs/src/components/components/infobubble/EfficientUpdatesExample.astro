@@ -1,0 +1,35 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForGood?: string;
+  commentForStableId?: string;
+  commentForAvoid?: string;
+  commentForNewInstance?: string;
+}
+
+const {
+  commentForGood = "Good: Use stable keys for markers",
+  commentForStableId = "Stable ID",
+  commentForAvoid = "Avoid: Creating new marker state on every recomposition",
+  commentForNewInstance = "New instance each time"
+} = Astro.props;
+
+const code = `// ${commentForGood}
+val markerStates = remember(markersData) {
+    markersData.map { data ->
+        MarkerState(
+            id = "marker_\${data.id}", // ${commentForStableId}
+            position = data.position,
+            extra = data
+        )
+    }
+}
+
+// ${commentForAvoid}
+val markerStates = markersData.map { data ->
+    MarkerState(position = data.position, extra = data) // ${commentForNewInstance}
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

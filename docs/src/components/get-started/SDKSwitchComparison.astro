@@ -1,0 +1,45 @@
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+
+const googleMapsCode = `import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+
+@Composable
+fun MyMap() {
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+
+    GoogleMapView(
+        state = mapViewState
+    ) {
+        // マーカーやその他のコンポーネント
+    }
+}`;
+
+const mapboxCode = `import com.mapconductor.mapbox.MapboxMapView
+import com.mapconductor.mapbox.rememberMapboxViewState
+
+@Composable
+fun MyMap() {
+    val mapViewState = rememberMapboxViewState(
+        cameraPosition = initialCamera
+    )
+
+    MapboxMapView(
+        state = mapViewState
+    ) {
+        // マーカーやその他のコンポーネント(変更なし!)
+    }
+}`;
+---
+
+<Tabs>
+  <TabItem label="変更前 (Google Maps)">
+    <Code code={googleMapsCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="変更後 (Mapbox)">
+    <Code code={mapboxCode} lang="kotlin" />
+  </TabItem>
+</Tabs>

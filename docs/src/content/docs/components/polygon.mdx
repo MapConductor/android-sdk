@@ -1,0 +1,91 @@
+---
+title: "Polygon"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BasicPolygonExample from '~/components/components/polygon/BasicPolygonExample.astro';
+import InteractivePolygonExample from '~/components/components/polygon/InteractivePolygonExample.astro';
+import MultiplePolygonsExample from '~/components/components/polygon/MultiplePolygonsExample.astro';
+import DynamicPolygonExample from '~/components/components/polygon/DynamicPolygonExample.astro';
+import ComplexPolygonExample from '~/components/components/polygon/ComplexPolygonExample.astro';
+import PolygonEventHandlingExample from '~/components/components/polygon/PolygonEventHandlingExample.astro';
+import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicSignature.astro';
+import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
+import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
+import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+
+A polygon is a closed shape that defines an area with customizable stroke and fill properties. Polygons are useful for representing zones, regions, boundaries, or area-based features.
+
+## Composable Functions
+
+<Tabs>
+<TabItem label="Basic Polygon">
+
+<PolygonBasicSignature />
+</TabItem>
+<TabItem label="Polygon with State">
+
+<PolygonStateSignature />
+</TabItem>
+</Tabs>
+
+## Parameters
+
+- **`points`**: List of geographic coordinates defining the polygon vertices (`List<GeoPoint>`)
+- **`id`**: Optional unique identifier for the polygon (`String?`)
+- **`strokeColor`**: Color of the polygon boundary (default: `Color.Black`)
+- **`strokeWidth`**: Width of the boundary line (default: `1.dp`)
+- **`fillColor`**: Fill color of the polygon interior (default: `Color.Transparent`)
+- **`geodesic`**: Whether to draw geodesic edges (default: `false`)
+- **`extra`**: Additional data attached to the polygon (`Serializable?`)
+
+## Usage Examples
+
+### Basic Polygon
+
+<BasicPolygonExample />
+
+### Interactive Polygon with Vertex Markers
+
+<InteractivePolygonExample />
+
+### Multiple Polygons with Different Styles
+
+<MultiplePolygonsExample />
+
+### Complex Polygon Shape
+
+<ComplexPolygonExample />
+
+### Dynamic Polygon Creation
+
+<DynamicPolygonExample />
+
+## Event Handling
+
+Polygon interactions are handled by your map provider component:
+
+<PolygonEventHandlingExample />
+
+## Styling Options
+
+### Fill Variations
+
+<PolygonFillStyleExamples />
+
+### Stroke Variations
+
+<PolygonStrokeStyleExamples />
+
+## Best Practices
+
+1. **Close the Polygon**: Always ensure the last point equals the first point to properly close the polygon
+2. **Vertex Order**: Use consistent vertex ordering (clockwise or counter-clockwise) for predictable results
+3. **Performance**: Avoid excessively complex polygons with hundreds of vertices
+4. **Visual Clarity**: Use appropriate colors and transparency for good visibility
+5. **Interactive Feedback**: Provide visual feedback when polygons are clickable
+6. **Hole Handling**: Simulate holes using overlapping polygons with different colors
+7. **Geodesic Edges**: Use geodesic edges for large polygons to account for Earth's curvature
+8. **State Management**: Efficiently manage polygon vertex data and handle updates reactively
+9. **Validation**: Validate polygon geometry to ensure it forms a valid shape
+10. **Error Handling**: Handle edge cases like polygons with fewer than 3 vertices

@@ -1,0 +1,46 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  darkBackgroundColorExpr?: string;
+  lightBackgroundColorExpr?: string;
+  darkBorderColorExpr?: string;
+  lightBorderColorExpr?: string;
+  contentPaddingDp?: number;
+  cornerRadiusDp?: number;
+  darkTextColorExpr?: string;
+  lightTextColorExpr?: string;
+}
+
+const {
+  darkBackgroundColorExpr = "Color(0xFF2D2D2D)",
+  lightBackgroundColorExpr = "Color.White",
+  darkBorderColorExpr = "Color(0xFF555555)",
+  lightBorderColorExpr = "Color.Black",
+  contentPaddingDp = 12,
+  cornerRadiusDp = 8,
+  darkTextColorExpr = "Color.White",
+  lightTextColorExpr = "Color.Black"
+} = Astro.props;
+
+const code = `@Composable
+fun DarkModeInfoBubble(marker: MarkerState) {
+    val isDarkTheme = isSystemInDarkTheme()
+
+    InfoBubble(
+        marker = marker,
+        bubbleColor = if (isDarkTheme) ${darkBackgroundColorExpr} else ${lightBackgroundColorExpr},
+        borderColor = if (isDarkTheme) ${darkBorderColorExpr} else ${lightBorderColorExpr},
+        contentPadding = ${contentPaddingDp}.dp,
+        cornerRadius = ${cornerRadiusDp}.dp
+    ) {
+        Text(
+            text = marker.extra as? String ?: "",
+            color = if (isDarkTheme) ${darkTextColorExpr} else ${lightTextColorExpr},
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

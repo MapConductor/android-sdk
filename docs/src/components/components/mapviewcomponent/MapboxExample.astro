@@ -1,0 +1,73 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  zoomLevel?: number;
+  mapClickPrefix?: string;
+  markerLabel?: string;
+  markerExtra?: string;
+  markerLatitude?: number;
+  markerLongitude?: number;
+  polylinePoint1Latitude?: number;
+  polylinePoint1Longitude?: number;
+  polylinePoint2Latitude?: number;
+  polylinePoint2Longitude?: number;
+  polylinePoint3Latitude?: number;
+  polylinePoint3Longitude?: number;
+  polylineStrokeColorExpr?: string;
+  polylineStrokeWidthDp?: number;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  zoomLevel = 13.0,
+  mapClickPrefix = 'Map clicked at',
+  markerLabel = 'MB',
+  markerExtra = 'Mapbox marker',
+  markerLatitude = 37.7749,
+  markerLongitude = -122.4194,
+  polylinePoint1Latitude = 37.7749,
+  polylinePoint1Longitude = -122.4194,
+  polylinePoint2Latitude = 37.7849,
+  polylinePoint2Longitude = -122.4094,
+  polylinePoint3Latitude = 37.7949,
+  polylinePoint3Longitude = -122.3994,
+  polylineStrokeColorExpr = 'Color.Red',
+  polylineStrokeWidthDp = 3,
+} = Astro.props;
+
+const code = `@Composable
+fun MapboxExample() {
+    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val camera = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
+    val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
+
+    MapboxMapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("${mapClickPrefix}: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${markerLatitude}, ${markerLongitude}),
+            icon = DefaultIcon(label = "${markerLabel}"),
+            extra = "${markerExtra}"
+        )
+
+        Polyline(
+            points = listOf(
+                GeoPointImpl.fromLatLong(${polylinePoint1Latitude}, ${polylinePoint1Longitude}),
+                GeoPointImpl.fromLatLong(${polylinePoint2Latitude}, ${polylinePoint2Longitude}),
+                GeoPointImpl.fromLatLong(${polylinePoint3Latitude}, ${polylinePoint3Longitude})
+            ),
+            strokeColor = ${polylineStrokeColorExpr},
+            strokeWidth = ${polylineStrokeWidthDp}.dp
+        )
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

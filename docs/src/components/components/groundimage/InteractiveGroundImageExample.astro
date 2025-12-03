@@ -1,0 +1,79 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun InteractiveGroundImageExample() {
+    var southwest by remember {
+        mutableStateOf(GeoPointImpl.fromLatLong(37.7649, -122.4294))
+    }
+    var northeast by remember {
+        mutableStateOf(GeoPointImpl.fromLatLong(37.7849, -122.4094))
+    }
+    var opacity by remember { mutableStateOf(0.7f) }
+
+    val context = LocalContext.current
+    val groundImageDrawable = AppCompatResources.getDrawable(context, R.drawable.map_overlay)
+
+    val bounds = GeoRectBounds(southwest = southwest, northeast = northeast)
+
+    val groundImageState = groundImageDrawable?.let { drawable ->
+        GroundImageState(
+            bounds = bounds,
+            image = drawable,
+            opacity = opacity
+        )
+    }
+
+    val swMarker = MarkerState(
+        position = southwest,
+        icon = DefaultIcon(
+            fillColor = Color.Green,
+            label = "SW",
+            scale = 0.8f
+        ),
+        draggable = true,
+        extra = "southwest"
+    )
+
+    val neMarker = MarkerState(
+        position = northeast,
+        icon = DefaultIcon(
+            fillColor = Color.Red,
+            label = "NE",
+            scale = 0.8f
+        ),
+        draggable = true,
+        extra = "northeast"
+    )
+
+    Column {
+        Slider(
+            value = opacity,
+            onValueChange = { opacity = it },
+            valueRange = 0f..1f,
+            modifier = Modifier.padding(16.dp)
+        )
+
+        MapView(
+            state = mapViewState,
+            onMarkerDrag = { markerState ->
+                when (markerState.extra as String) {
+                    "southwest" -> southwest = markerState.position
+                    "northeast" -> northeast = markerState.position
+                }
+            },
+            onGroundImageClick = { groundImageEvent ->
+                println("Ground image clicked at: \${groundImageEvent.clicked}")
+            }
+        ) {
+            groundImageState?.let { state ->
+                GroundImage(state)
+            }
+            Marker(swMarker)
+            Marker(neMarker)
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

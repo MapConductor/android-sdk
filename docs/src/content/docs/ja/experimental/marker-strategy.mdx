@@ -13,6 +13,7 @@ import ClusteringStrategyExampleComposable from '~/components/experimental/marke
 import PerformanceStrategyConfigExample from '~/components/experimental/marker-strategy/PerformanceStrategyConfigExample.astro';
 import StrategyPerformanceMonitoringComposable from '~/components/experimental/marker-strategy/StrategyPerformanceMonitoringComposable.astro';
 import MigrationBasicToStrategyComposable from '~/components/experimental/marker-strategy/MigrationBasicToStrategyComposable.astro';
+import CustomMarkerStrategyExample from '~/components/experimental/marker-strategy/CustomMarkerStrategyExample.astro';
 
 `mapconductor-marker-strategy` モジュールは、大規模なデータセットでのパフォーマンスとユーザーエクスペリエンスを最適化するための高度なマーカーレンダリング戦略を提供します。この実験的モジュールは、異なるユースケースとパフォーマンス要件に合わせた複数のレンダリングアプローチを提供します。
 
@@ -147,56 +148,13 @@ import MigrationBasicToStrategyComposable from '~/components/experimental/marker
 
 ### AbstractViewportStrategy の拡張
 
-```kotlin
-class CustomMarkerStrategy<ActualMarker>(
-    semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell()
-) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
-
-    override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>
-    ) {
-        semaphore.withPermit {
-            // カスタムレンダリングロジック
-            val visibleBounds = cameraPosition.visibleRegion?.bounds ?: return
-
-            // 独自のマーカー管理ロジック
-            val markersToShow = determineVisibleMarkers(visibleBounds)
-            val markersToHide = determineHiddenMarkers(visibleBounds)
-
-            // renderer を使用して表示を更新
-            if (markersToHide.isNotEmpty()) {
-                renderer.onRemove(markersToHide)
-            }
-
-            if (markersToShow.isNotEmpty()) {
-                val addParams = markersToShow.map { entity ->
-                    object : MarkerOverlayRenderer.AddParams {
-                        override val state: MarkerState = entity.state
-                        override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
-                    }
-                }
-                renderer.onAdd(addParams)
-            }
-
-            renderer.onPostProcess()
-        }
-    }
-
-    private fun determineVisibleMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
-        // どのマーカーを表示すべきかを決定するカスタムロジック
-        return markerManager.findMarkersInBounds(bounds)
-    }
-
-    private fun determineHiddenMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
-        // どのマーカーを非表示にすべきかを決定するカスタムロジック
-        return markerManager.allEntities().filter { entity ->
-            entity.isRendered && !bounds.contains(entity.state.position)
-        }
-    }
-}
-```
+<CustomMarkerStrategyExample
+  commentForCustomRenderingLogic="カスタムレンダリングロジック"
+  commentForManagementLogic="独自のマーカー管理ロジック"
+  commentForUseRenderer="renderer を使用して表示を更新"
+  commentForVisibleLogic="どのマーカーを表示すべきかを決定するカスタムロジック"
+  commentForHiddenLogic="どのマーカーを非表示にすべきかを決定するカスタムロジック"
+/>
 
 ## パフォーマンス最適化
 
@@ -236,4 +194,3 @@ class CustomMarkerStrategy<ActualMarker>(
 />
 
 マーカー戦略モジュールは、大規模なデータセットや複雑なレンダリング要件を必要とするアプリケーションのための洗練されたマーカー管理機能を提供します。
-

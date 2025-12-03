@@ -1,0 +1,44 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForStableReference?: string;
+  commentForEfficientUpdates?: string;
+  commentForLoadData?: string;
+  commentForAvoidHeavyComputation?: string;
+  commentForAvoidExpensiveOperations?: string;
+  commentForMoveToRemember?: string;
+}
+
+const {
+  commentForStableReference = "Good: Stable marker reference",
+  commentForEfficientUpdates = "Good: Efficient content updates",
+  commentForLoadData = "Load additional data if needed",
+  commentForAvoidHeavyComputation = "Avoid: Heavy computation inside bubble content",
+  commentForAvoidExpensiveOperations = "Avoid expensive operations here",
+  commentForMoveToRemember = "Move to remember"
+} = Astro.props;
+
+const code = `// ${commentForStableReference}
+val markerState = remember(markerId) {
+    MarkerState(id = markerId, position = position)
+}
+
+// ${commentForEfficientUpdates}
+LaunchedEffect(selectedMarkerId) {
+    if (selectedMarkerId != null) {
+        // ${commentForLoadData}
+    }
+}
+
+// ${commentForAvoidHeavyComputation}
+InfoBubble(marker = marker) {
+    // ${commentForAvoidExpensiveOperations}
+    val processedData = remember(marker.extra) {
+        processData(marker.extra) // ${commentForMoveToRemember}
+    }
+    DisplayContent(processedData)
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

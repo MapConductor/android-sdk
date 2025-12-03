@@ -2,6 +2,8 @@
 title: Compatibilidad de proveedores
 ---
 
+import CompatibilityAwareMapExample from '~/components/provider-compatibility/CompatibilityAwareMapExample.astro';
+
 Esta página muestra qué componentes de MapConductor están soportados por cada proveedor de mapas. Aunque MapConductor intenta ofrecer una API unificada, algunas funciones no están disponibles en todos los proveedores debido a limitaciones de los SDK subyacentes.
 
 ## Matriz de soporte de componentes
@@ -72,37 +74,12 @@ Si utilizas componentes que no están soportados en todos los proveedores, prior
 
 ### Ejemplo de detección en tiempo de ejecución
 
-```kotlin
-@Composable
-fun CompatibilityAwareMap() {
-    val mapViewState = rememberGoogleMapViewState()
-    val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
-
-    // Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView
-    MapView(state = mapViewState) {
-        // Componentes siempre soportados
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon()
-        )
-
-        Circle(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radiusMeters = 1000.0,
-            fillColor = Color.Blue.copy(alpha = 0.3f)
-        )
-
-        // Componentes soportados de forma condicional
-        if (supportsGroundImage) {
-            GroundImage(
-                bounds = imageBounds,
-                image = overlayImage,
-                opacity = 0.7f
-            )
-        }
-    }
-}
-```
+<CompatibilityAwareMapExample
+  lat={37.7749}
+  long={-122.4194}
+  mapProvider="MapView"
+  comment="Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView"
+/>
 
 ## Buenas prácticas
 

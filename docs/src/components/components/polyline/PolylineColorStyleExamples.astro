@@ -1,0 +1,34 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForSolidColors?: string;
+  commentForSemiTransparent?: string;
+  commentForCustomColor?: string;
+  commentForMaterialGreen?: string;
+}
+
+const {
+  commentForSolidColors = 'Solid colors',
+  commentForSemiTransparent = 'Semi-transparent',
+  commentForCustomColor = 'Custom color',
+  commentForMaterialGreen = 'Material green',
+} = Astro.props;
+
+const code = `// ${commentForSolidColors}
+Polyline(points = points, strokeColor = Color.Red)
+Polyline(points = points, strokeColor = Color.Blue)
+Polyline(points = points, strokeColor = Color.Green)
+
+// ${commentForSemiTransparent}
+Polyline(points = points, strokeColor = Color.Red.copy(alpha = 0.7f))
+
+// ${commentForCustomColor}
+Polyline(
+    points = points,
+    strokeColor = Color(0xFF4CAF50) // ${commentForMaterialGreen}
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

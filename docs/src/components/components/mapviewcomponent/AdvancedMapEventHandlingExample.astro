@@ -1,0 +1,107 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  zoomLevel?: number;
+  mapLoadedMessage?: string;
+  mapClickedPrefix?: string;
+  cameraMoveStartMessage?: string;
+  cameraMovePrefix?: string;
+  cameraMoveEndMessage?: string;
+  markerClickedPrefix?: string;
+  centerMarkerLabel?: string;
+  centerMarkerExtra?: string;
+  centerMarkerFillColorExpr?: string;
+  centerCircleRadiusMeters?: number;
+  centerCircleStrokeColorExpr?: string;
+  centerCircleFillColorExpr?: string;
+  clickedMarkerLabel?: string;
+  clickedMarkerExtra?: string;
+  clickedMarkerFillColorExpr?: string;
+  commentForCenterMarkerAndCircle?: string;
+  commentForClickedMarker?: string;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  zoomLevel = 13.0,
+  mapLoadedMessage = 'Map loaded successfully',
+  mapClickedPrefix = 'Map clicked at',
+  cameraMoveStartMessage = 'Camera move started',
+  cameraMovePrefix = 'Camera position',
+  cameraMoveEndMessage = 'Camera move ended',
+  markerClickedPrefix = 'Marker clicked',
+  centerMarkerLabel = 'Center',
+  centerMarkerExtra = 'Center marker',
+  centerMarkerFillColorExpr = 'Color.Red',
+  centerCircleRadiusMeters = 1000.0,
+  centerCircleStrokeColorExpr = 'Color.Blue',
+  centerCircleFillColorExpr = 'Color.Blue.copy(alpha = 0.2f)',
+  clickedMarkerLabel = 'Clicked',
+  clickedMarkerExtra = 'Clicked point',
+  clickedMarkerFillColorExpr = 'Color.Green',
+  commentForCenterMarkerAndCircle = 'マーカーと円を表示',
+  commentForClickedMarker = 'クリックされた位置にマーカーを表示',
+} = Astro.props;
+
+const code = `@Composable
+fun AdvancedMapExample() {
+    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
+    )
+
+    var clickedPoint by remember { mutableStateOf<GeoPoint?>(null) }
+
+    GoogleMapView(
+        state = mapViewState,
+        onMapLoaded = {
+            println("${mapLoadedMessage}")
+        },
+        onMapClick = { geoPoint ->
+            clickedPoint = geoPoint
+            println("${mapClickedPrefix}: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        },
+        onCameraMoveStart = {
+            println("${cameraMoveStartMessage}")
+        },
+        onCameraMove = { cameraPosition ->
+            println("${cameraMovePrefix}: \${cameraPosition.position}")
+        },
+        onCameraMoveEnd = {
+            println("${cameraMoveEndMessage}")
+        },
+        onMarkerClick = { markerState ->
+            println("${markerClickedPrefix}: \${markerState.extra}")
+        }
+    ) {
+        // ${commentForCenterMarkerAndCircle}
+        Marker(
+            position = center,
+            icon = DefaultIcon(label = "${centerMarkerLabel}", fillColor = ${centerMarkerFillColorExpr}),
+            extra = "${centerMarkerExtra}"
+        )
+
+        Circle(
+            center = center,
+            radiusMeters = ${centerCircleRadiusMeters},
+            strokeColor = ${centerCircleStrokeColorExpr},
+            fillColor = ${centerCircleFillColorExpr}
+        )
+
+        // ${commentForClickedMarker}
+        clickedPoint?.let { point ->
+            Marker(
+                position = point,
+                icon = DefaultIcon(label = "${clickedMarkerLabel}", fillColor = ${clickedMarkerFillColorExpr}),
+                extra = "${clickedMarkerExtra}"
+            )
+        }
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

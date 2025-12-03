@@ -8,16 +8,12 @@ import BasicGroundImageExample from '~/components/components/groundimage/BasicGr
 import InteractiveGroundImageExample from '~/components/components/groundimage/InteractiveGroundImageExample.astro';
 import MultipleGroundImagesExample from '~/components/components/groundimage/MultipleGroundImagesExample.astro';
 import DynamicGroundImageExample from '~/components/components/groundimage/DynamicGroundImageExample.astro';
-import AnimatedGroundImageExample from '~/components/components/groundimage/AnimatedGroundImageExample.astro';
-import FloorPlanOverlayExample from '~/components/components/groundimage/FloorPlanOverlayExample.astro';
 import GroundImageEventHandlingExample from '~/components/components/groundimage/GroundImageEventHandlingExample.astro';
-import GroundImageResourceLoadingExample from '~/components/components/groundimage/GroundImageResourceLoadingExample.astro';
-import GroundImageAssetsLoadingExample from '~/components/components/groundimage/GroundImageAssetsLoadingExample.astro';
-import GroundImageNetworkLoadingExample from '~/components/components/groundimage/GroundImageNetworkLoadingExample.astro';
+import GroundImageOpacityStylesExample from '~/components/components/groundimage/GroundImageOpacityStylesExample.astro';
 
 Ground images are image overlays that are positioned geographically on the map. They are useful for displaying floor plans, satellite imagery, weather overlays, or any image-based data that needs to be anchored to specific geographic coordinates.
 
-## Composable Functions
+## Composable Function
 
 ### Basic GroundImage
 
@@ -29,11 +25,11 @@ Ground images are image overlays that are positioned geographically on the map. 
 
 ## Parameters
 
-- **`bounds`**: Geographic rectangular bounds where the image should be positioned (`GeoRectBounds`)
-- **`image`**: The drawable image to display (`Drawable`)
-- **`opacity`**: Transparency level from 0.0 (transparent) to 1.0 (opaque) (default: `0.5f`)
-- **`id`**: Optional unique identifier for the ground image (`String?`)
-- **`extra`**: Additional data attached to the ground image (`Serializable?`)
+- **`bounds`**: Geographic rectangular bounds where the image is positioned (`GeoRectBounds`)
+- **`image`**: Drawable image to display (`Drawable`)
+- **`opacity`**: Opacity level from 0.0 (transparent) to 1.0 (opaque) (default: `0.5f`)
+- **`id`**: Optional unique identifier for the GroundImage (`String?`)
+- **`extra`**: Additional data attached to the GroundImage (`Serializable?`)
 
 ## Usage Examples
 
@@ -41,9 +37,7 @@ Ground images are image overlays that are positioned geographically on the map. 
 
 <BasicGroundImageExample />
 
-### Interactive GroundImage with Bounds Markers
-
-Based on the example app pattern:
+### Interactive GroundImage with Boundary Markers
 
 <InteractiveGroundImageExample />
 
@@ -55,44 +49,25 @@ Based on the example app pattern:
 
 <DynamicGroundImageExample />
 
-### Animated GroundImage
-
-<AnimatedGroundImageExample />
-
-### Floor Plan Overlay
-
-<FloorPlanOverlayExample />
-
 ## Event Handling
 
-GroundImage interactions are handled with your map provider component:
+GroundImage interactions are handled by your map provider component:
 
 <GroundImageEventHandlingExample />
 
-## Image Resources
+## Styling Options
 
-### Loading from Resources
+### Opacity Control
 
-<GroundImageResourceLoadingExample />
-
-### Loading from Assets
-
-<GroundImageAssetsLoadingExample />
-
-### Loading from Network (with caching)
-
-<GroundImageNetworkLoadingExample />
+<GroundImageOpacityStylesExample />
 
 ## Best Practices
 
-1. **Image Size**: Use appropriately sized images to balance quality and performance
-2. **Opacity**: Use transparency to blend overlays naturally with the map
-3. **Bounds Accuracy**: Ensure ground image bounds are precisely aligned with geographic features
-4. **Resource Management**: Optimize image resources and consider memory usage
-5. **Layer Order**: Consider the drawing order when overlapping multiple ground images
-6. **Interactive Elements**: Provide clear visual feedback for interactive ground images
-7. **Caching**: Cache image resources efficiently, especially for network-loaded images
-8. **Error Handling**: Handle cases where images fail to load
-9. **Performance**: Avoid rendering too many large ground images simultaneously
-10. **User Experience**: Provide controls for opacity and visibility when appropriate
+1. **Image Quality**: Ensure high-resolution images scale well
+2. **Opacity Usage**: Choose an appropriate opacity level to allow the underlying map to be visible
+3. **Boundary Accuracy**: Verify that the image bounds match the actual location on the map
+4. **Performance**: Monitor performance impact when using multiple large images simultaneously
+5. **Caching**: Cache images that are loaded repeatedly for performance
+6. **Dynamic Loading**: For large image sets, consider dynamically loading only visible images
+7. **Z-Index**: Maintain correct layer order when overlaying multiple images
 

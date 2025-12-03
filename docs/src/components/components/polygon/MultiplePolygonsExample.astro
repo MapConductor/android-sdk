@@ -1,0 +1,50 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// MapView を GoogleMapView、MapboxMapView などに置き換えてください
+MapView(state = mapViewState) {
+    Polygon(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4194),
+            GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            GeoPointImpl.fromLatLong(37.7749, -122.4094),
+            GeoPointImpl.fromLatLong(37.7749, -122.4194)
+        ),
+        strokeColor = Color.Blue,
+        strokeWidth = 2.dp,
+        fillColor = Color.Blue.copy(alpha = 0.4f),
+        extra = "Blue zone"
+    )
+
+    Polygon(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7649, -122.4194),
+            GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            GeoPointImpl.fromLatLong(37.7749, -122.4094),
+            GeoPointImpl.fromLatLong(37.7649, -122.4094),
+            GeoPointImpl.fromLatLong(37.7649, -122.4194)
+        ),
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        fillColor = Color.Transparent,
+        extra = "Red boundary"
+    )
+
+    Polygon(
+        points = listOf(
+            GeoPointImpl.fromLatLong(37.7549, -122.4194),
+            GeoPointImpl.fromLatLong(37.7649, -122.4194),
+            GeoPointImpl.fromLatLong(37.7649, -122.4094),
+            GeoPointImpl.fromLatLong(37.7549, -122.4094),
+            GeoPointImpl.fromLatLong(37.7549, -122.4194)
+        ),
+        strokeColor = Color.Green,
+        strokeWidth = 1.dp,
+        fillColor = Color.Green.copy(alpha = 0.2f),
+        extra = "Green area"
+    )
+}`;
+---
+
+<pre><code set:html={code}></code></pre>

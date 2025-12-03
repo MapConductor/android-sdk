@@ -13,6 +13,7 @@ import ClusteringStrategyExampleComposable from '~/components/experimental/marke
 import PerformanceStrategyConfigExample from '~/components/experimental/marker-strategy/PerformanceStrategyConfigExample.astro';
 import StrategyPerformanceMonitoringComposable from '~/components/experimental/marker-strategy/StrategyPerformanceMonitoringComposable.astro';
 import MigrationBasicToStrategyComposable from '~/components/experimental/marker-strategy/MigrationBasicToStrategyComposable.astro';
+import CustomMarkerStrategyExample from '~/components/experimental/marker-strategy/CustomMarkerStrategyExample.astro';
 
 The `mapconductor-marker-strategy` module provides advanced marker rendering strategies for optimizing performance and user experience with large datasets. This experimental module offers multiple rendering approaches tailored to different use cases and performance requirements.
 
@@ -135,56 +136,7 @@ Advanced strategy with spatial clustering and optimization:
 
 ### Extending AbstractViewportStrategy
 
-```kotlin
-class CustomMarkerStrategy<ActualMarker>(
-    semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell()
-) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
-
-    override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>
-    ) {
-        semaphore.withPermit {
-            // Custom rendering logic
-            val visibleBounds = cameraPosition.visibleRegion?.bounds ?: return
-
-            // Your custom marker management here
-            val markersToShow = determineVisibleMarkers(visibleBounds)
-            val markersToHide = determineHiddenMarkers(visibleBounds)
-
-            // Use renderer to update display
-            if (markersToHide.isNotEmpty()) {
-                renderer.onRemove(markersToHide)
-            }
-
-            if (markersToShow.isNotEmpty()) {
-                val addParams = markersToShow.map { entity ->
-                    object : MarkerOverlayRenderer.AddParams {
-                        override val state: MarkerState = entity.state
-                        override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
-                    }
-                }
-                renderer.onAdd(addParams)
-            }
-
-            renderer.onPostProcess()
-        }
-    }
-
-    private fun determineVisibleMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
-        // Your custom logic to determine which markers should be visible
-        return markerManager.findMarkersInBounds(bounds)
-    }
-
-    private fun determineHiddenMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
-        // Your custom logic to determine which markers should be hidden
-        return markerManager.allEntities().filter { entity ->
-            entity.isRendered && !bounds.contains(entity.state.position)
-        }
-    }
-}
-```
+<CustomMarkerStrategyExample />
 
 ## Performance Optimization
 
@@ -220,4 +172,3 @@ class CustomMarkerStrategy<ActualMarker>(
 <MigrationBasicToStrategyComposable />
 
 The marker strategy module provides sophisticated marker management capabilities for applications requiring high performance with large datasets or complex rendering requirements.
-

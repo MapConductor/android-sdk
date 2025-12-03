@@ -1,0 +1,153 @@
+---
+title: "InfoBubble"
+---
+
+import SimpleInfoBubbleExample from '~/components/components/infobubble/SimpleInfoBubbleExample.astro';
+import RichContentInfoBubbleExample from '~/components/components/infobubble/RichContentInfoBubbleExample.astro';
+import InteractiveBubbleExample from '~/components/components/infobubble/InteractiveBubbleExample.astro';
+import InfoBubbleSignature from '~/components/components/infobubble/InfoBubbleSignature.astro';
+import CustomPositioningExample from '~/components/components/infobubble/CustomPositioningExample.astro';
+import LifecycleManagementExample from '~/components/components/infobubble/LifecycleManagementExample.astro';
+import ManualLifecycleExample from '~/components/components/infobubble/ManualLifecycleExample.astro';
+import DarkModeInfoBubbleExample from '~/components/components/infobubble/DarkModeInfoBubbleExample.astro';
+import CustomThemeExample from '~/components/components/infobubble/CustomThemeExample.astro';
+import EfficientUpdatesExample from '~/components/components/infobubble/EfficientUpdatesExample.astro';
+import MemoryManagementExample from '~/components/components/infobubble/MemoryManagementExample.astro';
+import ImplementationTipsExample from '~/components/components/infobubble/ImplementationTipsExample.astro';
+import DebugModeExample from '~/components/components/infobubble/DebugModeExample.astro';
+
+An InfoBubble is a component that displays custom content in a callout format attached to markers on a map. It provides a method to display detailed information about markers.
+
+## Overview
+
+An InfoBubble is displayed above a specific marker. The content displayed in the InfoBubble can be any Composable, allowing for flexible and custom designs.
+
+## Composable Function
+
+<InfoBubbleSignature />
+
+## Parameters
+
+- **`marker`**: The `MarkerState` to which the bubble is attached
+- **`bubbleColor`**: Background color of the bubble (default: White)
+- **`borderColor`**: Color of the bubble's border (default: Black)
+- **`contentPadding`**: Internal padding around the content (default: 8dp)
+- **`cornerRadius`**: Radius of the bubble's rounded corners (default: 4dp)
+- **`tailSize`**: Size of the tail pointing to the marker (default: 8dp)
+- **`content`**: Composable content to display inside the bubble
+
+## Basic Usage
+
+### Simple Text Bubble
+
+<SimpleInfoBubbleExample />
+
+### Custom Styled Bubble
+
+<RichContentInfoBubbleExample
+  locationName="Golden Gate Park"
+  locationDescription="A large urban park with gardens, museums, and recreational areas."
+  locationRating={4.5}
+  latitude={37.7694}
+  longitude={-122.4862}
+  markerLabel="🌳"
+  markerId="park-marker"
+  zoomLevel={13.0}
+  markerFillColorExpr="Color.Green"
+/>
+
+### Interactive Bubble with Actions
+
+<InteractiveBubbleExample
+  storeName="Coffee Shop"
+  storeAddress="1-4, Hongo 4-Chome, Bunkyo-Ku"
+  storePhone="+81 (555) 123-4567"
+  storeType="coffee"
+  cameraLatitude={35.70662}
+  cameraLongitude={139.76378}
+  markerLatitude={35.708106}
+  markerLongitude={139.760823}
+  markerColor="0xFF8B4513"
+  markerLabel="☕"
+  markerId="coffee-shop-marker"
+  zoomLevel={16.0}
+/>
+
+## Positioning and Behavior
+
+### Automatic Positioning
+
+The InfoBubble is automatically positioned above its associated marker:
+
+- The bubble's tail points to the marker's center
+- The bubble adjusts its position to remain visible within the map viewport
+- The bubble follows the marker as the map is panned or zoomed
+
+### Custom Positioning
+
+While InfoBubble handles positioning automatically, you can influence it through the marker icon's anchor:
+
+<CustomPositioningExample />
+
+## Lifecycle Management
+
+The InfoBubble automatically manages its lifecycle:
+
+<LifecycleManagementExample />
+
+### Manual Lifecycle Control
+
+<ManualLifecycleExample />
+
+## Styling and Theming
+
+### Dark Mode Support
+
+<DarkModeInfoBubbleExample />
+
+### Custom Theme
+
+<CustomThemeExample />
+
+## Performance Considerations
+
+### Efficient Updates
+
+<EfficientUpdatesExample />
+
+### Memory Management
+
+<MemoryManagementExample />
+
+## Best Practices
+
+### Design Guidelines
+
+1. **Concise Content**: The InfoBubble should provide essential information without overwhelming the user
+2. **Appropriate Size**: Limit the bubble's width to maintain readability on mobile devices
+3. **Clear Actions**: If including buttons, make their purpose clear
+4. **Touch Targets**: Ensure interactive elements meet minimum touch target sizes
+
+### User Experience
+
+1. **Close Behavior**: Allow users to close the bubble by tapping the map or markers
+2. **Loading State**: Show a loading indicator for content that requires network requests
+3. **Error Handling**: Handle missing or invalid data appropriately
+4. **Accessibility**: Provide content descriptions for screen readers
+
+### Implementation Tips
+
+<ImplementationTipsExample />
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Bubble not appearing**: Verify that the marker is properly configured and the InfoBubble is inside a MapViewScope
+2. **Bubble not closing**: Check that conditional rendering responds properly to state changes
+3. **Performance degradation**: Limit the number of simultaneously displayed bubbles and optimize content composition
+4. **Layout issues**: Use appropriate size constraints and test on various screen sizes
+
+### Debug Mode
+
+<DebugModeExample />

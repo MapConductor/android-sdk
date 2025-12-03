@@ -1,0 +1,128 @@
+---
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+const googleMapsCode = `GoogleMapView(
+    state: GoogleMapViewStateImpl,
+    modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    onGroundImageClick: OnGroundImageEventHandler? = null,
+    content: (@Composable MapViewScope.() -> Unit)? = null
+)`;
+
+const mapboxCode = `MapboxMapView(
+    state: MapboxViewStateImpl,
+    modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    content: (@Composable MapViewScope.() -> Unit)? = null
+)`;
+
+const hereCode = `HereMapView(
+    state: HereViewStateImpl,
+    modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    content: (@Composable MapViewScope.() -> Unit)? = null
+)`;
+
+const arcGisCode = `ArcGISMapView(
+    state: ArcGISMapViewStateImpl,
+    modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    content: (@Composable MapViewScope.() -> Unit)? = null
+)`;
+
+const mapLibreCode = `MapLibreMapView(
+    state: MapLibreViewStateImpl,
+    modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    content: (@Composable MapLibreMapViewScope.() -> Unit)? = null
+)`;
+---
+
+<Tabs>
+  <TabItem label="GoogleMaps">
+    <Code code={googleMapsCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Mapbox">
+    <Code code={mapboxCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="HERE">
+    <Code code={hereCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="ArcGIS">
+    <Code code={arcGisCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="MapLibre">
+    <Code code={mapLibreCode} lang="kotlin" />
+  </TabItem>
+</Tabs>
+

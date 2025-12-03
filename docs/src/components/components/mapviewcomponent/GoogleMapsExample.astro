@@ -1,0 +1,57 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  mapClickPrefix?: string;
+  markerClickPrefix?: string;
+  markerLabel?: string;
+  markerExtra?: string;
+  circleRadiusMeters?: number;
+  circleStrokeColorExpr?: string;
+  circleFillColorExpr?: string;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  mapClickPrefix = 'Map clicked at',
+  markerClickPrefix = 'Marker clicked',
+  markerLabel = 'SF',
+  markerExtra = 'San Francisco',
+  circleRadiusMeters = 1000.0,
+  circleStrokeColorExpr = 'Color.Blue',
+  circleFillColorExpr = 'Color.Blue.copy(alpha = 0.3f)',
+} = Astro.props;
+
+const code = `@Composable
+fun GoogleMapsExample() {
+    val mapViewState = rememberGoogleMapViewState()
+
+    GoogleMapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            println("${mapClickPrefix}: \${geoPoint.latitude}, \${geoPoint.longitude}")
+        },
+        onMarkerClick = { markerState ->
+            println("${markerClickPrefix}: \${markerState.extra}")
+        }
+    ) {
+        Marker(
+            position = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            icon = DefaultIcon(label = "${markerLabel}"),
+            extra = "${markerExtra}"
+        )
+
+        Circle(
+            center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            radiusMeters = ${circleRadiusMeters},
+            strokeColor = ${circleStrokeColorExpr},
+            fillColor = ${circleFillColorExpr}
+        )
+    }
+}`;
+---
+
+<pre><code set:html={code}></code></pre>
