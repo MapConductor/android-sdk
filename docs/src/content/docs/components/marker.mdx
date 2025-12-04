@@ -2,6 +2,7 @@
 title: "Marker"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import MarkerBasicSignature from '~/components/components/marker/MarkerBasicSignature.astro';
 import MarkerStateSignature from '~/components/components/marker/MarkerStateSignature.astro';
 import BasicMarkerExample from '~/components/components/marker/BasicMarkerExample.astro';
@@ -16,13 +17,22 @@ Markers are point annotations that can be placed on the map at specific geograph
 
 ## Composable Functions
 
-### Basic Marker
+<Tabs>
+<TabItem label="Basic Marker">
+
+For a small number of markers, you can specify options directly. Specifying an `id` helps prevent unnecessary recomposition.
 
 <MarkerBasicSignature />
 
-### Marker with State
+</TabItem>
+<TabItem label="Marker with State">
+
+For a large number of markers or when moving markers, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
 
 <MarkerStateSignature />
+
+</TabItem>
+</Tabs>
 
 ## Parameters
 
@@ -72,6 +82,12 @@ Marker using a custom drawable image:
 <DraggableMarkerExample
   commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
 />
+
+<video width="720" height="480" controls>
+ <source src="/marker/draggable-marker-example.webm" type="video/webm" />
+ <source src="/marker/draggable-marker-example.mp4" type="video/mp4" />
+</video>
+
 
 ### Multiple Markers with Different Icons
 

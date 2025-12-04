@@ -2,11 +2,11 @@
 title: "Circle"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import CircleBasicSignature from '~/components/components/circle/CircleBasicSignature.astro';
 import CircleStateSignature from '~/components/components/circle/CircleStateSignature.astro';
 import BasicCircleExample from '~/components/components/circle/BasicCircleExample.astro';
 import InteractiveCircleExample from '~/components/components/circle/InteractiveCircleExample.astro';
-import MultipleCirclesExample from '~/components/components/circle/MultipleCirclesExample.astro';
 import DynamicCircleExample from '~/components/components/circle/DynamicCircleExample.astro';
 import OverlappingCirclesExample from '~/components/components/circle/OverlappingCirclesExample.astro';
 import CircleEventHandlingExample from '~/components/components/circle/CircleEventHandlingExample.astro';
@@ -20,13 +20,24 @@ Los círculos son superposiciones circulares que se pueden dibujar en el mapa co
 
 ## Funciones Composable
 
-### Círculo Básico
+<Tabs>
+<TabItem label="Círculo Básico">
+
+Cuando tienes pocos círculo, especificar opciones directamente es más fácil.
+Especificar `id` puede reducir Recomposiciones innecesarias.
 
 <CircleBasicSignature />
 
-### Círculo con Estado
+</TabItem>
+<TabItem label="Círculo con Estado">
+
+Cuando tienes muchos círculo o necesitas mover círculo, se recomienda usar este enfoque.
+Especificar `id` puede reducir Recomposiciones innecesarias.
 
 <CircleStateSignature />
+
+</TabItem>
+</Tabs>
 
 ## Parámetros
 
@@ -55,24 +66,21 @@ Según el patrón de la aplicación de ejemplo, aquí se muestra cómo crear un 
   commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
   commentForLatOffsetNote="Esto está simplificado - el cálculo real consideraría la curvatura de la Tierra"
 />
-
-### Múltiples Círculos con Diferentes Estilos
-
-<MultipleCirclesExample
-  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
-/>
+<video width="720" height="480" controls>
+ <source src="/circle/interactive-circle-example.webm" type="video/webm" />
+ <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
+</video>
 
 ### Actualizaciones Dinámicas de Círculo
 
 <DynamicCircleExample
   commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
 />
+<video width="720" height="480" controls>
+ <source src="/circle/dynamic-circle-example.webm" type="video/webm" />
+ <source src="/circle/dynamic-circle-example.mp4" type="video/mp4" />
+</video>
 
-### Círculos Superpuestos con Z-Index
-
-<OverlappingCirclesExample
-  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
-/>
 
 ## Manejo de Eventos
 
@@ -91,19 +99,6 @@ Las interacciones de círculo se manejan con su componente de proveedor de mapas
 ### Estilos de Relleno
 
 <CircleFillStylesExample />
-
-## Ejemplos Interactivos
-
-### Círculo Interactivo con Marcadores
-
-Demuestra cómo crear un círculo interactivo con marcadores arrastrables que actualizan el radio:
-
-<CircleInteractiveDetailedExample />
-
-<video width="720" height="480" controls>
- <source src="/circle/interactive-circle-example.webm" type="video/webm" />
- <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
-</video>
 
 ## Identificación de Círculo
 

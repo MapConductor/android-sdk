@@ -7,7 +7,6 @@ import CircleBasicSignature from '~/components/components/circle/CircleBasicSign
 import CircleStateSignature from '~/components/components/circle/CircleStateSignature.astro';
 import BasicCircleExample from '~/components/components/circle/BasicCircleExample.astro';
 import InteractiveCircleExample from '~/components/components/circle/InteractiveCircleExample.astro';
-import MultipleCirclesExample from '~/components/components/circle/MultipleCirclesExample.astro';
 import DynamicCircleExample from '~/components/components/circle/DynamicCircleExample.astro';
 import OverlappingCirclesExample from '~/components/components/circle/OverlappingCirclesExample.astro';
 import CircleEventHandlingExample from '~/components/components/circle/CircleEventHandlingExample.astro';
@@ -58,23 +57,30 @@ import CircleIdDetailedExample from '~/components/components/circle/CircleIdDeta
   commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
 />
 
-### 複数の Circle とスタイル
 
-<MultipleCirclesExample
-  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
-/>
+## インタラクティブな例
+
+### マーカーを使ったインタラクティブな Circle
+
+ドラッグ可能なマーカーを使ったインタラクティブな円の作成方法を示します。
+
+<CircleInteractiveDetailedExample />
+
+<video width="720" height="480" controls>
+ <source src="/circle/interactive-circle-example.webm" type="video/webm" />
+ <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
+</video>
 
 ### 動的な Circle の更新
 
 <DynamicCircleExample
   commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
 />
+<video width="720" height="480" controls>
+ <source src="/circle/dynamic-circle-example.webm" type="video/webm" />
+ <source src="/circle/dynamic-circle-example.mp4" type="video/mp4" />
+</video>
 
-### 円の重なりと Z-Index
-
-<OverlappingCirclesExample
-  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
-/>
 
 ## イベント処理
 
@@ -94,18 +100,6 @@ Circle のインタラクションは、マップ地図SDKコンポーネント�
 
 <CircleFillStylesExample />
 
-## インタラクティブな例
-
-### マーカーを使ったインタラクティブな Circle
-
-ドラッグ可能なマーカーを使ったインタラクティブな円の作成方法を示します。
-
-<CircleInteractiveDetailedExample />
-
-<video width="720" height="480" controls>
- <source src="/circle/interactive-circle-example.webm" type="video/webm" />
- <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
-</video>
 
 ## Circle の識別
 

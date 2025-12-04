@@ -2,11 +2,11 @@
 title: "Circle"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import CircleBasicSignature from '~/components/components/circle/CircleBasicSignature.astro';
 import CircleStateSignature from '~/components/components/circle/CircleStateSignature.astro';
 import BasicCircleExample from '~/components/components/circle/BasicCircleExample.astro';
 import InteractiveCircleExample from '~/components/components/circle/InteractiveCircleExample.astro';
-import MultipleCirclesExample from '~/components/components/circle/MultipleCirclesExample.astro';
 import DynamicCircleExample from '~/components/components/circle/DynamicCircleExample.astro';
 import OverlappingCirclesExample from '~/components/components/circle/OverlappingCirclesExample.astro';
 import CircleEventHandlingExample from '~/components/components/circle/CircleEventHandlingExample.astro';
@@ -20,13 +20,22 @@ Circles are circular overlays that can be drawn on the map with customizable rad
 
 ## Composable Functions
 
-### Basic Circle
+<Tabs>
+<TabItem label="Basic Circle">
+
+For a small number of circles, you can specify options directly. Specifying an `id` helps prevent unnecessary recomposition.
 
 <CircleBasicSignature />
 
-### Circle with State
+</TabItem>
+<TabItem label="Circle with State">
+
+For a large number of circles or when moving circles, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
 
 <CircleStateSignature />
+
+</TabItem>
+</Tabs>
 
 ## Parameters
 
@@ -55,24 +64,21 @@ Based on the example app, here's how to create an interactive circle with dragga
   commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
   commentForLatOffsetNote="This is simplified - actual calculation would consider Earth's curvature"
 />
-
-### Multiple Circles with Different Styles
-
-<MultipleCirclesExample
-  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
-/>
+<video width="720" height="480" controls>
+ <source src="/circle/interactive-circle-example.webm" type="video/webm" />
+ <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
+</video>
 
 ### Dynamic Circle Updates
 
 <DynamicCircleExample
   commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
 />
+<video width="720" height="480" controls>
+ <source src="/circle/dynamic-circle-example.webm" type="video/webm" />
+ <source src="/circle/dynamic-circle-example.mp4" type="video/mp4" />
+</video>
 
-### Overlapping Circles with Z-Index
-
-<OverlappingCirclesExample
-  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
-/>
 
 ## Event Handling
 
