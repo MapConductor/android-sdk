@@ -9,7 +9,6 @@
 /* Mermaid diagrams */
 .mermaid,
 .sl-markdown-content .mermaid {
-  max-width: 600px !important;
   margin: 2rem auto !important;
   overflow: visible !important;
   padding: 1rem !important;

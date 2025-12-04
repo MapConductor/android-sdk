@@ -5,6 +5,12 @@ import Default from '@astrojs/starlight/components/Head.astro';
 
 <Default {...Astro.props}><slot /></Default>
 
+<style is:global>
+.main-pane {
+  max-width: 1024px !important;
+}
+</style>
+
 <!-- Mermaid Zoom Functionality -->
 <script>
   function initMermaidZoom() {
