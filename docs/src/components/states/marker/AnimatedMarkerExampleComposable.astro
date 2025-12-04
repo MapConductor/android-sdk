@@ -1,17 +1,35 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  startLatitude?: number;
+  startLongitude?: number;
+  endLatitude?: number;
+  endLongitude?: number;
+  markerLabel?: string;
+  extraLabel?: string;
+}
+
+const {
+  startLatitude = 37.7749,
+  startLongitude = -122.4194,
+  endLatitude = 37.7849,
+  endLongitude = -122.4094,
+  markerLabel = "Moving",
+  extraLabel = "Animated marker"
+} = Astro.props;
+
 const code = `@Composable
 fun AnimatedMarkerExample() {
-    val startPosition = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val endPosition = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+    val startPosition = GeoPointImpl.fromLatLong(${startLatitude}, ${startLongitude})
+    val endPosition = GeoPointImpl.fromLatLong(${endLatitude}, ${endLongitude})
 
     var markerState by remember {
         mutableStateOf(
             MarkerState(
                 position = startPosition,
-                icon = DefaultIcon(fillColor = Color.Green, label = "Moving"),
-                extra = "Animated marker"
+                icon = DefaultIcon(fillColor = Color.Green, label = "${markerLabel}"),
+                extra = "${extraLabel}"
             )
         )
     }
@@ -32,4 +50,3 @@ fun AnimatedMarkerExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

@@ -1,6 +1,18 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  highwaySegmentExtra?: string;
+  localRoadSegmentExtra?: string;
+  walkingPathExtra?: string;
+}
+
+const {
+  highwaySegmentExtra = "Highway segment",
+  localRoadSegmentExtra = "Local road segment",
+  walkingPathExtra = "Walking path"
+} = Astro.props;
+
 const code = `@Composable
 fun RouteExample() {
     val routeSegments = remember {
@@ -9,19 +21,19 @@ fun RouteExample() {
                 points = highway1Points,
                 strokeColor = Color.Blue,
                 strokeWidth = 6.dp,
-                extra = "Highway segment"
+                extra = "${highwaySegmentExtra}"
             ),
             PolylineState(
                 points = localRoadPoints,
                 strokeColor = Color.Green,
                 strokeWidth = 3.dp,
-                extra = "Local road segment"
+                extra = "${localRoadSegmentExtra}"
             ),
             PolylineState(
                 points = walkingPathPoints,
                 strokeColor = Color.Orange,
                 strokeWidth = 2.dp,
-                extra = "Walking path"
+                extra = "${walkingPathExtra}"
             )
         )
     }
@@ -35,4 +47,3 @@ fun RouteExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

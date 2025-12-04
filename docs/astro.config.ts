@@ -1,15 +1,17 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightMermaid from '@pasqal-io/starlight-client-mermaid';
 import { fileURLToPath } from 'node:url';
 import remarkVersionPlaceholder from './src/remark/versionPlaceholder.ts';
+import versionPlaceholderPlugin from './src/vite/versionPlaceholderPlugin.ts';
+import postBuildIntegration from './src/astro/postBuildIntegration.ts';
 
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://mapconductor.com',
 	outDir: 'dist',
 	integrations: [
+		postBuildIntegration(),
 		starlight({
 			title: 'MapConductor',
 			description: 'A unified map SDK for mobile developers',
@@ -47,7 +49,6 @@ export default defineConfig({
 						{ slug: 'introduction' },
 						{ slug: 'get-started' },
 						{ slug: 'modules' },
-						{ slug: 'sdk-version-compatibility' },
 						{ slug: 'provider-compatibility' },
 					],
 				},
@@ -175,6 +176,9 @@ export default defineConfig({
 		}),
 	],
 	vite: {
+		plugins: [
+			versionPlaceholderPlugin(),
+		],
 		resolve: {
 			// Match Starlight docs behavior so `~/` points to `src/`
 			alias: {

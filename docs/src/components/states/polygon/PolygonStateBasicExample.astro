@@ -1,12 +1,32 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  firstLatitude?: number;
+  firstLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+  thirdLatitude?: number;
+  thirdLongitude?: number;
+  commentForClosingPolygon?: string;
+}
+
+const {
+  firstLatitude = 37.7749,
+  firstLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094,
+  thirdLatitude = 37.7749,
+  thirdLongitude = -122.3994,
+  commentForClosingPolygon = "ポリゴンを閉じる"
+} = Astro.props;
+
 const code = `val polygonState = PolygonState(
     points = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        GeoPointImpl.fromLatLong(37.7749, -122.3994),
-        GeoPointImpl.fromLatLong(37.7749, -122.4194) // ポリゴンを閉じる
+        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
+        GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
+        GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}) // ${commentForClosingPolygon}
     ),
     strokeColor = Color.Blue,
     strokeWidth = 2.dp,
@@ -19,4 +39,3 @@ MapView(state = mapViewState) {
 ---
 
 <Code code={code} lang="kotlin" />
-

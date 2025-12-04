@@ -29,29 +29,71 @@ import GroundImageResourceLoadingExample from '~/components/states/groundimage/G
 
 ## メソッド
 
-<GroundImageStateMethodsExample />
+<GroundImageStateMethodsExample
+  commentForFingerPrint="変更検知"
+  commentForAsFlow="リアクティブ更新"
+/>
 
 ## 使用例
 
 ### 基本的なグラウンドイメージ
 
-<BasicGroundImageExampleComposable />
+<BasicGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="ベースオーバーレイ"
+/>
 
 ### インタラクティブなグラウンドイメージ
 
-<InteractiveGroundImageExampleComposable />
+<InteractiveGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="インタラクティブオーバーレイ"
+  opacityLabelTemplate="不透明度: ${(opacity * 100).toInt()}%"
+  groundImageClickLog="グラウンドイメージがクリックされました: ${event.clicked}"
+/>
 
 ### 複数のオーバーレイ
 
-<MultiLayerGroundImageExampleComposable />
+<MultiLayerGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  baseOverlayDescription="ベース衛星"
+  weatherOverlayDescription="天気データ"
+  trafficOverlayDescription="交通情報"
+/>
 
 ### 動的な境界
 
-<DynamicBoundsExampleComposable />
+<DynamicBoundsExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="フロアプラン"
+  southwestLabel="SW"
+  northeastLabel="NE"
+  commentForCornerMarkers="角のマーカー"
+/>
 
 ### アニメーション付きオーバーレイ
 
-<AnimatedGroundImageExampleComposable />
+<AnimatedGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="アニメーションオーバーレイ"
+  animateLabel="アニメーション開始"
+  stopLabel="停止"
+/>
 
 ## イベント処理
 
@@ -63,7 +105,12 @@ import GroundImageResourceLoadingExample from '~/components/states/groundimage/G
 
 ### 異なるソースからの読み込み
 
-<GroundImageResourceLoadingExample />
+<GroundImageResourceLoadingExample
+  commentForFromResources="リソースから"
+  commentForFromAssets="アセットから"
+  commentForFromNetwork="ネットワークから（画像読み込みライブラリを使用）"
+  commentForLibraryUsage="Coil、Glide、Picassoなどのライブラリをネットワーク画像に使用してください"
+/>
 
 ## ベストプラクティス
 

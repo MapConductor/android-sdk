@@ -8,6 +8,7 @@ interface Props {
   marker2Label?: string;
   marker2Lat?: number;
   marker2Long?: number;
+  commentMarkerClicked?: string;
 }
 
 const {
@@ -16,7 +17,8 @@ const {
   marker1Long = 139.7454,
   marker2Label = "ST",
   marker2Lat = 35.7101,
-  marker2Long = 139.8107
+  marker2Long = 139.8107,
+  commentMarkerClicked = "マーカーがクリックされたときの処理"
 } = Astro.props;
 
 const code = `val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
@@ -26,7 +28,7 @@ GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState,
     onMarkerClick = { markerState ->
-        // マーカーがクリックされたときの処理
+        // ${commentMarkerClicked}
         when (markerState.extra) {
             "marker1" -> {
                 markerState.animate(MarkerAnimation.Drop)

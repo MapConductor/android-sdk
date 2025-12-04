@@ -1,8 +1,18 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `# proguard-rules.pro
-# Google Play Services
+interface Props {
+  headerComment?: string;
+  googlePlayServicesComment?: string;
+}
+
+const {
+  headerComment = "proguard-rules.pro",
+  googlePlayServicesComment = "Google Play Services",
+} = Astro.props;
+
+const code = `# ${headerComment}
+# ${googlePlayServicesComment}
 -keep class com.google.android.gms.maps.** { *; }
 -keep interface com.google.android.gms.maps.** { *; }
 -dontwarn com.google.android.gms.**`;

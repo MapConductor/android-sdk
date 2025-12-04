@@ -32,21 +32,43 @@ import CircleEventTypesExample from '~/components/states/circle/CircleEventTypes
 
 ## Métodos
 
-<CircleStateMethodsExample />
+<CircleStateMethodsExample
+  commentForCopy="Crear una copia modificada"
+  commentForFingerPrint="Detección de cambios"
+  commentForAsFlow="Actualizaciones reactivas"
+/>
 
 ## Ejemplos de uso
 
 ### Círculo básico
 
-<CircleStateBasicExample />
+<CircleStateBasicExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  radiusMeters={1000.0}
+/>
 
 ### Círculo interactivo
 
-<InteractiveCircleExampleComposable />
+<InteractiveCircleExampleComposable
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  initialRadiusMeters={500.0}
+  minRadiusForSlider={100.0}
+  maxRadiusForSlider={2000.0}
+  circleClickLog="Círculo pulsado en: ${event.clicked}"
+/>
 
 ### Varios círculos con Z-Index
 
-<MultipleCirclesZIndexExample />
+<MultipleCirclesZIndexExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusMeters={1000.0}
+  innerRadiusMeters={500.0}
+  outerZIndex={1}
+  innerZIndex={2}
+/>
 
 ## Manejo de eventos
 
@@ -61,4 +83,3 @@ Los eventos de círculo proporcionan tanto el estado como la posición del clic:
 3. **Z-Index**: Utiliza z-index para controlar círculos superpuestos.
 4. **Rendimiento**: Evita crear demasiados círculos grandes.
 5. **Reactividad**: Actualiza las propiedades directamente para un renderizado eficiente.
-

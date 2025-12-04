@@ -40,7 +40,12 @@ MapConductor は既存の地図 SDK 上に統一された API レイヤーを提
 
 次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="ほかのプラグイン"
+  googleMapsSdkComment="Google Maps SDK（libs.versions.toml でバージョン管理）"
+  bomComment="MapConductor BOM によるバージョン管理 (v{BOM_MODULE_VERSION})"
+  modulesComment="MapConductor モジュール（BOM でバージョン管理）"
+/>
 
 Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み取り、ビルド時に値を `AndroidManifest.xml` に注入します。
 
@@ -94,8 +99,9 @@ Google Maps のセットアップを確認するには:
 <ProviderVerificationExample
   provider="GoogleMap"
   functionName="TestGoogleMaps"
-  imageUrl="~/assets/setup/basic-setup-google.png"
+  comment="もし地図が表示されれば、セットアップが正しくできています"
 />
+![TestGoogleMapsの実行結果](~/assets/setup/basic-setup-google.png)
 
 ## トラブルシューティング
 

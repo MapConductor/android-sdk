@@ -6,13 +6,17 @@ interface Props {
   long?: number;
   mapProvider?: string;
   comment?: string;
+  alwaysSupportedComment?: string;
+  conditionallySupportedComment?: string;
 }
 
 const {
   lat = 37.7749,
   long = -122.4194,
   mapProvider = "GoogleMapView",
-  comment = "選択した地図SDKに置き換えてください"
+  comment = "選択した地図SDKに置き換えてください",
+  alwaysSupportedComment = "常にサポートされているコンポーネント",
+  conditionallySupportedComment = "条件付きでサポートされているコンポーネント"
 } = Astro.props;
 
 const code = `@Composable
@@ -22,7 +26,7 @@ fun CompatibilityAwareMap() {
 
     // ${comment}
     ${mapProvider}(state = mapViewState) {
-        // 常にサポートされているコンポーネント
+        // ${alwaysSupportedComment}
         Marker(
             position = GeoPointImpl.fromLatLong(${lat}, ${long}),
             icon = DefaultIcon()
@@ -34,7 +38,7 @@ fun CompatibilityAwareMap() {
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )
 
-        // 条件付きでサポートされているコンポーネント
+        // ${conditionallySupportedComment}
         if (supportsGroundImage) {
             GroundImage(
                 bounds = imageBounds,

@@ -31,25 +31,59 @@ import PolygonEventTypesExample from '~/components/states/polygon/PolygonEventTy
 
 ## Métodos
 
-<PolygonStateMethodsExample />
+<PolygonStateMethodsExample
+  commentForCopy="Crear una copia modificada"
+  commentForFingerPrint="Detección de cambios"
+  commentForAsFlow="Actualizaciones reactivas"
+/>
 
 ## Ejemplos de uso
 
 ### Polígono básico
 
-<PolygonStateBasicExample />
+<PolygonStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+  commentForClosingPolygon="Cerrar el polígono"
+/>
 
 ### Polígono editable
 
-<EditablePolygonExampleComposable />
+<EditablePolygonExampleComposable
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  polygonClickedLog="Polígono pulsado en: ${event.clicked}"
+  commentForVertexMarkers="Marcadores de vértices (excluyendo el punto de cierre)"
+  vertexExtraPrefix="vertex_"
+/>
 
 ### Polígonos de zona
 
-<ZonePolygonsExample />
+<ZonePolygonsExample
+  restrictedZoneExtra="Zona restringida"
+  parkingZoneExtra="Zona de estacionamiento"
+  safeZoneExtra="Zona segura"
+/>
 
 ### Formas complejas
 
-<ComplexPolygonExampleComposable />
+<ComplexPolygonExampleComposable
+  commentForStarPolygon="Polígono en forma de estrella"
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusDegrees={0.01}
+  innerRadiusDegrees={0.005}
+  commentForClosingPolygon="Cerrar el polígono"
+  extraLabel="Forma de estrella"
+/>
 
 ## Manejo de eventos
 
@@ -64,4 +98,3 @@ Los eventos de polígono proporcionan tanto el estado como la posición del clic
 3. **Rendimiento**: Evita polígonos excesivamente complejos con muchos vértices.
 4. **Diseño visual**: Usa transparencia adecuada en el relleno para mantener la visibilidad del mapa.
 5. **Validación**: Comprueba que el polígono forme una geometría válida.
-

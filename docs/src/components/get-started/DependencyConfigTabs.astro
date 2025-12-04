@@ -9,6 +9,13 @@ interface Props {
   hereIncluded?: boolean;
   arcgisIncluded?: boolean;
   maplibreIncluded?: boolean;
+  commentBOM?: string;
+  commentCore?: string;
+  commentGoogleMaps?: string;
+  commentOrMapbox?: string;
+  commentOrHere?: string;
+  commentOrArcGIS?: string;
+  commentOrMapLibre?: string;
 }
 
 const {
@@ -17,56 +24,63 @@ const {
   mapboxIncluded = false,
   hereIncluded = false,
   arcgisIncluded = false,
-  maplibreIncluded = false
+  maplibreIncluded = false,
+  commentBOM = "BOM を利用してバージョンを統一",
+  commentCore = "コアモジュール(必須)",
+  commentGoogleMaps = "Google Maps を使う場合",
+  commentOrMapbox = "または Mapbox を使う場合",
+  commentOrHere = "または HERE Maps を使う場合",
+  commentOrArcGIS = "または ArcGIS を使う場合",
+  commentOrMapLibre = "または MapLibre を使う場合"
 } = Astro.props;
 
 const kotlinCode = `dependencies {
     val mapconductorVersion = "${bomVersion}"
 
-    // BOM を利用してバージョンを統一
+    // ${commentBOM}
     implementation(platform("com.mapconductor:mapconductor-bom:$mapconductorVersion"))
 
-    // コアモジュール(必須)
+    // ${commentCore}
     implementation("com.mapconductor:core")
 
-    // Google Maps を使う場合
+    // ${commentGoogleMaps}
     ${googleMapsIncluded ? 'implementation("com.mapconductor:for-googlemaps")' : '// implementation("com.mapconductor:for-googlemaps")'}
 
-    // または Mapbox を使う場合
+    // ${commentOrMapbox}
     ${mapboxIncluded ? 'implementation("com.mapconductor:for-mapbox")' : '// implementation("com.mapconductor:for-mapbox")'}
 
-    // または HERE Maps を使う場合
+    // ${commentOrHere}
     ${hereIncluded ? 'implementation("com.mapconductor:for-here")' : '// implementation("com.mapconductor:for-here")'}
 
-    // または ArcGIS を使う場合
+    // ${commentOrArcGIS}
     ${arcgisIncluded ? 'implementation("com.mapconductor:for-arcgis")' : '// implementation("com.mapconductor:for-arcgis")'}
 
-    // または MapLibre を使う場合
+    // ${commentOrMapLibre}
     ${maplibreIncluded ? 'implementation("com.mapconductor:for-maplibre")' : '// implementation("com.mapconductor:for-maplibre")'}
 }`;
 
 const groovyCode = `dependencies {
     def mapconductorVersion = "${bomVersion}"
 
-    // BOM を利用してバージョンを統一
+    // ${commentBOM}
     implementation platform("com.mapconductor:mapconductor-bom:$mapconductorVersion")
 
-    // コアモジュール(必須)
+    // ${commentCore}
     implementation "com.mapconductor:core"
 
-    // Google Maps を使う場合
+    // ${commentGoogleMaps}
     ${googleMapsIncluded ? 'implementation "com.mapconductor:for-googlemaps"' : '// implementation "com.mapconductor:for-googlemaps"'}
 
-    // または Mapbox を使う場合
+    // ${commentOrMapbox}
     ${mapboxIncluded ? 'implementation "com.mapconductor:for-mapbox"' : '// implementation "com.mapconductor:for-mapbox"'}
 
-    // または HERE Maps を使う場合
+    // ${commentOrHere}
     ${hereIncluded ? 'implementation "com.mapconductor:for-here"' : '// implementation "com.mapconductor:for-here"'}
 
-    // または ArcGIS を使う場合
+    // ${commentOrArcGIS}
     ${arcgisIncluded ? 'implementation "com.mapconductor:for-arcgis"' : '// implementation "com.mapconductor:for-arcgis"'}
 
-    // または MapLibre を使う場合
+    // ${commentOrMapLibre}
     ${maplibreIncluded ? 'implementation "com.mapconductor:for-maplibre"' : '// implementation "com.mapconductor:for-maplibre"'}
 }`;
 ---

@@ -1,8 +1,18 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `fun fingerPrint(): GroundImageFingerPrint // 変更検知
-fun asFlow(): Flow<GroundImageFingerPrint> // リアクティブ更新`;
+interface Props {
+  commentForFingerPrint?: string;
+  commentForAsFlow?: string;
+}
+
+const {
+  commentForFingerPrint = "変更検知",
+  commentForAsFlow = "リアクティブ更新"
+} = Astro.props;
+
+const code = `fun fingerPrint(): GroundImageFingerPrint // ${commentForFingerPrint}
+fun asFlow(): Flow<GroundImageFingerPrint> // ${commentForAsFlow}`;
 ---
 
 <Code code={code} lang="kotlin" />

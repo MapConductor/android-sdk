@@ -1,13 +1,31 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  initialRadiusMeters?: number;
+  minRadiusForSlider?: number;
+  maxRadiusForSlider?: number;
+  circleClickLog?: string;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  initialRadiusMeters = 500.0,
+  minRadiusForSlider = 100.0,
+  maxRadiusForSlider = 2000.0,
+  circleClickLog = "Circle clicked at: ${event.clicked}"
+} = Astro.props;
+
 const code = `@Composable
 fun InteractiveCircleExample() {
     var circleState by remember {
         mutableStateOf(
             CircleState(
-                center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                radiusMeters = 500.0,
+                center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+                radiusMeters = ${initialRadiusMeters},
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f),
                 clickable = true
@@ -21,13 +39,13 @@ fun InteractiveCircleExample() {
             onValueChange = {
                 circleState = circleState.copy(radiusMeters = it.toDouble())
             },
-            valueRange = 100f..2000f
+            valueRange = ${minRadiusForSlider}f..${maxRadiusForSlider}f
         )
 
         MapView(
             state = mapViewState,
             onCircleClick = { event ->
-                println("Circle clicked at: \${event.clicked}")
+                println("${circleClickLog}")
             }
         ) {
             Circle(circleState)

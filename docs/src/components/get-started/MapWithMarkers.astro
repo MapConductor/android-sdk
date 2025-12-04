@@ -11,6 +11,10 @@ interface Props {
   initialLat?: number;
   initialLong?: number;
   zoom?: number;
+  commentCoords?: string;
+  commentInitialPosition?: string;
+  commentMarkerClicked?: string;
+  commentAddMarkers?: string;
 }
 
 const {
@@ -22,7 +26,11 @@ const {
   marker2Long = 139.8107,
   initialLat = 35.6586,
   initialLong = 139.7454,
-  zoom = 11.0
+  zoom = 11.0,
+  commentCoords = "東京タワーとスカイツリーの座標",
+  commentInitialPosition = "カメラの初期位置",
+  commentMarkerClicked = "マーカーがクリックされました: ",
+  commentAddMarkers = "マーカーを追加"
 } = Astro.props;
 
 const code = `import androidx.compose.foundation.layout.fillMaxSize
@@ -34,11 +42,11 @@ import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
 @Composable
 fun MapWithMarkers(modifier: Modifier = Modifier) {
-    // 東京タワーとスカイツリーの座標
+    // ${commentCoords}
     val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
     val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
 
-    // カメラの初期位置
+    // ${commentInitialPosition}
     val initialCamera = MapCameraPositionImpl(
         position = GeoPointImpl.fromLatLong(${initialLat}, ${initialLong}),
         zoom = ${zoom}
@@ -52,10 +60,10 @@ fun MapWithMarkers(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         state = mapViewState,
         onMarkerClick = { markerState ->
-            println("マーカーがクリックされました: \${markerState.extra}")
+            println("${commentMarkerClicked}\${markerState.extra}")
         }
     ) {
-        // マーカーを追加
+        // ${commentAddMarkers}
         Marker(
             position = marker1,
             icon = DefaultIcon(label = "${marker1Label}"),

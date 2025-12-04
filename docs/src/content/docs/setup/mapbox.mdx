@@ -12,7 +12,9 @@ import TestMapboxComposable from '~/components/setup/mapbox/TestMapboxComposable
 
 This section covers the setup process for Mapbox Maps SDK integration with MapConductor.
 
-> **Important**: MapConductor provides a unified API layer on top of existing map SDKs. You must set up the Mapbox Maps SDK independently before using MapConductor's Mapbox integration.
+:::tip
+MapConductor provides a unified API layer on top of existing map SDKs. You must set up the Mapbox Maps SDK independently before using MapConductor's Mapbox integration.
+:::
 
 ## Prerequisites
 
@@ -42,7 +44,12 @@ Add the Secrets Gradle Plugin to your project's root `build.gradle.kts` or `buil
 
 Then, add the dependencies and apply the plugin in your app's `build.gradle.kts` or `build.gradle`:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="... other plugins"
+  mapboxSdkComment="Mapbox Maps SDK (NDK27 variant)"
+  bomComment="MapConductor BOM for version management (v{BOM_MODULE_VERSION})"
+  modulesComment="MapConductor modules (versions managed by BOM)"
+/>
 
 The Secrets Gradle Plugin automatically reads your `secrets.properties` file and injects the values into your `AndroidManifest.xml` at build time.
 
@@ -91,7 +98,7 @@ To verify your Mapbox setup:
 2. Check that the map displays with Mapbox styling
 3. Test map interactions (zoom, pan, rotate)
 
-<TestMapboxComposable />
+<TestMapboxComposable comment="If this displays correctly, your setup is working" />
 
 ## Troubleshooting
 

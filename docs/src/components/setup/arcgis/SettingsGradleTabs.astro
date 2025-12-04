@@ -1,6 +1,14 @@
 ---
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 
+interface Props {
+  arcgisRepositoryComment?: string;
+}
+
+const {
+  arcgisRepositoryComment = "Esri public repository for ArcGIS Maps SDK",
+} = Astro.props;
+
 const kotlinCode = `// settings.gradle.kts
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -8,7 +16,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-        // Esri public repository for ArcGIS Maps SDK
+        // ${arcgisRepositoryComment}
         maven {
             url = uri("https://esri.jfrog.io/artifactory/arcgis")
         }
@@ -22,7 +30,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-        // Esri public repository for ArcGIS Maps SDK
+        // ${arcgisRepositoryComment}
         maven {
             url "https://esri.jfrog.io/artifactory/arcgis"
         }
@@ -38,4 +46,3 @@ dependencyResolutionManagement {
     <Code code={groovyCode} lang="groovy" />
   </TabItem>
 </Tabs>
-

@@ -1,13 +1,35 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  extraLabel?: string;
+  southwestLabel?: string;
+  northeastLabel?: string;
+  commentForCornerMarkers?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  extraLabel = "Floor plan",
+  southwestLabel = "SW",
+  northeastLabel = "NE",
+  commentForCornerMarkers = "角のマーカー"
+} = Astro.props;
+
 const code = `@Composable
 fun DynamicBoundsExample() {
     var southwest by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7649, -122.4294))
+        mutableStateOf(GeoPointImpl.fromLatLong(${southwestLatitude}, ${southwestLongitude}))
     }
     var northeast by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7849, -122.4094))
+        mutableStateOf(GeoPointImpl.fromLatLong(${northeastLatitude}, ${northeastLongitude}))
     }
 
     val context = LocalContext.current
@@ -18,7 +40,7 @@ fun DynamicBoundsExample() {
             bounds = GeoRectBounds(southwest = southwest, northeast = northeast),
             image = it,
             opacity = 0.8f,
-            extra = "Floor plan"
+            extra = "${extraLabel}"
         )
     }
 
@@ -26,8 +48,8 @@ fun DynamicBoundsExample() {
         state = mapViewState,
         onMarkerDrag = { markerState ->
             when (markerState.extra) {
-                "SW" -> southwest = markerState.position
-                "NE" -> northeast = markerState.position
+                "${southwestLabel}" -> southwest = markerState.position
+                "${northeastLabel}" -> northeast = markerState.position
             }
         }
     ) {
@@ -35,19 +57,19 @@ fun DynamicBoundsExample() {
             GroundImage(state)
         }
 
-        // 角のマーカー
+        // ${commentForCornerMarkers}
         Marker(
             position = southwest,
-            icon = DefaultIcon(fillColor = Color.Green, label = "SW"),
+            icon = DefaultIcon(fillColor = Color.Green, label = "${southwestLabel}"),
             draggable = true,
-            extra = "SW"
+            extra = "${southwestLabel}"
         )
 
         Marker(
             position = northeast,
-            icon = DefaultIcon(fillColor = Color.Red, label = "NE"),
+            icon = DefaultIcon(fillColor = Color.Red, label = "${northeastLabel}"),
             draggable = true,
-            extra = "NE"
+            extra = "${northeastLabel}"
         )
     }
 }`;

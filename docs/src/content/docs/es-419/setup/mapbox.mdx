@@ -44,7 +44,12 @@ A continuación, añade el Secrets Gradle Plugin en el `build.gradle.kts` o `bui
 
 Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="... otros plugins"
+  mapboxSdkComment="Mapbox Maps SDK (variante NDK27)"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
 
 El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede inyectar los valores en `AndroidManifest.xml` en tiempo de compilación.
 
@@ -93,7 +98,7 @@ Para verificar la configuración de Mapbox:
 2. Comprueba que el mapa se muestra con el estilo de Mapbox.
 3. Prueba las interacciones de mapa (zoom, desplazamiento, rotación).
 
-<TestMapboxComposable />
+<TestMapboxComposable comment="Si esta pantalla se muestra correctamente, tu configuración es válida" />
 
 ![Resultado de TestMapbox](~/assets/setup/basic-setup-mapbox.png)
 
@@ -122,4 +127,3 @@ Para verificar la configuración de Mapbox:
 ## Próximos pasos
 
 Una vez configurado correctamente el SDK de Mapbox Maps, puedes usar el componente `MapboxMapView` de MapConductor con la API unificada.
-

@@ -43,21 +43,74 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 
 ### MarkerState básico
 
-<MarkerStateBasicExample />
+<MarkerStateBasicExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  extraLabel="Marcador de San Francisco"
+/>
 
 ### MarkerState personalizado
 
-<MarkerStateCustomExample />
+<MarkerStateCustomExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  markerLabel="SF"
+  extraLabel="Marcador de San Francisco arrastrable"
+  markerClickLog="Marcador pulsado: ${markerState.extra}"
+  markerDragLog="Marcador arrastrado a: ${markerState.position}"
+/>
 
 ### Actualizar MarkerState de forma dinámica
 
-<DynamicMarkerExampleComposable />
+<DynamicMarkerExampleComposable
+  initialLatitude={37.7749}
+  initialLongitude={-122.4194}
+  initialLabel="1"
+  initialExtra="Contador: 1"
+  counterExtraTemplate="Contador: $counter"
+  updateButtonLabel="Actualizar marcador ($counter)"
+/>
 
 ### MarkerState con animación de posición
 
-<AnimatedMarkerExampleComposable />
+<AnimatedMarkerExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={37.7849}
+  endLongitude={-122.4094}
+  markerLabel="En movimiento"
+  extraLabel="Marcador animado"
+/>
 
 ### Ejemplos avanzados (listas, iconos personalizados, observación)
 
-<MarkerStateAdvancedExamplesComposable />
-
+<MarkerStateAdvancedExamplesComposable
+  listMarker1Latitude={37.7749}
+  listMarker1Longitude={-122.4194}
+  listMarker1Extra="Marcador 1"
+  listMarker2Latitude={37.7849}
+  listMarker2Longitude={-122.4094}
+  listMarker2Extra="Marcador 2"
+  listMarker3Latitude={37.7649}
+  listMarker3Longitude={-122.4294}
+  listMarker3Extra="Marcador 3"
+  selectedMarkerText="Seleccionado: ${marker.extra}"
+  positionText="Posición: ${marker.position.latitude}, ${marker.position.longitude}"
+  draggableText="Arrastrable: ${marker.draggable}"
+  mapViewReplacementComment="Sustituye MapView por el proveedor de mapas que prefieras, por ejemplo GoogleMapView o MapboxMapView"
+  customMarkerLatitude={37.7749}
+  customMarkerLongitude={-122.4194}
+  customMarkerLabel="XL"
+  customMarkerExtra="Icono por defecto grande"
+  drawableMarkerLatitude={37.7849}
+  drawableMarkerLongitude={-122.4094}
+  drawableMarkerExtra="Icono personalizado desde drawable"
+  weatherMarkerLatitude={37.7649}
+  weatherMarkerLongitude={-122.4294}
+  weatherMarkerExtra="Icono de meteorología"
+  observerMarkerLatitude={37.7749}
+  observerMarkerLongitude={-122.4194}
+  observerMarkerExtra="Marcador observado"
+  observeStateComment="Observar cambios de estado"
+  markerStateChangedLog="El estado del marcador ha cambiado: $markerFingerprint"
+/>

@@ -1,13 +1,33 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `// MapView を GoogleMapView、MapboxMapView などに置き換えてください
+interface Props {
+  commentForMapViewReplacement?: string;
+  firstLatitude?: number;
+  firstLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+  thirdLatitude?: number;
+  thirdLongitude?: number;
+}
+
+const {
+  commentForMapViewReplacement = 'Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView',
+  firstLatitude = 37.7749,
+  firstLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094,
+  thirdLatitude = 37.7749,
+  thirdLongitude = -122.3994,
+} = Astro.props;
+
+const code = `// ${commentForMapViewReplacement}
 MapView(state = mapViewState) {
     val trianglePoints = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        GeoPointImpl.fromLatLong(37.7749, -122.3994),
-        GeoPointImpl.fromLatLong(37.7749, -122.4194)
+        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
+        GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
+        GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude})
     )
 
     Polygon(

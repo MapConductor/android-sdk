@@ -1,44 +1,62 @@
 ---
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 
+interface Props {
+  arcgisMapsKotlin?: string;
+  bomVersion?: string;
+  otherPluginsComment?: string;
+  arcgisSdkComment?: string;
+  bomComment?: string;
+  modulesComment?: string;
+}
+
+const {
+  arcgisMapsKotlin = "{ARCGIS_SDK_VERSION}",
+  bomVersion = "{BOM_MODULE_VERSION}",
+  otherPluginsComment = "... other plugins",
+  arcgisSdkComment = "ArcGIS Maps SDK",
+  bomComment = "MapConductor BOM for version management (v{BOM_MODULE_VERSION})",
+  modulesComment = "MapConductor modules (versions managed by BOM)",
+} = Astro.props;
+
 const kotlinCode = `// App/build.gradle.kts
 plugins {
-    // ... other plugins
+    // ${otherPluginsComment}
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 dependencies {
-    // ArcGIS Maps SDK (version managed via libs.versions.toml)
-    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-    implementation(libs.arcgis.maps.kotlin)
-    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+    // ${arcgisSdkComment}
+    implementation(platform("com.esri:arcgis-maps-kotlin-toolkit-bom:${arcgisMapsKotlin}"))
+    implementation("com.esri:arcgis-maps-kotlin:${arcgisMapsKotlin}")
+    implementation("com.esri:arcgis-maps-kotlin-toolkit-geoview-compose")
+    implementation("com.esri:arcgis-maps-kotlin-toolkit-authentication")
 
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    // ${bomComment}
+    implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))
 
-    // MapConductor modules (versions managed by BOM)
+    // ${modulesComment}
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-arcgis")
 }`;
 
 const groovyCode = `// App/build.gradle
 plugins {
-    // ... other plugins
+    // ${otherPluginsComment}
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 dependencies {
-    // ArcGIS Maps SDK (version managed via libs.versions.toml)
-    implementation platform(libs.arcgis.maps.kotlin.toolkit.bom)
-    implementation libs.arcgis.maps.kotlin
-    implementation libs.arcgis.maps.kotlin.toolkit.geoview.compose
-    implementation libs.arcgis.maps.kotlin.toolkit.authentication
+    // ${arcgisSdkComment}
+    implementation platform("com.esri:arcgis-maps-kotlin-toolkit-bom:${arcgisMapsKotlin}")
+    implementation "com.esri:arcgis-maps-kotlin:${arcgisMapsKotlin}"
+    implementation "com.esri:arcgis-maps-kotlin-toolkit-geoview-compose"
+    implementation "com.esri:arcgis-maps-kotlin-toolkit-authentication"
 
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+    // ${bomComment}
+    implementation platform("com.mapconductor:mapconductor-bom:${bomVersion}")
 
-    // MapConductor modules (versions managed by BOM)
+    // ${modulesComment}
     implementation "com.mapconductor:core"
     implementation "com.mapconductor:for-arcgis"
 }`;
@@ -52,4 +70,3 @@ dependencies {
     <Code code={groovyCode} lang="groovy" />
   </TabItem>
 </Tabs>
-

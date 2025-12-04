@@ -1,17 +1,38 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  startLatitude?: number;
+  startLongitude?: number;
+  endLatitude?: number;
+  endLongitude?: number;
+  commentForStartPoint?: string;
+  commentForEndPoint?: string;
+  commentForGeodesic?: string;
+  extraLabel?: string;
+}
+
+const {
+  startLatitude = 37.7749,
+  startLongitude = -122.4194,
+  endLatitude = 40.7128,
+  endLongitude = -74.006,
+  commentForStartPoint = "サンフランシスコ",
+  commentForEndPoint = "ニューヨーク",
+  commentForGeodesic = "地球の曲率に従う",
+  extraLabel = "Cross-country route"
+} = Astro.props;
+
 const code = `val geodesicPolyline = PolylineState(
     points = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // サンフランシスコ
-        GeoPointImpl.fromLatLong(40.7128, -74.0060)   // ニューヨーク
+        GeoPointImpl.fromLatLong(${startLatitude}, ${startLongitude}), // ${commentForStartPoint}
+        GeoPointImpl.fromLatLong(${endLatitude}, ${endLongitude})   // ${commentForEndPoint}
     ),
     strokeColor = Color.Green,
     strokeWidth = 3.dp,
-    geodesic = true, // 地球の曲率に従う
-    extra = "Cross-country route"
+    geodesic = true, // ${commentForGeodesic}
+    extra = "${extraLabel}"
 )`;
 ---
 
 <Code code={code} lang="kotlin" />
-

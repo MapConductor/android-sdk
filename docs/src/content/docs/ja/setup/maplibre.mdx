@@ -42,7 +42,11 @@ MapLibre は、タイルサーバーを必要とするオープンソースの�
 
 アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加します:
 
-<AppGradleTabs />
+<AppGradleTabs
+  maplibreSdkComment="MapLibre Native Android SDK"
+  bomComment="MapConductor BOM によるバージョン管理 (v{BOM_MODULE_VERSION})"
+  modulesComment="MapConductor モジュール（BOM でバージョン管理）"
+/>
 
 MapLibre SDK は Maven Central から利用できます。`settings.gradle.kts` または `settings.gradle` に既に設定されているはずです:
 
@@ -65,7 +69,12 @@ MapLibre SDK は Maven Central から利用できます。`settings.gradle.kts` 
 
 MapLibre は、マップの見た目を定義するためにスタイル JSON が必要です。ホストされたスタイルを使用するか、カスタムのものを提供できます。
 
-<MapLibreStyleExamples />
+<MapLibreStyleExamples
+  demoTitle="デモ用スタイル"
+  hostedTitle="ホストされたスタイルの使用"
+  osmTitle="OpenStreetMap スタイルの使用"
+  osmComment="OSM Liberty スタイルを使う例"
+/>
 
 ## 検証
 
@@ -76,7 +85,7 @@ MapLibre のセットアップを確認するには:
 3. マップ操作（ズーム、パン、回転）をテストします
 4. タイルプロバイダーによって要求される場合、帰属表示が表示されることを確認します
 
-<TestMapLibreComposable />
+<TestMapLibreComposable comment="もし地図が表示されれば、セットアップが正しくできています" />
 
 ![TestMapLibreの実行結果](~/assets/setup/basic-setup-maplibre.png)
 

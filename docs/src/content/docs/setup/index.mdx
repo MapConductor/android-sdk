@@ -4,8 +4,6 @@ title: SDK Setup Overview
 
 import MapConductorInitExample from '~/components/setup/MapConductorInitExample.astro';
 
-# SDK Setup Overview
-
 This page provides a high-level overview of the steps required to use MapConductor with each map provider. See the provider-specific pages for detailed instructions.
 
 ## Common Prerequisites
@@ -34,6 +32,11 @@ You only need to configure the providers you actually use in your application.
 
 Once each map SDK is initialized, MapConductor only needs the corresponding `MapViewState` and map view component.
 
-<MapConductorInitExample provider="Google" />
+<MapConductorInitExample
+  provider="Google"
+  comment="Add Marker / Circle / Polyline as needed"
+/>
+
+![MyMap example output](~/assets/examples/basic-example.jpg)
 
 To switch to another provider, replace `rememberGoogleMapViewState` and `GoogleMapView` with the corresponding versions such as `rememberMapboxMapViewState` and `MapboxMapView`.

@@ -44,7 +44,12 @@ Mapbox Maven リポジトリが設定されていることを確認します（�
 
 次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="ほかのプラグイン"
+  mapboxSdkComment="Mapbox Maps SDK（NDK27 バリアント）"
+  bomComment="MapConductor BOM によるバージョン管理 (v{BOM_MODULE_VERSION})"
+  modulesComment="MapConductor モジュール（BOM でバージョン管理）"
+/>
 
 Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み取り、ビルド時に値を `AndroidManifest.xml` に注入します。
 
@@ -89,7 +94,7 @@ Mapbox のセットアップを確認するには:
 2. マップが Mapbox スタイルで表示されることを確認します
 3. マップ操作（ズーム、パン、回転）をテストします
 
-<TestMapboxComposable />
+<TestMapboxComposable comment="もし地図が表示されれば、セットアップが正しくできています" />
 
 ![TestMapboxの実行結果](~/assets/setup/basic-setup-mapbox.png)
 

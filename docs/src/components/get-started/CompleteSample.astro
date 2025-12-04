@@ -11,6 +11,14 @@ interface Props {
   centerLat?: number;
   centerLong?: number;
   circleRadiusMeters?: number;
+  commentPositions?: string;
+  commentClickedPosition?: string;
+  commentControlButtons?: string;
+  commentMap?: string;
+  commentMarkers?: string;
+  commentClickedMarker?: string;
+  commentCircle?: string;
+  commentPolyline?: string;
 }
 
 const {
@@ -22,7 +30,15 @@ const {
   marker2Long = 139.8107,
   centerLat = 35.6812,
   centerLong = 139.7671,
-  circleRadiusMeters = 1000.0
+  circleRadiusMeters = 1000.0,
+  commentPositions = "位置情報",
+  commentClickedPosition = "クリックされた位置を保存",
+  commentControlButtons = "コントロールボタン",
+  commentMap = "地図",
+  commentMarkers = "マーカー",
+  commentClickedMarker = "クリックされた位置のマーカー",
+  commentCircle = "円",
+  commentPolyline = "ポリライン"
 } = Astro.props;
 
 const code = `import androidx.compose.foundation.layout.*
@@ -41,11 +57,11 @@ import kotlinx.coroutines.launch
 fun CompleteSample(modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
-    // 位置情報
+    // ${commentPositions}
     val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
     val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
 
-    // クリックされた位置を保存
+    // ${commentClickedPosition}
     var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
 
     val initialCamera = MapCameraPositionImpl(
@@ -59,7 +75,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxSize()) {
-        // コントロールボタン
+        // ${commentControlButtons}
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +105,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             }
         }
 
-        // 地図
+        // ${commentMap}
         GoogleMapView(
             modifier = Modifier.fillMaxSize(),
             state = mapViewState,
@@ -106,7 +122,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                     .show()
             }
         ) {
-            // マーカー
+            // ${commentMarkers}
             Marker(
                 position = marker1,
                 icon = DefaultIcon(
@@ -125,7 +141,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 extra = "marker2"
             )
 
-            // クリックされた位置のマーカー
+            // ${commentClickedMarker}
             clickedPosition?.let { position ->
                 Marker(
                     position = position,
@@ -137,7 +153,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 )
             }
 
-            // 円
+            // ${commentCircle}
             Circle(
                 center = marker1,
                 radiusMeters = ${circleRadiusMeters},
@@ -152,7 +168,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 fillColor = Color.Blue.copy(alpha = 0.2f)
             )
 
-            // ポリライン
+            // ${commentPolyline}
             Polyline(
                 points = listOf(marker1, marker2),
                 strokeColor = Color.Magenta,

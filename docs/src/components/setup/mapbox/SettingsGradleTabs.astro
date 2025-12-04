@@ -1,6 +1,14 @@
 ---
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 
+interface Props {
+  mapboxRepositoryComment?: string;
+}
+
+const {
+  mapboxRepositoryComment = "Mapbox Maven repository",
+} = Astro.props;
+
 const kotlinCode = `// settings.gradle.kts
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -8,7 +16,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-        // Mapbox Maven repository
+        // ${mapboxRepositoryComment}
         maven {
             url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
         }
@@ -22,7 +30,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-        // Mapbox Maven repository
+        // ${mapboxRepositoryComment}
         maven {
             url "https://api.mapbox.com/downloads/v2/releases/maven"
         }
@@ -38,4 +46,3 @@ dependencyResolutionManagement {
     <Code code={groovyCode} lang="groovy" />
   </TabItem>
 </Tabs>
-

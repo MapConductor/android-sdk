@@ -36,7 +36,7 @@ MapConductor proporciona una capa de API unificada sobre los SDKs de mapas exist
 
 ### 2. Instalación del HERE SDK
 
-1. Descarga HERE SDK Explore Android (por ejemplo, `4.23.2.0.210004`).
+1. Descarga HERE SDK Explore Android (por ejemplo, `{HERE_EXPLORER_SDK_VERSION}`).
 2. Coloca el archivo AAR en el directorio `libs/` de tu proyecto:
 
    <HereAarPathExample />
@@ -51,7 +51,12 @@ Añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradle` de la 
 
 Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="... otros plugins"
+  hereSdkComment="HERE SDK (AAR local)"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
 
 El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede utilizarse para inyectar valores en tu `AndroidManifest.xml`.
 
@@ -97,7 +102,7 @@ Para verificar la configuración de HERE Maps:
 2. Comprueba que el mapa de HERE se muestra correctamente.
 3. Prueba interacciones de mapa y funciones específicas de HERE.
 
-<TestHereComposable />
+<TestHereComposable commentForVerification="Si esta pantalla se muestra correctamente, tu configuración es válida" />
 
 ![Resultado de TestHERE](~/assets/setup/basic-setup-here.png)
 
@@ -123,4 +128,3 @@ Para verificar la configuración de HERE Maps:
 ## Próximos pasos
 
 Una vez que el HERE SDK esté configurado correctamente, puedes usar el componente `HereMapView` de MapConductor con la API unificada.
-

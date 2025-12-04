@@ -30,25 +30,54 @@ import PolylineEventTypesExample from '~/components/states/polyline/PolylineEven
 
 ## Methods
 
-<PolylineStateMethodsExample />
+<PolylineStateMethodsExample
+  commentForCopy="Create a modified copy"
+  commentForFingerPrint="Change detection"
+  commentForAsFlow="Reactive updates"
+/>
 
 ## Usage Examples
 
 ### Basic Polyline
 
-<PolylineStateBasicExample />
+<PolylineStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7949}
+  thirdLongitude={-122.3994}
+/>
 
 ### Dynamic Polyline
 
-<DynamicPolylineExampleComposable />
+<DynamicPolylineExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+/>
 
 ### Geodesic Polyline
 
-<GeodesicPolylineExample />
+<GeodesicPolylineExample
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={40.7128}
+  endLongitude={-74.006}
+  commentForStartPoint="San Francisco"
+  commentForEndPoint="New York"
+  commentForGeodesic="Follows the Earth's curvature"
+  extraLabel="Cross-country route"
+/>
 
 ### Multi-segment Route
 
-<RouteExampleComposable />
+<RouteExampleComposable
+  highwaySegmentExtra="Highway segment"
+  localRoadSegmentExtra="Local road segment"
+  walkingPathExtra="Walking path"
+/>
 
 ## Event Handling
 
@@ -63,4 +92,3 @@ Polyline events provide both the state and click location:
 3. **Color Coding**: Use different colors to distinguish route types
 4. **Width Hierarchy**: Use stroke width to indicate importance
 5. **Performance**: Consider simplification for complex polylines at different zoom levels
-

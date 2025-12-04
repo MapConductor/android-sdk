@@ -1,27 +1,47 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `// MapView を GoogleMapView、MapboxMapView などに置き換えてください
+interface Props {
+  commentForMapViewReplacement?: string;
+  logPolygonClicked?: string;
+  logVerticesLabel?: string;
+  logClickLocationLabel?: string;
+  logExtraDataLabel?: string;
+  logApproxAreaLabel?: string;
+  extraLabel?: string;
+}
+
+const {
+  commentForMapViewReplacement = 'Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView',
+  logPolygonClicked = 'Polygon clicked:',
+  logVerticesLabel = '  Vertices: ${polygon.points.size}',
+  logClickLocationLabel = '  Click location: ${clickPoint}',
+  logExtraDataLabel = '  Extra data: ${polygon.extra}',
+  logApproxAreaLabel = '  Approximate area: $area sq meters',
+  extraLabel = 'Interactive polygon',
+} = Astro.props;
+
+const code = `// ${commentForMapViewReplacement}
 MapView(
     state = mapViewState,
     onPolygonClick = { polygonEvent ->
         val polygon = polygonEvent.state
         val clickPoint = polygonEvent.clicked
 
-        println("Polygon clicked:")
-        println("  Vertices: \${polygon.points.size}")
-        println("  Click location: \${clickPoint}")
-        println("  Extra data: \${polygon.extra}")
+        println("${logPolygonClicked}")
+        println("${logVerticesLabel}")
+        println("${logClickLocationLabel}")
+        println("${logExtraDataLabel}")
 
         val area = calculatePolygonArea(polygon.points)
-        println("  Approximate area: \$area sq meters")
+        println("${logApproxAreaLabel}")
     }
 ) {
     Polygon(
         points = polygonPoints,
         strokeColor = Color.Green,
         fillColor = Color.Green.copy(alpha = 0.3f),
-        extra = "Interactive polygon"
+        extra = "${extraLabel}"
     )
 }`;
 ---

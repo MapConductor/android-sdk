@@ -9,6 +9,8 @@ interface Props {
   marker2Lat?: number;
   marker2Long?: number;
   strokeWidth?: string;
+  commentMarker?: string;
+  commentDrawLine?: string;
 }
 
 const {
@@ -18,18 +20,20 @@ const {
   marker2Label = "ST",
   marker2Lat = 35.7101,
   marker2Long = 139.8107,
-  strokeWidth = "5.dp"
+  strokeWidth = "5.dp",
+  commentMarker = "マーカー",
+  commentDrawLine = "2つのポイントを結ぶ線"
 } = Astro.props;
 
 const code = `GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState
 ) {
-    // マーカー
+    // ${commentMarker}
     Marker(position = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long}), icon = DefaultIcon(label = "${marker1Label}"))
     Marker(position = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long}), icon = DefaultIcon(label = "${marker2Label}"))
 
-    // 2つのポイントを結ぶ線
+    // ${commentDrawLine}
     Polyline(
         points = listOf(
             GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long}),

@@ -43,19 +43,51 @@ A polygon is a closed shape that defines an area with customizable stroke and fi
 
 ### Basic Polygon
 
-<BasicPolygonExample />
+<BasicPolygonExample
+  commentForMapViewReplacement="Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView"
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+/>
 
 ### Interactive Polygon with Vertex Markers
 
-<InteractivePolygonExample />
+<InteractivePolygonExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  fourthLatitude={37.7649}
+  fourthLongitude={-122.4094}
+  vertexPrefix="Vertex "
+  polygonClickedLog="Polygon clicked at: ${polygonEvent.clicked}"
+/>
 
 ### Multiple Polygons with Different Styles
 
-<MultiplePolygonsExample />
+<MultiplePolygonsExample
+  commentForMapViewReplacement="Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView"
+  blueZoneExtra="Blue zone"
+  redBoundaryExtra="Red boundary"
+  greenAreaExtra="Green area"
+/>
 
 ### Complex Polygon Shape
 
-<ComplexPolygonExample />
+<ComplexPolygonExample
+  commentForStarPolygon="Star-shaped polygon"
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadius={0.01}
+  innerRadius={0.005}
+  extraLabel="Star polygon"
+  markerLabel="⭐"
+/>
 
 ### Dynamic Polygon Creation
 
@@ -65,7 +97,15 @@ A polygon is a closed shape that defines an area with customizable stroke and fi
 
 Polygon interactions are handled by your map provider component:
 
-<PolygonEventHandlingExample />
+<PolygonEventHandlingExample
+  commentForMapViewReplacement="Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView"
+  logPolygonClicked="Polygon clicked:"
+  logVerticesLabel="  Vertices: ${polygon.points.size}"
+  logClickLocationLabel="  Click location: ${clickPoint}"
+  logExtraDataLabel="  Extra data: ${polygon.extra}"
+  logApproxAreaLabel="  Approximate area: $area sq meters"
+  extraLabel="Interactive polygon"
+/>
 
 ## Styling Options
 

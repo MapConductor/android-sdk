@@ -1,6 +1,26 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  extraLabel?: string;
+  opacityLabelTemplate?: string;
+  groundImageClickLog?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  extraLabel = "Interactive overlay",
+  opacityLabelTemplate = "Opacity: ${(opacity * 100).toInt()}%",
+  groundImageClickLog = "Ground image clicked at: ${event.clicked}"
+} = Astro.props;
+
 const code = `@Composable
 fun InteractiveGroundImageExample() {
     var groundImageState by remember { mutableStateOf<GroundImageState?>(null) }
@@ -13,12 +33,12 @@ fun InteractiveGroundImageExample() {
         drawable?.let {
             groundImageState = GroundImageState(
                 bounds = GeoRectBounds(
-                    southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
-                    northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                    southwest = GeoPointImpl.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
+                    northeast = GeoPointImpl.fromLatLong(${northeastLatitude}, ${northeastLongitude})
                 ),
                 image = it,
                 opacity = opacity,
-                extra = "Interactive overlay"
+                extra = "${extraLabel}"
             )
         }
     }
@@ -30,12 +50,12 @@ fun InteractiveGroundImageExample() {
             valueRange = 0f..1f,
             modifier = Modifier.padding(16.dp)
         )
-        Text("Opacity: \${(opacity * 100).toInt()}%")
+        Text("${opacityLabelTemplate}")
 
         MapView(
             state = mapViewState,
             onGroundImageClick = { event ->
-                println("Ground image clicked at: \${event.clicked}")
+                println("${groundImageClickLog}")
             }
         ) {
             groundImageState?.let { state ->

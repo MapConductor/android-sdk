@@ -29,29 +29,71 @@ import GroundImageResourceLoadingExample from '~/components/states/groundimage/G
 
 ## Métodos
 
-<GroundImageStateMethodsExample />
+<GroundImageStateMethodsExample
+  commentForFingerPrint="Detección de cambios"
+  commentForAsFlow="Actualizaciones reactivas"
+/>
 
 ## Ejemplos de uso
 
 ### GroundImage básico
 
-<BasicGroundImageExampleComposable />
+<BasicGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Overlay base"
+/>
 
 ### GroundImage interactivo
 
-<InteractiveGroundImageExampleComposable />
+<InteractiveGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Overlay interactivo"
+  opacityLabelTemplate="Opacidad: ${(opacity * 100).toInt()}%"
+  groundImageClickLog="GroundImage pulsado en: ${event.clicked}"
+/>
 
 ### Varios overlays
 
-<MultiLayerGroundImageExampleComposable />
+<MultiLayerGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  baseOverlayDescription="Satélite base"
+  weatherOverlayDescription="Datos meteorológicos"
+  trafficOverlayDescription="Información de tráfico"
+/>
 
 ### Límites dinámicos
 
-<DynamicBoundsExampleComposable />
+<DynamicBoundsExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Plano de planta"
+  southwestLabel="SO"
+  northeastLabel="NE"
+  commentForCornerMarkers="Marcadores de esquina"
+/>
 
 ### Overlay animado
 
-<AnimatedGroundImageExampleComposable />
+<AnimatedGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Overlay animado"
+  animateLabel="Animar"
+  stopLabel="Detener"
+/>
 
 ## Manejo de eventos
 
@@ -63,7 +105,12 @@ Los eventos de GroundImage proporcionan tanto el estado como la posición del cl
 
 ### Carga desde diferentes orígenes
 
-<GroundImageResourceLoadingExample />
+<GroundImageResourceLoadingExample
+  commentForFromResources="Desde recursos"
+  commentForFromAssets="Desde assets"
+  commentForFromNetwork="Desde la red (usando una librería de carga de imágenes)"
+  commentForLibraryUsage="Utiliza librerías como Coil, Glide o Picasso para imágenes de red"
+/>
 
 ## Buenas prácticas
 
@@ -74,4 +121,3 @@ Los eventos de GroundImage proporcionan tanto el estado como la posición del cl
 5. **Orden de capas**: Ten en cuenta el orden de dibujo cuando haya varios overlays.
 6. **Rendimiento**: Limita el número de GroundImages simultáneos.
 7. **Manejo de errores**: Gestiona correctamente los errores cuando falle la carga de imágenes.
-

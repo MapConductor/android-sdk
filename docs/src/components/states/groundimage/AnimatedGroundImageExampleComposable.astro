@@ -1,6 +1,26 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  extraLabel?: string;
+  animateLabel?: string;
+  stopLabel?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  extraLabel = "Animated overlay",
+  animateLabel = "Animate",
+  stopLabel = "Stop"
+} = Astro.props;
+
 const code = `@Composable
 fun AnimatedGroundImageExample() {
     var isAnimating by remember { mutableStateOf(false) }
@@ -21,18 +41,18 @@ fun AnimatedGroundImageExample() {
     val groundImageState = drawable?.let {
         GroundImageState(
             bounds = GeoRectBounds(
-                southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
-                northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                southwest = GeoPointImpl.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
+                northeast = GeoPointImpl.fromLatLong(${northeastLatitude}, ${northeastLongitude})
             ),
             image = it,
             opacity = opacity,
-            extra = "Animated overlay"
+            extra = "${extraLabel}"
         )
     }
 
     Column {
         Button(onClick = { isAnimating = !isAnimating }) {
-            Text(if (isAnimating) "Stop" else "Animate")
+            Text(if (isAnimating) "${stopLabel}" else "${animateLabel}")
         }
 
         MapView(state = mapViewState) {

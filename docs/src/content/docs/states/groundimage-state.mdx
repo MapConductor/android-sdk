@@ -29,29 +29,71 @@ import GroundImageResourceLoadingExample from '~/components/states/groundimage/G
 
 ## Methods
 
-<GroundImageStateMethodsExample />
+<GroundImageStateMethodsExample
+  commentForFingerPrint="Change detection"
+  commentForAsFlow="Reactive updates"
+/>
 
 ## Usage Examples
 
 ### Basic Ground Image
 
-<BasicGroundImageExampleComposable />
+<BasicGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Base overlay"
+/>
 
 ### Interactive Ground Image
 
-<InteractiveGroundImageExampleComposable />
+<InteractiveGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Interactive overlay"
+  opacityLabelTemplate="Opacity: ${(opacity * 100).toInt()}%"
+  groundImageClickLog="Ground image clicked at: ${event.clicked}"
+/>
 
 ### Multiple Overlays
 
-<MultiLayerGroundImageExampleComposable />
+<MultiLayerGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  baseOverlayDescription="Base satellite"
+  weatherOverlayDescription="Weather data"
+  trafficOverlayDescription="Traffic info"
+/>
 
 ### Dynamic Bounds
 
-<DynamicBoundsExampleComposable />
+<DynamicBoundsExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Floor plan"
+  southwestLabel="SW"
+  northeastLabel="NE"
+  commentForCornerMarkers="Corner markers"
+/>
 
 ### Animated Overlay
 
-<AnimatedGroundImageExampleComposable />
+<AnimatedGroundImageExampleComposable
+  southwestLatitude={37.7649}
+  southwestLongitude={-122.4294}
+  northeastLatitude={37.7849}
+  northeastLongitude={-122.4094}
+  extraLabel="Animated overlay"
+  animateLabel="Animate"
+  stopLabel="Stop"
+/>
 
 ## Event Handling
 
@@ -63,7 +105,12 @@ Ground image events provide both the state and click location:
 
 ### Loading from Different Sources
 
-<GroundImageResourceLoadingExample />
+<GroundImageResourceLoadingExample
+  commentForFromResources="From resources"
+  commentForFromAssets="From assets"
+  commentForFromNetwork="From network (using image loading library)"
+  commentForLibraryUsage="Use libraries like Coil, Glide, or Picasso for network images"
+/>
 
 ## Best Practices
 
@@ -74,4 +121,3 @@ Ground image events provide both the state and click location:
 5. **Layer Order**: Consider drawing order for multiple overlays
 6. **Performance**: Limit the number of simultaneous ground images
 7. **Error Handling**: Handle cases where images fail to load
-

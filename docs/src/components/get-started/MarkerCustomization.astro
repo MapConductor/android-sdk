@@ -5,12 +5,14 @@ interface Props {
   label?: string;
   lat?: number;
   long?: number;
+  commentAnchorInfo?: string;
 }
 
 const {
   label = "TT",
   lat = 35.6586,
-  long = 139.7454
+  long = 139.7454,
+  commentAnchorInfo = "x = 0.0(左)～1.0(右), y = 0.0(上)～1.0(下)"
 } = Astro.props;
 
 const code = `Marker(
@@ -21,7 +23,7 @@ const code = `Marker(
         textColor = Color.White
     ),
     extra = "tokyo_tower",
-    anchor = Offset(0.5f, 1.0f)  // x = 0.0(左)～1.0(右), y = 0.0(上)～1.0(下)
+    anchor = Offset(0.5f, 1.0f)  // ${commentAnchorInfo}
 )`;
 ---
 

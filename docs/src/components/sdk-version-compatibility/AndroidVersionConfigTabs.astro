@@ -7,7 +7,7 @@ interface Props {
   minSdk?: string;
   javaVersion?: string;
   kotlinVersion?: string;
-  composeVersion?: string;
+  composeBomVersion?: string;
 }
 
 const {
@@ -15,15 +15,29 @@ const {
   minSdk = "{ANDROID_MIN_SDK_VERSION}",
   javaVersion = "{JAVA_VERSION}",
   kotlinVersion = "{KOTLIN_VERSION}",
-  composeVersion = "{JETPACK_COMPOSE_VERSION}"
+  composeBomVersion = "{JETPACK_COMPOSE_BOM_VERSION}"
 } = Astro.props;
 
-const kotlinCode = `android {
+const kotlinCode = `plugin {
+  id("org.jetbrains.kotlin.plugin.compose:${kotlinVersion}")
+  id("org.jetbrains.kotlin.android:${kotlinVersion}")
+}
+
+android {
     compileSdk = ${targetSdk}
 
     defaultConfig {
         minSdk = ${minSdk}
         targetSdk = ${targetSdk}
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion =
+            project.property("${kotlinVersion}").toString()
     }
 
     compileOptions {
@@ -36,12 +50,26 @@ const kotlinCode = `android {
     }
 }`;
 
-const groovyCode = `android {
+const groovyCode = `plugin {
+  id("org.jetbrains.kotlin.plugin.compose:${kotlinVersion}")
+  id("org.jetbrains.kotlin.android:${kotlinVersion}")
+}
+  
+android {
     compileSdk ${targetSdk}
 
     defaultConfig {
         minSdk ${minSdk}
         targetSdk ${targetSdk}
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion 
+            project.property("{KOTLIN_VERSION}").toString()
     }
 
     compileOptions {

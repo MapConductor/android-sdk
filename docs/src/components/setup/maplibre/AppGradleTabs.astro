@@ -1,28 +1,44 @@
 ---
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 
+interface Props {
+  maplibreSdkVersion?: string;
+  bomVersion?: string;
+  maplibreSdkComment?: string;
+  bomComment?: string;
+  modulesComment?: string;
+}
+
+const {
+  maplibreSdkVersion = "{MAPLBRE_SDK_VERSION}",
+  bomVersion = "{BOM_MODULE_VERSION}",
+  maplibreSdkComment = "MapLibre Native Android SDK",
+  bomComment = "MapConductor BOM for version management (v{BOM_MODULE_VERSION})",
+  modulesComment = "MapConductor modules (versions managed by BOM)",
+} = Astro.props;
+
 const kotlinCode = `// App/build.gradle.kts
 dependencies {
-    // MapLibre Native Android SDK (version managed via libs.versions.toml)
-    implementation(libs.maplibre.android)
+    // ${maplibreSdkComment}
+    implementation("org.maplibre.gl:android-sdk:${maplibreSdkVersion}")
 
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    // ${bomComment}
+    implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))
 
-    // MapConductor modules (versions managed by BOM)
+    // ${modulesComment}
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-maplibre")
 }`;
 
 const groovyCode = `// App/build.gradle
 dependencies {
-    // MapLibre Native Android SDK (version managed via libs.versions.toml)
-    implementation libs.maplibre.android
+    // ${maplibreSdkComment}
+    implementation("org.maplibre.gl:android-sdk:${maplibreSdkVersion}")
 
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+    // ${bomComment}
+    implementation platform("com.mapconductor:mapconductor-bom:${bomVersion}")
 
-    // MapConductor modules (versions managed by BOM)
+    // ${modulesComment}
     implementation "com.mapconductor:core"
     implementation "com.mapconductor:for-maplibre"
 }`;
@@ -36,4 +52,3 @@ dependencies {
     <Code code={groovyCode} lang="groovy" />
   </TabItem>
 </Tabs>
-

@@ -50,7 +50,9 @@ Consulta la página de [Comenzar](/es-419/get-started/) para ver toda la informa
 
 ### 2. Configuración de cada SDK de mapas
 
-> **Importante**: MapConductor proporciona una capa de API unificada sobre los SDK de mapas existentes. Debes configurar cada SDK de mapas de forma independiente antes de usar la integración de MapConductor.
+:::tip
+MapConductor proporciona una capa de API unificada sobre los SDK de mapas existentes. Debes configurar cada SDK de mapas de forma independiente antes de usar la integración de MapConductor.
+:::
 
 Cada proveedor de mapas requiere su propia configuración de SDK: claves de API, permisos y ajustes específicos:
 
@@ -69,21 +71,21 @@ Ejemplo de creación de una vista de mapa con un marcador y un círculo:
 <BasicMapExample
   stateComment="// Sustituye por el proveedor de mapas que vayas a usar"
   stateCommentLines={[
-    "// - Google Maps -> rememberGoogleMapViewState",
-    "// - Mapbox -> rememberMapboxViewState",
-    "// ... etc.",
+    "    // - Google Maps -> rememberGoogleMapViewState",
+    "    / - Mapbox -> rememberMapboxViewState",
+    "    // ... etc.",
   ]}
   viewComment="// Cambia también la vista de mapa según el proveedor elegido"
   viewCommentLines={[
-    "// - Google Maps -> GoogleMapView",
-    "// - Mapbox -> MapboxMapView",
-    "// ... etc.",
+    "    // - Google Maps -> GoogleMapView",
+    "    // - Mapbox -> MapboxMapView",
+    "    // ... etc.",
   ]}
   markerComment="// Añadir un marcador"
   circleComment="// Añadir un círculo"
 />
 
-![un marcador con un círculo dibujado en el mapa](/img/introduction/basic-googlemaps-example.jpg)
+![un marcador con un círculo dibujado en el mapa](~/assets/introduction/basic-googlemaps-example.png)
 
 ### 4. Cambio de proveedor de mapas
 

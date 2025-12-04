@@ -1,27 +1,47 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  commentForStarPolygon?: string;
+  centerLatitude?: number;
+  centerLongitude?: number;
+  outerRadiusDegrees?: number;
+  innerRadiusDegrees?: number;
+  commentForClosingPolygon?: string;
+  extraLabel?: string;
+}
+
+const {
+  commentForStarPolygon = "星型ポリゴン",
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  outerRadiusDegrees = 0.01,
+  innerRadiusDegrees = 0.005,
+  commentForClosingPolygon = "ポリゴンを閉じる",
+  extraLabel = "Star shape"
+} = Astro.props;
+
 const code = `@Composable
 fun ComplexPolygonExample() {
-    // 星型ポリゴン
+    // ${commentForStarPolygon}
     val starPolygon = remember {
-        val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+        val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
         val points = mutableListOf<GeoPoint>()
 
         for (i in 0 until 10) {
             val angle = (i * 36.0) * Math.PI / 180.0
-            val radiusMeters = if (i % 2 == 0) 0.01 else 0.005
+            val radiusMeters = if (i % 2 == 0) ${outerRadiusDegrees} else ${innerRadiusDegrees}
             val lat = center.latitude + radiusMeters * cos(angle)
             val lng = center.longitude + radiusMeters * sin(angle)
             points.add(GeoPointImpl.fromLatLong(lat, lng))
         }
-        points.add(points.first()) // ポリゴンを閉じる
+        points.add(points.first()) // ${commentForClosingPolygon}
 
         PolygonState(
             points = points,
             strokeColor = Color.Magenta,
             fillColor = Color.Magenta.copy(alpha = 0.4f),
-            extra = "Star shape"
+            extra = "${extraLabel}"
         )
     }
 
@@ -32,4 +52,3 @@ fun ComplexPolygonExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

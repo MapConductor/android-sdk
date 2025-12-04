@@ -7,7 +7,6 @@ interface Props {
   zoom?: number;
   provider?: string;
   comment?: string;
-  imageUrl?: string;
 }
 
 const {
@@ -16,7 +15,6 @@ const {
   zoom = 12.0,
   provider = "Google",
   comment = "Marker / Circle / Polyline などを追加",
-  imageUrl = "~/assets/examples/basic-example.jpg"
 } = Astro.props;
 
 const providerLower = provider.toLowerCase();
@@ -41,4 +39,3 @@ fun MyMap() {
 ---
 
 <Code code={code} lang="kotlin" />
-![MyMapの実行結果]({imageUrl})

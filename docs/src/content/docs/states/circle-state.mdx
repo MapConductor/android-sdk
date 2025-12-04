@@ -32,21 +32,43 @@ import CircleEventTypesExample from '~/components/states/circle/CircleEventTypes
 
 ## Methods
 
-<CircleStateMethodsExample />
+<CircleStateMethodsExample
+  commentForCopy="Create a modified copy"
+  commentForFingerPrint="Change detection"
+  commentForAsFlow="Reactive updates"
+/>
 
 ## Usage Examples
 
 ### Basic Circle
 
-<CircleStateBasicExample />
+<CircleStateBasicExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  radiusMeters={1000.0}
+/>
 
 ### Interactive Circle
 
-<InteractiveCircleExampleComposable />
+<InteractiveCircleExampleComposable
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  initialRadiusMeters={500.0}
+  minRadiusForSlider={100.0}
+  maxRadiusForSlider={2000.0}
+  circleClickLog="Circle clicked at: ${event.clicked}"
+/>
 
 ### Multiple Circles with Z-Index
 
-<MultipleCirclesZIndexExample />
+<MultipleCirclesZIndexExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusMeters={1000.0}
+  innerRadiusMeters={500.0}
+  outerZIndex={1}
+  innerZIndex={2}
+/>
 
 ## Event Handling
 

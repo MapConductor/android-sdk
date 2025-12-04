@@ -12,6 +12,8 @@ interface Props {
   button2Zoom?: number;
   marker1Label?: string;
   marker2Label?: string;
+  commentButtons?: string;
+  commentMap?: string;
 }
 
 const {
@@ -24,7 +26,9 @@ const {
   button2Long = 139.8107,
   button2Zoom = 15.0,
   marker1Label = "TT",
-  marker2Label = "ST"
+  marker2Label = "ST",
+  commentButtons = "ボタン",
+  commentMap = "地図"
 } = Astro.props;
 
 const code = `import androidx.compose.foundation.layout.*
@@ -48,7 +52,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxSize()) {
-        // ボタン
+        // ${commentButtons}
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly

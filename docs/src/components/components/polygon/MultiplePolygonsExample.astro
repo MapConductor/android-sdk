@@ -1,7 +1,21 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `// MapView を GoogleMapView、MapboxMapView などに置き換えてください
+interface Props {
+  commentForMapViewReplacement?: string;
+  blueZoneExtra?: string;
+  redBoundaryExtra?: string;
+  greenAreaExtra?: string;
+}
+
+const {
+  commentForMapViewReplacement = 'Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView',
+  blueZoneExtra = 'Blue zone',
+  redBoundaryExtra = 'Red boundary',
+  greenAreaExtra = 'Green area',
+} = Astro.props;
+
+const code = `// ${commentForMapViewReplacement}
 MapView(state = mapViewState) {
     Polygon(
         points = listOf(
@@ -14,7 +28,7 @@ MapView(state = mapViewState) {
         strokeColor = Color.Blue,
         strokeWidth = 2.dp,
         fillColor = Color.Blue.copy(alpha = 0.4f),
-        extra = "Blue zone"
+        extra = "${blueZoneExtra}"
     )
 
     Polygon(
@@ -28,7 +42,7 @@ MapView(state = mapViewState) {
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
         fillColor = Color.Transparent,
-        extra = "Red boundary"
+        extra = "${redBoundaryExtra}"
     )
 
     Polygon(
@@ -42,7 +56,7 @@ MapView(state = mapViewState) {
         strokeColor = Color.Green,
         strokeWidth = 1.dp,
         fillColor = Color.Green.copy(alpha = 0.2f),
-        extra = "Green area"
+        extra = "${greenAreaExtra}"
     )
 }`;
 ---

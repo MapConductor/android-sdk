@@ -8,9 +8,9 @@ interface Props {
   long?: number;
   zoom?: number;
   comment?: string;
-  imageUrl?: string;
-  extraParams?: string;
 }
+
+const props = Astro.props as Props;
 
 const {
   provider = "GoogleMaps",
@@ -19,14 +19,10 @@ const {
   long = 0.0,
   zoom = 3.0,
   comment = "もし地図が表示されれば、セットアップが正しくできています",
-  imageUrl = "~/assets/setup/basic-setup-google.png",
-  extraParams = ""
-} = Astro.props;
+} = props;
 
 const stateFunction = `remember${provider}ViewState`;
 const viewComponent = `${provider}View`;
-
-const extraParamsStr = extraParams ? `,\n${extraParams}` : '';
 
 const code = `@Composable
 fun ${functionName}() {
@@ -35,7 +31,7 @@ fun ${functionName}() {
             MapCameraPositionImpl(
                 position = GeoPointImpl.fromLatLong(${lat}, ${long}),
                 zoom = ${zoom},
-            )${extraParamsStr},
+            ),
     )
 
     ${viewComponent}(state = mapState) {
@@ -45,4 +41,3 @@ fun ${functionName}() {
 ---
 
 <Code code={code} lang="kotlin" />
-![{functionName}の実行結果]({imageUrl})

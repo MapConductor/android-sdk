@@ -36,10 +36,11 @@ MapConductor は既存の地図 SDK 上に統一された API レイヤーを提
 
 ### 2. HERE SDK のインストール
 
-1. HERE SDK Explore Android（例：`4.23.2.0.210004`）をダウンロードします
+1. HERE SDK Explore Android（例：`{HERE_EXPLORER_SDK_VERSION}`）をダウンロードします
 2. AAR ファイルをプロジェクトの `libs/` ディレクトリに配置します:
 
-   <HereAarPathExample />
+   <HereAarPathExample
+    aarVerion="{HERE_EXPLORER_SDK_VERSION}" />
 
 3. AAR ファイル名が Gradle で参照するものと一致していることを確認してください。
 
@@ -98,7 +99,7 @@ HERE Maps のセットアップを確認するには:
 2. HERE マップが正しく表示されることを確認します
 3. マップ操作と HERE 固有の機能をテストします
 
-<TestHereComposable />
+<TestHereComposable commentForVerification="もし地図が表示されれば、セットアップが正しくできています" />
 
 ![TestHEREの実行結果](~/assets/setup/basic-setup-here.png)
 

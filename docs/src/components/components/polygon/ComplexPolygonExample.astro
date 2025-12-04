@@ -1,14 +1,34 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  commentForStarPolygon?: string;
+  centerLatitude?: number;
+  centerLongitude?: number;
+  outerRadius?: number;
+  innerRadius?: number;
+  extraLabel?: string;
+  markerLabel?: string;
+}
+
+const {
+  commentForStarPolygon = 'Star-shaped polygon',
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  outerRadius = 0.01,
+  innerRadius = 0.005,
+  extraLabel = 'Star polygon',
+  markerLabel = '⭐',
+} = Astro.props;
+
 const code = `@Composable
 fun ComplexPolygonExample() {
-    // 星形のポリゴン
+    // ${commentForStarPolygon}
     val starPoints = remember {
-        val centerLat = 37.7749
-        val centerLng = -122.4194
-        val outerRadius = 0.01
-        val innerRadius = 0.005
+        val centerLat = ${centerLatitude}
+        val centerLng = ${centerLongitude}
+        val outerRadius = ${outerRadius}
+        val innerRadius = ${innerRadius}
 
         buildList {
             for (i in 0 until 10) {
@@ -28,14 +48,14 @@ fun ComplexPolygonExample() {
             strokeColor = Color.Magenta,
             strokeWidth = 2.dp,
             fillColor = Color.Magenta.copy(alpha = 0.3f),
-            extra = "Star polygon"
+            extra = "${extraLabel}"
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            position = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
             icon = DefaultIcon(
                 fillColor = Color.Magenta,
-                label = "⭐"
+                label = "${markerLabel}"
             )
         )
     }

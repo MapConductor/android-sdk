@@ -30,25 +30,54 @@ import PolylineEventTypesExample from '~/components/states/polyline/PolylineEven
 
 ## Métodos
 
-<PolylineStateMethodsExample />
+<PolylineStateMethodsExample
+  commentForCopy="Crear una copia modificada"
+  commentForFingerPrint="Detección de cambios"
+  commentForAsFlow="Actualizaciones reactivas"
+/>
 
 ## Ejemplos de uso
 
 ### Polilínea básica
 
-<PolylineStateBasicExample />
+<PolylineStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7949}
+  thirdLongitude={-122.3994}
+/>
 
 ### Polilínea dinámica
 
-<DynamicPolylineExampleComposable />
+<DynamicPolylineExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+/>
 
 ### Polilínea geodésica
 
-<GeodesicPolylineExample />
+<GeodesicPolylineExample
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={40.7128}
+  endLongitude={-74.006}
+  commentForStartPoint="San Francisco"
+  commentForEndPoint="Nueva York"
+  commentForGeodesic="Sigue la curvatura de la Tierra"
+  extraLabel="Ruta de costa a costa"
+/>
 
 ### Ruta con múltiples segmentos
 
-<RouteExampleComposable />
+<RouteExampleComposable
+  highwaySegmentExtra="Tramo de autopista"
+  localRoadSegmentExtra="Tramo de carretera local"
+  walkingPathExtra="Tramo peatonal"
+/>
 
 ## Manejo de eventos
 
@@ -63,4 +92,3 @@ Los eventos de polilínea proporcionan tanto el estado como la posición del cli
 3. **Codificación por color**: Usa colores distintos para diferenciar tipos de rutas.
 4. **Jerarquía de grosores**: Usa el grosor de la línea para indicar importancia.
 5. **Rendimiento**: Considera simplificar polilíneas complejas según el nivel de zoom.
-

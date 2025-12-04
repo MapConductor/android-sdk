@@ -45,20 +45,74 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 
 ### 基本的な MarkerState
 
-<MarkerStateBasicExample />
+<MarkerStateBasicExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  extraLabel="サンフランシスコのマーカー"
+/>
 
 ### カスタマイズした MarkerState
 
-<MarkerStateCustomExample />
+<MarkerStateCustomExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  markerLabel="SF"
+  extraLabel="ドラッグ可能なサンフランシスコのマーカー"
+  markerClickLog="クリックされたマーカー: ${markerState.extra}"
+  markerDragLog="マーカーがドラッグされました: ${markerState.position}"
+/>
 
 ### 動的に MarkerState を更新する
 
-<DynamicMarkerExampleComposable />
+<DynamicMarkerExampleComposable
+  initialLatitude={37.7749}
+  initialLongitude={-122.4194}
+  initialLabel="1"
+  initialExtra="カウンター: 1"
+  counterExtraTemplate="カウンター: $counter"
+  updateButtonLabel="マーカーを更新 ($counter)"
+/>
 
 ### 位置をアニメーションさせる MarkerState
 
-<AnimatedMarkerExampleComposable />
+<AnimatedMarkerExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={37.7849}
+  endLongitude={-122.4094}
+  markerLabel="移動中"
+  extraLabel="アニメーションするマーカー"
+/>
 
 ### 複数マーカーと監視の高度な例
 
-<MarkerStateAdvancedExamplesComposable />
+<MarkerStateAdvancedExamplesComposable
+  listMarker1Latitude={37.7749}
+  listMarker1Longitude={-122.4194}
+  listMarker1Extra="マーカー 1"
+  listMarker2Latitude={37.7849}
+  listMarker2Longitude={-122.4094}
+  listMarker2Extra="マーカー 2"
+  listMarker3Latitude={37.7649}
+  listMarker3Longitude={-122.4294}
+  listMarker3Extra="マーカー 3"
+  selectedMarkerText="選択中: ${marker.extra}"
+  positionText="位置: ${marker.position.latitude}, ${marker.position.longitude}"
+  draggableText="ドラッグ可能: ${marker.draggable}"
+  mapViewReplacementComment="MapView を GoogleMapView や MapboxMapView などの任意のマッププロバイダに置き換えてください"
+  customMarkerLatitude={37.7749}
+  customMarkerLongitude={-122.4194}
+  customMarkerLabel="XL"
+  customMarkerExtra="大きなデフォルトアイコン"
+  drawableMarkerLatitude={37.7849}
+  drawableMarkerLongitude={-122.4094}
+  drawableMarkerExtra="カスタム Drawable アイコン"
+  weatherMarkerLatitude={37.7649}
+  weatherMarkerLongitude={-122.4294}
+  weatherMarkerExtra="天気アイコン"
+  observerMarkerLatitude={37.7749}
+  observerMarkerLongitude={-122.4194}
+  observerMarkerExtra="監視対象マーカー"
+  observeStateComment="状態変化を監視"
+  markerStateChangedLog="マーカー状態が変化しました: $markerFingerprint"
+/>

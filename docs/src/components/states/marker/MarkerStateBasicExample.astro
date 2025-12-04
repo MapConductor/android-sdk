@@ -1,9 +1,21 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  extraLabel?: string;
+}
+
+const {
+  latitude = 37.7749,
+  longitude = -122.4194,
+  extraLabel = "San Francisco marker"
+} = Astro.props;
+
 const code = `val markerState = MarkerState(
-    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    extra = "San Francisco marker"
+    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+    extra = "${extraLabel}"
 )
 
 MapView(state = mapViewState) {
@@ -12,4 +24,3 @@ MapView(state = mapViewState) {
 ---
 
 <Code code={code} lang="kotlin" />
-

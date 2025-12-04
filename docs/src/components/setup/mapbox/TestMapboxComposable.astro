@@ -1,6 +1,14 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  comment?: string;
+}
+
+const {
+  comment = "もし地図が表示されれば、セットアップが正しくできています"
+} = Astro.props;
+
 const code = `@Composable
 fun TestMapbox() {
     val state =
@@ -16,10 +24,9 @@ fun TestMapbox() {
         modifier = modifier,
         state = state,
     ) {
-        // もし地図が表示されれば、セットアップが正しくできています
+        // ${comment}
     }
 }`;
 ---
 
 <Code code={code} lang="kotlin" />
-

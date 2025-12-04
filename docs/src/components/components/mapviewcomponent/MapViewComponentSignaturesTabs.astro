@@ -20,8 +20,9 @@ const googleMapsCode = `GoogleMapView(
     onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
     onGroundImageClick: OnGroundImageEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
+    content: (@Composable () -> Unit)? = null
 )`;
+
 
 const mapboxCode = `MapboxMapView(
     state: MapboxViewStateImpl,
@@ -41,10 +42,11 @@ const mapboxCode = `MapboxMapView(
     onPolylineClick: OnPolylineEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
+    content: (@Composable () -> Unit)? = null
 )`;
 
-const hereCode = `HereMapView(
+
+const hereMapCode = `HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
     markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
@@ -62,28 +64,7 @@ const hereCode = `HereMapView(
     onPolylineClick: OnPolylineEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)`;
-
-const arcGisCode = `ArcGISMapView(
-    state: ArcGISMapViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
+    content: (@Composable () -> Unit)? = null
 )`;
 
 const mapLibreCode = `MapLibreMapView(
@@ -104,7 +85,28 @@ const mapLibreCode = `MapLibreMapView(
     onPolylineClick: OnPolylineEventHandler? = null,
     onCircleClick: OnCircleEventHandler? = null,
     onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapLibreMapViewScope.() -> Unit)? = null
+    content: (@Composable () -> Unit)? = null
+)`;
+
+const arcGISMapCode = `ArcGISMapView(
+    state: ArcGISMapViewStateImpl,
+    modifier: Modifier = Modifier,
+    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler? = null,
+    onMarkerDragStart: OnMarkerEventHandler? = null,
+    onMarkerDrag: OnMarkerEventHandler? = null,
+    onMarkerDragEnd: OnMarkerEventHandler? = null,
+    onMarkerAnimateStart: OnMarkerEventHandler? = null,
+    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
+    onPolylineClick: OnPolylineEventHandler? = null,
+    onCircleClick: OnCircleEventHandler? = null,
+    onPolygonClick: OnPolygonEventHandler? = null,
+    content: (@Composable () -> Unit)? = null
 )`;
 ---
 
@@ -115,14 +117,13 @@ const mapLibreCode = `MapLibreMapView(
   <TabItem label="Mapbox">
     <Code code={mapboxCode} lang="kotlin" />
   </TabItem>
-  <TabItem label="HERE">
-    <Code code={hereCode} lang="kotlin" />
-  </TabItem>
   <TabItem label="ArcGIS">
-    <Code code={arcGisCode} lang="kotlin" />
+    <Code code={arcGISMapCode} lang="kotlin" />
   </TabItem>
-  <TabItem label="MapLibre">
+  <TabItem label="Here">
+    <Code code={hereMapCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="MapLibreCode">
     <Code code={mapLibreCode} lang="kotlin" />
   </TabItem>
 </Tabs>
-

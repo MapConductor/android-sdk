@@ -43,21 +43,74 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 
 ### Basic MarkerState
 
-<MarkerStateBasicExample />
+<MarkerStateBasicExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  extraLabel="San Francisco marker"
+/>
 
 ### Customized MarkerState
 
-<MarkerStateCustomExample />
+<MarkerStateCustomExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  markerLabel="SF"
+  extraLabel="Draggable San Francisco marker"
+  markerClickLog="Clicked marker: ${markerState.extra}"
+  markerDragLog="Marker dragged to: ${markerState.position}"
+/>
 
 ### Dynamic MarkerState Updates
 
-<DynamicMarkerExampleComposable />
+<DynamicMarkerExampleComposable
+  initialLatitude={37.7749}
+  initialLongitude={-122.4194}
+  initialLabel="1"
+  initialExtra="Counter: 1"
+  counterExtraTemplate="Counter: $counter"
+  updateButtonLabel="Update Marker ($counter)"
+/>
 
 ### MarkerState with Position Animation
 
-<AnimatedMarkerExampleComposable />
+<AnimatedMarkerExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={37.7849}
+  endLongitude={-122.4094}
+  markerLabel="Moving"
+  extraLabel="Animated marker"
+/>
 
 ### Marker lists, custom icons, and observation
 
-<MarkerStateAdvancedExamplesComposable />
-
+<MarkerStateAdvancedExamplesComposable
+  listMarker1Latitude={37.7749}
+  listMarker1Longitude={-122.4194}
+  listMarker1Extra="Marker 1"
+  listMarker2Latitude={37.7849}
+  listMarker2Longitude={-122.4094}
+  listMarker2Extra="Marker 2"
+  listMarker3Latitude={37.7649}
+  listMarker3Longitude={-122.4294}
+  listMarker3Extra="Marker 3"
+  selectedMarkerText="Selected: ${marker.extra}"
+  positionText="Position: ${marker.position.latitude}, ${marker.position.longitude}"
+  draggableText="Draggable: ${marker.draggable}"
+  mapViewReplacementComment="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  customMarkerLatitude={37.7749}
+  customMarkerLongitude={-122.4194}
+  customMarkerLabel="XL"
+  customMarkerExtra="Large default icon"
+  drawableMarkerLatitude={37.7849}
+  drawableMarkerLongitude={-122.4094}
+  drawableMarkerExtra="Custom drawable icon"
+  weatherMarkerLatitude={37.7649}
+  weatherMarkerLongitude={-122.4294}
+  weatherMarkerExtra="Weather image icon"
+  observerMarkerLatitude={37.7749}
+  observerMarkerLongitude={-122.4194}
+  observerMarkerExtra="Observed marker"
+  observeStateComment="Observe state changes"
+  markerStateChangedLog="Marker state changed: $markerFingerprint"
+/>

@@ -1,18 +1,36 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  outerRadiusMeters?: number;
+  innerRadiusMeters?: number;
+  outerZIndex?: number;
+  innerZIndex?: number;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  outerRadiusMeters = 1000.0,
+  innerRadiusMeters = 500.0,
+  outerZIndex = 1,
+  innerZIndex = 2
+} = Astro.props;
+
 const code = `val circles = listOf(
     CircleState(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radiusMeters = 1000.0,
+        center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+        radiusMeters = ${outerRadiusMeters},
         fillColor = Color.Red.copy(alpha = 0.3f),
-        zIndex = 1
+        zIndex = ${outerZIndex}
     ),
     CircleState(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radiusMeters = 500.0,
+        center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+        radiusMeters = ${innerRadiusMeters},
         fillColor = Color.Blue.copy(alpha = 0.5f),
-        zIndex = 2
+        zIndex = ${innerZIndex}
     )
 )
 

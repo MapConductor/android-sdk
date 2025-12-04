@@ -1,14 +1,28 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  startLatitude?: number;
+  startLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+}
+
+const {
+  startLatitude = 37.7749,
+  startLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094
+} = Astro.props;
+
 const code = `@Composable
 fun DynamicPolylineExample() {
     var polylineState by remember {
         mutableStateOf(
             PolylineState(
                 points = listOf(
-                    GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                    GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                    GeoPointImpl.fromLatLong(${startLatitude}, ${startLongitude}),
+                    GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude})
                 ),
                 strokeColor = Color.Red,
                 strokeWidth = 4.dp
@@ -30,4 +44,3 @@ fun DynamicPolylineExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

@@ -1,21 +1,83 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  listMarker1Latitude?: number;
+  listMarker1Longitude?: number;
+  listMarker1Extra?: string;
+  listMarker2Latitude?: number;
+  listMarker2Longitude?: number;
+  listMarker2Extra?: string;
+  listMarker3Latitude?: number;
+  listMarker3Longitude?: number;
+  listMarker3Extra?: string;
+  selectedMarkerText?: string;
+  positionText?: string;
+  draggableText?: string;
+  mapViewReplacementComment?: string;
+  customMarkerLatitude?: number;
+  customMarkerLongitude?: number;
+  customMarkerLabel?: string;
+  customMarkerExtra?: string;
+  drawableMarkerLatitude?: number;
+  drawableMarkerLongitude?: number;
+  drawableMarkerExtra?: string;
+  weatherMarkerLatitude?: number;
+  weatherMarkerLongitude?: number;
+  weatherMarkerExtra?: string;
+  observerMarkerLatitude?: number;
+  observerMarkerLongitude?: number;
+  observerMarkerExtra?: string;
+  observeStateComment?: string;
+  markerStateChangedLog?: string;
+}
+
+const {
+  listMarker1Latitude = 37.7749,
+  listMarker1Longitude = -122.4194,
+  listMarker1Extra = "Marker 1",
+  listMarker2Latitude = 37.7849,
+  listMarker2Longitude = -122.4094,
+  listMarker2Extra = "Marker 2",
+  listMarker3Latitude = 37.7649,
+  listMarker3Longitude = -122.4294,
+  listMarker3Extra = "Marker 3",
+  selectedMarkerText = "Selected: ${marker.extra}",
+  positionText = "Position: ${marker.position.latitude}, ${marker.position.longitude}",
+  draggableText = "Draggable: ${marker.draggable}",
+  mapViewReplacementComment = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  customMarkerLatitude = 37.7749,
+  customMarkerLongitude = -122.4194,
+  customMarkerLabel = "XL",
+  customMarkerExtra = "Large default icon",
+  drawableMarkerLatitude = 37.7849,
+  drawableMarkerLongitude = -122.4094,
+  drawableMarkerExtra = "Custom drawable icon",
+  weatherMarkerLatitude = 37.7649,
+  weatherMarkerLongitude = -122.4294,
+  weatherMarkerExtra = "Weather image icon",
+  observerMarkerLatitude = 37.7749,
+  observerMarkerLongitude = -122.4194,
+  observerMarkerExtra = "Observed marker",
+  observeStateComment = "Observe state changes",
+  markerStateChangedLog = "Marker state changed: $markerFingerprint"
+} = Astro.props;
+
 const code = `@Composable
 fun MarkerListExample() {
     val markerStates = remember {
         mutableStateListOf(
             MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                extra = "Marker 1"
+                position = GeoPointImpl.fromLatLong(${listMarker1Latitude}, ${listMarker1Longitude}),
+                extra = "${listMarker1Extra}"
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                extra = "Marker 2"
+                position = GeoPointImpl.fromLatLong(${listMarker2Latitude}, ${listMarker2Longitude}),
+                extra = "${listMarker2Extra}"
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
-                extra = "Marker 3"
+                position = GeoPointImpl.fromLatLong(${listMarker3Latitude}, ${listMarker3Longitude}),
+                extra = "${listMarker3Extra}"
             )
         )
     }
@@ -26,14 +88,14 @@ fun MarkerListExample() {
         selectedMarker?.let { marker ->
             Card(modifier = Modifier.padding(8.dp)) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Selected: \${marker.extra}")
-                    Text("Position: \${marker.position.latitude}, \${marker.position.longitude}")
-                    Text("Draggable: \${marker.draggable}")
+                    Text("${selectedMarkerText}")
+                    Text("${positionText}")
+                    Text("${draggableText}")
                 }
             }
         }
 
-        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+        // ${mapViewReplacementComment}
         MapView(
             state = mapViewState,
             onMarkerClick = { clickedMarker ->
@@ -57,40 +119,40 @@ fun CustomIconMarkerExample() {
     val markerStates = remember {
         listOf(
             MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                position = GeoPointImpl.fromLatLong(${customMarkerLatitude}, ${customMarkerLongitude}),
                 icon = DefaultIcon(
                     scale = 1.5f,
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     strokeWidth = 2.dp,
-                    label = "XL"
+                    label = "${customMarkerLabel}"
                 ),
-                extra = "Large default icon"
+                extra = "${customMarkerExtra}"
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                position = GeoPointImpl.fromLatLong(${drawableMarkerLatitude}, ${drawableMarkerLongitude}),
                 icon = AppCompatResources.getDrawable(context, R.drawable.custom_pin)?.let { drawable ->
                     DrawableDefaultIcon(
                         backgroundDrawable = drawable,
                         scale = 1.2f
                     )
                 },
-                extra = "Custom drawable icon"
+                extra = "${drawableMarkerExtra}"
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+                position = GeoPointImpl.fromLatLong(${weatherMarkerLatitude}, ${weatherMarkerLongitude}),
                 icon = AppCompatResources.getDrawable(context, R.drawable.weather_icon)?.let { drawable ->
                     ImageIcon(
                         drawable = drawable,
                         anchor = Offset(0.5f, 1.0f)
                     )
                 },
-                extra = "Weather image icon"
+                extra = "${weatherMarkerExtra}"
             )
         )
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    // ${mapViewReplacementComment}
     MapView(state = mapViewState) {
         markerStates.forEach { markerState ->
             Marker(markerState)
@@ -102,21 +164,21 @@ fun CustomIconMarkerExample() {
 fun MarkerStateObserver() {
     val markerState = remember {
         MarkerState(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            extra = "Observed marker"
+            position = GeoPointImpl.fromLatLong(${observerMarkerLatitude}, ${observerMarkerLongitude}),
+            extra = "${observerMarkerExtra}"
         )
     }
 
-    // Observe state changes
+    // ${observeStateComment}
     val markerFingerprint by markerState.asFlow().collectAsState(
         initial = markerState.fingerPrint()
     )
 
     LaunchedEffect(markerFingerprint) {
-        println("Marker state changed: $markerFingerprint")
+        println("${markerStateChangedLog}")
     }
 
-    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    // ${mapViewReplacementComment}
     MapView(state = mapViewState) {
         Marker(markerState)
     }
@@ -124,4 +186,3 @@ fun MarkerStateObserver() {
 ---
 
 <Code code={code} lang="kotlin" />
-

@@ -1,15 +1,22 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  commentForVerification?: string;
+}
+
+const {
+  commentForVerification = "If this displays correctly, your setup is working",
+} = Astro.props;
+
 const code = `@Composable
 fun TestHERE() {
     val mapState = rememberHereMapViewState()
 
     HereMapView(state = mapState) {
-        // If this displays correctly, your setup is working
+        // ${commentForVerification}
     }
 }`;
 ---
 
 <Code code={code} lang="kotlin" />
-

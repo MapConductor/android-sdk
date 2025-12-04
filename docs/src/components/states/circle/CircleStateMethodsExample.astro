@@ -1,9 +1,21 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `fun copy(...): CircleState // 変更されたコピーを作成
-fun fingerPrint(): CircleFingerPrint // 変更検知
-fun asFlow(): Flow<CircleFingerPrint> // リアクティブ更新`;
+interface Props {
+  commentForCopy?: string;
+  commentForFingerPrint?: string;
+  commentForAsFlow?: string;
+}
+
+const {
+  commentForCopy = "変更されたコピーを作成",
+  commentForFingerPrint = "変更検知",
+  commentForAsFlow = "リアクティブ更新"
+} = Astro.props;
+
+const code = `fun copy(...): CircleState // ${commentForCopy}
+fun fingerPrint(): CircleFingerPrint // ${commentForFingerPrint}
+fun asFlow(): Flow<CircleFingerPrint> // ${commentForAsFlow}`;
 ---
 
 <Code code={code} lang="kotlin" />

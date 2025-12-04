@@ -31,25 +31,59 @@ import PolygonEventTypesExample from '~/components/states/polygon/PolygonEventTy
 
 ## Methods
 
-<PolygonStateMethodsExample />
+<PolygonStateMethodsExample
+  commentForCopy="Create a modified copy"
+  commentForFingerPrint="Change detection"
+  commentForAsFlow="Reactive updates"
+/>
 
 ## Usage Examples
 
 ### Basic Polygon
 
-<PolygonStateBasicExample />
+<PolygonStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+  commentForClosingPolygon="Close the polygon"
+/>
 
 ### Editable Polygon
 
-<EditablePolygonExampleComposable />
+<EditablePolygonExampleComposable
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  polygonClickedLog="Polygon clicked at: ${event.clicked}"
+  commentForVertexMarkers="Vertex markers (excluding closing point)"
+  vertexExtraPrefix="vertex_"
+/>
 
 ### Zone Polygons
 
-<ZonePolygonsExample />
+<ZonePolygonsExample
+  restrictedZoneExtra="Restricted Zone"
+  parkingZoneExtra="Parking Zone"
+  safeZoneExtra="Safe Zone"
+/>
 
 ### Complex Shapes
 
-<ComplexPolygonExampleComposable />
+<ComplexPolygonExampleComposable
+  commentForStarPolygon="Star polygon"
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusDegrees={0.01}
+  innerRadiusDegrees={0.005}
+  commentForClosingPolygon="Close the polygon"
+  extraLabel="Star shape"
+/>
 
 ## Event Handling
 
@@ -64,4 +98,3 @@ Polygon events provide both the state and click location:
 3. **Performance**: Avoid overly complex polygons with many vertices
 4. **Visual Design**: Use appropriate fill transparency for map visibility
 5. **Validation**: Ensure polygons form valid geometries
-

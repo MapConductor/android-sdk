@@ -1,16 +1,40 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  firstLatitude?: number;
+  firstLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+  thirdLatitude?: number;
+  thirdLongitude?: number;
+  polygonClickedLog?: string;
+  commentForVertexMarkers?: string;
+  vertexExtraPrefix?: string;
+}
+
+const {
+  firstLatitude = 37.7749,
+  firstLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094,
+  thirdLatitude = 37.7799,
+  thirdLongitude = -122.3994,
+  polygonClickedLog = "Polygon clicked at: \${event.clicked}",
+  commentForVertexMarkers = "頂点マーカー（閉じる点を除く）",
+  vertexExtraPrefix = "vertex_"
+} = Astro.props;
+
 const code = `@Composable
 fun EditablePolygonExample() {
     var polygonState by remember {
         mutableStateOf(
             PolygonState(
                 points = listOf(
-                    GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                    GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                    GeoPointImpl.fromLatLong(37.7799, -122.3994),
-                    GeoPointImpl.fromLatLong(37.7749, -122.4194)
+                    GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
+                    GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
+                    GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+                    GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude})
                 ),
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f)
@@ -21,12 +45,12 @@ fun EditablePolygonExample() {
     MapView(
         state = mapViewState,
         onPolygonClick = { event ->
-            println("Polygon clicked at: \${event.clicked}")
+            println("${polygonClickedLog}")
         }
     ) {
         Polygon(polygonState)
 
-        // 頂点マーカー（閉じる点を除く）
+        // ${commentForVertexMarkers}
         polygonState.points.dropLast(1).forEachIndexed { index, point ->
             Marker(
                 position = point,
@@ -36,7 +60,7 @@ fun EditablePolygonExample() {
                     scale = 0.8f
                 ),
                 draggable = true,
-                extra = "vertex_$index"
+                extra = "${vertexExtraPrefix}$index"
             )
         }
     }
@@ -44,4 +68,3 @@ fun EditablePolygonExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

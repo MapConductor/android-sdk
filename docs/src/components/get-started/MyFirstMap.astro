@@ -5,12 +5,20 @@ interface Props {
   lat?: number;
   long?: number;
   zoom?: number;
+  commentTokyoCoords?: string;
+  commentInitialCamera?: string;
+  commentStateManagement?: string;
+  commentMapDisplay?: string;
 }
 
 const {
   lat = 35.6812,
   long = 139.7671,
-  zoom = 12.0
+  zoom = 12.0,
+  commentTokyoCoords = "東京の座標",
+  commentInitialCamera = "カメラの初期位置を設定",
+  commentStateManagement = "地図の状態を管理するstateオブジェクトを作成",
+  commentMapDisplay = "地図を表示"
 } = Astro.props;
 
 const code = `import androidx.compose.runtime.Composable
@@ -22,21 +30,21 @@ import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
 @Composable
 fun MyFirstMap(modifier: Modifier = Modifier) {
-    // 東京の座標
+    // ${commentTokyoCoords}
     val tokyo = GeoPointImpl.fromLatLong(${lat}, ${long})
 
-    // カメラの初期位置を設定
+    // ${commentInitialCamera}
     val initialCamera = MapCameraPositionImpl(
         position = tokyo,
         zoom = ${zoom}
     )
 
-    // 地図の状態を管理するstateオブジェクトを作成
+    // ${commentStateManagement}
     val mapViewState = rememberGoogleMapViewState(
         cameraPosition = initialCamera
     )
 
-    // 地図を表示
+    // ${commentMapDisplay}
     GoogleMapView(
         modifier = modifier,
         state = mapViewState

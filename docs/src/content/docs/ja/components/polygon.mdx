@@ -43,19 +43,51 @@ import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonS
 
 ### 基本的な Polygon
 
-<BasicPolygonExample />
+<BasicPolygonExample
+  commentForMapViewReplacement="MapView を GoogleMapView、MapboxMapView などに置き換えてください"
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+/>
 
 ### 頂点マーカー付きのインタラクティブな Polygon
 
-<InteractivePolygonExample />
+<InteractivePolygonExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  fourthLatitude={37.7649}
+  fourthLongitude={-122.4094}
+  vertexPrefix="Vertex "
+  polygonClickedLog="Polygon がクリックされました: ${polygonEvent.clicked}"
+/>
 
 ### 異なるスタイルの複数の Polygon
 
-<MultiplePolygonsExample />
+<MultiplePolygonsExample
+  commentForMapViewReplacement="MapView を GoogleMapView、MapboxMapView などに置き換えてください"
+  blueZoneExtra="青のゾーン"
+  redBoundaryExtra="赤の境界"
+  greenAreaExtra="緑のエリア"
+/>
 
 ### 複雑なポリゴン形状
 
-<ComplexPolygonExample />
+<ComplexPolygonExample
+  commentForStarPolygon="星形のポリゴン"
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadius={0.01}
+  innerRadius={0.005}
+  extraLabel="星形ポリゴン"
+  markerLabel="⭐"
+/>
 
 ### 動的なポリゴン作成
 
@@ -65,7 +97,15 @@ import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonS
 
 Polygon のインタラクションは、マップ地図SDKコンポーネントで処理されます:
 
-<PolygonEventHandlingExample />
+<PolygonEventHandlingExample
+  commentForMapViewReplacement="MapView を GoogleMapView、MapboxMapView などに置き換えてください"
+  logPolygonClicked="Polygon がクリックされました:"
+  logVerticesLabel="  頂点数: ${polygon.points.size}"
+  logClickLocationLabel="  クリック位置: ${clickPoint}"
+  logExtraDataLabel="  追加データ: ${polygon.extra}"
+  logApproxAreaLabel="  おおよその面積: $area 平方メートル"
+  extraLabel="インタラクティブな Polygon"
+/>
 
 ## スタイルオプション
 

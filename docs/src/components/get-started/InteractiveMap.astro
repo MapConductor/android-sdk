@@ -6,13 +6,19 @@ interface Props {
   long?: number;
   zoom?: number;
   clickLabelIcon?: string;
+  commentMapClicked?: string;
+  commentClickPosition?: string;
+  commentShowMarker?: string;
 }
 
 const {
   lat = 35.6812,
   long = 139.7671,
   zoom = 12.0,
-  clickLabelIcon = "!"
+  clickLabelIcon = "!",
+  commentMapClicked = "地図がクリックされたときの処理",
+  commentClickPosition = "クリック位置: ",
+  commentShowMarker = "クリックした位置にマーカーを表示"
 } = Astro.props;
 
 const code = `import androidx.compose.runtime.*
@@ -34,12 +40,12 @@ fun InteractiveMap(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         state = mapViewState,
         onMapClick = { geoPoint ->
-            // 地図がクリックされたときの処理
+            // ${commentMapClicked}
             clickedPosition = geoPoint
-            println("クリック位置: \${geoPoint.latitude}, \${geoPoint.longitude}")
+            println("${commentClickPosition}\${geoPoint.latitude}, \${geoPoint.longitude}")
         }
     ) {
-        // クリックした位置にマーカーを表示
+        // ${commentShowMarker}
         clickedPosition?.let { position ->
             Marker(
                 position = position,

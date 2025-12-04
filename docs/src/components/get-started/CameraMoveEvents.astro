@@ -1,20 +1,34 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  commentMarkers?: string;
+  cameraMoveStartMessage?: string;
+  cameraMoveMessage?: string;
+  cameraMoveEndMessage?: string;
+}
+
+const {
+  commentMarkers = "マーカーなど",
+  cameraMoveStartMessage = "カメラの移動が開始されました",
+  cameraMoveMessage = "カメラ位置: ",
+  cameraMoveEndMessage = "カメラの移動が終了しました"
+} = Astro.props;
+
 const code = `GoogleMapView(
     modifier = modifier.fillMaxSize(),
     state = mapViewState,
     onCameraMoveStart = {
-        println("カメラの移動が開始されました")
+        println("${cameraMoveStartMessage}")
     },
     onCameraMove = { cameraPosition ->
-        println("カメラ位置: \${cameraPosition.position.latitude}, \${cameraPosition.position.longitude}")
+        println("${cameraMoveMessage}\${cameraPosition.position.latitude}, \${cameraPosition.position.longitude}")
     },
     onCameraMoveEnd = {
-        println("カメラの移動が終了しました")
+        println("${cameraMoveEndMessage}")
     }
 ) {
-    // マーカーなど
+    // ${commentMarkers}
 }`;
 ---
 

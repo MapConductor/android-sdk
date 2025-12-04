@@ -47,14 +47,15 @@ All map view components share the following parameters:
 ## Usage Examples
 
 <Tabs>
-<TabItem label="Google Maps Implementation">
-<GoogleMapsExample />
-</TabItem>
-<TabItem label="Mapbox Implementation">
-<MapboxExample />
-</TabItem>
+  <TabItem label="GoogleMaps">
+    <GoogleMapsExample/>
+    ![](~/assets/introduction/basic-googlemaps-example.png)
+  </TabItem>
+  <TabItem label="Mapbox">
+    <MapboxExample />
+    ![](~/assets/introduction/basic-mapbox-example.png)
+  </TabItem>
 </Tabs>
-
 
 
 ### Map Provider-Independent Pattern
@@ -75,7 +76,28 @@ While specific map components are required for each SDK, you can create provider
 
 ### Advanced Event Handling
 
-<AdvancedMapEventHandlingExample />
+<AdvancedMapEventHandlingExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  mapLoadedMessage="Map loaded successfully"
+  mapClickedPrefix="Map clicked at"
+  cameraMoveStartMessage="Camera move started"
+  cameraMovePrefix="Camera position"
+  cameraMoveEndMessage="Camera move ended"
+  markerClickedPrefix="Marker clicked"
+  centerMarkerLabel="Center"
+  centerMarkerExtra="Center marker"
+  clickedMarkerLabel="Clicked"
+  clickedMarkerExtra="Clicked point"
+  commentForCenterMarkerAndCircle="Show marker and circle"
+  commentForClickedMarker="Show marker at clicked position"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewcomponent/advanced-map-example.webm" type="video/webm" />
+ <source src="/mapviewcomponent/advanced-map-example.mp4" type="video/mp4" />
+</video>
 
 ## Map SDK Differences
 

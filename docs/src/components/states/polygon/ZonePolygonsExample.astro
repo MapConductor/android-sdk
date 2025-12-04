@@ -1,27 +1,39 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  restrictedZoneExtra?: string;
+  parkingZoneExtra?: string;
+  safeZoneExtra?: string;
+}
+
+const {
+  restrictedZoneExtra = "Restricted Zone",
+  parkingZoneExtra = "Parking Zone",
+  safeZoneExtra = "Safe Zone"
+} = Astro.props;
+
 const code = `val zonePolygons = listOf(
     PolygonState(
         points = restrictedZonePoints,
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
         fillColor = Color.Red.copy(alpha = 0.2f),
-        extra = "Restricted Zone"
+        extra = "${restrictedZoneExtra}"
     ),
     PolygonState(
         points = parkingZonePoints,
         strokeColor = Color.Blue,
         strokeWidth = 2.dp,
         fillColor = Color.Blue.copy(alpha = 0.2f),
-        extra = "Parking Zone"
+        extra = "${parkingZoneExtra}"
     ),
     PolygonState(
         points = safeZonePoints,
         strokeColor = Color.Green,
         strokeWidth = 2.dp,
         fillColor = Color.Green.copy(alpha = 0.2f),
-        extra = "Safe Zone"
+        extra = "${safeZoneExtra}"
     )
 )
 
@@ -33,4 +45,3 @@ MapView(state = mapViewState) {
 ---
 
 <Code code={code} lang="kotlin" />
-

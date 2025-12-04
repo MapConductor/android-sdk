@@ -47,15 +47,15 @@ MapConductor は複数の地図SDKをサポートしており、それぞれに�
 ## 使用例
 
 <Tabs>
-<TabItem label="Google Maps の実装">
-<GoogleMapsExample />
-</TabItem>
-<TabItem label="Mapbox の実装">
-<MapboxExample />
-</TabItem>
+  <TabItem label="Google Maps の実装">
+    <GoogleMapsExample/>
+    ![](~/assets/introduction/basic-googlemaps-example.png)
+  </TabItem>
+  <TabItem label="Mapbox の実装">
+    <MapboxExample />
+    ![](~/assets/introduction/basic-mapbox-example.png)
+  </TabItem>
 </Tabs>
-
-
 
 ### 地図SDKに依存しないパターン
 
@@ -75,7 +75,28 @@ MapConductor は複数の地図SDKをサポートしており、それぞれに�
 
 ### 高度なイベント処理
 
-<AdvancedMapEventHandlingExample />
+<AdvancedMapEventHandlingExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  mapLoadedMessage="地図の読み込みが完了しました"
+  mapClickedPrefix="地図がクリックされました"
+  cameraMoveStartMessage="カメラの移動が開始されました"
+  cameraMovePrefix="カメラ位置"
+  cameraMoveEndMessage="カメラの移動が終了しました"
+  markerClickedPrefix="マーカーがクリックされました"
+  centerMarkerLabel="中心"
+  centerMarkerExtra="中心のマーカー"
+  clickedMarkerLabel="クリック"
+  clickedMarkerExtra="クリックされた位置"
+  commentForCenterMarkerAndCircle="マーカーと円を表示"
+  commentForClickedMarker="クリックされた位置にマーカーを表示"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewcomponent/advanced-map-example.webm" type="video/webm" />
+ <source src="/mapviewcomponent/advanced-map-example.mp4" type="video/mp4" />
+</video>
 
 ## 地図SDKの違い
 

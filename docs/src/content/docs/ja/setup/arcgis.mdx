@@ -45,7 +45,12 @@ Esri リポジトリが設定されていることを確認します（このリ
 
 次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="ほかのプラグイン"
+  arcgisSdkComment="ArcGIS Maps SDK"
+  bomComment="MapConductor BOM によるバージョン管理 (v{BOM_MODULE_VERSION})"
+  modulesComment="MapConductor モジュール（BOM でバージョン管理）"
+/>
 
 Secrets Gradle Plugin は `secrets.properties` ファイルを読み取り、ビルド時に値を `AndroidManifest.xml` に注入できます。
 
@@ -98,7 +103,7 @@ ArcGIS のセットアップを確認するには:
 3. GIS 固有の機能をテストします（使用している場合）
 4. 認証が機能していることを確認します
 
-<TestArcGISComposable />
+<TestArcGISComposable comment="もし地図が表示されれば、セットアップが正しくできています" />
 
 ![TestArcGISの実行結果](~/assets/setup/basic-setup-arcgis.png)
 

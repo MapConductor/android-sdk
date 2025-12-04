@@ -43,8 +43,8 @@ const {
   clickedMarkerLabel = 'Clicked',
   clickedMarkerExtra = 'Clicked point',
   clickedMarkerFillColorExpr = 'Color.Green',
-  commentForCenterMarkerAndCircle = 'マーカーと円を表示',
-  commentForClickedMarker = 'クリックされた位置にマーカーを表示',
+  commentForCenterMarkerAndCircle = 'Show marker and circle',
+  commentForClickedMarker = 'Show marker at clicked position',
 } = Astro.props;
 
 const code = `@Composable
@@ -104,4 +104,4 @@ fun AdvancedMapExample() {
 }`;
 ---
 
-<pre><code set:html={code}></code></pre>
+<Code code={code} lang="kotlin" />

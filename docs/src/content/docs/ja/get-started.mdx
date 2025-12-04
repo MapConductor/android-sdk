@@ -49,6 +49,13 @@ import CompleteSample from '~/components/get-started/CompleteSample.astro';
   hereIncluded={false}
   arcgisIncluded={false}
   maplibreIncluded={false}
+  commentBOM="BOM を利用してバージョンを統一"
+  commentCore="コアモジュール(必須)"
+  commentGoogleMaps="Google Maps を使う場合"
+  commentOrMapbox="または Mapbox を使う場合"
+  commentOrHere="または HERE Maps を使う場合"
+  commentOrArcGIS="または ArcGIS を使う場合"
+  commentOrMapLibre="または MapLibre を使う場合"
 />
 
 ### 1-2. Android 設定
@@ -60,7 +67,7 @@ import CompleteSample from '~/components/get-started/CompleteSample.astro';
   minSdk="{ANDROID_MIN_SDK_VERSION}"
   javaVersion="{JAVA_VERSION}"
   kotlinVersion="{KOTLIN_VERSION}"
-  composeVersion="{JETPACK_COMPOSE_VERSION}"
+  composeVersion="{JETPACK_COMPOSE_BOM_VERSION}"
 />
 
 ### 1-3. 地図SDKのセットアップ
@@ -84,6 +91,10 @@ import CompleteSample from '~/components/get-started/CompleteSample.astro';
   lat={35.6812}
   long={139.7671}
   zoom={12.0}
+  commentTokyoCoords="東京の座標"
+  commentInitialCamera="初期カメラ位置"
+  commentStateManagement="状態管理"
+  commentMapDisplay="地図表示"
 />
 
 ![実行結果](~/assets/get-started/my-first-map.png)
@@ -105,6 +116,10 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   initialLat={35.6586}
   initialLong={139.7454}
   zoom={11.0}
+  commentCoords="座標"
+  commentInitialPosition="初期位置"
+  commentMarkerClicked="マーカークリック時の処理"
+  commentAddMarkers="マーカーの追加"
 />
 
 ![実行結果](~/assets/get-started/map-with-markers.png)
@@ -118,6 +133,7 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   label="TT"
   lat={35.6586}
   long={139.7454}
+  commentAnchorInfo="アンカー情報"
 />
 
 ## ステップ4: 円とポリラインを追加する
@@ -132,6 +148,10 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   markerLong={139.7454}
   radiusMeters={1000.0}
   strokeWidth="3.dp"
+  commentMarker="マーカー"
+  commentDrawCircle="円を描画"
+  commentRadiusUnit="半径(メートル)"
+  commentStrokeUnit="線幅(dp)"
 />
 
 ![実行結果](~/assets/get-started/marker-with-circle.png)
@@ -149,6 +169,8 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   marker2Lat={35.7101}
   marker2Long={139.8107}
   strokeWidth="5.dp"
+  commentMarker="マーカー"
+  commentDrawLine="線を描画"
 />
 
 ![実行結果](~/assets/get-started/marker-with-polyline.png)
@@ -165,6 +187,9 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   long={139.7671}
   zoom={12.0}
   clickLabelIcon="!"
+  commentMapClicked="地図をクリック"
+  commentClickPosition="クリック位置"
+  commentShowMarker="マーカーを表示"
 />
 
 <video width="720" height="480" controls>
@@ -182,6 +207,7 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   marker2Label="ST"
   marker2Lat={35.7101}
   marker2Long={139.8107}
+  commentMarkerClicked="マーカークリック時の処理"
 />
 
 <video width="720" height="480" controls>
@@ -205,6 +231,8 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
   button2Zoom={15.0}
   marker1Label="TT"
   marker2Label="ST"
+  commentButtons="ボタン"
+  commentMap="地図"
 />
 
 <video width="720" height="480" controls>
@@ -214,7 +242,12 @@ Note: デモを見やすくするために、地図のデザインをデフォ�
 
 ### 6-2. カメラの移動イベントを監視する
 
-<CameraMoveEvents />
+<CameraMoveEvents
+  commentMarkers="マーカーなど"
+  cameraMoveStartMessage="カメラの移動が開始されました"
+  cameraMoveMessage="カメラ位置: "
+  cameraMoveEndMessage="カメラの移動が終了しました"
+/>
 
 ## ステップ7: 地図SDKを切り替える
 
@@ -222,7 +255,12 @@ MapConductor の最大の利点は、わずかな変更で地図SDKを切り替�
 
 ### Google Maps から Mapbox への切り替え
 
-<SDKSwitchComparison />
+<SDKSwitchComparison
+  commentComponents="マーカーやその他のコンポーネント"
+  commentComponentsNoChange="マーカーやその他のコンポーネント(変更なし!)"
+  beforeLabel="変更前 (Google Maps)"
+  afterLabel="変更後 (Mapbox)"
+/>
 
 マーカーや円、ポリラインなどのコンポーネントは、**まったく同じコード**で動作します。
 
@@ -250,6 +288,14 @@ MapConductor の最大の利点は、わずかな変更で地図SDKを切り替�
   centerLat={35.6812}
   centerLong={139.7671}
   circleRadiusMeters={1000.0}
+  commentPositions="位置情報"
+  commentClickedPosition="クリックされた位置を保存"
+  commentControlButtons="コントロールボタン"
+  commentMap="地図"
+  commentMarkers="マーカー"
+  commentClickedMarker="クリックされた位置のマーカー"
+  commentCircle="円"
+  commentPolyline="ポリライン"
 />
 
 <video width="720" height="480" controls>

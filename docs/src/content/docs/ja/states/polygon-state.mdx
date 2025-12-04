@@ -31,25 +31,59 @@ import PolygonEventTypesExample from '~/components/states/polygon/PolygonEventTy
 
 ## メソッド
 
-<PolygonStateMethodsExample />
+<PolygonStateMethodsExample
+  commentForCopy="変更されたコピーを作成"
+  commentForFingerPrint="変更検知"
+  commentForAsFlow="リアクティブ更新"
+/>
 
 ## 使用例
 
 ### 基本的なポリゴン
 
-<PolygonStateBasicExample />
+<PolygonStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+  commentForClosingPolygon="ポリゴンを閉じる"
+/>
 
 ### インタラクティブなポリゴン
 
-<EditablePolygonExampleComposable />
+<EditablePolygonExampleComposable
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  polygonClickedLog="ポリゴンがクリックされました: ${event.clicked}"
+  commentForVertexMarkers="頂点マーカー（閉じる点を除く）"
+  vertexExtraPrefix="vertex_"
+/>
 
 ### ゾーンポリゴン
 
-<ZonePolygonsExample />
+<ZonePolygonsExample
+  restrictedZoneExtra="Restricted Zone"
+  parkingZoneExtra="Parking Zone"
+  safeZoneExtra="Safe Zone"
+/>
 
 ### 複雑な形状
 
-<ComplexPolygonExampleComposable />
+<ComplexPolygonExampleComposable
+  commentForStarPolygon="星型ポリゴン"
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusDegrees={0.01}
+  innerRadiusDegrees={0.005}
+  commentForClosingPolygon="ポリゴンを閉じる"
+  extraLabel="Star shape"
+/>
 
 ## イベント処理
 

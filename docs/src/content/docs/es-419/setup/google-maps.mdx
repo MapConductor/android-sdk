@@ -40,7 +40,12 @@ Primero, añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradl
 
 Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="... otros plugins"
+  googleMapsSdkComment="Google Maps SDK (versión gestionada mediante libs.versions.toml)"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
 
 El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede inyectar los valores en `AndroidManifest.xml` en tiempo de compilación.
 
@@ -95,8 +100,8 @@ Para verificar la configuración de Google Maps:
   provider="GoogleMap"
   functionName="TestGoogleMaps"
   comment="Si esta pantalla se muestra correctamente, tu configuración es válida"
-  imageUrl="~/assets/setup/basic-setup-google.png"
 />
+![Resultado de TestGoogleMaps](~/assets/setup/basic-setup-google.png)
 
 ## Solución de problemas
 
@@ -123,4 +128,3 @@ Para verificar la configuración de Google Maps:
 ## Próximos pasos
 
 Una vez configurado correctamente el SDK de Google Maps, puedes usar el componente `GoogleMapView` de MapConductor tal como se describe en la documentación del componente Map View.
-

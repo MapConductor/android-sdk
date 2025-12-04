@@ -1,38 +1,56 @@
 ---
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 
+interface Props {
+  mapboxSdkVersion?: string;
+  bomVersion?: string;
+  otherPluginsComment?: string;
+  mapboxSdkComment?: string;
+  bomComment?: string;
+  modulesComment?: string;
+}
+
+const {
+  mapboxSdkVersion = "{MAPBOX_SDK_VERSION}",
+  bomVersion = "{BOM_MODULE_VERSION}",
+  otherPluginsComment = "... other plugins",
+  mapboxSdkComment = "Mapbox Maps SDK (NDK27 variant)",
+  bomComment = "MapConductor BOM for version management (v{BOM_MODULE_VERSION})",
+  modulesComment = "MapConductor modules (versions managed by BOM)",
+} = Astro.props;
+
 const kotlinCode = `// App/build.gradle.kts
 plugins {
-    // ... other plugins
+    // ${otherPluginsComment}
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 dependencies {
-    // Mapbox Maps SDK (NDK27 variant)
-    implementation("com.mapbox.maps:android-ndk27:{MAPBOX_SDK_VERSION}")
+    // ${mapboxSdkComment}
+    implementation("com.mapbox.maps:android-ndk27:${mapboxSdkVersion}")
 
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    // ${bomComment}
+    implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))
 
-    // MapConductor modules (versions managed by BOM)
+    // ${modulesComment}
     implementation("com.mapconductor:core")
     implementation("com.mapconductor:for-mapbox")
 }`;
 
 const groovyCode = `// App/build.gradle
 plugins {
-    // ... other plugins
+    // ${otherPluginsComment}
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 dependencies {
-    // Mapbox Maps SDK (NDK27 variant)
-    implementation "com.mapbox.maps:android-ndk27:{MAPBOX_SDK_VERSION}"
+    // ${mapboxSdkComment}
+    implementation "com.mapbox.maps:android-ndk27:${mapboxSdkVersion}"
 
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
+    // ${bomComment}
+    implementation platform("com.mapconductor:mapconductor-bom:${bomVersion}")
 
-    // MapConductor modules (versions managed by BOM)
+    // ${modulesComment}
     implementation "com.mapconductor:core"
     implementation "com.mapconductor:for-mapbox"
 }`;
@@ -46,4 +64,3 @@ dependencies {
     <Code code={groovyCode} lang="groovy" />
   </TabItem>
 </Tabs>
-

@@ -30,25 +30,54 @@ import PolylineEventTypesExample from '~/components/states/polyline/PolylineEven
 
 ## メソッド
 
-<PolylineStateMethodsExample />
+<PolylineStateMethodsExample
+  commentForCopy="変更されたコピーを作成"
+  commentForFingerPrint="変更検知"
+  commentForAsFlow="リアクティブ更新"
+/>
 
 ## 使用例
 
 ### 基本的なポリライン
 
-<PolylineStateBasicExample />
+<PolylineStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7949}
+  thirdLongitude={-122.3994}
+/>
 
 ### 動的なポリライン
 
-<DynamicPolylineExampleComposable />
+<DynamicPolylineExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+/>
 
 ### 測地線ポリライン
 
-<GeodesicPolylineExample />
+<GeodesicPolylineExample
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={40.7128}
+  endLongitude={-74.006}
+  commentForStartPoint="サンフランシスコ"
+  commentForEndPoint="ニューヨーク"
+  commentForGeodesic="地球の曲率に従う"
+  extraLabel="Cross-country route"
+/>
 
 ### 複数セグメントのルート
 
-<RouteExampleComposable />
+<RouteExampleComposable
+  highwaySegmentExtra="Highway segment"
+  localRoadSegmentExtra="Local road segment"
+  walkingPathExtra="Walking path"
+/>
 
 ## イベント処理
 

@@ -49,6 +49,13 @@ Añade las dependencias de MapConductor en `build.gradle.kts` o `build.gradle` d
   hereIncluded={false}
   arcgisIncluded={false}
   maplibreIncluded={false}
+  commentBOM="Usar BOM para unificar versiones"
+  commentCore="Módulo principal (requerido)"
+  commentGoogleMaps="Si utilizas Google Maps"
+  commentOrMapbox="O si utilizas Mapbox"
+  commentOrHere="O si utilizas HERE Maps"
+  commentOrArcGIS="O si utilizas ArcGIS"
+  commentOrMapLibre="O si utilizas MapLibre"
 />
 
 ### 1-2. Configuración de Android
@@ -60,7 +67,7 @@ Añade la siguiente configuración en `build.gradle.kts` o `build.gradle`:
   minSdk="{ANDROID_MIN_SDK_VERSION}"
   javaVersion="{JAVA_VERSION}"
   kotlinVersion="{KOTLIN_VERSION}"
-  composeVersion="{JETPACK_COMPOSE_VERSION}"
+  composeVersion="{JETPACK_COMPOSE_BOM_VERSION}"
 />
 
 ### 1-3. Configuración del SDK de mapas
@@ -83,6 +90,10 @@ Empecemos con la forma más simple de mostrar un mapa centrado en Tokio.
   lat={35.6812}
   long={139.7671}
   zoom={12.0}
+  commentTokyoCoords="Coordenadas de Tokio"
+  commentInitialCamera="Posición inicial de la cámara"
+  commentStateManagement="Gestión de estado"
+  commentMapDisplay="Mostrar mapa"
 />
 
 ![Resultado del mapa](~/assets/get-started/my-first-map.png)
@@ -104,6 +115,10 @@ Añadamos marcadores al mapa.
   initialLat={35.6586}
   initialLong={139.7454}
   zoom={11.0}
+  commentCoords="Coordenadas"
+  commentInitialPosition="Posición inicial"
+  commentMarkerClicked="Manejar clic en marcador"
+  commentAddMarkers="Añadir marcadores"
 />
 
 ![Mapa con marcadores](~/assets/get-started/map-with-markers.png)
@@ -117,6 +132,7 @@ Puedes personalizar marcadores con colores y estilos:
   label="TT"
   lat={35.6586}
   long={139.7454}
+  commentAnchorInfo="Información de anclaje"
 />
 
 ## Paso 4: Añadir círculos y polilíneas
@@ -131,6 +147,10 @@ Dibujemos un círculo alrededor de un marcador.
   markerLong={139.7454}
   radiusMeters={1000.0}
   strokeWidth="3.dp"
+  commentMarker="Marcador"
+  commentDrawCircle="Dibujar círculo"
+  commentRadiusUnit="Radio (metros)"
+  commentStrokeUnit="Ancho de trazo (dp)"
 />
 
 ![Marcador con círculo](~/assets/get-started/marker-with-circle.png)
@@ -148,6 +168,8 @@ Ahora dibujemos una línea que conecte dos puntos.
   marker2Lat={35.7101}
   marker2Long={139.8107}
   strokeWidth="5.dp"
+  commentMarker="Marcadores"
+  commentDrawLine="Dibujar línea"
 />
 
 ![Marcador con polilínea](~/assets/get-started/marker-with-polyline.png)
@@ -164,6 +186,9 @@ Puedes manejar cuándo los usuarios tocan el mapa:
   long={139.7671}
   zoom={12.0}
   clickLabelIcon="!"
+  commentMapClicked="Mapa tocado"
+  commentClickPosition="Posición tocada"
+  commentShowMarker="Mostrar marcador"
 />
 
 <video width="720" height="480" controls>
@@ -183,6 +208,7 @@ Maneja clics en marcadores y dispara animaciones:
   marker2Label="ST"
   marker2Lat={35.7101}
   marker2Long={139.8107}
+  commentMarkerClicked="Manejar clic en marcador"
 />
 
 <video width="720" height="480" controls>
@@ -208,6 +234,8 @@ Usa botones para mover la cámara a diferentes ubicaciones:
   button2Zoom={15.0}
   marker1Label="TT"
   marker2Label="ST"
+  commentButtons="Botones"
+  commentMap="Mapa"
 />
 
 <video width="720" height="480" controls>
@@ -219,7 +247,12 @@ Usa botones para mover la cámara a diferentes ubicaciones:
 
 Escucha eventos de movimiento de cámara:
 
-<CameraMoveEvents />
+<CameraMoveEvents
+  commentMarkers="Marcadores etc."
+  cameraMoveStartMessage="Movimiento de cámara iniciado"
+  cameraMoveMessage="Posición de cámara: "
+  cameraMoveEndMessage="Movimiento de cámara finalizado"
+/>
 
 ## Paso 7: Cambiar entre SDKs de mapas
 
@@ -227,7 +260,12 @@ La ventaja más grande de MapConductor es la capacidad de cambiar proveedores de
 
 ### Cambiar de Google Maps a Mapbox
 
-<SDKSwitchComparison />
+<SDKSwitchComparison
+  commentComponents="Marcadores y otros componentes"
+  commentComponentsNoChange="Marcadores y otros componentes (¡sin cambios!)"
+  beforeLabel="Antes (Google Maps)"
+  afterLabel="Después (Mapbox)"
+/>
 
 ¡Los marcadores, círculos, polilíneas y otros componentes funcionan con **exactamente el mismo código**!
 
@@ -255,6 +293,14 @@ Aquí está el código de ejemplo completo que combina todo lo que has aprendido
   centerLat={35.6812}
   centerLong={139.7671}
   circleRadiusMeters={1000.0}
+  commentPositions="Información de posición"
+  commentClickedPosition="Guardar posición tocada"
+  commentControlButtons="Botones de control"
+  commentMap="Mapa"
+  commentMarkers="Marcadores"
+  commentClickedMarker="Marcador para posición tocada"
+  commentCircle="Círculo"
+  commentPolyline="Polilínea"
 />
 
 <video width="720" height="480" controls>

@@ -45,7 +45,12 @@ Añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradle` de la 
 
 Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
 
-<AppGradleTabs />
+<AppGradleTabs
+  otherPluginsComment="... otros plugins"
+  arcgisSdkComment="ArcGIS Maps SDK"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
 
 El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede inyectar sus valores en `AndroidManifest.xml` en tiempo de compilación.
 
@@ -94,7 +99,7 @@ Para verificar tu configuración de ArcGIS:
 3. Prueba las funcionalidades GIS específicas (si las usas)
 4. Verifica que la autenticación funcione correctamente
 
-<TestArcGISComposable />
+<TestArcGISComposable comment="Si esta pantalla se muestra correctamente, tu configuración es válida" />
 
 ![Resultado de TestArcGIS](~/assets/setup/basic-setup-arcgis.png)
 

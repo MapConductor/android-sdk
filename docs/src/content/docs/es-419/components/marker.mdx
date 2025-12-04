@@ -1,0 +1,102 @@
+---
+title: "Marcador"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import MarkerBasicSignature from '~/components/components/marker/MarkerBasicSignature.astro';
+import MarkerStateSignature from '~/components/components/marker/MarkerStateSignature.astro';
+import BasicMarkerExample from '~/components/components/marker/BasicMarkerExample.astro';
+import CustomIconMarkerExample from '~/components/components/marker/CustomIconMarkerExample.astro';
+import DraggableMarkerExample from '~/components/components/marker/DraggableMarkerExample.astro';
+import DraggableMarkerWithStateExample from '~/components/components/marker/DraggableMarkerWithStateExample.astro';
+import MultipleMarkersExample from '~/components/components/marker/MultipleMarkersExample.astro';
+import DefaultIconSignature from '~/components/components/marker/DefaultIconSignature.astro';
+import DrawableDefaultIconSignature from '~/components/components/marker/DrawableDefaultIconSignature.astro';
+import ImageIconSignature from '~/components/components/marker/ImageIconSignature.astro';
+
+Un marcador es una anotación de punto que se puede colocar en el mapa en ubicaciones geográficas específicas. Admite iconos personalizados, interacciones y animaciones.
+
+## Funciones Composable
+
+<Tabs>
+<TabItem label="Marcador básico">
+
+Cuando tienes pocos marcadores, especificar opciones directamente es más fácil.
+Especificar `id` puede reducir Recomposiciones innecesarias.
+
+<MarkerBasicSignature />
+
+</TabItem>
+<TabItem label="Marcador con Estado">
+
+Cuando tienes muchos marcadores o necesitas mover marcadores, se recomienda usar este enfoque.
+Especificar `id` puede reducir Recomposiciones innecesarias.
+
+<MarkerStateSignature />
+
+</TabItem>
+</Tabs>
+
+## Parámetros
+
+- **`position`**: Coordenadas geográficas que representan la posición del marcador (`GeoPoint`)
+- **`clickable`**: Si el marcador responde a clics (por defecto: `true`)
+- **`draggable`**: Si el marcador se puede arrastra (por defecto: `false`)
+- **`icon`**: Icono personalizado para el marcador (`MarkerIcon?`)
+- **`extra`**: Datos adicionales asociados al marcador (`Serializable?`)
+- **`id`**: Identificador único para el marcador (`String?`, se genera automáticamente si no se especifica)
+
+## Tipos de iconos
+
+### DefaultIcon
+
+Icono de marcador estándar con apariencia personalizable:
+
+<DefaultIconSignature />
+
+### DrawableDefaultIcon
+
+Marcador que utiliza un recurso Drawable como fondo:
+
+<DrawableDefaultIconSignature />
+
+### ImageIcon
+
+Marcador que utiliza una imagen Drawable personalizada:
+
+<ImageIconSignature />
+
+## Ejemplos de uso
+
+### Marcador básico
+
+<BasicMarkerExample
+  commentForMapViewUsage="Reemplaza MapView con el componente del proveedor de mapas que hayas elegido, como GoogleMapView o MapboxMapView"
+/>
+
+### Marcador con icono personalizado
+
+<CustomIconMarkerExample
+  commentForMapViewUsage="Reemplaza MapView con el componente del proveedor de mapas que hayas elegido, como GoogleMapView o MapboxMapView"
+/>
+
+### Marcador arrastrável
+
+<DraggableMarkerWithStateExample
+  commentForMapViewUsage="Reemplaza MapView con el componente del proveedor de mapas que hayas elegido, como GoogleMapView o MapboxMapView"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/marker/draggable-marker-example.webm" type="video/webm" />
+ <source src="/marker/draggable-marker-example.mp4" type="video/mp4" />
+</video>
+
+### Múltiples marcadores con iconos diferentes
+
+<MultipleMarkersExample
+  commentForMapViewUsage="Reemplaza MapView con el componente del proveedor de mapas que hayas elegido, como GoogleMapView o MapboxMapView"
+/>
+
+### Marcador combinado con InfoBubble
+
+Combinando el marcador con el componente `InfoBubble`, puedes mostrar información detallada cuando se hace clic en un marcador. Para más detalles, consulta el [componente InfoBubble](/es-419/components/infobubble).

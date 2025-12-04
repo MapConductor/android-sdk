@@ -2,6 +2,20 @@
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  commentComponents?: string;
+  commentComponentsNoChange?: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+}
+
+const {
+  commentComponents = "マーカーやその他のコンポーネント",
+  commentComponentsNoChange = "マーカーやその他のコンポーネント(変更なし!)",
+  beforeLabel = "変更前 (Google Maps)",
+  afterLabel = "変更後 (Mapbox)"
+} = Astro.props;
+
 const googleMapsCode = `import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
@@ -14,7 +28,7 @@ fun MyMap() {
     GoogleMapView(
         state = mapViewState
     ) {
-        // マーカーやその他のコンポーネント
+        // ${commentComponents}
     }
 }`;
 
@@ -30,16 +44,16 @@ fun MyMap() {
     MapboxMapView(
         state = mapViewState
     ) {
-        // マーカーやその他のコンポーネント(変更なし!)
+        // ${commentComponentsNoChange}
     }
 }`;
 ---
 
 <Tabs>
-  <TabItem label="変更前 (Google Maps)">
+  <TabItem label={beforeLabel}>
     <Code code={googleMapsCode} lang="kotlin" />
   </TabItem>
-  <TabItem label="変更後 (Mapbox)">
+  <TabItem label={afterLabel}>
     <Code code={mapboxCode} lang="kotlin" />
   </TabItem>
 </Tabs>

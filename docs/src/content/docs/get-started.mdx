@@ -49,6 +49,13 @@ Add MapConductor dependencies to your module-level `build.gradle.kts` or `build.
   hereIncluded={false}
   arcgisIncluded={false}
   maplibreIncluded={false}
+  commentBOM="Use BOM to unify versions"
+  commentCore="Core module (required)"
+  commentGoogleMaps="If using Google Maps"
+  commentOrMapbox="Or if using Mapbox"
+  commentOrHere="Or if using HERE Maps"
+  commentOrArcGIS="Or if using ArcGIS"
+  commentOrMapLibre="Or if using MapLibre"
 />
 
 ### 1-2. Android configuration
@@ -60,7 +67,7 @@ Add the following configuration to `build.gradle.kts` or `build.gradle`:
   minSdk="{ANDROID_MIN_SDK_VERSION}"
   javaVersion="{JAVA_VERSION}"
   kotlinVersion="{KOTLIN_VERSION}"
-  composeVersion="{JETPACK_COMPOSE_VERSION}"
+  composeVersion="{JETPACK_COMPOSE_BOM_VERSION}"
 />
 
 ### 1-3. Map SDK Setup
@@ -83,6 +90,10 @@ Let's start with the simplest way to display a map - showing a map centered on T
   lat={35.6812}
   long={139.7671}
   zoom={12.0}
+  commentTokyoCoords="Tokyo coordinates"
+  commentInitialCamera="Initial camera position"
+  commentStateManagement="State management"
+  commentMapDisplay="Display map"
 />
 
 ![Map Result](~/assets/get-started/my-first-map.png)
@@ -104,6 +115,10 @@ Let's add markers to the map.
   initialLat={35.6586}
   initialLong={139.7454}
   zoom={11.0}
+  commentCoords="Coordinates"
+  commentInitialPosition="Initial position"
+  commentMarkerClicked="Handle marker click"
+  commentAddMarkers="Add markers"
 />
 
 ![Map with Markers](~/assets/get-started/map-with-markers.png)
@@ -117,6 +132,7 @@ You can further customize markers with colors and styling:
   label="TT"
   lat={35.6586}
   long={139.7454}
+  commentAnchorInfo="Anchor info"
 />
 
 ## Step 4: Add Circles and Polylines
@@ -131,6 +147,10 @@ Let's draw a circle around a marker.
   markerLong={139.7454}
   radiusMeters={1000.0}
   strokeWidth="3.dp"
+  commentMarker="Marker"
+  commentDrawCircle="Draw circle"
+  commentRadiusUnit="Radius (meters)"
+  commentStrokeUnit="Stroke width (dp)"
 />
 
 ![Marker with Circle](~/assets/get-started/marker-with-circle.png)
@@ -148,6 +168,8 @@ Now let's draw a line connecting two points.
   marker2Lat={35.7101}
   marker2Long={139.8107}
   strokeWidth="5.dp"
+  commentMarker="Markers"
+  commentDrawLine="Draw line"
 />
 
 ![Marker with Polyline](~/assets/get-started/marker-with-polyline.png)
@@ -164,6 +186,9 @@ You can handle when users tap the map:
   long={139.7671}
   zoom={12.0}
   clickLabelIcon="!"
+  commentMapClicked="Map clicked"
+  commentClickPosition="Click position"
+  commentShowMarker="Show marker"
 />
 
 <video width="720" height="480" controls>
@@ -183,6 +208,7 @@ Handle clicks on markers and trigger animations:
   marker2Label="ST"
   marker2Lat={35.7101}
   marker2Long={139.8107}
+  commentMarkerClicked="Handle marker click"
 />
 
 <video width="720" height="480" controls>
@@ -208,6 +234,8 @@ Use buttons to move the camera to different locations:
   button2Zoom={15.0}
   marker1Label="TT"
   marker2Label="ST"
+  commentButtons="Buttons"
+  commentMap="Map"
 />
 
 <video width="720" height="480" controls>
@@ -219,7 +247,12 @@ Use buttons to move the camera to different locations:
 
 Listen to camera movement events:
 
-<CameraMoveEvents />
+<CameraMoveEvents
+  commentMarkers="Markers etc."
+  cameraMoveStartMessage="Camera move started"
+  cameraMoveMessage="Camera position: "
+  cameraMoveEndMessage="Camera move ended"
+/>
 
 ## Step 7: Switch Map SDKs
 
@@ -227,7 +260,12 @@ MapConductor's biggest advantage is the ability to switch map providers with min
 
 ### Switching from Google Maps to Mapbox
 
-<SDKSwitchComparison />
+<SDKSwitchComparison
+  commentComponents="Markers and other components"
+  commentComponentsNoChange="Markers and other components (no change!)"
+  beforeLabel="Before (Google Maps)"
+  afterLabel="After (Mapbox)"
+/>
 
 Markers, circles, polylines, and other components work with **exactly the same code**!
 
@@ -255,6 +293,14 @@ Here's the complete sample code combining everything you've learned:
   centerLat={35.6812}
   centerLong={139.7671}
   circleRadiusMeters={1000.0}
+  commentPositions="Position information"
+  commentClickedPosition="Save clicked position"
+  commentControlButtons="Control buttons"
+  commentMap="Map"
+  commentMarkers="Markers"
+  commentClickedMarker="Marker for clicked position"
+  commentCircle="Circle"
+  commentPolyline="Polyline"
 />
 
 <video width="720" height="480" controls>

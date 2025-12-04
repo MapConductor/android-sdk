@@ -1,15 +1,29 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `// リソースから
+interface Props {
+  commentForFromResources?: string;
+  commentForFromAssets?: string;
+  commentForFromNetwork?: string;
+  commentForLibraryUsage?: string;
+}
+
+const {
+  commentForFromResources = "リソースから",
+  commentForFromAssets = "アセットから",
+  commentForFromNetwork = "ネットワークから（画像読み込みライブラリを使用）",
+  commentForLibraryUsage = "Coil、Glide、Picassoなどのライブラリをネットワーク画像に使用してください"
+} = Astro.props;
+
+const code = `// ${commentForFromResources}
 val drawable = AppCompatResources.getDrawable(context, R.drawable.overlay)
 
-// アセットから
+// ${commentForFromAssets}
 val inputStream = context.assets.open("overlays/map.png")
 val drawableFromAssets = Drawable.createFromStream(inputStream, null)
 
-// ネットワークから（画像読み込みライブラリを使用）
-// Coil、Glide、Picassoなどのライブラリをネットワーク画像に使用してください`;
+// ${commentForFromNetwork}
+// ${commentForLibraryUsage}`;
 ---
 
 <Code code={code} lang="kotlin" />

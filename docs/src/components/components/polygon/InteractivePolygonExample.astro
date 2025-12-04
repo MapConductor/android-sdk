@@ -1,15 +1,41 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  firstLatitude?: number;
+  firstLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+  thirdLatitude?: number;
+  thirdLongitude?: number;
+  fourthLatitude?: number;
+  fourthLongitude?: number;
+  vertexPrefix?: string;
+  polygonClickedLog?: string;
+}
+
+const {
+  firstLatitude = 37.7749,
+  firstLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094,
+  thirdLatitude = 37.7799,
+  thirdLongitude = -122.3994,
+  fourthLatitude = 37.7649,
+  fourthLongitude = -122.4094,
+  vertexPrefix = "Vertex ",
+  polygonClickedLog = "Polygon clicked at: ${polygonEvent.clicked}",
+} = Astro.props;
+
 const code = `@Composable
 fun InteractivePolygonExample() {
     var vertices by remember {
         mutableStateOf(
             listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7799, -122.3994),
-                GeoPointImpl.fromLatLong(37.7649, -122.4094)
+                GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
+                GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
+                GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+                GeoPointImpl.fromLatLong(${fourthLatitude}, ${fourthLongitude})
             )
         )
     }
@@ -33,14 +59,14 @@ fun InteractivePolygonExample() {
                 scale = 0.8f
             ),
             draggable = true,
-            extra = "Vertex \$index"
+            extra = "${vertexPrefix}$" + "index"
         )
     }
 
     MapView(
         state = mapViewState,
         onMarkerDrag = { markerState ->
-            val vertexIndex = markerState.extra.toString().substringAfter("Vertex ").toIntOrNull()
+            val vertexIndex = markerState.extra.toString().substringAfter("${vertexPrefix}").toIntOrNull()
             vertexIndex?.let { index ->
                 vertices = vertices.toMutableList().apply {
                     if (index < size) set(index, markerState.position)
@@ -48,7 +74,7 @@ fun InteractivePolygonExample() {
             }
         },
         onPolygonClick = { polygonEvent ->
-            println("Polygon clicked at: \${polygonEvent.clicked}")
+            println("${polygonClickedLog}")
         }
     ) {
         Polygon(polygonState)

@@ -44,7 +44,11 @@ MapLibre es una biblioteca de mapas de código abierto que requiere un servidor 
 
 Añade las dependencias en el `build.gradle.kts` o `build.gradle` de tu app:
 
-<AppGradleTabs />
+<AppGradleTabs
+  maplibreSdkComment="MapLibre Native Android SDK"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
 
 El SDK de MapLibre está disponible en Maven Central, que debería estar configurado ya en tu `settings.gradle.kts` o `settings.gradle`:
 
@@ -67,7 +71,12 @@ Añade los permisos necesarios en tu `AndroidManifest.xml`:
 
 MapLibre requiere un JSON de estilo para definir cómo se ve el mapa. Puedes usar un estilo alojado o uno personalizado.
 
-<MapLibreStyleExamples />
+<MapLibreStyleExamples
+  demoTitle="Estilo de demostración"
+  hostedTitle="Uso de estilo alojado"
+  osmTitle="Uso de estilo OpenStreetMap"
+  osmComment="Ejemplo usando el estilo OSM Liberty"
+/>
 
 ## Verificación
 
@@ -78,7 +87,7 @@ Para verificar la configuración de MapLibre:
 3. Prueba las interacciones de mapa (zoom, desplazamiento, rotación).
 4. Verifica que se muestre la atribución si tu proveedor de teselas lo requiere.
 
-<TestMapLibreComposable />
+<TestMapLibreComposable comment="Si esta pantalla se muestra correctamente, tu configuración es válida" />
 
 ![Resultado de TestMapLibre](~/assets/setup/basic-setup-maplibre.png)
 
@@ -132,4 +141,3 @@ Asegúrate de mostrar las atribuciones requeridas en la interfaz de tu aplicaci�
 ## Próximos pasos
 
 Una vez configurado correctamente MapLibre, puedes utilizar el componente `MapLibreMapView` de MapConductor con la API unificada.
-
