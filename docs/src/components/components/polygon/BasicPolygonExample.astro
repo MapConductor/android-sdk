@@ -22,7 +22,7 @@ const {
 } = Astro.props;
 
 const code = `// ${commentForMapViewReplacement}
-MapView(state = mapViewState) {
+MapLibreMapView(state = mapViewState) {
     val trianglePoints = listOf(
         GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
         GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),

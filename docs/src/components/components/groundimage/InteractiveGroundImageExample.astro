@@ -2,75 +2,53 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
-fun InteractiveGroundImageExample() {
-    var southwest by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7649, -122.4294))
-    }
-    var northeast by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7849, -122.4094))
-    }
+fun MapView(
+    drawable: Drawable,
+    modifier: Modifier = Modifier,
+) {
+    val mapViewState =
+        rememberGoogleMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl(51.511649,-0.100761),
+                    zoom = 12.0,
+                ),
+        )
+
+    var marker1 by remember { mutableStateOf(MarkerState(
+        position = GeoPointImpl.fromLatLong(51.476747,-0.167729),
+        draggable = true,
+    )) }
+    var marker2 by remember { mutableStateOf(MarkerState(
+        position = GeoPointImpl.fromLatLong(51.546550,-0.033792),
+        draggable = true,
+    )) }
+    val bounds = GeoRectBounds(
+        southWest = marker1.position as GeoPointImpl,
+        northEast = marker2.position as GeoPointImpl,
+    )
     var opacity by remember { mutableStateOf(0.7f) }
 
-    val context = LocalContext.current
-    val groundImageDrawable = AppCompatResources.getDrawable(context, R.drawable.map_overlay)
-
-    val bounds = GeoRectBounds(southwest = southwest, northeast = northeast)
-
-    val groundImageState = groundImageDrawable?.let { drawable ->
-        GroundImageState(
-            bounds = bounds,
-            image = drawable,
-            opacity = opacity
-        )
-    }
-
-    val swMarker = MarkerState(
-        position = southwest,
-        icon = DefaultIcon(
-            fillColor = Color.Green,
-            label = "SW",
-            scale = 0.8f
-        ),
-        draggable = true,
-        extra = "southwest"
-    )
-
-    val neMarker = MarkerState(
-        position = northeast,
-        icon = DefaultIcon(
-            fillColor = Color.Red,
-            label = "NE",
-            scale = 0.8f
-        ),
-        draggable = true,
-        extra = "northeast"
-    )
-
-    Column {
+    Column(
+        modifier = modifier,
+    ) {
         Slider(
             value = opacity,
             onValueChange = { opacity = it },
             valueRange = 0f..1f,
             modifier = Modifier.padding(16.dp)
         )
-
-        MapView(
+        GoogleMapView(
             state = mapViewState,
-            onMarkerDrag = { markerState ->
-                when (markerState.extra as String) {
-                    "southwest" -> southwest = markerState.position
-                    "northeast" -> northeast = markerState.position
-                }
-            },
-            onGroundImageClick = { groundImageEvent ->
-                println("Ground image clicked at: \${groundImageEvent.clicked}")
-            }
         ) {
-            groundImageState?.let { state ->
-                GroundImage(state)
-            }
-            Marker(swMarker)
-            Marker(neMarker)
+            Marker(marker1)
+            Marker(marker2)
+            GroundImage(
+                id = "groundimage",
+                bounds = bounds,
+                image = drawable,
+                opacity = opacity
+            )
         }
     }
 }`;

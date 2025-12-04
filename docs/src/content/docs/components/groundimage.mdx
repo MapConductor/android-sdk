@@ -2,6 +2,7 @@
 title: "GroundImage"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import GroundImageBasicSignature from '~/components/components/groundimage/GroundImageBasicSignature.astro';
 import GroundImageStateSignature from '~/components/components/groundimage/GroundImageStateSignature.astro';
 import BasicGroundImageExample from '~/components/components/groundimage/BasicGroundImageExample.astro';
@@ -15,13 +16,14 @@ Ground images are image overlays that are positioned geographically on the map. 
 
 ## Composable Function
 
-### Basic GroundImage
-
-<GroundImageBasicSignature />
-
-### GroundImage with State
-
-<GroundImageStateSignature />
+<Tabs>
+<TabItem label="Basic GroundImage">
+    <GroundImageBasicSignature />
+</TabItem>
+<TabItem label="GroundImage with State">
+    <GroundImageStateSignature />
+</TabItem>
+</Tabs>
 
 ## Parameters
 
@@ -36,38 +38,19 @@ Ground images are image overlays that are positioned geographically on the map. 
 ### Basic GroundImage
 
 <BasicGroundImageExample />
+![](~/assets/groundimage/basic-ground-image.png)
 
 ### Interactive GroundImage with Boundary Markers
 
 <InteractiveGroundImageExample />
 
-### Multiple GroundImages with Different Opacities
-
-<MultipleGroundImagesExample />
-
-### Dynamic GroundImage Loading
-
-<DynamicGroundImageExample />
+<video width="720" height="400" controls>
+ <source src="/groundimage/interactive-ground-image.webm" type="video/webm" />
+ <source src="/groundimage/interactive-ground-image.mp4" type="video/mp4" />
+</video>
 
 ## Event Handling
 
 GroundImage interactions are handled by your map provider component:
 
 <GroundImageEventHandlingExample />
-
-## Styling Options
-
-### Opacity Control
-
-<GroundImageOpacityStylesExample />
-
-## Best Practices
-
-1. **Image Quality**: Ensure high-resolution images scale well
-2. **Opacity Usage**: Choose an appropriate opacity level to allow the underlying map to be visible
-3. **Boundary Accuracy**: Verify that the image bounds match the actual location on the map
-4. **Performance**: Monitor performance impact when using multiple large images simultaneously
-5. **Caching**: Cache images that are loaded repeatedly for performance
-6. **Dynamic Loading**: For large image sets, consider dynamically loading only visible images
-7. **Z-Index**: Maintain correct layer order when overlaying multiple images
-

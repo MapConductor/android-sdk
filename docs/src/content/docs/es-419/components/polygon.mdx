@@ -13,6 +13,7 @@ import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicS
 import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
 import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
 import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+import GeodesicPolygonComparisonExample from '~/components/components/polygon/GeodesicPolygonComparisonExample.astro';
 
 Un polígono es una forma cerrada que define un área con propiedades de trazo y relleno personalizables. Los polígonos son útiles para representar zonas, regiones, límites o características basadas en áreas.
 
@@ -44,57 +45,41 @@ Un polígono es una forma cerrada que define un área con propiedades de trazo y
 ### Polígono Básico
 
 <BasicPolygonExample />
+![](~/assets/polygon/basic-polygon-example.png)
 
 ### Polígono Interactivo con Marcadores de Vértices
 
 <InteractivePolygonExample />
 
-### Múltiples Polígonos con Diferentes Estilos
+<video width="720" height="480" controls>
+ <source src="/polygon/interactive-polygon-example.webm" type="video/webm" />
+ <source src="/polygon/interactive-polygon-example.mp4" type="video/mp4" />
+</video>
 
-<MultiplePolygonsExample />
+### Polígono Geodésico vs Polígono Estándar
 
-### Forma de Polígono Compleja
-
-<ComplexPolygonExample />
-
-### Creación Dinámica de Polígono
-
-<DynamicPolygonExample />
-
-## Manejo de Eventos
-
-Las interacciones de polígono se manejan mediante el componente de su proveedor de mapas:
-
-<PolygonEventHandlingExample />
-
-## Opciones de Estilo
-
-### Variaciones de Relleno
-
-<PolygonFillStyleExamples
-  commentForSolidFill="Relleno sólido"
-  commentForSemiTransparentFill="Relleno semi-transparente"
-  commentForNoFill="Sin relleno (solo contorno)"
-  commentForGradientEffect="Efecto similar a degradado usando múltiples polígonos"
+<GeodesicPolygonComparisonExample
+  centerLatitude={30.0}
+  centerLongitude={0.0}
+  zoomLevel={2.0}
+  point1Longitude={23.66}
+  point1Latitude={56.42}
+  point2Longitude={13.39}
+  point2Latitude={2.95}
+  point3Longitude={-87.82}
+  point3Latitude={38.58}
+  point4Longitude={23.66}
+  point4Latitude={56.42}
+  mapLoadedMessage="El mapa se cargó y está listo"
+  commentForMapClickClear="Borrar la selección al pulsar el mapa"
+  markerDragStartMessagePrefix="Comenzó a arrastrar el marcador"
+  markerDragMessagePrefix="Arrastrando el marcador a"
+  markerDragEndMessagePrefix="Finalizó el arrastre del marcador"
+  commentForInteractiveMarkers="Contenido interactivo con marcadores"
+  commentForSelectedMarkerInfo="Mostrar información del marcador seleccionado"
 />
 
-### Variaciones de Trazo
-
-<PolygonStrokeStyleExamples
-  commentForThinBorder="Borde fino"
-  commentForThickBorder="Borde grueso"
-  commentForNoBorder="Sin borde"
-/>
-
-## Mejores Prácticas
-
-1. **Cerrar el Polígono**: Asegurar siempre que el último punto sea igual al primer punto para cerrar correctamente el polígono
-2. **Orden de Vértices**: Usar orden de vértices consistente (sentido horario o antihorario) para resultados predecibles
-3. **Rendimiento**: Evitar polígonos excesivamente complejos con cientos de vértices
-4. **Claridad Visual**: Usar colores y transparencia apropiados para buena visibilidad
-5. **Retroalimentación Interactiva**: Proporcionar retroalimentación visual cuando los polígonos sean clickeables
-6. **Manejo de Agujeros**: Simular agujeros usando polígonos superpuestos con diferentes colores
-7. **Bordes Geodésicos**: Usar bordes geodésicos para polígonos grandes para considerar la curvatura de la Tierra
-8. **Gestión de Estado**: Gestionar de manera eficiente los datos de vértices del polígono y manejar actualizaciones reactivamente
-9. **Validación**: Validar la geometría del polígono para asegurar que forme una forma válida
-10. **Manejo de Errores**: Manejar casos límite como polígonos con menos de 3 vértices
+<video width="720" height="480" controls>
+ <source src="/polygon/geodesic-polygon.webm" type="video/webm" />
+ <source src="/polygon/geodesic-polygon.mp4" type="video/mp4" />
+</video>

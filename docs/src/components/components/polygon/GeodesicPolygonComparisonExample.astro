@@ -1,0 +1,137 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  zoomLevel?: number;
+  point1Longitude?: number;
+  point1Latitude?: number;
+  point2Longitude?: number;
+  point2Latitude?: number;
+  point3Longitude?: number;
+  point3Latitude?: number;
+  point4Longitude?: number;
+  point4Latitude?: number;
+  mapLoadedMessage?: string;
+  commentForMapClickClear?: string;
+  markerDragStartMessagePrefix?: string;
+  markerDragMessagePrefix?: string;
+  markerDragEndMessagePrefix?: string;
+  commentForInteractiveMarkers?: string;
+  commentForSelectedMarkerInfo?: string;
+}
+
+const {
+  centerLatitude = 30.0,
+  centerLongitude = 0.0,
+  zoomLevel = 2.0,
+  point1Longitude = 23.66,
+  point1Latitude = 56.42,
+  point2Longitude = 13.39,
+  point2Latitude = 2.95,
+  point3Longitude = -87.82,
+  point3Latitude = 38.58,
+  point4Longitude = 23.66,
+  point4Latitude = 56.42,
+  mapLoadedMessage = 'Map loaded and ready',
+  commentForMapClickClear = 'Clear selection when the map is clicked',
+  markerDragStartMessagePrefix = 'Started dragging marker',
+  markerDragMessagePrefix = 'Dragging marker to',
+  markerDragEndMessagePrefix = 'Finished dragging marker',
+  commentForInteractiveMarkers = 'Interactive content with markers',
+  commentForSelectedMarkerInfo = 'Draw the selected marker',
+} = Astro.props;
+
+const code = `@Composable
+fun MapView(modifier: Modifier = Modifier) {
+    val mapViewState =
+        rememberArcGISMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl(${centerLatitude}, ${centerLongitude}),
+                    zoom = ${zoomLevel},
+                ),
+        )
+
+    val points =
+        listOf(
+            GeoPointImpl.fromLongLat(${point1Longitude}, ${point1Latitude}),
+            GeoPointImpl.fromLongLat(${point2Longitude}, ${point2Latitude}),
+            GeoPointImpl.fromLongLat(${point3Longitude}, ${point3Latitude}),
+            GeoPointImpl.fromLongLat(${point4Longitude}, ${point4Latitude}),
+        )
+
+    val polygonState =
+        remember {
+            PolygonState(
+                points = points,
+                strokeColor = Color.Yellow.copy(alpha = 0.3f),
+                strokeWidth = 3.dp,
+                fillColor = Color.Green.copy(alpha = 0.5f),
+                geodesic = false,
+                zIndex = 0,
+            )
+        }
+
+    val geodesicPolygonState =
+        remember {
+            PolygonState(
+                points = points,
+                strokeColor = Color.Red.copy(alpha = 0.3f),
+                strokeWidth = 3.dp,
+                fillColor = Color.Blue.copy(alpha = 0.5f),
+                geodesic = true,
+                zIndex = 1,
+            )
+        }
+    var marker by remember { mutableStateOf<MarkerState?>(null) }
+
+    ArcGISMapView(
+        modifier = modifier,
+        state = mapViewState,
+        onMapLoaded = {
+            println("${mapLoadedMessage}")
+        },
+        onMapClick = {
+            marker = null // ${commentForMapClickClear}
+        },
+        onMarkerClick = { markerState ->
+            marker = markerState
+        },
+        onMarkerDragStart = { markerState ->
+            println("${markerDragStartMessagePrefix}: ${'$'}{markerState.id}")
+        },
+        onMarkerDrag = { markerState ->
+            println("${markerDragMessagePrefix}: ${'$'}{markerState.position}")
+        },
+        onMarkerDragEnd = { markerState ->
+            println("${markerDragEndMessagePrefix}: ${'$'}{markerState.id}")
+        },
+        onPolygonClick = { event ->
+            marker = MarkerState(
+                position = event.clicked,
+                icon = DefaultIcon(
+                    fillColor = event.state.fillColor,
+                    strokeColor = Color.Red,
+                ),
+                animation = MarkerAnimation.Drop,
+            )
+        }
+    ) {
+
+        // ${commentForInteractiveMarkers}
+        Polygon(polygonState)
+        Polygon(geodesicPolygonState)
+
+        // ${commentForSelectedMarkerInfo}
+        marker?.let { markerState ->
+            Marker(markerState)
+        }
+    }
+}
+`;
+---
+
+<Code code={code} lang="kotlin" />
+

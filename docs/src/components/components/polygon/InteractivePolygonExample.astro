@@ -2,40 +2,33 @@
 import { Code } from '@astrojs/starlight/components';
 
 interface Props {
-  firstLatitude?: number;
-  firstLongitude?: number;
-  secondLatitude?: number;
-  secondLongitude?: number;
-  thirdLatitude?: number;
-  thirdLongitude?: number;
-  fourthLatitude?: number;
-  fourthLongitude?: number;
   vertexPrefix?: string;
   polygonClickedLog?: string;
 }
 
 const {
-  firstLatitude = 37.7749,
-  firstLongitude = -122.4194,
-  secondLatitude = 37.7849,
-  secondLongitude = -122.4094,
-  thirdLatitude = 37.7799,
-  thirdLongitude = -122.3994,
-  fourthLatitude = 37.7649,
-  fourthLongitude = -122.4094,
   vertexPrefix = "Vertex ",
   polygonClickedLog = "Polygon clicked at: ${polygonEvent.clicked}",
 } = Astro.props;
 
 const code = `@Composable
 fun InteractivePolygonExample() {
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl.fromLatLong(37.7809, -122.4094),
+                    zoom = 13.5,
+                ),
+        )
+
     var vertices by remember {
         mutableStateOf(
             listOf(
-                GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
-                GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
-                GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
-                GeoPointImpl.fromLatLong(${fourthLatitude}, ${fourthLongitude})
+                GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                GeoPointImpl.fromLatLong(37.7799, -122.3994),
+                GeoPointImpl.fromLatLong(37.7649, -122.4094)
             )
         )
     }
@@ -43,6 +36,7 @@ fun InteractivePolygonExample() {
     val closedVertices = vertices + vertices.first()
 
     val polygonState = PolygonState(
+        id = "polygon",  // important
         points = closedVertices,
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
@@ -51,6 +45,7 @@ fun InteractivePolygonExample() {
 
     val vertexMarkers = vertices.mapIndexed { index, point ->
         MarkerState(
+            id = "marker-\${index + 1}",  // important
             position = point,
             icon = DefaultIcon(
                 fillColor = Color.Red,
@@ -59,22 +54,23 @@ fun InteractivePolygonExample() {
                 scale = 0.8f
             ),
             draggable = true,
-            extra = "${vertexPrefix}$" + "index"
+            extra = index,
         )
     }
 
-    MapView(
+    MapLibreMapView(
+        modifier = modifier,
         state = mapViewState,
         onMarkerDrag = { markerState ->
-            val vertexIndex = markerState.extra.toString().substringAfter("${vertexPrefix}").toIntOrNull()
-            vertexIndex?.let { index ->
-                vertices = vertices.toMutableList().apply {
-                    if (index < size) set(index, markerState.position)
+            val vertexIndex = markerState.extra as Int
+            vertices = vertices.toMutableList().apply {
+                if (vertexIndex < size) {
+                    set(vertexIndex, GeoPointImpl.from(markerState.position))
                 }
             }
         },
         onPolygonClick = { polygonEvent ->
-            println("${polygonClickedLog}")
+            println("${polygonClickedLog} at: \${polygonEvent.clicked}")
         }
     ) {
         Polygon(polygonState)
@@ -82,7 +78,8 @@ fun InteractivePolygonExample() {
             Marker(marker)
         }
     }
-}`;
+}
+`;
 ---
 
 <Code code={code} lang="kotlin" />

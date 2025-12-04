@@ -13,6 +13,7 @@ import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicS
 import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
 import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
 import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+import GeodesicPolygonComparisonExample from '~/components/components/polygon/GeodesicPolygonComparisonExample.astro';
 
 A polygon is a closed shape that defines an area with customizable stroke and fill properties. Polygons are useful for representing zones, regions, boundaries, or area-based features.
 
@@ -52,6 +53,7 @@ A polygon is a closed shape that defines an area with customizable stroke and fi
   thirdLatitude={37.7749}
   thirdLongitude={-122.3994}
 />
+![](~/assets/polygon/basic-polygon-example.png)
 
 ### Interactive Polygon with Vertex Markers
 
@@ -68,64 +70,36 @@ A polygon is a closed shape that defines an area with customizable stroke and fi
   polygonClickedLog="Polygon clicked at: ${polygonEvent.clicked}"
 />
 
-### Multiple Polygons with Different Styles
+<video width="720" height="480" controls>
+ <source src="/polygon/interactive-polygon-example.webm" type="video/webm" />
+ <source src="/polygon/interactive-polygon-example.mp4" type="video/mp4" />
+</video>
 
-<MultiplePolygonsExample
-  commentForMapViewReplacement="Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView"
-  blueZoneExtra="Blue zone"
-  redBoundaryExtra="Red boundary"
-  greenAreaExtra="Green area"
+### Geodesic vs Standard Polygon
+
+<GeodesicPolygonComparisonExample
+  centerLatitude={30.0}
+  centerLongitude={0.0}
+  zoomLevel={2.0}
+  point1Longitude={23.66}
+  point1Latitude={56.42}
+  point2Longitude={13.39}
+  point2Latitude={2.95}
+  point3Longitude={-87.82}
+  point3Latitude={38.58}
+  point4Longitude={23.66}
+  point4Latitude={56.42}
+  mapLoadedMessage="Map loaded and ready"
+  commentForMapClickClear="Clear selection when the map is clicked"
+  markerDragStartMessagePrefix="Started dragging marker"
+  markerDragMessagePrefix="Dragging marker to"
+  markerDragEndMessagePrefix="Finished dragging marker"
+  commentForInteractiveMarkers="Interactive content with markers"
+  commentForSelectedMarkerInfo="Show information for the selected marker"
 />
 
-### Complex Polygon Shape
+<video width="720" height="480" controls>
+ <source src="/polygon/geodesic-polygon.webm" type="video/webm" />
+ <source src="/polygon/geodesic-polygon.mp4" type="video/mp4" />
+</video>
 
-<ComplexPolygonExample
-  commentForStarPolygon="Star-shaped polygon"
-  centerLatitude={37.7749}
-  centerLongitude={-122.4194}
-  outerRadius={0.01}
-  innerRadius={0.005}
-  extraLabel="Star polygon"
-  markerLabel="⭐"
-/>
-
-### Dynamic Polygon Creation
-
-<DynamicPolygonExample />
-
-## Event Handling
-
-Polygon interactions are handled by your map provider component:
-
-<PolygonEventHandlingExample
-  commentForMapViewReplacement="Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView"
-  logPolygonClicked="Polygon clicked:"
-  logVerticesLabel="  Vertices: ${polygon.points.size}"
-  logClickLocationLabel="  Click location: ${clickPoint}"
-  logExtraDataLabel="  Extra data: ${polygon.extra}"
-  logApproxAreaLabel="  Approximate area: $area sq meters"
-  extraLabel="Interactive polygon"
-/>
-
-## Styling Options
-
-### Fill Variations
-
-<PolygonFillStyleExamples />
-
-### Stroke Variations
-
-<PolygonStrokeStyleExamples />
-
-## Best Practices
-
-1. **Close the Polygon**: Always ensure the last point equals the first point to properly close the polygon
-2. **Vertex Order**: Use consistent vertex ordering (clockwise or counter-clockwise) for predictable results
-3. **Performance**: Avoid excessively complex polygons with hundreds of vertices
-4. **Visual Clarity**: Use appropriate colors and transparency for good visibility
-5. **Interactive Feedback**: Provide visual feedback when polygons are clickable
-6. **Hole Handling**: Simulate holes using overlapping polygons with different colors
-7. **Geodesic Edges**: Use geodesic edges for large polygons to account for Earth's curvature
-8. **State Management**: Efficiently manage polygon vertex data and handle updates reactively
-9. **Validation**: Validate polygon geometry to ensure it forms a valid shape
-10. **Error Handling**: Handle edge cases like polygons with fewer than 3 vertices

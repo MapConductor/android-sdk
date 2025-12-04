@@ -2,22 +2,37 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
-fun BasicGroundImageExample() {
-    val context = LocalContext.current
-
-    MapView(state = mapViewState) {
-        AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
-            GroundImage(
-                bounds = GeoRectBounds(
-                    southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
-                    northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+fun BasicGroundImageExample(
+    drawable: Drawable,
+    modifier: Modifier = Modifier,
+) {
+    val mapViewState =
+        rememberGoogleMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl(51.511649,-0.100761),
+                    zoom = 12.0,
                 ),
-                image = drawable,
-                opacity = 0.7f
-            )
-        }
+        )
+
+    val bounds = GeoRectBounds(
+        southWest = GeoPointImpl.from(51.476747, -0.167729),
+        northEast = GeoPointImpl.from(51.546550,-0.033792),
+    )
+    GoogleMapView(
+        modifier = modifier,
+        state = mapViewState,
+    ) {
+        GroundImage(
+            id = "groundimage",
+            bounds = bounds,
+            image = drawable,
+            opacity = 0.6f
+        )
     }
 }`;
 ---
 
 <Code code={code} lang="kotlin" />
+
+image: <a href="https://commons.wikimedia.org/wiki/File:A_plan_of_London,_Westminster,_and_Southwark_(5384794369).jpg">http://maps.bpl.org</a>, <a href="https://creativecommons.org/licenses/by/2.0">CC BY 2.0</a>, via Wikimedia Commons

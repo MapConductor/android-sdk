@@ -2,6 +2,7 @@
 title: "GroundImage"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import GroundImageBasicSignature from '~/components/components/groundimage/GroundImageBasicSignature.astro';
 import GroundImageStateSignature from '~/components/components/groundimage/GroundImageStateSignature.astro';
 import BasicGroundImageExample from '~/components/components/groundimage/BasicGroundImageExample.astro';
@@ -15,13 +16,15 @@ GroundImage は、地図上に地理的に配置される画像オーバーレ�
 
 ## Composable 関数
 
-### 基本的な GroundImage
+<Tabs>
+<TabItem label="基本的な GroundImage">
+    <GroundImageBasicSignature />
+</TabItem>
+<TabItem label="State を利用した GroundImage">
+    <GroundImageStateSignature />
+</TabItem>
+</Tabs>
 
-<GroundImageBasicSignature />
-
-### State を使用した GroundImage
-
-<GroundImageStateSignature />
 
 ## パラメータ
 
@@ -36,37 +39,19 @@ GroundImage は、地図上に地理的に配置される画像オーバーレ�
 ### 基本的な GroundImage
 
 <BasicGroundImageExample />
+![](~/assets/groundimage/basic-ground-image.png)
 
 ### 境界マーカー付きのインタラクティブな GroundImage
 
 <InteractiveGroundImageExample />
 
-### 異なる不透明度を持つ複数の GroundImage
-
-<MultipleGroundImagesExample />
-
-### 動的な GroundImage の読み込み
-
-<DynamicGroundImageExample />
+<video width="720" height="400" controls>
+ <source src="/groundimage/interactive-ground-image.webm" type="video/webm" />
+ <source src="/groundimage/interactive-ground-image.mp4" type="video/mp4" />
+</video>
 
 ## イベント処理
 
 GroundImage のインタラクションは、マップ地図SDKコンポーネントで処理されます:
 
 <GroundImageEventHandlingExample />
-
-## スタイルオプション
-
-### 不透明度の制御
-
-<GroundImageOpacityStylesExample />
-
-## ベストプラクティス
-
-1. **画像品質**: 高解像度の画像を使用しても、スケーリングが良好なことを確認してください
-2. **透明度の使用**: 下の地図が見える適切な透明度レベルを選択してください
-3. **境界の正確さ**: 画像の境界が地図上の実際の場所と正確に一致することを確認してください
-4. **パフォーマンス**: 複数の大きな画像を同時に使用する場合、パフォーマンスへの影響を監視してください
-5. **キャッシング**: 繰り返し読み込まれる画像は、パフォーマンスのためにキャッシュしてください
-6. **動的な読み込み**: 大きな画像セットの場合、表示可能な画像のみを動的に読み込むことを検討してください
-7. **Z-Index**: 複数の画像を重ねる場合、正しいレイヤー順序を維持してください

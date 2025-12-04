@@ -13,6 +13,7 @@ import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicS
 import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
 import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
 import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+import GeodesicPolygonComparisonExample from '~/components/components/polygon/GeodesicPolygonComparisonExample.astro';
 
 ポリゴンは、カスタマイズ可能なストロークと塗りつぶしプロパティを持つエリアを定義する閉じた形状です。ゾーン、地域、境界、またはエリアベースの機能を表現するのに便利です。
 
@@ -52,6 +53,7 @@ import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonS
   thirdLatitude={37.7749}
   thirdLongitude={-122.3994}
 />
+![](~/assets/polygon/basic-polygon-example.png)
 
 ### 頂点マーカー付きのインタラクティブな Polygon
 
@@ -68,73 +70,36 @@ import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonS
   polygonClickedLog="Polygon がクリックされました: ${polygonEvent.clicked}"
 />
 
-### 異なるスタイルの複数の Polygon
+<video width="720" height="480" controls>
+ <source src="/polygon/interactive-polygon-example.webm" type="video/webm" />
+ <source src="/polygon/interactive-polygon-example.mp4" type="video/mp4" />
+</video>
 
-<MultiplePolygonsExample
-  commentForMapViewReplacement="MapView を GoogleMapView、MapboxMapView などに置き換えてください"
-  blueZoneExtra="青のゾーン"
-  redBoundaryExtra="赤の境界"
-  greenAreaExtra="緑のエリア"
+
+### 測地線ポリゴン vs 標準線ポリゴン
+
+<GeodesicPolygonComparisonExample
+  centerLatitude={30.0}
+  centerLongitude={0.0}
+  zoomLevel={2.0}
+  point1Longitude={23.66}
+  point1Latitude={56.42}
+  point2Longitude={13.39}
+  point2Latitude={2.95}
+  point3Longitude={-87.82}
+  point3Latitude={38.58}
+  point4Longitude={23.66}
+  point4Latitude={56.42}
+  mapLoadedMessage="地図の読み込みが完了しました"
+  commentForMapClickClear="地図クリックで選択解除"
+  markerDragStartMessagePrefix="マーカーのドラッグを開始"
+  markerDragMessagePrefix="マーカーをドラッグ中"
+  markerDragEndMessagePrefix="マーカーのドラッグが終了"
+  commentForInteractiveMarkers="インタラクティブなマーカーを持つ地図コンテンツ"
+  commentForSelectedMarkerInfo="選択されたマーカーの情報を表示"
 />
 
-### 複雑なポリゴン形状
-
-<ComplexPolygonExample
-  commentForStarPolygon="星形のポリゴン"
-  centerLatitude={37.7749}
-  centerLongitude={-122.4194}
-  outerRadius={0.01}
-  innerRadius={0.005}
-  extraLabel="星形ポリゴン"
-  markerLabel="⭐"
-/>
-
-### 動的なポリゴン作成
-
-<DynamicPolygonExample />
-
-## イベント処理
-
-Polygon のインタラクションは、マップ地図SDKコンポーネントで処理されます:
-
-<PolygonEventHandlingExample
-  commentForMapViewReplacement="MapView を GoogleMapView、MapboxMapView などに置き換えてください"
-  logPolygonClicked="Polygon がクリックされました:"
-  logVerticesLabel="  頂点数: ${polygon.points.size}"
-  logClickLocationLabel="  クリック位置: ${clickPoint}"
-  logExtraDataLabel="  追加データ: ${polygon.extra}"
-  logApproxAreaLabel="  おおよその面積: $area 平方メートル"
-  extraLabel="インタラクティブな Polygon"
-/>
-
-## スタイルオプション
-
-### 塗りつぶしのバリエーション
-
-<PolygonFillStyleExamples
-  commentForSolidFill="ソリッドな塗りつぶし"
-  commentForSemiTransparentFill="半透明の塗りつぶし"
-  commentForNoFill="塗りつぶしなし（境界線のみ）"
-  commentForGradientEffect="グラデーションのような効果を持つ複数のポリゴン"
-/>
-
-### ストロークのバリエーション
-
-<PolygonStrokeStyleExamples
-  commentForThinBorder="細い境界線"
-  commentForThickBorder="太い境界線"
-  commentForNoBorder="境界線なし"
-/>
-
-## ベストプラクティス
-
-1. **ポリゴンを閉じる**: 常に最後のポイントが最初のポイントと等しいことを確認して、ポリゴンを適切に閉じてください
-2. **頂点の順序**: 予測可能な結果を得るために、一貫した頂点の順序（時計回りまたは反時計回り）を使用してください
-3. **パフォーマンス**: 数百の頂点を持つ過度に複雑なポリゴンは避けてください
-4. **視覚的な明瞭さ**: 良好な視認性を得るために適切な色と透明度を使用してください
-5. **インタラクティブなフィードバック**: ポリゴンがクリック可能な場合は、視覚的なフィードバックを提供してください
-6. **穴の処理**: 異なる色を持つ重なり合うポリゴンを使用して穴をシミュレートしてください
-7. **測地線エッジ**: 大きなポリゴンには、地球の曲率を考慮するために測地線エッジを使用してください
-8. **状態管理**: ポリゴンの頂点データを効率的に管理し、更新をリアクティブに処理してください
-9. **検証**: 有効な形状を形成することを確認するためにポリゴンのジオメトリを検証してください
-10. **エラー処理**: 3つ未満の頂点を持つポリゴンなどのエッジケースを処理してください
+<video width="720" height="480" controls>
+ <source src="/polygon/geodesic-polygon.webm" type="video/webm" />
+ <source src="/polygon/geodesic-polygon.mp4" type="video/mp4" />
+</video>

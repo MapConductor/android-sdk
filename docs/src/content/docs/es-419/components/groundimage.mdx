@@ -2,6 +2,7 @@
 title: "GroundImage"
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import GroundImageBasicSignature from '~/components/components/groundimage/GroundImageBasicSignature.astro';
 import GroundImageStateSignature from '~/components/components/groundimage/GroundImageStateSignature.astro';
 import BasicGroundImageExample from '~/components/components/groundimage/BasicGroundImageExample.astro';
@@ -15,13 +16,14 @@ Una GroundImage es una superposición de imagen posicionada geográficamente en 
 
 ## Función Composable
 
-### GroundImage Básico
-
-<GroundImageBasicSignature />
-
-### GroundImage con Estado
-
-<GroundImageStateSignature />
+<Tabs>
+<TabItem label="GroundImage Básico">
+    <GroundImageBasicSignature />
+</TabItem>
+<TabItem label="GroundImage con Estado">
+    <GroundImageStateSignature />
+</TabItem>
+</Tabs>
 
 ## Parámetros
 
@@ -36,37 +38,19 @@ Una GroundImage es una superposición de imagen posicionada geográficamente en 
 ### GroundImage Básico
 
 <BasicGroundImageExample />
+![](~/assets/groundimage/basic-ground-image.png)
 
 ### GroundImage Interactivo con Marcadores de Límites
 
 <InteractiveGroundImageExample />
 
-### Múltiples GroundImages con Diferentes Opacidades
-
-<MultipleGroundImagesExample />
-
-### Carga Dinámica de GroundImage
-
-<DynamicGroundImageExample />
+<video width="720" height="400" controls>
+ <source src="/groundimage/interactive-ground-image.webm" type="video/webm" />
+ <source src="/groundimage/interactive-ground-image.mp4" type="video/mp4" />
+</video>
 
 ## Manejo de Eventos
 
 Las interacciones de GroundImage se manejan mediante el componente de su proveedor de mapas:
 
 <GroundImageEventHandlingExample />
-
-## Opciones de Estilo
-
-### Control de Opacidad
-
-<GroundImageOpacityStylesExample />
-
-## Mejores Prácticas
-
-1. **Calidad de Imagen**: Asegurar que las imágenes de alta resolución se escalen bien
-2. **Uso de Opacidad**: Elegir un nivel de opacidad apropiado para permitir que el mapa base sea visible
-3. **Precisión de Límites**: Verificar que los límites de la imagen coincidan con la ubicación real en el mapa
-4. **Rendimiento**: Monitorear el impacto en el rendimiento cuando se usan múltiples imágenes grandes simultáneamente
-5. **Almacenamiento en Caché**: Almacenar en caché las imágenes que se cargan repetidamente para mejorar el rendimiento
-6. **Carga Dinámica**: Para grandes conjuntos de imágenes, considerar cargar dinámicamente solo las imágenes visibles
-7. **Índice Z**: Mantener el orden correcto de capas al superponer múltiples imágenes

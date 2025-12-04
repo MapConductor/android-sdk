@@ -2,7 +2,7 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
-fun GroundImageEventHandlingExample() {
+fun GroundImageEventHandlingExample(overlayImage: Drawable) {
     val mapViewState = rememberGoogleMapViewState()
 
     GoogleMapView(
