@@ -2,7 +2,7 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
-fun MapViewScope.InfoBubble(
+fun InfoBubble(
     marker: MarkerState,
     bubbleColor: Color = Color.White,
     borderColor: Color = Color.Black,
@@ -13,4 +13,4 @@ fun MapViewScope.InfoBubble(
 )`;
 ---
 
-<pre><code set:html={code}></code></pre>
+<Code code={code} lang="kotlin" />

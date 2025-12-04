@@ -16,6 +16,7 @@ import EfficientUpdatesExample from '~/components/components/infobubble/Efficien
 import MemoryManagementExample from '~/components/components/infobubble/MemoryManagementExample.astro';
 import ImplementationTipsExample from '~/components/components/infobubble/ImplementationTipsExample.astro';
 import DebugModeExample from '~/components/components/infobubble/DebugModeExample.astro';
+import RightInfoBubbleMapExample from '~/components/components/infobubble/RightInfoBubbleMapExample.astro';
 
 InfoBubble is a component that displays custom content in a speech bubble attached to a marker on the map. It provides a way to show detailed information about markers without cluttering the map interface.
 
@@ -42,6 +43,7 @@ InfoBubble appears above a specific marker. Because the content inside InfoBubbl
 ### Simple Text Bubble
 
 <SimpleInfoBubbleExample />
+![](~/assets/info-bubble/simple-info-bubble-example.png)
 
 ### Custom Styled Bubble
 
@@ -56,6 +58,7 @@ InfoBubble appears above a specific marker. Because the content inside InfoBubbl
   zoomLevel={13.0}
   markerFillColorExpr="Color.Green"
 />
+![](~/assets/info-bubble/rich-content-info-bubble-example.png)
 
 ### Interactive Bubble with Actions
 
@@ -73,6 +76,10 @@ InfoBubble appears above a specific marker. Because the content inside InfoBubbl
   markerId="coffee-shop-marker"
   zoomLevel={16.0}
 />
+<video width="720" height="480" controls>
+ <source src="/info-bubble/interactive-bubble-example.webm" type="video/webm" />
+ <source src="/info-bubble/interactive-bubble-example.mp4" type="video/mp4" />
+</video>
 
 ### Managing Multiple Bubbles
 
@@ -101,6 +108,24 @@ InfoBubble appears above a specific marker. Because the content inside InfoBubbl
 ### Custom Designs
 
 To implement a custom design, you can build your own InfoBubble-based component. The following video shows an example of a bubble with a tail on the right side.
+
+<RightInfoBubbleMapExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  marker1Latitude={37.7749}
+  marker1Longitude={-122.4194}
+  marker2Latitude={37.7849}
+  marker2Longitude={-122.4094}
+  mapLoadedMessage="Map loaded and ready"
+  markerDragStartMessagePrefix="Started dragging marker"
+  markerDragMessagePrefix="Dragging marker to"
+  markerDragEndMessagePrefix="Finished dragging marker"
+  commentForMapClickClear="Clear selection when the map is clicked"
+  commentForInteractiveMarkers="Interactive map content with markers"
+  commentForSelectedMarkerInfo="Show information for the selected marker"
+  commentForRightSideTailExample="Custom bubble with right-side tail"
+/>
 
 <video width="720" height="480" controls>
  <source src="/info-bubble/right-info-bubble-map-example.webm" type="video/webm" />
@@ -181,8 +206,3 @@ InfoBubble automatically manages its lifecycle:
 2. **Bubble not dismissing**: Check that conditional rendering properly responds to state changes.
 3. **Poor performance**: Limit the number of simultaneous bubbles and optimize content composition.
 4. **Layout issues**: Use appropriate sizing constraints and test on different screen sizes.
-
-### Debug Mode
-
-<DebugModeExample />
-

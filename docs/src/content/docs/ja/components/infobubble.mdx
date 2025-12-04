@@ -16,6 +16,7 @@ import EfficientUpdatesExample from '~/components/components/infobubble/Efficien
 import MemoryManagementExample from '~/components/components/infobubble/MemoryManagementExample.astro';
 import ImplementationTipsExample from '~/components/components/infobubble/ImplementationTipsExample.astro';
 import DebugModeExample from '~/components/components/infobubble/DebugModeExample.astro';
+import RightInfoBubbleMapExample from '~/components/components/infobubble/RightInfoBubbleMapExample.astro';
 
 InfoBubble は、地図上のマーカーに吹き出し形式でカスタムコンテンツを表示するコンポーネントです。マーカーに関する詳細情報を表示する方法を提供します。
 
@@ -42,6 +43,7 @@ InfoBubble は、特定のマーカーの上に表示されます。InfoBubble�
 ### シンプルなテキストバブル
 
 <SimpleInfoBubbleExample />
+![](~/assets/info-bubble/simple-info-bubble-example.png)
 
 ### カスタムスタイルのバブル
 
@@ -56,6 +58,7 @@ InfoBubble は、特定のマーカーの上に表示されます。InfoBubble�
   zoomLevel={13.0}
   markerFillColorExpr="Color.Green"
 />
+![](~/assets/info-bubble/rich-content-info-bubble-example.png)
 
 ### アクション付きのインタラクティブバブル
 
@@ -73,6 +76,11 @@ InfoBubble は、特定のマーカーの上に表示されます。InfoBubble�
   markerId="coffee-shop-marker"
   zoomLevel={16.0}
 />
+
+<video width="720" height="480" controls>
+ <source src="/info-bubble/interactive-bubble-example.webm" type="video/webm" />
+ <source src="/info-bubble/interactive-bubble-example.mp4" type="video/mp4" />
+</video>
 
 ### 複数のバブル管理
 
@@ -102,6 +110,24 @@ InfoBubble は、特定のマーカーの上に表示されます。InfoBubble�
 ### カスタムデザイン
 
 カスタムデザインを実装するには、独自の InfoBubble 派生コンポーネントを作成できます。以下は、右側に尾を持つカスタム吹き出しの詳細な実装例です。
+
+<RightInfoBubbleMapExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  marker1Latitude={37.7749}
+  marker1Longitude={-122.4194}
+  marker2Latitude={37.7849}
+  marker2Longitude={-122.4094}
+  mapLoadedMessage="地図の読み込みが完了しました"
+  markerDragStartMessagePrefix="マーカーのドラッグを開始"
+  markerDragMessagePrefix="マーカーをドラッグ中"
+  markerDragEndMessagePrefix="マーカーのドラッグが終了"
+  commentForMapClickClear="地図クリックで選択解除"
+  commentForInteractiveMarkers="インタラクティブなマーカーを持つ地図コンテンツ"
+  commentForSelectedMarkerInfo="選択されたマーカーの情報を表示"
+  commentForRightSideTailExample="右側に尾を持つカスタム吹き出しの例"
+/>
 
 <video width="720" height="480" controls>
  <source src="/info-bubble/right-info-bubble-map-example.webm" type="video/webm" />
@@ -183,7 +209,3 @@ InfoBubble は自動的にライフサイクルを管理します:
 2. **バブルが閉じない**: 条件付きレンダリングが状態の変化に適切に反応しているか確認してください
 3. **パフォーマンスの低下**: 同時に表示するバブルの数を制限し、コンテンツのコンポジションを最適化してください
 4. **レイアウトの問題**: 適切なサイズ制約を使用し、さまざまな画面サイズでテストしてください
-
-### デバッグモード
-
-<DebugModeExample />

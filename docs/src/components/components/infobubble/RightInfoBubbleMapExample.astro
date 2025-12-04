@@ -1,0 +1,232 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  zoomLevel?: number;
+  marker1Latitude?: number;
+  marker1Longitude?: number;
+  marker2Latitude?: number;
+  marker2Longitude?: number;
+  mapLoadedMessage?: string;
+  markerDragStartMessagePrefix?: string;
+  markerDragMessagePrefix?: string;
+  markerDragEndMessagePrefix?: string;
+  commentForMapClickClear?: string;
+  commentForInteractiveMarkers?: string;
+  commentForSelectedMarkerInfo?: string;
+  commentForRightSideTailExample?: string;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  zoomLevel = 13.0,
+  marker1Latitude = 37.7749,
+  marker1Longitude = -122.4194,
+  marker2Latitude = 37.7849,
+  marker2Longitude = -122.4094,
+  mapLoadedMessage = 'Map loaded and ready',
+  markerDragStartMessagePrefix = 'Started dragging marker',
+  markerDragMessagePrefix = 'Dragging marker to',
+  markerDragEndMessagePrefix = 'Finished dragging marker',
+  commentForMapClickClear = 'Clear selection when the map is clicked',
+  commentForInteractiveMarkers = 'Interactive map content with markers',
+  commentForSelectedMarkerInfo = 'Show information for the selected marker',
+  commentForRightSideTailExample = 'Custom bubble with right-side tail',
+} = Astro.props;
+
+const code = `@Composable
+fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = center,
+                    zoom = ${zoomLevel},
+                ),
+        )
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+    val markerState1 by remember {
+        mutableStateOf(
+            MarkerState(
+                id = "marker1",
+                position = GeoPointImpl.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
+                icon =
+                    DefaultIcon(
+                        fillColor = Color.Blue,
+                        infoAnchor = Offset(0.5f, 0.25f),
+                        label = "1",
+                    ),
+                draggable = true,
+            ),
+        )
+    }
+    val markerState2 by remember {
+        mutableStateOf(
+            MarkerState(
+                id = "marker2",
+                position = GeoPointImpl.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
+                icon =
+                    DefaultIcon(
+                        fillColor = Color.Red,
+                        infoAnchor = Offset(0.5f, 0.25f),
+                        label = "2",
+                    ),
+            ),
+        )
+    }
+
+    MapLibreMapView(
+        state = mapViewState,
+        onMapLoaded = {
+            println("${mapLoadedMessage}")
+        },
+        onMapClick = { geoPoint ->
+            selectedMarker = null // ${commentForMapClickClear}
+        },
+        onMarkerClick = { markerState ->
+            selectedMarker = markerState
+        },
+        onMarkerDragStart = { markerState ->
+            println("${markerDragStartMessagePrefix}: ${'$'}{markerState.id}")
+        },
+        onMarkerDrag = { markerState ->
+            println("${markerDragMessagePrefix}: ${'$'}{markerState.position}")
+        },
+        onMarkerDragEnd = { markerState ->
+            println("${markerDragEndMessagePrefix}: ${'$'}{markerState.id}")
+        },
+    ) {
+        // ${commentForInteractiveMarkers}
+        Marker(markerState1)
+        Marker(markerState2)
+
+        // ${commentForSelectedMarkerInfo}
+        selectedMarker?.let { marker ->
+            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
+            // ${commentForRightSideTailExample}
+            InfoBubbleCustom(
+                marker = marker,
+                tailOffset = Offset(0f, 0.5f), // attach at center-left of the bubble
+            ) {
+                RightTailInfoBubble(
+                    bubbleColor = Color.White,
+                    borderColor = Color.Black,
+                ) {
+                    Text(
+                        text = text,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RightTailInfoBubble(
+    bubbleColor: Color,
+    borderColor: Color,
+    contentPadding: androidx.compose.ui.unit.Dp = 8.dp,
+    cornerRadius: androidx.compose.ui.unit.Dp = 4.dp,
+    tailSize: androidx.compose.ui.unit.Dp = 8.dp,
+    content: @Composable () -> Unit,
+) {
+    Box(modifier = Modifier.wrapContentSize()) {
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val width = size.width
+            val height = size.height
+            val tail = tailSize.toPx()
+            val corner = cornerRadius.toPx()
+
+            val path =
+                Path().apply {
+                    // start at top-left (after tail area)
+                    moveTo(tail + 2 * corner, 0f)
+                    lineTo(width - 2 * corner, 0f)
+                    // top-right corner
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(width - 2 * corner, 0f),
+                                bottomRight = Offset(width, 2 * corner),
+                            ),
+                        startAngleDegrees = -90f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    // right edge
+                    lineTo(width, height - 2 * corner)
+                    // bottom-right corner
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(width - 2 * corner, height - 2 * corner),
+                                bottomRight = Offset(width, height),
+                            ),
+                        startAngleDegrees = 0f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    // bottom edge towards left (before tail)
+                    lineTo(tail + 2 * corner, height)
+                    // bottom-left corner (before tail)
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(tail, height - 2 * corner),
+                                bottomRight = Offset(tail + 2 * corner, height),
+                            ),
+                        startAngleDegrees = 90f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    // left edge up to tail bottom
+                    lineTo(tail, height / 2 + tail / 2)
+                    // Tail on left side
+                    lineTo(0f, height / 2)
+                    lineTo(tail, height / 2 - tail / 2)
+                    // left edge up to top-left corner
+                    lineTo(tail, 2 * corner)
+                    // top-left corner
+                    arcTo(
+                        rect =
+                            Rect(
+                                topLeft = Offset(tail, 0f),
+                                bottomRight = Offset(tail + 2 * corner, 2 * corner),
+                            ),
+                        startAngleDegrees = 180f,
+                        sweepAngleDegrees = 90f,
+                        forceMoveTo = false,
+                    )
+                    close()
+                }
+
+            drawPath(path, color = bubbleColor, style = Fill)
+            drawPath(path, color = borderColor, style = Stroke(width = 2f))
+        }
+
+        Box(
+            modifier =
+                Modifier
+                    .padding(
+                        start = contentPadding + tailSize,
+                        top = contentPadding,
+                        bottom = contentPadding,
+                        end = contentPadding,
+                    ).wrapContentSize()
+                    .clip(RoundedCornerShape(cornerRadius)),
+        ) {
+            content()
+        }
+    }
+}
+`;
+---
+
+<Code code={code} lang="kotlin" />
+
