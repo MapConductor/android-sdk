@@ -48,14 +48,6 @@ The main implementation provides immutable geographic coordinates:
   label="SF"
 />
 
-<AltitudeExample
-  commentForAltitude="With altitude for 3D positioning"
-  altitudeComment="meters"
-  latitude={27.9881}
-  longitude={86.9250}
-  altitude={8848.0}
-/>
-
 ## Coordinate System
 
 ### Latitude
@@ -69,11 +61,6 @@ The main implementation provides immutable geographic coordinates:
 - **-180.0**: International Date Line (west side)
 - **0.0**: Prime Meridian (Greenwich)
 - **180.0**: International Date Line (east side)
-
-### Altitude
-- **Optional**: Can be `null` or `0.0` for 2D positioning
-- **Units**: Meters above sea level
-- **Usage**: 3D positioning, elevation data
 
 ## Validation and Normalization
 

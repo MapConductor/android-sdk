@@ -46,14 +46,6 @@ La implementación principal proporciona coordenadas geográficas inmutables:
   label="SF"
 />
 
-<AltitudeExample
-  commentForAltitude="Con altitud para posicionamiento 3D"
-  altitudeComment="metros"
-  latitude={27.9881}
-  longitude={86.9250}
-  altitude={8848.0}
-/>
-
 ## Sistema de coordenadas
 
 ### Latitud
@@ -66,10 +58,6 @@ La implementación principal proporciona coordenadas geográficas inmutables:
 - **Rango**: de -180.0 a 180.0 grados
 - **Negativa**: hemisferio occidental
 - **Positiva**: hemisferio oriental
-
-### Altitud
-- Expresada normalmente en metros sobre el nivel del mar
-- Opcional en la mayoría de los casos de uso
 
 `GeoPoint` asume el sistema WGS84 (latitud/longitud). Incluso cuando internamente se utilizan otras proyecciones (por ejemplo, Web Mercator), la API pública siempre expone posiciones como `GeoPoint`.
 

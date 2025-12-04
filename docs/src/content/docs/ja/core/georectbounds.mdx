@@ -50,16 +50,6 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
   northEastLongitude={-122.4094}
 />
 
-### GroundImage での使用
-
-<GroundImageExample
-  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
-  southWestLatitude={37.7649}
-  southWestLongitude={-122.4294}
-  northEastLatitude={37.7849}
-  northEastLongitude={-122.4094}
-  overlayOpacity={0.7}
-/>
 
 ## 動的な境界の構築
 
@@ -112,49 +102,6 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 
 <IntersectsBoundsExample commentForUsage="境界が交差" />
 
-## 実用例
-
-### ビューポート境界の計算
-
-<ViewportBoundsExample
-  commentForMarkerSimulation="表示されているマーカーからビューポートを計算"
-  firstMarkerLatitude={37.7749}
-  firstMarkerLongitude={-122.4194}
-  secondMarkerLatitude={37.7849}
-  secondMarkerLongitude={-122.4094}
-  thirdMarkerLatitude={37.7649}
-  thirdMarkerLongitude={-122.4294}
-  fourthMarkerLatitude={37.7949}
-  fourthMarkerLongitude={-122.3994}
-  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
-/>
-
-### 境界ベースの読み込み
-
-<BoundsBasedLoadingExample
-  commentForAllMarkersSimulation="利用可能なすべてのマーカーをシミュレート"
-  baseLatitude={37.7}
-  baseLongitude={-122.5}
-  latitudeStep={0.01}
-  longitudeStep={0.01}
-  viewportSouthWestLatitude={37.7}
-  viewportSouthWestLongitude={-122.5}
-  viewportNorthEastLatitude={37.75}
-  viewportNorthEastLongitude={-122.45}
-  commentForViewportSimulation="ビューポート境界の設定をシミュレート"
-  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
-/>
-
-### インタラクティブな境界エディタ
-
-<BoundsEditorExample
-  initialSouthWestLatitude={37.7649}
-  initialSouthWestLongitude={-122.4294}
-  initialNorthEastLatitude={37.7849}
-  initialNorthEastLongitude={-122.4094}
-  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
-/>
-
 ## 特別な処理
 
 ### 国際日付変更線
@@ -195,14 +142,3 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 ### 等価性の比較
 
 <EqualsToExample commentForUsage="使用例" />
-
-## ベストプラクティス
-
-1. **座標の順序**: 一貫性のため常に南西（左下）と北東（右上）を使用
-2. **空の境界**: 計算に使用する前に `isEmpty` を確認
-3. **日付変更線の交差**: クラスは国際日付変更線の交差を自動的に処理
-4. **動的な構築**: 点のコレクションから境界を構築するには `extend()` を使用
-5. **パフォーマンス**: 頻繁にアクセスされる領域の境界計算をキャッシュ
-6. **検証**: 南西が実際に北東の南西であることを確認
-7. **精度**: ユースケースに基づいて URL 値に適切な精度を使用
-

@@ -50,17 +50,6 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
   northEastLongitude={-122.4094}
 />
 
-### Using with GroundImage
-
-<GroundImageExample
-  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
-  southWestLatitude={37.7649}
-  southWestLongitude={-122.4294}
-  northEastLatitude={37.7849}
-  northEastLongitude={-122.4094}
-  overlayOpacity={0.7}
-/>
-
 ## Dynamic Bounds Construction
 
 ### Extending Bounds
@@ -112,49 +101,6 @@ The bounds can be dynamically extended to include new points:
 
 <IntersectsBoundsExample commentForUsage="Bounds intersect" />
 
-## Practical Examples
-
-### Viewport Bounds Calculation
-
-<ViewportBoundsExample
-  commentForMarkerSimulation="Simulate calculating viewport from visible markers"
-  firstMarkerLatitude={37.7749}
-  firstMarkerLongitude={-122.4194}
-  secondMarkerLatitude={37.7849}
-  secondMarkerLongitude={-122.4094}
-  thirdMarkerLatitude={37.7649}
-  thirdMarkerLongitude={-122.4294}
-  fourthMarkerLatitude={37.7949}
-  fourthMarkerLongitude={-122.3994}
-  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
-/>
-
-### Bounds-based Loading
-
-<BoundsBasedLoadingExample
-  commentForAllMarkersSimulation="Simulate all available markers"
-  baseLatitude={37.7}
-  baseLongitude={-122.5}
-  latitudeStep={0.01}
-  longitudeStep={0.01}
-  viewportSouthWestLatitude={37.7}
-  viewportSouthWestLongitude={-122.5}
-  viewportNorthEastLatitude={37.75}
-  viewportNorthEastLongitude={-122.45}
-  commentForViewportSimulation="Simulate setting viewport bounds"
-  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
-/>
-
-### Interactive Bounds Editor
-
-<BoundsEditorExample
-  initialSouthWestLatitude={37.7649}
-  initialSouthWestLongitude={-122.4294}
-  initialNorthEastLatitude={37.7849}
-  initialNorthEastLongitude={-122.4094}
-  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
-/>
-
 ## Special Handling
 
 ### International Date Line
@@ -195,14 +141,3 @@ The bounds can be dynamically extended to include new points:
 ### Equality Comparison
 
 <EqualsToExample commentForUsage="Usage" />
-
-## Best Practices
-
-1. **Coordinate Order**: Always use southwest (bottom-left) and northeast (top-right) for consistency
-2. **Empty Bounds**: Check `isEmpty` before using bounds in calculations
-3. **Date Line Crossing**: The class handles international date line crossing automatically
-4. **Dynamic Construction**: Use `extend()` to build bounds from a collection of points
-5. **Performance**: Cache bounds calculations for frequently accessed regions
-6. **Validation**: Ensure southwest is actually southwest of northeast
-7. **Precision**: Use appropriate precision for URL values based on your use case
-

@@ -37,61 +37,6 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 - **`center: GeoPointImpl?`**: punto central de los límites.
 - **`toSpan(): GeoPointImpl?`**: devuelve el “span” (ancho/alto) como un `GeoPoint`.
 
-## Uso básico
-
-### Crear límites
-
-<GeoRectBoundsCreationExample
-  commentForDefineArea="Definir un área rectangular"
-  commentForEmptyBounds="Límites vacíos (para extenderlos más tarde)"
-  southWestLatitude={37.7649}
-  southWestLongitude={-122.4294}
-  northEastLatitude={37.7849}
-  northEastLongitude={-122.4094}
-/>
-
-### Uso con GroundImage
-
-<GroundImageExample
-  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
-  southWestLatitude={37.7649}
-  southWestLongitude={-122.4294}
-  northEastLatitude={37.7849}
-  northEastLongitude={-122.4094}
-  overlayOpacity={0.7}
-/>
-
-## Construcción dinámica de límites
-
-### Extender límites
-
-<ExtendBoundsExample
-  commentForUsage="Uso"
-  commentForStartEmpty="Comenzar vacío"
-  commentForBoundsGrow="Los límites crecen para incluir cada punto"
-  commentForFinalBounds="Límites finales"
-  firstPointLatitude={37.7749}
-  firstPointLongitude={-122.4194}
-  secondPointLatitude={37.7849}
-  secondPointLongitude={-122.4094}
-  thirdPointLatitude={37.7649}
-  thirdPointLongitude={-122.4294}
-/>
-
-### Unión de límites
-
-<UnionBoundsExample
-  firstSouthWestLatitude={37.7649}
-  firstSouthWestLongitude={-122.4294}
-  firstNorthEastLatitude={37.7749}
-  firstNorthEastLongitude={-122.4194}
-  secondSouthWestLatitude={37.7749}
-  secondSouthWestLongitude={-122.4194}
-  secondNorthEastLatitude={37.7849}
-  secondNorthEastLongitude={-122.4094}
-  commentForCombinedBounds="Contiene ambas áreas"
-/>
-
 ## Pruebas con puntos y límites
 
 ### Contiene un punto
@@ -193,10 +138,3 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 ### Comparación de igualdad
 
 <EqualsToExample commentForUsage="Uso" />
-
-## Buenas prácticas
-
-- Utiliza siempre coordenadas válidas (latitudes entre -90 y 90, longitudes entre -180 y 180).
-- Asegúrate de que `southWest` esté realmente al suroeste de `northEast` para evitar resultados inesperados.
-- Reutiliza instancias de `GeoRectBounds` cuando sea posible para evitar asignaciones innecesarias en operaciones frecuentes.
-
