@@ -2,150 +2,100 @@
 title: "Polygon"
 ---
 
-Los polígonos son figuras cerradas que definen áreas en el mapa con propiedades de trazo y relleno configurables. Son útiles para representar zonas, regiones, límites u otras entidades basadas en áreas.
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BasicPolygonExample from '~/components/components/polygon/BasicPolygonExample.astro';
+import InteractivePolygonExample from '~/components/components/polygon/InteractivePolygonExample.astro';
+import MultiplePolygonsExample from '~/components/components/polygon/MultiplePolygonsExample.astro';
+import DynamicPolygonExample from '~/components/components/polygon/DynamicPolygonExample.astro';
+import ComplexPolygonExample from '~/components/components/polygon/ComplexPolygonExample.astro';
+import PolygonEventHandlingExample from '~/components/components/polygon/PolygonEventHandlingExample.astro';
+import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicSignature.astro';
+import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
+import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
+import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
 
-## Funciones composable
+Un polígono es una forma cerrada que define un área con propiedades de trazo y relleno personalizables. Los polígonos son útiles para representar zonas, regiones, límites o características basadas en áreas.
 
-### Polygon básico
+## Funciones Composable
 
-```kotlin
-@Composable
-fun MapViewScope.Polygon(
-    points: List<GeoPoint>,
-    id: String? = null,
-    strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 1.dp,
-    fillColor: Color = Color.Transparent,
-    geodesic: Boolean = false,
-    extra: Serializable? = null
-)
-```
+<Tabs>
+<TabItem label="Polígono Básico">
 
-### Polygon con estado
+<PolygonBasicSignature />
+</TabItem>
+<TabItem label="Polígono con Estado">
 
-```kotlin
-@Composable
-fun MapViewScope.Polygon(state: PolygonState)
-```
+<PolygonStateSignature />
+</TabItem>
+</Tabs>
 
 ## Parámetros
 
 - **`points`**: Lista de coordenadas geográficas que definen los vértices del polígono (`List<GeoPoint>`).
 - **`id`**: Identificador único opcional para el polígono (`String?`).
-- **`strokeColor`**: Color del borde del polígono (por defecto `Color.Black`).
-- **`strokeWidth`**: Grosor de la línea de borde (por defecto `1.dp`).
-- **`fillColor`**: Color de relleno del interior del polígono (por defecto `Color.Transparent`).
-- **`geodesic`**: Indica si se deben dibujar aristas geodésicas (por defecto `false`).
-- **`extra`**: Datos adicionales asociados al polígono (`Serializable?`).
+- **`strokeColor`**: Color del límite del polígono (predeterminado: `Color.Black`).
+- **`strokeWidth`**: Ancho de la línea de límite (predeterminado: `1.dp`).
+- **`fillColor`**: Color de relleno del interior del polígono (predeterminado: `Color.Transparent`).
+- **`geodesic`**: Si se deben dibujar bordes geodésicos (predeterminado: `false`).
+- **`extra`**: Datos adicionales adjuntos al polígono (`Serializable?`).
 
 ## Ejemplos de uso
 
-### Polygon básico
+### Polígono Básico
 
-```kotlin
-// Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView
-MapView(state = mapViewState) {
-    val trianglePoints = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // Punto 1
-        GeoPointImpl.fromLatLong(37.7849, -122.4094), // Punto 2
-        GeoPointImpl.fromLatLong(37.7749, -122.3994), // Punto 3
-        GeoPointImpl.fromLatLong(37.7749, -122.4194)  // Cierra el polígono
-    )
+<BasicPolygonExample />
 
-    Polygon(
-        points = trianglePoints,
-        strokeColor = Color.Blue,
-        strokeWidth = 2.dp,
-        fillColor = Color.Blue.copy(alpha = 0.3f)
-    )
-}
-```
+### Polígono interactivo con marcadores de vértice
 
-### Polygon interactivo con vértices
+<InteractivePolygonExample />
 
-```kotlin
-@Composable
-fun InteractivePolygonExample() {
-    var vertices by remember {
-        mutableStateOf(
-            listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7799, -122.3994),
-                GeoPointImpl.fromLatLong(37.7649, -122.4094)
-            )
-        )
-    }
+### Múltiples polígonos con diferentes estilos
 
-    val polygonState = PolygonState(
-        points = vertices + vertices.first(), // Cierra el polígono
-        strokeColor = Color.Red,
-        strokeWidth = 2.dp,
-        fillColor = Color.Red.copy(alpha = 0.2f)
-    )
+<MultiplePolygonsExample />
 
-    // Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView
-MapView(
-        state = mapViewState,
-        onPolygonClick = { event ->
-            println("Polygon clicked at: ${event.clicked}")
-        }
-    ) {
-        Polygon(polygonState)
+### Forma de polígono compleja
 
-        // Marcadores de vértices (sin incluir el punto de cierre)
-        vertices.forEachIndexed { index, point ->
-            Marker(
-                position = point,
-                icon = DefaultIcon(
-                    fillColor = Color.Red,
-                    label = "${index + 1}",
-                    scale = 0.8f
-                ),
-                draggable = true,
-                extra = "vertex_$index"
-            )
-        }
-    }
-}
-```
+<ComplexPolygonExample />
 
-### Varios polígonos de zona
+### Creación dinámica de polígonos
 
-```kotlin
-val zonePolygons = listOf(
-    PolygonState(
-        points = restrictedZonePoints,
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        fillColor = Color.Red.copy(alpha = 0.2f),
-        extra = "Restricted Zone"
-    ),
-    PolygonState(
-        points = parkingZonePoints,
-        strokeColor = Color.Blue,
-        strokeWidth = 2.dp,
-        fillColor = Color.Blue.copy(alpha = 0.2f),
-        extra = "Parking Zone"
-    ),
-    PolygonState(
-        points = safeZonePoints,
-        strokeColor = Color.Green,
-        strokeWidth = 2.dp,
-        fillColor = Color.Green.copy(alpha = 0.2f),
-        extra = "Safe Zone"
-    )
-)
+<DynamicPolygonExample />
 
-MapView(state = mapViewState) {
-    zonePolygons.forEach { zone ->
-        Polygon(zone)
-    }
-}
-```
+## Manejo de eventos
 
-## Buenas prácticas
+Las interacciones de polígono se gestionan mediante el componente del proveedor de mapas:
 
-- Cierra siempre el polígono (primer y último punto iguales) si tu implementación así lo requiere.
-- Usa rellenos translúcidos para que la cartografía base siga siendo legible.
-- Sé consistente con el orden de los vértices (horario/antihorario) para evitar artefactos visuales.
+<PolygonEventHandlingExample />
+
+## Opciones de estilo
+
+### Variaciones de relleno
+
+<PolygonFillStyleExamples
+  commentForSolidFill="Relleno sólido"
+  commentForSemiTransparentFill="Relleno semi-transparente"
+  commentForNoFill="Sin relleno (solo contorno)"
+  commentForGradientEffect="Efecto similar a degradado usando múltiples polígonos"
+/>
+
+### Variaciones de trazo
+
+<PolygonStrokeStyleExamples
+  commentForThinBorder="Borde fino"
+  commentForThickBorder="Borde grueso"
+  commentForNoBorder="Sin borde"
+/>
+
+## Mejores prácticas
+
+1. **Cerrar el polígono**: Asegúrate siempre de que el último punto sea igual al primero para cerrar correctamente el polígono.
+2. **Orden de vértices**: Usa un orden de vértices consistente (sentido horario o antihorario) para resultados predecibles.
+3. **Rendimiento**: Evita polígonos excesivamente complejos con cientos de vértices.
+4. **Claridad visual**: Usa colores y niveles de transparencia apropiados para buena visibilidad.
+5. **Retroalimentación interactiva**: Proporciona feedback visual cuando los polígonos sean clicables.
+6. **Manejo de agujeros**: Simula agujeros usando polígonos superpuestos con colores diferentes.
+7. **Bordes geodésicos**: Usa bordes geodésicos para polígonos grandes para considerar la curvatura de la Tierra.
+8. **Gestión de estado**: Gestiona eficientemente los datos de vértices del polígono y maneja actualizaciones de forma reactiva.
+9. **Validación**: Valida la geometría del polígono para asegurar que forme una figura válida.
+10. **Manejo de errores**: Maneja casos límite como polígonos con menos de 3 vértices.
+

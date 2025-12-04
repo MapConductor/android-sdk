@@ -2,142 +2,92 @@
 title: "MapViewState"
 ---
 
-`MapViewState` es el componente central que gestiona la inicialización del mapa, la posición de la cámara y el estado global del mapa. Cada proveedor tiene su propia implementación manteniendo una interfaz coherente.
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CameraControlExample from '~/components/components/mapviewstate/CameraControlExample.astro';
+import MapDesignSwitchExample from '~/components/components/mapviewstate/MapDesignSwitchExample.astro';
+import MoveCameraToGeoPointSignature from '~/components/components/mapviewstate/MoveCameraToGeoPointSignature.astro';
+import MoveCameraToCameraPositionSignature from '~/components/components/mapviewstate/MoveCameraToCameraPositionSignature.astro';
+import MapViewStateEventHandlingExample from '~/components/components/mapviewstate/MapViewStateEventHandlingExample.astro';
 
-## Implementaciones por proveedor
+`MapViewState` es un componente principal que gestiona la inicialización del mapa, la posición de la cámara y el estado general del mapa.
+Cada SDK de mapa tiene su propia implementación, pero MapConductor proporciona una API unificada en todos los proveedores.
 
-MapConductor admite varios proveedores, cada uno con su propia implementación de `MapViewState`:
+## Implementaciones de SDK de mapa
 
-- `GoogleMapViewStateImpl` – Google Maps
-- `MapboxViewStateImpl` – Mapbox Maps
-- `HereViewStateImpl` – HERE Maps
-- `ArcGISMapViewStateImpl` – ArcGIS Maps
-- `MapLibreViewStateImpl` – MapLibre Maps
+MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `MapViewState`:
+
+- `GoogleMapViewStateImpl` - Google Maps
+- `MapboxViewStateImpl` - Mapbox Map
+- `HereViewStateImpl` - HERE Map
+- `ArcGISMapViewStateImpl` - ArcGIS Map
+- `MapLibreViewStateImpl` - MapLibre Map
 
 ## Propiedades principales
 
 ### Estado de inicialización
 
-- **`isInitialized: StateFlow<InitState>`**: rastrea el estado de inicialización del mapa.
-  - `NotStarted`: la inicialización aún no ha comenzado.
-  - `Initializing`: el mapa se está inicializando.
-  - `Initialized`: el mapa está listo para usarse.
-  - `Failed`: la inicialización ha fallado.
+- **`isInitialized: StateFlow<InitState>`**: Rastrea el estado de inicialización del mapa.
+  - `NotStarted`: La inicialización del mapa no ha comenzado.
+  - `Initializing`: El mapa se está inicializando actualmente.
+  - `Initialized`: El mapa está listo para usar.
+  - `Failed`: La inicialización falló.
 
-### Gestión de la cámara
+### Gestión de cámara
 
-- **`cameraPosition: StateFlow<MapCameraPositionImpl?>`**: posición actual de la cámara.
-- **`initCameraPosition: MapCameraPositionImpl`**: posición inicial de la cámara al cargar el mapa.
+- **`cameraPosition: MapCameraPositionImpl`**: Posición de cámara actual e inicial cuando se carga el mapa.
 
-### Diseño del mapa
+### Diseño de mapa
 
-- **`mapDesignType: ActualMapDesignType`**: estilo/diseño del mapa (específico del proveedor).
-
-## Métodos principales
-
-### Inicialización
-
-```kotlin
-fun initAsync(init: suspend () -> Boolean)
-```
-Inicializa el mapa de forma asíncrona. Devuelve `true` si tiene éxito.
-
-```kotlin
-fun resetInitState()
-```
-Restablece el estado de inicialización a `NotStarted`.
+- **`mapDesignType: ActualMapDesignType`**: Estilo/diseño del mapa (específico del proveedor).
 
 ### Movimiento de cámara
 
-```kotlin
-fun moveCameraTo(
-    cameraPosition: MapCameraPositionImpl,
-    durationMills: Long? = 0,
-    listener: MoveCameraCallback? = null
-)
-```
-Mueve la cámara a una posición específica, opcionalmente con animación.
+<Tabs>
+<TabItem label="Movimiento simple">
+- `moveCameraTo(GeoPointImpl, Long?)`
 
-```kotlin
-fun moveCameraTo(
-    position: GeoPointImpl,
-    durationMills: Long? = 0,
-    listener: MoveCameraCallback? = null
-)
-```
-Mueve la cámara para centrar un punto geográfico.
+    <MoveCameraToGeoPointSignature />
 
-## Ejemplo de uso
+    - Mueve la cámara a la posición especificada. Los ángulos de zoom e inclinación se mantienen desde el momento en que se llama a `moveCameraTo`.
+    - Cuando se especifica `durationMills` en milisegundos, la cámara se mueve con animación.
+</TabItem>
+<TabItem label="Movimiento con opciones de cámara">
+- `moveCameraTo(MapCameraPositionImpl, Long?)`
 
-### Configuración básica
+    <MoveCameraToCameraPositionSignature />
 
-```kotlin
-@Composable
-fun MapExample() {
-    // Crear el estado del mapa (elige el proveedor)
-    val mapViewState = rememberGoogleMapViewState()
+    - Mueve la cámara usando `MapCameraPositionImpl`. Se pueden especificar zoom e inclinación al mismo tiempo. Las propiedades que se omiten mantienen sus valores desde el momento en que se llamó a `moveCameraTo`.
+    - Cuando se especifica `durationMills` en milisegundos, la cámara se mueve con animación.
+</TabItem>
+</Tabs>
 
-    // Observar el estado de inicialización
-    val initState by mapViewState.isInitialized.collectAsState()
-
-    when (initState) {
-        InitState.NotStarted -> {
-            LaunchedEffect(Unit) {
-                mapViewState.initAsync {
-                    // Realiza aquí cualquier inicialización adicional
-                    true
-                }
-            }
-        }
-        InitState.Initializing -> {
-            LoadingScreen(message = "Inicializando mapa...")
-        }
-        InitState.Initialized -> {
-            GoogleMapView(state = mapViewState) {
-                // Contenido del mapa
-            }
-        }
-        InitState.Failed -> {
-            ErrorScreen(onRetry = { mapViewState.resetInitState() })
-        }
-    }
-}
-```
+## Ejemplos de uso
 
 ### Control de cámara
 
-```kotlin
-@Composable
-fun CameraControlExample() {
-    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
-    val camera = MapCameraPositionImpl(
-        position = london,
-        zoom = 8.0,
-    )
-    val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
-    val scope = rememberCoroutineScope()
+<CameraControlExample />
 
-    Column {
-        Row {
-            Button(onClick = {
-                scope.launch {
-                    mapViewState.moveCameraTo(
-                        cameraPosition = MapCameraPositionImpl(
-                            position = london,
-                            zoom = 12.0
-                        ),
-                        durationMills = 1000L
-                    )
-                }
-            }) {
-                Text("Zoom to London")
-            }
-        }
+### Cambio de diseño de mapa
 
-        GoogleMapView(state = mapViewState) {
-            // Contenido del mapa
-        }
-    }
-}
-```
+<MapDesignSwitchExample />
+
+## Manejo de eventos
+
+`MapViewState` funciona con el componente del proveedor de mapas elegido para proporcionar un manejo de eventos completo:
+
+<MapViewStateEventHandlingExample
+  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
+  commentForMapContent="Contenido del mapa"
+  mapLoadedMessage="Mapa cargado exitosamente"
+  mapClickPrefix="Mapa clickeado en"
+/>
+
+## Mejores prácticas
+
+1. **Inicialización del estado**: Inicializar MapViewState con posición de cámara y límites apropiados.
+2. **Animación de cámara**: Usar duraciones de animación razonables para una experiencia de usuario fluida (500 ms - 3000 ms).
+3. **Estabilidad del estado**: Usar `remember` para mantener el estado entre recomposiciones.
+4. **Actualizaciones reactivas**: Usar StateFlow para actualizaciones reactivas del estado de inicialización.
+5. **Manejo de errores**: Verificar el estado de inicialización antes de realizar operaciones de cámara.
+6. **Gestión de memoria**: Limpiar escuchadores cuando el mapa ya no sea necesario.
 

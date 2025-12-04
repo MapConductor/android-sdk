@@ -2,11 +2,13 @@
 title: Google Maps Setup
 ---
 
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
 import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
 import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
 import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
 import ProguardRules from '~/components/setup/google-maps/ProguardRules.astro';
 import ProviderVerificationExample from '~/components/setup/ProviderVerificationExample.astro';
+import AppGradleTabs from '~/components/setup/google-maps/AppGradleTabs.astro';
 
 This section covers the setup process for Google Maps SDK integration with MapConductor.
 
@@ -30,36 +32,13 @@ This section covers the setup process for Google Maps SDK integration with MapCo
 
 ### 2. Gradle Configuration
 
-First, add the Secrets Gradle Plugin to your project's root `build.gradle.kts`:
+First, add the Secrets Gradle Plugin to your project's root `build.gradle.kts` or `build.gradle`:
 
-```kotlin
-// Root build.gradle.kts
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
+<SecretsPluginRootGradleTabs />
 
-Then, add the dependencies and apply the plugin in your app's `build.gradle.kts`:
+Then, add the dependencies and apply the plugin in your app's `build.gradle.kts` or `build.gradle`:
 
-```kotlin
-// App build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // Google Maps SDK (version managed via libs.versions.toml)
-    implementation(libs.play.services.maps)
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-}
-```
+<AppGradleTabs />
 
 The Secrets Gradle Plugin automatically reads your `secrets.properties` file and injects the values into your `AndroidManifest.xml` at build time.
 

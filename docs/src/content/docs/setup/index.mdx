@@ -1,24 +1,39 @@
 ---
-title: SDK Setup
+title: SDK Setup Overview
 ---
 
-MapConductor provides a unified API on top of multiple map SDKs, but you must configure each provider's SDK independently before using the corresponding MapConductor module.
+import MapConductorInitExample from '~/components/setup/MapConductorInitExample.astro';
 
-Choose one or more providers and follow the setup guide:
+# SDK Setup Overview
 
-- **[Google Maps Setup](/setup/google-maps)**
-  Configure the Google Maps SDK, API key, and permissions, then integrate `com.mapconductor:for-googlemaps`.
+This page provides a high-level overview of the steps required to use MapConductor with each map provider. See the provider-specific pages for detailed instructions.
 
-- **[Mapbox Setup](/setup/mapbox)**
-  Configure the Mapbox Maven repository, access token, styles, and integrate `com.mapconductor:for-mapbox`.
+## Common Prerequisites
 
-- **[HERE Maps Setup](/setup/here-maps)**
-  Install the HERE SDK AAR, configure access key credentials, and integrate `com.mapconductor:for-here`.
+Before using MapConductor, make sure the following prerequisites are met:
 
-- **[ArcGIS Maps Setup](/setup/arcgis)**
-  Configure the Esri repository, ArcGIS API key, licensing, and integrate `com.mapconductor:for-arcgis`.
+- An Android project is created and configured with Gradle.
+- Kotlin and Jetpack Compose are enabled in the project.
+- You have obtained the required API keys / credentials for each map SDK you plan to use.
 
-- **[MapLibre Setup](/setup/maplibre)**
-  Configure tile servers, style JSON, and integrate `com.mapconductor:for-maplibre`. Open-source alternative with flexible hosting options.
+You can find an example Gradle setup in the [Get Started](/get-started/) section.
 
-You only need to configure the SDKs you plan to use in your application.
+## Provider-Specific Setup
+
+The setup steps for each map provider are described on the following pages:
+
+- [Google Maps Setup](/setup/google-maps)
+- [Mapbox Setup](/setup/mapbox)
+- [HERE Maps Setup](/setup/here-maps)
+- [ArcGIS Maps Setup](/setup/arcgis)
+- [MapLibre Setup](/setup/maplibre)
+
+You only need to configure the providers you actually use in your application.
+
+## Initializing MapConductor
+
+Once each map SDK is initialized, MapConductor only needs the corresponding `MapViewState` and map view component.
+
+<MapConductorInitExample provider="Google" />
+
+To switch to another provider, replace `rememberGoogleMapViewState` and `GoogleMapView` with the corresponding versions such as `rememberMapboxMapViewState` and `MapboxMapView`.

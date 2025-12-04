@@ -2,10 +2,13 @@
 title: Mapbox Setup
 ---
 
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
 import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
 import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
 import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
-import ProviderVerificationExample from '~/components/setup/ProviderVerificationExample.astro';
+import SettingsGradleTabs from '~/components/setup/mapbox/SettingsGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/mapbox/AppGradleTabs.astro';
+import TestMapboxComposable from '~/components/setup/mapbox/TestMapboxComposable.astro';
 
 This section covers the setup process for Mapbox Maps SDK integration with MapConductor.
 
@@ -31,50 +34,15 @@ This section covers the setup process for Mapbox Maps SDK integration with MapCo
 
 Ensure the Mapbox Maven repository is configured (this repository already has it in `settings.gradle.kts`):
 
-```kotlin
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
+<SettingsGradleTabs />
 
-        // Mapbox Maven repository
-        maven {
-            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
-        }
-    }
-}
-```
+Add the Secrets Gradle Plugin to your project's root `build.gradle.kts` or `build.gradle`:
 
-Add the Secrets Gradle Plugin to your project's root `build.gradle.kts`:
+<SecretsPluginRootGradleTabs />
 
-```kotlin
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
+Then, add the dependencies and apply the plugin in your app's `build.gradle.kts` or `build.gradle`:
 
-Then, add the dependencies and apply the plugin in your app's `build.gradle.kts`:
-
-```kotlin
-// App build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // Mapbox Maps SDK (NDK27 variant, version managed via libs.versions.toml)
-    implementation(libs.mapbox.android)
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-mapbox")
-}
-```
+<AppGradleTabs />
 
 The Secrets Gradle Plugin automatically reads your `secrets.properties` file and injects the values into your `AndroidManifest.xml` at build time.
 
@@ -113,16 +81,7 @@ Add your actual access token to your `secrets.properties` file:
 
 ### 5. Style Configuration
 
-Mapbox allows custom map styles. You can use built-in styles or create custom ones:
-
-```kotlin
-// Using built-in styles
-val mapStyle = Style.MAPBOX_STREETS
-// or Style.SATELLITE, Style.OUTDOORS, etc.
-
-// Using custom style URL
-val customStyle = "mapbox://styles/your-username/your-style-id"
-```
+Mapbox allows custom map styles. You can use built-in styles or create custom ones, but this configuration is done in your Composable code rather than in the basic setup described here.
 
 ## Verification
 
@@ -131,14 +90,8 @@ To verify your Mapbox setup:
 1. Build and run your app
 2. Check that the map displays with Mapbox styling
 3. Test map interactions (zoom, pan, rotate)
-4. Verify custom styles load correctly (if using)
 
-<ProviderVerificationExample
-  provider="MapboxMap"
-  functionName="TestMapbox"
-  comment="If this displays correctly, your setup is working"
-  imageUrl="~/assets/setup/basic-setup-mapbox.png"
-/>
+<TestMapboxComposable />
 
 ## Troubleshooting
 

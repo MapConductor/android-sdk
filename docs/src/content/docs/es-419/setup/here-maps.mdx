@@ -2,69 +2,125 @@
 title: Configuración de HERE Maps
 ---
 
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import HereAarPathExample from '~/components/setup/here-maps/HereAarPathExample.astro';
+import AppGradleTabs from '~/components/setup/here-maps/AppGradleTabs.astro';
+import TestHereComposable from '~/components/setup/here-maps/TestHereComposable.astro';
+
 # Configuración de HERE Maps
 
-En esta página se explica cómo configurar el SDK de HERE Maps para Android junto con MapConductor.
+Esta sección explica cómo configurar el HERE SDK (se asume la edición Explore) junto con MapConductor.
+
+:::tip
+MapConductor proporciona una capa de API unificada sobre los SDKs de mapas existentes. Debes configurar el HERE SDK de forma independiente antes de usar la integración de HERE Maps de MapConductor.
+:::
 
 ## Requisitos previos
 
-- Cuenta de desarrollador de HERE creada.
-- Credenciales de API de HERE generadas (Access Key ID y Secret).
-- Archivo AAR del SDK de HERE descargado.
+- Entorno de desarrollo Android
+- Cuenta de desarrollador de HERE
+- Credenciales de API de HERE
 
-## Añadir dependencias en Gradle
+## Pasos de configuración
 
-```kotlin
-dependencies {
-    implementation(files("${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar"))
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-here")
-}
-```
+### 1. Configuración en HERE Developer Portal
 
-Coloca el archivo AAR del SDK de HERE en el directorio `libs/` de tu proyecto.
+1. Crea una cuenta de [HERE Developer](https://developer.here.com/).
+2. Accede al [HERE Developer Portal](https://developer.here.com/projects).
+3. Crea un nuevo proyecto.
+4. Genera credenciales de API (Access Key ID y Secret).
+5. Descarga el archivo AAR del HERE SDK.
 
-## Configuración en AndroidManifest
+### 2. Instalación del HERE SDK
 
-Añade las credenciales de API y los permisos necesarios en tu `AndroidManifest.xml`:
+1. Descarga HERE SDK Explore Android (por ejemplo, `4.23.2.0.210004`).
+2. Coloca el archivo AAR en el directorio `libs/` de tu proyecto:
 
-```xml
-<manifest>
-    <application>
-        <meta-data
-            android:name="HERE_ACCESS_KEY_ID"
-            android:value="@string/here_access_key_id" />
-        <meta-data
-            android:name="HERE_ACCESS_KEY_SECRET"
-            android:value="@string/here_access_key_secret" />
-    </application>
-</manifest>
-```
+   <HereAarPathExample />
 
-## Ejemplo de uso con MapConductor
+3. Asegúrate de que el nombre del archivo AAR coincida con el que se referencia en Gradle.
 
-```kotlin
-@Composable
-fun HereExample() {
-    val camera = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(52.5200, 13.4050),
-        zoom = 14.0,
-    )
+### 3. Configuración de Gradle
 
-    val mapViewState = rememberHereMapViewState(
-        cameraPosition = camera,
-    )
+Añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradle` de la raíz del proyecto:
 
-    HereMapView(
-        state = mapViewState,
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(52.5200, 13.4050),
-            icon = DefaultIcon(label = "Berlin"),
-        )
-    }
-}
-```
+<SecretsPluginRootGradleTabs />
 
-Consulta [MapView Component](/es-419/components/mapviewcomponent) para ver más detalles.
+Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
+
+<AppGradleTabs />
+
+El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede utilizarse para inyectar valores en tu `AndroidManifest.xml`.
+
+### 4. Configuración de AndroidManifest
+
+Añade los marcadores de posición de las credenciales de HERE en tu `AndroidManifest.xml`:
+
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "HERE_ACCESS_KEY_ID", value: "${HERE_ACCESS_KEY_ID}", comment: "HERE Access Key ID"},
+    {name: "HERE_ACCESS_KEY_SECRET", value: "${HERE_ACCESS_KEY_SECRET}", comment: "HERE Access Key Secret"}
+  ]}
+  permissions={[
+    {name: "android.permission.INTERNET", comment: "Añade permisos de internet y ubicación"},
+    {name: "android.permission.ACCESS_COARSE_LOCATION"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
+
+### 5. Configuración de credenciales
+
+- Añade las credenciales reales de HERE en el archivo `secrets.properties`.
+- El Secrets Gradle Plugin reemplaza automáticamente `${HERE_ACCESS_KEY_ID}` y `${HERE_ACCESS_KEY_SECRET}` en tu `AndroidManifest.xml` por los valores reales.
+- En entornos de CI/CD, puedes utilizar variables de entorno u otros métodos seguros para proporcionar estos valores.
+
+<SecretsPropertiesExample
+  entries={[
+    {key: "HERE_ACCESS_KEY_ID", value: "your_actual_here_access_key_id"},
+    {key: "HERE_ACCESS_KEY_SECRET", value: "your_actual_here_access_key_secret"}
+  ]}
+/>
+
+:::caution
+No subas el archivo `secrets.properties` ni el AAR de HERE SDK a un repositorio público. Añádelos a `.gitignore` para evitar commits accidentales.
+<GitignoreExample entries={["secrets.properties", "libs/heresdk-*.aar"]} />
+:::
+
+## Verificación
+
+Para verificar la configuración de HERE Maps:
+
+1. Compila y ejecuta la app.
+2. Comprueba que el mapa de HERE se muestra correctamente.
+3. Prueba interacciones de mapa y funciones específicas de HERE.
+
+<TestHereComposable />
+
+![Resultado de TestHERE](~/assets/setup/basic-setup-here.png)
+
+## Solución de problemas
+
+### Problemas comunes
+
+**El mapa no se carga**  
+
+- Verifica que las credenciales de HERE en `secrets.properties` sean correctas.
+- Comprueba que el Access Key ID y el Secret estén configurados correctamente y sigan activos.
+
+**No se encuentra el archivo AAR**  
+
+- Verifica que el archivo AAR esté en el directorio `libs/`.
+- Confirma que el nombre del archivo coincida exactamente con el que se referencia en Gradle.
+
+**Errores de compilación**  
+
+- Asegúrate de que la versión del HERE SDK coincida con la configuración de Gradle.
+- Comprueba que `secrets.properties` contenga las claves necesarias.
+
+## Próximos pasos
+
+Una vez que el HERE SDK esté configurado correctamente, puedes usar el componente `HereMapView` de MapConductor con la API unificada.
+

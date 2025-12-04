@@ -12,7 +12,7 @@ import OverlappingCirclesExample from '~/components/components/circle/Overlappin
 import CircleEventHandlingExample from '~/components/components/circle/CircleEventHandlingExample.astro';
 import CircleStrokeStylesExample from '~/components/components/circle/CircleStrokeStylesExample.astro';
 import CircleFillStylesExample from '~/components/components/circle/CircleFillStylesExample.astro';
-import CircleIdUsageExample from '~/components/components/circle/CircleIdUsageExample.astro';
+import CircleIdDetailedExample from '~/components/components/circle/CircleIdDetailedExample.astro';
 
 Los círculos son superposiciones circulares que se dibujan sobre el mapa con radio, trazo y relleno personalizables. Son útiles para representar áreas, rangos o zonas.
 
@@ -96,4 +96,4 @@ Las interacciones con círculos se gestionan desde el componente de mapa:
 
 La propiedad `id` proporciona un identificador único para cada círculo y permite un seguimiento y gestión eficientes:
 
-<CircleIdUsageExample />
+<CircleIdDetailedExample />

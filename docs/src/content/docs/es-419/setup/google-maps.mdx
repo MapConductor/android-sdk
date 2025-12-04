@@ -2,72 +2,125 @@
 title: Configuración de Google Maps
 ---
 
-# Configuración de Google Maps
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import ProguardRules from '~/components/setup/google-maps/ProguardRules.astro';
+import ProviderVerificationExample from '~/components/setup/ProviderVerificationExample.astro';
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/google-maps/AppGradleTabs.astro';
 
-En esta página se explica cómo configurar el SDK de Google Maps para Android junto con MapConductor.
+Esta sección explica el proceso de configuración del SDK de Google Maps para Android junto con MapConductor.
+
+:::tip
+MapConductor proporciona una capa de API unificada sobre los SDKs de mapas existentes. Debes configurar el SDK de Google Maps de forma independiente antes de usar la integración de Google Maps de MapConductor.
+:::
 
 ## Requisitos previos
 
-- Proyecto de Google Cloud creado.
-- Maps SDK for Android habilitado.
-- Clave de API de Android generada.
+- Entorno de desarrollo Android
+- Cuenta de Google Cloud Console
+- Maps SDK for Android habilitado en tu proyecto de Google Cloud
 
-## Añadir dependencias en Gradle
+## Pasos de configuración
 
-```kotlin
-dependencies {
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-googlemaps")
-    // Añade también las dependencias del SDK de Google Maps para Android
-}
-```
+### 1. Configuración en Google Cloud Console
 
-Sigue la documentación oficial de Google para añadir las dependencias del SDK de Google Maps.
+1. Accede a la [Google Cloud Console](https://console.cloud.google.com/).
+2. Crea un nuevo proyecto o selecciona uno existente.
+3. Habilita la API **Maps SDK for Android**.
+4. Ve a **Credenciales** y crea una clave de API.
+5. Restringe la clave de API al nombre de paquete y huella SHA-1 de tu app.
 
-## Configuración en AndroidManifest
+### 2. Configuración de Gradle
 
-Añade la clave de API y los permisos necesarios en tu `AndroidManifest.xml`:
+Primero, añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradle` de la raíz del proyecto:
 
-```xml
-<manifest>
-    <application>
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
-    </application>
-</manifest>
-```
+<SecretsPluginRootGradleTabs />
 
-Si utilizas funciones de localización, recuerda declarar permisos como `ACCESS_FINE_LOCATION`.
+Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
 
-## Ejemplo de uso con MapConductor
+<AppGradleTabs />
 
-```kotlin
-@Composable
-fun GoogleMapsExample() {
-    val camera = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
-        zoom = 14.0,
-    )
+El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede inyectar los valores en `AndroidManifest.xml` en tiempo de compilación.
 
-    val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = camera,
-    )
+### 3. Configuración de AndroidManifest
 
-    GoogleMapView(
-        state = mapViewState,
-        onMapClick = { point ->
-            println("Clicked: ${point.latitude}, ${point.longitude}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
-            icon = DefaultIcon(label = "Tokyo"),
-        )
-    }
-}
-```
-![Ejemplo sencillo de GoogleMaps](/img/basic-googlemaps.jpg)
+Añade el marcador de posición de la clave de API de Google Maps en tu `AndroidManifest.xml`:
 
-Consulta [MapView Component](/es-419/components/mapviewcomponent) y [Marker](/es-419/components/marker) para ver más detalles sobre estas APIs.
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "com.google.android.geo.API_KEY", value: "${GOOGLE_MAPS_API_KEY}", comment: "Google Maps API Key"}
+  ]}
+  permissions={[
+    {name: "android.permission.ACCESS_COARSE_LOCATION", comment: "Añade permisos de localización"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
+
+### 4. Configuración de la clave de API
+
+Añade la clave de API real a tu archivo `secrets.properties` (créalo si no existe):
+
+<SecretsPropertiesExample
+  entries={[
+    {key: "GOOGLE_MAPS_API_KEY", value: "tu_clave_real_de_google_maps_aquí"}
+  ]}
+/>
+
+**Importante**:
+
+- No subas el archivo `secrets.properties` al control de versiones. Añádelo a `.gitignore`.
+- El Secrets Gradle Plugin reemplaza automáticamente `${GOOGLE_MAPS_API_KEY}` en tu `AndroidManifest.xml` por el valor real de este archivo.
+- En entornos de CI/CD puedes usar variables de entorno u otros métodos seguros para proporcionar estos valores.
+
+<GitignoreExample entries={["secrets.properties"]} />
+
+### 5. Configuración de ProGuard / R8 (si aplica)
+
+Si utilizas ProGuard/R8, añade estas reglas a tu archivo `proguard-rules.pro`:
+
+<ProguardRules />
+
+## Verificación
+
+Para verificar la configuración de Google Maps:
+
+1. Compila y ejecuta la app.
+2. Comprueba que el mapa se muestra sin errores.
+3. Verifica que los permisos de localización funcionan correctamente.
+4. Prueba interacciones básicas con el mapa (zoom, desplazamiento).
+
+<ProviderVerificationExample
+  provider="GoogleMap"
+  functionName="TestGoogleMaps"
+  comment="Si esta pantalla se muestra correctamente, tu configuración es válida"
+  imageUrl="~/assets/setup/basic-setup-google.png"
+/>
+
+## Solución de problemas
+
+### Problemas comunes
+
+**El mapa no se muestra (pantalla gris)**  
+
+- Verifica que la clave de API en `secrets.properties` sea correcta.
+- Comprueba que Maps SDK for Android esté habilitado en Google Cloud Console.
+- Asegúrate de que las restricciones de la clave coincidan con el nombre de paquete y la huella SHA-1 de tu app.
+
+**Errores de clave de API en los logs**  
+
+- Revisa de nuevo el valor de la clave.
+- Comprueba que la clave siga activa.
+- Verifica las restricciones de la clave en Google Cloud Console.
+
+**Errores de compilación**  
+
+- Asegúrate de que la dependencia de Play Services Maps coincida con la configuración de tu proyecto.
+- Verifica que el archivo `secrets.properties` exista y esté correctamente formateado.
+- Comprueba que `secrets.properties` no esté siendo ignorado accidentalmente en tu entorno local.
+
+## Próximos pasos
+
+Una vez configurado correctamente el SDK de Google Maps, puedes usar el componente `GoogleMapView` de MapConductor tal como se describe en la documentación del componente Map View.
+

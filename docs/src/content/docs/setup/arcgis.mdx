@@ -2,14 +2,20 @@
 title: ArcGIS Maps Setup
 ---
 
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
 import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
 import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
 import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
-import ProviderVerificationExample from '~/components/setup/ProviderVerificationExample.astro';
+import SettingsGradleTabs from '~/components/setup/arcgis/SettingsGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/arcgis/AppGradleTabs.astro';
+import TestArcGISComposable from '~/components/setup/arcgis/TestArcGISComposable.astro';
+import LicenseSetupExample from '~/components/setup/arcgis/LicenseSetupExample.astro';
 
-This section covers the setup process for ArcGIS Maps SDK integration with MapConductor.
+This section describes the setup steps for integrating the ArcGIS Maps SDK with MapConductor.
 
-> **Important**: MapConductor provides a unified API layer on top of existing map SDKs. You must set up the ArcGIS Maps SDK independently before using MapConductor's ArcGIS integration.
+:::tip
+MapConductor provides a unified API layer on top of existing map SDKs. You must set up the ArcGIS Maps SDK independently before using MapConductor's ArcGIS integration.
+:::
 
 ## Prerequisites
 
@@ -29,57 +35,19 @@ This section covers the setup process for ArcGIS Maps SDK integration with MapCo
 
 ### 2. Gradle Configuration
 
-Ensure the Esri repository is configured (already present in this repository's `settings.gradle.kts`):
+Ensure the Esri Maven repository is configured (this repository already includes it in `settings.gradle.kts`):
 
-```kotlin
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
+<SettingsGradleTabs />
 
-        // Esri public repository for ArcGIS Maps SDK
-        maven {
-            url = uri("https://esri.jfrog.io/artifactory/arcgis")
-        }
-    }
-}
-```
+Add the Secrets Gradle Plugin to your project's root `build.gradle.kts` or `build.gradle`:
 
-Add the Secrets Gradle Plugin to your project's root `build.gradle.kts`:
+<SecretsPluginRootGradleTabs />
 
-```kotlin
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
+Then, add the dependencies and apply the plugin in your app's `build.gradle.kts` or `build.gradle`:
 
-Then, add the dependencies and apply the plugin in your app's `build.gradle.kts`:
+<AppGradleTabs />
 
-```kotlin
-// App build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // ArcGIS Maps SDK (version managed via libs.versions.toml)
-    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-    implementation(libs.arcgis.maps.kotlin)
-    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-arcgis")
-}
-```
-
-The Secrets Gradle Plugin can read your `secrets.properties` file and inject values into your `AndroidManifest.xml` at build time.
+The Secrets Gradle Plugin automatically reads your `secrets.properties` file and can inject values into your `AndroidManifest.xml` at build time.
 
 ### 3. Android Manifest Configuration
 
@@ -98,7 +66,7 @@ Add the ArcGIS API key placeholder to your `AndroidManifest.xml`:
 
 ### 4. API Key Configuration
 
-Add your actual API key to your `secrets.properties` file:
+Add your actual API key to your `secrets.properties` file. The Secrets Gradle Plugin automatically replaces `${ARCGIS_API_KEY}` in your `AndroidManifest.xml` with the actual value from this file.
 
 <SecretsPropertiesExample
   entries={[
@@ -106,26 +74,16 @@ Add your actual API key to your `secrets.properties` file:
   ]}
 />
 
-**Important**:
-
-- Never commit your `secrets.properties` file to version control. Add it to `.gitignore`.
-- The Secrets Gradle Plugin automatically replaces `${ARCGIS_API_KEY}` in your `AndroidManifest.xml` with the actual value from this file.
-
+:::caution
+Never commit your `secrets.properties` file to version control. Add it to `.gitignore` to avoid accidental commits.
 <GitignoreExample entries={["secrets.properties"]} />
+:::
 
 ### 5. License Configuration
 
-ArcGIS SDK requires proper license configuration. Set the license in your application:
+ArcGIS SDK requires proper license configuration. Configure licensing in your application:
 
-```kotlin
-// In your Application class or MainActivity
-ArcGISEnvironment.setApiKey("your_api_key_here")
-
-// For development/testing
-// ArcGISEnvironment.setLicense("your_license_key_here") // Optional for basic use
-```
-
-For production apps, consider using a [Named User License](https://developers.arcgis.com/documentation/security-and-authentication/licensing/) or [License Key](https://developers.arcgis.com/documentation/security-and-authentication/licensing/).
+<LicenseSetupExample />
 
 ## Verification
 
@@ -136,12 +94,9 @@ To verify your ArcGIS setup:
 3. Test GIS-specific features (if using)
 4. Verify authentication is working
 
-<ProviderVerificationExample
-  provider="ArcGISMap"
-  functionName="TestArcGIS"
-  comment="If this displays correctly, your setup is working"
-  imageUrl="~/assets/setup/basic-setup-arcgis.png"
-/>
+<TestArcGISComposable />
+
+![ArcGIS setup verification](~/assets/setup/basic-setup-arcgis.png)
 
 ## Troubleshooting
 

@@ -29,19 +29,7 @@ For a small number of polylines, you can specify options directly. Specifying an
 
 For a large number of polylines or when moving polylines, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
 
-```kotlin
-PolylineState(
-    points: List<GeoPoint>,
-    id: String? = null,
-    strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 1.dp,
-    geodesic: Boolean = false,
-    extra: Serializable? = null
-)
-
-@Composable
-fun Polyline(state: PolylineState)
-```
+<PolylineStateSignature />
 
 </TabItem>
 </Tabs>

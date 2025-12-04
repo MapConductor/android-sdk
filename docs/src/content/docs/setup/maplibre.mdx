@@ -3,8 +3,9 @@ title: MapLibre Setup
 ---
 
 import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
-import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
-import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import AppGradleTabs from '~/components/setup/maplibre/AppGradleTabs.astro';
+import SettingsGradleTabs from '~/components/setup/maplibre/SettingsGradleTabs.astro';
+import MapLibreStyleExamples from '~/components/setup/maplibre/MapLibreStyleExamples.astro';
 import TestMapLibreComposable from '~/components/setup/maplibre/TestMapLibreComposable.astro';
 
 This section covers the setup process for MapLibre Native Android integration with MapConductor.
@@ -39,11 +40,11 @@ MapLibre is an open-source mapping library that requires a tile server. You have
 
 ### 2. Gradle Configuration
 
-Add the dependencies to your app's `build.gradle.kts`:
+Add the dependencies to your app's `build.gradle.kts` or `build.gradle`:
 
 <AppGradleTabs />
 
-The MapLibre SDK is available from Maven Central, which should already be configured in your `settings.gradle.kts`:
+The MapLibre SDK is available from Maven Central, which should already be configured in your `settings.gradle.kts` or `settings.gradle`:
 
 <SettingsGradleTabs />
 
@@ -64,7 +65,7 @@ Add the required permissions to your `AndroidManifest.xml`:
 
 MapLibre requires a style JSON to define how the map looks. You can use a hosted style or provide a custom one.
 
-<TestMapLibreComposable />
+<MapLibreStyleExamples />
 
 ## Verification
 
@@ -75,13 +76,7 @@ To verify your MapLibre setup:
 3. Test map interactions (zoom, pan, rotate)
 4. Verify attribution is displayed if required by your tile provider
 
-<ProviderVerificationExample
-  provider="MapLibreMap"
-  functionName="TestMapLibre"
-  comment="If this displays correctly, your setup is working"
-  imageUrl="~/assets/setup/basic-setup-maplibre.png"
-  extraParams='        styleUrl = "https://tiles.openfreemap.org/styles/liberty"'
-/>
+<TestMapLibreComposable />
 
 ## Troubleshooting
 

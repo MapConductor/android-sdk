@@ -35,15 +35,15 @@ La implementación principal proporciona datos inmutables de la posición de la 
 
 ### Posición de la cámara
 
-- **`position: GeoPoint`**: punto geográfico central de la vista de la cámara.
-- **`zoom: Double`**: nivel de zoom (aproximadamente alineado con la escala de Google Maps).
-- **`bearing: Double`**: rumbo en grados (0 = norte, 90 = este).
-- **`tilt: Double`**: ángulo de inclinación en grados (0 = vista cenital, 90 = horizontal).
+- **`position: GeoPoint`**: Punto geográfico central de la vista de la cámara.
+- **`zoom: Double`**: Nivel de zoom (aproximadamente alineado con la escala de Google Maps).
+- **`bearing: Double`**: Rumbo en grados (0 = norte, 90 = este).
+- **`tilt: Double`**: Ángulo de inclinación en grados (0 = vista cenital, 90 = horizontal).
 
-### Configuración de vista
+### Configuración de la vista
 
-- **`paddings: MapPaddings?`**: márgenes del viewport que afectan a la región visible.
-- **`visibleRegion: VisibleRegion?`**: límites geográficos que realmente se ven en pantalla.
+- **`paddings: MapPaddings?`**: Márgenes del viewport que afectan a la región visible.
+- **`visibleRegion: VisibleRegion?`**: Límites geográficos que realmente se ven en pantalla.
 
 ## Formas de creación
 
@@ -54,7 +54,7 @@ La implementación principal proporciona datos inmutables de la posición de la 
 ### Posición personalizada
 
 <CustomCameraPositionsExample
-  commentForBasic="Posición básica de cámara"
+  commentForBasic="Posición básica de la cámara"
   commentForAerial="Cámara con rumbo e inclinación"
   commentForPadded="Cámara con rellenos para dejar espacio a la UI"
   latitude={37.7749}
@@ -64,30 +64,135 @@ La implementación principal proporciona datos inmutables de la posición de la 
   aerialBearing={45.0}
   aerialTilt={60.0}
   paddedZoom={14.0}
-  paddingTop={200.0}
-  paddingLeft={0.0}
-  paddingBottom={0.0}
-  paddingRight={0.0}
+  paddingTop={100.0}
+  paddingLeft={50.0}
+  paddingBottom={200.0}
+  paddingRight={50.0}
 />
 
-### Uso con MapViewState
+## Niveles de zoom
 
-```kotlin
-val camera = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    zoom = 14.0,
-    tilt = 45.0,
-    bearing = 90.0
-)
+Los niveles de zoom de MapConductor se alinean aproximadamente con la escala de Google Maps, aunque pueden variar ligeramente según el proveedor:
 
-val mapViewState = rememberGoogleMapViewState(
-    cameraPosition = camera
-)
-```
+- **0-2**: Vista mundial, continentes visibles
+- **3-5**: Nivel de país
+- **6-9**: Nivel de estado/región
+- **10-12**: Nivel de ciudad
+- **13-15**: Nivel de barrio/distrito
+- **16-18**: Nivel de calle
+- **19-21**: Nivel de edificio (alto detalle)
 
-## Buenas prácticas
+<ZoomLevelsExample
+  worldLatitude={0.0}
+  worldLongitude={0.0}
+  worldZoom={2.0}
+  worldComment="Mostrar continentes"
+  cityLatitude={37.7749}
+  cityLongitude={-122.4194}
+  cityZoom={12.0}
+  cityComment="Mostrar ciudad completa"
+  streetLatitude={37.7749}
+  streetLongitude={-122.4194}
+  streetZoom={17.0}
+  streetComment="Mostrar calles individuales"
+/>
 
-- Ajusta el zoom en función del tipo de contenido que quieras mostrar (ciudad, país, mundo, etc.).
-- Usa `paddings` cuando tengas overlays de UI (como paneles o barras) que no deban tapar elementos importantes del mapa.
-- Combina `bearing` y `tilt` para crear vistas 3D atractivas, pero vuelve a valores neutros cuando la legibilidad sea prioritaria.
+## Rumbo e inclinación
+
+### Rumbo (rotación)
+
+El rumbo rota el mapa alrededor del punto central:
+
+<BearingExamples
+  latitude={37.7749}
+  longitude={-122.4194}
+  bearingNorth={0.0}
+  bearingEast={90.0}
+  bearingRoute={135.0}
+  routeComment="Sureste"
+/>
+
+### Inclinación (perspectiva 3D)
+
+La inclinación proporciona ángulos de vista en 3D:
+
+<TiltExamples
+  latitude={37.7749}
+  longitude={-122.4194}
+  topDownTilt={0.0}
+  angledTilt={30.0}
+  angledZoom={16.0}
+  streetTilt={80.0}
+  streetBearing={45.0}
+  streetZoom={19.0}
+/>
+
+## Región visible
+
+La región visible describe el área geográfica real mostrada en pantalla teniendo en cuenta la posición de la cámara, el nivel de zoom, el rumbo, la inclinación y los márgenes del viewport.
+
+### Clase VisibleRegion
+
+<VisibleRegionDataClass />
+
+### Propiedades
+
+- **`bounds: GeoRectBounds`**: Límites geográficos rectangulares que abarcan toda el área visible.
+- **`nearLeft: GeoPoint?`**: Coordenada geográfica de la esquina inferior izquierda de la región visible.
+- **`nearRight: GeoPoint?`**: Coordenada geográfica de la esquina inferior derecha.
+- **`farLeft: GeoPoint?`**: Coordenada geográfica de la esquina superior izquierda.
+- **`farRight: GeoPoint?`**: Coordenada geográfica de la esquina superior derecha.
+
+### Uso de la región visible
+
+<VisibleRegionExample
+  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
+  commentForDisplayRegion="Mostrar información de la región visible"
+  commentForShowBounds="Mostrar límites como polígono"
+/>
+
+## Animación y transiciones
+
+### Movimiento suave de cámara
+
+<AnimatedCameraExample
+  commentForLocations="Animar entre múltiples ubicaciones"
+  commentForAnimationInterval="Animar a la siguiente ubicación cada 5 segundos"
+  animationIntervalMillis={5000}
+  moveDurationMillis={1000}
+/>
+
+### Control interactivo de cámara
+
+<CameraControlExample commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView" />
+
+## Mejores prácticas
+
+1. **Selección de Nivel de Zoom**: Elige niveles de zoom apropiados para tu caso de uso.
+2. **Transiciones Suaves**: Usa movimientos de cámara graduales para una mejor experiencia de usuario.
+3. **Gestión de Paddings**: Ten en cuenta elementos de UI al establecer la posición de la cámara.
+4. **Rendimiento**: Evita cambios de posición de cámara demasiado frecuentes que provoquen redibujos costosos.
+5. **Contexto del Usuario**: Considera qué necesita ver el usuario al establecer la posición inicial de la cámara.
+6. **Accesibilidad**: Proporciona controles para usuarios que no puedan usar gestos para mover la cámara.
+
+## Casos de uso comunes
+
+### Foco en la ubicación del usuario
+
+<UserLocationCameraExample
+  commentForZoom="Detalle a nivel de calle"
+  zoomLevel={16.0}
+/>
+
+### Mostrar múltiples puntos
+
+<ShowMultiplePointsExample commentForZoomCalculation="Cálculo personalizado de zoom" />
+
+### Modo de navegación
+
+<NavigationCameraExample
+  navigationZoom={18.0}
+  navigationTilt={60.0}
+  commentForBearing="Dirección de viaje"
+/>
 

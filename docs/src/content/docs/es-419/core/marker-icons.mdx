@@ -5,6 +5,16 @@ title: "Marker Icons"
 import MarkerIconInterface from '~/components/core/marker-icons/MarkerIconInterface.astro';
 import DefaultIconSignature from '~/components/core/marker-icons/DefaultIconSignature.astro';
 import DefaultIconUsageExamples from '~/components/core/marker-icons/DefaultIconUsageExamples.astro';
+import DrawableDefaultIconSignature from '~/components/core/marker-icons/DrawableDefaultIconSignature.astro';
+import DrawableIconExamples from '~/components/core/marker-icons/DrawableIconExamples.astro';
+import ImageDefaultIconSignature from '~/components/core/marker-icons/ImageDefaultIconSignature.astro';
+import ImageIconExamples from '~/components/core/marker-icons/ImageIconExamples.astro';
+import DynamicIconExample from '~/components/core/marker-icons/DynamicIconExample.astro';
+import MarkerIconFactoryExample from '~/components/core/marker-icons/MarkerIconFactoryExample.astro';
+import PerformanceReuseIconsExample from '~/components/core/marker-icons/PerformanceReuseIconsExample.astro';
+import StatusIconExample from '~/components/core/marker-icons/StatusIconExample.astro';
+import PoiCategoryExample from '~/components/core/marker-icons/PoiCategoryExample.astro';
+import DebugImageIconExample from '~/components/core/marker-icons/DebugImageIconExample.astro';
 
 MapConductor proporciona varios tipos de iconos de marcador para personalizar la apariencia de los marcadores en el mapa. Todos los iconos implementan la interfaz `MarkerIcon` y pueden usarse con cualquier proveedor de mapas.
 
@@ -26,14 +36,14 @@ Icono estándar de marcador coloreado con apariencia y texto personalizables.
 
 #### Parámetros
 
-- **`scale`**: factor de escala del icono (1.0 = tamaño normal, 0.5 = mitad de tamaño, 2.0 = el doble).
-- **`label`**: texto mostrado en el marcador (opcional).
-- **`fillColor`**: color de fondo del marcador.
-- **`strokeColor`**: color del borde del marcador.
-- **`strokeWidth`**: grosor del borde.
-- **`labelTextColor`**: color del texto de la etiqueta.
-- **`labelStrokeColor`**: color de contorno opcional para el texto.
-- **`debug`**: muestra información de depuración si está activado.
+- **`scale`**: Factor de escala del icono (1.0 = tamaño normal, 0.5 = mitad de tamaño, 2.0 = el doble).
+- **`label`**: Texto mostrado en el marcador (opcional).
+- **`fillColor`**: Color de fondo del marcador.
+- **`strokeColor`**: Color del borde del marcador.
+- **`strokeWidth`**: Grosor del borde.
+- **`labelTextColor`**: Color del texto de la etiqueta.
+- **`labelStrokeColor`**: Color de contorno opcional para el texto.
+- **`debug`**: Muestra información de depuración si está activado.
 
 #### Ejemplos de uso
 
@@ -43,36 +53,105 @@ Icono estándar de marcador coloreado con apariencia y texto personalizables.
 
 ### DrawableDefaultIcon
 
-Icono basado en un `Drawable` con soporte para trazo opcional.
+Usa un recurso `Drawable` como fondo del marcador, con superposiciones de estilo opcionales.
 
-```kotlin
-DrawableDefaultIcon(
-    backgroundDrawable: Drawable,
-    scale: Float = 1.0f,
-    strokeColor: Color? = null,
-    strokeWidth: Dp = 1.dp
-)
-```
+<DrawableDefaultIconSignature />
 
-Se utiliza cuando quieres reutilizar drawables existentes (por ejemplo, recursos de tu app) como fondo de tu marcador.
+#### Parámetros
 
-### ImageIcon
+- **`backgroundDrawable`**: Recurso drawable usado como fondo del marcador.
+- **`scale`**: Factor de escala del icono.
+- **`strokeColor`**: Color opcional del borde superpuesto.
+- **`strokeWidth`**: Grosor del borde superpuesto.
 
-Icono de marcador que renderiza directamente un `Drawable` en la posición del marcador.
+#### Ejemplos de uso
 
-```kotlin
-ImageIcon(
-    drawable: Drawable,
-    anchor: Offset = Offset(0.5f, 0.5f),
-    debug: Boolean = false
-)
-```
+<DrawableIconExamples
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+  commentForCustomDrawable="Marcador con drawable personalizado"
+  commentForCustomBorder="Drawable con borde personalizado"
+/>
 
-- **`anchor`**: punto de anclaje relativo dentro de la imagen (0.5, 0.5 = centro).
+### ImageDefaultIcon
 
-## Relación con mapconductor-icons
+Usa un drawable de imagen personalizado con control preciso del punto de anclaje.
 
-Cuando utilizas el módulo experimental `mapconductor-icons`, puedes combinar `MarkerIcon` con iconos composables como `CircleIcon` o estilos de info bubble para conseguir marcadores más ricos visualmente.
+<ImageDefaultIconSignature />
 
-Consulta también [Marker](/es-419/components/marker) para ver cómo se usan estos iconos en el mapa.
+#### Parámetros
+
+- **`drawable`**: Drawable de imagen que se mostrará.
+- **`anchor`**: Punto de anclaje relativo dentro de la imagen (rango 0.0–1.0).
+  - `Offset(0.5f, 0.5f)`: Anclaje centrado (por defecto).
+  - `Offset(0.5f, 1.0f)`: Anclaje en el centro inferior.
+  - `Offset(0.0f, 0.0f)`: Anclaje en la esquina superior izquierda.
+  - `Offset(1.0f, 1.0f)`: Anclaje en la esquina inferior derecha.
+- **`debug`**: Muestra visualización de depuración del anclaje si está activado.
+
+#### Ejemplos de uso
+
+<ImageIconExamples
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+  commentForWeatherStation="Icono de estación meteorológica con anclaje inferior centrado"
+  commentForDirectionArrow="Flecha direccional con anclaje centrado"
+/>
+
+## Uso avanzado
+
+### Selección dinámica de iconos
+
+<DynamicIconExample
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+### Patrón de fábrica de iconos
+
+<MarkerIconFactoryExample />
+
+## Mejores prácticas
+
+### Consideraciones de rendimiento
+
+1. **Reutilizar instancias de iconos**: Crea iconos una vez y reutilízalos para múltiples marcadores.
+2. **Optimizar recursos drawable**: Usa recursos con tamaños adecuados.
+3. **Limitar drawables personalizados**: Demasiados drawables únicos pueden impactar el uso de memoria.
+
+<PerformanceReuseIconsExample />
+
+### Consistencia visual
+
+1. **Escalado consistente**: Usa valores de escala coherentes en toda la aplicación.
+2. **Paleta de colores**: Mantén una paleta de colores consistente para tipos de marcador.
+3. **Puntos de anclaje**: Usa anclajes apropiados para cada tipo de icono (inferior centrado para pines, centrado para círculos).
+
+### Accesibilidad
+
+1. **Etiquetas significativas**: Proporciona etiquetas descriptivas al usar `DefaultIcon`.
+2. **Contraste de color**: Asegura buen contraste entre colores de relleno y borde.
+3. **Indicadores alternativos**: No dependas únicamente del color para transmitir información.
+
+## Casos de uso comunes
+
+### Indicadores de estado
+
+<StatusIconExample />
+
+### Marcadores por categoría
+
+<PoiCategoryExample />
+
+## Solución de problemas
+
+### Problemas comunes
+
+1. **Iconos no visibles**: Verifica que los recursos drawable existan y sean accesibles.
+2. **Posicionamiento incorrecto**: Revisa los puntos de anclaje para iconos personalizados.
+3. **Problemas de rendimiento**: Reduce el número de instancias de iconos únicos.
+4. **Problemas de escala**: Asegura que los valores de escala sean positivos y razonables (0.1–3.0).
+
+### Modo de depuración
+
+Activa el modo de depuración para visualizar puntos de anclaje y límites del icono:
+
+<DebugImageIconExample />
 

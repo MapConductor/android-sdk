@@ -2,200 +2,87 @@
 title: "MapViewState"
 ---
 
-`MapViewState` is the core component that manages map initialization, camera position, and overall map state. Each map provider has its own implementation while maintaining a consistent interface.
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CameraControlExample from '~/components/components/mapviewstate/CameraControlExample.astro';
+import MapDesignSwitchExample from '~/components/components/mapviewstate/MapDesignSwitchExample.astro';
+import MoveCameraToGeoPointSignature from '~/components/components/mapviewstate/MoveCameraToGeoPointSignature.astro';
+import MoveCameraToCameraPositionSignature from '~/components/components/mapviewstate/MoveCameraToCameraPositionSignature.astro';
+import MapViewStateEventHandlingExample from '~/components/components/mapviewstate/MapViewStateEventHandlingExample.astro';
 
-## Provider Implementations
+`MapViewState` is a core component that manages map initialization, camera position, and overall map state.
+Each map SDK has its own implementation, but MapConductor provides a unified API across all providers.
 
-MapConductor supports four map providers, each with their own `MapViewState` implementation:
+## Map SDK Implementations
+
+MapConductor supports 5 map SDKs, each with its own `MapViewState` implementation:
 
 - `GoogleMapViewStateImpl` - Google Maps
-- `MapboxViewStateImpl` - Mapbox Maps
-- `HereViewStateImpl` - HERE Maps
-- `ArcGISMapViewStateImpl` - ArcGIS Maps
+- `MapboxViewStateImpl` - Mapbox Map
+- `HereViewStateImpl` - HERE Map
+- `ArcGISMapViewStateImpl` - ArcGIS Map
+- `MapLibreViewStateImpl` - MapLibre Map
 
 ## Core Properties
 
 ### Initialization State
 
-- **`isInitialized: StateFlow<InitState>`**: Tracks the map initialization status
-  - `NotStarted`: Map initialization has not begun
-  - `Initializing`: Map is currently being initialized
+- **`isInitialized: StateFlow<InitState>`**: Tracks the map's initialization state
+  - `NotStarted`: Map initialization has not started
+  - `Initializing`: Map is currently initializing
   - `Initialized`: Map is ready to use
   - `Failed`: Initialization failed
 
 ### Camera Management
 
-- **`cameraPosition: StateFlow<MapCameraPositionImpl?>`**: Current camera position
-- **`initCameraPosition: MapCameraPositionImpl`**: Initial camera position when map loads
+- **`cameraPosition: MapCameraPositionImpl`**: Current camera position and initial camera position when the map loads
 
 ### Map Design
 
 - **`mapDesignType: ActualMapDesignType`**: Map style/design (provider-specific)
 
-## Core Methods
-
-### Initialization
-
-```kotlin
-fun initAsync(init: suspend () -> Boolean)
-```
-Initializes the map asynchronously. Returns `true` if successful.
-
-```kotlin
-fun resetInitState()
-```
-Resets the initialization state to `NotStarted`.
-
 ### Camera Movement
 
-```kotlin
-fun moveCameraTo(
-    cameraPosition: MapCameraPositionImpl,
-    durationMills: Long? = 0,
-    listener: MoveCameraCallback? = null
-)
-```
-Moves the camera to a specific position with optional animation.
+<Tabs>
+<TabItem label="Simple Movement">
+- `moveCameraTo(GeoPointImpl, Long?)`
 
-```kotlin
-fun moveCameraTo(
-    position: GeoPointImpl,
-    durationMills: Long? = 0,
-    listener: MoveCameraCallback? = null
-)
-```
-Moves the camera to focus on a specific geographic point.
+    <MoveCameraToGeoPointSignature />
 
-## Usage Example
+    - Moves the camera to the specified position. Zoom and tilt angles are maintained from the time `moveCameraTo` is called.
+    - When `durationMills` is specified in milliseconds, the camera moves with animation.
+</TabItem>
+<TabItem label="Movement with Camera Options">
+- `moveCameraTo(MapCameraPositionImpl, Long?)`
 
-### Basic Setup
+    <MoveCameraToCameraPositionSignature />
 
-```kotlin
-@Composable
-fun MapExample() {
-    // Create map state (choose your provider)
-    val mapViewState = rememberGoogleMapViewState()
+    - Moves the camera using a `MapCameraPositionImpl`. Zoom and tilt can be specified at the same time. Properties that are omitted maintain their values from when `moveCameraTo` is called.
+    - When `durationMills` is specified in milliseconds, the camera moves with animation.
+</TabItem>
+</Tabs>
 
-    // Monitor initialization state
-    val initState by mapViewState.isInitialized.collectAsState()
-
-    when (initState) {
-        InitState.NotStarted -> Text("Map not started")
-        InitState.Initializing -> CircularProgressIndicator()
-        InitState.Initialized -> {
-            // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
-MapView(state = mapViewState) {
-                // Add map content here
-            }
-        }
-        InitState.Failed -> Text("Map failed to load")
-    }
-}
-```
+## Usage Examples
 
 ### Camera Control
 
-```kotlin
-@Composable
-fun CameraControlExample() {
-    val mapViewState = rememberGoogleMapViewState()
+<CameraControlExample />
 
-    Column {
-        Button(
-            onClick = {
-                val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-                mapViewState.moveCameraTo(
-                    position = sanFrancisco,
-                    durationMills = 1000,
-                    listener = object : MapViewState.MoveCameraCallback {
-                        override fun onComplete() {
-                            println("Camera movement completed")
-                        }
-                    }
-                )
-            }
-        ) {
-            Text("Move to San Francisco")
-        }
+### Map Design Switching
 
-        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
-MapView(state = mapViewState) {
-            // Map content
-        }
-    }
-}
-```
-
-### Provider Switching
-
-```kotlin
-@Composable
-fun ProviderSwitchExample() {
-    var selectedProvider by remember { mutableStateOf("google") }
-
-    val mapViewState = remember(selectedProvider) {
-        when (selectedProvider) {
-            "google" -> GoogleMapViewStateImpl()
-            "mapbox" -> MapboxViewStateImpl()
-            "here" -> HereViewStateImpl()
-            "arcgis" -> ArcGISMapViewStateImpl()
-            else -> GoogleMapViewStateImpl()
-        }
-    }
-
-    Column {
-        Row {
-            Button(onClick = { selectedProvider = "google" }) {
-                Text("Google Maps")
-            }
-            Button(onClick = { selectedProvider = "mapbox" }) {
-                Text("Mapbox")
-            }
-            Button(onClick = { selectedProvider = "here" }) {
-                Text("HERE")
-            }
-            Button(onClick = { selectedProvider = "arcgis" }) {
-                Text("ArcGIS")
-            }
-        }
-
-        // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
-MapView(state = mapViewState) {
-            Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(label = selectedProvider)
-            )
-        }
-    }
-}
-```
+<MapDesignSwitchExample />
 
 ## Event Handling
 
-The `MapViewState` works with your chosen map provider component to provide comprehensive event handling:
+`MapViewState` works with your chosen map provider component to provide comprehensive event handling:
 
-```kotlin
-// Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
-MapView(
-    state = mapViewState,
-    onMapViewInitialized = {
-        println("Map view initialized")
-    },
-    onMapLoaded = {
-        println("Map loaded successfully")
-    },
-    onMapClick = { geoPoint ->
-        println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
-    }
-) {
-    // Map content
-}
-```
+<MapViewStateEventHandlingExample />
 
 ## Best Practices
 
-1. **Remember State**: Always use `remember` to maintain state across recompositions
-2. **Monitor Initialization**: Check initialization state before adding content
-3. **Handle Failures**: Provide fallback UI for initialization failures
-4. **Provider Abstraction**: Write code that works with any provider implementation
-5. **Resource Management**: Allow the SDK to handle lifecycle management automatically
+1. **State Initialization**: Initialize MapViewState with appropriate camera position and bounds
+2. **Camera Animation**: Use reasonable animation durations for smooth user experience (500ms - 3000ms)
+3. **State Stability**: Use `remember` to maintain state across recompositions
+4. **Reactive Updates**: Use StateFlow for reactive updates to initialization state
+5. **Error Handling**: Check initialization state before performing camera operations
+6. **Memory Management**: Clean up listeners when the map is no longer needed
+

@@ -2,129 +2,25 @@
 title: "MapViewComponent"
 ---
 
-MapConductor provides provider-specific map view components that serve as the foundation for displaying maps in your application. Each map provider has its own implementation while maintaining a consistent API interface.
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import GoogleMapsExample from '~/components/components/mapviewcomponent/GoogleMapsExample.astro';
+import MapboxExample from '~/components/components/mapviewcomponent/MapboxExample.astro';
+import AdvancedMapEventHandlingExample from '~/components/components/mapviewcomponent/AdvancedMapEventHandlingExample.astro';
+import MapViewComponentSignaturesTabs from '~/components/components/mapviewcomponent/MapViewComponentSignaturesTabs.astro';
+import ProviderIndependentMapContentExample from '~/components/components/mapviewcomponent/ProviderIndependentMapContentExample.astro';
 
-## Provider-Specific Components
+MapConductor provides map provider-specific map view components that serve as the foundation for displaying maps in your application. Each map SDK has its own implementation, but a consistent API interface is maintained across all providers.
 
-MapConductor supports multiple map providers, each with their dedicated component:
+## Map Provider-Specific Components
 
-### GoogleMapView
-For Google Maps integration:
-```kotlin
-GoogleMapView(
-    state: GoogleMapViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    onGroundImageClick: OnGroundImageEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
+MapConductor supports multiple map SDKs, each with a dedicated component.
+Multiple objects (markers, polylines, etc.) are typically placed on a map, so rather than setting event callbacks on individual objects,
+event callbacks are set on the map provider-specific component.
 
-### MapboxMapView
-For Mapbox integration:
-```kotlin
-MapboxMapView(
-    state: MapboxViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
+Provider-specific special event callbacks are not yet supported in v{BOM_MODULE_VERSION}.
 
-### HereMapView
-For HERE Maps integration:
-```kotlin
-HereMapView(
-    state: HereViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
+<MapViewComponentSignaturesTabs />
 
-### ArcGISMapView
-For ArcGIS integration:
-```kotlin
-ArcGISMapView(
-    state: ArcGISMapViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
-    onMapViewInitialized: OnMapViewInitializedHandler? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapViewScope.() -> Unit)? = null
-)
-```
-
-### MapLibreMapView
-For MapLibre integration:
-```kotlin
-MapLibreMapView(
-    state: MapLibreViewStateImpl,
-    modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
-    onMapLoaded: OnMapLoadedHandler? = null,
-    onMapClick: OnMapEventHandler? = null,
-    onCameraMoveStart: OnCameraMoveHandler? = null,
-    onCameraMove: OnCameraMoveHandler? = null,
-    onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    content: (@Composable MapLibreMapViewScope.() -> Unit)? = null
-)
-```
 
 ## Common Parameters
 
@@ -133,17 +29,16 @@ All map view components share the following parameters:
 ### Core Parameters
 
 - **`modifier`**: Compose modifier for styling and layout
-- **`state`**: Provider-specific map view state implementation
+- **`state`**: Map provider-specific map view state implementation
 - **`content`**: Composable content containing map overlays (markers, circles, etc.)
 
 ### Event Handlers
 
-- **`onMapViewInitialized`**: Called when the map view is first initialized
 - **`onMapLoaded`**: Called when the map has finished loading
 - **`onMapClick`**: Called when the user taps on the map
-- **Camera Events**: `onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`
-- **Marker Events**: `onMarkerClick`, `onMarkerDragStart`, `onMarkerDrag`, `onMarkerDragEnd`, `onMarkerAnimateStart`, `onMarkerAnimateEnd`
-- **Overlay Events**: `onCircleClick`, `onPolylineClick`, `onPolygonClick`, `onGroundImageClick`
+- **Camera events**: `onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`
+- **Marker events**: `onMarkerClick`, `onMarkerDragStart`, `onMarkerDrag`, `onMarkerDragEnd`, `onMarkerAnimateStart`, `onMarkerAnimateEnd`
+- **Overlay events**: `onCircleClick`, `onPolylineClick`, `onPolygonClick`, `onGroundImageClick`
 
 ### Advanced Parameters
 
@@ -151,194 +46,62 @@ All map view components share the following parameters:
 
 ## Usage Examples
 
-### Basic Google Maps Implementation
+<Tabs>
+<TabItem label="Google Maps Implementation">
+<GoogleMapsExample />
+</TabItem>
+<TabItem label="Mapbox Implementation">
+<MapboxExample />
+</TabItem>
+</Tabs>
 
-```kotlin
-@Composable
-fun GoogleMapsExample() {
-    val mapViewState = rememberGoogleMapViewState()
 
-    GoogleMapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        },
-        onMarkerClick = { markerState ->
-            println("Marker clicked: ${markerState.extra}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "SF"),
-            extra = "San Francisco"
-        )
 
-        Circle(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            radiusMeters = 1000.0,
-            strokeColor = Color.Blue,
-            fillColor = Color.Blue.copy(alpha = 0.3f)
-        )
-    }
-}
-```
-![](/img/introduction/basic-googlemaps-example.jpg)
+### Map Provider-Independent Pattern
 
-### Basic Mapbox Implementation
+While specific map components are required for each SDK, you can create provider-independent content:
 
-```kotlin
-@Composable
-fun MapboxExample() {
-    val mapViewState = remember { MapboxViewStateImpl() }
-
-    MapboxMapView(
-        state = mapViewState,
-        onMapClick = { geoPoint ->
-            println("Map clicked at: ${geoPoint.latitude}, ${geoPoint.longitude}")
-        }
-    ) {
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(label = "MB"),
-            extra = "Mapbox marker"
-        )
-
-        Polyline(
-            points = listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7949, -122.3994)
-            ),
-            strokeColor = Color.Red,
-            strokeWidth = 3.dp
-        )
-    }
-}
-```
-![](/img/introduction/basic-mapbox-example.jpg)
-
-### Provider-Agnostic Pattern
-
-While each provider requires its specific component, you can create provider-agnostic content:
-
-```kotlin
-@Composable
-fun MapContent() {
-    Marker(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(label = "Point"),
-        extra = "Common marker"
-    )
-
-    Circle(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        radiusMeters = 500.0,
-        strokeColor = Color.Green,
-        fillColor = Color.Green.copy(alpha = 0.2f)
-    )
-}
-
-@Composable
-fun GoogleMapsScreen() {
-    val state = rememberGoogleMapViewState()
-    GoogleMapView(state = state) {
-        MapContent() // Reusable content
-    }
-}
-
-@Composable
-fun MapboxScreen() {
-    val state = remember { MapboxViewStateImpl() }
-    MapboxMapView(state = state) {
-        MapContent() // Same content, different provider
-    }
-}
-```
+<ProviderIndependentMapContentExample
+  markerLatitude={37.7749}
+  markerLongitude={-122.4194}
+  markerLabel="Point"
+  markerExtra="Common marker"
+  radiusMeters={500.0}
+  strokeColorExpr="Color.Green"
+  fillColorExpr="Color.Green.copy(alpha = 0.2f)"
+  commentForReusableContent="Reusable content"
+  commentForSameContentDifferentSdk="Same content, different map SDK"
+/>
 
 ### Advanced Event Handling
 
-```kotlin
-@Composable
-fun AdvancedMapExample() {
-    val mapViewState = rememberGoogleMapViewState()
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+<AdvancedMapEventHandlingExample />
 
-    GoogleMapView(
-        state = mapViewState,
-        onMapViewInitialized = {
-            println("Map initialized successfully")
-        },
-        onMapLoaded = {
-            println("Map loaded and ready")
-        },
-        onMapClick = { geoPoint ->
-            selectedMarker = null // Deselect on map click
-        },
-        onMarkerClick = { markerState ->
-            selectedMarker = markerState
-        },
-        onMarkerDragStart = { markerState ->
-            println("Started dragging marker: ${markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("Dragging marker to: ${markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("Finished dragging marker: ${markerState.id}")
-        }
-    ) {
-        // Map content with interactive markers
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(
-                fillColor = if (selectedMarker?.id == "marker1") Color.Yellow else Color.Blue,
-                label = "1"
-            ),
-            draggable = true,
-            extra = "Draggable marker 1"
-        )
+## Map SDK Differences
 
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-            icon = DefaultIcon(
-                fillColor = if (selectedMarker?.id == "marker2") Color.Yellow else Color.Red,
-                label = "2"
-            ),
-            extra = "Clickable marker 2"
-        )
-
-        // Show info for selected marker
-        selectedMarker?.let { marker ->
-            // You could show an InfoBubble or other UI here
-        }
-    }
-}
-```
-
-## Provider Differences
-
-While the API is consistent across providers, there are some differences in:
+While the API is consistent across all map SDKs, there are differences in the following areas:
 
 ### Supported Features
 - **GroundImage**: Currently supported on Google Maps and ArcGIS
 - **Marker Animation**: Available on Google Maps and Mapbox
-- **Custom Styling**: Each provider has different map style options
+- **Custom Styling**: Each map SDK has different map style options
 
 ### Performance Characteristics
-- **Google Maps**: Excellent for general use, good marker performance
-- **Mapbox**: Great for custom styling and large datasets
+- **Google Maps**: Excellent for general use with great marker performance
+- **Mapbox**: Optimal for custom styling and large datasets
 - **HERE Maps**: Optimized for location services integration
-- **ArcGIS**: Best for GIS and enterprise applications
+- **ArcGIS**: Optimal for GIS and enterprise applications
 
 ### Platform Integration
-Each provider may have different requirements for API keys, permissions, and platform setup. Refer to the initialization documentation for provider-specific setup instructions.
+Each map SDK may have different requirements regarding API keys, permissions, and platform setup. Refer to the provider-specific setup documentation for details.
 
 ## Best Practices
 
-1. **Choose the Right Provider**: Select based on your app's specific needs (styling, performance, features)
-2. **Consistent State Management**: Use the same state patterns regardless of provider
-3. **Reusable Content**: Create provider-agnostic composable content when possible
+1. **Choose the Right SDK**: Select based on your app's specific needs (styling, performance, features)
+2. **Consistent State Management**: Use the same state patterns regardless of the map SDK
+3. **Reusable Content**: Create provider-independent Composable content when possible
 4. **Event Handling**: Implement comprehensive event handling for better user experience
 5. **Error Handling**: Always handle initialization failures and provide fallback UI
-6. **Performance**: Consider using custom rendering strategies for large numbers of markers
-7. **Testing**: Test your application with multiple providers to ensure compatibility
+6. **Performance**: Consider custom rendering strategies for large marker sets
+7. **Testing**: Test your application with multiple map SDKs to ensure compatibility
+

@@ -2,10 +2,13 @@
 title: HERE Maps Setup
 ---
 
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
 import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
 import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
 import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
-import ProviderVerificationExample from '~/components/setup/ProviderVerificationExample.astro';
+import HereAarPathExample from '~/components/setup/here-maps/HereAarPathExample.astro';
+import AppGradleTabs from '~/components/setup/here-maps/AppGradleTabs.astro';
+import TestHereComposable from '~/components/setup/here-maps/TestHereComposable.astro';
 
 # HERE Maps Setup
 
@@ -34,43 +37,19 @@ This section covers the setup process for HERE SDK integration with MapConductor
 1. Download HERE SDK Explore Android (e.g. `4.23.2.0.210004`, as used in this repository)
 2. Place the AAR file in your project's `libs/` directory:
 
-   ```text
-   libs/heresdk-explore-android-4.23.2.0.210004.aar
-   ```
+   <HereAarPathExample />
 
 3. Ensure the AAR filename matches what you reference in Gradle.
 
 ### 3. Gradle Configuration
 
-Add the Secrets Gradle Plugin to your project's root `build.gradle.kts`:
+Add the Secrets Gradle Plugin to your project's root `build.gradle.kts` or `build.gradle`:
 
-```kotlin
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
+<SecretsPluginRootGradleTabs />
 
-Then, add the dependencies and apply the plugin in your app's `build.gradle.kts`:
+Then, add the dependencies and apply the plugin in your app's `build.gradle.kts` or `build.gradle`:
 
-```kotlin
-// App build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // HERE SDK (local AAR)
-    implementation(files("${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar"))
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-here")
-}
-```
+<AppGradleTabs />
 
 The Secrets Gradle Plugin automatically reads your `secrets.properties` file and can be used to inject values into your `AndroidManifest.xml`.
 
@@ -117,12 +96,7 @@ To verify your HERE Maps setup:
 2. Check that the HERE map displays correctly
 3. Test map interactions and HERE-specific features
 
-<ProviderVerificationExample
-  provider="HereMap"
-  functionName="TestHERE"
-  comment="If this displays correctly, your setup is working"
-  imageUrl="~/assets/setup/basic-setup-here.png"
-/>
+<TestHereComposable />
 
 ## Troubleshooting
 

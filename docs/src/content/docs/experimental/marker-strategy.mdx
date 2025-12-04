@@ -99,12 +99,26 @@ Advanced strategy with spatial clustering and optimization:
 
 ### Performance Characteristics
 
-| Strategy | Best For | Memory Usage | Network | Complexity |
-|----------|----------|--------------|---------|------------|
-| DefaultMarkerStrategy | Google Maps, ArcGIS | Medium | None | Medium |
-| SimpleMarkerStrategy | Mapbox, HERE | Low | None | Low |
-| SpatialMarkerStrategy | Large datasets | High | None | High |
-| RemoteSpatialMarkerStrategy | Server-side data | Low | High | High |
+- **DefaultMarkerStrategy**
+  - Best for: Google Maps, ArcGIS
+  - Memory usage: Medium
+  - Network: None
+  - Complexity: Medium
+- **SimpleMarkerStrategy**
+  - Best for: Mapbox, HERE
+  - Memory usage: Low
+  - Network: None
+  - Complexity: Low
+- **SpatialMarkerStrategy**
+  - Best for: Large datasets
+  - Memory usage: High
+  - Network: None
+  - Complexity: High
+- **RemoteSpatialMarkerStrategy**
+  - Best for: Server-side data
+  - Memory usage: Low
+  - Network: High
+  - Complexity: High
 
 ### Use Case Guidelines
 
@@ -116,7 +130,7 @@ Advanced strategy with spatial clustering and optimization:
 
 #### Choose SimpleMarkerStrategy when:
 - Using Mapbox or HERE Maps
-- Have smaller marker counts (<10,000)
+- Have smaller marker counts (&lt;10,000)
 - Want minimal overhead
 - Simple rendering requirements
 
