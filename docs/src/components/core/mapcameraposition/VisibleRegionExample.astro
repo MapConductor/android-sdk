@@ -15,16 +15,29 @@ const {
 
 const code = `@Composable
 fun VisibleRegionExample() {
-    var cameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
+
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            zoom = 15.0
+        ),
+    )
+    var visibleRegionInfo by remember { mutableStateOf<VisibleRegion?>(null) }
 
     // ${commentForMapViewUsage}
-    MapView(
+    MapboxMapView(
         state = mapViewState,
+        modifier = modifier,
+        onCameraMoveEnd = { cameraPosition ->
+            cameraPosition.visibleRegion?.let { visibleRegion ->
+                visibleRegionInfo = visibleRegion
+            }
+        },
     ) {
         // ${commentForDisplayRegion}
-        cameraPosition?.visibleRegion?.let { region ->
+        visibleRegionInfo?.let { region ->
             // ${commentForShowBounds}
-            region.bounds?.let { bounds ->
+            region.bounds.let { bounds ->
                 if (!bounds.isEmpty) {
                     val sw = bounds.southWest!!
                     val ne = bounds.northEast!!

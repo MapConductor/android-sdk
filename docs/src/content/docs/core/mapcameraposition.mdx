@@ -43,7 +43,7 @@ The main implementation provides immutable camera position data:
 ### View Configuration
 
 - **`paddings: MapPaddings?`**: Viewport padding that affects the visible region
-- **`visibleRegion: VisibleRegion?`**: The actual geographic bounds visible on screen. **Note: this property does not work in v{BOM_MODULE_VERSION} yet**.
+- **`visibleRegion: VisibleRegion?`**: `(Readonly)` The actual geographic bounds visible on screen. **Note: this property does not work in v{BOM_MODULE_VERSION} yet**.
 
 ## Creation Methods
 
@@ -104,6 +104,9 @@ Bearing rotates the map around the center point:
   bearingNorth={0.0}
   bearingEast={90.0}
   bearingRoute={135.0}
+  northUpComment="North-up (default)"
+  eastUpComment="East-up"
+  followingBearingComment="Following route bearing"
   routeComment="Southeast"
 />
 
@@ -120,6 +123,9 @@ Tilt provides 3D viewing angles:
   streetTilt={80.0}
   streetBearing={45.0}
   streetZoom={19.0}
+  topDownComment="Top-down view (default)"
+  angledComment="Slight angle for depth"
+  streetLevelComment="Maximum tilt for street-level view"
 />
 
 ## Visible Region
@@ -128,7 +134,18 @@ The visible region describes the actual geographic area shown on screen after co
 
 ### VisibleRegion Class
 
-<VisibleRegionDataClass />
+<VisibleRegionDataClass
+  boundsComment="Overall bounding rectangle"
+  nearLeftComment="Bottom-left corner (near to camera)"
+  nearRightComment="Bottom-right corner (near to camera)"
+  farLeftComment="Top-left corner (far from camera)"
+  farRightComment="Top-right corner (far from camera)"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/visible-region-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/visible-region-example.mp4" type="video/mp4" />
+</video>
 
 ### Properties
 
@@ -157,6 +174,16 @@ The visible region describes the actual geographic area shown on screen after co
   moveDurationMillis={1000}
 />
 
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/animated-camera-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/animated-camera-example.mp4" type="video/mp4" />
+</video>
+
 ### Interactive Camera Control
 
 <CameraControlExample commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView" />
+
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/camera-control-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/camera-control-example.mp4" type="video/mp4" />
+</video>

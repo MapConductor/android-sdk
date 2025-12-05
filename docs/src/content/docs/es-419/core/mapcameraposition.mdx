@@ -43,7 +43,7 @@ La implementación principal proporciona datos inmutables de la posición de la 
 ### Configuración de la vista
 
 - **`paddings: MapPaddings?`**: Márgenes del viewport que afectan a la región visible. **Nota: esta propiedad aún no funciona en v{BOM_MODULE_VERSION}**.
-- **`visibleRegion: VisibleRegion?`**: Límites geográficos que realmente se ven en pantalla.
+- **`visibleRegion: VisibleRegion?`**: `(Solo lectura)` Límites geográficos que realmente se ven en pantalla.
 
 ## Formas de creación
 
@@ -104,6 +104,9 @@ El rumbo rota el mapa alrededor del punto central:
   bearingNorth={0.0}
   bearingEast={90.0}
   bearingRoute={135.0}
+  northUpComment="Norte arriba (por defecto)"
+  eastUpComment="Este arriba"
+  followingBearingComment="Siguiendo el rumbo de la ruta"
   routeComment="Sureste"
 />
 
@@ -120,6 +123,9 @@ La inclinación proporciona ángulos de vista en 3D:
   streetTilt={80.0}
   streetBearing={45.0}
   streetZoom={19.0}
+  topDownComment="Vista cenital (por defecto)"
+  angledComment="Ángulo ligero para dar profundidad"
+  streetLevelComment="Inclinación máxima para vista a nivel de calle"
 />
 
 ## Región visible
@@ -128,7 +134,13 @@ La región visible describe el área geográfica real mostrada en pantalla tenie
 
 ### Clase VisibleRegion
 
-<VisibleRegionDataClass />
+<VisibleRegionDataClass
+  boundsComment="Rectángulo delimitador general"
+  nearLeftComment="Esquina inferior izquierda (cerca de la cámara)"
+  nearRightComment="Esquina inferior derecha (cerca de la cámara)"
+  farLeftComment="Esquina superior izquierda (lejos de la cámara)"
+  farRightComment="Esquina superior derecha (lejos de la cámara)"
+/>
 
 ### Propiedades
 
@@ -146,6 +158,11 @@ La región visible describe el área geográfica real mostrada en pantalla tenie
   commentForShowBounds="Mostrar límites como polígono"
 />
 
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/visible-region-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/visible-region-example.mp4" type="video/mp4" />
+</video>
+
 ## Animación y transiciones
 
 ### Movimiento suave de cámara
@@ -157,6 +174,16 @@ La región visible describe el área geográfica real mostrada en pantalla tenie
   moveDurationMillis={1000}
 />
 
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/animated-camera-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/animated-camera-example.mp4" type="video/mp4" />
+</video>
+
 ### Control interactivo de cámara
 
 <CameraControlExample commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView" />
+
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/camera-control-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/camera-control-example.mp4" type="video/mp4" />
+</video>

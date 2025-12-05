@@ -1,12 +1,28 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
+interface Props {
+  boundsComment?: string;
+  nearLeftComment?: string;
+  nearRightComment?: string;
+  farLeftComment?: string;
+  farRightComment?: string;
+}
+
+const {
+  boundsComment = "Overall bounding rectangle",
+  nearLeftComment = "Bottom-left corner (near to camera)",
+  nearRightComment = "Bottom-right corner (near to camera)",
+  farLeftComment = "Top-left corner (far from camera)",
+  farRightComment = "Top-right corner (far from camera)"
+} = Astro.props;
+
 const code = `data class VisibleRegion(
-    val bounds: GeoRectBounds,        // Overall bounding rectangle
-    val nearLeft: GeoPoint?,          // Bottom-left corner (near to camera)
-    val nearRight: GeoPoint?,         // Bottom-right corner (near to camera)
-    val farLeft: GeoPoint?,           // Top-left corner (far from camera)
-    val farRight: GeoPoint?           // Top-right corner (far from camera)
+    val bounds: GeoRectBounds,        // ${boundsComment}
+    val nearLeft: GeoPoint?,          // ${nearLeftComment}
+    val nearRight: GeoPoint?,         // ${nearRightComment}
+    val farLeft: GeoPoint?,           // ${farLeftComment}
+    val farRight: GeoPoint?           // ${farRightComment}
 )`;
 ---
 

@@ -43,7 +43,7 @@ import NavigationCameraExample from '~/components/core/mapcameraposition/Navigat
 ### ビュー構成
 
 - **`paddings: MapPaddings?`**: 可視領域に影響するビューポートのパディング
-- **`visibleRegion: VisibleRegion?`**: 画面上で実際に表示される地理的境界
+- **`visibleRegion: VisibleRegion?`**: `(読み込み専用)` 画面上で実際に表示される地理的境界
 
 ## 生成メソッド
 
@@ -104,6 +104,9 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
   bearingNorth={0.0}
   bearingEast={90.0}
   bearingRoute={135.0}
+  northUpComment="北向き（デフォルト）"
+  eastUpComment="東向き"
+  followingBearingComment="ルートの方位角に従う"
   routeComment="南東"
 />
 
@@ -120,6 +123,9 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
   streetTilt={80.0}
   streetBearing={45.0}
   streetZoom={19.0}
+  topDownComment="真上からの眺め（デフォルト）"
+  angledComment="奥行きを出すための傾斜"
+  streetLevelComment="ストリートレベルの最大傾斜"
 />
 
 ## 可視領域
@@ -128,7 +134,13 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
 
 ### VisibleRegion クラス
 
-<VisibleRegionDataClass />
+<VisibleRegionDataClass
+  boundsComment="全体の境界矩形"
+  nearLeftComment="左下角（カメラに近い側）"
+  nearRightComment="右下角（カメラに近い側）"
+  farLeftComment="左上角（カメラから遠い側）"
+  farRightComment="右上角（カメラから遠い側）"
+/>
 
 ### プロパティ
 
@@ -146,6 +158,11 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
   commentForShowBounds="境界をポリゴンとして表示"
 />
 
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/visible-region-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/visible-region-example.mp4" type="video/mp4" />
+</video>
+
 ## アニメーションと遷移
 
 ### スムーズなカメラ移動
@@ -157,8 +174,18 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
   moveDurationMillis={1000}
 />
 
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/animated-camera-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/animated-camera-example.mp4" type="video/mp4" />
+</video>
+
 ### インタラクティブなカメラ制御
 
 <CameraControlExample
   commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
 />
+
+<video width="720" height="480" controls>
+ <source src="/mapcameraposition/camera-control-example.webm" type="video/webm" />
+ <source src="/mapcameraposition/camera-control-example.mp4" type="video/mp4" />
+</video>

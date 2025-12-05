@@ -10,6 +10,9 @@ interface Props {
   streetTilt?: number;
   streetBearing?: number;
   streetZoom?: number;
+  topDownComment?: string;
+  angledComment?: string;
+  streetLevelComment?: string;
 }
 
 const {
@@ -20,23 +23,26 @@ const {
   angledZoom = 16.0,
   streetTilt = 80.0,
   streetBearing = 45.0,
-  streetZoom = 19.0
+  streetZoom = 19.0,
+  topDownComment = "Top-down view (default)",
+  angledComment = "Slight angle for depth",
+  streetLevelComment = "Maximum tilt for street-level view"
 } = Astro.props;
 
-const code = `// Top-down view (default)
+const code = `// ${topDownComment}
 val topDown = MapCameraPositionImpl(
     position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
     tilt = ${topDownTilt}
 )
 
-// Slight angle for depth
+// ${angledComment}
 val angled = MapCameraPositionImpl(
     position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
     tilt = ${angledTilt},
     zoom = ${angledZoom}
 )
 
-// Maximum tilt for street-level view
+// ${streetLevelComment}
 val streetLevel = MapCameraPositionImpl(
     position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
     tilt = ${streetTilt},
