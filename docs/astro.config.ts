@@ -91,7 +91,6 @@ export default defineConfig({
 						{ slug: 'core/geopoint' },
 						{ slug: 'core/georectbounds' },
 						{ slug: 'core/mapcameraposition' },
-						{ slug: 'core/mapviewholder' },
 						{ slug: 'core/marker-icons' },
 						{ slug: 'core/marker-animation' },
 						{ slug: 'core/spherical-utilities' },
@@ -121,6 +120,18 @@ export default defineConfig({
 						{ slug: 'api/event-handlers' },
 					],
 				},
+				{
+					label: 'MapViewHolder',
+					items: [
+						{ slug: 'mapviewholder' },
+						{ slug: 'mapviewholder/googlemaps' },
+						{ slug: 'mapviewholder/mapbox' },
+						{ slug: 'mapviewholder/here-maps' },
+						{ slug: 'mapviewholder/arcgis' },
+						{ slug: 'mapviewholder/maplibre' },
+					],
+				},
+				
 				// {
 				// 	label: 'Examples',
 				// 	translations: {

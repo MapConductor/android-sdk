@@ -1,0 +1,48 @@
+---
+title: "GoogleMapViewHolder"
+---
+
+import GoogleMapViewHolder from '~/components/core/mapviewholder/GoogleMapViewHolder.astro';
+import GoogleMapViewHolderAccess from '~/components/core/mapviewholder/GoogleMapViewHolderAccess.astro';
+import GoogleMapViewHolderExample from '~/components/core/mapviewholder/GoogleMapViewHolderExample.astro';
+
+
+## 概要
+
+Google Maps API固有の機能にアクセスするためには、`GoogleMapViewHolder`を使います。
+`GoogleMapViewHolder`の定義は次のとおりです。
+
+<GoogleMapViewHolder />
+### プロパティ
+
+- **`mapView: MapView`**: GoogleMapViewコンポーネント内部で生成したMapView
+- **`map: GoogleMap`**: MapViewを操作するためのGoogleMapクラス
+
+### メソッド
+
+- **`toScreenOffset(position: GeoPoint): Offset?`**: GeoPointで示す地図上の位置を、MapView左上を(0,0)としたDp値で返します
+- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: MapView左上を(0,0)としたDp値で指定した位置の、地図上でのGeoPoint位置を返します
+
+
+## GoogleMapViewHolderの取得
+
+`GoogleMapViewHolder`は、地図の初期化後に `getMapViewHolder()`を通じて取得できます。
+
+<GoogleMapViewHolderAccess />
+
+
+### サンプル
+
+<GoogleMapViewHolderExample
+  commentCameraPosition="地図のカメラ位置"
+  commentRecompose="mutableStateOfにすることで、mapStyleが変化したら 再描画"
+  commentGetViewHolder="ViewHolderの取得"
+  commentNormalMap="通常のGoogle Maps"
+  commentSimplifiedMap="地図を簡略化したデザイン"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-googlemaps-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-googlemaps-example.mp4" type="video/mp4" />
+</video>
+

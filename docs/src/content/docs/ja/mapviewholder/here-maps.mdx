@@ -1,0 +1,49 @@
+---
+title: "HereMapViewHolder"
+---
+
+import HereMapViewHolder from '~/components/core/mapviewholder/HereMapViewHolder.astro';
+import HereMapViewHolderAccess from '~/components/core/mapviewholder/HereMapViewHolderAccess.astro';
+import HereMapViewHolderExample from '~/components/core/mapviewholder/HereMapViewHolderExample.astro';
+
+
+## 概要
+
+HERE SDK固有の機能にアクセスするためには、`HereMapViewHolder`を使います。
+`HereMapViewHolder`の定義は次のとおりです。
+
+<HereMapViewHolder />
+
+### プロパティ
+
+- **`mapView: MapView`**: HereMapViewコンポーネント内部で生成したMapView
+- **`map: MapScene`**: MapViewを操作するためのMapSceneクラス
+
+### メソッド
+
+- **`toScreenOffset(position: GeoPoint): Offset?`**: GeoPointで示す地図上の位置を、MapView左上を(0,0)としたDp値で返します
+- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: MapView左上を(0,0)としたDp値で指定した位置の、地図上でのGeoPoint位置を返します
+
+
+## HereMapViewHolderの取得
+
+`HereMapViewHolder`は、地図の初期化後に `getMapViewHolder()`を通じて取得できます。
+
+<HereMapViewHolderAccess />
+
+
+### サンプル
+
+<HereMapViewHolderExample
+  commentCameraPosition="地図のカメラ位置"
+  commentMapScheme="mutableStateOfにすることで、mapSchemeが変化したら 再描画"
+  commentGetViewHolder="ViewHolderの取得"
+  commentNormalDay="通常の地図表示"
+  commentSatellite="衛星画像表示"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-here-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-here-example.mp4" type="video/mp4" />
+</video>
+

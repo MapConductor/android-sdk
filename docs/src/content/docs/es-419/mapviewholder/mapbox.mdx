@@ -1,0 +1,35 @@
+---
+title: "MapViewHolder"
+---
+
+import MapboxMapViewHolderAccessExample from '~/components/core/mapviewholder/MapViewHolderAccessExample.astro';
+import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
+
+`MapViewHolder` は、MapConductor の統一 API でカバーされていない特定の地図SDK機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolder がこのギャップを埋めます。
+
+## 概要
+
+Mapboxの固有の機能にアクセスするためには、`MapboxMapViewHolder` を使います。
+
+<MapViewHolderInterface />
+
+## MapViewHolder へのアクセス
+
+`MapboxMapViewState`の`getMapViewHolder()`を通じて取得します。地図が初期化されてから取得できます。
+
+<MapboxMapViewHolderAccessExample />
+
+
+### Mapbox
+
+<MapboxMapViewHolderExample
+  commentPermissionLogic="位置情報アクセス許可後の処理（例: Maps SDK の LocationComponent を有効化してデバイスの位置を表示）"
+  commentExplanationNeeded="位置情報アクセス権限を取得するための説明を表示"
+  commentPermissionDenied="ユーザーが権限を拒否した"
+  commentGetViewHolder="ViewHolderの取得"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-mapbox-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-mapbox-example.mp4" type="video/mp4" />
+</video>

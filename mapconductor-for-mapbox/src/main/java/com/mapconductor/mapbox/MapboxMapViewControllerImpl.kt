@@ -60,8 +60,6 @@ internal class MapboxMapViewControllerImpl(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapboxMapViewController,
-    CameraChangedCallback,
-    StyleLoadedCallback,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
@@ -100,8 +98,47 @@ internal class MapboxMapViewControllerImpl(
     }
 
     fun setupListeners() {
-        holder.map.subscribeCameraChanged(this)
-        holder.map.subscribeStyleLoaded(this)
+        holder.map.subscribeCameraChanged {
+            coroutine.launch {
+                getMapCameraPosition()?.let { mapCameraPosition ->
+                    backCoroutine.launch {
+                        notifyMapCameraPosition(mapCameraPosition)
+                        cameraMoveCallback?.invoke(mapCameraPosition)
+                    }
+                }
+            }
+        }
+        holder.map.subscribeStyleLoaded {
+            mapLoadedCallback?.invoke()
+            mapLoadedCallback = null
+
+            holder.map.style?.let { style ->
+                // When style reloads, our runtime sources/layers/images are dropped.
+                // Reattach overlays and ensure marker images exist, then redraw.
+                attachOverlaySourcesAndLayers(style)
+                markerController.renderer.ensureStyleImages(style)
+                markerController.renderer.redraw()
+
+                // After style is ready, trigger an initial camera update
+                sendInitialCameraUpdate()
+
+                style.toMapDesignType().let { mapDesign ->
+                    this@MapboxMapViewControllerImpl.mapDesignType = mapDesign
+                    mapDesignTypeChangeListener?.invoke(mapDesign)
+                }
+            }
+        }
+        holder.map.subscribeMapIdle {
+            coroutine.launch {
+                getMapCameraPosition()?.let { mapCameraPosition ->
+                    backCoroutine.launch {
+                        notifyMapCameraPosition(mapCameraPosition)
+                        cameraMoveEndCallback?.invoke(mapCameraPosition)
+                    }
+                }
+            }
+        }
+
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
 
@@ -110,6 +147,7 @@ internal class MapboxMapViewControllerImpl(
 
         holder.map.removeOnMoveListener(this)
         holder.map.addOnMoveListener(this)
+
     }
 
     override suspend fun clearOverlays() {
@@ -144,16 +182,6 @@ internal class MapboxMapViewControllerImpl(
         this.circleController.clickListener = listener
     }
 
-    override fun run(cameraChanged: CameraChanged) {
-        coroutine.launch {
-            getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
-                backCoroutine.launch {
-                    notifyMapCameraPosition(mapCameraPosition)
-                }
-            }
-        }
-    }
-
     override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
 
     override fun hasPolyline(state: PolylineState): Boolean =
@@ -166,7 +194,7 @@ internal class MapboxMapViewControllerImpl(
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
-    private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPositionImpl? {
+    private fun getMapCameraPosition(): MapCameraPositionImpl? {
 //        val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
 
@@ -213,7 +241,6 @@ internal class MapboxMapViewControllerImpl(
         val cameraOptions = position.toCameraOptions()
         coroutine.launch {
             holder.map.setCamera(cameraOptions)
-            cameraMoveEndCallback?.invoke(position)
         }
     }
 
@@ -236,7 +263,6 @@ internal class MapboxMapViewControllerImpl(
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
-                    cameraMoveEndCallback?.invoke(position)
                 }
 
                 override fun onAnimationCancel(animation: Animator) {
@@ -399,28 +425,6 @@ internal class MapboxMapViewControllerImpl(
 
     override fun setMapDesignTypeChangeListener(listener: MapboxMapDesignTypeChangeHandler) {
         mapDesignTypeChangeListener = listener
-        listener(mapDesignType)
-    }
-
-    override fun run(styleLoaded: StyleLoaded) {
-        mapLoadedCallback?.invoke()
-        mapLoadedCallback = null
-
-        holder.map.style?.let { style ->
-            // When style reloads, our runtime sources/layers/images are dropped.
-            // Reattach overlays and ensure marker images exist, then redraw.
-            attachOverlaySourcesAndLayers(style)
-            markerController.renderer.ensureStyleImages(style)
-            markerController.renderer.redraw()
-
-            // After style is ready, trigger an initial camera update
-            sendInitialCameraUpdate()
-
-            style.toMapDesignType().let { mapDesign ->
-                this@MapboxMapViewControllerImpl.mapDesignType = mapDesign
-                mapDesignTypeChangeListener?.invoke(mapDesign)
-            }
-        }
     }
 
     private fun ensurePolygonZLayers(style: com.mapbox.maps.Style) {

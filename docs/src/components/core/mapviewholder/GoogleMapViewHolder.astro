@@ -1,0 +1,16 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `typealias GoogleMapViewHolder = MapViewHolder<MapView, GoogleMap>
+
+class GoogleMapViewHolderImpl(
+    override val mapView: MapView,
+    override val map: GoogleMap,
+) : MapViewHolder<MapView, GoogleMap> {
+    fun toScreenOffset(position: GeoPoint): Offset?
+    suspend fun fromScreenOffset(offset: Offset): GeoPointImpl?
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

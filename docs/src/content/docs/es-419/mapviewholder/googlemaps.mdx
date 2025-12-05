@@ -1,0 +1,31 @@
+---
+title: "MapViewHolder - Google Maps"
+---
+
+import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
+import GoogleMapViewHolderAccess from '~/components/core/mapviewholder/GoogleMapViewHolderAccess.astro';
+import GoogleMapViewHolderExample from '~/components/core/mapviewholder/GoogleMapViewHolderExample.astro';
+
+
+## Visión general
+
+Para acceder a funciones específicas de la API de Google Maps, usa `mapViewHolder`.
+
+<GoogleMapViewHolderAccessExample />
+
+## Implementación específica del proveedor
+
+### Google Maps
+
+<GoogleMapViewHolderExample
+  commentCameraPosition="Posición de la cámara del mapa"
+  commentRecompose="Usando mutableStateOf, recomponer cuando cambie mapStyle"
+  commentGetViewHolder="Obtener ViewHolder"
+  commentNormalMap="Google Maps normal"
+  commentSimplifiedMap="Diseño de mapa simplificado"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-googlemaps-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-googlemaps-example.mp4" type="video/mp4" />
+</video>

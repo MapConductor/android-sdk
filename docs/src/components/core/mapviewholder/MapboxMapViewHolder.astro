@@ -1,0 +1,19 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
+
+class MapboxMapViewHolderImpl(
+    override val mapView: MapView,
+    override val map: MapboxMap,
+) : MapViewHolder<MapView, MapboxMap>,
+    MapboxLifecycleObserver {
+    fun toScreenOffset(position: GeoPoint): Offset?
+    fun fromScreenOffsetSync(offset: Offset): GeoPointImpl?
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPointImpl?
+    suspend fun fromScreenOffset(offset: Offset): GeoPointImpl?
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `typealias HereMapViewHolder = MapViewHolder<MapView, MapScene>
+
+class HereMapViewHolderImpl(
+    override val mapView: MapView,
+    override val map: MapScene,
+) : MapViewHolder<MapView, MapScene> {
+    fun toScreenOffset(position: GeoPoint): Offset?
+    suspend fun fromScreenOffset(offset: Offset): GeoPointImpl?
+}`;
+---
+
+<Code code={code} lang="kotlin" />

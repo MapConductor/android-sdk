@@ -8,7 +8,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapViewHolder
 import android.graphics.Point
 
-internal class GoogleMapViewHolderImpl(
+class GoogleMapViewHolderImpl(
     override val mapView: MapView,
     override val map: GoogleMap,
 ) : MapViewHolder<MapView, GoogleMap> {

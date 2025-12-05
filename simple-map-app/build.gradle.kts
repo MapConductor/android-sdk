@@ -76,6 +76,7 @@ dependencies {
     // Mapbox SDK
     implementation(libs.mapbox.android)
     debugImplementation(project(":mapconductor-for-mapbox"))
+//    implementation("com.mapbox.plugin:maps-locationcomponent:11.17.0")
 
     // MapLibre SDK
     implementation(libs.maplibre.sdk)

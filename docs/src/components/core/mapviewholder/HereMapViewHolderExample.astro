@@ -1,0 +1,78 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentCameraPosition?: string;
+  commentMapScheme?: string;
+  commentGetViewHolder?: string;
+  commentNormalDay?: string;
+  commentSatellite?: string;
+}
+
+const {
+  commentCameraPosition = "地図のカメラ位置",
+  commentMapScheme = "mutableStateOfにすることで、mapSchemeが変化したら 再描画",
+  commentGetViewHolder = "ViewHolderの取得",
+  commentNormalDay = "通常の地図表示",
+  commentSatellite = "衛星画像表示"
+} = Astro.props;
+
+const code = `@Composable
+fun MapViewHolderHereMapsExample(modifier: Modifier = Modifier) {
+    // ${commentCameraPosition}
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+            zoom = 12.0
+        ),
+    )
+
+    // ${commentMapScheme}
+    var mapScheme by remember { mutableStateOf(MapScheme.NORMAL_DAY) }
+
+    // ${commentGetViewHolder}
+    val hereMapViewHolder = mapViewState.getMapViewHolder()
+    LaunchedEffect(hereMapViewHolder, mapScheme) {
+        if (hereMapViewHolder == null) return@LaunchedEffect
+        hereMapViewHolder.map.loadScene(mapScheme) { errorCode ->
+            if (errorCode != null) {
+                Log.e("HERE", "Failed to load map scene: \${errorCode.name}")
+            }
+        }
+    }
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Spacer(modifier = Modifier.size(20.dp))
+
+            // ${commentNormalDay}
+            Button(onClick = {
+                mapScheme = MapScheme.NORMAL_DAY
+            }) {
+                Text(
+                    text = "Normal"
+                )
+            }
+            Spacer(modifier = Modifier.size(20.dp))
+
+            // ${commentSatellite}
+            Button(onClick = {
+                mapScheme = MapScheme.SATELLITE
+            }) {
+                Text(
+                    text = "Satellite"
+                )
+            }
+        }
+
+        HereMapView(
+            state = mapViewState,
+            modifier = Modifier.fillMaxSize(),
+        ) {}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

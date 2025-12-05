@@ -1,0 +1,50 @@
+---
+title: "HereMapViewHolder"
+---
+
+import HereMapViewHolder from '~/components/core/mapviewholder/HereMapViewHolder.astro';
+import HereMapViewHolderAccess from '~/components/core/mapviewholder/HereMapViewHolderAccess.astro';
+import HereMapViewHolderExample from '~/components/core/mapviewholder/HereMapViewHolderExample.astro';
+
+
+## Overview
+
+To access HERE SDK-specific features, use `HereMapViewHolder`.
+The definition of `HereMapViewHolder` is as follows:
+
+<HereMapViewHolder />
+
+### Properties
+
+- **`mapView: MapView`**: MapView generated internally by the HereMapView component
+- **`map: MapScene`**: MapScene class for manipulating the MapView
+
+### Methods
+
+- **`toScreenOffset(position: GeoPoint): Offset?`**: Returns the map position indicated by GeoPoint as a Dp value with the upper left corner of MapView as (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: Returns the GeoPoint position on the map at the position specified by the Dp value with the upper left corner of MapView as (0,0)
+
+
+## Getting HereMapViewHolder
+
+`HereMapViewHolder` can be obtained through `getMapViewHolder()` after map initialization.
+
+<HereMapViewHolderAccess />
+
+
+
+### Sample
+
+<HereMapViewHolderExample
+  commentCameraPosition="Map camera position"
+  commentMapScheme="Make it mutableStateOf so it re-renders when mapScheme changes"
+  commentGetViewHolder="Get ViewHolder"
+  commentNormalDay="Normal map display"
+  commentSatellite="Satellite imagery display"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-here-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-here-example.mp4" type="video/mp4" />
+</video>
+

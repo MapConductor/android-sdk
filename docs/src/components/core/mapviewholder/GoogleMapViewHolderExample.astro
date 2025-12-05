@@ -2,32 +2,74 @@
 import { Code } from '@astrojs/starlight/components';
 
 interface Props {
-  commentForAccessApis?: string;
-  commentForUseFeatures?: string;
-  commentForHandlePoi?: string;
+  commentCameraPosition?: string;
+  commentRecompose?: string;
+  commentGetViewHolder?: string;
+  commentNormalMap?: string;
+  commentSimplifiedMap?: string;
 }
 
 const {
-  commentForAccessApis = "Access native Google Maps APIs",
-  commentForUseFeatures = "Use Google Maps specific features",
-  commentForHandlePoi = "Handle Points of Interest clicks"
+  commentCameraPosition = "地図のカメラ位置",
+  commentRecompose = "mutableStateOfにすることで、mapStyleが変化したら 再描画",
+  commentGetViewHolder = "ViewHolderの取得",
+  commentNormalMap = "通常のGoogle Maps",
+  commentSimplifiedMap = "地図を簡略化したデザイン"
 } = Astro.props;
 
-const code = `typealias GoogleMapViewHolder = MapViewHolder<MapView, GoogleMap>
+const code = `@Composable
+fun MapViewHolderGoogleMapsExample(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
 
-// ${commentForAccessApis}
-googleHolder?.let { holder ->
-    val nativeMapView: MapView = holder.mapView
-    val googleMap: GoogleMap = holder.map
+    // ${commentCameraPosition}
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = MapCameraPositionImpl(
+            position = GeoPointImpl.fromLatLong(28.53456, 77.192845),
+            zoom = 12.0
+        ),
+    )
 
-    // ${commentForUseFeatures}
-    googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.style_json))
-    googleMap.setOnPoiClickListener { poi ->
-        // ${commentForHandlePoi}
+    // ${commentRecompose}
+    var mapStyle by remember { mutableStateOf<MapStyleOptions?>(null) }
+
+    // ${commentGetViewHolder}
+    val googleMapViewHolder = mapViewState.getMapViewHolder()
+    LaunchedEffect(googleMapViewHolder, mapStyle) {
+        if (googleMapViewHolder == null) return@LaunchedEffect
+        googleMapViewHolder.map.setMapStyle(mapStyle)
     }
 
-    nativeMapView.onResume()
-    nativeMapView.onPause()
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Spacer(modifier = Modifier.size(20.dp))
+
+            // ${commentNormalMap}
+            Button(onClick = {
+                mapStyle = null
+            }) {
+                Text(
+                    text = "Normal"
+                )
+            }
+            Spacer(modifier = Modifier.size(20.dp))
+
+            // ${commentSimplifiedMap}
+            Button(onClick = {
+                mapStyle = MapStyleOptions.loadRawResourceStyle(context, R.raw.style_map)
+            }) {
+                Text(
+                    text = "Simplified"
+                )
+            }
+        }
+
+        GoogleMapView(
+            state = mapViewState,
+            modifier = Modifier.fillMaxSize(),
+        ) {}
+    }
 }`;
 ---
 

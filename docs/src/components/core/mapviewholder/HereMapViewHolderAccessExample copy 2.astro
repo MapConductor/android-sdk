@@ -1,0 +1,10 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// HERE Maps
+val hereState = rememberHereMapViewState()
+val hereHolder: HereViewHolder? = hereState.getMapViewHolder()`
+---
+
+<Code code={code} lang="kotlin" />
+
