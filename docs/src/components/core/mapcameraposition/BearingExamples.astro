@@ -7,6 +7,9 @@ interface Props {
   bearingNorth?: number;
   bearingEast?: number;
   bearingRoute?: number;
+  northUpComment?: string;
+  eastUpComment?: string;
+  followingBearingComment?: string;
   routeComment?: string;
 }
 
@@ -16,22 +19,25 @@ const {
   bearingNorth = 0.0,
   bearingEast = 90.0,
   bearingRoute = 135.0,
+  northUpComment = "North-up (default)",
+  eastUpComment = "Southeast",
+  followingBearingComment = "Southeast",
   routeComment = "Southeast"
 } = Astro.props;
 
-const code = `// North-up (default)
+const code = `// ${northUpComment}
 val northUp = MapCameraPositionImpl(
     position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
     bearing = ${bearingNorth}
 )
 
-// East-up
+// ${eastUpComment}
 val eastUp = MapCameraPositionImpl(
     position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
     bearing = ${bearingEast}
 )
 
-// Following a route bearing
+// ${followingBearingComment}
 val routeBearing = MapCameraPositionImpl(
     position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
     bearing = ${bearingRoute},  // ${routeComment}

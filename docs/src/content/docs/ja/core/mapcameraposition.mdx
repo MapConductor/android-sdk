@@ -63,11 +63,6 @@ import NavigationCameraExample from '~/components/core/mapcameraposition/Navigat
   aerialZoom={18.0}
   aerialBearing={45.0}
   aerialTilt={60.0}
-  paddedZoom={14.0}
-  paddingTop={100.0}
-  paddingLeft={50.0}
-  paddingBottom={200.0}
-  paddingRight={50.0}
 />
 
 ## ズームレベル
@@ -167,34 +162,3 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
 <CameraControlExample
   commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
 />
-
-## ベストプラクティス
-
-1. **ズームレベルの選択**: ユースケースに適切なズームレベルを選択
-2. **スムーズな遷移**: より良いユーザー体験のため段階的なカメラ移動を使用
-3. **パディング管理**: カメラ位置を設定する際に UI 要素を考慮
-4. **パフォーマンス**: 高価な再描画を引き起こす頻繁なカメラ位置の変更を避ける
-5. **ユーザーコンテキスト**: 初期カメラ位置を設定する際にユーザーが見る必要があるものを考慮
-6. **アクセシビリティ**: ジェスチャーベースのカメラ移動を使用できないユーザーのためのコントロールを提供
-
-## 一般的なユースケース
-
-### ユーザー位置にフォーカス
-
-<UserLocationCameraExample
-  commentForZoom="ストリートレベルの詳細"
-  zoomLevel={16.0}
-/>
-
-### 複数の点を表示
-
-<ShowMultiplePointsExample commentForZoomCalculation="カスタム計算" />
-
-### ナビゲーションモード
-
-<NavigationCameraExample
-  navigationZoom={18.0}
-  navigationTilt={60.0}
-  commentForBearing="移動方向"
-/>
-

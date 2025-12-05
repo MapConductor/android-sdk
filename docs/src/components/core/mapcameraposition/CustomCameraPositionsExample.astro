@@ -48,18 +48,7 @@ val aerialView = MapCameraPositionImpl(
     bearing = ${aerialBearing},  // Northeast direction
     tilt = ${aerialTilt}      // Angled view
 )
-
-// ${commentForPadded}
-val paddedView = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
-    zoom = ${paddedZoom},
-    paddings = MapPaddingsImpl(
-        top = ${paddingTop},
-        left = ${paddingLeft},
-        bottom = ${paddingBottom},
-        right = ${paddingRight}
-    )
-)`;
+`;
 ---
 
 <Code code={code} lang="kotlin" />

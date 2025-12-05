@@ -43,7 +43,7 @@ The main implementation provides immutable camera position data:
 ### View Configuration
 
 - **`paddings: MapPaddings?`**: Viewport padding that affects the visible region
-- **`visibleRegion: VisibleRegion?`**: The actual geographic bounds visible on screen
+- **`visibleRegion: VisibleRegion?`**: The actual geographic bounds visible on screen. **Note: this property does not work in v{BOM_MODULE_VERSION} yet**.
 
 ## Creation Methods
 
@@ -63,11 +63,6 @@ The main implementation provides immutable camera position data:
   aerialZoom={18.0}
   aerialBearing={45.0}
   aerialTilt={60.0}
-  paddedZoom={14.0}
-  paddingTop={100.0}
-  paddingLeft={50.0}
-  paddingBottom={200.0}
-  paddingRight={50.0}
 />
 
 ## Zoom Levels
@@ -165,34 +160,3 @@ The visible region describes the actual geographic area shown on screen after co
 ### Interactive Camera Control
 
 <CameraControlExample commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView" />
-
-## Best Practices
-
-1. **Zoom Level Selection**: Choose appropriate zoom levels for your use case
-2. **Smooth Transitions**: Use gradual camera movements for better user experience
-3. **Padding Management**: Account for UI elements when setting camera position
-4. **Performance**: Avoid frequent camera position changes that trigger expensive redraws
-5. **User Context**: Consider what the user needs to see when setting initial camera position
-6. **Accessibility**: Provide controls for users who cannot use gesture-based camera movement
-
-## Common Use Cases
-
-### Focus on User Location
-
-<UserLocationCameraExample
-  commentForZoom="Street level detail"
-  zoomLevel={16.0}
-/>
-
-### Show Multiple Points
-
-<ShowMultiplePointsExample commentForZoomCalculation="Custom calculation" />
-
-### Navigation Mode
-
-<NavigationCameraExample
-  navigationZoom={18.0}
-  navigationTilt={60.0}
-  commentForBearing="Direction of travel"
-/>
-

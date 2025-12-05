@@ -42,7 +42,7 @@ La implementación principal proporciona datos inmutables de la posición de la 
 
 ### Configuración de la vista
 
-- **`paddings: MapPaddings?`**: Márgenes del viewport que afectan a la región visible.
+- **`paddings: MapPaddings?`**: Márgenes del viewport que afectan a la región visible. **Nota: esta propiedad aún no funciona en v{BOM_MODULE_VERSION}**.
 - **`visibleRegion: VisibleRegion?`**: Límites geográficos que realmente se ven en pantalla.
 
 ## Formas de creación
@@ -63,11 +63,6 @@ La implementación principal proporciona datos inmutables de la posición de la 
   aerialZoom={18.0}
   aerialBearing={45.0}
   aerialTilt={60.0}
-  paddedZoom={14.0}
-  paddingTop={100.0}
-  paddingLeft={50.0}
-  paddingBottom={200.0}
-  paddingRight={50.0}
 />
 
 ## Niveles de zoom
@@ -165,34 +160,3 @@ La región visible describe el área geográfica real mostrada en pantalla tenie
 ### Control interactivo de cámara
 
 <CameraControlExample commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView" />
-
-## Mejores prácticas
-
-1. **Selección de Nivel de Zoom**: Elige niveles de zoom apropiados para tu caso de uso.
-2. **Transiciones Suaves**: Usa movimientos de cámara graduales para una mejor experiencia de usuario.
-3. **Gestión de Paddings**: Ten en cuenta elementos de UI al establecer la posición de la cámara.
-4. **Rendimiento**: Evita cambios de posición de cámara demasiado frecuentes que provoquen redibujos costosos.
-5. **Contexto del Usuario**: Considera qué necesita ver el usuario al establecer la posición inicial de la cámara.
-6. **Accesibilidad**: Proporciona controles para usuarios que no puedan usar gestos para mover la cámara.
-
-## Casos de uso comunes
-
-### Foco en la ubicación del usuario
-
-<UserLocationCameraExample
-  commentForZoom="Detalle a nivel de calle"
-  zoomLevel={16.0}
-/>
-
-### Mostrar múltiples puntos
-
-<ShowMultiplePointsExample commentForZoomCalculation="Cálculo personalizado de zoom" />
-
-### Modo de navegación
-
-<NavigationCameraExample
-  navigationZoom={18.0}
-  navigationTilt={60.0}
-  commentForBearing="Dirección de viaje"
-/>
-
