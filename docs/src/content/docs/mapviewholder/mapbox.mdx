@@ -1,32 +1,46 @@
 ---
-title: "MapViewHolder"
+title: "MapboxMapViewHolder"
 ---
 
-import MapboxMapViewHolderAccessExample from '~/components/core/mapviewholder/MapViewHolderAccessExample.astro';
+import MapboxMapViewHolder from '~/components/core/mapviewholder/MapboxMapViewHolder.astro';
+import MapboxMapViewHolderAccess from '~/components/core/mapviewholder/MapboxMapViewHolderAccess.astro';
 import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
 
-`MapViewHolder` は、MapConductor の統一 API でカバーされていない特定の地図SDK機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolder がこのギャップを埋めます。
 
-## 概要
+## Overview
 
-Mapboxの固有の機能にアクセスするためには、`MapboxMapViewHolder` を使います。
+To access Mapbox SDK-specific features, use the `MapboxMapViewHolder`.
+The definition of `MapboxMapViewHolder` is as follows:
 
-<MapViewHolderInterface />
+<MapboxMapViewHolder />
 
-## MapViewHolder へのアクセス
+### Properties
 
-`MapboxMapViewState`の`getMapViewHolder()`を通じて取得します。地図が初期化されてから取得できます。
+- **`mapView: MapView`**: MapView generated inside the MapboxView component
+- **`map: Mapbox`**: Mapbox class for manipulating the MapView
 
-<MapboxMapViewHolderAccessExample />
+### Methods
+
+- **`toScreenOffset(position: GeoPoint): Offset?`**: Returns the position on the map indicated by GeoPoint as a Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffsetSync(offset: Offset): GeoPointImpl?`**: Returns the GeoPoint position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffset(coordinate: ScreenCoordinate): GeoPointImpl?`**: Returns the GeoPoint position on the map for the position specified by ScreenCoordinate value with the top-left of the MapView as (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: Returns the GeoPoint position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
 
 
-### Mapbox
+## Getting MapboxMapViewHolder
+
+`MapboxMapViewHolder` can be obtained through `getMapViewHolder()` after the map is initialized.
+
+<MapboxMapViewHolderAccess />
+
+
+### Sample
 
 <MapboxMapViewHolderExample
-  commentPermissionLogic="位置情報アクセス許可後の処理（例: Maps SDK の LocationComponent を有効化してデバイスの位置を表示）"
-  commentExplanationNeeded="位置情報アクセス権限を取得するための説明を表示"
-  commentPermissionDenied="ユーザーが権限を拒否した"
-  commentGetViewHolder="ViewHolderの取得"
+  commentPermissionLogic="Process after location access permission (e.g., enable Maps SDK LocationComponent to display device location)"
+  commentExplanationNeeded="Display explanation for obtaining location access permission"
+  commentPermissionDenied="User denied permission"
+  commentGetViewHolder="Get ViewHolder"
 />
 
 <video width="720" height="480" controls>

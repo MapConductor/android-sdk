@@ -43,13 +43,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- ArcGIS OAuth Sign-In Activity -->
-        <activity
-            android:name="com.arcgismaps.toolkit.authentication.OAuthUserSignInActivity"
-            android:exported="false"
-            android:launchMode="singleTask">
-        </activity>
     </application>
 
 </manifest>

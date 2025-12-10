@@ -1,21 +1,37 @@
 ---
-title: "MapViewHolder - Google Maps"
+title: "GoogleMapViewHolder"
 ---
 
-import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
+import GoogleMapViewHolder from '~/components/core/mapviewholder/GoogleMapViewHolder.astro';
 import GoogleMapViewHolderAccess from '~/components/core/mapviewholder/GoogleMapViewHolderAccess.astro';
 import GoogleMapViewHolderExample from '~/components/core/mapviewholder/GoogleMapViewHolderExample.astro';
 
 
 ## Overview
 
-To access Google Maps API-specific features, use `mapViewHolder`.
+To access Google Maps API-specific features, use the `GoogleMapViewHolder`.
+The definition of `GoogleMapViewHolder` is as follows:
 
-<GoogleMapViewHolderAccessExample />
+<GoogleMapViewHolder />
+### Properties
 
-## Provider-Specific Implementation
+- **`mapView: MapView`**: MapView generated inside the GoogleMapView component
+- **`map: GoogleMap`**: GoogleMap class for manipulating the MapView
 
-### Google Maps
+### Methods
+
+- **`toScreenOffset(position: GeoPoint): Offset?`**: Returns the position on the map indicated by GeoPoint as a Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: Returns the GeoPoint position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
+
+
+## Getting GoogleMapViewHolder
+
+`GoogleMapViewHolder` can be obtained through `getMapViewHolder()` after the map is initialized.
+
+<GoogleMapViewHolderAccess />
+
+
+### Sample
 
 <GoogleMapViewHolderExample
   commentCameraPosition="Map camera position"

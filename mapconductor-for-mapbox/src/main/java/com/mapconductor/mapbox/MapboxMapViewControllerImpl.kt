@@ -4,11 +4,7 @@ import MapboxMapViewController
 import androidx.compose.ui.geometry.Offset
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
-import com.mapbox.maps.CameraChanged
-import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.ScreenCoordinate
-import com.mapbox.maps.StyleLoaded
-import com.mapbox.maps.StyleLoadedCallback
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.addLayerAbove
 import com.mapbox.maps.extension.style.layers.addLayerBelow
@@ -147,7 +143,6 @@ internal class MapboxMapViewControllerImpl(
 
         holder.map.removeOnMoveListener(this)
         holder.map.addOnMoveListener(this)
-
     }
 
     override suspend fun clearOverlays() {

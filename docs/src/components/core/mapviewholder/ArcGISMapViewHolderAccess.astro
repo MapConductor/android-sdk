@@ -1,0 +1,10 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// ArcGIS
+val arcgisState = rememberArcGISMapViewState()
+val arcgisHolder: ArcGISMapViewHolder? = arcgisState.getMapViewHolder();`
+---
+
+<Code code={code} lang="kotlin" />
+

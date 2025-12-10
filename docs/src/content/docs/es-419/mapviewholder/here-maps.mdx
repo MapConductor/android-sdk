@@ -7,27 +7,27 @@ import HereMapViewHolderAccess from '~/components/core/mapviewholder/HereMapView
 import HereMapViewHolderExample from '~/components/core/mapviewholder/HereMapViewHolderExample.astro';
 
 
-## Descripción general
+## Descripción General
 
-Para acceder a funcionalidades específicas del SDK de HERE, use `HereMapViewHolder`.
+Para acceder a las funciones específicas del SDK de HERE, use el `HereMapViewHolder`.
 La definición de `HereMapViewHolder` es la siguiente:
 
 <HereMapViewHolder />
 
 ### Propiedades
 
-- **`mapView: MapView`**: MapView generado internamente por el componente HereMapView
+- **`mapView: MapView`**: MapView generado dentro del componente HereMapView
 - **`map: MapScene`**: Clase MapScene para manipular el MapView
 
 ### Métodos
 
-- **`toScreenOffset(position: GeoPoint): Offset?`**: Devuelve la posición del mapa indicada por GeoPoint como un valor Dp con la esquina superior izquierda de MapView como (0,0)
-- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: Devuelve la posición GeoPoint en el mapa en la posición especificada por el valor Dp con la esquina superior izquierda de MapView como (0,0)
+- **`toScreenOffset(position: GeoPoint): Offset?`**: Devuelve la posición en el mapa indicada por GeoPoint como un valor Dp con la parte superior izquierda del MapView como (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPointImpl?`**: Devuelve la posición GeoPoint en el mapa para la posición especificada por el valor Dp con la parte superior izquierda del MapView como (0,0)
 
 
-## Obtención de HereMapViewHolder
+## Obtener HereMapViewHolder
 
-`HereMapViewHolder` se puede obtener a través de `getMapViewHolder()` después de la inicialización del mapa.
+El `HereMapViewHolder` se puede obtener a través de `getMapViewHolder()` después de que se inicializa el mapa.
 
 <HereMapViewHolderAccess />
 

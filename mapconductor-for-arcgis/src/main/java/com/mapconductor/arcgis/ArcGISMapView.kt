@@ -163,11 +163,6 @@ fun ArcGISMapView(
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
-                controller.setCameraMoveEndListener {
-                    cameraState.value = it
-                    state.updateCameraPosition(it)
-                    onCameraMoveEnd?.invoke(it)
-                }
                 controller.setMapClickListener(onMapClick)
                 controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolylineClickListener(onPolylineClick)
@@ -181,10 +176,20 @@ fun ArcGISMapView(
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 state.setController(controller)
 
-                val restoreCameraPosition = state.cameraPosition
-                controller.moveCamera(restoreCameraPosition)
-                // Post an initial camera update after layout to compute visibleRegion correctly
-                holder.mapView.post { controller.sendInitialCameraUpdate() }
+                controller.setCameraMoveEndListener {
+                    // Post an initial camera update after layout to compute visibleRegion correctly
+                    holder.mapView.post {
+                        val restoreCameraPosition = state.cameraPosition
+                        controller.moveCamera(restoreCameraPosition)
+                        controller.sendInitialCameraUpdate()
+
+                        controller.setCameraMoveEndListener {
+                            cameraState.value = it
+                            state.updateCameraPosition(it)
+                            onCameraMoveEnd?.invoke(it)
+                        }
+                    }
+                }
             }
         },
         sdkInitialize = {
