@@ -46,6 +46,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun ArcGISMapView(
     state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -98,6 +99,7 @@ fun ArcGISMapView(
                 )
 
             val scene = ArcGISScene(options.basemapStyle)
+
             options.elevationSources.forEach {
                 val source = ArcGISTiledElevationSource(it)
                 scene.baseSurface.elevationSources.add(source)
@@ -111,15 +113,17 @@ fun ArcGISMapView(
                 coroutine.launch {
                     scene.loadStatus.collect {
                         when (it) {
-                            is LoadStatus.Loaded,
-                            is LoadStatus.FailedToLoad,
-                            -> {
+                            is LoadStatus.Loaded -> {
+                                wrapView.sceneView.scene = scene
                                 val holder =
                                     ArcGISMapViewHolderImpl(
                                         mapView = wrapView,
                                         map = wrapView.sceneView,
                                     )
                                 cont.resume(holder) {}
+                            }
+                            is LoadStatus.FailedToLoad -> {
+                                cont.cancel(it.error)
                             }
                             else -> {
                                 // Do nothing here
@@ -184,13 +188,7 @@ fun ArcGISMapView(
             }
         },
         sdkInitialize = {
-            val apiKey = context.applicationContext.getArcGisApiKey()
-            if (apiKey == null) {
-                Log.e("ArcGISMapView", "<meta-data android:name=\"ARCGIS_API_KEY\" /> is required")
-                return@MapViewBase false
-            }
-            ArcGISEnvironment.apiKey = ApiKey.create(apiKey)
-            true
+            sdkInitialize?.invoke(context) ?: defaultArcGISInitialize(context)
         },
         onMapLoaded = onMapLoaded,
         content = content,
@@ -261,3 +259,27 @@ private fun getMarkerController(
     holder = holder,
     renderingStrategy = renderingStrategy,
 )
+
+/**
+ * Default ArcGIS SDK initialization using API Key authentication.
+ *
+ * This function is used when no custom sdkInitialize parameter is provided to ArcGISMapView.
+ * It reads the API Key from AndroidManifest.xml metadata and configures ArcGISEnvironment.
+ *
+ * @param context Application context
+ * @return true if initialization succeeded, false otherwise
+ */
+private suspend fun defaultArcGISInitialize(context: android.content.Context): Boolean {
+    if (ArcGISEnvironment.authenticationManager.arcGISCredentialStore
+            .getCredentials()
+            .isEmpty()
+    ) {
+        val apiKey = context.applicationContext.getArcGisApiKey()
+        if (apiKey == null) {
+            Log.e("ArcGISMapView", "<meta-data android:name=\"ARCGIS_API_KEY\" /> is required")
+            return false
+        }
+        ArcGISEnvironment.apiKey = ApiKey.create(apiKey)
+    }
+    return true
+}
