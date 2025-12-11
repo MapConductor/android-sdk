@@ -1,0 +1,43 @@
+---
+title: "ArcGISOAuthHybridInitialize"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ArcGISOAuthHybridInitialize from '~/components/cloud/arcgis/ArcGISOAuthHybridInitialize.astro';
+import ArcGISOAuthHybridInitializeExample from '~/components/cloud/arcgis/ArcGISOAuthHybridInitializeExample.astro';
+
+Using `ArcGISOAuthHybridInitialize`, you can display ArcGIS Online content by signing in with OAuth2.
+
+## ArcGISOAuthHybridInitialize Function
+
+Attempts authentication with Application Credentials, and automatically falls back to user login if it fails.
+Waits until authentication is complete.
+
+<ArcGISOAuthHybridInitialize />
+
+## Parameters
+
+- **`authenticatorState`**: AuthenticatorState that manages authentication state
+- **`portalUrl`**: URL of the ArcGIS Portal
+- **`redirectUrl`**: OAuth Redirect URI
+- **`clientId`**: OAuth Client ID
+- **`clientSecret`**: OAuth Client Secret. If omitted, a login dialog will be displayed.
+
+## Usage Example of ArcGISOAuthHybridInitialize
+
+Displaying private content managed in Portal by specifying ClientID and ClientSecret.
+
+<ArcGISOAuthHybridInitializeExample
+  commentCameraPosition="Map camera position"
+  commentAuthStateAndScope="Authentication state and CoroutineScope (for sequential processing like await)"
+  commentAwaitStyleExecution="Execute sequentially like await"
+  commentWaitForSceneLoad="Wait for WebScene to finish loading"
+  commentSceneViewWebSceneOnly="SceneView only supports WebScene"
+  commentAdditionalLayerExample="Additional layer example (optional)"
+  commentAuthenticatorUI="Authentication UI (for user login). Used as fallback for hybrid authentication."
+/>
+
+<video width="720" height="480" controls>
+ <source src="/cloud/arcgis/arcgis-oauth-hybrid-initialize.webm" type="video/webm" />
+ <source src="/cloud/arcgis/arcgis-oauth-hybrid-initialize.mp4" type="video/mp4" />
+</video>

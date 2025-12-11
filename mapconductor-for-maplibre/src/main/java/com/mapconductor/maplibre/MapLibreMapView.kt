@@ -46,6 +46,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun MapLibreMapView(
     state: MapLibreViewStateImpl,
     modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -157,8 +158,12 @@ fun MapLibreMapView(
             }
         },
         sdkInitialize = {
-            MapLibre.getInstance(context)
-            true
+            if (sdkInitialize != null) {
+                sdkInitialize(context)
+            } else {
+                MapLibre.getInstance(context)
+                true
+            }
         },
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to MapLibreMapView structure before calling MapViewBase.

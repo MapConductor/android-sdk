@@ -48,6 +48,7 @@ import android.view.ViewGroup
 fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -154,8 +155,12 @@ fun MapboxMapView(
         scope = scope,
         registry = registry,
         sdkInitialize = {
-            MapboxInitSDK(context)
-            true
+            if (sdkInitialize != null) {
+                sdkInitialize(context)
+            } else {
+                MapboxInitSDK(context)
+                true
+            }
         },
         onMapLoaded = onMapLoaded,
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,

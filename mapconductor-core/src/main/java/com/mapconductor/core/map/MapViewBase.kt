@@ -53,6 +53,7 @@ import com.mapconductor.settings.Settings
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -290,12 +291,16 @@ fun <
     }
 
     // 1. Start initialization
-    LaunchedEffect(initState) {
+    // Use a stable key so changing initState inside doesn't cancel this effect
+    LaunchedEffect(Unit) {
         if (initState != InitState.NotStarted) return@LaunchedEffect
         initState = InitState.Initializing
         try {
             val success = sdkInitialize()
             initState = if (success) InitState.SdkInitialized else InitState.Failed
+        } catch (ce: CancellationException) {
+            // Composition left; don't mark as failure or log error
+            return@LaunchedEffect
         } catch (e: Exception) {
             initState = InitState.Failed
             Log.e("MapConductor", "Failed to initialize the Map view", e)

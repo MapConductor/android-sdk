@@ -131,6 +131,15 @@ export default defineConfig({
 						{ slug: 'mapviewholder/maplibre' },
 					],
 				},
+				{
+					label: 'ArcGIS Integration',
+					translations: {
+						ja: 'ArcGISポータルとの連携',
+					},
+					items: [
+						{ slug: 'cloud/arcgis/arcgis-oauth-hybrid-initialize' },
+					],
+				},
 				
 				// {
 				// 	label: 'Examples',

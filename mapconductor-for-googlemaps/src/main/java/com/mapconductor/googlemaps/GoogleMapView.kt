@@ -40,6 +40,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun GoogleMapView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -186,6 +187,9 @@ fun GoogleMapView(
                     lifecycle.removeObserver(observer)
                 }
             }
+        },
+        sdkInitialize = {
+            sdkInitialize?.invoke(context) ?: true
         },
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to GoogleMapView structure before calling MapViewBase.

@@ -1,0 +1,90 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+    commentCameraPosition?: string;
+    commentAuthStateAndScope?: string;
+    commentAwaitStyleExecution?: string;
+    commentWaitForSceneLoad?: string;
+    commentSceneViewWebSceneOnly?: string;
+    commentAdditionalLayerExample?: string;
+    commentAuthenticatorUI?: string;
+}
+
+const {
+    commentCameraPosition = '地図のカメラ位置',
+    commentAuthStateAndScope = '認証状態と CoroutineScope（await ライクに逐次処理）',
+    commentAwaitStyleExecution = 'await 風に直列実行',
+    commentWaitForSceneLoad = 'WebSceneの読み込み完了を待つ',
+    commentSceneViewWebSceneOnly = 'SceneView は WebScene のみ対応',
+    commentAdditionalLayerExample = '追加レイヤ例（任意）',
+    commentAuthenticatorUI = '認証UI（ユーザーログイン用）。ハイブリッド認証のフォールバックで使用されます。',
+} = Astro.props;
+
+const code = `@Composable
+fun BasicMapExample(modifier: Modifier = Modifier) {
+    // ${commentCameraPosition}
+    val mapViewState =
+        rememberArcGISMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+                    zoom = 12.0,
+                ),
+        )
+
+    // ${commentAuthStateAndScope}
+    val authenticatorState = remember { AuthenticatorState() }
+    val scope = rememberCoroutineScope()
+
+    ArcGISMapView(
+        state = mapViewState,
+        modifier = modifier.fillMaxSize(),
+        sdkInitialize = { context ->
+            ArcGISOAuthHybridInitialize(
+                authenticatorState = authenticatorState,
+                portalUrl = "(ArcGIS Portal URL)",
+                redirectUrl = "(Redirect URL)",
+                clientId = (APP CLIENT ID),
+                clientSecret = "(APP CLIENT SECRET)",
+            )
+        },
+        onMapLoaded = {
+            scope.launch {
+                val holder = mapViewState.getMapViewHolder() ?: return@launch
+
+                // ${commentAwaitStyleExecution}
+                val portal = Portal("https://mkgeeklab.maps.arcgis.com/", Portal.Connection.Authenticated)
+                portal.load().getOrThrow()
+
+                val item = PortalItem(portal, "e0ce06974e3d4c79b37e30d224c585d3")
+                item.load().getOrThrow()
+
+                when (item.type) {
+                    is PortalItemType.WebScene -> {
+                        ArcGISScene(item).also {
+                            it.load().getOrThrow() // ${commentWaitForSceneLoad}
+                            holder.map.scene = it
+                        }
+                    }
+                    is PortalItemType.WebMap -> error("${commentSceneViewWebSceneOnly}")
+                    else -> error("Unknown item type: \${item.type}")
+                }
+
+                // ${commentAdditionalLayerExample}
+                val trafficServerUrl = "https://traffic.arcgis.com/arcgis/rest/services/World/Traffic/MapServer"
+                ArcGISMapImageLayer(trafficServerUrl).also {
+                    it.opacity = 0.6f
+                    holder.map.scene!!.operationalLayers.add(0, it)
+                }
+            }
+        }
+    ) {}
+
+    // ${commentAuthenticatorUI}
+    Authenticator(authenticatorState = authenticatorState, modifier = modifier)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

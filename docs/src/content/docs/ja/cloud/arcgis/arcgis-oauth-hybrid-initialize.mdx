@@ -1,0 +1,41 @@
+---
+title: "ArcGISOAuthHybridInitialize"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ArcGISOAuthHybridInitialize from '~/components/cloud/arcgis/ArcGISOAuthHybridInitialize.astro';
+import ArcGISOAuthHybridInitializeExample from '~/components/cloud/arcgis/ArcGISOAuthHybridInitializeExample.astro';
+
+`ArcGISOAuthHybridInitialize`を使い、OAuth2でサイン・インすることで、ArcGIS Onlineのコンテンツを表示することができます。
+
+Application Credentialで認証を試み、失敗した場合は自動的にユーザーログインにフォールバックします。
+認証が完了するまで待機します。
+
+<ArcGISOAuthHybridInitialize />
+
+## パラメータ
+
+- **`authenticatorState`**: 認証状態を管理するAuthenticatorState
+- **`portalUrl`**: ArcGIS Portalの URL
+- **`redirectUrl`**: OAuth Redirect URI
+- **`clientId`**: OAuth Client ID
+- **`clientSecret`**: OAuth Client Secret。省略した場合はログインダイアログが表示されます。
+
+## ArcGISOAuthHybridInitializeの使用例
+
+ClientID,　ClientSecretを指定して、Portalで管理するプライベートなコンテンツを表示しています。
+
+<ArcGISOAuthHybridInitializeExample
+  commentCameraPosition="地図のカメラ位置"
+  commentAuthStateAndScope="認証状態と CoroutineScope（await ライクに逐次処理）"
+  commentAwaitStyleExecution="await 風に直列実行"
+  commentWaitForSceneLoad="WebSceneの読み込み完了を待つ"
+  commentSceneViewWebSceneOnly="SceneView は WebScene のみ対応"
+  commentAdditionalLayerExample="追加レイヤ例（任意）"
+  commentAuthenticatorUI="認証UI（ユーザーログイン用）。ハイブリッド認証のフォールバックで使用されます。"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/cloud/arcgis/arcgis-oauth-hybrid-initialize.webm" type="video/webm" />
+ <source src="/cloud/arcgis/arcgis-oauth-hybrid-initialize.mp4" type="video/mp4" />
+</video>

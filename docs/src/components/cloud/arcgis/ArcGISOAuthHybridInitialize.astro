@@ -1,0 +1,14 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `suspend fun ArcGISOAuthHybridInitialize(
+    authenticatorState: AuthenticatorState,
+    portalUrl: String,
+    redirectUrl: String,
+    clientId: String,
+    clientSecret: String? = null,
+): Boolean`;
+---
+
+<Code code={code} lang="kotlin" />
+

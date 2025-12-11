@@ -44,6 +44,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -74,8 +75,12 @@ fun HereMapView(
         cameraState = cameraState,
         modifier = modifier,
         sdkInitialize = {
-            HereMapViewControllerStore.initSDK(context.applicationContext)
-            true
+            if (sdkInitialize != null) {
+                sdkInitialize(context)
+            } else {
+                HereMapViewControllerStore.initSDK(context.applicationContext)
+                true
+            }
         },
         viewProvider = {
             // TEXTUREモードにしないとデバイスが回転したときに再描画を適切に行わない
@@ -122,7 +127,6 @@ fun HereMapView(
                     polygonController = polygonController,
                     circleController = circleController,
                 )
-//            controller.setCameraMoveListener(state::onCameraChange)
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
             controller.setOnMarkerDragStart(onMarkerDragStart)
