@@ -15,6 +15,7 @@ import com.mapconductor.here.toMapImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.Serializable
 
 class HereMarkerRenderer(
     holder: HereViewHolder,
@@ -45,10 +46,12 @@ class HereMarkerRenderer(
                         params.bitmapIcon.toAnchor2D(),
                     ).apply {
                         drawOrder = calculateZIndex(params.state.position).toInt()
-                        metadata =
-                            Metadata().apply {
-                                setString("id", params.state.id)
-                            }
+                        metadata = Metadata().apply {
+                            // Always include MapConductor marker id
+                            setString("mc:id", params.state.id)
+                            // Optional user-defined extras from MarkerState.extra
+                            putExtras(params.state.extra)
+                        }
                     }
                 return@map marker
             }
@@ -91,4 +94,30 @@ class HereMarkerRenderer(
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
             marker
         }
+}
+
+// Convert MarkerState.extra into HERE Metadata entries.
+// Supports Map<String, Any?> by best-effort type mapping; otherwise stores value as string under key "mc:extra".
+private fun Metadata.putExtras(extra: Serializable?) {
+    if (extra == null) return
+    when (extra) {
+        is Map<*, *> -> {
+            extra.forEach { (k, v) ->
+                val key = k?.toString() ?: return@forEach
+                when (v) {
+                    null -> setString(key, "null")
+                    is String -> setString(key, v)
+                    is Int -> setInteger(key, v)
+                    is Long -> setInteger(key, v.toInt())
+                    is Float -> setDouble(key, v.toDouble())
+                    is Double -> setDouble(key, v)
+                    is Boolean -> setString(key, v.toString())
+                    else -> setString(key, v.toString())
+                }
+            }
+        }
+        else -> {
+            setString("mc:extra", extra.toString())
+        }
+    }
 }

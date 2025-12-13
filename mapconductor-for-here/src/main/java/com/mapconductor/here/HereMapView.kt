@@ -1,6 +1,5 @@
 package com.mapconductor.here
 
-import HerePolygonOverlayRenderer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +32,7 @@ import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.polygon.HerePolygonController
+import com.mapconductor.here.polygon.HerePolygonOverlayRenderer
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import android.view.ViewGroup

@@ -123,18 +123,18 @@ dependencies {
     implementation(project(":mapconductor-core"))
 
     // Google Maps SDK
-//    implementation(libs.play.services.maps)
-//    implementation(project(":mapconductor-for-googlemaps"))
-//
-//    // Mapbox SDK
-//    implementation(libs.mapbox.android)
-//    implementation(project(":mapconductor-for-mapbox"))
-////    implementation("com.mapbox.plugin:maps-locationcomponent:11.17.0")
-//
-//    // MapLibre SDK
-//    implementation(libs.maplibre.sdk)
-//    implementation(libs.maplibre.annotation)
-//    implementation(project(":mapconductor-for-maplibre"))
+    implementation(libs.play.services.maps)
+    implementation(project(":mapconductor-for-googlemaps"))
+
+    // Mapbox SDK
+    implementation(libs.mapbox.android)
+    implementation(project(":mapconductor-for-mapbox"))
+//    implementation("com.mapbox.plugin:maps-locationcomponent:11.17.0")
+
+    // MapLibre SDK
+    implementation(libs.maplibre.sdk)
+    implementation(libs.maplibre.annotation)
+    implementation(project(":mapconductor-for-maplibre"))
 
     // arcgis
     implementation(project(":mapconductor-for-arcgis"))
@@ -144,13 +144,13 @@ dependencies {
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     // Here Maps SDK
-//    implementation(project(":mapconductor-for-here"))
-//    implementation(
-//        fileTree(
-//            mapOf(
-//                "dir" to rootDir.resolve("libs").toString(),
-//                "include" to arrayOf("heresdk*.jar", "heresdk*.aar"),
-//            ),
-//        ),
-//    )
+    implementation(project(":mapconductor-for-here"))
+    implementation(
+        fileTree(
+            mapOf(
+                "dir" to rootDir.resolve("libs").toString(),
+                "include" to arrayOf("heresdk*.jar", "heresdk*.aar"),
+            ),
+        ),
+    )
 }

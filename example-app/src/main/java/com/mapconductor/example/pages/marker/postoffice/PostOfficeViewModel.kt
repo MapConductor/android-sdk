@@ -3,7 +3,9 @@ package com.mapconductor.example.pages.marker.postoffice
 import androidx.lifecycle.ViewModel
 import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.map.ArcGISMapViewState
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
@@ -92,6 +94,8 @@ class PostOfficeViewModelImpl(
     private var _selectedMarker: MutableStateFlow<MarkerState?> = MutableStateFlow(null)
     override val selectedMarker: StateFlow<MarkerState?> = _selectedMarker.asStateFlow()
 
+    private var cameraPosition: MapCameraPositionImpl = initCameraPosition
+
     private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategy<Any>?> =
         MutableStateFlow(null)
     override val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?> = _renderingStrategy.asStateFlow()
@@ -114,8 +118,8 @@ class PostOfficeViewModelImpl(
                     )
                 }
             _markerList.value = markerStates
+            sleep(3000)
             _isDataLoading.value = false
-            sleep(1000)
         }
     }
 
@@ -137,6 +141,9 @@ class PostOfficeViewModelImpl(
     override fun onMapLoaded(mapViewState: MapViewState<*>) {
         coroutine.launch {
             _isMapLoaded.value = true
+            _mapViewState.value?.moveCameraTo(
+                cameraPosition = cameraPosition,
+            )
         }
     }
 
@@ -153,6 +160,8 @@ class PostOfficeViewModelImpl(
     }
 
     override fun onMapViewChanged(mapViewState: MapViewState<*>) {
+        cameraPosition = mapViewState.cameraPosition
+
         renderingStrategy.value?.clear()
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState

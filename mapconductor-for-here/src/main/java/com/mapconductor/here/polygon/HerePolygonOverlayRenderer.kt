@@ -1,3 +1,5 @@
+package com.mapconductor.here.polygon
+
 import androidx.compose.ui.graphics.toArgb
 import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon

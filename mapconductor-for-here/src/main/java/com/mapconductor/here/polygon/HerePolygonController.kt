@@ -1,6 +1,5 @@
 package com.mapconductor.here.polygon
 
-import HerePolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polygon.PolygonManagerImpl
