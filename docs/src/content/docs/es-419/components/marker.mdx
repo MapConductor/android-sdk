@@ -13,6 +13,7 @@ import MultipleMarkersExample from '~/components/components/marker/MultipleMarke
 import DefaultIconSignature from '~/components/components/marker/DefaultIconSignature.astro';
 import DrawableDefaultIconSignature from '~/components/components/marker/DrawableDefaultIconSignature.astro';
 import ImageIconSignature from '~/components/components/marker/ImageIconSignature.astro';
+import MarkerAnimation from '~/components/components/marker/MarkerAnimation.astro';
 
 Un marcador es una anotación de punto que se puede colocar en el mapa en ubicaciones geográficas específicas. Admite iconos personalizados, interacciones y animaciones.
 
@@ -97,6 +98,12 @@ Marcador que utiliza una imagen Drawable personalizada:
   commentForMapViewUsage="Reemplaza MapView con el componente del proveedor de mapas que hayas elegido, como GoogleMapView o MapboxMapView"
 />
 
-### Marcador combinado con InfoBubble
+### Animación
 
-Combinando el marcador con el componente `InfoBubble`, puedes mostrar información detallada cuando se hace clic en un marcador. Para más detalles, consulta el [componente InfoBubble](/es-419/components/infobubble).
+<MarkerAnimation
+  dropText="Animación donde el marcador se mueve desde la parte superior de la pantalla a la posición"
+  bounceText="El marcador se mueve desde la parte superior de la pantalla a la posición y luego rebota"
+/>
+
+<img src="/marker/marker-animation.gif" width="300" alt="vista previa de animación de rebote y caída del marcador" />
+

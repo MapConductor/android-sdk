@@ -92,7 +92,6 @@ export default defineConfig({
 						{ slug: 'core/georectbounds' },
 						{ slug: 'core/mapcameraposition' },
 						{ slug: 'core/marker-icons' },
-						{ slug: 'core/marker-animation' },
 						{ slug: 'core/spherical-utilities' },
 						{ slug: 'core/zoom-levels' },
 					],

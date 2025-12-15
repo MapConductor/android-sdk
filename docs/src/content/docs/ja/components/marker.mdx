@@ -13,6 +13,7 @@ import MultipleMarkersExample from '~/components/components/marker/MultipleMarke
 import DefaultIconSignature from '~/components/components/marker/DefaultIconSignature.astro';
 import DrawableDefaultIconSignature from '~/components/components/marker/DrawableDefaultIconSignature.astro';
 import ImageIconSignature from '~/components/components/marker/ImageIconSignature.astro';
+import MarkerAnimation from '~/components/components/marker/MarkerAnimation.astro';
 
 Marker は、特定の地理位置に配置できるポイント型の注釈です。カスタムアイコン、インタラクション、アニメーションに対応しています。
 
@@ -42,9 +43,14 @@ Marker は、特定の地理位置に配置できるポイント型の注釈で�
 - **`position`**: マーカーの位置を表す地理座標（`GeoPoint`）
 - **`clickable`**: マーカーがクリックに反応するかどうか（デフォルト: `true`）
 - **`draggable`**: マーカーをドラッグ可能にするかどうか（デフォルト: `false`）
+- **`animation`**: マーカーを表示するときにアニメーション（デフォルト：`null`）
 - **`icon`**: マーカー用のカスタムアイコン（`MarkerIcon?`）
 - **`extra`**: マーカーに紐づける任意の追加データ（`Serializable?`）
 - **`id`**: マーカーの一意な識別子（`String?`、未指定の場合は自動生成）
+
+### MarkerStateのメソッド
+
+- **`animate(animation: MarkerAnimation? = null)`**: マーカーに対するアニメーション
 
 ## アイコンの種類
 
@@ -97,6 +103,11 @@ Drawable リソースを背景として利用するマーカー:
   commentForMapViewUsage="MapView には GoogleMapView や MapboxMapView など、利用する地図SDKのコンポーネントを指定します"
 />
 
-### InfoBubble と組み合わせたマーカー
+### アニメーション
 
-`InfoBubble` コンポーネントと組み合わせることで、マーカーをクリックした際に詳細情報を表示できます。詳細は [InfoBubble コンポーネント](/ja/components/infobubble) を参照してください。
+<MarkerAnimation
+  dropText="画面上部から、positionの位置にマーカーが移動するアニメーション"
+  bounceText="画面上部から、positionの位置にマーカーが移動したあと、バウンスします"
+/>
+
+<img src="/marker/marker-animation.gif" width="300" alt="marker bounce and drop animation preview" />

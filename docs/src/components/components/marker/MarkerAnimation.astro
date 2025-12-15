@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+	dropText: string;
+	bounceText: string;
+}
+
+const { dropText, bounceText } = Astro.props;
+---
+
+<ul>
+<li><code dir="auto">Drop</code> - {dropText}</li>
+<li><code dir="auto">Bounce</code> - {bounceText}</li>
+</ul>
