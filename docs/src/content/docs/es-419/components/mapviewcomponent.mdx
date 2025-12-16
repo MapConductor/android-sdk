@@ -11,6 +11,14 @@ import ProviderIndependentMapContentExample from '~/components/components/mapvie
 
 MapConductor proporciona componentes de vista de mapa específicos del proveedor de mapas que sirven como base para mostrar mapas en su aplicación. Cada SDK de mapa tiene su propia implementación, pero se mantiene una interfaz de API consistente en todos los proveedores.
 
+## Arquitectura de MapViewContainer
+
+MapConductor proporciona un componente MapViewContainer que envuelve el MapView proporcionado por el SDK del mapa.
+MapViewComponent es una capa conceptual; cuando se utiliza realmente, emplea el `XxxMapView` proporcionado por cada SDK de mapas (por ejemplo, `GoogleMapView`, `MapBoxView`, etc.).
+MapViewComponent contiene controles para gestionar MapView. Estos controles se pueden manipular a través de `MapViewState`.
+
+![Arquitectura de MapViewContainer](~/assets/mapviewcomponent/architecture.png)
+
 ## Componentes Específicos del Proveedor de Mapas
 
 MapConductor admite múltiples SDKs de mapa, cada uno con un componente dedicado.

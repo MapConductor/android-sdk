@@ -11,6 +11,14 @@ import ProviderIndependentMapContentExample from '~/components/components/mapvie
 
 MapConductor は、アプリケーションで地図を表示するための基盤となる、地図SDK固有の地図ビューコンポーネントを提供します。各地図SDKには独自の実装がありますが、一貫した API インターフェースを維持しています。
 
+## MapViewContainerのアーキテクチャ
+
+MapConductor は、地図SDKが提供するMapViewをラップしたMapViewContainerコンポーネントを提供します。
+MapViewComponentは概念で、実際に使うときには地図SDKごとに提供される `XxxMapView` (例：`GoogleMapView`, `MapBoxView` など)を使用します。
+MapViewComponentの中にはMapViewを制御するためのコントロールが内包されています。このコントロールは`MapViewState`を通じて操作することができます。
+
+![MapViewComponentのアーキテクチャ](~/assets/mapviewcomponent/architecture.png)
+
 ## 地図SDK固有のコンポーネント
 
 MapConductor は複数の地図SDKをサポートしており、それぞれに専用のコンポーネントがあります。

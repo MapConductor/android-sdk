@@ -110,13 +110,15 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'API Reference',
+					label: 'Events',
 					translations: {
-						ja: 'API リファレンス',
+						ja: 'イベント',
 					},
 					items: [
-						{ slug: 'api/initialization' },
-						{ slug: 'api/event-handlers' },
+						{ slug: 'event/onMapLoaded' },
+						// { slug: 'event/onCameraMoveStart' },
+						// { slug: 'event/onCameraMove' },
+						// { slug: 'event/onCameraMoveEnd' },
 					],
 				},
 				{
