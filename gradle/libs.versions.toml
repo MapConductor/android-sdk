@@ -20,7 +20,6 @@ lifecycleViewmodelCompose = "2.9.0"
 # gradle.propertiesのkotlinCompilerExtensionVersionと一致させる
 compose = "1.8.1"
 composeBom = "2025.05.00"
-okhttpBom = "5.3.2"
 runner = "1.6.2"
 
 mapboxAndroid = "11.14.3"
@@ -89,10 +88,6 @@ arcgis-maps-kotlin-toolkit-bom = { group = "com.esri", name = "arcgis-maps-kotli
 arcgis-maps-kotlin-toolkit-geoview-compose = { group = "com.esri", name = "arcgis-maps-kotlin-toolkit-geoview-compose" }
 arcgis-maps-kotlin-toolkit-authentication = { group = "com.esri", name = "arcgis-maps-kotlin-toolkit-authentication" }
 
-# OKHttp
-okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttpBom" }
-okhttp = { module = "com.squareup.okhttp3:okhttp" }
-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
 
 # テスト用
 junit = { group = "junit", name = "junit", version.ref = "junit" }
