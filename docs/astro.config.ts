@@ -109,18 +109,18 @@ export default defineConfig({
 						{ slug: 'states/groundimage-state' },
 					],
 				},
-				{
-					label: 'Events',
-					translations: {
-						ja: 'イベント',
-					},
-					items: [
-						{ slug: 'event/onMapLoaded' },
-						// { slug: 'event/onCameraMoveStart' },
-						// { slug: 'event/onCameraMove' },
-						// { slug: 'event/onCameraMoveEnd' },
-					],
-				},
+				// {
+				// 	label: 'Events',
+				// 	translations: {
+				// 		ja: 'イベント',
+				// 	},
+				// 	items: [
+				// 		{ slug: 'event/onMapLoaded' },
+				// 		// { slug: 'event/onCameraMoveStart' },
+				// 		// { slug: 'event/onCameraMove' },
+				// 		// { slug: 'event/onCameraMoveEnd' },
+				// 	],
+				// },
 				{
 					label: 'MapViewHolder',
 					items: [
