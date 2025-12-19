@@ -67,7 +67,7 @@ class ZoomAltitudeConverter(
         val cosTilt = cosTiltFactor(tilt)
         val distance = clampedAltitude / cosTilt
         val zoomLevel = log2((zoom0Altitude * cosLat) / distance)
-        return zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
+        return zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL) - 1.0
     }
 
     // Legacy methods for backward compatibility
