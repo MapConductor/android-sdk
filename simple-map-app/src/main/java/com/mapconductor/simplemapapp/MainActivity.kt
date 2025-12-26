@@ -7,25 +7,49 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.arcgismaps.mapping.ArcGISScene
-import com.arcgismaps.mapping.PortalItem
-import com.arcgismaps.mapping.layers.ArcGISMapImageLayer
-import com.arcgismaps.portal.Portal
-import com.arcgismaps.portal.PortalItemType
-import com.arcgismaps.toolkit.authentication.Authenticator
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.arcgismaps.toolkit.authentication.AuthenticatorState
-import com.mapconductor.arcgis.authentication.ArcGISOAuthHybridInitialize
-import com.mapconductor.arcgis.map.ArcGISMapView
-import com.mapconductor.arcgis.map.rememberArcGISMapViewState
+import com.here.sdk.core.Point2D
+import com.here.sdk.core.Rectangle2D
+import com.here.sdk.core.Size2D
+import com.here.sdk.mapview.MapScene
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.MapViewScope
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.polyline.Polyline
+import com.mapconductor.core.polygon.Polygon
+import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import com.mapconductor.here.HereMapView
+import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,192 +72,89 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+fun MapLibre() {
+    val center = GeoPointImpl.fromLatLong(52.5163, 13.3777)
+
+    val camera = MapCameraPositionImpl(position = center, zoom = 13.0)
+val mapViewState = rememberHereMapViewState(cameraPosition = camera)
+
+var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+HereMapView(
+    state = mapViewState,
+    onMarkerClick = { markerState -> selectedMarker = markerState }
+) {
+    val markerState = MarkerState(
+        position = center,
+        id = "my-marker"
+    )
+    Marker(
+        markerState
+    )
+}
+}
+
+@Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val mapViewState = rememberArcGISMapViewState()
+    val mapViewState = rememberHereMapViewState()
+    var polygons by remember { mutableStateOf<List<PolygonState>>(emptyList()) }
 
-    // 認証状態と CoroutineScope（await ライクに逐次処理）
-    val authenticatorState = remember { AuthenticatorState() }
-    val scope = rememberCoroutineScope()
-
-    ArcGISMapView(
+    HereMapView(
         state = mapViewState,
-        modifier = modifier.fillMaxSize(),
-        sdkInitialize = { context ->
-            ArcGISOAuthHybridInitialize(
-                authenticatorState = authenticatorState,
-                portalUrl = "https://mkgeeklab.maps.arcgis.com/",
-                redirectUrl = "urn:ietf:wg:oauth:2.0:oob",
-                clientId = "9QsChEh9QuTV5jLk",
-                clientSecret = "34a5c93cfcb1462cb409f37fba775a39",
-            )
-        },
-        onMapLoaded = {
-            scope.launch {
-                val holder = mapViewState.getMapViewHolder() ?: return@launch
+        onMapClick = { clicked ->
+            mapViewState.getMapViewHolder()?.let { holder ->
+                val screenXY = holder.toScreenOffset(clicked)!!
+                val leftTop = holder.fromScreenOffsetSync(
+                    Offset(
+                        screenXY.x - 10.0f,
+                        screenXY.y - 10.0f,
+                    )
+                )!!
+                val rightTop = holder.fromScreenOffsetSync(
+                    Offset(
+                        screenXY.x + 20.0f,
+                        screenXY.y - 10.0f,
+                    )
+                )!!
+                val rightBottom = holder.fromScreenOffsetSync(
+                    Offset(
+                        screenXY.x + 20.0f,
+                        screenXY.y + 20.0f,
+                    )
+                )!!
+                val leftBottom = holder.fromScreenOffsetSync(
+                    Offset(
+                        screenXY.x - 10.0f,
+                        screenXY.y + 20.0f,
+                    )
+                )!!
+                polygons = polygons + PolygonState(
+                    id = "polygon-${clicked.hashCode()}",
+                    points = listOf(
+                        leftTop,
+                        rightTop,
+                        rightBottom,
+                        leftBottom,
+                    )
+                )
 
-                // await 風に直列実行
-                val portal = Portal("https://mkgeeklab.maps.arcgis.com/", Portal.Connection.Authenticated)
-                portal.load().getOrThrow()
+                val viewarea = Rectangle2D(
+                        Point2D((screenXY.x - 10.0).toDouble(),(screenXY.y - 10.0).toDouble()),
+                        Size2D(10.0, 10.0)
+                    )
 
-                val item = PortalItem(portal, "e0ce06974e3d4c79b37e30d224c585d3")
-                item.load().getOrThrow()
-
-                when (item.type) {
-                    is PortalItemType.WebScene -> {
-                        ArcGISScene(item).also {
-                            it.load().getOrThrow() // WebSceneの読み込み完了を待つ
-                            holder.map.scene = it
+                holder.mapView.pick(null, viewarea) { pickResult ->
+                    pickResult?.let { result ->
+                        result.mapContent?.pickedPlaces?.forEach {
+                            println("categoryId: ${it.placeCategoryId}, name: ${it.name}")
                         }
                     }
-                    is PortalItemType.WebMap -> error("SceneView は WebScene のみ対応")
-                    else -> error("Unknown item type: ${item.type}")
-                }
-
-                // 追加レイヤ例（任意）
-                val trafficServerUrl = "https://traffic.arcgis.com/arcgis/rest/services/World/Traffic/MapServer"
-                ArcGISMapImageLayer(trafficServerUrl).also {
-                    it.opacity = 0.6f
-                    holder.map.scene!!.operationalLayers.add(0, it)
                 }
             }
         }
-    ) {}
+    ) {
 
-    // 認証UI（ユーザーログイン用）。ハイブリッド認証のフォールバックで使用されます。
-    Authenticator(authenticatorState = authenticatorState, modifier = modifier)
+    }
 }
 
 
-@Composable
-fun BasicMapExampleBackup(modifier: Modifier = Modifier) {
-    // 地図のカメラ位置
-    val mapViewState =
-        rememberArcGISMapViewState(
-            cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
-                    zoom = 12.0,
-                ),
-        )
-
-    // 認証状態と CoroutineScope（await風の逐次処理で使う）
-    val authenticatorState = remember { AuthenticatorState() }
-    val scope = rememberCoroutineScope()
-
-    ArcGISMapView(
-        state = mapViewState,
-        modifier = modifier.fillMaxSize(),
-        sdkInitialize = { context ->
-            ArcGISOAuthHybridInitialize(
-                authenticatorState = authenticatorState,
-                portalUrl = "https://mkgeeklab.maps.arcgis.com/",
-                redirectUrl = "urn:ietf:wg:oauth:2.0:oob",
-                clientId = "9QsChEh9QuTV5jLk",
-                clientSecret = "34a5c93cfcb1462cb409f37fba775a39",
-            )
-        },
-        onMapLoaded = {
-            // ここで await 風に順次処理
-            scope.launch {
-                val holder = mapViewState.getMapViewHolder() ?: return@launch
-                runCatching {
-                    Log.d("ArcGIS", "Loading portal and scene...")
-                    val portal = Portal("https://mkgeeklab.maps.arcgis.com/", Portal.Connection.Authenticated)
-                    portal.load().getOrThrow()
-
-                    val portalItem = PortalItem(portal, "e0ce06974e3d4c79b37e30d224c585d3")
-                    portalItem.load().getOrThrow()
-
-                    when (portalItem.type) {
-                        is PortalItemType.WebScene -> {
-                            holder.map.scene = ArcGISScene(portalItem)
-                        }
-                        is PortalItemType.WebMap -> {
-                            error("SceneView only supports WebScene. Use a WebScene item ID.")
-                        }
-                        else -> error("Unknown item type: ${portalItem.type}")
-                    }
-
-                    // 追加レイヤ（任意）
-                    val trafficLayer = ArcGISMapImageLayer(
-                        "https://traffic.arcgis.com/arcgis/rest/services/World/Traffic/MapServer",
-                    )
-                    //holder.map.scene!!.operationalLayers.add(trafficLayer)
-                }.onFailure { e ->
-                    Log.e("ArcGIS", "Post-load sequential setup failed", e)
-                }
-            }
-        },
-    ) {}
-
-    // 認証UI（ユーザーログイン用）。ハイブリッド認証のフォールバックで使用されます。
-    Authenticator(
-        authenticatorState = authenticatorState,
-        modifier = modifier,
-    )
-}
-
-/*
- * ===============================
- * 他の認証パターンの例
- * ===============================
- *
- * パターンA: OAuth Application Credential認証のみ（ログインダイアログなし）
- * 組織で共有されているコンテンツにアクセス可能
- *
- * ArcGISMapView(
- *     state = mapViewState,
- *     sdkInitialize = { context ->
- *         arcGISOAuthApplicationInitialize(
- *             portalUrl = "https://mkgeeklab.maps.arcgis.com/",
- *             clientId = "9QsChEh9QuTV5jLk",
- *             clientSecret = "34a5c93cfcb1462cb409f37fba775a39"
- *         )
- *     },
- *     onMapLoaded = { arcGisMapViewHolder = mapViewState.getMapViewHolder() }
- * ) {}
- *
- * ===============================
- *
- * パターンB: OAuth User Credential認証（ログインダイアログあり）
- * ユーザーのプライベートコンテンツにアクセス可能
- * ※ Authenticator(authenticatorState)をScaffold内に追加する必要があります
- *
- * ArcGISMapView(
- *     state = mapViewState,
- *     sdkInitialize = { context ->
- *         arcGISOAuthUserInitialize(
- *             authenticatorState = authenticatorState,
- *             portalUrl = "https://mkgeeklab.maps.arcgis.com/",
- *             clientId = "9QsChEh9QuTV5jLk",
- *             redirectUrl = "urn:ietf:wg:oauth:2.0:oob"
- *         )
- *     },
- *     onMapLoaded = { arcGisMapViewHolder = mapViewState.getMapViewHolder() }
- * ) {}
- *
- * ===============================
- *
- * パターンC: デフォルトのAPI Key認証（従来通り）
- * AndroidManifest.xmlのARCGIS_API_KEYを使用
- *
- * ArcGISMapView(
- *     state = mapViewState,
- *     // sdkInitializeを指定しない = デフォルトのAPI Key認証
- *     onMapLoaded = { arcGisMapViewHolder = mapViewState.getMapViewHolder() }
- * ) {}
- *
- * ===============================
- *
- * パターンD: 完全カスタム認証
- * 任意の認証ロジックを実装可能
- *
- * ArcGISMapView(
- *     state = mapViewState,
- *     sdkInitialize = { context ->
- *         // カスタム認証ロジック
- *         myCustomAuthenticationLogic(context)
- *     },
- *     onMapLoaded = { arcGisMapViewHolder = mapViewState.getMapViewHolder() }
- * ) {}
- */
