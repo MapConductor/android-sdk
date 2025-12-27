@@ -1,0 +1,25 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForDefault?: string;
+  commentForCustom?: string;
+  latitude?: number;
+  longitude?: number;
+  precision?: number;
+}
+
+const {
+  commentForDefault = "Default precision (6 digits)",
+  commentForCustom = "Custom precision (3 digits)",
+  latitude = 37.7749,
+  longitude = -122.4194,
+  precision = 3
+} = Astro.props;
+
+const code = `val point = GeoPointImpl(${latitude}, ${longitude})
+val urlValue = point.toUrlValue() // "${latitude.toFixed(6)},${longitude.toFixed(6)}" - ${commentForDefault}
+val urlValue3 = point.toUrlValue(precision = ${precision}) // "${latitude.toFixed(precision)},${longitude.toFixed(precision)}" - ${commentForCustom}`;
+---
+
+<Code code={code} lang="kotlin" />

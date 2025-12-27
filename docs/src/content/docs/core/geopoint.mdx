@@ -9,18 +9,23 @@ import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.as
 import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
 import ValidationExample from '~/components/core/geopoint/ValidationExample.astro';
 import NormalizationExample from '~/components/core/geopoint/NormalizationExample.astro';
+import WrapExample from '~/components/core/geopoint/WrapExample.astro';
+import EqualsExample from '~/components/core/geopoint/EqualsExample.astro';
+import ToUrlValueExample from '~/components/core/geopoint/ToUrlValueExample.astro';
 
-`GeoPoint` represents a geographic coordinate with latitude, longitude, and optional altitude. It is the fundamental building block for positioning markers, circles, and other map overlays.
+`GeoPoint` represents a geographic coordinate with latitude, longitude, and optional altitude.
 
 ## Interface and Implementation
 
 ### GeoPoint Interface
 
+The GeoPoint interface has the following properties. It is used for unit testing and other purposes.
+
 <GeoPointInterface />
 
 ### GeoPointImpl
 
-The main implementation provides immutable geographic coordinates:
+The GeoPointImpl class is an implementation of the GeoPoint interface.
 
 <GeoPointImpl />
 
@@ -28,11 +33,14 @@ The main implementation provides immutable geographic coordinates:
 
 ### Factory Methods
 
+The GeoPointImpl class provides the following factory methods.
+Developers can choose the method that is most convenient for them.
+
 <GeoPointFactoryMethods
-  commentForFromLatLong="Standard creation - latitude first (common pattern)"
-  commentForFromLongLat="Alternative - longitude first"
-  commentForFrom="From existing GeoPoint"
-  commentForConstructor="Direct constructor"
+  commentForFromLatLong="Specify values in latitude, longitude order"
+  commentForFromLongLat="Specify values in longitude, latitude order"
+  commentForFrom="Create from an object with GeoPoint interface"
+  commentForConstructor="Create by passing values directly to constructor"
   latitude={37.7749}
   longitude={-122.4194}
   altitude={100.0}
@@ -41,12 +49,13 @@ The main implementation provides immutable geographic coordinates:
 ### Usage Examples
 
 <BasicMarkerExample
-  commentForPosition="Basic marker positioning"
-  commentForMapView="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  commentForPosition="Basic marker placement"
+  commentForMapView="Replace MapViewContainer with GoogleMapView, MapboxMapView, or other map SDK of your choice"
   latitude={37.7749}
   longitude={-122.4194}
   label="SF"
 />
+
 
 ## Coordinate System
 
@@ -62,12 +71,20 @@ The main implementation provides immutable geographic coordinates:
 - **0.0**: Prime Meridian (Greenwich)
 - **180.0**: International Date Line (east side)
 
+
 ## Validation and Normalization
 
 ### Validation
 
+The `isValid()` extension function checks if the coordinates of a GeoPoint are within valid ranges.
+
+- **Latitude**: Within the range -90.0 to 90.0
+- **Longitude**: Within the range -180.0 to 180.0
+
+Returns `true` when both conditions are met.
+
 <ValidationExample
-  commentForUsage="Usage"
+  commentForUsage="Usage example"
   commentForUse="Use the point"
   latitude={37.7749}
   longitude={-122.4194}
@@ -75,10 +92,77 @@ The main implementation provides immutable geographic coordinates:
 
 ### Normalization
 
+Two methods are available to keep coordinates within valid ranges.
+
+#### normalize()
+
+The `normalize()` extension function clamps coordinates to valid ranges.
+
+- **Latitude**: Clamped to -90.0 to 90.0
+- **Longitude**: Normalized to -180.0 to 180.0 (modulo operation)
+- **Altitude**: Converted to 0.0 if null
+
 <NormalizationExample
-  commentForUsage="Usage"
+  commentForUsage="Usage example"
   commentForInvalid="Invalid coordinates"
   commentForValid="Clamped to valid range"
   invalidLatitude={100.0}
   invalidLongitude={200.0}
 />
+
+#### wrap()
+
+The `wrap()` method properly wraps coordinates that cross the poles.
+
+- **When latitude exceeds 90 degrees**: Wraps from -90 degrees, flips longitude by 180 degrees
+- **When latitude falls below -90 degrees**: Wraps from 90 degrees, flips longitude by 180 degrees
+- **Longitude**: Normalized to -180.0 to 180.0
+
+<WrapExample
+  commentForExample="Example: Coordinates beyond poles"
+  commentForOverflow="Latitude exceeds 90 degrees"
+  latitude={95.0}
+  longitude={10.0}
+/>
+
+The difference between `normalize()` and `wrap()` is how they handle pole crossing. `normalize()` simply clamps values, while `wrap()` calculates the actual coordinates as if crossing the poles on a globe.
+
+## Comparison
+
+### equals()
+
+The `equals()` method of `GeoPointImpl` performs comparison considering floating-point errors.
+
+- **Tolerance**: 1e-7 (approximately 0.00000001 degrees, about 1.1cm)
+- **Comparison targets**: Latitude, longitude, and altitude
+
+<EqualsExample
+  commentForTolerance="within tolerance"
+  latitude1={37.7749}
+  longitude1={-122.4194}
+  altitude1={100.0}
+  latitude2={37.77490001}
+  longitude2={-122.41940001}
+  altitude2={100.00000001}
+/>
+
+This tolerance allows comparisons to ignore tiny differences from floating-point arithmetic.
+
+## Utility Methods
+
+### toUrlValue()
+
+The `toUrlValue()` method converts latitude and longitude to a URL string.
+
+- **Format**: `"latitude,longitude"`
+- **Precision**: Default is 6 digits (approximately 11cm), customizable
+
+<ToUrlValueExample
+  commentForDefault="Default precision (6 digits)"
+  commentForCustom="Custom precision (3 digits)"
+  latitude={37.7749}
+  longitude={-122.4194}
+  precision={3}
+/>
+
+Can be used for URL parameters in mapping services like Google Maps or Mapbox.
