@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoRectBounds
 import java.io.Serializable
 
 @Composable
@@ -46,4 +48,36 @@ fun MapViewScope.Polygon(
             extra = extra,
         )
     Polygon(state)
+}
+
+@Composable
+fun MapViewScope.Polygon(
+    bounds: GeoRectBounds,
+    id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    fillColor: Color = Color.Transparent,
+    geodesic: Boolean = false,
+    extra: Serializable? = null,
+) {
+    bounds.northEast?.let { ne ->
+        bounds.southWest?.let { sw ->
+            val points = listOf(
+                ne,
+                GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                sw,
+                GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                ne,
+            )
+            Polygon(
+                points = points,
+                id = id,
+                strokeColor = strokeColor,
+                strokeWidth = strokeWidth,
+                fillColor = fillColor,
+                geodesic = geodesic,
+                extra = extra,
+            )
+        }
+    }
 }

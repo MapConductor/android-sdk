@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoRectBounds
 import java.io.Serializable
 
 @Composable
@@ -44,4 +46,34 @@ fun MapViewScope.Polyline(
             extra = extra,
         )
     Polyline(state)
+}
+
+@Composable
+fun MapViewScope.Polyline(
+    bounds: GeoRectBounds,
+    id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    geodesic: Boolean = false,
+    extra: Serializable? = null,
+) {
+    bounds.northEast?.let { ne ->
+        bounds.southWest?.let { sw ->
+            val points = listOf(
+                ne,
+                GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                sw,
+                GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                ne,
+            )
+            Polyline(
+                points = points,
+                id = id,
+                strokeColor = strokeColor,
+                strokeWidth = strokeWidth,
+                geodesic = geodesic,
+                extra = extra,
+            )
+        }
+    }
 }
