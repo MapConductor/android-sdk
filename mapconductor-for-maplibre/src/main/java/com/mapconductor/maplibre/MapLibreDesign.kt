@@ -18,5 +18,45 @@ data class MapLibreDesign(
                 id = "demo",
                 styleJsonURL = "https://demotiles.maplibre.org/style.json",
             )
+        val MapTilerTonerJa =
+            MapLibreDesign(
+                id = "maptiler-toner-ja",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/maptiler-toner-ja/style.json",
+            )
+        val MapTilerTonerEn =
+            MapLibreDesign(
+                id = "maptiler-toner-en",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/maptiler-toner-en/style.json",
+            )
+        val OsmBright =
+            MapLibreDesign(
+                id = "osm-bright",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/osm-bright/style.json",
+            )
+        val OsmBrightEn =
+            MapLibreDesign(
+                id = "osm-bright-en",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/osm-bright-en/style.json",
+            )
+        val OsmBrightJaTiles =
+            MapLibreDesign(
+                id = "osm-bright-ja",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json",
+            )
+        val MapTilerBasicEn =
+            MapLibreDesign(
+                id = "maptiler-basic-en",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/maptiler-basic-en/style.json",
+            )
+        val OpenMapTiles =
+            MapLibreDesign(
+                id = "openmaptiles",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/openmaptiles/style.json",
+            )
+        val MapTilerBasicJa =
+            MapLibreDesign(
+                id = "maptiler-basic-ja",
+                styleJsonURL = "https://tile.openstreetmap.jp/styles/maptiler-basic-ja/style.json",
+            )
     }
 }
