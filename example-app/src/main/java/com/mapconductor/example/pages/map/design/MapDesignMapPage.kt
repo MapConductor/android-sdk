@@ -33,7 +33,7 @@ import com.mapconductor.here.HereMapDesignType
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxDesignType
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.maplibre.MapLibreDesignType
+import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,7 +111,7 @@ fun MapDesignTypeSelector(
             }
             is MapLibreViewState -> {
                 @Suppress("UNCHECKED_CAST")
-                state.mapDesignType = mapDesignOption.design as MapLibreDesignType
+                state.mapDesignType = mapDesignOption.design as MapLibreDesign
             }
             else -> throw IllegalArgumentException("Not implemented yet")
         }

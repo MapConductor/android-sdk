@@ -180,7 +180,7 @@ class MapLibreViewControllerImpl(
         }
     }
 
-    private var mapDesignType: MapLibreMapDesignType = MapLibreDesignType.DemoTiles
+    private var mapDesignType: MapLibreMapDesignType = MapLibreDesign.DemoTiles
 
     private var mapDesignTypeChangeListener: MapLibreDesignTypeChangeHandler? = null
 

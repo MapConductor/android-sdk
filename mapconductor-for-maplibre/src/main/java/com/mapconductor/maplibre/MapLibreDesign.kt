@@ -38,7 +38,7 @@ data class MapLibreDesign(
                 id = "osm-bright-en",
                 styleJsonURL = "https://tile.openstreetmap.jp/styles/osm-bright-en/style.json",
             )
-        val OsmBrightJaTiles =
+        val OsmBrightJa =
             MapLibreDesign(
                 id = "osm-bright-ja",
                 styleJsonURL = "https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json",

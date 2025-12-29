@@ -13,7 +13,7 @@ import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.maplibre.MapLibreDesignType
+import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -191,7 +191,15 @@ class MapDesignPageViewModelImpl :
 
     private val mapLibreDesigns =
         listOf(
-            MapDesignOption(label = "Normal", design = MapLibreDesignType.DemoTiles),
+            MapDesignOption(label = "DemoTiles", design = MapLibreDesign.DemoTiles),
+            MapDesignOption(label = "MapTilerBasicEn", design = MapLibreDesign.MapTilerBasicEn),
+            MapDesignOption(label = "MapTilerBasicJa", design = MapLibreDesign.MapTilerBasicJa),
+            MapDesignOption(label = "MapTilerTonerEn", design = MapLibreDesign.MapTilerTonerEn),
+            MapDesignOption(label = "MapTilerTonerJa", design = MapLibreDesign.MapTilerTonerJa),
+            MapDesignOption(label = "OsmBright", design = MapLibreDesign.OsmBright),
+            MapDesignOption(label = "OsmBrightEn", design = MapLibreDesign.OsmBrightEn),
+            MapDesignOption(label = "OsmBrightJa", design = MapLibreDesign.OsmBrightJa),
+            MapDesignOption(label = "OpenMapTiles", design = MapLibreDesign.OpenMapTiles),
             // TODO: check the reason to inspect crashing
 //            MapDesignOption(label = "OSM", design = MapLibreDesignType(
 //                "OSM",
