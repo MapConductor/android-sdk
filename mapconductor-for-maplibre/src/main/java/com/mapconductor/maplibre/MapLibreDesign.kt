@@ -6,7 +6,7 @@ interface MapLibreMapDesignType : MapDesignType<String> {
     val styleJsonURL: String
 }
 
-data class MapLibreDesignType(
+data class MapLibreDesign(
     override val id: String,
     override val styleJsonURL: String,
 ) : MapLibreMapDesignType {
@@ -14,7 +14,7 @@ data class MapLibreDesignType(
 
     companion object {
         val DemoTiles =
-            MapLibreDesignType(
+            MapLibreDesign(
                 id = "demo",
                 styleJsonURL = "https://demotiles.maplibre.org/style.json",
             )
