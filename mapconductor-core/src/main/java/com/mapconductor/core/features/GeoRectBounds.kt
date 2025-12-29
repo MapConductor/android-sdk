@@ -167,10 +167,14 @@ class GeoRectBounds(
             this._northEast = other.northEast
             return this
         }
+        val newBounds = GeoRectBounds(
+            southWest = this.southWest,
+            northEast = this.northEast,
+        )
 
-        extend(other._southWest!!.wrap())
-        extend(other._northEast!!.wrap())
-        return this
+        newBounds.extend(other._southWest!!.wrap())
+        newBounds.extend(other._northEast!!.wrap())
+        return newBounds
     }
 
     fun toSpan(): GeoPointImpl? {
