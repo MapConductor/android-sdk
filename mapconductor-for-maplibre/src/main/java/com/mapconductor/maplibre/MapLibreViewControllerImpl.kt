@@ -146,16 +146,6 @@ class MapLibreViewControllerImpl(
         ensurePolygonZLayers(style)
 
         // Marker - add source and layer at the top
-        style.addSource(markerController.renderer.markerLayer.source)
-        try {
-            style.addLayerAbove(
-                markerController.renderer.markerLayer.layer,
-                polylineController.renderer.layer.layerId,
-            )
-        } catch (_: Exception) {
-            // Fallback when anchor layer is not present yet
-            style.addLayer(markerController.renderer.markerLayer.layer)
-        }
         ensureGeoJsonSource(style, markerController.renderer.markerLayer.sourceId)
         addLayerAboveSafely(
             style = style,
@@ -312,11 +302,11 @@ class MapLibreViewControllerImpl(
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateStartListener = listener
+        markerController.animateStartListener = listener
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateEndListener = listener
+        markerController.animateEndListener = listener
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
@@ -339,7 +329,7 @@ class MapLibreViewControllerImpl(
         val touchPosition = point.toGeoPoint()
 
         markerController.find(touchPosition)?.let { entity ->
-            markerController.clickListener?.invoke(entity.state)
+            markerController.dispatchClick(entity.state)
             return true
         }
 
@@ -389,7 +379,7 @@ class MapLibreViewControllerImpl(
                 }
                 markerController.selectedMarker = entity
                 markerController.markerManager.removeEntity(entity.state.id)
-                markerController.dragStartListener?.invoke(entity.state)
+                markerController.dispatchDragStart(entity.state)
                 // Intercept touch to move marker without moving the map
                 installDragTouchInterceptor()
                 return true
@@ -423,7 +413,7 @@ class MapLibreViewControllerImpl(
                 markerController.renderer.drawDragLayer()
             }
 
-            markerController.dragListener?.invoke(entity.state)
+            markerController.dispatchDrag(entity.state)
         }
     }
 
@@ -437,7 +427,7 @@ class MapLibreViewControllerImpl(
             val point = holder.map.projection.fromScreenLocation(screenCoordinate)
             markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
             markerController.selectedMarker = null
-            markerController.dragEndListener?.invoke(entity.state)
+            markerController.dispatchDragEnd(entity.state)
             // Re-enable map scroll after dragging finishes
             try {
                 val ui = holder.map.uiSettings
@@ -464,7 +454,7 @@ class MapLibreViewControllerImpl(
                             selected.state.position = pos
                             markerController.renderer.dragLayer.updatePosition(pos)
                             markerController.renderer.drawDragLayer()
-                            markerController.dragListener?.invoke(selected.state)
+                            markerController.dispatchDrag(selected.state)
                         }
                         true // consume to prevent map panning
                     }
@@ -472,7 +462,7 @@ class MapLibreViewControllerImpl(
                         val point = holder.map.projection.fromScreenLocation(PointF(event.x, event.y))
                         markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
                         markerController.selectedMarker = null
-                        markerController.dragEndListener?.invoke(selected.state)
+                        markerController.dispatchDragEnd(selected.state)
                         try {
                             val ui = holder.map.uiSettings
                             ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
