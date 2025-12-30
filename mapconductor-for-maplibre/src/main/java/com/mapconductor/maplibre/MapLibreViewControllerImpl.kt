@@ -28,9 +28,11 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.FillLayer
+import org.maplibre.android.style.layers.Layer
 import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.sources.GeoJsonSource
 import android.graphics.PointF
 import android.util.Log
 import android.view.MotionEvent
@@ -62,6 +64,54 @@ class MapLibreViewControllerImpl(
     private var dragTouchInterceptor: View.OnTouchListener? = null
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
 
+    private fun ensureGeoJsonSource(
+        style: Style,
+        sourceId: String,
+    ) {
+        if (style.getSource(sourceId) != null) return
+        try {
+            style.addSource(GeoJsonSource(sourceId))
+        } catch (e: Exception) {
+            Log.w("MapLibre", "Failed to add source: $sourceId (${e.message})")
+        }
+    }
+
+    private fun addLayerSafely(
+        style: Style,
+        layer: Layer,
+        layerId: String,
+    ) {
+        if (style.getLayer(layerId) != null) return
+        try {
+            style.addLayer(layer)
+        } catch (e: Exception) {
+            if (style.getLayer(layerId) == null) {
+                Log.w("MapLibre", "Failed to add layer: $layerId (${e.message})")
+            }
+        }
+    }
+
+    private fun addLayerAboveSafely(
+        style: Style,
+        layer: Layer,
+        layerId: String,
+        aboveId: String,
+    ) {
+        if (style.getLayer(layerId) != null) return
+        try {
+            style.addLayerAbove(layer, aboveId)
+        } catch (e: Exception) {
+            if (style.getLayer(layerId) != null) return
+            try {
+                style.addLayer(layer)
+            } catch (e2: Exception) {
+                if (style.getLayer(layerId) == null) {
+                    Log.w("MapLibre", "Failed to add layer: $layerId (${e2.message})")
+                }
+            }
+        }
+    }
+
     private fun setupStyle(style: Style) {
         // Store the style instance for future use
         styleInstance = style
@@ -73,16 +123,24 @@ class MapLibreViewControllerImpl(
         markerController.renderer.ensureDefaultIcon(style)
 
         // Polygon sources only (layers will be added per zIndex)
-        style.addSource(polygonController.polylineOverlay.layer.source)
-        style.addSource(polygonController.polygonOverlay.layer.source)
+        ensureGeoJsonSource(style, polygonController.polylineOverlay.layer.sourceId)
+        ensureGeoJsonSource(style, polygonController.polygonOverlay.layer.sourceId)
 
         // Circle cts as anchor above polygons
-        style.addSource(circleController.renderer.layer.source)
-        style.addLayer(circleController.renderer.layer.layer)
+        ensureGeoJsonSource(style, circleController.renderer.layer.sourceId)
+        addLayerSafely(
+            style = style,
+            layer = circleController.renderer.layer.layer,
+            layerId = circleController.renderer.layer.layerId,
+        )
 
         // Polyline (general) acts as anchor above circles
-        style.addSource(polylineController.renderer.layer.source)
-        style.addLayer(polylineController.renderer.layer.layer)
+        ensureGeoJsonSource(style, polylineController.renderer.layer.sourceId)
+        addLayerSafely(
+            style = style,
+            layer = polylineController.renderer.layer.layer,
+            layerId = polylineController.renderer.layer.layerId,
+        )
 
         // Add z-indexed polygon layers below general polylines
         ensurePolygonZLayers(style)
@@ -98,18 +156,23 @@ class MapLibreViewControllerImpl(
             // Fallback when anchor layer is not present yet
             style.addLayer(markerController.renderer.markerLayer.layer)
         }
+        ensureGeoJsonSource(style, markerController.renderer.markerLayer.sourceId)
+        addLayerAboveSafely(
+            style = style,
+            layer = markerController.renderer.markerLayer.layer,
+            layerId = markerController.renderer.markerLayer.layerId,
+            aboveId = polylineController.renderer.layer.layerId,
+        )
         markerController.renderer.redraw()
 
         // Drag layer above marker layer
-        style.addSource(markerController.renderer.dragLayer.source)
-        try {
-            style.addLayerAbove(
-                markerController.renderer.dragLayer.layer,
-                markerController.renderer.markerLayer.layerId,
-            )
-        } catch (_: Exception) {
-            style.addLayer(markerController.renderer.dragLayer.layer)
-        }
+        ensureGeoJsonSource(style, markerController.renderer.dragLayer.sourceId)
+        addLayerAboveSafely(
+            style = style,
+            layer = markerController.renderer.dragLayer.layer,
+            layerId = markerController.renderer.dragLayer.layerId,
+            aboveId = markerController.renderer.markerLayer.layerId,
+        )
         markerController.renderer.redraw()
 
         // Force redraw after adding layers
