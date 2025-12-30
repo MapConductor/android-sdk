@@ -25,10 +25,7 @@ const {
   commentForCombinedBounds = "Contains both areas"
 } = Astro.props;
 
-const code = `fun union(other: GeoRectBounds): GeoRectBounds
-
-// Usage
-val bounds1 = GeoRectBounds(
+const code = `val bounds1 = GeoRectBounds(
     southWest = GeoPointImpl.fromLatLong(${firstSouthWestLatitude}, ${firstSouthWestLongitude}),
     northEast = GeoPointImpl.fromLatLong(${firstNorthEastLatitude}, ${firstNorthEastLongitude})
 )
