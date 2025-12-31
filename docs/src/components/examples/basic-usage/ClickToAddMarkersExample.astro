@@ -29,13 +29,13 @@ fun ClickToAddMarkersExample() {
                     label = "\${markers.size + 1}",
                     fillColor = ${fillColor}
                 ),
-                extra = "${markerLabelPrefix} \${markers.size + 1}"
+                extra = "${markerLabelPrefix} \${markers.size + 1}",
+                onClick = { markerState ->
+                    // ${commentForRemoveMarker}
+                    markers = markers.filter { it.id != markerState.id }
+                }
             )
             markers = markers + newMarker
-        },
-        onMarkerClick = { markerState ->
-            // ${commentForRemoveMarker}
-            markers = markers.filter { it.id != markerState.id }
         }
     ) {
         markers.forEach { marker ->

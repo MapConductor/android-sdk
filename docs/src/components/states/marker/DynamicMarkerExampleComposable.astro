@@ -21,6 +21,15 @@ const {
 
 const code = `@Composable
 fun DynamicMarkerExample() {
+    val colors = listOf(
+        Color.Red,
+        Color.Blue,
+        Color.Yellow,
+        Color.Green,
+        Color.Cyan,
+        Color.Magenta,
+        Color.White,
+    )
     var markerState by remember {
         mutableStateOf(
             MarkerState(
@@ -31,7 +40,7 @@ fun DynamicMarkerExample() {
         )
     }
 
-    var counter by remember { mutableStateOf(1) }
+    var counter by remember { mutableStateOf(0) }
 
     Column {
         Button(
@@ -39,7 +48,7 @@ fun DynamicMarkerExample() {
                 counter++
                 markerState = markerState.copy(
                     icon = DefaultIcon(
-                        fillColor = Color.Blue,
+                        fillColor = colors[counter % colors.size],
                         label = counter.toString()
                     ),
                     extra = "${counterExtraTemplate}"

@@ -9,16 +9,16 @@ const {
   commentForPrint = "A circle clicked at:"
 } = Astro.props;
 
-const code = `MapView(
-    ...
-        onCircleClick = { event ->
-            println("${commentForPrint} \${event.clicked.latitude}, \${event.clicked.longitude}")
+const code = `Circle(
+    ...,
+    onClick = { event ->
+        println("${commentForPrint} \${event.clicked.latitude}, \${event.clicked.longitude}")
 
-            event.state.fillColor = Color.Red.copy(
-                opacity = 0.7f,
-            )
-        },
-) { }`;
+        event.state.fillColor = Color.Red.copy(
+            opacity = 0.7f,
+        )
+    },
+)`;
 ---
 
 <Code code={code} lang="kotlin" />

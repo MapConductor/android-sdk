@@ -55,25 +55,27 @@ fun MapWithMarkers(modifier: Modifier = Modifier) {
     val mapViewState = rememberGoogleMapViewState(
         cameraPosition = initialCamera
     )
+    val onMarkerClick: (MarkerState) -> Unit = { markerState ->
+        println("${commentMarkerClicked}\${markerState.extra}")
+    }
 
     GoogleMapView(
         modifier = modifier.fillMaxSize(),
-        state = mapViewState,
-        onMarkerClick = { markerState ->
-            println("${commentMarkerClicked}\${markerState.extra}")
-        }
+        state = mapViewState
     ) {
         // ${commentAddMarkers}
         Marker(
             position = marker1,
             icon = DefaultIcon(label = "${marker1Label}"),
-            extra = "marker1"
+            extra = "marker1",
+            onClick = onMarkerClick
         )
 
         Marker(
             position = marker2,
             icon = DefaultIcon(label = "${marker2Label}"),
-            extra = "marker2"
+            extra = "marker2",
+            onClick = onMarkerClick
         )
     }
 }`;

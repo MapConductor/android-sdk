@@ -38,7 +38,10 @@ fun InteractiveGroundImageExample() {
                 ),
                 image = it,
                 opacity = opacity,
-                extra = "${extraLabel}"
+                extra = "${extraLabel}",
+                onClick = { event ->
+                    println("${groundImageClickLog}")
+                }
             )
         }
     }
@@ -53,10 +56,7 @@ fun InteractiveGroundImageExample() {
         Text("${opacityLabelTemplate}")
 
         MapView(
-            state = mapViewState,
-            onGroundImageClick = { event ->
-                println("${groundImageClickLog}")
-            }
+            state = mapViewState
         ) {
             groundImageState?.let { state ->
                 GroundImage(state)

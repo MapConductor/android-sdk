@@ -22,8 +22,7 @@ MapViewComponentの中にはMapViewを制御するためのコントロールが
 ## 地図SDK固有のコンポーネント
 
 MapConductor は複数の地図SDKをサポートしており、それぞれに専用のコンポーネントがあります。
-地図上には通常、複数のオブジェクト（マーカーやポリラインなど）が配置されるため、個々のオブジェクトにイベントコールバックを設定するのではなく、
-地図SDK固有のコンポーネントにイベントコールバックを設定します。
+地図上には通常、複数のオブジェクト（マーカーやポリラインなど）が配置されるため、イベントコールバックは各オーバーレイの State に設定します。
 
 各地図SDK固有の特殊なイベントコールバックについては、v{BOM_MODULE_VERSION} ではまだサポートされていません。
 
@@ -44,9 +43,9 @@ MapConductor は複数の地図SDKをサポートしており、それぞれに�
 
 - **`onMapLoaded`**: 地図の読み込みが完了したときに呼び出されます
 - **`onMapClick`**: ユーザーが地図をタップしたときに呼び出されます
-- **カメライベント**: `onCameraMoveStart`、`onCameraMove`、`onCameraMoveEnd`
-- **マーカーイベント**: `onMarkerClick`、`onMarkerDragStart`、`onMarkerDrag`、`onMarkerDragEnd`、`onMarkerAnimateStart`、`onMarkerAnimateEnd`
-- **オーバーレイイベント**: `onCircleClick`、`onPolylineClick`、`onPolygonClick`、`onGroundImageClick`
+- **`onCameraMoveStart`**: `moveCameraTo(dst, durationMs)`を開始するときに呼び出されます。ユーザーが地図をインタラクティブに動かしたときには呼び出されません。
+- **`onCameraMove`**: 地図を表示するカメラが移動したときに呼び出されます。
+- **`onCameraMoveEnd`**: 地図を表示するカメラの移動が修了したときに呼び出されます。
 
 ### 高度なパラメータ
 

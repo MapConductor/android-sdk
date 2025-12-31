@@ -1,9 +1,12 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `onMarkerDragStart: OnMarkerEventHandler? = null
-onMarkerDrag: OnMarkerEventHandler? = null
-onMarkerDragEnd: OnMarkerEventHandler? = null`;
+const code = `MarkerState(
+    ...,
+    onDragStart: OnMarkerEventHandler? = null,
+    onDrag: OnMarkerEventHandler? = null,
+    onDragEnd: OnMarkerEventHandler? = null,
+)`;
 ---
 
 <Code code={code} lang="kotlin" />

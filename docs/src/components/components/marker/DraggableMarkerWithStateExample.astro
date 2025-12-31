@@ -18,14 +18,14 @@ fun DraggableMarkerExample() {
             label = "Drag me",
             fillColor = Color.Green
         ),
+        onDrag = { markerState ->
+            println("position: ${'${'}GeoPointImpl.from(markerState.position).toUrlValue(6)}")
+        }
     )
 
     // ${commentForMapViewUsage}
     MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            println("position: ${'${'}GeoPointImpl.from(markerState.position).toUrlValue(6)}")
-        }
+        state = mapViewState
     ) {
         Marker(markerState)
     }
@@ -33,4 +33,3 @@ fun DraggableMarkerExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

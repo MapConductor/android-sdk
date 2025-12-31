@@ -48,16 +48,16 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         state = mapViewState,
         onMapClick = { geoPoint ->
             println("Map clicked at: \${geoPoint.latitude}, \${geoPoint.longitude}")
-        },
-        onMarkerClick = { markerState ->
-            println("Marker clicked: \${markerState.extra}")
         }
     ) {
         ${markerComment}
         Marker(
             position = sanFrancisco,
             icon = DefaultIcon(label = "SF"),
-            extra = "San Francisco marker"
+            extra = "San Francisco marker",
+            onClick = { markerState ->
+                println("Marker clicked: \${markerState.extra}")
+            }
         )
 
         ${circleComment}
@@ -72,4 +72,3 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
 ---
 
 <Code code={code} lang="kotlin" />
-

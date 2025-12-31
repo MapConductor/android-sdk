@@ -16,8 +16,8 @@ fun BasicGroundImageExample(
         )
 
     val bounds = GeoRectBounds(
-        southWest = GeoPointImpl.from(51.476747, -0.167729),
-        northEast = GeoPointImpl.from(51.546550,-0.033792),
+        southWest = GeoPointImpl.fromLatLng(51.476747, -0.167729),
+        northEast = GeoPointImpl.fromLatLng(51.546550,-0.033792),
     )
     GoogleMapView(
         modifier = modifier,

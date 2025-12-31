@@ -28,26 +28,27 @@ fun BoundsEditorExample() {
         )
     }
 
-    // ${commentForMapViewUsage}
-    MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            val newPosition = markerState.position
-            when (markerState.extra) {
-                "SW" -> {
-                    bounds = GeoRectBounds(
-                        southWest = newPosition as GeoPointImpl,
-                        northEast = bounds.northEast
-                    )
-                }
-                "NE" -> {
-                    bounds = GeoRectBounds(
-                        southWest = bounds.southWest,
-                        northEast = newPosition as GeoPointImpl
-                    )
-                }
+    val onCornerDrag: (MarkerState) -> Unit = { markerState ->
+        val newPosition = markerState.position
+        when (markerState.extra) {
+            "SW" -> {
+                bounds = GeoRectBounds(
+                    southWest = newPosition as GeoPointImpl,
+                    northEast = bounds.northEast
+                )
+            }
+            "NE" -> {
+                bounds = GeoRectBounds(
+                    southWest = bounds.southWest,
+                    northEast = newPosition as GeoPointImpl
+                )
             }
         }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState
     ) {
         // Bounds visualization
         if (!bounds.isEmpty) {
@@ -75,7 +76,8 @@ fun BoundsEditorExample() {
                     label = "SW"
                 ),
                 draggable = true,
-                extra = "SW"
+                extra = "SW",
+                onDrag = onCornerDrag
             )
 
             Marker(
@@ -85,7 +87,8 @@ fun BoundsEditorExample() {
                     label = "NE"
                 ),
                 draggable = true,
-                extra = "NE"
+                extra = "NE",
+                onDrag = onCornerDrag
             )
         }
     }
@@ -93,4 +96,3 @@ fun BoundsEditorExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

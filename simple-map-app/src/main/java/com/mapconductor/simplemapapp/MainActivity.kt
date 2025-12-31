@@ -7,49 +7,32 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.arcgismaps.toolkit.authentication.AuthenticatorState
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
-import com.here.sdk.mapview.MapScene
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polyline.Polyline
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.googlemaps.GoogleMapViewState
-import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import android.os.Bundle
-import android.util.Log
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +42,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    BasicMapExample(
+                    MarkerAnimationExample(
                         modifier =
                             Modifier
                                 .padding(innerPadding)
@@ -72,7 +55,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MapLibre() {
+fun MapLibre(modifier: Modifier = Modifier) {
     val center = GeoPointImpl.fromLatLong(52.5163, 13.3777)
 
     val camera = MapCameraPositionImpl(position = center, zoom = 13.0)
@@ -82,6 +65,7 @@ fun MapLibre() {
 
     HereMapView(
         state = mapViewState,
+        modifier = modifier,
     ) {
         val markerState = MarkerState(
             position = center,
@@ -101,6 +85,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
 
     HereMapView(
         state = mapViewState,
+        modifier = modifier,
         onMapClick = { clicked ->
             mapViewState.getMapViewHolder()?.let { holder ->
                 val screenXY = holder.toScreenOffset(clicked)!!
@@ -157,4 +142,58 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+fun MarkerAnimationExample(modifier: Modifier = Modifier) {
+    val startPosition = GeoPointImpl.fromLatLong(37.775111, -122.419206)
+    val endPosition = GeoPointImpl.fromLatLong(37.780522, -122.412522)
 
+    var markerState by remember {
+        mutableStateOf(
+            MarkerState(
+                position = startPosition,
+                icon = DefaultIcon(fillColor = Color.Green, label = "移動中"),
+                extra = "アニメーションするマーカー"
+            )
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        val path = (0 .. 10)
+            .map { it * 0.1 }
+            .map {
+                Spherical.sphericalInterpolate(
+                    from = startPosition,
+                    to = endPosition,
+                    fraction = it,
+                )
+            }
+
+        var direction = 1;
+        var idx = 0
+        while (true) {
+            delay(1000)
+            for (i in 0..path.size - 2) {
+                idx += direction
+                markerState.position = path[idx]
+                println("$idx : ${GeoPointImpl.from(path[idx]).toUrlValue()}")
+                delay(50)
+            }
+            direction = direction * -1
+        }
+    }
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition = MapCameraPositionImpl(
+                position = GeoPointImpl.fromLatLong(37.7791, -122.4144),
+                zoom = 15.0,
+            ),
+            mapDesign = MapLibreDesign.OsmBrightEn,
+        )
+
+    MapLibreMapView(
+        modifier = modifier,
+        state = mapViewState,
+    ) {
+        Marker(markerState)
+    }
+}

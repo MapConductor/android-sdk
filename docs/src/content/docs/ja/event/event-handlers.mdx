@@ -19,7 +19,8 @@ import OnPolylineClickSignature from '~/components/api/event-handlers/OnPolyline
 import PolylineEventDataClass from '~/components/api/event-handlers/PolylineEventDataClass.astro';
 import OnPolylineClickExample from '~/components/api/event-handlers/OnPolylineClickExample.astro';
 
-MapConductor は、マップとそのコンポーネントに対するユーザーインタラクションのイベント処理を包括的に提供します。すべてのイベントは `MapViewContainer` コンポーネントを通じて処理され、イベントリスナーは MapView コンポーネントに渡されます。
+MapConductor は、マップとそのコンポーネントに対するユーザーインタラクションのイベント処理を包括的に提供します。
+マップのイベントは MapView コンポーネントで処理し、オーバーレイのイベントは各 State に設定します。
 
 <MapViewEventHandlersSignature />
 
@@ -63,9 +64,9 @@ MapConductor は、マップとそのコンポーネントに対するユーザ�
 
 ### ドラッグイベント
 
-- **`onMarkerDragStart`**: ドラッグ開始時に呼び出されます
-- **`onMarkerDrag`**: ドラッグ中に継続的に呼び出されます
-- **`onMarkerDragEnd`**: ドラッグ終了時に呼び出されます
+- **`onDragStart`**: ドラッグ開始時に呼び出されます
+- **`onDrag`**: ドラッグ中に継続的に呼び出されます
+- **`onDragEnd`**: ドラッグ終了時に呼び出されます
 
 <OnMarkerDragSignatures />
 

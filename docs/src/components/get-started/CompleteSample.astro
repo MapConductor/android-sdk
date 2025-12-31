@@ -73,6 +73,15 @@ fun CompleteSample(modifier: Modifier = Modifier) {
         cameraPosition = initialCamera
     )
     val scope = rememberCoroutineScope()
+    val onMarkerClick: (MarkerState) -> Unit = { markerState ->
+        Toast
+            .makeText(
+                context,
+                "clicked: \${markerState.extra}",
+                Toast.LENGTH_SHORT,
+            )
+            .show()
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         // ${commentControlButtons}
@@ -111,15 +120,6 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             state = mapViewState,
             onMapClick = { geoPoint ->
                 clickedPosition = geoPoint
-            },
-            onMarkerClick = { markerState ->
-                Toast
-                    .makeText(
-                        context,
-                        "clicked: \${markerState.extra}",
-                        Toast.LENGTH_SHORT,
-                    )
-                    .show()
             }
         ) {
             // ${commentMarkers}
@@ -129,7 +129,8 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                     label = "${marker1Label}",
                     fillColor = Color.Red,
                 ),
-                extra = "marker1"
+                extra = "marker1",
+                onClick = onMarkerClick
             )
 
             Marker(
@@ -138,7 +139,8 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                     label = "${marker2Label}",
                     fillColor = Color.Blue
                 ),
-                extra = "marker2"
+                extra = "marker2",
+                onClick = onMarkerClick
             )
 
             // ${commentClickedMarker}
@@ -149,7 +151,8 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                         label = "!",
                         fillColor = Color.Green
                     ),
-                    extra = "clicked"
+                    extra = "clicked",
+                    onClick = onMarkerClick
                 )
             }
 

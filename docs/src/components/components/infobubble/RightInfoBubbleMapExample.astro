@@ -49,6 +49,18 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
                 ),
         )
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarker = markerState
+    }
+    val onMarkerDragStart: OnMarkerEventHandler = { markerState ->
+        println("${markerDragStartMessagePrefix}: ${'$'}{markerState.id}")
+    }
+    val onMarkerDrag: OnMarkerEventHandler = { markerState ->
+        println("${markerDragMessagePrefix}: ${'$'}{markerState.position}")
+    }
+    val onMarkerDragEnd: OnMarkerEventHandler = { markerState ->
+        println("${markerDragEndMessagePrefix}: ${'$'}{markerState.id}")
+    }
 
     val markerState1 by remember {
         mutableStateOf(
@@ -62,6 +74,10 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
                         label = "1",
                     ),
                 draggable = true,
+                onClick = onMarkerClick,
+                onDragStart = onMarkerDragStart,
+                onDrag = onMarkerDrag,
+                onDragEnd = onMarkerDragEnd,
             ),
         )
     }
@@ -76,6 +92,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
                         infoAnchor = Offset(0.5f, 0.25f),
                         label = "2",
                     ),
+                onClick = onMarkerClick,
             ),
         )
     }
@@ -87,19 +104,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
         },
         onMapClick = { geoPoint ->
             selectedMarker = null // ${commentForMapClickClear}
-        },
-        onMarkerClick = { markerState ->
-            selectedMarker = markerState
-        },
-        onMarkerDragStart = { markerState ->
-            println("${markerDragStartMessagePrefix}: ${'$'}{markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("${markerDragMessagePrefix}: ${'$'}{markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("${markerDragEndMessagePrefix}: ${'$'}{markerState.id}")
-        },
+        }
     ) {
         // ${commentForInteractiveMarkers}
         Marker(markerState1)
@@ -229,4 +234,3 @@ private fun RightTailInfoBubble(
 ---
 
 <Code code={code} lang="kotlin" />
-

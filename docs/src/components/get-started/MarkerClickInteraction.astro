@@ -26,28 +26,25 @@ val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
 
 GoogleMapView(
     modifier = modifier.fillMaxSize(),
-    state = mapViewState,
-    onMarkerClick = { markerState ->
-        // ${commentMarkerClicked}
-        when (markerState.extra) {
-            "marker1" -> {
-                markerState.animate(MarkerAnimation.Drop)
-            }
-            "marker2" -> {
-                markerState.animate(MarkerAnimation.Bounce)
-            }
-        }
-    }
+    state = mapViewState
 ) {
     Marker(
         position = marker1,
         icon = DefaultIcon(label = "${marker1Label}"),
-        extra = "marker1"
+        extra = "marker1",
+        onClick = { markerState ->
+            // ${commentMarkerClicked}
+            markerState.animate(MarkerAnimation.Drop)
+        }
     )
     Marker(
         position = marker2,
         icon = DefaultIcon(label = "${marker2Label}"),
-        extra = "marker2"
+        extra = "marker2",
+        onClick = { markerState ->
+            // ${commentMarkerClicked}
+            markerState.animate(MarkerAnimation.Bounce)
+        }
     )
 }`;
 ---

@@ -40,8 +40,20 @@ fun InteractivePolygonExample() {
         points = closedVertices,
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
-        fillColor = Color.Red.copy(alpha = 0.2f)
+        fillColor = Color.Red.copy(alpha = 0.2f),
+        onClick = { polygonEvent ->
+            println("${polygonClickedLog} at: \${polygonEvent.clicked}")
+        }
     )
+
+    val onVertexDrag: (MarkerState) -> Unit = { markerState ->
+        val vertexIndex = markerState.extra as Int
+        vertices = vertices.toMutableList().apply {
+            if (vertexIndex < size) {
+                set(vertexIndex, GeoPointImpl.from(markerState.position))
+            }
+        }
+    }
 
     val vertexMarkers = vertices.mapIndexed { index, point ->
         MarkerState(
@@ -55,23 +67,13 @@ fun InteractivePolygonExample() {
             ),
             draggable = true,
             extra = index,
+            onDrag = onVertexDrag,
         )
     }
 
     MapLibreMapView(
         modifier = modifier,
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            val vertexIndex = markerState.extra as Int
-            vertices = vertices.toMutableList().apply {
-                if (vertexIndex < size) {
-                    set(vertexIndex, GeoPointImpl.from(markerState.position))
-                }
-            }
-        },
-        onPolygonClick = { polygonEvent ->
-            println("${polygonClickedLog} at: \${polygonEvent.clicked}")
-        }
+        state = mapViewState
     ) {
         Polygon(polygonState)
         vertexMarkers.forEach { marker ->

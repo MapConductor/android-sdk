@@ -19,8 +19,8 @@ import OnPolylineClickSignature from '~/components/api/event-handlers/OnPolyline
 import PolylineEventDataClass from '~/components/api/event-handlers/PolylineEventDataClass.astro';
 import OnPolylineClickExample from '~/components/api/event-handlers/OnPolylineClickExample.astro';
 
-MapConductor provides comprehensive event handling for user interactions with the map and its components. All events are handled through the `MapViewContainer` component.
-All event listeners are passed through MapView component.
+MapConductor provides comprehensive event handling for user interactions with the map and its components.
+Map events are handled through the MapView component, while overlay events are configured on their State objects.
 
 <MapViewEventHandlersSignature />
 
@@ -64,9 +64,9 @@ All marker events receive a `MarkerState` object containing the marker's current
 
 ### Drag Events
 
-- **`onMarkerDragStart`**: Called when dragging begins
-- **`onMarkerDrag`**: Called continuously during dragging
-- **`onMarkerDragEnd`**: Called when dragging ends
+- **`onDragStart`**: Called when dragging begins
+- **`onDrag`**: Called continuously during dragging
+- **`onDragEnd`**: Called when dragging ends
 
 <OnMarkerDragSignatures />
 
@@ -109,4 +109,4 @@ All marker events receive a `MarkerState` object containing the marker's current
 
 - example
 
-<OnPolylineClickExample commentForPrint="A circle clicked at:" />
+<OnPolylineClickExample commentForPrint="A polyline clicked at:" />

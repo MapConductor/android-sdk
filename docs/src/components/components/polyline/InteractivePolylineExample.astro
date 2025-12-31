@@ -31,28 +31,30 @@ fun InteractivePolylineExample() {
         geodesic = true
     )
 
+    val onWaypointDrag: (MarkerState) -> Unit = { markerState ->
+        val markerIndex = markerState.extra as Int
+        markerIndex.let { index ->
+            waypoints = waypoints.toMutableList().apply {
+                if (index < size) {
+                    set(index, markerState.position as GeoPointImpl)
+                }
+            }
+        }
+    }
+
     val waypointMarkers = waypoints.mapIndexed { index, point ->
         MarkerState(
             id = "marker-\${index}",
             position = point,
             icon = DefaultIcon(label = "\${index + 1}", scale = 0.7f),
             draggable = true,
-            extra = index
+            extra = index,
+            onDrag = onWaypointDrag
         )
     }
 
     MapboxMapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            val markerIndex = markerState.extra as Int
-            markerIndex?.let { index ->
-                waypoints = waypoints.toMutableList().apply {
-                    if (index < size) {
-                        set(index, markerState.position as GeoPointImpl)
-                    }
-                }
-            }
-        }
+        state = mapViewState
     ) {
         Polyline(polylineState)
         waypointMarkers.forEach { marker ->
@@ -63,4 +65,3 @@ fun InteractivePolylineExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

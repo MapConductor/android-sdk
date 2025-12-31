@@ -5,34 +5,37 @@ const code = `@Composable
 fun CircleIdentificationExample() {
     val mapViewState = rememberGoogleMapViewState()
 
+    // Use ID in event handling
+    val onCircleClick: OnCircleEventHandler = { circleEvent ->
+        when (circleEvent.state.id) {
+            "zone-a" -> handleZoneA()
+            "zone-b" -> handleZoneB()
+            else -> handleUnknownZone()
+        }
+    }
+
     // Create circles with unique IDs
     val circles = listOf(
-        Circle(
+        CircleState(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
             radiusMeters = 1000.0,
             strokeColor = Color.Red,
             fillColor = Color.Red.copy(alpha = 0.3f),
-            id = "zone-a"
+            id = "zone-a",
+            onClick = onCircleClick
         ),
-        Circle(
+        CircleState(
             center = GeoPointImpl.fromLatLong(37.7849, -122.4094),
             radiusMeters = 1500.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f),
-            id = "zone-b"
+            id = "zone-b",
+            onClick = onCircleClick
         )
     )
 
-    // Use ID in event handling
     MapView(
-        state = mapViewState,
-        onCircleClick = { circleEvent ->
-            when (circleEvent.state.id) {
-                "zone-a" -> handleZoneA()
-                "zone-b" -> handleZoneB()
-                else -> handleUnknownZone()
-            }
-        }
+        state = mapViewState
     ) {
         circles.forEach { circle -> Circle(circle) }
     }

@@ -27,17 +27,6 @@ Marker は、特定の地理位置に配置できるポイント型の注釈で�
 
 <MarkerBasicSignature />
 
-</TabItem>
-<TabItem label="State を利用した Marker">
-
-マーカーの数が多い場合、マーカーを移動させるような場合、こちらを使用することを推奨します。
-`id` を指定すると、不要な Recomposition を抑えることができます。
-
-<MarkerStateSignature />
-
-</TabItem>
-</Tabs>
-
 ## パラメータ
 
 - **`position`**: マーカーの位置を表す地理座標（`GeoPoint`）
@@ -47,10 +36,28 @@ Marker は、特定の地理位置に配置できるポイント型の注釈で�
 - **`icon`**: マーカー用のカスタムアイコン（`MarkerIcon?`）
 - **`extra`**: マーカーに紐づける任意の追加データ（`Serializable?`）
 - **`id`**: マーカーの一意な識別子（`String?`、未指定の場合は自動生成）
+- **`onClick`**: マーカーがクリックされたときに呼び出されます
+- **`onDragStart`**: マーカーがドラッグを開始したときに呼び出されます
+- **`onDrag`**: マーカーがドラッグ中に呼び出されます
+- **`onDragEnd`**: マーカーのドラッグが終了したときに呼び出されます
+- **`onAnimateStart`**: `animate()`を開始するときに呼び出されます
+- **`onAnimateEnd`**: `animate()`を終了したときに呼び出されます
 
-### MarkerStateのメソッド
+</TabItem>
+<TabItem label="State を利用した Marker">
 
-- **`animate(animation: MarkerAnimation? = null)`**: マーカーに対するアニメーション
+マーカーの数が多い場合、マーカーを移動させるような場合、こちらを使用することを推奨します。
+`id` を指定すると、不要な Recomposition を抑えることができます。
+
+<MarkerStateSignature />
+
+### パラメータ
+
+- **`state`**: マーカーの状態を管理する[MarkerState](../../states/marker-state/)
+
+</TabItem>
+</Tabs>
+
 
 ## アイコンの種類
 

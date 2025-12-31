@@ -27,17 +27,6 @@ Especificar `id` puede reducir Recomposiciones innecesarias.
 
 <MarkerBasicSignature />
 
-</TabItem>
-<TabItem label="Marcador con Estado">
-
-Cuando tienes muchos marcadores o necesitas mover marcadores, se recomienda usar este enfoque.
-Especificar `id` puede reducir Recomposiciones innecesarias.
-
-<MarkerStateSignature />
-
-</TabItem>
-</Tabs>
-
 ## Parámetros
 
 - **`position`**: Coordenadas geográficas que representan la posición del marcador (`GeoPoint`)
@@ -46,6 +35,26 @@ Especificar `id` puede reducir Recomposiciones innecesarias.
 - **`icon`**: Icono personalizado para el marcador (`MarkerIcon?`)
 - **`extra`**: Datos adicionales asociados al marcador (`Serializable?`)
 - **`id`**: Identificador único para el marcador (`String?`, se genera automáticamente si no se especifica)
+- **`onClick`**: Se invoca cuando se hace clic en el marcador.
+- **`onDragStart`**: Se invoca cuando se comienza a arrastrar el marcador.
+- **`onDrag`**: Se invoca mientras se arrastra el marcador.
+- **`onDragEnd`**: Se invoca cuando finaliza la operación de arrastre del marcador.
+- **`onAnimateStart`**: Se activa cuando comienza `animate()`.
+- **`onAnimateEnd`**: Se activa cuando finaliza `animate()`.
+
+</TabItem>
+<TabItem label="Marcador con Estado">
+
+Cuando tienes muchos marcadores o necesitas mover marcadores, se recomienda usar este enfoque.
+Especificar `id` puede reducir Recomposiciones innecesarias.
+
+<MarkerStateSignature />
+
+## Parameter
+- **`state`**: Gestiona el estado del marcador [MarkerState](../../states/marker-state/).
+
+</TabItem>
+</Tabs>
 
 ## Tipos de iconos
 

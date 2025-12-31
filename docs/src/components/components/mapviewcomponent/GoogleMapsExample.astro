@@ -33,15 +33,15 @@ fun GoogleMapsExample() {
         state = mapViewState,
         onMapClick = { geoPoint ->
             println("${mapClickPrefix}: \${geoPoint.latitude}, \${geoPoint.longitude}")
-        },
-        onMarkerClick = { markerState ->
-            println("${markerClickPrefix}: \${markerState.extra}")
         }
     ) {
         Marker(
             position = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
             icon = DefaultIcon(label = "${markerLabel}"),
-            extra = "${markerExtra}"
+            extra = "${markerExtra}",
+            onClick = { markerState ->
+                println("${markerClickPrefix}: \${markerState.extra}")
+            }
         )
 
         Circle(

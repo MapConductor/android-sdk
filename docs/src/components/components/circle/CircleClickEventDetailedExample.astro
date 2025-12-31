@@ -7,23 +7,23 @@ fun CircleClickEventExample() {
 
     // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
     MapView(
-        state = mapViewState,
-        onCircleClick = { circleEvent ->
-            val circle = circleEvent.state
-            val clickPoint = circleEvent.clicked
-
-            println("Circle clicked:")
-            println("  Center: \${circle.center}")
-            println("  Radius: \${circle.radiusMeters}m")
-            println("  Click point: \${clickPoint}")
-            println("  Extra data: \${circle.extra}")
-        }
+        state = mapViewState
     ) {
         Circle(
             center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
             radiusMeters = 1000.0,
             clickable = true,
-            extra = "Clickable circle"
+            extra = "Clickable circle",
+            onClick = { circleEvent ->
+                val circle = circleEvent.state
+                val clickPoint = circleEvent.clicked
+
+                println("Circle clicked:")
+                println("  Center: \${circle.center}")
+                println("  Radius: \${circle.radiusMeters}m")
+                println("  Click point: \${clickPoint}")
+                println("  Extra data: \${circle.extra}")
+            }
         )
     }
 }`;

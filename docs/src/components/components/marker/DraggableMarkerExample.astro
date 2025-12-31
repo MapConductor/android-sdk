@@ -17,10 +17,7 @@ fun DraggableMarkerExample() {
 
     // ${commentForMapViewUsage}
     MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            markerPosition = markerState.position
-        }
+        state = mapViewState
     ) {
         Marker(
             position = markerPosition,
@@ -28,11 +25,13 @@ fun DraggableMarkerExample() {
             icon = DefaultIcon(
                 label = "Drag me",
                 fillColor = Color.Green
-            )
+            ),
+            onDrag = { markerState ->
+                markerPosition = markerState.position
+            }
         )
     }
 }`;
 ---
 
 <Code code={code} lang="kotlin" />
-

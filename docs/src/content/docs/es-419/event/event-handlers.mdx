@@ -19,7 +19,8 @@ import OnPolylineClickSignature from '~/components/api/event-handlers/OnPolyline
 import PolylineEventDataClass from '~/components/api/event-handlers/PolylineEventDataClass.astro';
 import OnPolylineClickExample from '~/components/api/event-handlers/OnPolylineClickExample.astro';
 
-MapConductor proporciona un sistema completo de manejo de eventos para las interacciones de usuario con el mapa y sus componentes. Todos los eventos se gestionan a través del componente `MapViewContainer` y se pasan como parámetros al composable `MapView`.
+MapConductor proporciona un sistema completo de manejo de eventos para las interacciones de usuario con el mapa y sus componentes.
+Los eventos del mapa se gestionan en el componente MapView, mientras que los eventos de overlays se configuran en sus State.
 
 <MapViewEventHandlersSignature />
 
@@ -65,9 +66,9 @@ Todos los eventos de marcador reciben un objeto `MarkerState` con el estado actu
 
 ### Eventos de arrastre
 
-- `onMarkerDragStart`: se llama cuando el usuario comienza a arrastrar un marcador.
-- `onMarkerDrag`: se llama mientras el marcador se está arrastrando.
-- `onMarkerDragEnd`: se llama cuando el usuario suelta el marcador.
+- `onDragStart`: se llama cuando el usuario comienza a arrastrar un marcador.
+- `onDrag`: se llama mientras el marcador se está arrastrando.
+- `onDragEnd`: se llama cuando el usuario suelta el marcador.
 
 <OnMarkerDragSignatures />
 

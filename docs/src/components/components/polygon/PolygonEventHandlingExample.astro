@@ -23,25 +23,25 @@ const {
 
 const code = `// ${commentForMapViewReplacement}
 MapView(
-    state = mapViewState,
-    onPolygonClick = { polygonEvent ->
-        val polygon = polygonEvent.state
-        val clickPoint = polygonEvent.clicked
-
-        println("${logPolygonClicked}")
-        println("${logVerticesLabel}")
-        println("${logClickLocationLabel}")
-        println("${logExtraDataLabel}")
-
-        val area = calculatePolygonArea(polygon.points)
-        println("${logApproxAreaLabel}")
-    }
+    state = mapViewState
 ) {
     Polygon(
         points = polygonPoints,
         strokeColor = Color.Green,
         fillColor = Color.Green.copy(alpha = 0.3f),
-        extra = "${extraLabel}"
+        extra = "${extraLabel}",
+        onClick = { polygonEvent ->
+            val polygon = polygonEvent.state
+            val clickPoint = polygonEvent.clicked
+
+            println("${logPolygonClicked}")
+            println("${logVerticesLabel}")
+            println("${logClickLocationLabel}")
+            println("${logExtraDataLabel}")
+
+            val area = calculatePolygonArea(polygon.points)
+            println("${logApproxAreaLabel}")
+        }
     )
 }`;
 ---

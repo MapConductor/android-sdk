@@ -9,16 +9,14 @@ const {
   commentForPrint = "A polyline clicked at:"
 } = Astro.props;
 
-const code = `MapView(
-    ...
-        onPolylineClick = { event ->
-            println("${commentForPrint} \${event.clicked.latitude}, \${event.clicked.longitude}")
+const code = `Polyline(
+    ...,
+    onClick = { event ->
+        println("${commentForPrint} \${event.clicked.latitude}, \${event.clicked.longitude}")
 
-            event.state.fillColor = Color.Red.copy(
-                opacity = 0.7f,
-            )
-        },
-) { }`;
+        event.state.strokeColor = Color.Red
+    },
+)`;
 ---
 
 <Code code={code} lang="kotlin" />

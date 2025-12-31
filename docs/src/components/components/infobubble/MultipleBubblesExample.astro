@@ -39,6 +39,13 @@ const code = `@Composable
 fun MultipleBubblesExample() {
     val mapViewState = rememberGoogleMapViewState()
     var selectedMarkers by remember { mutableStateOf(setOf<String>()) }
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarkers = if (selectedMarkers.contains(markerState.id)) {
+            selectedMarkers - markerState.id // Deselect
+        } else {
+            selectedMarkers + markerState.id // Select
+        }
+    }
 
     val markerData = remember {
         listOf(
@@ -66,7 +73,8 @@ fun MultipleBubblesExample() {
                 id = "marker_\$index",
                 position = position,
                 icon = DefaultIcon(fillColor = color, label = "\${index + 1}"),
-                extra = name
+                extra = name,
+                onClick = onMarkerClick
             )
         }
     }
@@ -76,13 +84,6 @@ fun MultipleBubblesExample() {
         state = mapViewState,
         onMapClick = {
             selectedMarkers = emptySet() // Clear all selections
-        },
-        onMarkerClick = { markerState ->
-            selectedMarkers = if (selectedMarkers.contains(markerState.id)) {
-                selectedMarkers - markerState.id // Deselect
-            } else {
-                selectedMarkers + markerState.id // Select
-            }
         }
     ) {
         markerStates.forEach { markerState ->

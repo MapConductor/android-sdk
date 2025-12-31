@@ -16,6 +16,8 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 
 <MarkerStateConstructorExample />
 
+`MarkerState` は `onClick` / `onDragStart` / `onDrag` / `onDragEnd` / `onAnimateStart` / `onAnimateEnd` をコンストラクタで受け取り、各イベントを State 単位で処理できます。
+
 ## プロパティ
 
 ### 基本プロパティ
@@ -32,8 +34,12 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 
 ### インタラクション関連のプロパティ
 
-- **`isDragging: Boolean`**（読み取り専用）: 現在ドラッグ中かどうか
-- **`internalPosition: GeoPoint`**（読み取り専用）: 描画用に使用される内部位置（ドラッグ中の一時位置などを考慮）
+- **`onClick: (MarkerState) -> Unit`**: マーカーがクリックされたときに呼び出されるコールバック
+- **`onDragStart: (MarkerState) -> Unit`**: ドラッグ開始時に呼び出されるコールバック
+- **`onDrag: (MarkerState) -> Unit`**: ドラッグ中に継続的に呼び出されるコールバック
+- **`onDragEnd: (MarkerState) -> Unit`**: ドラッグ終了時に呼び出されるコールバック
+- **`onAnimateStart: (MarkerState) -> Unit`**: アニメーション開始時に呼び出されるコールバック
+- **`onAnimateEnd: (MarkerState) -> Unit`**: アニメーション終了時に呼び出されるコールバック
 
 ## 主なメソッド
 
@@ -51,6 +57,8 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
   extraLabel="サンフランシスコのマーカー"
 />
 
+![実行結果](~/assets/state/marker-state/marker-state-basic-example.jpg)
+
 ### カスタマイズした MarkerState
 
 <MarkerStateCustomExample
@@ -62,16 +70,35 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
   markerDragLog="マーカーがドラッグされました: ${markerState.position}"
 />
 
+**実行結果のログ**
+```
+マーカーがドラッグされました: GeoPointImpl(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+マーカーがドラッグされました: GeoPointImpl(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+...
+クリックされたマーカー: ドラッグ可能なサンフランシスコのマーカー
+```
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/marker-state-custom-example.webm" type="video/webm" />
+ <source src="/state/marker-state/marker-state-custom-example.mp4" type="video/mp4" />
+</video>
+
+
 ### 動的に MarkerState を更新する
 
 <DynamicMarkerExampleComposable
   initialLatitude={37.7749}
   initialLongitude={-122.4194}
-  initialLabel="1"
-  initialExtra="カウンター: 1"
+  initialLabel="0"
+  initialExtra="カウンター: 0"
   counterExtraTemplate="カウンター: $counter"
   updateButtonLabel="マーカーを更新 ($counter)"
 />
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/dynamic-marker-example.webm" type="video/webm" />
+ <source src="/state/marker-state/dynamic-marker-example.mp4" type="video/mp4" />
+</video>
 
 ### 位置をアニメーションさせる MarkerState
 
@@ -84,35 +111,4 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
   extraLabel="アニメーションするマーカー"
 />
 
-### 複数マーカーと監視の高度な例
-
-<MarkerStateAdvancedExamplesComposable
-  listMarker1Latitude={37.7749}
-  listMarker1Longitude={-122.4194}
-  listMarker1Extra="マーカー 1"
-  listMarker2Latitude={37.7849}
-  listMarker2Longitude={-122.4094}
-  listMarker2Extra="マーカー 2"
-  listMarker3Latitude={37.7649}
-  listMarker3Longitude={-122.4294}
-  listMarker3Extra="マーカー 3"
-  selectedMarkerText="選択中: ${marker.extra}"
-  positionText="位置: ${marker.position.latitude}, ${marker.position.longitude}"
-  draggableText="ドラッグ可能: ${marker.draggable}"
-  mapViewReplacementComment="MapView を GoogleMapView や MapboxMapView などの任意のマッププロバイダに置き換えてください"
-  customMarkerLatitude={37.7749}
-  customMarkerLongitude={-122.4194}
-  customMarkerLabel="XL"
-  customMarkerExtra="大きなデフォルトアイコン"
-  drawableMarkerLatitude={37.7849}
-  drawableMarkerLongitude={-122.4094}
-  drawableMarkerExtra="カスタム Drawable アイコン"
-  weatherMarkerLatitude={37.7649}
-  weatherMarkerLongitude={-122.4294}
-  weatherMarkerExtra="天気アイコン"
-  observerMarkerLatitude={37.7749}
-  observerMarkerLongitude={-122.4194}
-  observerMarkerExtra="監視対象マーカー"
-  observeStateComment="状態変化を監視"
-  markerStateChangedLog="マーカー状態が変化しました: $markerFingerprint"
-/>
+![実行結果](/state/marker-state/animated-marker-example.gif)

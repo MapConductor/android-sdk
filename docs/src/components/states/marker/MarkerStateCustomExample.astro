@@ -28,17 +28,18 @@ const code = `val customMarkerState = MarkerState(
     ),
     clickable = true,
     draggable = true,
-    extra = "${extraLabel}"
+    extra = "${extraLabel}",
+    onClick = { markerState ->
+        println("${markerClickLog}")
+        markerState.animate(MarkerAnimation.Bounce)
+    },
+    onDrag = { markerState ->
+        println("${markerDragLog}")
+    }
 )
 
 MapView(
-    state = mapViewState,
-    onMarkerClick = { markerState ->
-        println("${markerClickLog}")
-    },
-    onMarkerDrag = { markerState ->
-        println("${markerDragLog}")
-    }
+    state = mapViewState
 ) {
     Marker(customMarkerState)
 }`;

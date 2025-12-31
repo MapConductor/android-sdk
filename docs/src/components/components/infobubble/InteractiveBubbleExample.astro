@@ -46,12 +46,14 @@ fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
 
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val context = LocalContext.current
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarker = markerState
+    }
 
     ArcGISMapView(
         state = mapViewState,
         modifier = modifier,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
+        onMapClick = { selectedMarker = null }
     ) {
         val storeInfo = StoreInfo(
             name = "${storeName}",
@@ -64,7 +66,8 @@ fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
             position = GeoPointImpl.fromLatLong(${markerLatitude}, ${markerLongitude}),
             icon = DefaultIcon(fillColor = Color(${markerColor}), label = "${markerLabel}"),
             extra = storeInfo,
-            id = "${markerId}"
+            id = "${markerId}",
+            onClick = onMarkerClick
         )
 
         Marker(markerState)

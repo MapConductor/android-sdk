@@ -62,6 +62,35 @@ fun MapView(modifier: Modifier = Modifier) {
             GeoPointImpl.fromLongLat(${point4Longitude}, ${point4Latitude}),
         )
 
+    var marker by remember { mutableStateOf<MarkerState?>(null) }
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        marker = markerState
+    }
+    val onMarkerDragStart: OnMarkerEventHandler = { markerState ->
+        println("${markerDragStartMessagePrefix}: ${'$'}{markerState.id}")
+    }
+    val onMarkerDrag: OnMarkerEventHandler = { markerState ->
+        println("${markerDragMessagePrefix}: ${'$'}{markerState.position}")
+    }
+    val onMarkerDragEnd: OnMarkerEventHandler = { markerState ->
+        println("${markerDragEndMessagePrefix}: ${'$'}{markerState.id}")
+    }
+    val onPolygonClick: OnPolygonEventHandler = { event ->
+        marker = MarkerState(
+            position = event.clicked,
+            icon = DefaultIcon(
+                fillColor = event.state.fillColor,
+                strokeColor = Color.Red,
+            ),
+            animation = MarkerAnimation.Drop,
+            draggable = true,
+            onClick = onMarkerClick,
+            onDragStart = onMarkerDragStart,
+            onDrag = onMarkerDrag,
+            onDragEnd = onMarkerDragEnd,
+        )
+    }
+
     val polygonState =
         remember {
             PolygonState(
@@ -71,6 +100,7 @@ fun MapView(modifier: Modifier = Modifier) {
                 fillColor = Color.Green.copy(alpha = 0.5f),
                 geodesic = false,
                 zIndex = 0,
+                onClick = onPolygonClick,
             )
         }
 
@@ -83,9 +113,9 @@ fun MapView(modifier: Modifier = Modifier) {
                 fillColor = Color.Blue.copy(alpha = 0.5f),
                 geodesic = true,
                 zIndex = 1,
+                onClick = onPolygonClick,
             )
         }
-    var marker by remember { mutableStateOf<MarkerState?>(null) }
 
     ArcGISMapView(
         modifier = modifier,
@@ -95,28 +125,6 @@ fun MapView(modifier: Modifier = Modifier) {
         },
         onMapClick = {
             marker = null // ${commentForMapClickClear}
-        },
-        onMarkerClick = { markerState ->
-            marker = markerState
-        },
-        onMarkerDragStart = { markerState ->
-            println("${markerDragStartMessagePrefix}: ${'$'}{markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("${markerDragMessagePrefix}: ${'$'}{markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("${markerDragEndMessagePrefix}: ${'$'}{markerState.id}")
-        },
-        onPolygonClick = { event ->
-            marker = MarkerState(
-                position = event.clicked,
-                icon = DefaultIcon(
-                    fillColor = event.state.fillColor,
-                    strokeColor = Color.Red,
-                ),
-                animation = MarkerAnimation.Drop,
-            )
         }
     ) {
 
@@ -134,4 +142,3 @@ fun MapView(modifier: Modifier = Modifier) {
 ---
 
 <Code code={code} lang="kotlin" />
-

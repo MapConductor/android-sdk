@@ -65,24 +65,32 @@ const {
 
 const code = `@Composable
 fun MarkerListExample() {
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     val markerStates = remember {
         mutableStateListOf(
             MarkerState(
                 position = GeoPointImpl.fromLatLong(${listMarker1Latitude}, ${listMarker1Longitude}),
-                extra = "${listMarker1Extra}"
+                extra = "${listMarker1Extra}",
+                onClick = { clickedMarker ->
+                    selectedMarker = clickedMarker
+                }
             ),
             MarkerState(
                 position = GeoPointImpl.fromLatLong(${listMarker2Latitude}, ${listMarker2Longitude}),
-                extra = "${listMarker2Extra}"
+                extra = "${listMarker2Extra}",
+                onClick = { clickedMarker ->
+                    selectedMarker = clickedMarker
+                }
             ),
             MarkerState(
                 position = GeoPointImpl.fromLatLong(${listMarker3Latitude}, ${listMarker3Longitude}),
-                extra = "${listMarker3Extra}"
+                extra = "${listMarker3Extra}",
+                onClick = { clickedMarker ->
+                    selectedMarker = clickedMarker
+                }
             )
         )
     }
-
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
     Column {
         selectedMarker?.let { marker ->
@@ -98,9 +106,6 @@ fun MarkerListExample() {
         // ${mapViewReplacementComment}
         MapView(
             state = mapViewState,
-            onMarkerClick = { clickedMarker ->
-                selectedMarker = clickedMarker
-            },
             onMapClick = {
                 selectedMarker = null
             }

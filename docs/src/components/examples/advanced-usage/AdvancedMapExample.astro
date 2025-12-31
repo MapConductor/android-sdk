@@ -55,15 +55,15 @@ fun AdvancedMapScreen() {
     val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
 
     GoogleMapView(
-        state = mapViewState,
-        onMarkerClick = { markerState ->
-            println("${commentForMarkerClick}")
-        }
+        state = mapViewState
     ) {
         // ${commentMarker}
         Marker(
             position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
-            icon = DefaultIcon(label = "${markerLabel}")
+            icon = DefaultIcon(label = "${markerLabel}"),
+            onClick = { markerState ->
+                println("${commentForMarkerClick}")
+            }
         )
 
         // ${commentCircle}

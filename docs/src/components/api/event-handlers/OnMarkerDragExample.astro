@@ -11,20 +11,23 @@ const {
   commentForDragEnd = "Drag ended:"
 } = Astro.props;
 
-const code = `MapView(
-    ...
-        onMarkerDragStart = { draggedMarker ->
-            println("${commentForDragStart} \${draggedMarker.id}")
-        },
-        onMarkerDrag = { draggedMarker ->
-            if (draggedMarker.id == markerState.id) {
-                markerState = markerState.copy(position = draggedMarker.position)
-            }
-        },
-        onMarkerDragEnd = { draggedMarker ->
-            println("${commentForDragEnd} \${draggedMarker.id}")
-        },
-) { }`;
+const code = `var markerState = MarkerState(
+    ...,
+    draggable = true,
+    onDragStart = { draggedMarker ->
+        println("${commentForDragStart} \${draggedMarker.id}")
+    },
+    onDrag = { draggedMarker ->
+        if (draggedMarker.id == markerState.id) {
+            markerState = markerState.copy(position = draggedMarker.position)
+        }
+    },
+    onDragEnd = { draggedMarker ->
+        println("${commentForDragEnd} \${draggedMarker.id}")
+    },
+)
+
+Marker(markerState)`;
 ---
 
 <Code code={code} lang="kotlin" />

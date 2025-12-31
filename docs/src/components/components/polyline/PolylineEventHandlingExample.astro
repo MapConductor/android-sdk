@@ -21,25 +21,24 @@ const {
 
 const code = `// ${commentForMapViewUsage}
 MapView(
-    state = mapViewState,
-    onPolylineClick = { polylineEvent ->
-        val polyline = polylineEvent.state
-        val clickPoint = polylineEvent.clicked
-
-        println("${polylineClickedLabel}")
-        println("  ${pointsCountLabel}: \${polyline.points.size}")
-        println("  ${clickLocationLabel}: \${clickPoint}")
-        println("  ${extraDataLabel}: \${polyline.extra}")
-    }
+    state = mapViewState
 ) {
     Polyline(
         points = routePoints,
         strokeColor = Color.Blue,
         strokeWidth = 4.dp,
-        extra = "${extraValue}"
+        extra = "${extraValue}",
+        onClick = { polylineEvent ->
+            val polyline = polylineEvent.state
+            val clickPoint = polylineEvent.clicked
+
+            println("${polylineClickedLabel}")
+            println("  ${pointsCountLabel}: \${polyline.points.size}")
+            println("  ${clickLocationLabel}: \${clickPoint}")
+            println("  ${extraDataLabel}: \${polyline.extra}")
+        }
     )
 }`;
 ---
 
 <Code code={code} lang="kotlin" />
-

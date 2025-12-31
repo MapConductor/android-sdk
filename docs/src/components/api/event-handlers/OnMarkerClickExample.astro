@@ -9,14 +9,14 @@ const {
   commentForPrint = "Marker clicked at:"
 } = Astro.props;
 
-const code = `MapView(
-    ...
-    onMarkerClick = { markerState ->
-        println("${commentForPrint} \${geoPoint.latitude}, \${geoPoint.longitude}")
+const code = `val markerState = MarkerState(
+    ...,
+    onClick = { marker ->
+        println("${commentForPrint} \${marker.position.latitude}, \${marker.position.longitude}")
     },
-) {
-    ...
-}`;
+)
+
+Marker(markerState)`;
 ---
 
 <Code code={code} lang="kotlin" />

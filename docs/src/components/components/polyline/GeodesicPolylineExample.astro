@@ -8,16 +8,16 @@ fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
     val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
 
     var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
+    val onPolylineClick: OnPolylineEventHandler = { polylineEvent ->
+        markers = markers + MarkerState(
+            icon = DefaultIcon(fillColor = polylineEvent.state.strokeColor),
+            position = polylineEvent.clicked
+        )
+    }
 
     MapboxMapView(
         state = mapViewState,
-        modifier = modifier,
-        onPolylineClick = { polylineEvent ->
-            markers = markers + MarkerState(
-                icon = DefaultIcon(fillColor = polylineEvent.state.strokeColor),
-                position = polylineEvent.clicked
-            )
-        }
+        modifier = modifier
     ) {
         val longDistancePoints = listOf(
             GeoPointImpl.fromLatLong(35.548852, 139.784086), // 羽田空港
@@ -31,7 +31,8 @@ fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
             strokeColor = Color.Red,
             strokeWidth = 3.dp,
             geodesic = false,
-            extra = "Straight line"
+            extra = "Straight line",
+            onClick = onPolylineClick
         )
 
         // 測地線
@@ -41,7 +42,8 @@ fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
             strokeColor = Color.Blue,
             strokeWidth = 3.dp,
             geodesic = true,
-            extra = "Geodesic line"
+            extra = "Geodesic line",
+            onClick = onPolylineClick
         )
 
         markers.forEach { markerState ->
@@ -52,4 +54,3 @@ fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
 ---
 
 <Code code={code} lang="kotlin" />
-

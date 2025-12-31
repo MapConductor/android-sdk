@@ -11,18 +11,14 @@ interface Props {
 }
 
 const {
-  startLatitude = 37.7749,
-  startLongitude = -122.4194,
-  endLatitude = 37.7849,
-  endLongitude = -122.4094,
   markerLabel = "Moving",
   extraLabel = "Animated marker"
 } = Astro.props;
 
 const code = `@Composable
 fun AnimatedMarkerExample() {
-    val startPosition = GeoPointImpl.fromLatLong(${startLatitude}, ${startLongitude})
-    val endPosition = GeoPointImpl.fromLatLong(${endLatitude}, ${endLongitude})
+    val startPosition = GeoPointImpl.fromLatLong(37.775111, -122.419206)
+    val endPosition = GeoPointImpl.fromLatLong(37.780522, -122.412522)
 
     var markerState by remember {
         mutableStateOf(
@@ -35,13 +31,37 @@ fun AnimatedMarkerExample() {
     }
 
     LaunchedEffect(Unit) {
+        val path = (0 .. 10)
+            .map { it * 0.1 }
+            .map {
+                Spherical.sphericalInterpolate(
+                    from = startPosition,
+                    to = endPosition,
+                    fraction = it,
+                )
+            }
+
+        var direction = 1;
+        var idx = 0
         while (true) {
-            delay(2000)
-            markerState = markerState.copy(
-                position = if (markerState.position == startPosition) endPosition else startPosition
-            )
+            delay(1000)
+            for (i in 0..path.size - 2) {
+                idx += direction
+                markerState.position = path[idx]
+                println("$idx : \${GeoPointImpl.from(path[idx]).toUrlValue()}")
+                delay(50)
+            }
+            direction = direction * -1
         }
     }
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition = MapCameraPositionImpl(
+                position = GeoPointImpl.fromLatLong(37.7791, -122.4144),
+                zoom = 15.0,
+            ),
+            mapDesign = MapLibreDesign.OsmBrightEn,
+        )
 
     MapView(state = mapViewState) {
         Marker(markerState)

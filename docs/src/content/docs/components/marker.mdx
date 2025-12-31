@@ -25,16 +25,6 @@ For a small number of markers, you can specify options directly. Specifying an `
 
 <MarkerBasicSignature />
 
-</TabItem>
-<TabItem label="Marker with State">
-
-For a large number of markers or when moving markers, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
-
-<MarkerStateSignature />
-
-</TabItem>
-</Tabs>
-
 ## Parameters
 
 - **`position`**: Geographic coordinates (`GeoPoint`)
@@ -42,7 +32,25 @@ For a large number of markers or when moving markers, using state is recommended
 - **`draggable`**: Whether the marker can be dragged (default: `false`)
 - **`icon`**: Custom icon for the marker (`MarkerIcon?`)
 - **`extra`**: Additional data attached to the marker (`Serializable?`)
-- **`id`**: Unique identifier for the marker (`String?`)
+- **`id`**: Unique identifier for the marker (`String?`)- **`onClick`**: Called when the marker is clicked
+- **`onDragStart`**: Called when the marker begins dragging
+- **`onDrag`**: Called while the marker is being dragged
+- **`onDragEnd`**: Called when the marker's drag ends
+- **`onAnimateStart`**: Called when `animate()` begins
+- **`onAnimateEnd`**: Called when `animate()` finishes
+
+</TabItem>
+<TabItem label="Marker with State">
+
+For a large number of markers or when moving markers, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
+
+<MarkerStateSignature />
+
+## Parameter
+- **`state`**: Manages the marker's state [MarkerState](../../states/marker-state/)
+
+</TabItem>
+</Tabs>
 
 ## Icon Types
 

@@ -23,7 +23,7 @@ MapViewComponent contiene controles para gestionar MapView. Estos controles se p
 
 MapConductor admite múltiples SDKs de mapa, cada uno con un componente dedicado.
 Típicamente, se colocan múltiples objetos (marcadores, polilíneas, etc.) en un mapa, por lo que en lugar de configurar devoluciones de llamada de eventos en objetos individuales,
-se configuran devoluciones de llamada de eventos en el componente específico del proveedor de mapas.
+se configuran devoluciones de llamada de mapa y cámara en el componente específico del proveedor de mapas, mientras que las superposiciones se configuran en cada State.
 
 Las devoluciones de llamada de eventos especiales específicas del proveedor aún no se admiten en v{BOM_MODULE_VERSION}.
 
@@ -44,9 +44,9 @@ Todos los componentes de vista de mapa comparten los siguientes parámetros:
 
 - **`onMapLoaded`**: Se llama cuando el mapa ha terminado de cargar
 - **`onMapClick`**: Se llama cuando el usuario toca el mapa
-- **Eventos de cámara**: `onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`
-- **Eventos de marcador**: `onMarkerClick`, `onMarkerDragStart`, `onMarkerDrag`, `onMarkerDragEnd`, `onMarkerAnimateStart`, `onMarkerAnimateEnd`
-- **Eventos de superposición**: `onCircleClick`, `onPolylineClick`, `onPolygonClick`, `onGroundImageClick`
+- **`onCameraMoveStart`**: Se llama al iniciar `moveCameraTo(dst, durationMs)`. No se llama cuando el usuario mueve el mapa de forma interactiva.
+- **`onCameraMove`**: Se llama cuando se mueve la cámara que muestra el mapa.
+- **`onCameraMoveEnd`**: Se llama cuando finaliza el movimiento de la cámara que muestra el mapa.
 
 ### Parámetros Avanzados
 

@@ -34,7 +34,10 @@ fun InteractiveCircleExample() {
         radiusMeters = radiusMeters,
         strokeColor = Color.Blue,
         fillColor = Color.Blue.copy(alpha = 0.3f),
-        clickable = true
+        clickable = true,
+        onClick = { circleEvent ->
+            println("Circle clicked at: ${'${'}circleEvent.clicked}")
+        }
     )
 
     val centerMarker = MarkerState(
@@ -52,22 +55,17 @@ fun InteractiveCircleExample() {
             fillColor = Color.Green,
             label = "E"
         ),
-        draggable = true
+        draggable = true,
+        onDrag = { markerState ->
+            // Calculate new radius based on edge marker position
+            val distance = calculateDistance(centerPosition, markerState.position)
+            radiusMeters = distance
+        }
     )
 
     // ${commentForMapViewUsage}
     MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            if (markerState.id == edgeMarker.id) {
-                // Calculate new radius based on edge marker position
-                val distance = calculateDistance(centerPosition, markerState.position)
-                radiusMeters = distance
-            }
-        },
-        onCircleClick = { circleEvent ->
-            println("Circle clicked at: ${'${'}circleEvent.clicked}")
-        }
+        state = mapViewState
     ) {
         Circle(circleState)
         Marker(centerMarker)
@@ -77,4 +75,3 @@ fun InteractiveCircleExample() {
 ---
 
 <Code code={code} lang="kotlin" />
-

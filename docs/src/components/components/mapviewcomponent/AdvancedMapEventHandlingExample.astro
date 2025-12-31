@@ -55,6 +55,9 @@ fun AdvancedMapExample() {
     )
 
     var clickedPoint by remember { mutableStateOf<GeoPoint?>(null) }
+    val onMarkerClick: (MarkerState) -> Unit = { markerState ->
+        println("${markerClickedPrefix}: \${markerState.extra}")
+    }
 
     GoogleMapView(
         state = mapViewState,
@@ -73,16 +76,14 @@ fun AdvancedMapExample() {
         },
         onCameraMoveEnd = {
             println("${cameraMoveEndMessage}")
-        },
-        onMarkerClick = { markerState ->
-            println("${markerClickedPrefix}: \${markerState.extra}")
         }
     ) {
         // ${commentForCenterMarkerAndCircle}
         Marker(
             position = center,
             icon = DefaultIcon(label = "${centerMarkerLabel}", fillColor = ${centerMarkerFillColorExpr}),
-            extra = "${centerMarkerExtra}"
+            extra = "${centerMarkerExtra}",
+            onClick = onMarkerClick
         )
 
         Circle(
@@ -97,7 +98,8 @@ fun AdvancedMapExample() {
             Marker(
                 position = point,
                 icon = DefaultIcon(label = "${clickedMarkerLabel}", fillColor = ${clickedMarkerFillColorExpr}),
-                extra = "${clickedMarkerExtra}"
+                extra = "${clickedMarkerExtra}",
+                onClick = onMarkerClick
             )
         }
     }

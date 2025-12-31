@@ -1,8 +1,11 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `onMarkerAnimateStart: OnMarkerEventHandler? = null
-onMarkerAnimateEnd: OnMarkerEventHandler? = null`;
+const code = `MarkerState(
+    ...,
+    onAnimateStart: OnMarkerEventHandler? = null,
+    onAnimateEnd: OnMarkerEventHandler? = null,
+)`;
 ---
 
 <Code code={code} lang="kotlin" />

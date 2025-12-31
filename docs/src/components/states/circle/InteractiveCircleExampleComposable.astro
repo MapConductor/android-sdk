@@ -28,7 +28,10 @@ fun InteractiveCircleExample() {
                 radiusMeters = ${initialRadiusMeters},
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f),
-                clickable = true
+                clickable = true,
+                onClick = { event ->
+                    println("${circleClickLog}")
+                }
             )
         )
     }
@@ -43,10 +46,7 @@ fun InteractiveCircleExample() {
         )
 
         MapView(
-            state = mapViewState,
-            onCircleClick = { event ->
-                println("${circleClickLog}")
-            }
+            state = mapViewState
         ) {
             Circle(circleState)
         }

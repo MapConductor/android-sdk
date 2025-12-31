@@ -37,16 +37,16 @@ fun EditablePolygonExample() {
                     GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude})
                 ),
                 strokeColor = Color.Red,
-                fillColor = Color.Red.copy(alpha = 0.2f)
+                fillColor = Color.Red.copy(alpha = 0.2f),
+                onClick = { event ->
+                    println("${polygonClickedLog}")
+                }
             )
         )
     }
 
     MapView(
-        state = mapViewState,
-        onPolygonClick = { event ->
-            println("${polygonClickedLog}")
-        }
+        state = mapViewState
     ) {
         Polygon(polygonState)
 

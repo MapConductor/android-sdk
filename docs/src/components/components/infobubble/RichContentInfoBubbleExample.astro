@@ -39,12 +39,14 @@ fun RichContentBubbleExample() {
     val center = GeoPointImpl.fromLatLong(${latitude}, ${longitude})
     val camera = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
     val mapViewState = rememberHereMapViewState(cameraPosition = camera)
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarker = markerState
+    }
 
     HereMapView(
         modifier = modifier,
         state = mapViewState,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
+        onMapClick = { selectedMarker = null }
     ) {
         val locationInfo = LocationInfo(
             name = "${locationName}",
@@ -56,7 +58,8 @@ fun RichContentBubbleExample() {
             position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
             icon = DefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
             extra = locationInfo,
-            id = "${markerId}"
+            id = "${markerId}",
+            onClick = onMarkerClick
         )
 
         Marker(markerState)

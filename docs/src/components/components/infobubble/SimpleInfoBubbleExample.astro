@@ -39,18 +39,21 @@ fun SimpleInfoBubbleExample() {
     val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarker = markerState
+    }
 
     HereMapView(
         modifier = modifier,
         state = mapViewState,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
+        onMapClick = { selectedMarker = null }
     ) {
         val markerState = MarkerState(
             position = center,
             icon = DefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
             extra = "${markerExtra}",
-            id = "${markerId}"
+            id = "${markerId}",
+            onClick = onMarkerClick
         )
 
         Marker(markerState)

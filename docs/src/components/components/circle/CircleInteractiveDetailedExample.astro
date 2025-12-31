@@ -23,6 +23,9 @@ fun InteractiveCircleExample() {
             label = "Drag me",
         ),
         draggable = true,
+        onDragStart = onMarkerMove,
+        onDrag = onMarkerMove,
+        onDragEnd = onMarkerMove,
     )
 
     // Create CircleState
@@ -54,10 +57,7 @@ fun InteractiveCircleExample() {
 
     MapLibreMapView(
         modifier = modifier,
-        state = mapViewState,
-        onMarkerDragStart = onMarkerMove,
-        onMarkerDrag = onMarkerMove,
-        onMarkerDragEnd = onMarkerMove,
+        state = mapViewState
     ) {
         // Circle
         Circle(circleState)

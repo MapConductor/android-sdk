@@ -43,15 +43,15 @@ fun DynamicBoundsExample() {
             extra = "${extraLabel}"
         )
     }
+    val onCornerMarkerDrag: (MarkerState) -> Unit = { markerState ->
+        when (markerState.extra) {
+            "${southwestLabel}" -> southwest = markerState.position
+            "${northeastLabel}" -> northeast = markerState.position
+        }
+    }
 
     MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            when (markerState.extra) {
-                "${southwestLabel}" -> southwest = markerState.position
-                "${northeastLabel}" -> northeast = markerState.position
-            }
-        }
+        state = mapViewState
     ) {
         groundImageState?.let { state ->
             GroundImage(state)
@@ -62,14 +62,16 @@ fun DynamicBoundsExample() {
             position = southwest,
             icon = DefaultIcon(fillColor = Color.Green, label = "${southwestLabel}"),
             draggable = true,
-            extra = "${southwestLabel}"
+            extra = "${southwestLabel}",
+            onDrag = onCornerMarkerDrag
         )
 
         Marker(
             position = northeast,
             icon = DefaultIcon(fillColor = Color.Red, label = "${northeastLabel}"),
             draggable = true,
-            extra = "${northeastLabel}"
+            extra = "${northeastLabel}",
+            onDrag = onCornerMarkerDrag
         )
     }
 }`;

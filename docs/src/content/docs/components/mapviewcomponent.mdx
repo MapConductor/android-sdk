@@ -23,7 +23,7 @@ MapViewComponent contains controls for managing the MapView. These controls can 
 
 MapConductor supports multiple map SDKs, each with a dedicated component.
 Multiple objects (markers, polylines, etc.) are typically placed on a map, so rather than setting event callbacks on individual objects,
-event callbacks are set on the map provider-specific component.
+map and camera callbacks are set on the map provider-specific component, while overlay callbacks are set on each State.
 
 Provider-specific special event callbacks are not yet supported in v{BOM_MODULE_VERSION}.
 
@@ -44,9 +44,9 @@ All map view components share the following parameters:
 
 - **`onMapLoaded`**: Called when the map has finished loading
 - **`onMapClick`**: Called when the user taps on the map
-- **Camera events**: `onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`
-- **Marker events**: `onMarkerClick`, `onMarkerDragStart`, `onMarkerDrag`, `onMarkerDragEnd`, `onMarkerAnimateStart`, `onMarkerAnimateEnd`
-- **Overlay events**: `onCircleClick`, `onPolylineClick`, `onPolygonClick`, `onGroundImageClick`
+- **`onCameraMoveStart`**: Called when `moveCameraTo(dst, durationMs)` begins. Not called when the user moves the map interactively.
+- **`onCameraMove`**: Called when the camera displaying the map moves.
+- **`onCameraMoveEnd`**: Called when the movement of the camera displaying the map completes.
 
 ### Advanced Parameters
 
