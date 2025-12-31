@@ -18,6 +18,11 @@ abstract class CircleController<ActualCircle>(
     override val zIndex: Int = 3
     val semaphore = Semaphore(1)
 
+    fun dispatchClick(event: CircleEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
+    }
+
     override suspend fun add(data: List<CircleState>) {
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<CircleEntity<ActualCircle>>()

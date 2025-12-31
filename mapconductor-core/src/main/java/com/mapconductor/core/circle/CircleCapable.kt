@@ -5,6 +5,7 @@ interface CircleCapable {
 
     suspend fun updateCircle(state: CircleState)
 
+    @Deprecated("Use CircleState.onClick instead.")
     fun setOnCircleClickListener(listener: OnCircleEventHandler?)
 
     fun hasCircle(state: CircleState): Boolean

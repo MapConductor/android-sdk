@@ -28,6 +28,12 @@ fun MapViewScope.Marker(
     draggable: Boolean = false,
     icon: MarkerIcon? = null,
     extra: Serializable? = null,
+    onClick: OnMarkerEventHandler? = null,
+    onDragStart: OnMarkerEventHandler? = null,
+    onDrag: OnMarkerEventHandler? = null,
+    onDragEnd: OnMarkerEventHandler? = null,
+    onAnimateStart: OnMarkerEventHandler? = null,
+    onAnimateEnd: OnMarkerEventHandler? = null,
 ) {
     val state =
         MarkerState(
@@ -37,6 +43,12 @@ fun MapViewScope.Marker(
             clickable = clickable,
             draggable = draggable,
             icon = icon,
+            onClick = onClick,
+            onDragStart = onDragStart,
+            onDrag = onDrag,
+            onDragEnd = onDragEnd,
+            onAnimateStart = onAnimateStart,
+            onAnimateEnd = onAnimateEnd,
         )
     Marker(state)
 }

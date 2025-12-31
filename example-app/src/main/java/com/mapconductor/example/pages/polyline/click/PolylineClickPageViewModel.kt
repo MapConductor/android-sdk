@@ -60,6 +60,7 @@ class PolylineClickPageViewModelImpl :
                 strokeColor = Color.Red,
                 strokeWidth = 4.dp,
                 geodesic = true,
+                onClick = this::onPolylineClicked,
             )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)

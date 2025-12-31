@@ -34,8 +34,6 @@ fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
             circleState = viewModel.circleState,
             centerMarker = viewModel.centerMarker,
             edgeMarker = viewModel.edgeMarker,
-            onCircleClick = viewModel::onCircleClick,
-            onMarkerMove = viewModel::onMarkerMove,
         )
 
         MessageCard(

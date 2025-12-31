@@ -18,6 +18,11 @@ abstract class PolygonController<ActualPolygon>(
     override val zIndex: Int = 3
     val semaphore = Semaphore(1)
 
+    fun dispatchClick(event: PolygonEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
+    }
+
     override suspend fun add(data: List<PolygonState>) {
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<PolygonEntity<ActualPolygon>>()

@@ -5,6 +5,7 @@ interface PolylineCapable {
 
     suspend fun updatePolyline(state: PolylineState)
 
+    @Deprecated("Use PolylineState.onClick instead.")
     fun setOnPolylineClickListener(listener: OnPolylineEventHandler?)
 
     fun hasPolyline(state: PolylineState): Boolean

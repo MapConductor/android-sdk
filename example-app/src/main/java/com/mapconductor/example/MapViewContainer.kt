@@ -30,6 +30,7 @@ import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.MapLibreViewStateImpl
 
 @Composable
+@Suppress("DEPRECATION")
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     renderingStrategy: MarkerRenderingStrategy<*>? = null,
@@ -39,16 +40,6 @@ fun MapViewContainer(
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
     @Suppress("UNCHECKED_CAST")
@@ -63,16 +54,6 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
-                onGroundImageClick = onGroundImageClick,
                 content = content,
             )
 
@@ -86,15 +67,6 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
@@ -108,15 +80,6 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
@@ -130,15 +93,6 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
@@ -152,15 +106,6 @@ fun MapViewContainer(
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 

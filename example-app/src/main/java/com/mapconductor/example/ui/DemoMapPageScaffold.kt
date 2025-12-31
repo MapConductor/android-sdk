@@ -42,7 +42,7 @@ import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateImpl
 import com.mapconductor.mapbox.rememberMapboxMapViewState
-import com.mapconductor.maplibre.MapLibreDesignType
+import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateImpl
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 
@@ -118,7 +118,7 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMap
 fun GetMapLibreViewItem(initCameraPosition: MapCameraPosition): IconItem<MapLibreViewStateImpl> {
     val mapLibreMapState =
         rememberMapLibreMapViewState(
-            mapDesign = MapLibreDesignType.DemoTiles,
+            mapDesign = MapLibreDesign.DemoTiles,
             cameraPosition = initCameraPosition,
         )
     return IconItem(

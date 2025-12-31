@@ -36,7 +36,7 @@ class GoogleMapMarkerController private constructor(
         val stateId = (marker.tag as? String) ?: return false
         markerManager.getEntity(stateId)?.also { entity ->
             if (!entity.state.clickable) return true
-            clickListener?.invoke(entity.state)
+            dispatchClick(entity.state)
         }
         return true
     }
@@ -49,7 +49,7 @@ class GoogleMapMarkerController private constructor(
             setDraggingState(entity.state, true)
 
             entity.state.position = marker.position.toGeoPoint()
-            dragListener?.invoke(entity.state)
+            dispatchDrag(entity.state)
         }
     }
 
@@ -57,7 +57,7 @@ class GoogleMapMarkerController private constructor(
         val stateId = (marker.tag as? String) ?: return
         markerManager.getEntity(stateId)?.also { entity ->
             entity.state.position = marker.position.toGeoPoint()
-            dragEndListener?.invoke(entity.state)
+            dispatchDragEnd(entity.state)
         }
     }
 
@@ -67,7 +67,7 @@ class GoogleMapMarkerController private constructor(
             entity.state.position = marker.position.toGeoPoint()
             // Restore the recomposition for the position property
             setDraggingState(entity.state, false)
-            dragStartListener?.invoke(entity.state)
+            dispatchDragStart(entity.state)
         }
     }
 

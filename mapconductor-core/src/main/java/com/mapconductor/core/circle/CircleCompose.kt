@@ -34,6 +34,7 @@ fun MapViewScope.Circle(
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
     extra: Serializable? = null,
+    onClick: OnCircleEventHandler? = null,
 ) {
     val state =
         CircleState(
@@ -44,6 +45,7 @@ fun MapViewScope.Circle(
             strokeWidth = strokeWidth,
             fillColor = fillColor,
             extra = extra,
+            onClick = onClick,
         )
     Circle(state)
 }

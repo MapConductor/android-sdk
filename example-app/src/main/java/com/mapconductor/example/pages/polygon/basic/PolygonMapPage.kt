@@ -38,7 +38,6 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
                 Modifier.padding(
                     bottom = paddingValues.calculateBottomPadding(),
                 ),
-            onMarkerDrag = viewModel::onMarkerDrag,
         )
         MessageCard(
             title = "Polygon Example",

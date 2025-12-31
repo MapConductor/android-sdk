@@ -32,6 +32,14 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
         )
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     var mapViewState by remember { mutableStateOf<MapViewState<Any>?>(null) }
+    val markerState = remember {
+        MarkerState(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(fillColor = Color.Blue, label = "SF"),
+            extra = "San Francisco - The Golden Gate City",
+            onClick = { it -> selectedMarker = it },
+        )
+    }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
@@ -39,20 +47,13 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
         onMapViewStateChanged = { state ->
             mapViewState = state as MapViewState<Any>
         },
-    ) { paddingValues ->
-        val markerState =
-            MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(fillColor = Color.Blue, label = "SF"),
-                extra = "San Francisco - The Golden Gate City",
-            )
+    ) {
 
         mapViewState?.let {
             MapViewContainer(
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapClick = { selectedMarker = null },
-                onMarkerClick = { markerState -> selectedMarker = markerState },
             ) {
                 Marker(markerState)
 

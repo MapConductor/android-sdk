@@ -30,6 +30,7 @@ fun MapViewScope.GroundImage(
     opacity: Float = 0.5f,
     id: String? = null,
     extra: Serializable? = null,
+    onClick: OnGroundImageEventHandler? = null,
 ) {
     val state =
         GroundImageState(
@@ -38,6 +39,7 @@ fun MapViewScope.GroundImage(
             opacity = opacity,
             id = id,
             extra = extra,
+            onClick = onClick,
         )
     GroundImage(state)
 }

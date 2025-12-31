@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.infobubble
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
@@ -41,6 +43,14 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
                 Triple(GeoPointImpl.fromLatLong(37.7649, -122.4294), "Shop C", Color.Green),
             )
         }
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarkers =
+            if (selectedMarkers.contains(markerState.id)) {
+                selectedMarkers - markerState.id // Deselect
+            } else {
+                selectedMarkers + markerState.id // Select
+            }
+    }
     val markerStates =
         remember {
             markerData.mapIndexed { index, (position, name, color) ->
@@ -49,6 +59,7 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
                     position = position,
                     icon = DefaultIcon(fillColor = color, label = "${index + 1}"),
                     extra = name,
+                    onClick = onMarkerClick,
                 )
             }
         }
@@ -64,7 +75,7 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
         onMapViewStateChanged = { state ->
             mapViewState = state as MapViewState<Any>
         },
-    ) { paddingValues ->
+    ) {
 
         mapViewState?.let {
             MapViewContainer(
@@ -72,14 +83,6 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
                 state = mapViewState,
                 onMapClick = {
                     selectedMarkers = emptySet() // Clear all selections
-                },
-                onMarkerClick = { markerState ->
-                    selectedMarkers =
-                        if (selectedMarkers.contains(markerState.id)) {
-                            selectedMarkers - markerState.id // Deselect
-                        } else {
-                            selectedMarkers + markerState.id // Select
-                        }
                 },
             ) {
                 markerStates.forEach { markerState ->

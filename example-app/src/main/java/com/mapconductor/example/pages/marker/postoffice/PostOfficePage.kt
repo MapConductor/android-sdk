@@ -107,7 +107,6 @@ fun PostOfficeMapPage(
                     markers = markers,
                     onMapLoaded = viewModel::onMapLoaded,
                     onMapClick = viewModel::onMapClick,
-                    onMarkerClick = viewModel::onMarkerClick,
                     onInfoWndClick = viewModel::onInfoClick,
                 )
             }

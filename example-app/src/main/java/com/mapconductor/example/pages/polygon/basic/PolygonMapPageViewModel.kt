@@ -76,6 +76,7 @@ class PolygonMapPageViewModelImpl :
                 id = "vertex_$index",
                 draggable = true,
                 extra = index,
+                onDrag = this::onMarkerDrag,
             )
         }
 

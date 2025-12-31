@@ -11,6 +11,7 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereActualMarker
@@ -115,6 +116,7 @@ class PostOfficeViewModelImpl(
                         id = it.hashCode().toString(),
                         icon = postOfficeIcon,
                         extra = it,
+                        onClick = this@PostOfficeViewModelImpl::onMarkerClick,
                     )
                 }
             _markerList.value = markerStates

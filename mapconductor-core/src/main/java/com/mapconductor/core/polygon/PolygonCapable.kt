@@ -5,6 +5,7 @@ interface PolygonCapable {
 
     suspend fun updatePolygon(state: PolygonState)
 
+    @Deprecated("Use PolygonState.onClick instead.")
     fun setOnPolygonClickListener(listener: OnPolygonEventHandler?)
 
     fun hasPolygon(state: PolygonState): Boolean

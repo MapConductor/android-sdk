@@ -35,7 +35,6 @@ fun AnimationMapPage(
         AnimationMapComponent(
             mapViewState = mapViewState,
             allMarkers = allMarkers,
-            onMarkerClick = viewModel::onMarkerClick,
         )
 
         // Message Card

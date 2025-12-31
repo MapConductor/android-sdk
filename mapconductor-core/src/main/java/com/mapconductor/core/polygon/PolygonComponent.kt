@@ -36,6 +36,7 @@ fun MapViewScope.Polygon(
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
     extra: Serializable? = null,
+    onClick: OnPolygonEventHandler? = null,
 ) {
     val state =
         PolygonState(
@@ -46,6 +47,7 @@ fun MapViewScope.Polygon(
             fillColor = fillColor,
             geodesic = geodesic,
             extra = extra,
+            onClick = onClick,
         )
     Polygon(state)
 }
@@ -59,6 +61,7 @@ fun MapViewScope.Polygon(
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
     extra: Serializable? = null,
+    onClick: OnPolygonEventHandler? = null,
 ) {
     bounds.northEast?.let { ne ->
         bounds.southWest?.let { sw ->
@@ -77,6 +80,7 @@ fun MapViewScope.Polygon(
                 fillColor = fillColor,
                 geodesic = geodesic,
                 extra = extra,
+                onClick = onClick,
             )
         }
     }

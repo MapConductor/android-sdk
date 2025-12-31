@@ -42,6 +42,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
                 fillColor = Color.Green.copy(alpha = 0.5f),
                 geodesic = false,
                 zIndex = 0,
+                onClick = viewModel::onPolygonClicked,
             )
         }
 
@@ -54,6 +55,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
                 fillColor = Color.Blue.copy(alpha = 0.5f),
                 geodesic = true,
                 zIndex = 1,
+                onClick = viewModel::onPolygonClicked,
             )
         }
 
@@ -68,7 +70,6 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
         mapViewState.value?.let {
             MapViewContainer(
                 state = it,
-                onPolygonClick = viewModel::onPolygonClicked,
             ) {
                 Polygon(polylineState)
                 Polygon(geodesicPolylineState)

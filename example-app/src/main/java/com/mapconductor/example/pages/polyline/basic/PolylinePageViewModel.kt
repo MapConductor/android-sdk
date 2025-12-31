@@ -77,6 +77,9 @@ class PolylinePageViewModelImpl :
                     ),
                 draggable = true,
                 extra = index,
+                onDragStart = this::onMarkerDrag,
+                onDrag = this::onMarkerDrag,
+                onDragEnd = this::onMarkerDrag,
             )
         }
 

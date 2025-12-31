@@ -47,7 +47,47 @@ fun GoogleMapView(
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
+    onGroundImageClick: OnGroundImageEventHandler? = null,
+    content: (@Composable GoogleMapViewScope.() -> Unit)? = null,
+) {
+    @Suppress("DEPRECATION")
+    GoogleMapView(
+        state = state,
+        modifier = modifier,
+        sdkInitialize = sdkInitialize,
+        markerRenderingStrategy = markerRenderingStrategy,
+        onMapLoaded = onMapLoaded,
+        onMapClick = onMapClick,
+        onCameraMoveStart = onCameraMoveStart,
+        onCameraMove = onCameraMove,
+        onCameraMoveEnd = onCameraMoveEnd,
+        onMarkerClick = null,
+        onMarkerDragStart = null,
+        onMarkerDrag = null,
+        onMarkerDragEnd = null,
+        onMarkerAnimateStart = null,
+        onMarkerAnimateEnd = null,
+        onCircleClick = null,
+        onPolylineClick = null,
+        onPolygonClick = null,
+        onGroundImageClick = null,
+        content = content,
+    )
+}
+
+@Deprecated("Use GroundImageState onClick instead.")
+@Composable
+fun GoogleMapView(
+    state: GoogleMapViewStateImpl,
+    modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
+    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler?,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,

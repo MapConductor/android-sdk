@@ -335,7 +335,7 @@ class MapLibreViewControllerImpl(
 
         circleController.find(touchPosition)?.let { entity ->
             val event = CircleEvent(state = entity.state, clicked = touchPosition)
-            circleController.clickListener?.invoke(event)
+            circleController.dispatchClick(event)
             return true
         }
 
@@ -346,7 +346,7 @@ class MapLibreViewControllerImpl(
                     clicked = hitResult.closestPoint,
                 )
             coroutine.launch {
-                polylineController.clickListener?.invoke(event)
+                polylineController.dispatchClick(event)
             }
             return true
         }
@@ -357,7 +357,7 @@ class MapLibreViewControllerImpl(
                     state = polygonEntity.state,
                     clicked = touchPosition,
                 )
-            polygonController.clickListener?.invoke(event)
+            polygonController.dispatchClick(event)
             return true
         }
 

@@ -76,22 +76,22 @@ fun MapLibre() {
     val center = GeoPointImpl.fromLatLong(52.5163, 13.3777)
 
     val camera = MapCameraPositionImpl(position = center, zoom = 13.0)
-val mapViewState = rememberHereMapViewState(cameraPosition = camera)
+    val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
-var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-HereMapView(
-    state = mapViewState,
-    onMarkerClick = { markerState -> selectedMarker = markerState }
-) {
-    val markerState = MarkerState(
-        position = center,
-        id = "my-marker"
-    )
-    Marker(
-        markerState
-    )
-}
+    HereMapView(
+        state = mapViewState,
+    ) {
+        val markerState = MarkerState(
+            position = center,
+            id = "my-marker",
+            onClick = { markerState -> selectedMarker = markerState }
+        )
+        Marker(
+            markerState
+        )
+    }
 }
 
 @Composable

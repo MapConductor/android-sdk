@@ -18,6 +18,11 @@ abstract class GroundImageController<ActualGroundImage>(
     override val zIndex: Int = 2
     val semaphore = Semaphore(1)
 
+    fun dispatchClick(event: GroundImageEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
+    }
+
     override suspend fun add(data: List<GroundImageState>) {
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<GroundImageEntity<ActualGroundImage>>()

@@ -41,8 +41,6 @@ interface AnimationPageViewModel {
     val messages: StateFlow<List<ToastMessage>>
     val allMarkers: StateFlow<List<MarkerState>>
 
-    val circleCenter: GeoPointImpl
-
     fun getSpotName(markerId: String): String
 
     fun onMapViewChanged(state: MapViewState<*>)
@@ -69,8 +67,6 @@ class AnimationPageViewModelImpl :
             paddings = null,
         )
 
-    override val circleCenter = GeoPointImpl.fromLatLong(21.382314, -157.933097)
-
     private val _allMarkers: MutableStateFlow<List<MarkerState>> = MutableStateFlow(emptyList())
     override val allMarkers: StateFlow<List<MarkerState>> = _allMarkers.asStateFlow()
 
@@ -91,6 +87,7 @@ class AnimationPageViewModelImpl :
                     icon = DefaultIcon(label = spot.name),
                     animation = null,
                     extra = spot.animation,
+                    onClick = this::onMarkerClick,
                 )
             }
     }

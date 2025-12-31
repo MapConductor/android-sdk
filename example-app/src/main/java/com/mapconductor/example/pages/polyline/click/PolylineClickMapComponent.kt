@@ -17,13 +17,11 @@ fun PolylineClickMapComponent(
     polylineState: PolylineState,
     markers: List<MarkerState>,
     modifier: Modifier = Modifier,
-    onPolylineClick: OnPolylineEventHandler = {},
 ) {
     mapViewState?.let { it ->
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onPolylineClick = onPolylineClick,
         ) {
             // Polyline
             Polyline(polylineState)

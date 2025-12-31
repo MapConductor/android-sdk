@@ -284,7 +284,7 @@ internal class MapboxMapViewControllerImpl(
             if (entity.state.draggable) {
                 markerController.selectedMarker = entity
                 markerController.markerManager.removeEntity(entity.state.id)
-                markerController.dragStartListener?.invoke(entity.state)
+                markerController.dispatchDragStart(entity.state)
                 return true
             }
         }
@@ -297,7 +297,7 @@ internal class MapboxMapViewControllerImpl(
         val touchPosition = point.toGeoPoint()
 
         markerController.find(touchPosition)?.let { entity ->
-            markerController.clickListener?.invoke(entity.state)
+            markerController.dispatchClick(entity.state)
             return true
         }
 
@@ -307,7 +307,7 @@ internal class MapboxMapViewControllerImpl(
                     state = entity.state,
                     clicked = touchPosition,
                 )
-            circleController.clickListener?.invoke(event)
+            circleController.dispatchClick(event)
             return true
         }
 
@@ -318,7 +318,7 @@ internal class MapboxMapViewControllerImpl(
                     clicked = hitResult.closestPoint,
                 )
             coroutine.launch {
-                polylineController.clickListener?.invoke(event)
+                polylineController.dispatchClick(event)
             }
             return true
         }
@@ -329,7 +329,7 @@ internal class MapboxMapViewControllerImpl(
                     state = polygonEntity.state,
                     clicked = touchPosition,
                 )
-            polygonController.clickListener?.invoke(event)
+            polygonController.dispatchClick(event)
             return true
         }
 
@@ -352,7 +352,7 @@ internal class MapboxMapViewControllerImpl(
                 markerController.renderer.drawDragLayer()
             }
 
-            markerController.dragListener?.invoke(entity.state)
+            markerController.dispatchDrag(entity.state)
             return true
         }
         return false
@@ -372,7 +372,7 @@ internal class MapboxMapViewControllerImpl(
             val point = holder.map.coordinateForPixel(screenCoordinate)
             markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
             markerController.selectedMarker = null
-            markerController.dragEndListener?.invoke(entity.state)
+            markerController.dispatchDragEnd(entity.state)
         }
     }
 
@@ -389,11 +389,11 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateStartListener = listener
+        markerController.animateStartListener = listener
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateEndListener = listener
+        markerController.animateEndListener = listener
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {

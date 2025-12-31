@@ -94,11 +94,11 @@ class HereMapViewControllerImpl(
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateStartListener = listener
+        markerController.animateStartListener = listener
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateEndListener = listener
+        markerController.animateEndListener = listener
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
@@ -233,7 +233,7 @@ class HereMapViewControllerImpl(
         val touchPosition = this.getGeoPointFromPoint(point) ?: return
 
         markerController.find(touchPosition)?.let { entity ->
-            markerController.clickListener?.invoke(entity.state)
+            markerController.dispatchClick(entity.state)
             return
         }
 
@@ -243,7 +243,7 @@ class HereMapViewControllerImpl(
                     state = entity.state,
                     clicked = touchPosition,
                 )
-            circleController.clickListener?.invoke(event)
+            circleController.dispatchClick(event)
             return
         }
 
@@ -254,7 +254,7 @@ class HereMapViewControllerImpl(
                     clicked = hitResult.closestPoint,
                 )
             coroutine.launch {
-                polylineController.clickListener?.invoke(event)
+                polylineController.dispatchClick(event)
             }
             return
         }
@@ -266,7 +266,7 @@ class HereMapViewControllerImpl(
                     clicked = touchPosition,
                 )
             coroutine.launch {
-                polygonController.clickListener?.invoke(event)
+                polygonController.dispatchClick(event)
             }
             return
         }
@@ -287,7 +287,7 @@ class HereMapViewControllerImpl(
                     if (entity.state.draggable) {
                         entity.state.position = position
                         markerController.selectedMarker = entity
-                        markerController.dragStartListener?.invoke(entity.state)
+                        markerController.dispatchDragStart(entity.state)
                         return
                     }
                 }
@@ -300,14 +300,14 @@ class HereMapViewControllerImpl(
                         selected.marker?.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
-                    markerController.dragListener?.invoke(selected.state)
+                    markerController.dispatchDrag(selected.state)
                 }
             }
 
             GestureState.END.value, GestureState.CANCEL.value -> {
                 markerController.selectedMarker?.also { selected ->
                     markerController.markerManager.updateEntity(selected)
-                    markerController.dragEndListener?.invoke(selected.state)
+                    markerController.dispatchDragEnd(selected.state)
                     markerController.selectedMarker = null
                     markerController.selectedMarker = null
                 }

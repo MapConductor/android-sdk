@@ -44,7 +44,9 @@ class StoreMapPageViewModelImpl :
             paddings = null,
         )
 
-    override val markerList = StarbucksHI_list
+    override val markerList = StarbucksHI_list.map {
+        it.copy(onClick = this::onMarkerClick)
+    }
 
     private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
     override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()

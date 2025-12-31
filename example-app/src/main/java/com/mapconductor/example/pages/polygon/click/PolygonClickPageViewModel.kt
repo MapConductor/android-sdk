@@ -15,11 +15,8 @@ interface PolygonClickPageViewModel {
     val mapViewState: StateFlow<MapViewState<*>?>
     val markerState: StateFlow<MarkerState?>
     val message: StateFlow<String>
-
     fun onMapViewChanged(state: MapViewState<*>)
-
     fun onMapClicked(clicked: GeoPointImpl)
-
     fun onPolygonClicked(event: PolygonEvent)
 }
 

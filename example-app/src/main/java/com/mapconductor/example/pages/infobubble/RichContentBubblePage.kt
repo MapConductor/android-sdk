@@ -54,6 +54,20 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
     var mapViewState by remember { mutableStateOf<MapViewState<Any>?>(null) }
     val isDarkTheme = isSystemInDarkTheme()
+    val markerState = remember {
+        val locationInfo =
+            LocationInfo(
+                name = "Golden Gate Park",
+                description = "A large urban park with gardens, museums, and recreational areas.",
+                rating = 4.5f,
+            )
+        MarkerState(
+            position = GeoPointImpl.fromLatLong(37.7694, -122.4862),
+            icon = DefaultIcon(fillColor = Color.Green, label = "🌳"),
+            extra = locationInfo,
+            onClick = { markerState -> selectedMarker = markerState },
+        )
+    }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
@@ -61,20 +75,8 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
         onMapViewStateChanged = { state ->
             mapViewState = state as MapViewState<Any>
         },
-    ) { paddingValues ->
-        val locationInfo =
-            LocationInfo(
-                name = "Golden Gate Park",
-                description = "A large urban park with gardens, museums, and recreational areas.",
-                rating = 4.5f,
-            )
+    ) {
 
-        val markerState =
-            MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7694, -122.4862),
-                icon = DefaultIcon(fillColor = Color.Green, label = "🌳"),
-                extra = locationInfo,
-            )
 
         LaunchedEffect(Unit) {
             selectedMarker = markerState
@@ -85,7 +87,6 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapClick = { selectedMarker = null },
-                onMarkerClick = { markerState -> selectedMarker = markerState },
             ) {
                 Marker(markerState)
 

@@ -8,6 +8,7 @@ import com.mapconductor.core.polygon.PolygonEntityImpl
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineEntityImpl
+import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 
@@ -68,6 +69,11 @@ class MapboxPolygonConductor(
         }
         polygonOverlay.onPostProcess()
         polylineOverlay.onPostProcess()
+    }
+
+    fun dispatchClick(event: PolygonEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
     }
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null

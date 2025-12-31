@@ -19,6 +19,7 @@ class PolylineState(
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
     extra: Serializable? = null,
+    onClick: OnPolylineEventHandler? = null,
 ) {
     val id =
         (
@@ -37,6 +38,7 @@ class PolylineState(
     var geodesic by mutableStateOf(geodesic)
     var points by mutableStateOf<List<GeoPoint>>(points)
     var extra by mutableStateOf(extra)
+    var onClick by mutableStateOf(onClick)
 
     private fun polylineId(hashCodes: List<Int>): Int =
         hashCodes.reduce { result, hashCode ->
@@ -64,6 +66,7 @@ class PolylineState(
         strokeWidth: Dp = this.strokeWidth,
         geodesic: Boolean = this.geodesic,
         extra: Serializable? = this.extra,
+        onClick: OnPolylineEventHandler? = this.onClick,
     ): PolylineState =
         PolylineState(
             points = points,
@@ -72,6 +75,7 @@ class PolylineState(
             strokeWidth = strokeWidth,
             geodesic = geodesic,
             extra = extra,
+            onClick = onClick,
         )
 
     private fun <T> listHashCode(list: List<T>): Int {

@@ -16,18 +16,12 @@ fun AnimationMapComponent(
     allMarkers: List<MarkerState>,
     modifier: Modifier = Modifier,
     onMapClick: OnMapEventHandler = {},
-    onMarkerClick: OnMarkerEventHandler = {},
-    onCircleClick: OnCircleEventHandler = {},
-    onMarkerDrag: OnMarkerEventHandler = {},
 ) {
     mapViewState?.let {
         MapViewContainer(
             modifier = modifier,
             state = it,
             onMapClick = onMapClick,
-            onMarkerClick = onMarkerClick,
-            onMarkerDrag = onMarkerDrag,
-            onCircleClick = onCircleClick,
         ) {
             allMarkers.forEach { marker ->
                 Marker(marker)

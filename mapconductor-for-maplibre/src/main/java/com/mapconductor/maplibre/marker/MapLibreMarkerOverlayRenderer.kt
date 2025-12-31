@@ -171,7 +171,10 @@ class MapLibreMarkerOverlayRenderer(
 
     fun drawDragLayer() {
         coroutine.launch {
-            dragLayer.draw()
+            val style = holder.getController()?.getStyleInstance() ?: holder.map.style
+            if (style != null) {
+                dragLayer.draw(style)
+            }
         }
     }
 

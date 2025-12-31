@@ -16,15 +16,11 @@ fun PolylineMapComponent(
     polylineState: PolylineState,
     wayPointMarkers: List<MarkerState>,
     modifier: Modifier = Modifier,
-    onMarkerDrag: OnMarkerEventHandler = {},
 ) {
     mapViewState?.let { it ->
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onMarkerDragStart = onMarkerDrag,
-            onMarkerDrag = onMarkerDrag,
-            onMarkerDragEnd = onMarkerDrag,
         ) {
             // Polyline
             Polyline(polylineState)

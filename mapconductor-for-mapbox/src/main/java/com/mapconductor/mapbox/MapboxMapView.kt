@@ -55,7 +55,45 @@ fun MapboxMapView(
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
+    content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
+) {
+    @Suppress("DEPRECATION")
+    MapboxMapView(
+        state = state,
+        modifier = modifier,
+        sdkInitialize = sdkInitialize,
+        markerRenderingStrategy = markerRenderingStrategy,
+        onMapLoaded = onMapLoaded,
+        onMapClick = onMapClick,
+        onCameraMoveStart = onCameraMoveStart,
+        onCameraMove = onCameraMove,
+        onCameraMoveEnd = onCameraMoveEnd,
+        onMarkerClick = null,
+        onMarkerDragStart = null,
+        onMarkerDrag = null,
+        onMarkerDragEnd = null,
+        onMarkerAnimateStart = null,
+        onMarkerAnimateEnd = null,
+        onCircleClick = null,
+        onPolylineClick = null,
+        onPolygonClick = null,
+        content = content,
+    )
+}
+
+@Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
+@Composable
+fun MapboxMapView(
+    state: MapboxViewStateImpl,
+    modifier: Modifier = Modifier,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
+    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler?,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,

@@ -14,15 +14,11 @@ fun GroundImageMapComponent(
     mapViewState: MapViewState<*>?,
     viewModel: GroundImageMapPageViewModel,
     modifier: Modifier = Modifier,
-    onGroundImageClick: OnGroundImageEventHandler = {},
-    onMarkerDrag: OnMarkerEventHandler = {},
 ) {
     mapViewState?.let { mapViewState ->
         MapViewContainer(
             modifier = modifier,
             state = mapViewState,
-            onMarkerDrag = onMarkerDrag,
-            onGroundImageClick = onGroundImageClick,
         ) {
             // GroundImage
             GroundImage(viewModel.groundImageState)

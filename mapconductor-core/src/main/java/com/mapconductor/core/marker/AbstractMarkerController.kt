@@ -17,7 +17,7 @@ import kotlinx.coroutines.sync.withPermit
 
 abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
-    open val renderer: MarkerOverlayRenderer<ActualMarker>,
+    renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
     open val renderingStrategy: MarkerRenderingStrategy<ActualMarker>? = null,
 ) : OverlayController<
@@ -25,13 +25,17 @@ abstract class AbstractMarkerController<ActualMarker>(
         MarkerEntity<ActualMarker>,
         MarkerState,
     > {
+    open val renderer: MarkerOverlayRenderer<ActualMarker> = renderer
+    private val rendererRef: MarkerOverlayRenderer<ActualMarker> = renderer
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
     private val defaultIcon = DefaultIcon().toBitmapIcon()
 
-    var dragStartListener: ((MarkerState) -> Unit)? = null
-    var dragListener: ((MarkerState) -> Unit)? = null
-    var dragEndListener: ((MarkerState) -> Unit)? = null
+    var dragStartListener: OnMarkerEventHandler? = null
+    var dragListener: OnMarkerEventHandler? = null
+    var dragEndListener: OnMarkerEventHandler? = null
+    var animateStartListener: OnMarkerEventHandler? = null
+    var animateEndListener: OnMarkerEventHandler? = null
     private var mapCameraPosition: MapCameraPositionImpl? = null
 
     // Timer-based debounce implementation (ArcGIS Flow-compatible)
@@ -39,6 +43,41 @@ abstract class AbstractMarkerController<ActualMarker>(
     private val debounceMutex = Mutex()
     private var pendingCameraPosition: MapCameraPositionImpl? = null
     private var debounceJob: kotlinx.coroutines.Job? = null
+
+    init {
+        rendererRef.animateStartListener = { state -> dispatchAnimateStart(state) }
+        rendererRef.animateEndListener = { state -> dispatchAnimateEnd(state) }
+    }
+
+    fun dispatchClick(state: MarkerState) {
+        state.onClick?.invoke(state)
+        clickListener?.invoke(state)
+    }
+
+    fun dispatchDragStart(state: MarkerState) {
+        state.onDragStart?.invoke(state)
+        dragStartListener?.invoke(state)
+    }
+
+    fun dispatchDrag(state: MarkerState) {
+        state.onDrag?.invoke(state)
+        dragListener?.invoke(state)
+    }
+
+    fun dispatchDragEnd(state: MarkerState) {
+        state.onDragEnd?.invoke(state)
+        dragEndListener?.invoke(state)
+    }
+
+    fun dispatchAnimateStart(state: MarkerState) {
+        state.onAnimateStart?.invoke(state)
+        animateStartListener?.invoke(state)
+    }
+
+    fun dispatchAnimateEnd(state: MarkerState) {
+        state.onAnimateEnd?.invoke(state)
+        animateEndListener?.invoke(state)
+    }
 
     private suspend fun processCameraChangeDebounced(cameraPosition: MapCameraPositionImpl) {
         debounceMutex.withLock {

@@ -16,7 +16,7 @@ fun StoreMapPage(onToggleSidebar: () -> Unit = {}) {
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
-    ) { paddings ->
+    ) {
 
         val selectedMarker = viewModel.selectedMarker.collectAsState()
         val mapViewState = viewModel.mapViewState.collectAsState()
@@ -29,7 +29,6 @@ fun StoreMapPage(onToggleSidebar: () -> Unit = {}) {
                 context.startActivity(intent)
             },
             onMapClick = viewModel::onMapClick,
-            onMarkerClick = viewModel::onMarkerClick,
             selectedMarker = selectedMarker.value,
         )
     }

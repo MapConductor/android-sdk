@@ -26,7 +26,6 @@ fun PostOfficeMapComponent(
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
     onInfoWndClick: ((PostOffice) -> Unit)? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
@@ -40,7 +39,6 @@ fun PostOfficeMapComponent(
         state = mapViewState,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
-        onMarkerClick = onMarkerClick,
     ) {
         markers.forEach { markerState -> Marker(markerState) }
 

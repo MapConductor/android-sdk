@@ -19,6 +19,11 @@ abstract class PolylineController<ActualPolyline>(
     val semaphore = Semaphore(1)
     private var currentCameraPosition: MapCameraPositionImpl? = null
 
+    fun dispatchClick(event: PolylineEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
+    }
+
     override suspend fun add(data: List<PolylineState>) {
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<PolylineEntity<ActualPolyline>>()

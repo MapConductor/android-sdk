@@ -22,6 +22,12 @@ class MarkerState(
     animation: MarkerAnimation? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
+    onClick: OnMarkerEventHandler? = null,
+    onDragStart: OnMarkerEventHandler? = null,
+    onDrag: OnMarkerEventHandler? = null,
+    onDragEnd: OnMarkerEventHandler? = null,
+    onAnimateStart: OnMarkerEventHandler? = null,
+    onAnimateEnd: OnMarkerEventHandler? = null,
 ) {
     val id =
         (
@@ -45,6 +51,12 @@ class MarkerState(
     var icon by mutableStateOf<MarkerIcon?>(icon)
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
+    var onClick by mutableStateOf(onClick)
+    var onDragStart by mutableStateOf(onDragStart)
+    var onDrag by mutableStateOf(onDrag)
+    var onDragEnd by mutableStateOf(onDragEnd)
+    var onAnimateStart by mutableStateOf(onAnimateStart)
+    var onAnimateEnd by mutableStateOf(onAnimateEnd)
 
     private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
 
@@ -70,6 +82,12 @@ class MarkerState(
         icon: MarkerIcon? = this.icon,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
+        onClick: OnMarkerEventHandler? = this.onClick,
+        onDragStart: OnMarkerEventHandler? = this.onDragStart,
+        onDrag: OnMarkerEventHandler? = this.onDrag,
+        onDragEnd: OnMarkerEventHandler? = this.onDragEnd,
+        onAnimateStart: OnMarkerEventHandler? = this.onAnimateStart,
+        onAnimateEnd: OnMarkerEventHandler? = this.onAnimateEnd,
     ): MarkerState =
         MarkerState(
             id = id, // Keep marker id
@@ -78,6 +96,12 @@ class MarkerState(
             icon = icon,
             clickable = clickable ?: this.clickable,
             draggable = draggable ?: this.draggable,
+            onClick = onClick,
+            onDragStart = onDragStart,
+            onDrag = onDrag,
+            onDragEnd = onDragEnd,
+            onAnimateStart = onAnimateStart,
+            onAnimateEnd = onAnimateEnd,
         )
 
     override fun equals(other: Any?): Boolean {

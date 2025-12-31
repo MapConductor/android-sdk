@@ -22,6 +22,7 @@ class PolygonState(
     geodesic: Boolean = false,
     zIndex: Int = 0,
     extra: Serializable? = null,
+    onClick: OnPolygonEventHandler? = null,
 ) {
     val id =
         (
@@ -43,6 +44,7 @@ class PolygonState(
     var zIndex by mutableStateOf(zIndex)
     var points by StateFlowDelegate<List<GeoPoint>>(points)
     var extra by mutableStateOf(extra)
+    var onClick by mutableStateOf(onClick)
 
     private fun polygonId(hashCodes: List<Int>): Int =
         hashCodes.reduce { result, hashCode ->

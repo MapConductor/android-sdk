@@ -199,7 +199,7 @@ class ArcGISMapViewControllerImpl(
             val position = point.toGeoPoint()
             it.graphic.geometry = point
             it.state.position = position
-            markerController.dragListener?.invoke(it.state)
+            markerController.dispatchDrag(it.state)
         }
         invokeCameraMoveCallback()
     }
@@ -213,7 +213,7 @@ class ArcGISMapViewControllerImpl(
             it.state.position = position
 
             markerController.selectedMarker = null
-            markerController.dragEndListener?.invoke(it.state)
+            markerController.dispatchDragEnd(it.state)
 
             with(holder.map) {
                 interactionOptions.isPanEnabled = true
@@ -254,7 +254,7 @@ class ArcGISMapViewControllerImpl(
                             interactionOptions.isRotateEnabled = false
                             interactionOptions.isZoomEnabled = false
                         }
-                        markerController.dragStartListener?.invoke(entity.state)
+                        markerController.dispatchDragStart(entity.state)
                         return
                     }
                 }
@@ -272,7 +272,7 @@ class ArcGISMapViewControllerImpl(
                 ?.toGeoPoint() ?: return
 
         markerController.find(touchPosition)?.let { markerEntity ->
-            markerController.clickListener?.invoke(markerEntity.state)
+            markerController.dispatchClick(markerEntity.state)
             return
         }
 
@@ -282,7 +282,7 @@ class ArcGISMapViewControllerImpl(
                     state = circleEntity.state,
                     clicked = touchPosition,
                 )
-            circleController.clickListener?.invoke(event)
+            circleController.dispatchClick(event)
             return
         }
 
@@ -292,7 +292,7 @@ class ArcGISMapViewControllerImpl(
                     state = hitResult.entity.state,
                     clicked = hitResult.closestPoint,
                 )
-            polylineController.clickListener?.invoke(event)
+            polylineController.dispatchClick(event)
             return
         }
 
@@ -302,7 +302,7 @@ class ArcGISMapViewControllerImpl(
                     state = polygonEntity.state,
                     clicked = touchPosition,
                 )
-            polygonController.clickListener?.invoke(event)
+            polygonController.dispatchClick(event)
             return
         }
 
@@ -403,11 +403,11 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        this.markerController.renderer.animateStartListener = listener
+        this.markerController.animateStartListener = listener
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        this.markerController.renderer.animateEndListener = listener
+        this.markerController.animateEndListener = listener
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {

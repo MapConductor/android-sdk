@@ -17,6 +17,7 @@ class GroundImageState(
     opacity: Float = 1.0f,
     id: String? = null,
     extra: Serializable? = null,
+    onClick: OnGroundImageEventHandler? = null,
 ) {
     val id = (id ?: generateId(bounds, image, opacity, extra)).toString()
 
@@ -25,6 +26,7 @@ class GroundImageState(
     var image by mutableStateOf(image)
     var opacity by mutableStateOf(opacity)
     var extra by mutableStateOf(extra)
+    var onClick by mutableStateOf(onClick)
 
     fun fingerPrint(): GroundImageFingerPrint =
         GroundImageFingerPrint(

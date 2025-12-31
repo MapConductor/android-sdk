@@ -29,7 +29,6 @@ fun PolylineClickMapPage(onToggleSidebar: () -> Unit = {}) {
             polylineState = viewModel.polylineState,
             markers = markers.value,
             mapViewState = mapViewState.value,
-            onPolylineClick = viewModel::onPolylineClicked,
         )
 
         MessageCard(

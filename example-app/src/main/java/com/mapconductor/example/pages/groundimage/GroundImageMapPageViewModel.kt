@@ -125,6 +125,7 @@ class GroundImageMapPageViewModelImpl(
                             labelTextColor = Color.White,
                         ),
                     draggable = true,
+                    onDrag = this::onMarkerDrag,
                 ),
                 MarkerState(
                     id = "north_east",
@@ -137,6 +138,7 @@ class GroundImageMapPageViewModelImpl(
                             labelTextColor = Color.White,
                         ),
                     draggable = true,
+                    onDrag = this::onMarkerDrag,
                 ),
             )
         }
@@ -159,6 +161,7 @@ class GroundImageMapPageViewModelImpl(
                 bounds = bounds,
                 image = image,
                 opacity = opacity,
+                onClick = this::onGroundImageClick,
             )
 
     override fun onGroundImageClick(clicked: GroundImageEvent) {

@@ -37,8 +37,6 @@ fun GroundImageMapPage(
         GroundImageMapComponent(
             mapViewState = mapViewState.value,
             viewModel = viewModel,
-            onGroundImageClick = viewModel::onGroundImageClick,
-            onMarkerDrag = viewModel::onMarkerDrag,
         )
 
         // Message Card

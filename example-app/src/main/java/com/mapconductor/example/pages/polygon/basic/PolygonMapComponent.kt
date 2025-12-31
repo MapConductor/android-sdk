@@ -16,13 +16,11 @@ fun PolygonMapComponent(
     polygonVertexMarkers: List<MarkerState>,
     polygonState: PolygonState,
     modifier: Modifier = Modifier,
-    onMarkerDrag: OnMarkerEventHandler,
 ) {
     mapViewState?.let { it ->
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onMarkerDrag = onMarkerDrag,
         ) {
             // Polygon
             Polygon(polygonState)

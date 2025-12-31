@@ -113,6 +113,9 @@ class CirclePageViewModelImpl :
                         label = "E",
                     ),
                 draggable = true,
+                onDragStart = this::onMarkerMove,
+                onDrag = this::onMarkerMove,
+                onDragEnd = this::onMarkerMove,
             ),
         )
     override val edgeMarker: MarkerState
@@ -131,6 +134,7 @@ class CirclePageViewModelImpl :
                 strokeColor = Color.Blue.copy(alpha = 0.5f),
                 strokeWidth = strokeWidth.dp,
                 fillColor = this.colors[0].copy(alpha = fillOpacity),
+                onClick = this::onCircleClick,
             )
 
     private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)

@@ -27,6 +27,7 @@ import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.R
 import com.mapconductor.icons.CircleIcon
@@ -48,12 +49,12 @@ fun MarkerBasicMapComponent(
     var selected by remember { mutableStateOf<MarkerState?>(null) }
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor = if (darkTheme) Color.Black else Color.White
+    val onMarkerClick: OnMarkerEventHandler = { selected = it }
 
     MapViewContainer(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { selected = null },
-        onMarkerClick = { selected = it },
     ) {
         Marker(
             position = GeoPointImpl.fromLatLong(0.018, 0.004),

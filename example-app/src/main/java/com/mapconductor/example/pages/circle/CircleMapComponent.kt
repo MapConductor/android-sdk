@@ -18,17 +18,11 @@ fun CircleMapComponent(
     centerMarker: MarkerState,
     edgeMarker: MarkerState,
     modifier: Modifier = Modifier,
-    onCircleClick: OnCircleEventHandler = {},
-    onMarkerMove: OnMarkerEventHandler = {},
 ) {
     mapViewState?.let { it ->
         MapViewContainer(
             modifier = modifier,
             state = it,
-            onMarkerDragStart = onMarkerMove,
-            onMarkerDrag = onMarkerMove,
-            onMarkerDragEnd = onMarkerMove,
-            onCircleClick = onCircleClick,
         ) {
             // Circle
             Circle(circleState)

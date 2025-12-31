@@ -4,6 +4,8 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.toPoint
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 
@@ -19,7 +21,7 @@ open class MarkerDragLayer(
         }
     }
 
-    fun draw() {
+    fun draw(style: Style) {
         val features =
             selected?.let {
                 if (it.marker != null) {
@@ -35,8 +37,20 @@ open class MarkerDragLayer(
                     emptyList()
                 }
             } ?: emptyList()
-        source.setGeoJson(
-            FeatureCollection.fromFeatures(features),
-        )
+        val collection = FeatureCollection.fromFeatures(features)
+        val styleSource =
+            try {
+                style.getSource(sourceId)
+            } catch (_: IllegalStateException) {
+                null
+            }
+        if (styleSource is GeoJsonSource) {
+            try {
+                styleSource.setGeoJson(collection)
+                return
+            } catch (_: IllegalStateException) {
+            }
+        }
+        source.setGeoJson(collection)
     }
 }

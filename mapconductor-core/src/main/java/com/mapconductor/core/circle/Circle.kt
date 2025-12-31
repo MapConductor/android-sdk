@@ -30,6 +30,7 @@ class CircleState(
     id: String? = null,
     zIndex: Int? = null,
     extra: Serializable? = null,
+    onClick: OnCircleEventHandler? = null,
 ) {
     var center by mutableStateOf(center)
     var clickable by mutableStateOf(clickable)
@@ -40,6 +41,7 @@ class CircleState(
     var fillColor by mutableStateOf(fillColor)
     var extra by mutableStateOf(extra)
     var zIndex by mutableStateOf<Int?>(zIndex)
+    var onClick by mutableStateOf(onClick)
 
     val id =
         (
@@ -95,6 +97,7 @@ class CircleState(
         id: String? = this.id,
         zIndex: Int? = this.zIndex,
         extra: Serializable? = this.extra,
+        onClick: OnCircleEventHandler? = this.onClick,
     ): CircleState =
         CircleState(
             center = center,
@@ -107,6 +110,7 @@ class CircleState(
             id = id,
             zIndex = zIndex,
             extra = extra,
+            onClick = onClick,
         )
 
     override fun equals(other: Any?): Boolean {

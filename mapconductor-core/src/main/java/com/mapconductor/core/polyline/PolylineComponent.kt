@@ -35,6 +35,7 @@ fun MapViewScope.Polyline(
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
     extra: Serializable? = null,
+    onClick: OnPolylineEventHandler? = null,
 ) {
     val state =
         PolylineState(
@@ -44,6 +45,7 @@ fun MapViewScope.Polyline(
             strokeWidth = strokeWidth,
             geodesic = geodesic,
             extra = extra,
+            onClick = onClick,
         )
     Polyline(state)
 }
@@ -56,6 +58,7 @@ fun MapViewScope.Polyline(
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
     extra: Serializable? = null,
+    onClick: OnPolylineEventHandler? = null,
 ) {
     bounds.northEast?.let { ne ->
         bounds.southWest?.let { sw ->
@@ -73,6 +76,7 @@ fun MapViewScope.Polyline(
                 strokeWidth = strokeWidth,
                 geodesic = geodesic,
                 extra = extra,
+                onClick = onClick,
             )
         }
     }

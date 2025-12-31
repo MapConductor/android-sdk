@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.infobubble
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
@@ -35,19 +37,24 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
     var mapViewState by remember { mutableStateOf<MapViewState<Any>?>(null) }
     val isDarkTheme = isSystemInDarkTheme()
 
+    val onMarkerClick: OnMarkerEventHandler = { markerState -> selectedMarker = markerState }
+
+    val markerState = remember {
+        MarkerState(
+            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
+            extra = "Point of Interest",
+            onClick = onMarkerClick,
+        )
+    }
+
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
             mapViewState = state as MapViewState<Any>
         },
-    ) { paddingValues ->
-        val markerState =
-            MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
-                extra = "Point of Interest",
-            )
+    ) {
 
         LaunchedEffect(Unit) {
             selectedMarker = markerState
@@ -58,7 +65,6 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapClick = { selectedMarker = null },
-                onMarkerClick = { markerState -> selectedMarker = markerState },
             ) {
                 Marker(markerState)
 

@@ -174,7 +174,7 @@ class GoogleMapViewControllerImpl(
                         clicked = touchPosition,
                     )
                 coroutine.launch {
-                    circleController.clickListener?.invoke(event)
+                    circleController.dispatchClick(event)
                 }
                 return@launch
             }
@@ -186,7 +186,7 @@ class GoogleMapViewControllerImpl(
                         clicked = touchPosition,
                     )
                 coroutine.launch {
-                    groundImageController.clickListener?.invoke(event)
+                    groundImageController.dispatchClick(event)
                 }
                 return@launch
             }
@@ -198,7 +198,7 @@ class GoogleMapViewControllerImpl(
                         clicked = hitResult.closestPoint,
                     )
                 coroutine.launch {
-                    polylineController.clickListener?.invoke(event)
+                    polylineController.dispatchClick(event)
                 }
                 return@launch
             }
@@ -210,7 +210,7 @@ class GoogleMapViewControllerImpl(
                         clicked = touchPosition,
                     )
                 coroutine.launch {
-                    polygonController.clickListener?.invoke(event)
+                    polygonController.dispatchClick(event)
                 }
                 return@launch
             }
@@ -242,11 +242,11 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        this.markerController.renderer.animateStartListener = listener
+        this.markerController.animateStartListener = listener
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        this.markerController.renderer.animateEndListener = listener
+        this.markerController.animateEndListener = listener
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
