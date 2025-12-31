@@ -13,7 +13,6 @@ import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
@@ -47,7 +46,6 @@ fun MapLibreMapView(
     state: MapLibreViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -60,7 +58,6 @@ fun MapLibreMapView(
         state = state,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
-        markerRenderingStrategy = markerRenderingStrategy,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
         onCameraMoveStart = onCameraMoveStart,
@@ -85,7 +82,6 @@ fun MapLibreMapView(
     state: MapLibreViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -141,7 +137,6 @@ fun MapLibreMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    renderingStrategy = markerRenderingStrategy,
                 )
             val polylineController =
                 getPolylineController(
@@ -212,9 +207,8 @@ fun MapLibreMapView(
 
 internal fun getMarkerController(
     holder: MapLibreMapViewHolder,
-    renderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
 ): MapLibreMarkerController {
-    val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+    val manager = MarkerManager.defaultManager<MapLibreActualMarker>()
     val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -236,7 +230,6 @@ internal fun getMarkerController(
     val controller =
         MapLibreMarkerController(
             renderer = renderer,
-            renderingStrategy = renderingStrategy,
         )
     return controller
 }

@@ -26,9 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 open class MapViewScope {
-    val markerAddSharedFlow = MutableSharedFlow<MarkerState>(1000)
-    val markerRemoveSharedFlow = MutableSharedFlow<String>(1000)
-    val markerFlow = MutableStateFlow<MutableMap<String, MarkerState>>(mutableMapOf())
+    val markerCollector = com.mapconductor.core.marker.MarkerCollector()
     val bubbleFlow = MutableStateFlow<MutableMap<String, InfoBubbleEntry>>(mutableMapOf())
     val polylineFlow = MutableStateFlow<MutableMap<String, PolylineState>>(mutableMapOf())
     val polylineRemoveSharedFlow = MutableSharedFlow<String>(1000)
@@ -40,26 +38,6 @@ open class MapViewScope {
     val groundImageRemoveSharedFlow = MutableSharedFlow<String>(1000)
 
     init {
-        CoroutineScope(Dispatchers.IO).launch {
-            markerAddSharedFlow.debounceBatch(5.milliseconds, 100).collect { states ->
-                val newMap = markerFlow.value.toMutableMap()
-                states.forEach { state ->
-                    newMap.set(state.id, state)
-                }
-                markerFlow.value = newMap
-            }
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            markerRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
-                val newMap = markerFlow.value.toMutableMap()
-                ids.forEach { id ->
-                    newMap.remove(id)
-                }
-                markerFlow.value = newMap
-            }
-        }
-
         CoroutineScope(Dispatchers.IO).launch {
             polylineRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
                 val newMap = polylineFlow.value.toMutableMap()
@@ -103,7 +81,7 @@ open class MapViewScope {
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
-        registry.register(MarkerOverlay(markerFlow))
+        registry.register(MarkerOverlay(markerCollector.flow))
         registry.register(CircleOverlay(circleFlow))
         registry.register(PolylineOverlay(polylineFlow))
         registry.register(PolygonOverlay(polygonFlow))

@@ -29,7 +29,6 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -47,7 +46,6 @@ fun ArcGISMapView(
     state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
@@ -60,7 +58,6 @@ fun ArcGISMapView(
         state = state,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
-        markerRenderingStrategy = markerRenderingStrategy,
         onMapLoaded = onMapLoaded,
         onCameraMoveStart = onCameraMoveStart,
         onCameraMove = onCameraMove,
@@ -85,7 +82,6 @@ fun ArcGISMapView(
     state: ArcGISMapViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
@@ -176,7 +172,6 @@ fun ArcGISMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    renderingStrategy = markerRenderingStrategy,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -297,10 +292,8 @@ private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOver
 
 private fun getMarkerController(
     holder: ArcGISMapViewHolder,
-    renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
 ) = ArcGISMarkerController.create(
     holder = holder,
-    renderingStrategy = renderingStrategy,
 )
 
 /**

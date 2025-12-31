@@ -5,17 +5,14 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.settings.Settings
 
 class MapLibreMarkerController(
     override val renderer: MapLibreMarkerOverlayRenderer,
-    renderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
 ) : AbstractMarkerController<MapLibreActualMarker>(
         markerManager = renderer.markerManager,
         renderer = renderer,
-        renderingStrategy = renderingStrategy,
     ) {
     private var internalSelectedMarker: MarkerEntity<MapLibreActualMarker>? = null
 

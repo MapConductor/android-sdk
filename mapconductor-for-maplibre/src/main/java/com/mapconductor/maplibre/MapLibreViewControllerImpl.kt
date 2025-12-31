@@ -18,6 +18,8 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.maplibre.circle.MapLibreCircleController
+import com.mapconductor.maplibre.marker.DefaultMapLibreMarkerEventController
+import com.mapconductor.maplibre.marker.MapLibreMarkerEventController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
@@ -63,6 +65,14 @@ class MapLibreViewControllerImpl(
     private var wasScrollEnabledBeforeDrag: Boolean? = null
     private var dragTouchInterceptor: View.OnTouchListener? = null
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
+    private val markerEventControllers = mutableListOf<MapLibreMarkerEventController>()
+    private var activeDragController: MapLibreMarkerEventController? = null
+    private var markerClickListener: OnMarkerEventHandler? = null
+    private var markerDragStartListener: OnMarkerEventHandler? = null
+    private var markerDragListener: OnMarkerEventHandler? = null
+    private var markerDragEndListener: OnMarkerEventHandler? = null
+    private var markerAnimateStartListener: OnMarkerEventHandler? = null
+    private var markerAnimateEndListener: OnMarkerEventHandler? = null
 
     private fun ensureGeoJsonSource(
         style: Style,
@@ -165,6 +175,29 @@ class MapLibreViewControllerImpl(
         )
         markerController.renderer.redraw()
 
+        markerEventControllers
+            .map { it.renderer }
+            .filter { it != markerController.renderer }
+            .forEach { renderer ->
+                renderer.ensureDefaultIcon(style)
+                ensureGeoJsonSource(style, renderer.markerLayer.sourceId)
+                addLayerAboveSafely(
+                    style = style,
+                    layer = renderer.markerLayer.layer,
+                    layerId = renderer.markerLayer.layerId,
+                    aboveId = polylineController.renderer.layer.layerId,
+                )
+                ensureGeoJsonSource(style, renderer.dragLayer.sourceId)
+                addLayerAboveSafely(
+                    style = style,
+                    layer = renderer.dragLayer.layer,
+                    layerId = renderer.dragLayer.layerId,
+                    aboveId = renderer.markerLayer.layerId,
+                )
+                renderer.redraw()
+                renderer.drawDragLayer()
+            }
+
         // Force redraw after adding layers
         markerController.renderer.redraw()
         polylineController.renderer.redraw()
@@ -185,6 +218,7 @@ class MapLibreViewControllerImpl(
         registerController(polylineController)
         registerController(polygonController)
         registerController(circleController)
+        registerMarkerEventController(DefaultMapLibreMarkerEventController(markerController))
     }
 
     fun setupListeners() {
@@ -278,15 +312,18 @@ class MapLibreViewControllerImpl(
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
 
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
-        markerController.dragStartListener = listener
+        markerDragStartListener = listener
+        markerEventControllers.forEach { it.setDragStartListener(listener) }
     }
 
     override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
-        markerController.dragListener = listener
+        markerDragListener = listener
+        markerEventControllers.forEach { it.setDragListener(listener) }
     }
 
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
-        markerController.dragEndListener = listener
+        markerDragEndListener = listener
+        markerEventControllers.forEach { it.setDragEndListener(listener) }
     }
 
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
@@ -302,15 +339,18 @@ class MapLibreViewControllerImpl(
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        markerController.animateStartListener = listener
+        markerAnimateStartListener = listener
+        markerEventControllers.forEach { it.setAnimateStartListener(listener) }
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        markerController.animateEndListener = listener
+        markerAnimateEndListener = listener
+        markerEventControllers.forEach { it.setAnimateEndListener(listener) }
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
-        markerController.clickListener = listener
+        markerClickListener = listener
+        markerEventControllers.forEach { it.setClickListener(listener) }
     }
 
     override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
@@ -328,9 +368,11 @@ class MapLibreViewControllerImpl(
     override fun onMapClick(point: LatLng): Boolean {
         val touchPosition = point.toGeoPoint()
 
-        markerController.find(touchPosition)?.let { entity ->
-            markerController.dispatchClick(entity.state)
-            return true
+        markerEventControllers.forEach { controller ->
+            controller.find(touchPosition)?.let { entity ->
+                controller.dispatchClick(entity.state)
+                return true
+            }
         }
 
         circleController.find(touchPosition)?.let { entity ->
@@ -367,22 +409,24 @@ class MapLibreViewControllerImpl(
 
     override fun onMapLongClick(point: LatLng): Boolean {
         val touchPosition = point.toGeoPoint()
-        markerController.find(touchPosition)?.let { entity ->
-            if (entity.state.draggable) {
-                // Disable map scroll while dragging a marker
-                try {
-                    val ui = holder.map.uiSettings
-                    wasScrollEnabledBeforeDrag = ui.isScrollGesturesEnabled
-                    ui.isScrollGesturesEnabled = false
-                } catch (e: Exception) {
-                    Log.w("MapLibre", "Failed to disable scroll gestures: ${e.message}")
+        markerEventControllers.forEach { controller ->
+            controller.find(touchPosition)?.let { entity ->
+                if (entity.state.draggable) {
+                    // Disable map scroll while dragging a marker
+                    try {
+                        val ui = holder.map.uiSettings
+                        wasScrollEnabledBeforeDrag = ui.isScrollGesturesEnabled
+                        ui.isScrollGesturesEnabled = false
+                    } catch (e: Exception) {
+                        Log.w("MapLibre", "Failed to disable scroll gestures: ${e.message}")
+                    }
+                    activeDragController = controller
+                    controller.setSelectedMarker(entity)
+                    controller.dispatchDragStart(entity.state)
+                    // Intercept touch to move marker without moving the map
+                    installDragTouchInterceptor()
+                    return true
                 }
-                markerController.selectedMarker = entity
-                markerController.markerManager.removeEntity(entity.state.id)
-                markerController.dispatchDragStart(entity.state)
-                // Intercept touch to move marker without moving the map
-                installDragTouchInterceptor()
-                return true
             }
         }
 
@@ -399,7 +443,8 @@ class MapLibreViewControllerImpl(
     }
 
     override fun onMove(detector: MoveGestureDetector) {
-        markerController.selectedMarker?.let { entity ->
+        val controller = activeDragController ?: return
+        controller.getSelectedMarker()?.let { entity ->
 
             val screenCoordinate =
                 Offset(
@@ -409,25 +454,26 @@ class MapLibreViewControllerImpl(
 
             holder.fromScreenOffsetSync(screenCoordinate)?.let {
                 entity.state.position = it
-                markerController.renderer.dragLayer.updatePosition(it)
-                markerController.renderer.drawDragLayer()
+                controller.renderer.dragLayer.updatePosition(it)
+                controller.renderer.drawDragLayer()
             }
 
-            markerController.dispatchDrag(entity.state)
+            controller.dispatchDrag(entity.state)
         }
     }
 
     override fun onMoveEnd(detector: MoveGestureDetector) {
-        markerController.selectedMarker?.let { entity ->
+        val controller = activeDragController ?: return
+        controller.getSelectedMarker()?.let { entity ->
             val screenCoordinate =
                 PointF(
                     detector.focalPoint.x,
                     detector.focalPoint.y,
                 )
             val point = holder.map.projection.fromScreenLocation(screenCoordinate)
-            markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
-            markerController.selectedMarker = null
-            markerController.dispatchDragEnd(entity.state)
+            controller.renderer.dragLayer.updatePosition(point.toGeoPoint())
+            controller.setSelectedMarker(null)
+            controller.dispatchDragEnd(entity.state)
             // Re-enable map scroll after dragging finishes
             try {
                 val ui = holder.map.uiSettings
@@ -438,6 +484,7 @@ class MapLibreViewControllerImpl(
                 wasScrollEnabledBeforeDrag = null
             }
             removeDragTouchInterceptor()
+            activeDragController = null
         }
     }
 
@@ -446,23 +493,24 @@ class MapLibreViewControllerImpl(
         val view = holder.mapView
         dragTouchInterceptor =
             View.OnTouchListener { _, event ->
-                val selected = markerController.selectedMarker ?: return@OnTouchListener false
+                val controller = activeDragController ?: return@OnTouchListener false
+                val selected = controller.getSelectedMarker() ?: return@OnTouchListener false
                 when (event.actionMasked) {
                     MotionEvent.ACTION_MOVE -> {
                         val pos = holder.fromScreenOffsetSync(Offset(event.x, event.y))
                         if (pos != null) {
                             selected.state.position = pos
-                            markerController.renderer.dragLayer.updatePosition(pos)
-                            markerController.renderer.drawDragLayer()
-                            markerController.dispatchDrag(selected.state)
+                            controller.renderer.dragLayer.updatePosition(pos)
+                            controller.renderer.drawDragLayer()
+                            controller.dispatchDrag(selected.state)
                         }
                         true // consume to prevent map panning
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         val point = holder.map.projection.fromScreenLocation(PointF(event.x, event.y))
-                        markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
-                        markerController.selectedMarker = null
-                        markerController.dispatchDragEnd(selected.state)
+                        controller.renderer.dragLayer.updatePosition(point.toGeoPoint())
+                        controller.setSelectedMarker(null)
+                        controller.dispatchDragEnd(selected.state)
                         try {
                             val ui = holder.map.uiSettings
                             ui.isScrollGesturesEnabled = wasScrollEnabledBeforeDrag == true
@@ -472,6 +520,7 @@ class MapLibreViewControllerImpl(
                             wasScrollEnabledBeforeDrag = null
                         }
                         removeDragTouchInterceptor()
+                        activeDragController = null
                         true
                     }
                     else -> false
@@ -652,6 +701,37 @@ class MapLibreViewControllerImpl(
             getMapCameraPosition(camera)?.let { mapCameraPosition ->
                 backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
             }
+        }
+    }
+
+    internal fun registerMarkerEventController(controller: MapLibreMarkerEventController) {
+        if (markerEventControllers.contains(controller)) return
+        markerEventControllers.add(controller)
+        controller.setClickListener(markerClickListener)
+        controller.setDragStartListener(markerDragStartListener)
+        controller.setDragListener(markerDragListener)
+        controller.setDragEndListener(markerDragEndListener)
+        controller.setAnimateStartListener(markerAnimateStartListener)
+        controller.setAnimateEndListener(markerAnimateEndListener)
+
+        styleInstance?.let { style ->
+            controller.renderer.ensureDefaultIcon(style)
+            ensureGeoJsonSource(style, controller.renderer.markerLayer.sourceId)
+            addLayerAboveSafely(
+                style = style,
+                layer = controller.renderer.markerLayer.layer,
+                layerId = controller.renderer.markerLayer.layerId,
+                aboveId = polylineController.renderer.layer.layerId,
+            )
+            ensureGeoJsonSource(style, controller.renderer.dragLayer.sourceId)
+            addLayerAboveSafely(
+                style = style,
+                layer = controller.renderer.dragLayer.layer,
+                layerId = controller.renderer.dragLayer.layerId,
+                aboveId = controller.renderer.markerLayer.layerId,
+            )
+            controller.renderer.redraw()
+            controller.renderer.drawDragLayer()
         }
     }
 }

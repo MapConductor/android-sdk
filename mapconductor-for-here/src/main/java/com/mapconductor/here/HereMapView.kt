@@ -23,7 +23,6 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -45,7 +44,6 @@ fun HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -58,7 +56,6 @@ fun HereMapView(
         state = state,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
-        markerRenderingStrategy = markerRenderingStrategy,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
         onCameraMoveStart = onCameraMoveStart,
@@ -83,7 +80,6 @@ fun HereMapView(
     state: HereViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -149,7 +145,6 @@ fun HereMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    renderingStrategy = markerRenderingStrategy,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -273,10 +268,8 @@ private fun getPolylineController(holder: HereViewHolder): HerePolylineControlle
 
 private fun getMarkerController(
     holder: HereViewHolder,
-    renderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
 ) = HereMarkerController.create(
     holder = holder,
-    renderingStrategy = renderingStrategy,
 )
 
 private fun getHereCircleController(holder: HereViewHolder): HereCircleController {

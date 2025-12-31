@@ -4,22 +4,13 @@ import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 
 abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
     renderer: MarkerOverlayRenderer<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
-    open val renderingStrategy: MarkerRenderingStrategy<ActualMarker>? = null,
 ) : OverlayController<
         MarkerState,
         MarkerEntity<ActualMarker>,
@@ -36,14 +27,6 @@ abstract class AbstractMarkerController<ActualMarker>(
     var dragEndListener: OnMarkerEventHandler? = null
     var animateStartListener: OnMarkerEventHandler? = null
     var animateEndListener: OnMarkerEventHandler? = null
-    private var mapCameraPosition: MapCameraPositionImpl? = null
-
-    // Timer-based debounce implementation (ArcGIS Flow-compatible)
-    private val debounceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private val debounceMutex = Mutex()
-    private var pendingCameraPosition: MapCameraPositionImpl? = null
-    private var debounceJob: kotlinx.coroutines.Job? = null
-
     init {
         rendererRef.animateStartListener = { state -> dispatchAnimateStart(state) }
         rendererRef.animateEndListener = { state -> dispatchAnimateEnd(state) }
@@ -79,39 +62,6 @@ abstract class AbstractMarkerController<ActualMarker>(
         animateEndListener?.invoke(state)
     }
 
-    private suspend fun processCameraChangeDebounced(cameraPosition: MapCameraPositionImpl) {
-        debounceMutex.withLock {
-            // Store the latest camera position
-            pendingCameraPosition = cameraPosition
-
-            // Cancel previous debounce job
-            debounceJob?.cancel()
-
-            // Start new debounce job
-            debounceJob =
-                debounceScope.launch {
-                    delay(100) // 100ms debounce delay
-
-                    // Process the latest camera position
-                    val latestPosition =
-                        debounceMutex.withLock {
-                            pendingCameraPosition
-                        }
-
-                    latestPosition?.let { position ->
-                        this@AbstractMarkerController.mapCameraPosition = position
-                        renderingStrategy?.onCameraChanged(position, renderer)
-                    }
-                }
-        }
-    }
-
-    private val worldBounds =
-        GeoRectBounds(
-            southWest = GeoPointImpl(90.0, 180.0),
-            northEast = GeoPointImpl(-90.0, -180.0),
-        )
-
     protected fun setDraggingState(
         markerState: MarkerState,
         dragging: Boolean,
@@ -121,18 +71,6 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun add(data: List<MarkerState>) {
-        renderingStrategy?.let { strategy ->
-            mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
-                val processed =
-                    strategy.onAdd(
-                        data = data,
-                        viewport = bounds,
-                        renderer = renderer,
-                    )
-            }
-            return
-        }
-
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
@@ -246,20 +184,6 @@ abstract class AbstractMarkerController<ActualMarker>(
             )
         markerManager.updateEntity(entity)
 
-        renderingStrategy?.let { strategy ->
-            mapCameraPosition?.visibleRegion?.bounds?.let { bounds ->
-                val processed =
-                    strategy.onUpdate(
-                        state = state,
-                        viewport = bounds,
-                        renderer = renderer,
-                    )
-                if (processed) {
-                    return
-                }
-            } ?: return
-        }
-
         // Simple fallback: update marker immediately if it's already rendered
         semaphore.withPermit {
             val marker = prevEntity.marker
@@ -311,13 +235,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
-        if (this.mapCameraPosition == null) {
-            // Set the initial camera position
-            this.mapCameraPosition = mapCameraPosition
-        } else {
-            // Use timer-based debounce instead of Flow to avoid ArcGIS SDK conflicts
-            processCameraChangeDebounced(mapCameraPosition)
-        }
+        // No-op for default marker flow.
     }
 
     /**
@@ -325,8 +243,6 @@ abstract class AbstractMarkerController<ActualMarker>(
      * IMPORTANT: Call this when switching map providers or disposing the map
      */
     override fun destroy() {
-        debounceJob?.cancel()
-        debounceScope.cancel()
         markerManager.destroy()
     }
 }

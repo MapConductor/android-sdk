@@ -13,7 +13,8 @@ import com.mapconductor.arcgis.calculateCameraForOrbitParameters
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.fromLongLat
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
-import com.mapconductor.arcgis.marker.SelectedMarker
+import com.mapconductor.arcgis.marker.ArcGISMarkerEventController
+import com.mapconductor.arcgis.marker.DefaultArcGISMarkerEventController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.toGeoPoint
@@ -51,6 +52,15 @@ class ArcGISMapViewControllerImpl(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     ArcGISMapViewController {
+    private val markerEventControllers = mutableListOf<ArcGISMarkerEventController>()
+    private var activeDragController: ArcGISMarkerEventController? = null
+    private var markerClickListener: OnMarkerEventHandler? = null
+    private var markerDragStartListener: OnMarkerEventHandler? = null
+    private var markerDragListener: OnMarkerEventHandler? = null
+    private var markerDragEndListener: OnMarkerEventHandler? = null
+    private var markerAnimateStartListener: OnMarkerEventHandler? = null
+    private var markerAnimateEndListener: OnMarkerEventHandler? = null
+
     init {
         holder.map.graphicsOverlays.clear()
         holder.map.graphicsOverlays.add(circleController.renderer.circleLayer)
@@ -62,6 +72,7 @@ class ArcGISMapViewControllerImpl(
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerMarkerEventController(DefaultArcGISMarkerEventController(markerController))
     }
 
     fun setupListeners() {
@@ -193,27 +204,31 @@ class ArcGISMapViewControllerImpl(
     }
 
     private suspend fun onMapPan(event: PanChangeEvent) {
-        markerController.selectedMarker?.also {
+        val controller = activeDragController
+        if (controller != null) {
             val screenPoint = event.screenCoordinate
             val point = holder.map.screenToLocation(screenPoint).getOrNull() ?: return
             val position = point.toGeoPoint()
-            it.graphic.geometry = point
-            it.state.position = position
-            markerController.dispatchDrag(it.state)
+            controller.updateDrag(point, position)
+            controller.getSelectedState()?.let { state ->
+                controller.dispatchDrag(state)
+            }
         }
         invokeCameraMoveCallback()
     }
 
     private suspend fun onMapUp(event: UpEvent) {
-        markerController.selectedMarker?.also {
+        val controller = activeDragController
+        if (controller != null) {
             val screenPoint = event.screenCoordinate
             val point = holder.map.screenToLocation(screenPoint).getOrNull() ?: return
             val position = point.toGeoPoint()
-            it.graphic.geometry = point
-            it.state.position = position
-
-            markerController.selectedMarker = null
-            markerController.dispatchDragEnd(it.state)
+            val selectedState = controller.getSelectedState()
+            controller.endDrag(point, position)
+            selectedState?.let { state ->
+                controller.dispatchDragEnd(state)
+            }
+            activeDragController = null
 
             with(holder.map) {
                 interactionOptions.isPanEnabled = true
@@ -243,23 +258,37 @@ class ArcGISMapViewControllerImpl(
             (graphic.attributes.get("id") as? String)?.let { markerId ->
                 markerController.markerManager.getEntity(markerId)?.let { entity ->
                     if (entity.state.draggable) {
-                        markerController.selectedMarker =
-                            SelectedMarker(
-                                state = entity.state,
-                                graphic = graphic,
-                            )
+                        activeDragController = markerEventControllers.firstOrNull()
+                        activeDragController?.startDrag(entity)
                         // 3Dナビゲーションを無効化
                         with(holder.map) {
                             interactionOptions.isPanEnabled = false
                             interactionOptions.isRotateEnabled = false
                             interactionOptions.isZoomEnabled = false
                         }
-                        markerController.dispatchDragStart(entity.state)
+                        activeDragController?.dispatchDragStart(entity.state)
                         return
                     }
                 }
             }
         }
+        markerEventControllers
+            .drop(1)
+            .forEach { controller ->
+                controller.find(position)?.let { entity ->
+                    if (entity.state.draggable) {
+                        activeDragController = controller
+                        controller.startDrag(entity)
+                        with(holder.map) {
+                            interactionOptions.isPanEnabled = false
+                            interactionOptions.isRotateEnabled = false
+                            interactionOptions.isZoomEnabled = false
+                        }
+                        controller.dispatchDragStart(entity.state)
+                        return
+                    }
+                }
+            }
         mapLongClickCallback?.invoke(position)
     }
 
@@ -271,9 +300,11 @@ class ArcGISMapViewControllerImpl(
                 .getOrNull()
                 ?.toGeoPoint() ?: return
 
-        markerController.find(touchPosition)?.let { markerEntity ->
-            markerController.dispatchClick(markerEntity.state)
-            return
+        markerEventControllers.forEach { controller ->
+            controller.find(touchPosition)?.let { markerEntity ->
+                controller.dispatchClick(markerEntity.state)
+                return
+            }
         }
 
         circleController.find(touchPosition)?.let { circleEntity ->
@@ -391,27 +422,33 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
-        this.markerController.dragStartListener = listener
+        markerDragStartListener = listener
+        markerEventControllers.forEach { it.setDragStartListener(listener) }
     }
 
     override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
-        this.markerController.dragListener = listener
+        markerDragListener = listener
+        markerEventControllers.forEach { it.setDragListener(listener) }
     }
 
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
-        this.markerController.dragEndListener = listener
+        markerDragEndListener = listener
+        markerEventControllers.forEach { it.setDragEndListener(listener) }
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        this.markerController.animateStartListener = listener
+        markerAnimateStartListener = listener
+        markerEventControllers.forEach { it.setAnimateStartListener(listener) }
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        this.markerController.animateEndListener = listener
+        markerAnimateEndListener = listener
+        markerEventControllers.forEach { it.setAnimateEndListener(listener) }
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
-        this.markerController.clickListener = listener
+        markerClickListener = listener
+        markerEventControllers.forEach { it.setClickListener(listener) }
     }
 
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
@@ -450,5 +487,21 @@ class ArcGISMapViewControllerImpl(
                 notifyMapCameraPosition(mapCameraPosition)
             }
         }
+    }
+
+    internal fun registerMarkerEventController(controller: ArcGISMarkerEventController) {
+        if (markerEventControllers.contains(controller)) return
+        markerEventControllers.add(controller)
+        controller.setClickListener(markerClickListener)
+        controller.setDragStartListener(markerDragStartListener)
+        controller.setDragListener(markerDragListener)
+        controller.setDragEndListener(markerDragEndListener)
+        controller.setAnimateStartListener(markerAnimateStartListener)
+        controller.setAnimateEndListener(markerAnimateEndListener)
+    }
+
+    internal fun registerMarkerOverlayLayer(layer: com.arcgismaps.mapping.view.GraphicsOverlay) {
+        if (holder.map.graphicsOverlays.contains(layer)) return
+        holder.map.graphicsOverlays.add(layer)
     }
 }

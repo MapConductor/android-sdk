@@ -10,7 +10,6 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.settings.Settings
 
@@ -22,11 +21,9 @@ internal data class SelectedMarker(
 class ArcGISMarkerController private constructor(
     markerManager: MarkerManager<ArcGISActualMarker>,
     override val renderer: ArcGISMarkerRenderer,
-    renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
 ) : AbstractMarkerController<ArcGISActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
-        renderingStrategy = renderingStrategy,
     ) {
     private var internalSelectedMarker: SelectedMarker? = null
 
@@ -101,7 +98,6 @@ class ArcGISMarkerController private constructor(
     companion object {
         fun create(
             holder: ArcGISMapViewHolder,
-            renderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
         ): ArcGISMarkerController {
             val markerLayer: GraphicsOverlay =
                 GraphicsOverlay().apply {
@@ -114,13 +110,12 @@ class ArcGISMarkerController private constructor(
                     holder = holder,
                 )
 
-            val markerManager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+            val markerManager = MarkerManager.defaultManager<ArcGISActualMarker>()
 
             val controller =
                 ArcGISMarkerController(
                     markerManager = markerManager,
                     renderer = renderer,
-                    renderingStrategy = renderingStrategy,
                 )
             return controller
         }

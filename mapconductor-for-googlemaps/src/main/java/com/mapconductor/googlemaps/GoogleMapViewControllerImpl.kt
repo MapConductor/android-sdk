@@ -8,6 +8,8 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveCanceledListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.GoogleMap.OnCameraMoveStartedListener
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
+import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.model.LatLng
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
@@ -28,6 +30,8 @@ import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
+import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
@@ -51,13 +55,24 @@ class GoogleMapViewControllerImpl(
     OnCameraMoveListener,
     OnCameraIdleListener,
     OnMapClickListener,
+    OnMarkerClickListener,
+    OnMarkerDragListener,
     GoogleMap.OnMapLoadedCallback {
+    private val markerEventControllers = mutableListOf<GoogleMapMarkerEventController>()
+    private var markerClickListener: OnMarkerEventHandler? = null
+    private var markerDragStartListener: OnMarkerEventHandler? = null
+    private var markerDragListener: OnMarkerEventHandler? = null
+    private var markerDragEndListener: OnMarkerEventHandler? = null
+    private var markerAnimateStartListener: OnMarkerEventHandler? = null
+    private var markerAnimateEndListener: OnMarkerEventHandler? = null
+
     init {
         setupListeners()
         registerController(markerController)
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerMarkerEventController(DefaultGoogleMapMarkerEventController(markerController))
     }
 
     fun setupListeners() {
@@ -67,6 +82,8 @@ class GoogleMapViewControllerImpl(
         holder.map.setOnCameraIdleListener(this)
         holder.map.setOnMapClickListener(this)
         holder.map.setOnMapLoadedCallback(this)
+        holder.map.setOnMarkerClickListener(this)
+        holder.map.setOnMarkerDragListener(this)
     }
 
     override fun moveCamera(position: MapCameraPositionImpl) {
@@ -134,9 +151,7 @@ class GoogleMapViewControllerImpl(
 
     override fun onCameraIdle() {
         val mapCameraPosition = getMapCameraPosition()
-        backCoroutine.launch {
-            markerController.onCameraChanged(mapCameraPosition)
-        }
+        backCoroutine.launch { markerController.onCameraChanged(mapCameraPosition) }
         cameraMoveEndCallback?.invoke(getMapCameraPosition())
     }
 
@@ -230,27 +245,33 @@ class GoogleMapViewControllerImpl(
     override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
 
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
-        this.markerController.dragStartListener = listener
+        markerDragStartListener = listener
+        markerEventControllers.forEach { it.setDragStartListener(listener) }
     }
 
     override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
-        this.markerController.dragListener = listener
+        markerDragListener = listener
+        markerEventControllers.forEach { it.setDragListener(listener) }
     }
 
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
-        this.markerController.dragEndListener = listener
+        markerDragEndListener = listener
+        markerEventControllers.forEach { it.setDragEndListener(listener) }
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        this.markerController.animateStartListener = listener
+        markerAnimateStartListener = listener
+        markerEventControllers.forEach { it.setAnimateStartListener(listener) }
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        this.markerController.animateEndListener = listener
+        markerAnimateEndListener = listener
+        markerEventControllers.forEach { it.setAnimateEndListener(listener) }
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
-        this.markerController.clickListener = listener
+        markerClickListener = listener
+        markerEventControllers.forEach { it.setClickListener(listener) }
     }
 
     override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
@@ -310,5 +331,57 @@ class GoogleMapViewControllerImpl(
         if (w <= 0 || h <= 0) return
         val mapCameraPosition = getMapCameraPosition()
         backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
+    }
+
+    internal fun registerMarkerEventController(controller: GoogleMapMarkerEventController) {
+        if (markerEventControllers.contains(controller)) return
+        markerEventControllers.add(controller)
+        controller.setClickListener(markerClickListener)
+        controller.setDragStartListener(markerDragStartListener)
+        controller.setDragListener(markerDragListener)
+        controller.setDragEndListener(markerDragEndListener)
+        controller.setAnimateStartListener(markerAnimateStartListener)
+        controller.setAnimateEndListener(markerAnimateEndListener)
+    }
+
+    override fun onMarkerClick(marker: GoogleMapActualMarker): Boolean {
+        val stateId = marker.tag as? String ?: return false
+        markerEventControllers.forEach { controller ->
+            val entity = controller.getEntity(stateId) ?: return@forEach
+            if (!entity.state.clickable) return true
+            controller.dispatchClick(entity.state)
+            return true
+        }
+        return false
+    }
+
+    override fun onMarkerDrag(marker: GoogleMapActualMarker) {
+        val stateId = marker.tag as? String ?: return
+        markerEventControllers.forEach { controller ->
+            val entity = controller.getEntity(stateId) ?: return@forEach
+            entity.state.position = marker.position.toGeoPoint()
+            controller.dispatchDrag(entity.state)
+            return
+        }
+    }
+
+    override fun onMarkerDragEnd(marker: GoogleMapActualMarker) {
+        val stateId = marker.tag as? String ?: return
+        markerEventControllers.forEach { controller ->
+            val entity = controller.getEntity(stateId) ?: return@forEach
+            entity.state.position = marker.position.toGeoPoint()
+            controller.dispatchDragEnd(entity.state)
+            return
+        }
+    }
+
+    override fun onMarkerDragStart(marker: GoogleMapActualMarker) {
+        val stateId = marker.tag as? String ?: return
+        markerEventControllers.forEach { controller ->
+            val entity = controller.getEntity(stateId) ?: return@forEach
+            entity.state.position = marker.position.toGeoPoint()
+            controller.dispatchDragStart(entity.state)
+            return
+        }
     }
 }

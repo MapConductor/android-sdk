@@ -20,7 +20,6 @@ import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManagerImpl
@@ -49,7 +48,6 @@ fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -62,7 +60,6 @@ fun MapboxMapView(
         state = state,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
-        markerRenderingStrategy = markerRenderingStrategy,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
         onCameraMoveStart = onCameraMoveStart,
@@ -87,7 +84,6 @@ fun MapboxMapView(
     state: MapboxViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -140,7 +136,6 @@ fun MapboxMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    renderingStrategy = markerRenderingStrategy,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -324,9 +319,8 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
 
 internal fun getMarkerController(
     holder: MapboxMapViewHolder,
-    renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
 ): MapboxMarkerController {
-    val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+    val manager = MarkerManager.defaultManager<MapboxActualMarker>()
     val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -348,7 +342,6 @@ internal fun getMarkerController(
     val controller =
         MapboxMarkerController(
             renderer = renderer,
-            renderingStrategy = renderingStrategy,
         )
     return controller
 }

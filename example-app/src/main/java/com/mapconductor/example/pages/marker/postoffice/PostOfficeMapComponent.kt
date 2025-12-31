@@ -34,7 +34,6 @@ fun PostOfficeMapComponent(
 
     MapViewContainer(
         modifier = modifier,
-        renderingStrategy = renderingStrategy,
         state = mapViewState,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,

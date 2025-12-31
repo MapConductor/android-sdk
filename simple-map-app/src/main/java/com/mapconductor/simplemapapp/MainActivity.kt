@@ -15,22 +15,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
+import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
+import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.marker.MarkerRenderingGroup
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.marker.strategy.DefaultMarkerStrategy
+import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import kotlinx.coroutines.delay
 
@@ -42,11 +53,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MarkerAnimationExample(
+                    val postOfficeIcon =
+                        remember {
+                            val baseicon = this.getDrawable(R.drawable.postoffice)!!
+                            ImageIcon(
+                                drawable = baseicon,
+                                scale = 0.3f,
+                            )
+                        }
+                    GoogleMapStrategyMarkerExample(
                         modifier =
                             Modifier
                                 .padding(innerPadding)
                                 .fillMaxSize(),
+                        postOfficeIcon = postOfficeIcon,
                     )
                 }
             }
@@ -204,5 +224,43 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
         state = mapViewState,
     ) {
         Marker(markerState)
+    }
+}
+
+@Composable
+fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon: ImageIcon) {
+    val context = LocalContext.current
+    val center = GeoPointImpl.fromLatLong(35.681236, 139.767125)
+    val mapViewState =
+        rememberGoogleMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = center,
+                    zoom = 14.0,
+                ),
+        )
+
+    val strategy = remember { RemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context) }
+    val markers =
+        remember {
+            TokyoPostOffices.map { it ->
+                MarkerState(
+                    position = it.position,
+                    id = it.hashCode().toString(),
+                    icon = postOfficeIcon,
+                    extra = it,
+                )
+            }
+        }
+
+    GoogleMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+//        MarkerRenderingGroup(strategy = strategy) {
+            markers.forEach { markerState ->
+                Marker(markerState)
+            }
+//        }
     }
 }

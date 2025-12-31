@@ -35,6 +35,8 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.circle.HereCircleController
+import com.mapconductor.here.marker.DefaultHereMarkerEventController
+import com.mapconductor.here.marker.HereMarkerEventController
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
@@ -59,6 +61,14 @@ class HereMapViewControllerImpl(
     companion object {
         internal const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
+    private val markerEventControllers = mutableListOf<HereMarkerEventController>()
+    private var activeDragController: HereMarkerEventController? = null
+    private var markerClickListener: OnMarkerEventHandler? = null
+    private var markerDragStartListener: OnMarkerEventHandler? = null
+    private var markerDragListener: OnMarkerEventHandler? = null
+    private var markerDragEndListener: OnMarkerEventHandler? = null
+    private var markerAnimateStartListener: OnMarkerEventHandler? = null
+    private var markerAnimateEndListener: OnMarkerEventHandler? = null
 
     override suspend fun clearOverlays() {
         markerController.clear()
@@ -82,27 +92,33 @@ class HereMapViewControllerImpl(
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
-        markerController.dragStartListener = listener
+        markerDragStartListener = listener
+        markerEventControllers.forEach { it.setDragStartListener(listener) }
     }
 
     override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
-        markerController.dragListener = listener
+        markerDragListener = listener
+        markerEventControllers.forEach { it.setDragListener(listener) }
     }
 
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
-        markerController.dragEndListener = listener
+        markerDragEndListener = listener
+        markerEventControllers.forEach { it.setDragEndListener(listener) }
     }
 
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        markerController.animateStartListener = listener
+        markerAnimateStartListener = listener
+        markerEventControllers.forEach { it.setAnimateStartListener(listener) }
     }
 
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        markerController.animateEndListener = listener
+        markerAnimateEndListener = listener
+        markerEventControllers.forEach { it.setAnimateEndListener(listener) }
     }
 
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
-        markerController.clickListener = listener
+        markerClickListener = listener
+        markerEventControllers.forEach { it.setClickListener(listener) }
     }
 
     override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
@@ -127,6 +143,7 @@ class HereMapViewControllerImpl(
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerMarkerEventController(DefaultHereMarkerEventController(markerController))
     }
 
     fun setupListeners() {
@@ -232,9 +249,11 @@ class HereMapViewControllerImpl(
     override fun onTap(point: Point2D) {
         val touchPosition = this.getGeoPointFromPoint(point) ?: return
 
-        markerController.find(touchPosition)?.let { entity ->
-            markerController.dispatchClick(entity.state)
-            return
+        markerEventControllers.forEach { controller ->
+            controller.find(touchPosition)?.let { entity ->
+                controller.dispatchClick(entity.state)
+                return
+            }
         }
 
         circleController.find(touchPosition)?.let { entity ->
@@ -283,33 +302,37 @@ class HereMapViewControllerImpl(
 
         when (gesture.value) {
             GestureState.BEGIN.value -> {
-                markerController.find(position)?.let { entity ->
-                    if (entity.state.draggable) {
-                        entity.state.position = position
-                        markerController.selectedMarker = entity
-                        markerController.dispatchDragStart(entity.state)
-                        return
+                markerEventControllers.forEach { controller ->
+                    controller.find(position)?.let { entity ->
+                        if (entity.state.draggable) {
+                            entity.state.position = position
+                            activeDragController = controller
+                            controller.setSelectedMarker(entity)
+                            controller.dispatchDragStart(entity.state)
+                            return
+                        }
                     }
                 }
                 mapLongClickCallback?.invoke(position)
             }
 
             GestureState.UPDATE.value -> {
-                markerController.selectedMarker?.also { selected ->
+                val controller = activeDragController ?: return
+                controller.getSelectedMarker()?.also { selected ->
                     holder.mapView.viewToGeoCoordinates(point)?.also { coordinates ->
                         selected.marker?.coordinates = coordinates
                         selected.state.position = coordinates.toGeoPoint()
                     }
-                    markerController.dispatchDrag(selected.state)
+                    controller.dispatchDrag(selected.state)
                 }
             }
 
             GestureState.END.value, GestureState.CANCEL.value -> {
-                markerController.selectedMarker?.also { selected ->
-                    markerController.markerManager.updateEntity(selected)
-                    markerController.dispatchDragEnd(selected.state)
-                    markerController.selectedMarker = null
-                    markerController.selectedMarker = null
+                val controller = activeDragController ?: return
+                controller.getSelectedMarker()?.also { selected ->
+                    controller.dispatchDragEnd(selected.state)
+                    controller.setSelectedMarker(null)
+                    activeDragController = null
                 }
             }
         }
@@ -348,5 +371,16 @@ class HereMapViewControllerImpl(
     override fun setMapDesignTypeChangeListener(listener: HereMapDesignTypeChangeHandler) {
         mapDesignTypeChangeListener = listener
         listener(mapDesignType)
+    }
+
+    internal fun registerMarkerEventController(controller: HereMarkerEventController) {
+        if (markerEventControllers.contains(controller)) return
+        markerEventControllers.add(controller)
+        controller.setClickListener(markerClickListener)
+        controller.setDragStartListener(markerDragStartListener)
+        controller.setDragListener(markerDragListener)
+        controller.setDragEndListener(markerDragEndListener)
+        controller.setAnimateStartListener(markerAnimateStartListener)
+        controller.setAnimateEndListener(markerAnimateEndListener)
     }
 }

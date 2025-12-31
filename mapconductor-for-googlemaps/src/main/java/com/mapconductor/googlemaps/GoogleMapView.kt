@@ -20,7 +20,6 @@ import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
@@ -41,7 +40,6 @@ fun GoogleMapView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -55,7 +53,6 @@ fun GoogleMapView(
         state = state,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
-        markerRenderingStrategy = markerRenderingStrategy,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
         onCameraMoveStart = onCameraMoveStart,
@@ -81,7 +78,6 @@ fun GoogleMapView(
     state: GoogleMapViewStateImpl,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
-    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -143,7 +139,6 @@ fun GoogleMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    markerRenderingStrategy = markerRenderingStrategy,
                 )
             val groundImageController = getGroundImageController(holder)
             val polylineController = getPolylineController(holder)
@@ -292,8 +287,6 @@ private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylin
 
 private fun getMarkerController(
     holder: GoogleMapViewHolder,
-    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
 ) = GoogleMapMarkerController.create(
     holder = holder,
-    renderingStrategy = markerRenderingStrategy,
 )

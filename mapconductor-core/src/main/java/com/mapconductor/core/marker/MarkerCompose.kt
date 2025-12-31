@@ -9,13 +9,14 @@ import java.io.Serializable
 
 @Composable
 fun MapViewScope.Marker(state: MarkerState) {
+    val collector = LocalMarkerCollector.current
     LaunchedEffect(state) {
-        markerAddSharedFlow.emit(state)
+        collector.add(state)
     }
 
     DisposableEffect(state.id) {
         onDispose {
-            markerRemoveSharedFlow.tryEmit(state.id)
+            collector.remove(state.id)
         }
     }
 }

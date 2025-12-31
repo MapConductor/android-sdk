@@ -28,4 +28,6 @@ interface MapViewController {
         position: MapCameraPositionImpl,
         duration: Long,
     )
+
+    fun registerOverlayController(controller: OverlayController<*, *, *>) {}
 }

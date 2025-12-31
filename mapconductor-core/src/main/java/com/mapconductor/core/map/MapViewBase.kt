@@ -157,7 +157,7 @@ fun <
                 }
             }
         }
-        val markers = scope.markerFlow.collectAsState()
+        val markers = scope.markerCollector.flow.collectAsState()
         if (markers.value.isNotEmpty()) {
             markers.value.values.forEach { markerState ->
                 LaunchedEffect(markerState.id) {
@@ -228,11 +228,14 @@ fun <
                 subcompose("slotid") {
                     @Suppress("UNUSED_VARIABLE") // KtLint: backing property rule workaround
                     val tick = cameraTick.intValue
+                    val localController = controllerRef.value ?: return@subcompose
 
                     // 子コンポーネントを収集する
                     // **ここで初めて CompositionLocalProvider を差し込む**
                     CompositionLocalProvider(
-                        LocalMarkerCollector provides scope.markerFlow,
+                        LocalMapOverlayRegistry provides registry,
+                        LocalMapViewController provides localController,
+                        LocalMarkerCollector provides scope.markerCollector,
                         LocalInfoBubbleCollector provides scope.bubbleFlow,
                         LocalCircleCollector provides scope.circleFlow,
                         LocalPolylineCollector provides scope.polylineFlow,

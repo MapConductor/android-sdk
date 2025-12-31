@@ -36,7 +36,12 @@ abstract class BaseMapViewController : MapViewController {
     }
 
     protected fun registerController(controller: OverlayController<*, *, *>) {
+        if (overlayControllers.contains(controller)) return
         overlayControllers.add(controller)
+    }
+
+    override fun registerOverlayController(controller: OverlayController<*, *, *>) {
+        registerController(controller)
     }
 
     protected suspend fun notifyMapCameraPosition(mapCameraPosition: MapCameraPositionImpl) {

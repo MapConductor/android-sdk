@@ -3,11 +3,10 @@ package com.mapconductor.core.marker
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalMarkerCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, MarkerState>>> {
+    compositionLocalOf<MarkerCollector> {
         error("Marker must be under the <MapView />")
     }
 
