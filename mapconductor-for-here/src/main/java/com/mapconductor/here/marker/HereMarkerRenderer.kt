@@ -12,10 +12,10 @@ import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toAnchor2D
 import com.mapconductor.here.toGeoCoordinates
 import com.mapconductor.here.toMapImage
+import java.io.Serializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.Serializable
 
 class HereMarkerRenderer(
     holder: HereViewHolder,
@@ -46,12 +46,13 @@ class HereMarkerRenderer(
                         params.bitmapIcon.toAnchor2D(),
                     ).apply {
                         drawOrder = calculateZIndex(params.state.position).toInt()
-                        metadata = Metadata().apply {
-                            // Always include MapConductor marker id
-                            setString("mc:id", params.state.id)
-                            // Optional user-defined extras from MarkerState.extra
-                            putExtras(params.state.extra)
-                        }
+                        metadata =
+                            Metadata().apply {
+                                // Always include MapConductor marker id
+                                setString("mc:id", params.state.id)
+                                // Optional user-defined extras from MarkerState.extra
+                                putExtras(params.state.extra)
+                            }
                     }
                 return@map marker
             }

@@ -3,15 +3,12 @@ package com.mapconductor.example.pages.marker.postoffice
 import androidx.lifecycle.ViewModel
 import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereActualMarker

@@ -17,7 +17,6 @@ fun StoreMapPage(onToggleSidebar: () -> Unit = {}) {
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) {
-
         val selectedMarker = viewModel.selectedMarker.collectAsState()
         val mapViewState = viewModel.mapViewState.collectAsState()
 

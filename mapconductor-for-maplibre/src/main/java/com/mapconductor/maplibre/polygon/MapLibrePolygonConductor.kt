@@ -74,6 +74,7 @@ class MapLibrePolygonConductor(
         event.state.onClick?.invoke(event)
         clickListener?.invoke(event)
     }
+
     override var clickListener: ((PolygonEvent) -> Unit)? = null
 
     override fun find(position: GeoPoint): PolygonEntity<PolygonState>? =

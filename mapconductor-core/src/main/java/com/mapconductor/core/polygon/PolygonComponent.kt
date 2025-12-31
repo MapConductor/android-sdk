@@ -65,13 +65,14 @@ fun MapViewScope.Polygon(
 ) {
     bounds.northEast?.let { ne ->
         bounds.southWest?.let { sw ->
-            val points = listOf(
-                ne,
-                GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
-                sw,
-                GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
-                ne,
-            )
+            val points =
+                listOf(
+                    ne,
+                    GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                    sw,
+                    GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                    ne,
+                )
             Polygon(
                 points = points,
                 id = id,

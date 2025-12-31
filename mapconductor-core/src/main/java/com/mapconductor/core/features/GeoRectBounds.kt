@@ -167,10 +167,11 @@ class GeoRectBounds(
             this._northEast = other.northEast
             return this
         }
-        val newBounds = GeoRectBounds(
-            southWest = this.southWest,
-            northEast = this.northEast,
-        )
+        val newBounds =
+            GeoRectBounds(
+                southWest = this.southWest,
+                northEast = this.northEast,
+            )
 
         newBounds.extend(other._southWest!!.wrap())
         newBounds.extend(other._northEast!!.wrap())

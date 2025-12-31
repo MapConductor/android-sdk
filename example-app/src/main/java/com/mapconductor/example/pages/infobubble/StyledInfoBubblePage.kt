@@ -2,7 +2,6 @@ package com.mapconductor.example.pages.infobubble
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,14 +38,15 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
 
     val onMarkerClick: OnMarkerEventHandler = { markerState -> selectedMarker = markerState }
 
-    val markerState = remember {
-        MarkerState(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
-            extra = "Point of Interest",
-            onClick = onMarkerClick,
-        )
-    }
+    val markerState =
+        remember {
+            MarkerState(
+                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
+                extra = "Point of Interest",
+                onClick = onMarkerClick,
+            )
+        }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
@@ -55,7 +55,6 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
             mapViewState = state as MapViewState<Any>
         },
     ) {
-
         LaunchedEffect(Unit) {
             selectedMarker = markerState
         }

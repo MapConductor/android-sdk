@@ -30,15 +30,13 @@ class MapCameraPositionImpl(
     override val paddings: MapPaddings? = MapPaddingsImpl.Companion.Zeros,
     override val visibleRegion: VisibleRegion? = null,
 ) : MapCameraPosition {
-
     override val position: GeoPointImpl = GeoPointImpl.from(position)
 
-    fun equals(other: MapCameraPosition): Boolean {
-        return this.position.equals(other = other.position) &&
+    fun equals(other: MapCameraPosition): Boolean =
+        this.position.equals(other = other.position) &&
             this.zoomEquals(other) &&
             this.bearingEquals(other) &&
             this.tiltEquals(other)
-    }
 
     fun copy(
         position: GeoPoint? = this.position,
@@ -60,10 +58,12 @@ class MapCameraPositionImpl(
         val tolerance = 1e-2
         return abs(this.zoom - other.zoom) < tolerance
     }
+
     private fun bearingEquals(other: MapCameraPosition): Boolean {
         val tolerance = 1e-2
         return abs(this.bearing - other.bearing) < tolerance
     }
+
     private fun tiltEquals(other: MapCameraPosition): Boolean {
         val tolerance = 1e-2
         return abs(this.tilt - other.tilt) < tolerance

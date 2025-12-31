@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer

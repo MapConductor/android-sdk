@@ -14,7 +14,6 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 
 @Composable

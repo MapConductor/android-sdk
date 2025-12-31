@@ -67,13 +67,14 @@ fun MapLibre(modifier: Modifier = Modifier) {
         state = mapViewState,
         modifier = modifier,
     ) {
-        val markerState = MarkerState(
-            position = center,
-            id = "my-marker",
-            onClick = { markerState -> selectedMarker = markerState }
-        )
+        val markerState =
+            MarkerState(
+                position = center,
+                id = "my-marker",
+                onClick = { markerState -> selectedMarker = markerState },
+            )
         Marker(
-            markerState
+            markerState,
         )
     }
 }
@@ -89,43 +90,50 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         onMapClick = { clicked ->
             mapViewState.getMapViewHolder()?.let { holder ->
                 val screenXY = holder.toScreenOffset(clicked)!!
-                val leftTop = holder.fromScreenOffsetSync(
-                    Offset(
-                        screenXY.x - 10.0f,
-                        screenXY.y - 10.0f,
+                val leftTop =
+                    holder.fromScreenOffsetSync(
+                        Offset(
+                            screenXY.x - 10.0f,
+                            screenXY.y - 10.0f,
+                        ),
+                    )!!
+                val rightTop =
+                    holder.fromScreenOffsetSync(
+                        Offset(
+                            screenXY.x + 20.0f,
+                            screenXY.y - 10.0f,
+                        ),
+                    )!!
+                val rightBottom =
+                    holder.fromScreenOffsetSync(
+                        Offset(
+                            screenXY.x + 20.0f,
+                            screenXY.y + 20.0f,
+                        ),
+                    )!!
+                val leftBottom =
+                    holder.fromScreenOffsetSync(
+                        Offset(
+                            screenXY.x - 10.0f,
+                            screenXY.y + 20.0f,
+                        ),
+                    )!!
+                polygons = polygons +
+                    PolygonState(
+                        id = "polygon-${clicked.hashCode()}",
+                        points =
+                            listOf(
+                                leftTop,
+                                rightTop,
+                                rightBottom,
+                                leftBottom,
+                            ),
                     )
-                )!!
-                val rightTop = holder.fromScreenOffsetSync(
-                    Offset(
-                        screenXY.x + 20.0f,
-                        screenXY.y - 10.0f,
-                    )
-                )!!
-                val rightBottom = holder.fromScreenOffsetSync(
-                    Offset(
-                        screenXY.x + 20.0f,
-                        screenXY.y + 20.0f,
-                    )
-                )!!
-                val leftBottom = holder.fromScreenOffsetSync(
-                    Offset(
-                        screenXY.x - 10.0f,
-                        screenXY.y + 20.0f,
-                    )
-                )!!
-                polygons = polygons + PolygonState(
-                    id = "polygon-${clicked.hashCode()}",
-                    points = listOf(
-                        leftTop,
-                        rightTop,
-                        rightBottom,
-                        leftBottom,
-                    )
-                )
 
-                val viewarea = Rectangle2D(
-                        Point2D((screenXY.x - 10.0).toDouble(),(screenXY.y - 10.0).toDouble()),
-                        Size2D(10.0, 10.0)
+                val viewarea =
+                    Rectangle2D(
+                        Point2D((screenXY.x - 10.0).toDouble(), (screenXY.y - 10.0).toDouble()),
+                        Size2D(10.0, 10.0),
                     )
 
                 holder.mapView.pick(null, viewarea) { pickResult ->
@@ -136,9 +144,8 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
                     }
                 }
             }
-        }
+        },
     ) {
-
     }
 }
 
@@ -152,23 +159,24 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
             MarkerState(
                 position = startPosition,
                 icon = DefaultIcon(fillColor = Color.Green, label = "移動中"),
-                extra = "アニメーションするマーカー"
-            )
+                extra = "アニメーションするマーカー",
+            ),
         )
     }
 
     LaunchedEffect(Unit) {
-        val path = (0 .. 10)
-            .map { it * 0.1 }
-            .map {
-                Spherical.sphericalInterpolate(
-                    from = startPosition,
-                    to = endPosition,
-                    fraction = it,
-                )
-            }
+        val path =
+            (0..10)
+                .map { it * 0.1 }
+                .map {
+                    Spherical.sphericalInterpolate(
+                        from = startPosition,
+                        to = endPosition,
+                        fraction = it,
+                    )
+                }
 
-        var direction = 1;
+        var direction = 1
         var idx = 0
         while (true) {
             delay(1000)
@@ -183,10 +191,11 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
     }
     val mapViewState =
         rememberMapLibreMapViewState(
-            cameraPosition = MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(37.7791, -122.4144),
-                zoom = 15.0,
-            ),
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = GeoPointImpl.fromLatLong(37.7791, -122.4144),
+                    zoom = 15.0,
+                ),
             mapDesign = MapLibreDesign.OsmBrightEn,
         )
 
