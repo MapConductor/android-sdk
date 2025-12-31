@@ -298,6 +298,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                     }
                 }
             }
+            renderer.onPostProcess()
         }
     }
 
