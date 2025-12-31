@@ -14,7 +14,9 @@ import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.expandBounds
+import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.pow
@@ -28,6 +30,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private val minClusterSize: Int = DEFAULT_MIN_CLUSTER_SIZE,
     private val expandMargin: Double = DEFAULT_EXPAND_MARGIN,
     private val clusterIconProvider: (Int) -> MarkerIcon = DEFAULT_ICON_PROVIDER,
+    private val clusterIconProviderWithTurn: ((Int, Int) -> MarkerIcon)? = null,
     private val onClusterClick: ((MarkerCluster) -> Unit)? = null,
     private val tileSize: Double = DEFAULT_TILE_SIZE,
     semaphore: Semaphore = Semaphore(1),
@@ -36,6 +39,8 @@ class MarkerClusterStrategy<ActualMarker>(
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
     private val sourceStates = mutableMapOf<String, MarkerState>()
     private var lastCameraPosition: MapCameraPositionImpl? = null
+    private var clusteringTurn = 0
+    private var lastZoomKey: Int? = null
 
     override fun clear() {
         sourceStates.clear()
@@ -88,6 +93,7 @@ class MarkerClusterStrategy<ActualMarker>(
         semaphore.withPermit {
             val expandedBounds = expandBounds(viewport, expandMargin)
             val zoom = cameraPosition.zoom
+            val turn = updateClusteringTurn(zoom)
             val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
 
             sourceStates.values.forEach { state ->
@@ -101,10 +107,12 @@ class MarkerClusterStrategy<ActualMarker>(
                 clustered.getOrPut(cell) { mutableListOf() }.add(state)
             }
 
-            val desiredStates = mutableListOf<MarkerState>()
+            val desiredMarkerStates = mutableListOf<MarkerState>()
+
             clustered.forEach { (cell, members) ->
                 if (members.size >= minClusterSize) {
                     val center = averagePosition(members)
+                    val clusterId = buildClusterId(cell, zoom)
                     val cluster =
                         MarkerCluster(
                             count = members.size,
@@ -112,10 +120,12 @@ class MarkerClusterStrategy<ActualMarker>(
                         )
                     val clusterState =
                         MarkerState(
-                            id = buildClusterId(cell, zoom),
+                            id = clusterId,
                             position = center,
                             extra = cluster,
-                            icon = clusterIconProvider(members.size),
+                            icon =
+                                clusterIconProviderWithTurn?.invoke(members.size, turn)
+                                    ?: clusterIconProvider(members.size),
                             clickable = onClusterClick != null,
                             draggable = false,
                             onClick =
@@ -125,13 +135,13 @@ class MarkerClusterStrategy<ActualMarker>(
                                     null
                                 },
                         )
-                    desiredStates.add(clusterState)
+                    desiredMarkerStates.add(clusterState)
                 } else {
-                    desiredStates.addAll(members)
+                    desiredMarkerStates.addAll(members)
                 }
             }
 
-            updateRenderedMarkers(desiredStates, renderer)
+            updateRenderedMarkers(desiredMarkerStates, renderer)
         }
     }
 
@@ -257,10 +267,35 @@ class MarkerClusterStrategy<ActualMarker>(
         return Pair(x, y)
     }
 
+    private fun updateClusteringTurn(zoom: Double): Int {
+        val zoomKey = (zoom * 100).roundToInt()
+        if (lastZoomKey == null) {
+            clusteringTurn = 1
+            lastZoomKey = zoomKey
+            return clusteringTurn
+        }
+        if (lastZoomKey != zoomKey) {
+            clusteringTurn += 1
+            lastZoomKey = zoomKey
+        }
+        return clusteringTurn
+    }
+
+    private fun metersPerPixel(
+        position: GeoPoint,
+        zoom: Double,
+        tileSize: Double,
+    ): Double {
+        val scale = tileSize * 2.0.pow(zoom)
+        val latitudeRadians = position.latitude * DEG_TO_RAD
+        return (Earth.CIRCUMFERENCE_METERS * cos(latitudeRadians)) / scale
+    }
+
     private data class ClusterCell(
         val x: Int,
         val y: Int,
     )
+
 
     companion object {
         const val DEFAULT_CLUSTER_RADIUS_PX: Double = 60.0
