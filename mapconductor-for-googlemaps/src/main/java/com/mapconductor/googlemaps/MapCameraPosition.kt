@@ -24,7 +24,7 @@ fun MapCameraPositionImpl.Companion.from(position: MapCameraPosition): MapCamera
         is MapCameraPositionImpl -> position
         else ->
             MapCameraPositionImpl(
-                position = GeoPointImpl.from(position.position),
+                position = position.position,
                 zoom = position.zoom,
                 bearing = position.bearing,
                 tilt = position.tilt,

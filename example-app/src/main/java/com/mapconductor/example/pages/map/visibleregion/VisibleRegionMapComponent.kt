@@ -93,7 +93,7 @@ fun VisibleRegionMapComponent(
                     Marker(
                         MarkerState(
                             id = "center_marker",
-                            position = GeoPointImpl(centerLat, centerLng),
+                            position = GeoPointImpl.fromLatLong(centerLat, centerLng),
                             icon = ColorDefaultIcon(fillColor = Color.Red, label = "Center"),
                         ),
                     )
@@ -103,7 +103,7 @@ fun VisibleRegionMapComponent(
                         Marker(
                             MarkerState(
                                 id = "near_left",
-                                position = GeoPointImpl.from(point),
+                                position = point,
                                 icon = ColorDefaultIcon(fillColor = Color.Blue, label = "NL"),
                             ),
                         )
@@ -113,7 +113,7 @@ fun VisibleRegionMapComponent(
                         Marker(
                             MarkerState(
                                 id = "near_right",
-                                position = GeoPointImpl.from(point),
+                                position = point,
                                 icon = ColorDefaultIcon(fillColor = Color.Green, label = "NR"),
                             ),
                         )
@@ -123,7 +123,7 @@ fun VisibleRegionMapComponent(
                         Marker(
                             MarkerState(
                                 id = "far_left",
-                                position = GeoPointImpl.from(point),
+                                position = point,
                                 icon = ColorDefaultIcon(fillColor = Color.Yellow, label = "FL"),
                             ),
                         )
@@ -133,7 +133,7 @@ fun VisibleRegionMapComponent(
                         Marker(
                             MarkerState(
                                 id = "far_right",
-                                position = GeoPointImpl.from(point),
+                                position = point,
                                 icon = ColorDefaultIcon(fillColor = Color.Magenta, label = "FR"),
                             ),
                         )
@@ -144,7 +144,7 @@ fun VisibleRegionMapComponent(
                         Marker(
                             MarkerState(
                                 id = "southwest_corner",
-                                position = GeoPointImpl.from(point),
+                                position = point,
                                 icon = ColorDefaultIcon(fillColor = Color.Black, label = "SW"),
                             ),
                         )
@@ -154,7 +154,7 @@ fun VisibleRegionMapComponent(
                         Marker(
                             MarkerState(
                                 id = "northeast_corner",
-                                position = GeoPointImpl.from(point),
+                                position = point,
                                 icon = ColorDefaultIcon(fillColor = Color.Black, label = "NE"),
                             ),
                         )

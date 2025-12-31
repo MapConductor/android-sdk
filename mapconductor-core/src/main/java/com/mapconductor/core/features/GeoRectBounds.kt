@@ -28,7 +28,7 @@ class GeoRectBounds(
         get() = _northEast
 
     fun extend(point: GeoPoint) {
-        val position = GeoPointImpl.from(GeoPointImpl.from(point).wrap())
+        val position = GeoPointImpl.from(point).wrap() as GeoPointImpl
 
         when {
             // 初期化

@@ -149,8 +149,8 @@ class GroundImageMapPageViewModelImpl(
 
     private var bounds by mutableStateOf(
         GeoRectBounds(
-            southWest = GeoPointImpl.from(southWestPosition),
-            northEast = GeoPointImpl.from(northEastPosition),
+            southWest = southWestPosition,
+            northEast = northEastPosition,
         ),
     )
 
