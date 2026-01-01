@@ -205,9 +205,7 @@ fun MapLibreMapView(
     )
 }
 
-internal fun getMarkerController(
-    holder: MapLibreMapViewHolder,
-): MapLibreMarkerController {
+internal fun getMarkerController(holder: MapLibreMapViewHolder): MapLibreMarkerController {
     val manager = MarkerManager.defaultManager<MapLibreActualMarker>()
     val markerLayer: MarkerLayer =
         MarkerLayer(

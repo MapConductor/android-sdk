@@ -71,6 +71,7 @@ dependencies {
     // Mapbox SDK
     compileOnly(libs.mapbox.android)
     compileOnly(project(":mapconductor-core"))
+    implementation(project(":mapconductor-marker-clustering"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

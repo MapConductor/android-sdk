@@ -52,8 +52,13 @@ class GoogleMapMarkerRenderer(
     }
 
     override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {
-        coroutine.launch {
-            data.forEach { params -> params.marker?.remove() }
+        withContext(coroutine.coroutineContext) {
+            data.forEach { params ->
+                params.marker?.let { marker ->
+                    marker.isVisible = false
+                    marker.remove()
+                }
+            }
         }
     }
 

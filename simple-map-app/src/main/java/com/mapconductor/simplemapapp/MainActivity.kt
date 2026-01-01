@@ -28,20 +28,15 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
-import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.marker.MarkerClusterGroup
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
-import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
-import com.mapconductor.maplibre.marker.MarkerRenderingGroup
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
-import com.mapconductor.marker.strategy.DefaultMarkerStrategy
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import kotlinx.coroutines.delay
 
@@ -228,7 +223,10 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon: ImageIcon) {
+fun GoogleMapStrategyMarkerExample(
+    modifier: Modifier = Modifier,
+    postOfficeIcon: ImageIcon,
+) {
     val context = LocalContext.current
     val center = GeoPointImpl.fromLatLong(35.681236, 139.767125)
     val mapViewState =
@@ -240,7 +238,6 @@ fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon
                 ),
         )
 
-    val strategy = remember { RemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context) }
     val markers =
         remember {
             TokyoPostOffices.map { it ->
@@ -257,10 +254,10 @@ fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon
         state = mapViewState,
         modifier = modifier,
     ) {
-//        MarkerRenderingGroup(strategy = strategy) {
+        MarkerClusterGroup(minClusterSize = 5, showClusterRadiusCircle = true) {
             markers.forEach { markerState ->
                 Marker(markerState)
             }
-//        }
+        }
     }
 }

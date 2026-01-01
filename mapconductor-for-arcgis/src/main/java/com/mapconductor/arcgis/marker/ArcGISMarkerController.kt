@@ -96,9 +96,7 @@ class ArcGISMarkerController private constructor(
     }
 
     companion object {
-        fun create(
-            holder: ArcGISMapViewHolder,
-        ): ArcGISMarkerController {
+        fun create(holder: ArcGISMapViewHolder): ArcGISMarkerController {
             val markerLayer: GraphicsOverlay =
                 GraphicsOverlay().apply {
                     sceneProperties.surfacePlacement = SurfacePlacement.Relative

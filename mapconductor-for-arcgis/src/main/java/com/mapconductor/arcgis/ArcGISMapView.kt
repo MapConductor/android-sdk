@@ -14,7 +14,6 @@ import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
-import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
@@ -290,11 +289,10 @@ private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOver
     return controller
 }
 
-private fun getMarkerController(
-    holder: ArcGISMapViewHolder,
-) = ArcGISMarkerController.create(
-    holder = holder,
-)
+private fun getMarkerController(holder: ArcGISMapViewHolder) =
+    ArcGISMarkerController.create(
+        holder = holder,
+    )
 
 /**
  * Default ArcGIS SDK initialization using API Key authentication.

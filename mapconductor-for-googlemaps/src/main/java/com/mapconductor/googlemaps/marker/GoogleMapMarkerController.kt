@@ -16,9 +16,7 @@ class GoogleMapMarkerController private constructor(
 ) : AbstractMarkerController<GoogleMapActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
-    )
-{
-
+    ) {
     override fun find(position: GeoPoint): MarkerEntity<GoogleMapActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom =
@@ -39,9 +37,7 @@ class GoogleMapMarkerController private constructor(
     }
 
     companion object {
-        fun create(
-            holder: GoogleMapViewHolder,
-        ): GoogleMapMarkerController {
+        fun create(holder: GoogleMapViewHolder): GoogleMapMarkerController {
             val markerManager = MarkerManager.defaultManager<GoogleMapActualMarker>()
             val renderer =
                 GoogleMapMarkerRenderer(

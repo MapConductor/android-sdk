@@ -12,7 +12,6 @@ import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlay
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerOverlay
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonOverlay
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineOverlay
@@ -26,7 +25,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 open class MapViewScope {
-    val markerCollector = com.mapconductor.core.marker.MarkerCollector()
+    val markerCollector =
+        com.mapconductor.core.marker
+            .MarkerCollector()
     val bubbleFlow = MutableStateFlow<MutableMap<String, InfoBubbleEntry>>(mutableMapOf())
     val polylineFlow = MutableStateFlow<MutableMap<String, PolylineState>>(mutableMapOf())
     val polylineRemoveSharedFlow = MutableSharedFlow<String>(1000)

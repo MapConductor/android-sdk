@@ -72,6 +72,7 @@ dependencies {
     compileOnly(libs.maplibre.sdk)
     compileOnly(libs.maplibre.annotation)
     compileOnly(project(":mapconductor-core"))
+    implementation(project(":mapconductor-marker-clustering"))
 }
 
 // Publishing configuration

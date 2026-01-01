@@ -317,9 +317,7 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
     return controller
 }
 
-internal fun getMarkerController(
-    holder: MapboxMapViewHolder,
-): MapboxMarkerController {
+internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerController {
     val manager = MarkerManager.defaultManager<MapboxActualMarker>()
     val markerLayer: MarkerLayer =
         MarkerLayer(

@@ -75,6 +75,7 @@ dependencies {
     // Google Maps SDK
     implementation(libs.play.services.maps)
     implementation(project(":mapconductor-core"))
+    implementation(project(":mapconductor-marker-clustering"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

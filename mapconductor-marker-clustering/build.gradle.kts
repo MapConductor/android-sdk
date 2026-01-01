@@ -1,6 +1,6 @@
-﻿plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jlleitschuh.gradle.ktlint")
     id("maven-publish")
@@ -16,37 +16,20 @@ ktlint {
 }
 
 android {
-    namespace = "com.mapconductor.here"
+    namespace = "com.mapconductor.marker.clustering"
     compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
         minSdk = project.property("minSdk").toString().toInt()
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
-    buildFeatures {
-        compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion =
-            project.property("kotlinCompilerExtensionVersion").toString()
-    }
-
     buildTypes {
-        debug {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
-                "proguard-rules.pro",
-            )
-        }
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
+                getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
         }
@@ -56,32 +39,26 @@ android {
         sourceCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
+
     kotlinOptions {
         jvmTarget = project.property("jvmTarget").toString()
+    }
+
+    buildFeatures {
+        aidl = true
     }
 }
 
 dependencies {
-
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.ui.tooling.preview)
-    compileOnly(libs.androidx.foundation)
-    implementation(platform(libs.androidx.compose.bom)) // ← bomでバージョン合わせる
-    // Lifecycle（MapView用）
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.common.java8)
-
-    // libs
-    compileOnly(
-        fileTree(
-            mapOf(
-                "dir" to rootDir.resolve("libs").toString(),
-                "include" to arrayOf("heresdk*.jar", "heresdk*.aar"),
-            ),
-        ),
-    )
     compileOnly(project(":mapconductor-core"))
-    implementation(project(":mapconductor-marker-clustering"))
+
+    // Compose dependencies for DefaultIcon
+    compileOnly(libs.androidx.ui)
+    compileOnly(libs.androidx.foundation)
+    implementation(platform(libs.androidx.compose.bom))
+
+    // Coroutines for Semaphore and withPermit
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -90,16 +67,17 @@ dependencies {
 
 // Publishing configuration
 val libraryGroupId = project.findProperty("libraryGroupId") as String? ?: "com.mapconductor"
-val libraryArtifactId = "for-here"
+val libraryArtifactId = "marker-clustering"
 val libraryVersion = project.findProperty("libraryVersion") as String? ?: "1.0.0"
 
 // Set project version for NMCP plugin
 version = libraryVersion
-val libraryName = "MapConductor for HERE Maps"
-val libraryDescription = "HERE Maps implementation for MapConductor unified mapping library"
+val libraryName = "MapConductor Marker Clustering"
+val libraryDescription = "Marker clustering strategy for MapConductor"
 
 val javadocJar by tasks.registering(Jar::class) {
     archiveClassifier.set("javadoc")
+    // Since Android libraries don't have javadoc task by default, create empty jar
 }
 
 afterEvaluate {

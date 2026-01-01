@@ -36,8 +36,8 @@ import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
-import com.mapconductor.here.marker.HereMarkerEventController
 import com.mapconductor.here.marker.HereMarkerController
+import com.mapconductor.here.marker.HereMarkerEventController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +61,7 @@ class HereMapViewControllerImpl(
     companion object {
         internal const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
+
     private val markerEventControllers = mutableListOf<HereMarkerEventController>()
     private var activeDragController: HereMarkerEventController? = null
     private var markerClickListener: OnMarkerEventHandler? = null
