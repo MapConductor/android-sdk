@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
@@ -17,7 +17,6 @@ import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewControllerImpl
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.settings.Settings
-import android.util.Log
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -31,12 +30,14 @@ fun MarkerRenderingGroup(
     val mapController = LocalMapViewController.current
     val googleMapController = mapController as? GoogleMapViewControllerImpl ?: return
     val holder = googleMapController.holder as? GoogleMapViewHolder ?: return
-    val markerCollector = remember {
-        MarkerCollector()
-    }
-    val renderer = remember(holder) {
-        GoogleMapMarkerRenderer(holder = holder)
-    }
+    val markerCollector =
+        remember {
+            MarkerCollector()
+        }
+    val renderer =
+        remember(holder) {
+            GoogleMapMarkerRenderer(holder = holder)
+        }
     val markerController =
         remember(strategy, renderer) {
             StrategyMarkerController(

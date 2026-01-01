@@ -82,9 +82,7 @@ class HereMarkerController private constructor(
     companion object {
         private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
 
-        fun create(
-            holder: HereViewHolder,
-        ): HereMarkerController {
+        fun create(holder: HereViewHolder): HereMarkerController {
             val renderer =
                 HereMarkerRenderer(
                     holder = holder,

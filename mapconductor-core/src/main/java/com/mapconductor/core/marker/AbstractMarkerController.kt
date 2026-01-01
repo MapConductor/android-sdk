@@ -1,10 +1,7 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
-import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -28,6 +25,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     var dragEndListener: OnMarkerEventHandler? = null
     var animateStartListener: OnMarkerEventHandler? = null
     var animateEndListener: OnMarkerEventHandler? = null
+
     init {
         rendererRef.animateStartListener = { state -> dispatchAnimateStart(state) }
         rendererRef.animateEndListener = { state -> dispatchAnimateEnd(state) }

@@ -266,11 +266,10 @@ private fun getPolylineController(holder: HereViewHolder): HerePolylineControlle
     return controller
 }
 
-private fun getMarkerController(
-    holder: HereViewHolder,
-) = HereMarkerController.create(
-    holder = holder,
-)
+private fun getMarkerController(holder: HereViewHolder) =
+    HereMarkerController.create(
+        holder = holder,
+    )
 
 private fun getHereCircleController(holder: HereViewHolder): HereCircleController {
     val renderer =

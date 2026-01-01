@@ -94,9 +94,7 @@ class StrategyMarkerController<ActualMarker>(
 
     fun getEntity(id: String): MarkerEntity<ActualMarker>? = strategy.markerManager.getEntity(id)
 
-    override fun find(position: GeoPoint): MarkerEntity<ActualMarker>? {
-        return strategy.markerManager.findNearest(position)
-    }
+    override fun find(position: GeoPoint): MarkerEntity<ActualMarker>? = strategy.markerManager.findNearest(position)
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
         this.mapCameraPosition = mapCameraPosition

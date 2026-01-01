@@ -17,27 +17,26 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.expandBounds
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import kotlin.math.max
 import kotlin.math.sqrt
-import android.util.Log
-import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 class MarkerClusterStrategy<ActualMarker>(
     private val clusterRadiusPx: Double = DEFAULT_CLUSTER_RADIUS_PX,
@@ -147,8 +146,10 @@ class MarkerClusterStrategy<ActualMarker>(
             val desiredMarkerStates = mutableListOf<MarkerState>()
             val candidates =
                 clustered.entries
-                    .sortedWith(compareBy<MutableMap.MutableEntry<ClusterCell, MutableList<MarkerState>>> { it.key.x }.thenBy { it.key.y })
-                    .mapNotNull { entry ->
+                    .sortedWith(
+                        compareBy<MutableMap.MutableEntry<ClusterCell, MutableList<MarkerState>>> { it.key.x }
+                            .thenBy { it.key.y },
+                    ).mapNotNull { entry ->
                         val members = entry.value
                         val center = members.firstOrNull()?.position ?: return@mapNotNull null
                         ClusterCandidate(
@@ -380,7 +381,10 @@ class MarkerClusterStrategy<ActualMarker>(
             return i
         }
 
-        fun union(a: Int, b: Int) {
+        fun union(
+            a: Int,
+            b: Int,
+        ) {
             val rootA = find(a)
             val rootB = find(b)
             if (rootA != rootB) {
@@ -439,10 +443,11 @@ class MarkerClusterStrategy<ActualMarker>(
             return GeoPointImpl.from(members[0].position)
         }
 
-        val points = members.map { member ->
-            val (x, y) = projectToPixel(member.position, zoom, tileSize)
-            PixelPoint(member = member, x = x, y = y)
-        }
+        val points =
+            members.map { member ->
+                val (x, y) = projectToPixel(member.position, zoom, tileSize)
+                PixelPoint(member = member, x = x, y = y)
+            }
         val cellSize = clusterRadiusPx
         val cellMap = linkedMapOf<CellKey, MutableList<PixelPoint>>()
         points.forEach { point ->
@@ -528,7 +533,6 @@ class MarkerClusterStrategy<ActualMarker>(
         val x: Int,
         val y: Int,
     )
-
 
     companion object {
         const val DEFAULT_CLUSTER_RADIUS_PX: Double = 60.0

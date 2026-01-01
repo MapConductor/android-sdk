@@ -3,7 +3,6 @@ package com.mapconductor.core.marker
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
-import android.util.Log
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalMarkerCollector =

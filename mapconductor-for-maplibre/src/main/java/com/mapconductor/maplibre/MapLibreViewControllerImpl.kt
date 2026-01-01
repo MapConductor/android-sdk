@@ -19,8 +19,8 @@ import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.marker.DefaultMapLibreMarkerEventController
-import com.mapconductor.maplibre.marker.MapLibreMarkerEventController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
+import com.mapconductor.maplibre.marker.MapLibreMarkerEventController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import org.maplibre.android.camera.CameraUpdateFactory

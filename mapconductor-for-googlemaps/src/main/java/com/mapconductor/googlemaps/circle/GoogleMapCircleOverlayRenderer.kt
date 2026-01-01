@@ -10,10 +10,8 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.googlemaps.GoogleMapActualCircle
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class GoogleMapCircleOverlayRenderer(

@@ -31,15 +31,15 @@ import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
-import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class GoogleMapViewControllerImpl(
     override val holder: GoogleMapViewHolder,

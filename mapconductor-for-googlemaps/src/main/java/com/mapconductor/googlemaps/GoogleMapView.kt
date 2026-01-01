@@ -285,8 +285,7 @@ private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylin
     return controller
 }
 
-private fun getMarkerController(
-    holder: GoogleMapViewHolder,
-) = GoogleMapMarkerController.create(
-    holder = holder,
-)
+private fun getMarkerController(holder: GoogleMapViewHolder) =
+    GoogleMapMarkerController.create(
+        holder = holder,
+    )
