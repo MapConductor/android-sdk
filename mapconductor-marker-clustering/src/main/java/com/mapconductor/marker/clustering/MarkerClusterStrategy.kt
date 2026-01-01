@@ -15,6 +15,7 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Earth
+import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.expandBounds
 import kotlin.math.cos
 import kotlin.math.floor
@@ -22,10 +23,15 @@ import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.max
+import kotlin.math.sqrt
 import android.util.Log
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.delay
@@ -53,6 +59,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private val debounceScope = CoroutineScope(Dispatchers.Default)
     private val cameraUpdateToken = AtomicLong(0)
     private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
+    private var debounceJob: Job? = null
     private val _debugInfoFlow = MutableStateFlow<List<MarkerClusterDebugInfo>>(emptyList())
     val debugInfoFlow: StateFlow<List<MarkerClusterDebugInfo>> = _debugInfoFlow
 
@@ -69,7 +76,7 @@ class MarkerClusterStrategy<ActualMarker>(
     ): Boolean {
         updateSourceStates(data)
         val cameraPosition = lastCameraPosition ?: return true
-        renderClusters(cameraPosition, viewport, renderer)
+        renderClusters(cameraPosition, viewport, renderer, cameraUpdateToken.get())
         return true
     }
 
@@ -80,7 +87,7 @@ class MarkerClusterStrategy<ActualMarker>(
     ): Boolean {
         sourceStates[state.id] = state
         val cameraPosition = lastCameraPosition ?: return true
-        renderClusters(cameraPosition, viewport, renderer)
+        renderClusters(cameraPosition, viewport, renderer, cameraUpdateToken.get())
         return true
     }
 
@@ -88,19 +95,19 @@ class MarkerClusterStrategy<ActualMarker>(
         cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
-        Log.d("DEBUG", "----->onCameraChanged() start")
         lastCameraPosition = cameraPosition
         lastRenderer = renderer
         val token = cameraUpdateToken.incrementAndGet()
-        debounceScope.launch {
-            delay(CAMERA_DEBOUNCE_MILLIS)
-            if (token != cameraUpdateToken.get()) return@launch
-            val currentCamera = lastCameraPosition ?: return@launch
-            val viewport = currentCamera.visibleRegion?.bounds ?: return@launch
-            val currentRenderer = lastRenderer ?: return@launch
-            renderClusters(currentCamera, viewport, currentRenderer)
-        }
-        Log.d("DEBUG", "----->onCameraChanged() end")
+        debounceJob?.cancel()
+        debounceJob =
+            debounceScope.launch {
+                delay(CAMERA_DEBOUNCE_MILLIS)
+                if (token != cameraUpdateToken.get()) return@launch
+                val currentCamera = lastCameraPosition ?: return@launch
+                val viewport = currentCamera.visibleRegion?.bounds ?: return@launch
+                val currentRenderer = lastRenderer ?: return@launch
+                renderClusters(currentCamera, viewport, currentRenderer, token)
+            }
     }
 
     private fun updateSourceStates(data: List<MarkerState>) {
@@ -114,17 +121,19 @@ class MarkerClusterStrategy<ActualMarker>(
         cameraPosition: MapCameraPositionImpl,
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRenderer<ActualMarker>,
+        token: Long,
     ) {
         semaphore.withPermit {
-            Log.d("DEBUG", "----->renderClusters() start")
+            if (token != cameraUpdateToken.get()) return@withPermit
+            currentCoroutineContext().ensureActive()
             val expandedBounds = expandBounds(viewport, expandMargin)
             val zoom = cameraPosition.zoom
             val turn = updateClusteringTurn(zoom)
-            Log.d("DEBUG", "turn=${turn}")
             val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
             val debugInfos = mutableListOf<MarkerClusterDebugInfo>()
 
             sourceStates.values.forEach { state ->
+                currentCoroutineContext().ensureActive()
                 if (!expandedBounds.contains(state.position)) return@forEach
                 val (x, y) = projectToPixel(state.position, zoom, tileSize)
                 val cell =
@@ -136,23 +145,42 @@ class MarkerClusterStrategy<ActualMarker>(
             }
 
             val desiredMarkerStates = mutableListOf<MarkerState>()
+            val candidates =
+                clustered.entries
+                    .sortedWith(compareBy<MutableMap.MutableEntry<ClusterCell, MutableList<MarkerState>>> { it.key.x }.thenBy { it.key.y })
+                    .mapNotNull { entry ->
+                        val members = entry.value
+                        val center = members.firstOrNull()?.position ?: return@mapNotNull null
+                        ClusterCandidate(
+                            center = GeoPointImpl.from(center),
+                            members = members.toMutableList(),
+                        )
+                    }
+            val mergedClusters = mergeClusters(candidates, zoom)
 
-            clustered.forEach { (cell, members) ->
-                if (members.size >= minClusterSize) {
-                    val center = averagePosition(members)
+            mergedClusters.forEach { merged ->
+                currentCoroutineContext().ensureActive()
+                if (merged.members.size >= minClusterSize) {
+                    val center = merged.center
+                    val (cx, cy) = projectToPixel(center, zoom, tileSize)
+                    val cell =
+                        ClusterCell(
+                            x = floor(cx / clusterRadiusPx).toInt(),
+                            y = floor(cy / clusterRadiusPx).toInt(),
+                        )
                     val clusterId = buildClusterId(cell, zoom, turn)
-                    val radiusMeters = metersPerPixel(center, zoom, tileSize) * clusterRadiusPx
+                    val radiusMeters = calculateClusterRadiusMeters(center, merged.members)
                     val cluster =
                         MarkerCluster(
-                            count = members.size,
-                            markerIds = members.map { it.id },
+                            count = merged.members.size,
+                            markerIds = merged.members.map { it.id },
                         )
                     debugInfos.add(
                         MarkerClusterDebugInfo(
                             id = clusterId,
                             center = center,
                             radiusMeters = radiusMeters,
-                            count = members.size,
+                            count = merged.members.size,
                         ),
                     )
                     val clusterState =
@@ -161,8 +189,8 @@ class MarkerClusterStrategy<ActualMarker>(
                             position = center,
                             extra = cluster,
                             icon =
-                                clusterIconProviderWithTurn?.invoke(members.size, turn)
-                                    ?: clusterIconProvider(members.size),
+                                clusterIconProviderWithTurn?.invoke(merged.members.size, turn)
+                                    ?: clusterIconProvider(merged.members.size),
                             clickable = onClusterClick != null,
                             draggable = false,
                             onClick =
@@ -174,14 +202,13 @@ class MarkerClusterStrategy<ActualMarker>(
                         )
                     desiredMarkerStates.add(clusterState)
                 } else {
-                    desiredMarkerStates.addAll(members)
+                    desiredMarkerStates.addAll(merged.members)
                 }
             }
-            Log.d("DEBUG", "desiredMarkerStates.size=${desiredMarkerStates.size}")
 
+            if (token != cameraUpdateToken.get()) return@withPermit
             _debugInfoFlow.value = debugInfos
             updateRenderedMarkers(desiredMarkerStates, renderer)
-            Log.d("DEBUG", "----->renderClusters() end")
         }
     }
 
@@ -189,7 +216,6 @@ class MarkerClusterStrategy<ActualMarker>(
         desiredStates: List<MarkerState>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
-        Log.d("DEBUG", "----->updateRenderedMarkers() start")
         val desiredById = desiredStates.associateBy { it.id }
         val existing = markerManager.allEntities()
         val existingById = existing.associateBy { it.state.id }
@@ -206,9 +232,6 @@ class MarkerClusterStrategy<ActualMarker>(
             renderer.onRemove(removedEntities)
             removeIds.forEach { id -> markerManager.removeEntity(id) }
         }
-        Log.d("DEBUG", "removedEntities.size: ${removedEntities.size}")
-
-        Log.d("DEBUG", "addStates.size: ${addStates.size}")
         if (addStates.isNotEmpty()) {
             val addParams =
                 addStates.map { state ->
@@ -235,7 +258,6 @@ class MarkerClusterStrategy<ActualMarker>(
         val changeParams = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
         val changeEntities = mutableListOf<MarkerEntity<ActualMarker>>()
 
-        Log.d("DEBUG", "updateStates.size: ${updateStates.size}")
         updateStates.forEach { state ->
             val prev = existingById[state.id] ?: return@forEach
             val nextEntity: MarkerEntity<ActualMarker> =
@@ -261,7 +283,6 @@ class MarkerClusterStrategy<ActualMarker>(
             changeEntities.add(nextEntity)
         }
 
-        Log.d("DEBUG", "changeParams.size: ${changeParams.size}")
         if (changeParams.isNotEmpty()) {
             val actualMarkers = renderer.onChange(changeParams)
             actualMarkers.forEachIndexed { index, actualMarker ->
@@ -277,11 +298,9 @@ class MarkerClusterStrategy<ActualMarker>(
             }
         }
 
-        Log.d("DEBUG", "removedEntities.size: ${removedEntities.size}")
         if (removedEntities.isNotEmpty() || addStates.isNotEmpty() || changeParams.isNotEmpty()) {
             renderer.onPostProcess()
         }
-        Log.d("DEBUG", "----->updateRenderedMarkers() end")
     }
 
     private fun averagePosition(states: List<MarkerState>): GeoPointImpl {
@@ -345,7 +364,167 @@ class MarkerClusterStrategy<ActualMarker>(
         return (Earth.CIRCUMFERENCE_METERS * cos(latitudeRadians)) / scale
     }
 
+    private fun mergeClusters(
+        candidates: List<ClusterCandidate>,
+        zoom: Double,
+    ): List<MergedCluster> {
+        if (candidates.isEmpty()) return emptyList()
+        val parent = IntArray(candidates.size) { it }
+
+        fun find(index: Int): Int {
+            var i = index
+            while (parent[i] != i) {
+                parent[i] = parent[parent[i]]
+                i = parent[i]
+            }
+            return i
+        }
+
+        fun union(a: Int, b: Int) {
+            val rootA = find(a)
+            val rootB = find(b)
+            if (rootA != rootB) {
+                parent[rootB] = rootA
+            }
+        }
+
+        for (i in 0 until candidates.size) {
+            val centerA = candidates[i].center
+            val metersPerPixelA = metersPerPixel(centerA, zoom, tileSize)
+            for (j in i + 1 until candidates.size) {
+                val centerB = candidates[j].center
+                val metersPerPixelB = metersPerPixel(centerB, zoom, tileSize)
+                val thresholdMeters = clusterRadiusPx * max(metersPerPixelA, metersPerPixelB)
+                val distanceMeters = Spherical.computeDistanceBetween(centerA, centerB)
+                if (distanceMeters <= thresholdMeters) {
+                    union(i, j)
+                }
+            }
+        }
+
+        val mergedMap = linkedMapOf<Int, MutableList<ClusterCandidate>>()
+        candidates.forEachIndexed { index, candidate ->
+            val root = find(index)
+            mergedMap.getOrPut(root) { mutableListOf() }.add(candidate)
+        }
+
+        return mergedMap.values.map { group ->
+            val members = mutableListOf<MarkerState>()
+            group.forEach { candidate ->
+                members.addAll(candidate.members)
+            }
+            val center = selectDenseCenter(members, zoom)
+            MergedCluster(center = center, members = members)
+        }
+    }
+
+    private data class ClusterCandidate(
+        val center: GeoPointImpl,
+        val members: MutableList<MarkerState>,
+    )
+
+    private data class MergedCluster(
+        val center: GeoPointImpl,
+        val members: List<MarkerState>,
+    )
+
+    private fun selectDenseCenter(
+        members: List<MarkerState>,
+        zoom: Double,
+    ): GeoPointImpl {
+        if (members.isEmpty()) {
+            return GeoPointImpl.fromLatLong(0.0, 0.0)
+        }
+        if (members.size == 1) {
+            return GeoPointImpl.from(members[0].position)
+        }
+
+        val points = members.map { member ->
+            val (x, y) = projectToPixel(member.position, zoom, tileSize)
+            PixelPoint(member = member, x = x, y = y)
+        }
+        val cellSize = clusterRadiusPx
+        val cellMap = linkedMapOf<CellKey, MutableList<PixelPoint>>()
+        points.forEach { point ->
+            val key =
+                CellKey(
+                    x = floor(point.x / cellSize).toInt(),
+                    y = floor(point.y / cellSize).toInt(),
+                )
+            cellMap.getOrPut(key) { mutableListOf() }.add(point)
+        }
+
+        val sortedCells = cellMap.entries.sortedByDescending { it.value.size }
+        val candidates =
+            sortedCells
+                .take(MAX_DENSE_CELLS)
+                .flatMap { it.value }
+                .take(MAX_DENSE_CANDIDATES)
+
+        val radiusSq = cellSize * cellSize
+        var bestPoint = candidates.firstOrNull() ?: points.first()
+        var bestNeighborCount = -1
+        var bestTotalDistance = Double.MAX_VALUE
+        candidates.forEach { candidate ->
+            var neighborCount = 0
+            var totalDistance = 0.0
+            for (dx in -1..1) {
+                for (dy in -1..1) {
+                    val key =
+                        CellKey(
+                            x = floor(candidate.x / cellSize).toInt() + dx,
+                            y = floor(candidate.y / cellSize).toInt() + dy,
+                        )
+                    val neighbors = cellMap[key] ?: continue
+                    neighbors.forEach { other ->
+                        val dxp = candidate.x - other.x
+                        val dyp = candidate.y - other.y
+                        val distSq = dxp * dxp + dyp * dyp
+                        if (distSq <= radiusSq) {
+                            neighborCount += 1
+                            totalDistance += sqrt(distSq)
+                        }
+                    }
+                }
+            }
+            if (neighborCount > bestNeighborCount ||
+                (neighborCount == bestNeighborCount && totalDistance < bestTotalDistance)
+            ) {
+                bestNeighborCount = neighborCount
+                bestTotalDistance = totalDistance
+                bestPoint = candidate
+            }
+        }
+
+        return GeoPointImpl.from(bestPoint.member.position)
+    }
+
+    private fun calculateClusterRadiusMeters(
+        center: GeoPointImpl,
+        members: List<MarkerState>,
+    ): Double {
+        var maxDistance = 0.0
+        members.forEach { state ->
+            val distance = Spherical.computeDistanceBetween(center, state.position)
+            if (distance > maxDistance) {
+                maxDistance = distance
+            }
+        }
+        return maxDistance
+    }
+
     private data class ClusterCell(
+        val x: Int,
+        val y: Int,
+    )
+
+    private data class PixelPoint(
+        val member: MarkerState,
+        val x: Double,
+        val y: Double,
+    )
+
+    private data class CellKey(
         val x: Int,
         val y: Int,
     )
@@ -357,6 +536,8 @@ class MarkerClusterStrategy<ActualMarker>(
         const val DEFAULT_EXPAND_MARGIN: Double = 0.2
         const val DEFAULT_TILE_SIZE: Double = 256.0
         private const val CAMERA_DEBOUNCE_MILLIS: Long = 100L
+        private const val MAX_DENSE_CELLS: Int = 4
+        private const val MAX_DENSE_CANDIDATES: Int = 50
         val DEFAULT_ICON_PROVIDER: (Int) -> MarkerIcon =
             { count -> ColorDefaultIcon(label = count.toString()) }
         private const val DEG_TO_RAD: Double = Math.PI / 180.0

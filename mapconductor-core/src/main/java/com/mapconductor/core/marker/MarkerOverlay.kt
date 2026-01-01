@@ -19,7 +19,6 @@ class MarkerOverlay(
         controller: MapViewController,
     ) {
         (controller as? MarkerCapable)?.let { markerController ->
-            Log.d("DEBUG", "----->MarkerOverlay.compositionMarkers data.values.size=${data.values.size}")
             markerController.compositionMarkers(data.values.toList())
         }
     }

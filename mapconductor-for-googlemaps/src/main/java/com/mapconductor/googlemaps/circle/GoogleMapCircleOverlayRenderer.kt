@@ -10,6 +10,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.googlemaps.GoogleMapActualCircle
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,7 +44,7 @@ class GoogleMapCircleOverlayRenderer(
         }
 
     override suspend fun removeCircle(entity: CircleEntity<GoogleMapActualCircle>) {
-        coroutine.launch {
+        withContext(coroutine.coroutineContext) {
             entity.circle.remove()
         }
     }

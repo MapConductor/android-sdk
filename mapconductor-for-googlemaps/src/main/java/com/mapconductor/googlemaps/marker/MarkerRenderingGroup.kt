@@ -28,21 +28,17 @@ fun MarkerRenderingGroup(
     strategy: MarkerRenderingStrategy<GoogleMapActualMarker>,
     content: @Composable () -> Unit,
 ) {
-    Log.d("DEBUG", "----->MarkerRenderingGroup() start")
     val mapController = LocalMapViewController.current
     val googleMapController = mapController as? GoogleMapViewControllerImpl ?: return
     val holder = googleMapController.holder as? GoogleMapViewHolder ?: return
     val markerCollector = remember {
-        Log.d("DEBUG", "create markerCollector")
         MarkerCollector()
     }
     val renderer = remember(holder) {
-        Log.d("DEBUG", "create renderer: holder=${holder}")
         GoogleMapMarkerRenderer(holder = holder)
     }
     val markerController =
         remember(strategy, renderer) {
-            Log.d("DEBUG", "create StrategyMarkerController: strategy=${strategy},renderer=${renderer}")
             StrategyMarkerController(
                 strategy = strategy,
                 renderer = renderer,
@@ -53,9 +49,7 @@ fun MarkerRenderingGroup(
     var requestedInitialCameraUpdate by remember { mutableStateOf(false) }
 
     LaunchedEffect(googleMapController, markerController) {
-        Log.d("DEBUG", "registerOverlayController: googleMapController=${googleMapController}")
         googleMapController.registerOverlayController(markerController)
-        Log.d("DEBUG", "registerMarkerEventController: markerController=${markerController}")
         googleMapController.registerMarkerEventController(
             StrategyGoogleMapMarkerEventController(markerController),
         )
@@ -71,7 +65,6 @@ fun MarkerRenderingGroup(
     val markers = markerCollector.flow.collectAsState()
     LaunchedEffect(mapLoaded, markers.value) {
         if (!mapLoaded) return@LaunchedEffect
-        Log.d("DEBUG", "markerController.add markers.value.values.size=${markers.value.values.size}")
         markerController.add(markers.value.values.toList())
     }
 
@@ -89,5 +82,4 @@ fun MarkerRenderingGroup(
     CompositionLocalProvider(LocalMarkerCollector provides markerCollector) {
         content()
     }
-    Log.d("DEBUG", "----->MarkerRenderingGroup() end")
 }

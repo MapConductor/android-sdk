@@ -3,6 +3,7 @@ package com.mapconductor.core.circle
 import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPositionImpl
+import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 

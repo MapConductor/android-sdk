@@ -1,13 +1,14 @@
 package com.mapconductor.googlemaps.marker
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.googlemaps.GoogleMapActualMarker
@@ -30,10 +31,8 @@ fun GoogleMapViewScope.MarkerClusterGroup(
     clusterRadiusFillColor: Color = Color.Transparent,
     content: @Composable () -> Unit,
 ) {
-    Log.d("DEBUG", "----->MarkerClusterGroup() start")
     val iconProviderWithTurn =
         remember(clusterIconProvider, debugClusterTurnLabel) {
-            Log.d("DEBUG", "iconProviderWithTurn: clusterIconProvider=${clusterIconProvider}, debugClusterTurnLabel=${debugClusterTurnLabel}")
             if (debugClusterTurnLabel) {
                 { _: Int, turn: Int -> ColorDefaultIcon(label = turn.toString()) }
             } else {
@@ -49,7 +48,6 @@ fun GoogleMapViewScope.MarkerClusterGroup(
             onClusterClick,
             debugClusterTurnLabel,
         ) {
-            Log.d("DEBUG", "strategy: clusterRadiusPx=${clusterRadiusPx},clusterRadiusPx=${clusterRadiusPx}")
             MarkerClusterStrategy<GoogleMapActualMarker>(
                 clusterRadiusPx = clusterRadiusPx,
                 minClusterSize = minClusterSize,
@@ -61,22 +59,32 @@ fun GoogleMapViewScope.MarkerClusterGroup(
             )
         }
 
-    if (showClusterRadiusCircle) {
-        val debugInfos by strategy.debugInfoFlow.collectAsState()
-        debugInfos.forEach { info ->
-            Circle(
-                center = info.center,
-                radiusMeters = info.radiusMeters,
-                id = "cluster-circle-${info.id}",
-                strokeColor = clusterRadiusStrokeColor,
-                strokeWidth = clusterRadiusStrokeWidth,
-                fillColor = clusterRadiusFillColor,
-                extra = info,
-                onClick = null,
-            )
+    val debugInfos by strategy.debugInfoFlow.collectAsState()
+    LaunchedEffect(showClusterRadiusCircle, debugInfos) {
+        val prefix = CLUSTER_CIRCLE_ID_PREFIX
+        val nextMap = circleFlow.value.toMutableMap()
+        nextMap.keys.filter { it.startsWith(prefix) }.forEach { nextMap.remove(it) }
+        if (showClusterRadiusCircle) {
+            debugInfos.forEach { info ->
+                val circleState =
+                    CircleState(
+                        center = info.center,
+                        radiusMeters = info.radiusMeters,
+                        clickable = false,
+                        strokeColor = clusterRadiusStrokeColor,
+                        strokeWidth = clusterRadiusStrokeWidth,
+                        fillColor = clusterRadiusFillColor,
+                        id = "$prefix${info.id}",
+                        extra = info,
+                        onClick = null,
+                    )
+                nextMap[circleState.id] = circleState
+            }
         }
+        circleFlow.value = nextMap
     }
 
     MarkerRenderingGroup(strategy = strategy, content = content)
-    Log.d("DEBUG", "----->MarkerClusterGroup() end")
 }
+
+private const val CLUSTER_CIRCLE_ID_PREFIX = "cluster-circle-"
