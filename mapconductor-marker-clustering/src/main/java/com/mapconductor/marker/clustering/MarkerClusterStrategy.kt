@@ -30,6 +30,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class MarkerClusterStrategy<ActualMarker>(
     private val clusterRadiusPx: Double = DEFAULT_CLUSTER_RADIUS_PX,
@@ -51,10 +53,13 @@ class MarkerClusterStrategy<ActualMarker>(
     private val debounceScope = CoroutineScope(Dispatchers.Default)
     private val cameraUpdateToken = AtomicLong(0)
     private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
+    private val _debugInfoFlow = MutableStateFlow<List<MarkerClusterDebugInfo>>(emptyList())
+    val debugInfoFlow: StateFlow<List<MarkerClusterDebugInfo>> = _debugInfoFlow
 
     override fun clear() {
         sourceStates.clear()
         markerManager.clear()
+        _debugInfoFlow.value = emptyList()
     }
 
     override suspend fun onAdd(
@@ -117,6 +122,7 @@ class MarkerClusterStrategy<ActualMarker>(
             val turn = updateClusteringTurn(zoom)
             Log.d("DEBUG", "turn=${turn}")
             val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
+            val debugInfos = mutableListOf<MarkerClusterDebugInfo>()
 
             sourceStates.values.forEach { state ->
                 if (!expandedBounds.contains(state.position)) return@forEach
@@ -135,11 +141,20 @@ class MarkerClusterStrategy<ActualMarker>(
                 if (members.size >= minClusterSize) {
                     val center = averagePosition(members)
                     val clusterId = buildClusterId(cell, zoom, turn)
+                    val radiusMeters = metersPerPixel(center, zoom, tileSize) * clusterRadiusPx
                     val cluster =
                         MarkerCluster(
                             count = members.size,
                             markerIds = members.map { it.id },
                         )
+                    debugInfos.add(
+                        MarkerClusterDebugInfo(
+                            id = clusterId,
+                            center = center,
+                            radiusMeters = radiusMeters,
+                            count = members.size,
+                        ),
+                    )
                     val clusterState =
                         MarkerState(
                             id = clusterId,
@@ -164,6 +179,7 @@ class MarkerClusterStrategy<ActualMarker>(
             }
             Log.d("DEBUG", "desiredMarkerStates.size=${desiredMarkerStates.size}")
 
+            _debugInfoFlow.value = debugInfos
             updateRenderedMarkers(desiredMarkerStates, renderer)
             Log.d("DEBUG", "----->renderClusters() end")
         }

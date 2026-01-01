@@ -2,6 +2,12 @@ package com.mapconductor.googlemaps.marker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.mapconductor.core.circle.Circle
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.googlemaps.GoogleMapActualMarker
@@ -18,6 +24,10 @@ fun GoogleMapViewScope.MarkerClusterGroup(
     clusterIconProvider: (Int) -> MarkerIcon = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
     onClusterClick: ((MarkerCluster) -> Unit)? = null,
     debugClusterTurnLabel: Boolean = false,
+    showClusterRadiusCircle: Boolean = false,
+    clusterRadiusStrokeColor: Color = Color.Red,
+    clusterRadiusStrokeWidth: Dp = 1.dp,
+    clusterRadiusFillColor: Color = Color.Transparent,
     content: @Composable () -> Unit,
 ) {
     Log.d("DEBUG", "----->MarkerClusterGroup() start")
@@ -50,6 +60,22 @@ fun GoogleMapViewScope.MarkerClusterGroup(
                 onClusterClick = onClusterClick,
             )
         }
+
+    if (showClusterRadiusCircle) {
+        val debugInfos by strategy.debugInfoFlow.collectAsState()
+        debugInfos.forEach { info ->
+            Circle(
+                center = info.center,
+                radiusMeters = info.radiusMeters,
+                id = "cluster-circle-${info.id}",
+                strokeColor = clusterRadiusStrokeColor,
+                strokeWidth = clusterRadiusStrokeWidth,
+                fillColor = clusterRadiusFillColor,
+                extra = info,
+                onClick = null,
+            )
+        }
+    }
 
     MarkerRenderingGroup(strategy = strategy, content = content)
     Log.d("DEBUG", "----->MarkerClusterGroup() end")
