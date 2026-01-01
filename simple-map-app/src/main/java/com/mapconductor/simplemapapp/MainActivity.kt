@@ -257,7 +257,7 @@ fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon
         state = mapViewState,
         modifier = modifier,
     ) {
-        MarkerClusterGroup(debugClusterTurnLabel = true) {
+        MarkerClusterGroup(minClusterSize = 5, showClusterRadiusCircle = true) {
             markers.forEach { markerState ->
                 Marker(markerState)
             }
