@@ -80,6 +80,7 @@ dependencies {
     compileOnly(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     compileOnly(project(":mapconductor-core"))
+    implementation(project(":mapconductor-marker-clustering"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

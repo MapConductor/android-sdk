@@ -81,6 +81,7 @@ dependencies {
         ),
     )
     compileOnly(project(":mapconductor-core"))
+    implementation(project(":mapconductor-marker-clustering"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
