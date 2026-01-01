@@ -30,6 +30,7 @@ import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.marker.MarkerClusterGroup
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
@@ -240,7 +241,6 @@ fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon
                 ),
         )
 
-    val strategy = remember { RemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context) }
     val markers =
         remember {
             TokyoPostOffices.map { it ->
@@ -257,10 +257,10 @@ fun GoogleMapStrategyMarkerExample(modifier: Modifier = Modifier, postOfficeIcon
         state = mapViewState,
         modifier = modifier,
     ) {
-//        MarkerRenderingGroup(strategy = strategy) {
+        MarkerClusterGroup(debugClusterTurnLabel = true) {
             markers.forEach { markerState ->
                 Marker(markerState)
             }
-//        }
+        }
     }
 }

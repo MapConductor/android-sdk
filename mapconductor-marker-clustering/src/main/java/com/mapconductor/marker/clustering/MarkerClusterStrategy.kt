@@ -22,7 +22,13 @@ import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import android.util.Log
+import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withPermit
 
 class MarkerClusterStrategy<ActualMarker>(
@@ -31,6 +37,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private val expandMargin: Double = DEFAULT_EXPAND_MARGIN,
     private val clusterIconProvider: (Int) -> MarkerIcon = DEFAULT_ICON_PROVIDER,
     private val clusterIconProviderWithTurn: ((Int, Int) -> MarkerIcon)? = null,
+    private val includeTurnInClusterId: Boolean = false,
     private val onClusterClick: ((MarkerCluster) -> Unit)? = null,
     private val tileSize: Double = DEFAULT_TILE_SIZE,
     semaphore: Semaphore = Semaphore(1),
@@ -41,6 +48,9 @@ class MarkerClusterStrategy<ActualMarker>(
     private var lastCameraPosition: MapCameraPositionImpl? = null
     private var clusteringTurn = 0
     private var lastZoomKey: Int? = null
+    private val debounceScope = CoroutineScope(Dispatchers.Default)
+    private val cameraUpdateToken = AtomicLong(0)
+    private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
 
     override fun clear() {
         sourceStates.clear()
@@ -73,9 +83,19 @@ class MarkerClusterStrategy<ActualMarker>(
         cameraPosition: MapCameraPositionImpl,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
+        Log.d("DEBUG", "----->onCameraChanged() start")
         lastCameraPosition = cameraPosition
-        val viewport = cameraPosition.visibleRegion?.bounds ?: return
-        renderClusters(cameraPosition, viewport, renderer)
+        lastRenderer = renderer
+        val token = cameraUpdateToken.incrementAndGet()
+        debounceScope.launch {
+            delay(CAMERA_DEBOUNCE_MILLIS)
+            if (token != cameraUpdateToken.get()) return@launch
+            val currentCamera = lastCameraPosition ?: return@launch
+            val viewport = currentCamera.visibleRegion?.bounds ?: return@launch
+            val currentRenderer = lastRenderer ?: return@launch
+            renderClusters(currentCamera, viewport, currentRenderer)
+        }
+        Log.d("DEBUG", "----->onCameraChanged() end")
     }
 
     private fun updateSourceStates(data: List<MarkerState>) {
@@ -91,9 +111,11 @@ class MarkerClusterStrategy<ActualMarker>(
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
         semaphore.withPermit {
+            Log.d("DEBUG", "----->renderClusters() start")
             val expandedBounds = expandBounds(viewport, expandMargin)
             val zoom = cameraPosition.zoom
             val turn = updateClusteringTurn(zoom)
+            Log.d("DEBUG", "turn=${turn}")
             val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
 
             sourceStates.values.forEach { state ->
@@ -112,7 +134,7 @@ class MarkerClusterStrategy<ActualMarker>(
             clustered.forEach { (cell, members) ->
                 if (members.size >= minClusterSize) {
                     val center = averagePosition(members)
-                    val clusterId = buildClusterId(cell, zoom)
+                    val clusterId = buildClusterId(cell, zoom, turn)
                     val cluster =
                         MarkerCluster(
                             count = members.size,
@@ -140,8 +162,10 @@ class MarkerClusterStrategy<ActualMarker>(
                     desiredMarkerStates.addAll(members)
                 }
             }
+            Log.d("DEBUG", "desiredMarkerStates.size=${desiredMarkerStates.size}")
 
             updateRenderedMarkers(desiredMarkerStates, renderer)
+            Log.d("DEBUG", "----->renderClusters() end")
         }
     }
 
@@ -149,6 +173,7 @@ class MarkerClusterStrategy<ActualMarker>(
         desiredStates: List<MarkerState>,
         renderer: MarkerOverlayRenderer<ActualMarker>,
     ) {
+        Log.d("DEBUG", "----->updateRenderedMarkers() start")
         val desiredById = desiredStates.associateBy { it.id }
         val existing = markerManager.allEntities()
         val existingById = existing.associateBy { it.state.id }
@@ -159,12 +184,15 @@ class MarkerClusterStrategy<ActualMarker>(
 
         val removedEntities =
             removeIds.mapNotNull { id ->
-                markerManager.removeEntity(id)
+                markerManager.getEntity(id)
             }
         if (removedEntities.isNotEmpty()) {
             renderer.onRemove(removedEntities)
+            removeIds.forEach { id -> markerManager.removeEntity(id) }
         }
+        Log.d("DEBUG", "removedEntities.size: ${removedEntities.size}")
 
+        Log.d("DEBUG", "addStates.size: ${addStates.size}")
         if (addStates.isNotEmpty()) {
             val addParams =
                 addStates.map { state ->
@@ -191,6 +219,7 @@ class MarkerClusterStrategy<ActualMarker>(
         val changeParams = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
         val changeEntities = mutableListOf<MarkerEntity<ActualMarker>>()
 
+        Log.d("DEBUG", "updateStates.size: ${updateStates.size}")
         updateStates.forEach { state ->
             val prev = existingById[state.id] ?: return@forEach
             val nextEntity: MarkerEntity<ActualMarker> =
@@ -216,6 +245,7 @@ class MarkerClusterStrategy<ActualMarker>(
             changeEntities.add(nextEntity)
         }
 
+        Log.d("DEBUG", "changeParams.size: ${changeParams.size}")
         if (changeParams.isNotEmpty()) {
             val actualMarkers = renderer.onChange(changeParams)
             actualMarkers.forEachIndexed { index, actualMarker ->
@@ -231,9 +261,11 @@ class MarkerClusterStrategy<ActualMarker>(
             }
         }
 
+        Log.d("DEBUG", "removedEntities.size: ${removedEntities.size}")
         if (removedEntities.isNotEmpty() || addStates.isNotEmpty() || changeParams.isNotEmpty()) {
             renderer.onPostProcess()
         }
+        Log.d("DEBUG", "----->updateRenderedMarkers() end")
     }
 
     private fun averagePosition(states: List<MarkerState>): GeoPointImpl {
@@ -253,7 +285,13 @@ class MarkerClusterStrategy<ActualMarker>(
     private fun buildClusterId(
         cell: ClusterCell,
         zoom: Double,
-    ): String = "cluster_${zoom.roundToInt()}_${cell.x}_${cell.y}"
+        turn: Int,
+    ): String =
+        if (includeTurnInClusterId) {
+            "cluster_${zoom.roundToInt()}_${cell.x}_${cell.y}_$turn"
+        } else {
+            "cluster_${zoom.roundToInt()}_${cell.x}_${cell.y}"
+        }
 
     private fun projectToPixel(
         position: GeoPoint,
@@ -302,6 +340,7 @@ class MarkerClusterStrategy<ActualMarker>(
         const val DEFAULT_MIN_CLUSTER_SIZE: Int = 2
         const val DEFAULT_EXPAND_MARGIN: Double = 0.2
         const val DEFAULT_TILE_SIZE: Double = 256.0
+        private const val CAMERA_DEBOUNCE_MILLIS: Long = 100L
         val DEFAULT_ICON_PROVIDER: (Int) -> MarkerIcon =
             { count -> ColorDefaultIcon(label = count.toString()) }
         private const val DEG_TO_RAD: Double = Math.PI / 180.0

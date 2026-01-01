@@ -4,6 +4,7 @@ import com.mapconductor.core.controller.OverlayController
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPositionImpl
+import android.util.Log
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -72,6 +73,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
+            Log.d("DEBUG", "----->add() start")
             val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
             val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
@@ -116,11 +118,13 @@ abstract class AbstractMarkerController<ActualMarker>(
             }
 
             // Remove markers
+            Log.d("DEBUG", "removed.size=${removed.size}")
             if (removed.isNotEmpty()) {
                 renderer.onRemove(removed)
             }
 
             // Add new markers
+            Log.d("DEBUG", "added.size=${added.size}")
             if (added.isNotEmpty()) {
                 val actualMarkers: List<ActualMarker?> = renderer.onAdd(added)
                 actualMarkers.forEachIndexed { index, actualMarker ->
@@ -138,6 +142,7 @@ abstract class AbstractMarkerController<ActualMarker>(
             }
 
             // Update changed markers
+            Log.d("DEBUG", "updated.size=${updated.size}")
             if (updated.isNotEmpty()) {
                 val actualMarkers: List<ActualMarker?> = renderer.onChange(updated)
 
@@ -160,6 +165,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                 }
             }
             renderer.onPostProcess()
+            Log.d("DEBUG", "----->add() end")
         }
     }
 

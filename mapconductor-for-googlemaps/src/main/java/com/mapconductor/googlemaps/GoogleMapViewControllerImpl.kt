@@ -38,6 +38,8 @@ import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class GoogleMapViewControllerImpl(
     override val holder: GoogleMapViewHolder,
@@ -59,6 +61,8 @@ class GoogleMapViewControllerImpl(
     OnMarkerDragListener,
     GoogleMap.OnMapLoadedCallback {
     private val markerEventControllers = mutableListOf<GoogleMapMarkerEventController>()
+    private val _mapLoadedState = MutableStateFlow(false)
+    val mapLoadedState: StateFlow<Boolean> = _mapLoadedState
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -317,6 +321,7 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun onMapLoaded() {
+        _mapLoadedState.value = true
         mapLoadedCallback?.invoke()
         mapLoadedCallback = null
 
@@ -325,12 +330,24 @@ class GoogleMapViewControllerImpl(
     }
 
     // Trigger an initial camera update after the view and map are ready
+    private var initialCameraUpdateAttempts = 0
+
     fun sendInitialCameraUpdate() {
         val w = holder.mapView.width
         val h = holder.mapView.height
-        if (w <= 0 || h <= 0) return
+        if (w <= 0 || h <= 0) {
+            if (initialCameraUpdateAttempts >= INITIAL_CAMERA_UPDATE_MAX_ATTEMPTS) return
+            initialCameraUpdateAttempts += 1
+            holder.mapView.post { sendInitialCameraUpdate() }
+            return
+        }
+        initialCameraUpdateAttempts = 0
         val mapCameraPosition = getMapCameraPosition()
         backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
+    }
+
+    companion object {
+        private const val INITIAL_CAMERA_UPDATE_MAX_ATTEMPTS = 10
     }
 
     internal fun registerMarkerEventController(controller: GoogleMapMarkerEventController) {

@@ -3,6 +3,7 @@ package com.mapconductor.core.marker
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.core.controller.MapViewController
 import com.mapconductor.core.map.MapOverlay
+import android.util.Log
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalMarkerCollector =
@@ -18,6 +19,7 @@ class MarkerOverlay(
         controller: MapViewController,
     ) {
         (controller as? MarkerCapable)?.let { markerController ->
+            Log.d("DEBUG", "----->MarkerOverlay.compositionMarkers data.values.size=${data.values.size}")
             markerController.compositionMarkers(data.values.toList())
         }
     }
