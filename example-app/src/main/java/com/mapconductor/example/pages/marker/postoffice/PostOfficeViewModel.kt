@@ -154,7 +154,7 @@ class PostOfficeViewModelImpl(
                     zoom = 18.0,
                     tilt = 30.0,
                 ),
-            durationMills = 2000,
+            durationMillis = 2000,
         )
     }
 

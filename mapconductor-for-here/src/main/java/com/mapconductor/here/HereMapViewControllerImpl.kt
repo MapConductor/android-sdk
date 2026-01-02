@@ -180,7 +180,7 @@ class HereMapViewControllerImpl(
 
     override fun animateCamera(
         position: MapCameraPositionImpl,
-        durationMills: Long,
+        durationMillis: Long,
     ) {
         val camera = this.holder.mapView.camera
 
@@ -194,7 +194,7 @@ class HereMapViewControllerImpl(
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
-                Duration.ofMillis(durationMills),
+                Duration.ofMillis(durationMillis),
             )
         coroutine.launch {
             camera.startAnimation(animation) { animState ->

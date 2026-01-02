@@ -49,7 +49,7 @@ MapConductor supports 5 map SDKs, each with its own `MapViewState` implementatio
     <MoveCameraToGeoPointSignature />
 
     - Moves the camera to the specified position. Zoom and tilt angles are maintained from the time `moveCameraTo` is called.
-    - When `durationMills` is specified in milliseconds, the camera moves with animation.
+    - When `durationMillis` is specified in milliseconds, the camera moves with animation.
 </TabItem>
 <TabItem label="Movement with Camera Options">
 - `moveCameraTo(MapCameraPositionImpl, Long?)`
@@ -57,7 +57,7 @@ MapConductor supports 5 map SDKs, each with its own `MapViewState` implementatio
     <MoveCameraToCameraPositionSignature />
 
     - Moves the camera using a `MapCameraPositionImpl`. Zoom and tilt can be specified at the same time. Properties that are omitted maintain their values from when `moveCameraTo` is called.
-    - When `durationMills` is specified in milliseconds, the camera moves with animation.
+    - When `durationMillis` is specified in milliseconds, the camera moves with animation.
 </TabItem>
 </Tabs>
 

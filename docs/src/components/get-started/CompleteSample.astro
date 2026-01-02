@@ -95,7 +95,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 scope.launch {
                     mapViewState.moveCameraTo(
                         MapCameraPositionImpl(position = marker1, zoom = 15.0),
-                        durationMills = 1000
+                        durationMillis = 1000
                     )
                 }
             }) {
@@ -106,7 +106,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
                 scope.launch {
                     mapViewState.moveCameraTo(
                         MapCameraPositionImpl(position = marker2, zoom = 15.0),
-                        durationMills = 1000
+                        durationMillis = 1000
                     )
                 }
             }) {

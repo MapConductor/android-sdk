@@ -49,14 +49,14 @@ class MapboxViewStateImpl(
 
     override fun moveCameraTo(
         position: GeoPointImpl,
-        durationMills: Long?,
+        durationMillis: Long?,
     ) {
         val currentPosition = this.cameraPosition
         val newPosition =
             currentPosition.copy(
                 position = position,
             )
-        this.moveCameraTo(newPosition, durationMills)
+        this.moveCameraTo(newPosition, durationMillis)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -64,14 +64,14 @@ class MapboxViewStateImpl(
 
     override fun moveCameraTo(
         cameraPosition: MapCameraPositionImpl,
-        durationMills: Long?,
+        durationMillis: Long?,
     ) {
         controller?.let { ctrl ->
             val dstCameraPosition = MapCameraPositionImpl.from(cameraPosition)
-            if (durationMills == null || durationMills == 0L) {
+            if (durationMillis == null || durationMillis == 0L) {
                 ctrl.moveCamera(dstCameraPosition)
             } else {
-                ctrl.animateCamera(dstCameraPosition, durationMills)
+                ctrl.animateCamera(dstCameraPosition, durationMillis)
             }
             return@let
         }
