@@ -20,6 +20,8 @@ import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
 import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.heatmap.HeatmapPoint
+import com.mapconductor.core.heatmap.HeatmapPointState
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.DefaultIcon
 import com.mapconductor.core.marker.ImageIcon
@@ -29,12 +31,12 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.googlemaps.marker.MarkerClusterGroup
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.heatmap.HeatmapOverlay
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import android.os.Bundle
@@ -48,22 +50,47 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val postOfficeIcon =
-                        remember {
-                            val baseicon = this.getDrawable(R.drawable.postoffice)!!
-                            ImageIcon(
-                                drawable = baseicon,
-                                scale = 0.3f,
-                            )
-                        }
-                    GoogleMapStrategyMarkerExample(
+                    GoogleMapHeatmapExample(
                         modifier =
                             Modifier
                                 .padding(innerPadding)
                                 .fillMaxSize(),
-                        postOfficeIcon = postOfficeIcon,
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun GoogleMapHeatmapExample(modifier: Modifier = Modifier) {
+    val center = GeoPointImpl.fromLatLong(35.681236, 139.767125)
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition =
+                MapCameraPositionImpl(
+                    position = center,
+                    zoom = 11.0,
+                ),
+        )
+    val points =
+        remember {
+            TokyoPostOffices.mapIndexed { index, postOffice ->
+                HeatmapPointState(
+                    id = "postoffice-$index",
+                    position = postOffice.position,
+                    weight = 1.0,
+                )
+            }
+        }
+
+    MapLibreMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        HeatmapOverlay {
+            points.forEach { pointState ->
+                HeatmapPoint(pointState)
             }
         }
     }
@@ -238,26 +265,21 @@ fun GoogleMapStrategyMarkerExample(
                 ),
         )
 
-    val markers =
-        remember {
-            TokyoPostOffices.map { it ->
-                MarkerState(
-                    position = it.position,
-                    id = it.hashCode().toString(),
-                    icon = postOfficeIcon,
-                    extra = it,
-                )
-            }
-        }
+//    val markers =
+//        remember {
+//            TokyoPostOffices.map { it ->
+//                MarkerState(
+//                    position = it.position,
+//                    id = it.hashCode().toString(),
+//                    icon = postOfficeIcon,
+//                    extra = it,
+//                )
+//            }
+//        }
 
     GoogleMapView(
         state = mapViewState,
         modifier = modifier,
     ) {
-        MarkerClusterGroup(minClusterSize = 5, showClusterRadiusCircle = true) {
-            markers.forEach { markerState ->
-                Marker(markerState)
-            }
-        }
     }
 }

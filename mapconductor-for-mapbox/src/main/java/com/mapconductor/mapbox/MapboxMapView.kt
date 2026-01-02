@@ -38,6 +38,8 @@ import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
+import com.mapconductor.mapbox.raster.MapboxRasterLayerController
+import com.mapconductor.mapbox.raster.MapboxRasterLayerOverlayRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -140,6 +142,7 @@ fun MapboxMapView(
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until after controller is created and view is laid out
 
@@ -149,6 +152,7 @@ fun MapboxMapView(
                 polylineController = polylineController,
                 polygonController = polygonController,
                 circleController = circleController,
+                rasterLayerController = rasterLayerController,
             ).also { controller ->
                 controller.setCameraMoveStartListener {
                     cameraState.value = it
@@ -342,6 +346,16 @@ internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerContr
             renderer = renderer,
         )
     return controller
+}
+
+internal fun getRasterLayerController(holder: MapboxMapViewHolder): MapboxRasterLayerController {
+    val renderer =
+        MapboxRasterLayerOverlayRenderer(
+            holder = holder,
+        )
+    return MapboxRasterLayerController(
+        renderer = renderer,
+    )
 }
 
 internal fun Context.findActivity(): Activity? =

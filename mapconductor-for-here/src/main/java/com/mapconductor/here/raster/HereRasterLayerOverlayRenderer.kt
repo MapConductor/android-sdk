@@ -57,6 +57,7 @@ class HereRasterLayerOverlayRenderer(
                 TilingScheme.QUAD_TREE_MERCATOR,
                 storageLevels,
             )
+        provider.hasAlphaChannel = true
         val cache =
             RasterDataSourceConfiguration.Cache(
                 holder.mapView.context.cacheDir.absolutePath,

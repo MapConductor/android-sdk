@@ -17,12 +17,14 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.marker.DefaultMapLibreMarkerEventController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerEventController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
+import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -51,6 +53,7 @@ class MapLibreViewControllerImpl(
     private val polylineController: MapLibrePolylineController,
     private val polygonController: MapLibrePolygonConductor,
     private val circleController: MapLibreCircleController,
+    private val rasterLayerController: MapLibreRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -202,6 +205,9 @@ class MapLibreViewControllerImpl(
         markerController.renderer.redraw()
         polylineController.renderer.redraw()
 //        polygonController.polygonOverlay.onPostProcess()
+        coroutine.launch {
+            rasterLayerController.reapplyStyle()
+        }
     }
 
     init {
@@ -218,6 +224,7 @@ class MapLibreViewControllerImpl(
         registerController(polylineController)
         registerController(polygonController)
         registerController(circleController)
+        registerController(rasterLayerController)
         registerMarkerEventController(DefaultMapLibreMarkerEventController(markerController))
     }
 
@@ -240,6 +247,7 @@ class MapLibreViewControllerImpl(
         polylineController.clear()
         polygonController.clear()
         circleController.clear()
+        rasterLayerController.clear()
     }
 
     override fun moveCamera(position: MapCameraPositionImpl) {
@@ -311,6 +319,10 @@ class MapLibreViewControllerImpl(
 
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
 
+    override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
+
+    override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
+
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerDragStartListener = listener
         markerEventControllers.forEach { it.setDragStartListener(listener) }
@@ -364,6 +376,9 @@ class MapLibreViewControllerImpl(
             .hasEntity(state.id)
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
+    override fun hasRasterLayer(state: RasterLayerState): Boolean =
+        this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
     override fun onMapClick(point: LatLng): Boolean {
         val touchPosition = point.toGeoPoint()

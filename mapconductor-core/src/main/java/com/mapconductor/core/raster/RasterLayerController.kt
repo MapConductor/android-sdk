@@ -135,7 +135,9 @@ abstract class RasterLayerController<ActualLayer : Any>(
 
     override fun find(position: GeoPoint): RasterLayerEntity<ActualLayer>? = null
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+        renderer.onCameraChanged(mapCameraPosition)
+    }
 
     override fun destroy() {
         // No native resources to clean up

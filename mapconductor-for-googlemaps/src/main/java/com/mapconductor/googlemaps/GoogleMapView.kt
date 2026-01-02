@@ -32,6 +32,8 @@ import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonOverlayRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
+import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
+import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerOverlayRenderer
 import android.view.ViewGroup
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -144,6 +146,7 @@ fun GoogleMapView(
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
 
@@ -153,6 +156,7 @@ fun GoogleMapView(
                 polylineController = polylineController,
                 polygonController = polygonController,
                 circleController = circleController,
+                rasterLayerController = rasterLayerController,
                 holder = holder,
             ).also { controller ->
                 state.setController(controller)
@@ -289,3 +293,13 @@ private fun getMarkerController(holder: GoogleMapViewHolder) =
     GoogleMapMarkerController.create(
         holder = holder,
     )
+
+private fun getRasterLayerController(holder: GoogleMapViewHolder): GoogleMapRasterLayerController {
+    val renderer =
+        GoogleMapRasterLayerOverlayRenderer(
+            holder = holder,
+        )
+    return GoogleMapRasterLayerController(
+        renderer = renderer,
+    )
+}

@@ -22,6 +22,8 @@ import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
+import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
+import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
@@ -175,6 +177,7 @@ fun ArcGISMapView(
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
 
@@ -184,6 +187,7 @@ fun ArcGISMapView(
                 polylineController = polylineController,
                 polygonController = polygonController,
                 circleController = circleController,
+                rasterLayerController = rasterLayerController,
             ).also { controller ->
                 controller.setCameraMoveStartListener {
                     cameraState.value = it
@@ -293,6 +297,16 @@ private fun getMarkerController(holder: ArcGISMapViewHolder) =
     ArcGISMarkerController.create(
         holder = holder,
     )
+
+private fun getRasterLayerController(holder: ArcGISMapViewHolder): ArcGISRasterLayerController {
+    val renderer =
+        ArcGISRasterLayerOverlayRenderer(
+            holder = holder,
+        )
+    return ArcGISRasterLayerController(
+        renderer = renderer,
+    )
+}
 
 /**
  * Default ArcGIS SDK initialization using API Key authentication.
