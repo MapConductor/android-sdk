@@ -31,6 +31,8 @@ import com.mapconductor.maplibre.polygon.MapLibrePolygonOverlayRenderer
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
 import com.mapconductor.maplibre.polyline.MapLibrePolylineOverlayRenderer
+import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
+import com.mapconductor.maplibre.raster.MapLibreRasterLayerOverlayRenderer
 import org.maplibre.android.MapLibre
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
@@ -147,6 +149,7 @@ fun MapLibreMapView(
                     holder = holder,
                 )
             val circleController = getCircleController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
 
@@ -156,6 +159,7 @@ fun MapLibreMapView(
                 polylineController = polylineController,
                 polygonController = polygonController,
                 circleController = circleController,
+                rasterLayerController = rasterLayerController,
             ).also { controller ->
                 // Store controller reference in holder
                 holder.setController(controller)
@@ -303,6 +307,16 @@ internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleC
     return MapLibreCircleController(
         renderer = renderer,
         circleManager = circleManager,
+    )
+}
+
+internal fun getRasterLayerController(holder: MapLibreMapViewHolder): MapLibreRasterLayerController {
+    val renderer =
+        MapLibreRasterLayerOverlayRenderer(
+            holder = holder,
+        )
+    return MapLibreRasterLayerController(
+        renderer = renderer,
     )
 }
 

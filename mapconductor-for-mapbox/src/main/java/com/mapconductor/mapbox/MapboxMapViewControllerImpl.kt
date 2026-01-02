@@ -35,12 +35,14 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerEventController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.marker.MapboxMarkerEventController
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
+import com.mapconductor.mapbox.raster.MapboxRasterLayerController
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +56,7 @@ internal class MapboxMapViewControllerImpl(
     private val polylineController: MapboxPolylineController,
     private val polygonController: MapboxPolygonConductor,
     private val circleController: MapboxCircleController,
+    private val rasterLayerController: MapboxRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -78,6 +81,7 @@ internal class MapboxMapViewControllerImpl(
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerController(rasterLayerController)
         registerMarkerEventController(DefaultMapboxMarkerEventController(markerController))
     }
 
@@ -150,6 +154,9 @@ internal class MapboxMapViewControllerImpl(
                     controller.renderer.ensureStyleImages(style)
                     controller.renderer.redraw()
                 }
+                coroutine.launch {
+                    rasterLayerController.reapplyStyle()
+                }
 
                 // After style is ready, trigger an initial camera update
                 sendInitialCameraUpdate()
@@ -185,6 +192,7 @@ internal class MapboxMapViewControllerImpl(
         markerController.clear()
         polylineController.clear()
         polygonController.clear()
+        rasterLayerController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
@@ -209,6 +217,10 @@ internal class MapboxMapViewControllerImpl(
 
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
 
+    override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
+
+    override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
+
     override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
         this.circleController.clickListener = listener
     }
@@ -224,6 +236,9 @@ internal class MapboxMapViewControllerImpl(
             .hasEntity(state.id)
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
+    override fun hasRasterLayer(state: RasterLayerState): Boolean =
+        this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
     private fun getMapCameraPosition(): MapCameraPositionImpl? {
 //        val options = cameraChanged.toMapCameraPosition()

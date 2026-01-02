@@ -49,6 +49,8 @@ import com.mapconductor.core.polygon.LocalPolygonCollector
 import com.mapconductor.core.polygon.PolygonCapable
 import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapable
+import com.mapconductor.core.raster.LocalRasterLayerCollector
+import com.mapconductor.core.raster.RasterLayerCapable
 import com.mapconductor.settings.Settings
 import android.util.Log
 import android.view.View
@@ -116,6 +118,18 @@ fun <
                     groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
                         if (groundImageCapable.hasGroundImage(groundImageState)) {
                             groundImageCapable.updateGroundImage(groundImageState)
+                        }
+                    }
+                }
+            }
+        }
+        val rasterLayers = scope.rasterLayerFlow.collectAsState()
+        (controller as? RasterLayerCapable)?.let { rasterLayerCapable ->
+            rasterLayers.value.values.forEach { rasterLayerState ->
+                LaunchedEffect(rasterLayerState.id) {
+                    rasterLayerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
+                        if (rasterLayerCapable.hasRasterLayer(rasterLayerState)) {
+                            rasterLayerCapable.updateRasterLayer(rasterLayerState)
                         }
                     }
                 }
@@ -241,6 +255,7 @@ fun <
                         LocalPolylineCollector provides scope.polylineFlow,
                         LocalPolygonCollector provides scope.polygonFlow,
                         LocalGroundImageCollector provides scope.groundImageFlow,
+                        LocalRasterLayerCollector provides scope.rasterLayerFlow,
                     ) {
                         // 子（Marker など）の収集＆描画
                         with(scope) { content?.invoke(this) }

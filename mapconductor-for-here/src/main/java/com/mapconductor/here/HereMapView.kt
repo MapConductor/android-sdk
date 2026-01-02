@@ -34,6 +34,9 @@ import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polygon.HerePolygonOverlayRenderer
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
+import com.mapconductor.here.raster.HereRasterLayerController
+import com.mapconductor.here.raster.HereRasterLayerOverlayRenderer
+import java.util.concurrent.atomic.AtomicBoolean
 import android.view.ViewGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -149,6 +152,7 @@ fun HereMapView(
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
             val circleController = getHereCircleController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until after controller is created and camera is moved
 
@@ -159,6 +163,7 @@ fun HereMapView(
                     polylineController = polylineController,
                     polygonController = polygonController,
                     circleController = circleController,
+                    rasterLayerController = rasterLayerController,
                 )
             controller.setMapClickListener(onMapClick)
             controller.setOnMarkerClickListener(onMarkerClick)
@@ -182,8 +187,9 @@ fun HereMapView(
             controllerRef.value = controller
 
             return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
+                val resumed = AtomicBoolean(false)
                 controller.setCameraMoveListener {
-                    if (cont.isCompleted) {
+                    if (!resumed.compareAndSet(false, true)) {
                         return@setCameraMoveListener
                     }
                     controller.setCameraMoveStartListener {
@@ -295,4 +301,14 @@ private fun getPolygonController(holder: HereViewHolder): HerePolygonController 
             renderer = renderer,
         )
     return controller
+}
+
+private fun getRasterLayerController(holder: HereViewHolder): HereRasterLayerController {
+    val renderer =
+        HereRasterLayerOverlayRenderer(
+            holder = holder,
+        )
+    return HereRasterLayerController(
+        renderer = renderer,
+    )
 }

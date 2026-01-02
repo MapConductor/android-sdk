@@ -17,6 +17,7 @@ import com.mapconductor.arcgis.marker.ArcGISMarkerEventController
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerEventController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
+import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.toGeoPoint
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.arcgis.zoom.ZoomAltitudeConverter
@@ -37,6 +38,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.settings.Settings
 import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +51,7 @@ class ArcGISMapViewControllerImpl(
     private val polylineController: ArcGISPolylineOverlayController,
     private val polygonController: ArcGISPolygonOverlayController,
     private val circleController: ArcGISCircleOverlayController,
+    private val rasterLayerController: ArcGISRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     ArcGISMapViewController {
@@ -72,6 +75,7 @@ class ArcGISMapViewControllerImpl(
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerController(rasterLayerController)
         registerMarkerEventController(DefaultArcGISMarkerEventController(markerController))
     }
 
@@ -108,6 +112,9 @@ class ArcGISMapViewControllerImpl(
     override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
+    override fun hasRasterLayer(state: RasterLayerState): Boolean =
+        this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
     private suspend fun invokeCameraMoveStartCallback() {
         cameraMoveCallback?.let {
@@ -346,6 +353,7 @@ class ArcGISMapViewControllerImpl(
         markerController.clear()
         polylineController.clear()
         polygonController.clear()
+        rasterLayerController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
@@ -363,6 +371,10 @@ class ArcGISMapViewControllerImpl(
     override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
 
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
+
+    override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
+
+    override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
 
     override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
         this.circleController.clickListener = listener

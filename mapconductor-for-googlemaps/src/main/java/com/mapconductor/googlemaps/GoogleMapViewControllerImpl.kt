@@ -28,6 +28,7 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
@@ -35,6 +36,7 @@ import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
+import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +50,7 @@ class GoogleMapViewControllerImpl(
     private val polygonController: GoogleMapPolygonController,
     private val groundImageController: GoogleMapGroundImageController,
     private val circleController: GoogleMapCircleController,
+    private val rasterLayerController: GoogleMapRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -76,6 +79,7 @@ class GoogleMapViewControllerImpl(
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerController(rasterLayerController)
         registerMarkerEventController(DefaultGoogleMapMarkerEventController(markerController))
     }
 
@@ -127,6 +131,7 @@ class GoogleMapViewControllerImpl(
         polylineController.clear()
         polygonController.clear()
         circleController.clear()
+        rasterLayerController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
@@ -136,6 +141,10 @@ class GoogleMapViewControllerImpl(
     override suspend fun compositionCircles(data: List<CircleState>) = circleController.add(data)
 
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
+
+    override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
+
+    override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
 
     override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
         this.circleController.clickListener = listener
@@ -291,6 +300,9 @@ class GoogleMapViewControllerImpl(
     override fun hasGroundImage(state: GroundImageState): Boolean =
         this.groundImageController.groundImageManager
             .hasEntity(state.id)
+
+    override fun hasRasterLayer(state: RasterLayerState): Boolean =
+        this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
     override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
         this.groundImageController.clickListener = listener

@@ -16,6 +16,8 @@ import com.mapconductor.core.polygon.PolygonOverlay
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineOverlay
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerOverlay
+import com.mapconductor.core.raster.RasterLayerState
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +39,8 @@ open class MapViewScope {
     val polygonRemoveSharedFlow = MutableSharedFlow<String>(1000)
     val groundImageFlow = MutableStateFlow<MutableMap<String, GroundImageState>>(mutableMapOf())
     val groundImageRemoveSharedFlow = MutableSharedFlow<String>(1000)
+    val rasterLayerFlow = MutableStateFlow<MutableMap<String, RasterLayerState>>(mutableMapOf())
+    val rasterLayerRemoveSharedFlow = MutableSharedFlow<String>(1000)
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -78,6 +82,16 @@ open class MapViewScope {
                 groundImageFlow.value = newMap
             }
         }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            rasterLayerRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
+                val newMap = rasterLayerFlow.value.toMutableMap()
+                ids.forEach { id ->
+                    newMap.remove(id)
+                }
+                rasterLayerFlow.value = newMap
+            }
+        }
     }
 
     fun buildRegistry(): MapOverlayRegistry {
@@ -87,6 +101,7 @@ open class MapViewScope {
         registry.register(PolylineOverlay(polylineFlow))
         registry.register(PolygonOverlay(polygonFlow))
         registry.register(GroundImageOverlay(groundImageFlow))
+        registry.register(RasterLayerOverlay(rasterLayerFlow))
         return registry
     }
 }

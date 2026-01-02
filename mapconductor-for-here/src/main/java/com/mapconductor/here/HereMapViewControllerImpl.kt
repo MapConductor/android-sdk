@@ -34,12 +34,14 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.marker.HereMarkerEventController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
+import com.mapconductor.here.raster.HereRasterLayerController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,6 +51,7 @@ class HereMapViewControllerImpl(
     private val polylineController: HerePolylineController,
     private val polygonController: HerePolygonController,
     private val circleController: HereCircleController,
+    private val rasterLayerController: HereRasterLayerController,
     override val holder: MapViewHolder<MapView, MapScene>,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
@@ -76,6 +79,7 @@ class HereMapViewControllerImpl(
         polylineController.clear()
         polygonController.clear()
         circleController.clear()
+        rasterLayerController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
@@ -91,6 +95,9 @@ class HereMapViewControllerImpl(
     override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
+    override fun hasRasterLayer(state: RasterLayerState): Boolean =
+        this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerDragStartListener = listener
@@ -138,12 +145,17 @@ class HereMapViewControllerImpl(
 
     override suspend fun updatePolygon(state: PolygonState) = polygonController.update(state)
 
+    override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
+
+    override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
+
     init {
         setupListeners()
         registerController(markerController)
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerController(rasterLayerController)
         registerMarkerEventController(DefaultHereMarkerEventController(markerController))
     }
 

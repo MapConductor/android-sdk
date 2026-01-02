@@ -103,10 +103,10 @@ class MapLibreMapViewSaver : BaseMapViewSaver<MapLibreViewStateImpl>() {
                 MapLibreDesign(
                     id =
                         mapDesignBundle?.getString("id")
-                            ?: MapLibreDesign.DemoTiles.id,
+                            ?: MapLibreDesign.OsmBright.id,
                     styleJsonURL =
                         mapDesignBundle?.getString("styleJsonURL")
-                            ?: MapLibreDesign.DemoTiles.styleJsonURL,
+                            ?: MapLibreDesign.OsmBright.styleJsonURL,
                 ),
             cameraPosition = cameraPosition,
         )
