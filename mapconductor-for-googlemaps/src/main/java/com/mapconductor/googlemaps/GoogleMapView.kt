@@ -69,7 +69,7 @@ fun GoogleMapView(
         onCircleClick = null,
         onPolylineClick = null,
         onPolygonClick = null,
-        onGroundImageClick = null,
+        onGroundImageClick = onGroundImageClick,
         content = content,
     )
 }
