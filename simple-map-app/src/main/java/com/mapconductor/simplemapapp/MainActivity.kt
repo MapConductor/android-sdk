@@ -23,7 +23,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.heatmap.HeatmapPoint
 import com.mapconductor.core.heatmap.HeatmapPointState
 import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
@@ -200,7 +200,7 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
         mutableStateOf(
             MarkerState(
                 position = startPosition,
-                icon = DefaultIcon(fillColor = Color.Green, label = "移動中"),
+                icon = DefaultMarkerIcon(fillColor = Color.Green, label = "移動中"),
                 extra = "アニメーションするマーカー",
             ),
         )

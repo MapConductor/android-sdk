@@ -18,7 +18,7 @@ abstract class AbstractMarkerController<ActualMarker>(
     private val rendererRef: MarkerOverlayRenderer<ActualMarker> = renderer
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
-    private val defaultIcon = DefaultIcon().toBitmapIcon()
+    private val defaultMarkerIcon = DefaultMarkerIcon().toBitmapIcon()
 
     var dragStartListener: OnMarkerEventHandler? = null
     var dragListener: OnMarkerEventHandler? = null
@@ -81,7 +81,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
                 if (previous.contains(state.id)) {
                     val prevEntity = markerManager.getEntity(state.id)!!
-                    val markerIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                    val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
 
                     updated.add(
                         object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
@@ -101,7 +101,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                         object : MarkerOverlayRenderer.AddParams {
                             override val state: MarkerState = state
                             override val bitmapIcon: BitmapIcon =
-                                state.icon?.toBitmapIcon() ?: defaultIcon
+                                state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                         },
                     )
                     previous.remove(state.id)
@@ -186,8 +186,8 @@ abstract class AbstractMarkerController<ActualMarker>(
         // Simple fallback: update marker immediately if it's already rendered
         semaphore.withPermit {
             val marker = prevEntity.marker
-            val defaultIcon = DefaultIcon()
-            val markerIcon = state.icon ?: defaultIcon
+            val defaultMarkerIcon = DefaultMarkerIcon()
+            val markerIcon = state.icon ?: defaultMarkerIcon
 
             val renderEntity =
                 MarkerEntityImpl(

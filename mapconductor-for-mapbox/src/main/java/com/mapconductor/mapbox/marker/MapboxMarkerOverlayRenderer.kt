@@ -8,7 +8,7 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
@@ -36,7 +36,7 @@ class MapboxMarkerOverlayRenderer(
         coroutine = coroutine,
     ) {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
-    private val defaultIcon: BitmapIcon = DefaultIcon().toBitmapIcon()
+    private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
 
     object Prop {
         const val ICON_ID = "icon_id"
@@ -47,14 +47,14 @@ class MapboxMarkerOverlayRenderer(
 
     init {
         holder.map.getStyle { style ->
-            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
         }
     }
 
     // Ensure default and custom marker images exist on the given style (used after style reload)
     fun ensureStyleImages(style: com.mapbox.maps.Style) {
         try {
-            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
         } catch (_: Exception) {
             // Image may already exist; ignore
         }
@@ -248,7 +248,7 @@ class MapboxMarkerOverlayRenderer(
             Feature.fromGeometry(position, properties, featureId)
         }
 
-    private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultIcon)
+    private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultMarkerIcon)
 
     private fun createIconOffset(icon: BitmapIcon): JsonArray =
         JsonArray().apply {

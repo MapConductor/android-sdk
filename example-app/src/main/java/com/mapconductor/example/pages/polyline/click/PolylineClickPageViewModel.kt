@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineEvent
@@ -80,7 +80,7 @@ class PolylineClickPageViewModelImpl :
                 position = clicked.clicked,
                 animation = MarkerAnimation.Drop,
                 icon =
-                    DefaultIcon(
+                    DefaultMarkerIcon(
                         fillColor = clicked.state.strokeColor,
                     ),
             )

@@ -3,7 +3,7 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `enum class MarkerStatus { ACTIVE, INACTIVE, WARNING, ERROR }
 
-fun createStatusIcon(status: MarkerStatus): MarkerIcon = DefaultIcon(
+fun createStatusIcon(status: MarkerStatus): MarkerIcon = DefaultMarkerIcon(
     fillColor = when (status) {
         MarkerStatus.ACTIVE -> Color.Green
         MarkerStatus.INACTIVE -> Color.Gray

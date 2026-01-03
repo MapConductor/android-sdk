@@ -5,7 +5,7 @@ import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.spherical.expandBounds
@@ -86,13 +86,13 @@ class SpatialMarkerStrategy<ActualMarker>(
 
             // Add markers that entered the viewport
             if (markersToRender.isNotEmpty()) {
-                val defaultIcon = DefaultIcon()
+                val defaultMarkerIcon = DefaultMarkerIcon()
                 val addParams =
                     markersToRender.map { entity ->
                         object : MarkerOverlayRenderer.AddParams {
                             override val state = entity.state
                             override val bitmapIcon: BitmapIcon =
-                                entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                                entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon.toBitmapIcon()
                         }
                     }
 

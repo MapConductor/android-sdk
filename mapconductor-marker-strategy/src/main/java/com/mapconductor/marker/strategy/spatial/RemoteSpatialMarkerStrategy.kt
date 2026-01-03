@@ -347,7 +347,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                     markersToAdd.add(
                         object : MarkerOverlayRenderer.AddParams {
                             override val state = entity.state
-                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                         },
                     )
                 }
@@ -403,7 +403,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                         markersToRender.add(
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state = state
-                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             },
                         )
                     } else {
@@ -464,7 +464,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                         data.map { state ->
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state: MarkerState = state
-                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
                         }
                     fallbackAddAsync(params, renderer)
@@ -491,7 +491,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                 val addParams =
                     object : MarkerOverlayRenderer.AddParams {
                         override val state = state
-                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                     }
 
                 val actualMarkers = renderer.onAdd(listOf(addParams))
@@ -527,7 +527,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                                 isRendered = true,
                             )
                         override val prev = entity
-                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                        override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                     }
 
                 val actualMarkers = renderer.onChange(listOf(changeParams))

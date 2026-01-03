@@ -17,7 +17,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -56,7 +56,7 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
                 MarkerState(
                     id = "marker_$index",
                     position = position,
-                    icon = DefaultIcon(fillColor = color, label = "${index + 1}"),
+                    icon = DefaultMarkerIcon(fillColor = color, label = "${index + 1}"),
                     extra = name,
                     onClick = onMarkerClick,
                 )

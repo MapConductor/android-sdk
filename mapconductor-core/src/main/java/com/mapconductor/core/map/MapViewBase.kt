@@ -42,7 +42,7 @@ import com.mapconductor.core.groundimage.GroundImageCapable
 import com.mapconductor.core.groundimage.LocalGroundImageCollector
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCapable
 import com.mapconductor.core.polygon.LocalPolygonCollector
@@ -278,7 +278,7 @@ fun <
                                 if (posOffset != null) {
                                     // Keep a stable key per marker id; avoid using Flow as a key.
                                     key(marker.id) {
-                                        val icon = marker.icon ?: DefaultIcon()
+                                        val icon = marker.icon ?: DefaultMarkerIcon()
                                         val iconScale = icon.scale
                                         val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
                                         InfoBubbleOverlay(

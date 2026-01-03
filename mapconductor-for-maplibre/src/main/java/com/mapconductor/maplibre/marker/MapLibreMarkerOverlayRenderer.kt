@@ -6,7 +6,7 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerIcon
 import com.mapconductor.core.marker.MarkerManager
@@ -32,7 +32,7 @@ class MapLibreMarkerOverlayRenderer(
         coroutine = coroutine,
     ) {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
-    private val defaultIcon: BitmapIcon = DefaultIcon().toBitmapIcon()
+    private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
 
     object Prop {
         const val ICON_ID = "icon_id"
@@ -60,10 +60,10 @@ class MapLibreMarkerOverlayRenderer(
     init {
         val style = holder.map.style
         if (style != null) {
-            style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+            style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
         } else {
             holder.map.getStyle { style ->
-                style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+                style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
             }
         }
     }
@@ -72,7 +72,7 @@ class MapLibreMarkerOverlayRenderer(
     fun ensureDefaultIcon(style: org.maplibre.android.maps.Style) {
         try {
             if (style.getImage(Prop.DEFAULT_MARKER_ID) == null) {
-                style.addImage(Prop.DEFAULT_MARKER_ID, defaultIcon.bitmap)
+                style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
             }
         } catch (e: Exception) {
             android.util.Log.w("MapLibre", "Failed ensuring default icon on style: ${e.message}")
@@ -153,7 +153,7 @@ class MapLibreMarkerOverlayRenderer(
         }
     }
 
-    private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultIcon)
+    private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultMarkerIcon)
 
     private fun createIconOffset(icon: BitmapIcon): JsonArray =
         JsonArray().apply {

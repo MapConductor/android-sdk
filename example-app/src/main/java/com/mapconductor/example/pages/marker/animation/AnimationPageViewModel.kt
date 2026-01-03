@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
@@ -84,7 +84,7 @@ class AnimationPageViewModelImpl :
                 MarkerState(
                     id = spot.id,
                     position = spot.point,
-                    icon = DefaultIcon(label = spot.name),
+                    icon = DefaultMarkerIcon(label = spot.name),
                     animation = null,
                     extra = spot.animation,
                     onClick = this::onMarkerClick,

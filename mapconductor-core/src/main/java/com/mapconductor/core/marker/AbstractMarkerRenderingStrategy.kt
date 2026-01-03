@@ -6,7 +6,7 @@ import kotlinx.coroutines.sync.Semaphore
 abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
     protected val semaphore: Semaphore,
 ) : MarkerRenderingStrategy<ActualMarker> {
-    protected val defaultIcon = DefaultIcon().toBitmapIcon()
+    protected val defaultMarkerIcon = DefaultMarkerIcon().toBitmapIcon()
 
     override fun clear() {
         markerManager.clear()

@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,7 +70,7 @@ class PolylinePageViewModelImpl :
                 id = "waypoint_$index",
                 position = point,
                 icon =
-                    DefaultIcon(
+                    DefaultMarkerIcon(
                         fillColor = markerColor,
                         strokeColor = Color.Black,
                         label = label,

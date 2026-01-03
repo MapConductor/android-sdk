@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
@@ -380,7 +379,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                     markersToAdd.add(
                         object : MarkerOverlayRenderer.AddParams {
                             override val state = entity.state
-                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                            override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                         },
                     )
                 }
@@ -473,7 +472,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         markersToRender.add(
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state = state
-                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             },
                         )
                     } else {
@@ -527,7 +526,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         data.map { state ->
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state: MarkerState = state
-                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
                         }
                     fallbackAddAsync(params, renderer)
@@ -555,7 +554,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         val addParams =
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state = state
-                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
                         val actualMarkers = renderer.onAdd(listOf(addParams))
                         actualMarkers.firstOrNull()?.let { actualMarker ->
@@ -574,7 +573,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                                 override val current =
                                     MarkerEntityImpl(state = state, marker = entity.marker, isRendered = true)
                                 override val prev = entity
-                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
                         val actualMarkers = renderer.onChange(listOf(changeParams))
                         actualMarkers.firstOrNull()?.let { actualMarker ->

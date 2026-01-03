@@ -67,7 +67,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
                         markersToRender.map { entity ->
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state = entity.state
-                                override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
                         }
 
@@ -111,7 +111,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
                         markersToRender.map { entity ->
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state = entity.state
-                                override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                                override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
                         }
 

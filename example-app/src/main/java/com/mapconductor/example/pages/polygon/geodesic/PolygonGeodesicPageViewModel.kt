@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +46,7 @@ class PolygonGeodesicPageViewModelImpl :
                 id = "clicked",
                 position = event.clicked,
                 icon =
-                    DefaultIcon(
+                    DefaultMarkerIcon(
                         fillColor = event.state.fillColor.copy(alpha = 1.0f),
                     ),
             )

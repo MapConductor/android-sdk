@@ -3,7 +3,7 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `object MarkerIconFactory {
     fun createLocationIcon(color: Color, label: String? = null): MarkerIcon {
-        return DefaultIcon(
+        return DefaultMarkerIcon(
             fillColor = color,
             strokeColor = Color.White,
             strokeWidth = 2.dp,

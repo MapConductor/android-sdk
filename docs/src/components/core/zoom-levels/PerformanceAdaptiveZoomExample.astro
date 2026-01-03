@@ -49,7 +49,7 @@ fun PerformanceAdaptiveZoom() {
         displayedMarkers.forEach { marker ->
             Marker(
                 position = marker,
-                icon = DefaultIcon(
+                icon = DefaultMarkerIcon(
                     scale = when {
                         cameraPosition.zoom < 10.0 -> 1.2f
                         cameraPosition.zoom < 15.0 -> 1.0f

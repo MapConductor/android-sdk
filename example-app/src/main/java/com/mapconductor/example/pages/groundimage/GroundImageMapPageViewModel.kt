@@ -11,7 +11,7 @@ import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
@@ -118,7 +118,7 @@ class GroundImageMapPageViewModelImpl(
                     id = "south_west",
                     position = southWestPosition,
                     icon =
-                        DefaultIcon(
+                        DefaultMarkerIcon(
                             fillColor = Color.Blue,
                             strokeColor = Color.White,
                             label = swLabel,
@@ -131,7 +131,7 @@ class GroundImageMapPageViewModelImpl(
                     id = "north_east",
                     position = northEastPosition,
                     icon =
-                        DefaultIcon(
+                        DefaultMarkerIcon(
                             fillColor = Color.Red,
                             strokeColor = Color.White,
                             label = neLabel,

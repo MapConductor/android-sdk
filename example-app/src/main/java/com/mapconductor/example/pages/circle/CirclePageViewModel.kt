@@ -13,7 +13,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.core.spherical.calculatePositionAtDistance
@@ -88,7 +88,7 @@ class CirclePageViewModelImpl :
             id = "center_marker",
             position = circleCenter,
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     label = "C",
@@ -107,7 +107,7 @@ class CirclePageViewModelImpl :
                         bearingDegrees = 90.0, // East
                     ),
                 icon =
-                    DefaultIcon(
+                    DefaultMarkerIcon(
                         fillColor = Color.Green,
                         strokeColor = Color.White,
                         label = "E",
@@ -148,7 +148,7 @@ class CirclePageViewModelImpl :
     }
 
     override fun onMarkerClick(clicked: MarkerState) {
-        showToast("${clicked.icon?.let { (it as? DefaultIcon)?.label } ?: "Marker"} clicked")
+        showToast("${clicked.icon?.let { (it as? DefaultMarkerIcon)?.label } ?: "Marker"} clicked")
     }
 
     override fun onMapClick(clicked: GeoPointImpl) {

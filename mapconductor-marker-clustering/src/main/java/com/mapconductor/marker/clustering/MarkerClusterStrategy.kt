@@ -239,7 +239,7 @@ class MarkerClusterStrategy<ActualMarker>(
                     object : MarkerOverlayRenderer.AddParams {
                         override val state: MarkerState = state
                         override val bitmapIcon =
-                            state.icon?.toBitmapIcon() ?: defaultIcon
+                            state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                     }
                 }
             val actualMarkers = renderer.onAdd(addParams)
@@ -278,7 +278,7 @@ class MarkerClusterStrategy<ActualMarker>(
                     override val current: MarkerEntity<ActualMarker> = nextEntity
                     override val prev: MarkerEntity<ActualMarker> = prev
                     override val bitmapIcon =
-                        state.icon?.toBitmapIcon() ?: defaultIcon
+                        state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                 }
             changeParams.add(change)
             changeEntities.add(nextEntity)

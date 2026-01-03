@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import java.io.Serializable
 
@@ -40,7 +40,7 @@ val StarbucksHI_list =
                     store = "coffee_bean",
                 ),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     label = "店",
                     labelTextColor = Color.Black,
                     labelTextSize = 13.sp,

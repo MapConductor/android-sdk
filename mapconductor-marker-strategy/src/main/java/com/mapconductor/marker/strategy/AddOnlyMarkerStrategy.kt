@@ -4,7 +4,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.marker.AbstractViewportStrategy
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerOverlayRenderer
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
@@ -45,7 +45,7 @@ class AddOnlyMarkerStrategy<ActualMarker>(
                             override val state = entity.state
                             override val bitmapIcon =
                                 entity.state.icon?.toBitmapIcon()
-                                    ?: DefaultIcon().toBitmapIcon()
+                                    ?: DefaultMarkerIcon().toBitmapIcon()
                         }
                     }
                 val newMarkers = renderer.onAdd(addParams)

@@ -770,4 +770,4 @@ class DrawableDefaultIcon(
 }
 
 // 後方互換性のため、元のDefaultIconをColorDefaultIconのエイリアスとして定義
-typealias DefaultIcon = ColorDefaultIcon
+typealias DefaultMarkerIcon = ColorDefaultIcon

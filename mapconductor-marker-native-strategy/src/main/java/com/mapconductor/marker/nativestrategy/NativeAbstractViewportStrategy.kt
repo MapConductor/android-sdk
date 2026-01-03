@@ -51,7 +51,7 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
 
                 if (previous.contains(state.id)) {
                     val prevEntity = markerManager.getEntity(state.id)!!
-                    val markerIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                    val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
 
                     // Marker update handled by NativeMarkerManager
 
@@ -89,7 +89,7 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
                             object : MarkerOverlayRenderer.AddParams {
                                 override val state: MarkerState = state
                                 override val bitmapIcon: BitmapIcon =
-                                    state.icon?.toBitmapIcon() ?: defaultIcon
+                                    state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             },
                         )
                     } else {
@@ -194,7 +194,7 @@ abstract class NativeAbstractViewportStrategy<ActualMarker>(
             val isInViewport = viewport.contains(state.position)
             if (isInViewport) {
                 val marker = prevEntity.marker
-                val markerIcon = state.icon?.toBitmapIcon() ?: defaultIcon
+                val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
 
                 val renderEntity =
                     MarkerEntityImpl(

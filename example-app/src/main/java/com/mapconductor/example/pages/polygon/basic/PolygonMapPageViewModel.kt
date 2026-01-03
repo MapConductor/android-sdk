@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +68,7 @@ class PolygonMapPageViewModelImpl :
             MarkerState(
                 position = point,
                 icon =
-                    DefaultIcon(
+                    DefaultMarkerIcon(
                         scale = 0.7f,
                         fillColor = Color.Yellow,
                         strokeColor = Color.Black,

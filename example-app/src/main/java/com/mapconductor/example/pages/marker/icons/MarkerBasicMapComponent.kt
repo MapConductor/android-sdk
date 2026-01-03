@@ -22,7 +22,7 @@ import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
@@ -59,7 +59,7 @@ fun MarkerBasicMapComponent(
         Marker(
             position = GeoPointImpl.fromLatLong(0.018, 0.004),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 0.7f,
                     label = "0.7",
                     debug = true,
@@ -77,7 +77,7 @@ fun MarkerBasicMapComponent(
         Marker(
             position = GeoPointImpl.fromLatLong(0.018, 0.006),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 1.0f,
                     label = "1.0",
                     debug = true,
@@ -94,7 +94,7 @@ fun MarkerBasicMapComponent(
         Marker(
             position = GeoPointImpl.fromLatLong(0.018, 0.009),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 1.4f,
                     label = "1.4",
                     debug = true,
@@ -112,7 +112,7 @@ fun MarkerBasicMapComponent(
         Marker(
             position = GeoPointImpl.fromLatLong(0.018, 0.013),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 2.1f,
                     label = "2.1",
                     debug = true,
@@ -134,7 +134,7 @@ fun MarkerBasicMapComponent(
         Marker(
             position = GeoPointImpl.fromLatLong(0.014, 0.008),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     fillColor = Color.Yellow,
                     strokeColor = Color.Black,
                     strokeWidth = 2.dp,
@@ -151,7 +151,7 @@ fun MarkerBasicMapComponent(
         Marker(
             position = GeoPointImpl.fromLatLong(0.014, 0.012),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     fillColor =
                         Color(
                             red = 0x2E,

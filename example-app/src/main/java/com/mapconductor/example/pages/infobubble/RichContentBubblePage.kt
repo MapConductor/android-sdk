@@ -29,7 +29,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
@@ -64,7 +64,7 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                 )
             MarkerState(
                 position = GeoPointImpl.fromLatLong(37.7694, -122.4862),
-                icon = DefaultIcon(fillColor = Color.Green, label = "🌳"),
+                icon = DefaultMarkerIcon(fillColor = Color.Green, label = "🌳"),
                 extra = locationInfo,
                 onClick = { markerState -> selectedMarker = markerState },
             )

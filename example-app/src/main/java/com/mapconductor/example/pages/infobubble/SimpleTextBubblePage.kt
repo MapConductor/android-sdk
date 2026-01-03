@@ -16,7 +16,7 @@ import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
@@ -36,7 +36,7 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
         remember {
             MarkerState(
                 position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(fillColor = Color.Blue, label = "SF"),
+                icon = DefaultMarkerIcon(fillColor = Color.Blue, label = "SF"),
                 extra = "San Francisco - The Golden Gate City",
                 onClick = { it -> selectedMarker = it },
             )

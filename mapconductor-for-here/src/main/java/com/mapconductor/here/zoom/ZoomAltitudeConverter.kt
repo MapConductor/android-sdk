@@ -1,7 +1,5 @@
 package com.mapconductor.here.zoom
 
-import com.here.sdk.mapview.MapCameraLimits.MAX_ZOOM_LEVEL
-import com.here.sdk.mapview.MapCameraLimits.MIN_ZOOM_LEVEL
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.log2
 import kotlin.math.pow
