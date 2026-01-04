@@ -7,7 +7,7 @@ const code = `suspend fun batchNativeOperations(nativeManager: NativeMarkerManag
     // Efficient batch registration
     withContext(Dispatchers.Default) {
         markersBatch.forEach { markerData ->
-            val entity = MarkerEntity(
+            val entity = MarkerEntityInterface(
                 state = MarkerState(
                     id = markerData.id,
                     position = markerData.position,

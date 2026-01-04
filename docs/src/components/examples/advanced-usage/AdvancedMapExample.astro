@@ -39,7 +39,7 @@ const {
 } = Astro.props;
 
 const polylinePointsStr = polylinePoints
-  .map(p => `                GeoPointImpl.fromLatLong(${p.lat}, ${p.long})`)
+  .map(p => `                GeoPoint.fromLatLong(${p.lat}, ${p.long})`)
   .join(',\n');
 
 const polylineStyleStr = polylineStrokeColor || polylineStrokeWidth
@@ -48,8 +48,8 @@ const polylineStyleStr = polylineStrokeColor || polylineStrokeWidth
 
 const code = `@Composable
 fun AdvancedMapScreen() {
-    val camera = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+    val camera = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${centerLat}, ${centerLong}),
         zoom = ${zoom}
     )
     val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
@@ -59,7 +59,7 @@ fun AdvancedMapScreen() {
     ) {
         // ${commentMarker}
         Marker(
-            position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+            position = GeoPoint.fromLatLong(${centerLat}, ${centerLong}),
             icon = DefaultIcon(label = "${markerLabel}"),
             onClick = { markerState ->
                 println("${commentForMarkerClick}")
@@ -68,7 +68,7 @@ fun AdvancedMapScreen() {
 
         // ${commentCircle}
         Circle(
-            center = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+            center = GeoPoint.fromLatLong(${centerLat}, ${centerLong}),
             radiusMeters = ${circleRadiusMeters},
             strokeColor = ${circleStrokeColor},
             fillColor = ${circleFillColor}

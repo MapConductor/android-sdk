@@ -1,21 +1,21 @@
 package com.mapconductor.maplibre.marker
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.maplibre.MapLibreActualMarker
 
-internal interface MapLibreMarkerEventController {
+internal interface MapLibreMarkerEventControllerInterface {
     val renderer: MapLibreMarkerOverlayRenderer
 
-    fun find(position: GeoPoint): MarkerEntity<MapLibreActualMarker>?
+    fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>?
 
-    fun getSelectedMarker(): MarkerEntity<MapLibreActualMarker>?
+    fun getSelectedMarker(): MarkerEntityInterface<MapLibreActualMarker>?
 
-    fun setSelectedMarker(entity: MarkerEntity<MapLibreActualMarker>?)
+    fun setSelectedMarker(entity: MarkerEntityInterface<MapLibreActualMarker>?)
 
     fun dispatchClick(state: MarkerState)
 
@@ -40,14 +40,14 @@ internal interface MapLibreMarkerEventController {
 
 internal class DefaultMapLibreMarkerEventController(
     private val controller: MapLibreMarkerController,
-) : MapLibreMarkerEventController {
+) : MapLibreMarkerEventControllerInterface {
     override val renderer: MapLibreMarkerOverlayRenderer = controller.renderer
 
-    override fun find(position: GeoPoint): MarkerEntity<MapLibreActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>? = controller.find(position)
 
-    override fun getSelectedMarker(): MarkerEntity<MapLibreActualMarker>? = controller.selectedMarker
+    override fun getSelectedMarker(): MarkerEntityInterface<MapLibreActualMarker>? = controller.selectedMarker
 
-    override fun setSelectedMarker(entity: MarkerEntity<MapLibreActualMarker>?) {
+    override fun setSelectedMarker(entity: MarkerEntityInterface<MapLibreActualMarker>?) {
         controller.selectedMarker = entity
     }
 
@@ -87,17 +87,17 @@ internal class DefaultMapLibreMarkerEventController(
 internal class StrategyMapLibreMarkerEventController(
     private val controller: StrategyMarkerController<MapLibreActualMarker>,
     override val renderer: MapLibreMarkerOverlayRenderer,
-) : MapLibreMarkerEventController {
-    private var selectedMarker: MarkerEntity<MapLibreActualMarker>? = null
+) : MapLibreMarkerEventControllerInterface {
+    private var selectedMarker: MarkerEntityInterface<MapLibreActualMarker>? = null
 
-    override fun find(position: GeoPoint): MarkerEntity<MapLibreActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>? = controller.find(position)
 
-    override fun getSelectedMarker(): MarkerEntity<MapLibreActualMarker>? = selectedMarker
+    override fun getSelectedMarker(): MarkerEntityInterface<MapLibreActualMarker>? = selectedMarker
 
-    override fun setSelectedMarker(entity: MarkerEntity<MapLibreActualMarker>?) {
+    override fun setSelectedMarker(entity: MarkerEntityInterface<MapLibreActualMarker>?) {
         if (entity == null) {
             selectedMarker?.let {
-                renderer.dragLayer.updatePosition(GeoPointImpl.from(it.state.position))
+                renderer.dragLayer.updatePosition(GeoPoint.from(it.state.position))
                 renderer.dragLayer.selected = null
                 renderer.drawDragLayer()
                 controller.markerManager.registerEntity(it)
@@ -109,7 +109,7 @@ internal class StrategyMapLibreMarkerEventController(
         selectedMarker = entity
         controller.markerManager.removeEntity(entity.state.id)
         renderer.dragLayer.selected = entity
-        renderer.dragLayer.updatePosition(GeoPointImpl.from(entity.state.position))
+        renderer.dragLayer.updatePosition(GeoPoint.from(entity.state.position))
         renderer.redraw()
         renderer.drawDragLayer()
     }

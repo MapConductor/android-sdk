@@ -8,10 +8,10 @@ import androidx.compose.runtime.remember
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCollector
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.here.HereActualMarker
-import com.mapconductor.here.HereMapViewControllerImpl
+import com.mapconductor.here.HereMapViewController
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.FlowPreview
@@ -21,11 +21,11 @@ import kotlinx.coroutines.flow.debounce
 @OptIn(FlowPreview::class)
 @Composable
 fun MarkerRenderingGroup(
-    strategy: MarkerRenderingStrategy<HereActualMarker>,
+    strategy: MarkerRenderingStrategyInterface<HereActualMarker>,
     content: @Composable () -> Unit,
 ) {
     val mapController = LocalMapViewController.current
-    val hereController = mapController as? HereMapViewControllerImpl ?: return
+    val hereController = mapController as? HereMapViewController ?: return
     val holder = hereController.holder as? HereViewHolder ?: return
     val markerCollector = remember { MarkerCollector() }
     val renderer = remember(holder) { HereMarkerRenderer(holder = holder) }

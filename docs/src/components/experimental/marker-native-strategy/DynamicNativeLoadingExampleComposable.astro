@@ -15,12 +15,12 @@ const code = `@Composable
 fun DynamicNativeLoadingExample() {
     val nativeManager = remember {
         NativeMarkerManager<GoogleMapActualMarker>(
-            hexGeocell = HexGeocellImpl.defaultGeocell()
+            hexGeocell = HexGeocell.defaultGeocell()
         )
     }
 
     var currentBounds by remember { mutableStateOf<GeoRectBounds?>(null) }
-    var visibleMarkers by remember { mutableStateOf<List<MarkerEntity<GoogleMapActualMarker>>>(emptyList()) }
+    var visibleMarkers by remember { mutableStateOf<List<MarkerEntityInterface<GoogleMapActualMarker>>>(emptyList()) }
 
     // Load markers dynamically based on viewport
     LaunchedEffect(currentBounds) {

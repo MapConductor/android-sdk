@@ -1,8 +1,8 @@
 package com.mapconductor.core
 
 import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.GeographicLibCalculator
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-fun calculateZIndex(geoPointBase: GeoPoint): Int {
+fun calculateZIndex(geoPointBase: GeoPointInterface): Int {
     // 南→北で奥行きを出す
     // 同じ緯度内では西が上（前）に来る
     return (-geoPointBase.latitude * 1_000_000 - geoPointBase.longitude).roundToInt()
@@ -83,22 +83,22 @@ fun meterToPixel(
 
 fun printPoints(
     tag: String,
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
 ) {
     Log.d(tag, "-----------")
     points.forEach { point ->
-        Log.d(tag, GeoPointImpl.from(point).toUrlValue())
+        Log.d(tag, GeoPoint.from(point).toUrlValue())
     }
 }
 
-fun normalize(points: List<GeoPoint>): List<GeoPoint> = points.map { it.normalize() }
+fun normalize(points: List<GeoPointInterface>): List<GeoPointInterface> = points.map { it.normalize() }
 
 fun pointOnGeodesicSegmentOrNull(
-    from: GeoPoint,
-    to: GeoPoint,
-    position: GeoPoint,
+    from: GeoPointInterface,
+    to: GeoPointInterface,
+    position: GeoPointInterface,
     thresholdMeters: Double,
-): Pair<GeoPoint, Double>? {
+): Pair<GeoPointInterface, Double>? {
     val line =
         Geodesic.WGS84.InverseLine(
             from.latitude, from.longitude,
@@ -114,7 +114,7 @@ fun pointOnGeodesicSegmentOrNull(
                     position.latitude, position.longitude,
                 ).s12
         return if (distPosFrom <= thresholdMeters) {
-            Pair(GeoPointImpl(from.latitude, from.longitude, from.altitude ?: 0.0), distPosFrom)
+            Pair(GeoPoint(from.latitude, from.longitude, from.altitude ?: 0.0), distPosFrom)
         } else {
             null
         }
@@ -174,9 +174,9 @@ fun pointOnGeodesicSegmentOrNull(
 
         return Pair(
             if (distFrom <= distTo) {
-                GeoPointImpl(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0)
+                GeoPoint(from.latitude, from.longitude, from.altitude ?: to.altitude ?: 0.0)
             } else {
-                GeoPointImpl(to.latitude, to.longitude, to.altitude ?: from.altitude ?: 0.0)
+                GeoPoint(to.latitude, to.longitude, to.altitude ?: from.altitude ?: 0.0)
             },
             actualMin,
         )
@@ -202,7 +202,7 @@ fun pointOnGeodesicSegmentOrNull(
             else -> 0.0
         }
 
-    val result = GeoPointImpl(closestPoint.lat2, closestPoint.lon2, altitude)
+    val result = GeoPoint(closestPoint.lat2, closestPoint.lon2, altitude)
     return Pair(result, minDistance)
 }
 
@@ -211,11 +211,11 @@ fun pointOnGeodesicSegmentOrNull(
  * 地球の丸みは無視し、経度は短い差分を用いて unwrap します（±180°跨ぎ対応）。
  */
 fun isPointOnLinearLine(
-    from: GeoPoint,
-    to: GeoPoint,
-    position: GeoPoint,
+    from: GeoPointInterface,
+    to: GeoPointInterface,
+    position: GeoPointInterface,
     thresholdMeters: Double,
-): Pair<GeoPoint, Double>? {
+): Pair<GeoPointInterface, Double>? {
     // --- 経度の unwrap（短い経路を採用） ---
     val fromLng = from.longitude
     val toLng = to.longitude
@@ -279,8 +279,8 @@ fun isPointOnLinearLine(
                 to.altitude != null -> to.altitude!!
                 else -> 0.0
             }
-        return Pair<GeoPoint, Double>(
-            GeoPointImpl(
+        return Pair<GeoPointInterface, Double>(
+            GeoPoint(
                 latitude = from.latitude,
                 longitude = normalizeLng(fromLng),
                 altitude = alt,
@@ -312,8 +312,8 @@ fun isPointOnLinearLine(
             else -> 0.0
         }
 
-    return Pair<GeoPoint, Double>(
-        GeoPointImpl(
+    return Pair<GeoPointInterface, Double>(
+        GeoPoint(
             latitude = latitude,
             longitude = normalizeLng(longitude),
             altitude = alt,
@@ -328,11 +328,11 @@ fun normalizeLng(lng: Double): Double {
 }
 
 fun createInterpolatePoints(
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
     // 最大セグメント長（メートル）
     maxSegmentLength: Double = 10000.0,
-): List<GeoPoint> {
-    val results = mutableListOf<GeoPoint>()
+): List<GeoPointInterface> {
+    val results = mutableListOf<GeoPointInterface>()
     results.add(points[0])
 
     for (i in 1 until points.size) {
@@ -361,10 +361,10 @@ fun createInterpolatePoints(
 }
 
 fun createLinearInterpolatePoints(
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
     fractionStep: Double = 0.01,
-): List<GeoPoint> {
-    val results = mutableListOf<GeoPoint>()
+): List<GeoPointInterface> {
+    val results = mutableListOf<GeoPointInterface>()
     results.add(points[0])
     for (i in 1 until points.size) {
         var fraction = fractionStep
@@ -392,13 +392,13 @@ fun createLinearInterpolatePoints(
  * @return List of point groups, each representing a continuous segment without meridian crossings
  */
 fun splitByMeridian(
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
     geodesic: Boolean,
-): List<List<GeoPoint>> {
+): List<List<GeoPointInterface>> {
     if (points.isEmpty()) return emptyList()
 
-    val results = mutableListOf<List<GeoPoint>>()
-    var fragment = mutableListOf<GeoPoint>()
+    val results = mutableListOf<List<GeoPointInterface>>()
+    var fragment = mutableListOf<GeoPointInterface>()
 
     for (i in points.indices) {
         val currentPoint = points[i]
@@ -428,7 +428,7 @@ fun splitByMeridian(
 
             // Close current fragment and start new one
             results.add(fragment.toList())
-            fragment = mutableListOf<GeoPoint>()
+            fragment = mutableListOf<GeoPointInterface>()
 
             // Add the opposite meridian point to start the new fragment
             val oppositeMeridianPoint = createOppositeMeridianPoint(meridianPoint)
@@ -453,10 +453,10 @@ fun splitByMeridian(
  * @return Point at the meridian crossing
  */
 private fun interpolateAtMeridian(
-    from: GeoPoint,
-    to: GeoPoint,
+    from: GeoPointInterface,
+    to: GeoPointInterface,
     geodesic: Boolean,
-): GeoPointImpl {
+): GeoPoint {
     if (geodesic) {
         // Use geodesic interpolation (great circle path)
         return interpolateAtMeridianGeodesic(from, to)
@@ -470,9 +470,9 @@ private fun interpolateAtMeridian(
  * Performs linear interpolation to find the meridian crossing point.
  */
 private fun interpolateAtMeridianLinear(
-    from: GeoPoint,
-    to: GeoPoint,
-): GeoPointImpl {
+    from: GeoPointInterface,
+    to: GeoPointInterface,
+): GeoPoint {
     val fromLng = from.longitude
     val toLng = to.longitude
 
@@ -495,7 +495,7 @@ private fun interpolateAtMeridianLinear(
             else -> 0.0
         }
 
-    return GeoPointImpl(
+    return GeoPoint(
         latitude = interpolatedLatitude,
         longitude = targetMeridian,
         altitude = interpolatedAltitude!!,
@@ -507,9 +507,9 @@ private fun interpolateAtMeridianLinear(
  * Uses iterative method to find where the great circle path crosses the meridian.
  */
 private fun interpolateAtMeridianGeodesic(
-    from: GeoPoint,
-    to: GeoPoint,
-): GeoPointImpl {
+    from: GeoPointInterface,
+    to: GeoPointInterface,
+): GeoPoint {
     val fromLng = from.longitude
 
     // Determine target meridian
@@ -566,7 +566,7 @@ private fun interpolateAtMeridianGeodesic(
     val crossingPoint = Spherical.sphericalInterpolate(from, to, finalFraction)
 
     // Ensure the longitude is exactly at the target meridian
-    return GeoPointImpl(
+    return GeoPoint(
         latitude = crossingPoint.latitude,
         longitude = targetMeridian,
         altitude = crossingPoint.altitude,
@@ -579,10 +579,10 @@ private fun interpolateAtMeridianGeodesic(
  * @param point Point at one meridian
  * @return Point at the opposite meridian
  */
-private fun createOppositeMeridianPoint(point: GeoPoint): GeoPointImpl {
+private fun createOppositeMeridianPoint(point: GeoPointInterface): GeoPoint {
     val oppositeLongitude = if (point.longitude >= 0) -180.0 else 180.0
 
-    return GeoPointImpl(
+    return GeoPoint(
         latitude = point.latitude,
         longitude = oppositeLongitude,
         altitude = point.altitude ?: 0.0,

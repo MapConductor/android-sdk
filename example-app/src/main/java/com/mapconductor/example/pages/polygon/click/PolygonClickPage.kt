@@ -24,7 +24,7 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { PolygonClickPageViewModelImpl() }
+    val viewModel = remember { PolygonClickPageViewModel() }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),

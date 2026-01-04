@@ -32,8 +32,8 @@ const viewCommentBlock = [viewComment, ...viewCommentLines].join('\n');
 
 const code = `@Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
-    val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val camera = MapCameraPositionImpl(
+    val sanFrancisco = GeoPoint.fromLatLong(37.7749, -122.4194)
+    val camera = MapCameraPosition(
         position = sanFrancisco,
         zoom = 13.0,
     )

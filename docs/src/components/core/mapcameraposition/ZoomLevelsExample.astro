@@ -32,18 +32,18 @@ const {
 } = Astro.props;
 
 const code = `// Different zoom levels for different use cases
-val worldView = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${worldLatitude}, ${worldLongitude}),
+val worldView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${worldLatitude}, ${worldLongitude}),
     zoom = ${worldZoom}  // ${worldComment}
 )
 
-val cityView = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${cityLatitude}, ${cityLongitude}),
+val cityView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${cityLatitude}, ${cityLongitude}),
     zoom = ${cityZoom}  // ${cityComment}
 )
 
-val streetView = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${streetLatitude}, ${streetLongitude}),
+val streetView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${streetLatitude}, ${streetLongitude}),
     zoom = ${streetZoom}  // ${streetComment}
 )`;
 ---

@@ -20,7 +20,7 @@ fun StrategyMarkerManagement() {
         val markers = loadMarkerData() // Your marker data
 
         markers.forEach { markerData ->
-            val entity = MarkerEntity(
+            val entity = MarkerEntityInterface(
                 state = MarkerState(
                     id = markerData.id,
                     position = markerData.position,

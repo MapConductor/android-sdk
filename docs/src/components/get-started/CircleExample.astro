@@ -33,14 +33,14 @@ GoogleMapView(
 ) {
     // ${commentMarker}
     Marker(
-        position = GeoPointImpl.fromLatLong(${markerLat}, ${markerLong}),
+        position = GeoPoint.fromLatLong(${markerLat}, ${markerLong}),
         icon = DefaultIcon(label = "${markerLabel}"),
         extra = "tokyo_tower"
     )
 
     // ${commentDrawCircle}
     Circle(
-        center = GeoPointImpl.fromLatLong(${markerLat}, ${markerLong}),
+        center = GeoPoint.fromLatLong(${markerLat}, ${markerLong}),
         radiusMeters = ${radiusMeters},  // ${commentRadiusUnit}
         strokeColor = Color.Blue,
         strokeWidth = ${strokeWidth},  // ${commentStrokeUnit}

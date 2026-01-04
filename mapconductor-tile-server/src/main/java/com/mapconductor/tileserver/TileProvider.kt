@@ -1,5 +1,5 @@
 package com.mapconductor.tileserver
 
-interface TileProvider {
+interface TileProviderInterface {
     fun renderTile(request: TileRequest): ByteArray?
 }

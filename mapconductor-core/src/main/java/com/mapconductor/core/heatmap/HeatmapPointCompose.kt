@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 
 @Composable
 fun MapViewScope.HeatmapPoint(state: HeatmapPointState) {
@@ -22,7 +22,7 @@ fun MapViewScope.HeatmapPoint(state: HeatmapPointState) {
 
 @Composable
 fun MapViewScope.HeatmapPoint(
-    position: GeoPoint,
+    position: GeoPointInterface,
     weight: Double = 1.0,
     id: String? = null,
 ) {

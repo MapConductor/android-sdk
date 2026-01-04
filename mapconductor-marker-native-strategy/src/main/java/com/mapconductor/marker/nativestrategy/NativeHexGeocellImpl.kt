@@ -1,14 +1,14 @@
 ﻿package com.mapconductor.marker.nativestrategy
 
 import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
-import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.IdentifiedHexCell
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.projection.Projection
+import com.mapconductor.core.projection.ProjectionInterface
 import com.mapconductor.core.projection.WebMercator
 import kotlin.math.PI
 import kotlin.math.abs
@@ -20,15 +20,15 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * Native-compatible HexGeocell implementation that mirrors the API of
- * com.mapconductor.core.geocell.HexGeocell while living in the native strategy module.
+ * Native-compatible HexGeocellInterface implementation that mirrors the API of
+ * com.mapconductor.core.geocell.HexGeocellInterface while living in the native strategy module.
  */
-internal class NativeHexGeocellImpl(
-    override val projection: Projection,
+internal class NativeHexGeocell(
+    override val projection: ProjectionInterface,
     override val baseHexSideLength: Int = 1000,
-) : HexGeocell {
+) : HexGeocellInterface {
     override fun latLngToHexCoord(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
     ): HexCoord {
         val hexSideLength = adjustedHexSideLength(position.latitude, zoom)
@@ -37,7 +37,7 @@ internal class NativeHexGeocellImpl(
     }
 
     override fun latLngToHexCell(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
     ): HexCell {
         val coord = latLngToHexCoord(position, zoom)
@@ -51,7 +51,7 @@ internal class NativeHexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): GeoPoint {
+    ): GeoPointInterface {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
         return projection.unproject(center)
@@ -66,7 +66,7 @@ internal class NativeHexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): List<GeoPoint> {
+    ): List<GeoPointInterface> {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
         val circumRadius = hexSideLength * 2.0 / sqrt(3.0)
@@ -105,7 +105,7 @@ internal class NativeHexGeocellImpl(
                 IdentifiedHexCell(it.id, cell)
             }.toSet()
 
-    private fun computeGeographicCentroid(points: List<GeoPoint>): GeoPoint {
+    private fun computeGeographicCentroid(points: List<GeoPointInterface>): GeoPointInterface {
         if (points.size == 1) return points[0]
         var x = 0.0
         var y = 0.0
@@ -123,12 +123,12 @@ internal class NativeHexGeocellImpl(
         val centralLng = atan2(y, x) * 180 / PI
         val centralSquareRoot = sqrt(x * x + y * y)
         val centralLat = atan2(z, centralSquareRoot) * 180 / PI
-        return object : GeoPoint {
+        return object : GeoPointInterface {
             override val latitude: Double = centralLat
             override val longitude: Double = centralLng
             override val altitude: Double? = null
 
-            override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
+            override fun wrap(): GeoPointInterface = GeoPoint(latitude, longitude, altitude ?: 0.0).wrap()
         }
     }
 
@@ -199,8 +199,8 @@ internal class NativeHexGeocellImpl(
     }
 
     companion object {
-        fun defaultGeocell(): HexGeocell =
-            NativeHexGeocellImpl(
+        fun defaultGeocell(): HexGeocellInterface =
+            NativeHexGeocell(
                 projection = WebMercator,
                 baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
             )

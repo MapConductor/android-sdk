@@ -1,6 +1,6 @@
 package com.mapconductor.core.raster
 
-interface RasterLayerCapable {
+interface RasterLayerCapableInterface {
     suspend fun compositionRasterLayers(data: List<RasterLayerState>)
 
     suspend fun updateRasterLayer(state: RasterLayerState)

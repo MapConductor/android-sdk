@@ -49,12 +49,12 @@ const {
 
 const code = `@Composable
 fun AdvancedMapExample() {
-    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude})
     val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
+        cameraPosition = MapCameraPosition(position = center, zoom = ${zoomLevel})
     )
 
-    var clickedPoint by remember { mutableStateOf<GeoPoint?>(null) }
+    var clickedPoint by remember { mutableStateOf<GeoPointInterface?>(null) }
     val onMarkerClick: (MarkerState) -> Unit = { markerState ->
         println("${markerClickedPrefix}: \${markerState.extra}")
     }

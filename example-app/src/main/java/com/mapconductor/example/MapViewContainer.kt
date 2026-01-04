@@ -3,26 +3,26 @@ package com.mapconductor.example
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.map.ArcGISMapView
-import com.mapconductor.arcgis.map.ArcGISMapViewStateImpl
+import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.googlemaps.GoogleMapViewStateImpl
+import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapView
-import com.mapconductor.here.HereViewStateImpl
+import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxMapView
-import com.mapconductor.mapbox.MapboxViewStateImpl
+import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.maplibre.MapLibreMapView
-import com.mapconductor.maplibre.MapLibreViewStateImpl
+import com.mapconductor.maplibre.MapLibreViewState
 
 @Composable
 @Suppress("DEPRECATION")
 fun MapViewContainer(
     modifier: Modifier = Modifier,
-    state: MapViewState<*>? = null,
+    state: MapViewStateInterface<*>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -32,7 +32,7 @@ fun MapViewContainer(
 ) {
     @Suppress("UNCHECKED_CAST")
     when (state) {
-        is GoogleMapViewStateImpl ->
+        is GoogleMapViewState ->
             GoogleMapView(
                 modifier = modifier,
                 state = state,
@@ -44,7 +44,7 @@ fun MapViewContainer(
                 content = content,
             )
 
-        is HereViewStateImpl ->
+        is HereViewState ->
             HereMapView(
                 modifier = modifier,
                 state = state,
@@ -56,7 +56,7 @@ fun MapViewContainer(
                 content = content,
             )
 
-        is MapboxViewStateImpl ->
+        is MapboxViewState ->
             MapboxMapView(
                 modifier = modifier,
                 state = state,
@@ -68,7 +68,7 @@ fun MapViewContainer(
                 content = content,
             )
 
-        is ArcGISMapViewStateImpl ->
+        is ArcGISMapViewState ->
             ArcGISMapView(
                 modifier = modifier,
                 state = state,
@@ -80,7 +80,7 @@ fun MapViewContainer(
                 content = content,
             )
 
-        is MapLibreViewStateImpl ->
+        is MapLibreViewState ->
             MapLibreMapView(
                 modifier = modifier,
                 state = state,

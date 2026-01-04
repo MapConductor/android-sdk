@@ -62,8 +62,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun BasicMapExample(modifier: Modifier = Modifier) {
     val mapViewState = rememberMapboxMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(35.706400, 139.763635),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(35.706400, 139.763635),
             zoom = 13.0
         ),
     )

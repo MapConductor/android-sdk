@@ -1,10 +1,10 @@
 ﻿package com.mapconductor.marker.nativestrategy
 
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.geocell.HexGeocellInterface
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -35,11 +35,11 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
-    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = NativeHexGeocell.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
         semaphore.withPermit {
@@ -49,8 +49,8 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
             // Use native spatial query from the provided manager (keep consistent with onAdd/onUpdate)
             val markersInBounds = markerManager.findMarkersInBounds(expandedBounds)
             val markerIdsInBounds = markersInBounds.map { it.state.id }
-            val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
-            val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
+            val markersToRender = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+            val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
 
             // Fallback to iterating all entities if native spatial query fails (returns empty when it should return results)
             val allEntities = markerManager.allEntities()
@@ -108,7 +108,7 @@ class NativeSpatialMarkerRenderingStrategy<ActualMarker>(
             if (markersToRender.isNotEmpty()) {
                 val addParams =
                     markersToRender.map { entity ->
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state = entity.state
                             override val bitmapIcon: BitmapIcon =
                                 entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon

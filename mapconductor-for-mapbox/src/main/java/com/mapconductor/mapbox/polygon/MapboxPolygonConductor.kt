@@ -1,22 +1,22 @@
 package com.mapconductor.mapbox.polygon
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonEntityImpl
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.PolylineEntityImpl
+import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 
 class MapboxPolygonConductor(
     val polygonOverlay: MapboxPolygonOverlayRenderer,
     val polylineOverlay: MapboxPolylineOverlayRenderer,
-) : OverlayController<
+) : OverlayControllerInterface<
         PolygonState,
-        PolygonEntity<PolygonState>,
+        PolygonEntityInterface<PolygonState>,
         PolygonEvent,
     > {
     override val zIndex: Int = 2
@@ -26,7 +26,7 @@ class MapboxPolygonConductor(
 
             polygonOverlay.createPolygon(polygonState)?.let { polygon ->
                 val polygonEntity =
-                    PolygonEntityImpl(
+                    PolygonEntity(
                         polygon = polygon,
                         state = polygonState,
                     )
@@ -36,7 +36,7 @@ class MapboxPolygonConductor(
             val polylineState = polygonState.toPolylineState()
             polylineOverlay.createPolyline(polylineState)?.let { polyline ->
                 val polylineEntity =
-                    PolylineEntityImpl(
+                    PolylineEntity(
                         polyline = polyline,
                         state = polylineState,
                     )
@@ -50,7 +50,7 @@ class MapboxPolygonConductor(
     override suspend fun update(state: PolygonState) {
         polygonOverlay.createPolygon(state)?.let { polygon ->
             val polygonEntity =
-                PolygonEntityImpl(
+                PolygonEntity(
                     polygon = polygon,
                     state = state,
                 )
@@ -60,7 +60,7 @@ class MapboxPolygonConductor(
         val polylineState = state.toPolylineState()
         polylineOverlay.createPolyline(polylineState)?.let { polyline ->
             val polylineEntity =
-                PolylineEntityImpl(
+                PolylineEntity(
                     polyline = polyline,
                     state = polylineState,
                 )
@@ -77,13 +77,13 @@ class MapboxPolygonConductor(
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null
 
-    override fun find(position: GeoPoint): PolygonEntity<PolygonState>? =
-        polygonOverlay.polygonManager.find(position) as? PolygonEntity<PolygonState>
+    override fun find(position: GeoPointInterface): PolygonEntityInterface<PolygonState>? =
+        polygonOverlay.polygonManager.find(position) as? PolygonEntityInterface<PolygonState>
 
     override suspend fun clear() {
     }
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 
     override fun destroy() {
         // No native resources to clean up for polygons

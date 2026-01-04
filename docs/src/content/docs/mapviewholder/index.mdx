@@ -1,5 +1,5 @@
 ---
-title: "MapViewHolder"
+title: "MapViewHolderInterface"
 ---
 
 import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
@@ -16,17 +16,17 @@ import LifecycleAwareMapExample from '~/components/core/mapviewholder/LifecycleA
 import NullSafetyAccessExample from '~/components/core/mapviewholder/NullSafetyAccessExample.astro';
 import SafeNativeAccessExample from '~/components/core/mapviewholder/SafeNativeAccessExample.astro';
 
-`MapViewHolder` provides access to the native map SDK instances for advanced use cases where MapConductor's unified API doesn't cover specific provider functionality. While MapConductor provides a common interface, it doesn't completely wrap all native features, and MapViewHolder bridges this gap.
+`MapViewHolderInterface` provides access to the native map SDK instances for advanced use cases where MapConductor's unified API doesn't cover specific provider functionality. While MapConductor provides a common interface, it doesn't completely wrap all native features, and MapViewHolderInterface bridges this gap.
 
 ## Overview
 
-MapConductor aims to provide a unified API across map providers, but complete feature parity is not always possible. MapViewHolder allows developers to access the underlying native map instances when they need provider-specific functionality.
+MapConductor aims to provide a unified API across map providers, but complete feature parity is not always possible. MapViewHolderInterface allows developers to access the underlying native map instances when they need provider-specific functionality.
 
 <MapViewHolderInterface />
 
-## Accessing MapViewHolder
+## Accessing MapViewHolderInterface
 
-Each map provider's `MapViewState` implementation provides access to its specific `MapViewHolder`:
+Each map provider's `MapViewStateInterface` implementation provides access to its specific `MapViewHolderInterface`:
 
 <MapViewHolderAccessExample />
 
@@ -162,5 +162,5 @@ Each map provider's `MapViewState` implementation provides access to its specifi
 4. **Feature Parity**: Not all providers support equivalent native features
 5. **MapConductor Integration**: Native changes may not integrate with MapConductor's state management
 
-MapViewHolder is a powerful escape hatch for advanced use cases, but should be used judiciously to maintain the benefits of MapConductor's unified API approach.
+MapViewHolderInterface is a powerful escape hatch for advanced use cases, but should be used judiciously to maintain the benefits of MapConductor's unified API approach.
 

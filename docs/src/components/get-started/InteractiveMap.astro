@@ -25,10 +25,10 @@ const code = `import androidx.compose.runtime.*
 
 @Composable
 fun InteractiveMap(modifier: Modifier = Modifier) {
-    var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
+    var clickedPosition by remember { mutableStateOf<GeoPointInterface?>(null) }
 
-    val initialCamera = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+    val initialCamera = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${lat}, ${long}),
         zoom = ${zoom}
     )
 

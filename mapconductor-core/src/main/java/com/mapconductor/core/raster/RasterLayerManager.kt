@@ -1,41 +1,41 @@
 package com.mapconductor.core.raster
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 
-interface RasterLayerManager<ActualLayer> {
-    fun registerEntity(entity: RasterLayerEntity<ActualLayer>)
+interface RasterLayerManagerInterface<ActualLayer> {
+    fun registerEntity(entity: RasterLayerEntityInterface<ActualLayer>)
 
-    fun removeEntity(id: String): RasterLayerEntity<ActualLayer>?
+    fun removeEntity(id: String): RasterLayerEntityInterface<ActualLayer>?
 
-    fun getEntity(id: String): RasterLayerEntity<ActualLayer>?
+    fun getEntity(id: String): RasterLayerEntityInterface<ActualLayer>?
 
     fun hasEntity(id: String): Boolean
 
-    fun allEntities(): List<RasterLayerEntity<ActualLayer>>
+    fun allEntities(): List<RasterLayerEntityInterface<ActualLayer>>
 
     fun clear()
 
-    fun find(position: GeoPoint): RasterLayerEntity<ActualLayer>?
+    fun find(position: GeoPointInterface): RasterLayerEntityInterface<ActualLayer>?
 }
 
-class RasterLayerManagerImpl<ActualLayer> : RasterLayerManager<ActualLayer> {
-    private val entities = mutableMapOf<String, RasterLayerEntity<ActualLayer>>()
+class RasterLayerManager<ActualLayer> : RasterLayerManagerInterface<ActualLayer> {
+    private val entities = mutableMapOf<String, RasterLayerEntityInterface<ActualLayer>>()
 
-    override fun registerEntity(entity: RasterLayerEntity<ActualLayer>) {
+    override fun registerEntity(entity: RasterLayerEntityInterface<ActualLayer>) {
         entities[entity.state.id] = entity
     }
 
-    override fun removeEntity(id: String): RasterLayerEntity<ActualLayer>? = entities.remove(id)
+    override fun removeEntity(id: String): RasterLayerEntityInterface<ActualLayer>? = entities.remove(id)
 
-    override fun getEntity(id: String): RasterLayerEntity<ActualLayer>? = entities[id]
+    override fun getEntity(id: String): RasterLayerEntityInterface<ActualLayer>? = entities[id]
 
     override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
-    override fun allEntities(): List<RasterLayerEntity<ActualLayer>> = entities.values.toList()
+    override fun allEntities(): List<RasterLayerEntityInterface<ActualLayer>> = entities.values.toList()
 
     override fun clear() {
         entities.clear()
     }
 
-    override fun find(position: GeoPoint): RasterLayerEntity<ActualLayer>? = null
+    override fun find(position: GeoPointInterface): RasterLayerEntityInterface<ActualLayer>? = null
 }

@@ -1,14 +1,14 @@
 package com.mapconductor.core.circle
 
-interface CircleEntity<ActualCircle> {
+interface CircleEntityInterface<ActualCircle> {
     var circle: ActualCircle
     val state: CircleState
     val fingerPrint: CircleFingerPrint
 }
 
-class CircleEntityImpl<ActualCircle>(
+class CircleEntity<ActualCircle>(
     override var circle: ActualCircle,
     override val state: CircleState,
-) : CircleEntity<ActualCircle> {
+) : CircleEntityInterface<ActualCircle> {
     override val fingerPrint: CircleFingerPrint = state.fingerPrint()
 }

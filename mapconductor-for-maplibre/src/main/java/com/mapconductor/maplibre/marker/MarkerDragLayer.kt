@@ -1,7 +1,7 @@
 package com.mapconductor.maplibre.marker
 
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.toPoint
 import org.maplibre.android.maps.Style
@@ -13,9 +13,9 @@ open class MarkerDragLayer(
     sourceId: String,
     layerId: String,
 ) : MarkerLayer(sourceId, layerId) {
-    var selected: MarkerEntity<MapLibreActualMarker>? = null
+    var selected: MarkerEntityInterface<MapLibreActualMarker>? = null
 
-    fun updatePosition(geoPoint: GeoPointImpl) {
+    fun updatePosition(geoPoint: GeoPoint) {
         selected?.let {
             it.state.position = geoPoint
         }
@@ -27,7 +27,7 @@ open class MarkerDragLayer(
                 if (it.marker != null) {
                     val feature =
                         Feature.fromGeometry(
-                            GeoPointImpl.from(it.state.position).toPoint(),
+                            GeoPoint.from(it.state.position).toPoint(),
                             it.marker?.properties(),
                             it.state.id,
                         )

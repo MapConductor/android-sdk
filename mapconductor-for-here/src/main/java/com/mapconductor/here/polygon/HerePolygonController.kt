@@ -1,11 +1,11 @@
 package com.mapconductor.here.polygon
 
 import com.mapconductor.core.polygon.PolygonController
+import com.mapconductor.core.polygon.PolygonManagerInterface
 import com.mapconductor.core.polygon.PolygonManager
-import com.mapconductor.core.polygon.PolygonManagerImpl
 import com.mapconductor.here.HereActualPolygon
 
 class HerePolygonController(
-    polygonManager: PolygonManager<HereActualPolygon> = PolygonManagerImpl(),
+    polygonManager: PolygonManagerInterface<HereActualPolygon> = PolygonManager(),
     renderer: HerePolygonOverlayRenderer,
 ) : PolygonController<HereActualPolygon>(polygonManager, renderer)

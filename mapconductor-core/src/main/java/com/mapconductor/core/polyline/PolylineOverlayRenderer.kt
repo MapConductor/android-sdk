@@ -1,20 +1,20 @@
 package com.mapconductor.core.polyline
 
-interface PolylineOverlayRenderer<ActualPolyline> {
-    interface AddParams {
+interface PolylineOverlayRendererInterface<ActualPolyline> {
+    interface AddParamsInterface {
         val state: PolylineState
     }
 
-    interface ChangeParams<ActualPolyline> {
-        val current: PolylineEntity<ActualPolyline>
-        val prev: PolylineEntity<ActualPolyline>
+    interface ChangeParamsInterface<ActualPolyline> {
+        val current: PolylineEntityInterface<ActualPolyline>
+        val prev: PolylineEntityInterface<ActualPolyline>
     }
 
-    suspend fun onAdd(data: List<AddParams>): List<ActualPolyline?>
+    suspend fun onAdd(data: List<AddParamsInterface>): List<ActualPolyline?>
 
-    suspend fun onChange(data: List<ChangeParams<ActualPolyline>>): List<ActualPolyline?>
+    suspend fun onChange(data: List<ChangeParamsInterface<ActualPolyline>>): List<ActualPolyline?>
 
-    suspend fun onRemove(data: List<PolylineEntity<ActualPolyline>>)
+    suspend fun onRemove(data: List<PolylineEntityInterface<ActualPolyline>>)
 
     suspend fun onPostProcess()
 }

@@ -1,9 +1,9 @@
 ---
-title: "GeoPoint（地理座標）"
+title: "GeoPointInterface（地理座標）"
 ---
 
 import GeoPointInterface from '~/components/core/geopoint/GeoPointInterface.astro';
-import GeoPointImpl from '~/components/core/geopoint/GeoPointImpl.astro';
+import GeoPoint from '~/components/core/geopoint/GeoPoint.astro';
 import GeoPointFactoryMethods from '~/components/core/geopoint/GeoPointFactoryMethods.astro';
 import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.astro';
 import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
@@ -13,33 +13,33 @@ import WrapExample from '~/components/core/geopoint/WrapExample.astro';
 import EqualsExample from '~/components/core/geopoint/EqualsExample.astro';
 import ToUrlValueExample from '~/components/core/geopoint/ToUrlValueExample.astro';
 
-`GeoPoint` は、緯度・経度・高度（オプション）を持つ地理座標を表します。
+`GeoPointInterface` は、緯度・経度・高度（オプション）を持つ地理座標を表します。
 
 ## インターフェースと実装
 
-### GeoPoint インターフェース
+### GeoPointInterface インターフェース
 
-GeoPointインタフェースは、以下のプロパティを持ちます。ユニットテストなどに用います。
+GeoPointInterfaceは、以下のプロパティを持ちます。ユニットテストなどに用います。
 
 <GeoPointInterface />
 
-### GeoPointImpl
+### GeoPoint
 
-GeoPointImplクラスは、GeoPointインタフェースを実装したクラスです。
+GeoPointクラスは、GeoPointInterfaceを実装したクラスです。
 
-<GeoPointImpl />
+<GeoPoint />
 
 ## 生成メソッド
 
 ### ファクトリーメソッド
 
-GeoPointImplクラスは、下記のファクトリーメソッドを提供します。
+GeoPointクラスは、下記のファクトリーメソッドを提供します。
 開発者の使いやすいメソッドを選択することができます。
 
 <GeoPointFactoryMethods
   commentForFromLatLong="緯度,経度の順で値を指定"
   commentForFromLongLat="経度,緯度の順で値を指定"
-  commentForFrom="GeoPointインタフェースを持つオブジェクトから生成"
+  commentForFrom="GeoPointInterfaceを持つオブジェクトから生成"
   commentForConstructor="コンスタントに値を直接渡して生成"
   latitude={37.7749}
   longitude={-122.4194}
@@ -131,7 +131,7 @@ GeoPointImplクラスは、下記のファクトリーメソッドを提供し�
 
 ### equals()
 
-`GeoPointImpl` の `equals()` メソッドは、浮動小数点の誤差を考慮した比較を行います。
+`GeoPoint` の `equals()` メソッドは、浮動小数点の誤差を考慮した比較を行います。
 
 - **許容誤差**: 1e-7（約0.00000001度、約1.1cm）
 - **比較対象**: 緯度、経度、高度のすべて

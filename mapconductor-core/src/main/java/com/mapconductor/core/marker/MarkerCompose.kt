@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 
 @Composable
@@ -23,11 +23,11 @@ fun MapViewScope.Marker(state: MarkerState) {
 
 @Composable
 fun MapViewScope.Marker(
-    position: GeoPoint,
+    position: GeoPointInterface,
     id: String? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
-    icon: MarkerIcon? = null,
+    icon: MarkerIconInterface? = null,
     extra: Serializable? = null,
     onClick: OnMarkerEventHandler? = null,
     onDragStart: OnMarkerEventHandler? = null,

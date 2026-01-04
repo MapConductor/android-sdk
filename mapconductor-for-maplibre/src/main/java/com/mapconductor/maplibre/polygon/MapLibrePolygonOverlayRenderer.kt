@@ -1,13 +1,13 @@
 package com.mapconductor.maplibre.polygon
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonManager
+import com.mapconductor.core.polygon.PolygonEntityInterface
+import com.mapconductor.core.polygon.PolygonManagerInterface
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.maplibre.MapLibreActualPolygon
-import com.mapconductor.maplibre.MapLibreMapViewHolder
+import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import com.mapconductor.maplibre.createMapLibrePolygons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,11 +15,11 @@ import kotlinx.coroutines.launch
 
 class MapLibrePolygonOverlayRenderer(
     val layer: MapLibrePolygonLayer,
-    val polygonManager: PolygonManager<MapLibreActualPolygon>,
-    override val holder: MapLibreMapViewHolder,
+    val polygonManager: PolygonManagerInterface<MapLibreActualPolygon>,
+    override val holder: MapLibreMapViewHolderInterface,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolygonOverlayRenderer<MapLibreActualPolygon>() {
-    override suspend fun onRemove(data: List<PolygonEntity<MapLibreActualPolygon>>) {
+    override suspend fun onRemove(data: List<PolygonEntityInterface<MapLibreActualPolygon>>) {
         // Actual removal handled by redrawing remaining polygons in onPostProcess
     }
 
@@ -33,7 +33,7 @@ class MapLibrePolygonOverlayRenderer(
         }
     }
 
-    override suspend fun removePolygon(entity: PolygonEntity<MapLibreActualPolygon>) {
+    override suspend fun removePolygon(entity: PolygonEntityInterface<MapLibreActualPolygon>) {
         // No-op; we redraw full collection
     }
 
@@ -48,8 +48,8 @@ class MapLibrePolygonOverlayRenderer(
 
     override suspend fun updatePolygonProperties(
         polygon: MapLibreActualPolygon,
-        current: PolygonEntity<MapLibreActualPolygon>,
-        prev: PolygonEntity<MapLibreActualPolygon>,
+        current: PolygonEntityInterface<MapLibreActualPolygon>,
+        prev: PolygonEntityInterface<MapLibreActualPolygon>,
     ): MapLibreActualPolygon? {
         val finger = current.fingerPrint
         val prevFinger = prev.fingerPrint
@@ -65,12 +65,12 @@ class MapLibrePolygonOverlayRenderer(
      * Creates geodesic polygon points by interpolating between each consecutive pair of vertices.
      */
     private fun createGeodesicPolygonPoints(
-        points: List<GeoPoint>,
+        points: List<GeoPointInterface>,
         maxSegmentLength: Double = 1000.0,
-    ): List<GeoPoint> {
+    ): List<GeoPointInterface> {
         if (points.size < 3) return points
 
-        val results = mutableListOf<GeoPoint>()
+        val results = mutableListOf<GeoPointInterface>()
 
         for (i in points.indices) {
             val currentPoint = points[i]
@@ -100,5 +100,5 @@ class MapLibrePolygonOverlayRenderer(
         return results
     }
 
-    private fun getAllPolygonEntities(): List<PolygonEntity<MapLibreActualPolygon>> = polygonManager.allEntities()
+    private fun getAllPolygonEntities(): List<PolygonEntityInterface<MapLibreActualPolygon>> = polygonManager.allEntities()
 }

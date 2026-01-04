@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 
 @Composable
@@ -27,7 +27,7 @@ fun MapViewScope.Circle(state: CircleState) {
 
 @Composable
 fun MapViewScope.Circle(
-    center: GeoPoint,
+    center: GeoPointInterface,
     radiusMeters: Double,
     id: String? = null,
     strokeColor: Color = Color.Red,

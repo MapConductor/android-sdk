@@ -12,16 +12,16 @@ const {
 const code = `@Composable
 fun RouteProgress() {
     val route = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194),
-        GeoPointImpl.fromLatLong(37.7849, -122.4094),
-        GeoPointImpl.fromLatLong(37.7949, -122.3994)
+        GeoPoint.fromLatLong(37.7749, -122.4194),
+        GeoPoint.fromLatLong(37.7849, -122.4094),
+        GeoPoint.fromLatLong(37.7949, -122.3994)
     )
 
     var currentPosition by remember { mutableStateOf(route.first()) }
     val totalDistance = Spherical.computeLength(route)
 
     // Calculate progress along route
-    fun calculateProgress(position: GeoPoint): Double {
+    fun calculateProgress(position: GeoPointInterface): Double {
         var distanceToPosition = 0.0
         var minDistanceToRoute = Double.MAX_VALUE
         var bestSegmentProgress = 0.0

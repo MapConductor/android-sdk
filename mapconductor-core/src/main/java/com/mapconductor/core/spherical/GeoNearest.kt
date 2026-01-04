@@ -1,7 +1,7 @@
 package com.mapconductor.core.spherical
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.projection.Earth
 import kotlin.math.PI
 import kotlin.math.abs
@@ -19,7 +19,7 @@ data class ClosestHit(
     // P中心の円が初めて線分ABに触れる半径
     val radiusMeters: Double,
     // その交点
-    val hit: GeoPoint,
+    val hit: GeoPointInterface,
     // "planar" か "spherical"
     val mode: String,
 )
@@ -30,9 +30,9 @@ object GeoNearest {
     private const val EPS = 1e-12
 
     fun closestIntersection(
-        P: GeoPoint,
-        A: GeoPoint,
-        B: GeoPoint,
+        P: GeoPointInterface,
+        A: GeoPointInterface,
+        B: GeoPointInterface,
     ): ClosestHit {
         // スケール判定のために概算距離をいくつか見る
         val dPA = Spherical.computeDistanceBetween(P, A)
@@ -50,16 +50,16 @@ object GeoNearest {
 
     // --- 1) 局所平面（equirectangular, 中心P基準） ---
     private fun planarNearest(
-        P: GeoPoint,
-        A: GeoPoint,
-        B: GeoPoint,
+        P: GeoPointInterface,
+        A: GeoPointInterface,
+        B: GeoPointInterface,
     ): ClosestHit {
         // 中心Pの緯度に合わせてlonスケールをcos(phi)で補正
         val phi0 = P.latitude * DEG
         val kx = Earth.RADIUS_METERS * cos(phi0) * DEG
         val ky = Earth.RADIUS_METERS * DEG
 
-        fun toLocalXY(X: GeoPoint): Pair<Double, Double> {
+        fun toLocalXY(X: GeoPointInterface): Pair<Double, Double> {
             val x = (normalizelongitude(X.longitude - P.longitude)) * kx
             val y = (X.latitude - P.latitude) * ky
             return Pair(x, y)
@@ -68,10 +68,10 @@ object GeoNearest {
         fun toGeoPoint(
             x: Double,
             y: Double,
-        ): GeoPoint {
+        ): GeoPointInterface {
             val lat = P.latitude + (y / ky)
             val lon = P.longitude + (x / kx)
-            return GeoPointImpl(lat, normalizeLon180(lon))
+            return GeoPoint(lat, normalizeLon180(lon))
         }
 
         val (ax, ay) = toLocalXY(A)
@@ -107,9 +107,9 @@ object GeoNearest {
 
     // --- 2) 球面（大円） ---
     private fun sphericalNearest(
-        P: GeoPoint,
-        A: GeoPoint,
-        B: GeoPoint,
+        P: GeoPointInterface,
+        A: GeoPointInterface,
+        B: GeoPointInterface,
     ): ClosestHit {
         // 角度をラジアン
         val p = toUnitVec(P)
@@ -152,14 +152,14 @@ object GeoNearest {
     }
 
     // --- ユーティリティ ---
-    private fun toUnitVec(ll: GeoPoint): DoubleArray {
+    private fun toUnitVec(ll: GeoPointInterface): DoubleArray {
         val phi = ll.latitude * DEG
         val lam = ll.longitude * DEG
         val c = cos(phi)
         return doubleArrayOf(c * cos(lam), c * sin(lam), sin(phi))
     }
 
-    private fun toGeoPoint(v: DoubleArray): GeoPoint {
+    private fun toGeoPoint(v: DoubleArray): GeoPointInterface {
         val x = v[0]
         val y = v[1]
         val z = v[2]
@@ -167,7 +167,7 @@ object GeoNearest {
         val zn = (z / r).coerceIn(-1.0, 1.0)
         val lat = asin(zn) / DEG
         val lon = atan2(y, x) / DEG
-        return GeoPointImpl(lat, normalizeLon180(lon))
+        return GeoPoint(lat, normalizeLon180(lon))
     }
 
     private fun cross(
@@ -214,8 +214,8 @@ object GeoNearest {
 
     private fun endpointChoice(
         p: DoubleArray,
-        A: GeoPoint,
-        B: GeoPoint,
+        A: GeoPointInterface,
+        B: GeoPointInterface,
         mode: String,
     ): ClosestHit {
         val a = toUnitVec(A)

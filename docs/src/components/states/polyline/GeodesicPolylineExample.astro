@@ -25,8 +25,8 @@ const {
 
 const code = `val geodesicPolyline = PolylineState(
     points = listOf(
-        GeoPointImpl.fromLatLong(${startLatitude}, ${startLongitude}), // ${commentForStartPoint}
-        GeoPointImpl.fromLatLong(${endLatitude}, ${endLongitude})   // ${commentForEndPoint}
+        GeoPoint.fromLatLong(${startLatitude}, ${startLongitude}), // ${commentForStartPoint}
+        GeoPoint.fromLatLong(${endLatitude}, ${endLongitude})   // ${commentForEndPoint}
     ),
     strokeColor = Color.Green,
     strokeWidth = 3.dp,

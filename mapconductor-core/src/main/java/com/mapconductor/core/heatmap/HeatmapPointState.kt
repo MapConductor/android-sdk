@@ -4,12 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class HeatmapPointState(
-    position: GeoPoint,
+    position: GeoPointInterface,
     weight: Double = 1.0,
     id: String? = null,
 ) {
@@ -29,7 +29,7 @@ class HeatmapPointState(
         }
 
     private val currentPosition = mutableStateOf(position)
-    var position: GeoPoint
+    var position: GeoPointInterface
         get() = currentPosition.value
         set(value) {
             currentPosition.value = value
@@ -39,7 +39,7 @@ class HeatmapPointState(
 
     fun copy(
         id: String? = this.id,
-        position: GeoPoint = this.position,
+        position: GeoPointInterface = this.position,
         weight: Double = this.weight,
     ): HeatmapPointState =
         HeatmapPointState(

@@ -2,11 +2,11 @@ package com.mapconductor.arcgis
 
 import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.arcgis.zoom.ZoomAltitudeConverter
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.PI
@@ -17,10 +17,10 @@ import kotlin.math.sin
 
 private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
-fun MapCameraPositionImpl.getAltitudeForArcGIS(): Double = converter.zoomLevelToAltitude(zoom, position.latitude, tilt)
+fun MapCameraPosition.getAltitudeForArcGIS(): Double = converter.zoomLevelToAltitude(zoom, position.latitude, tilt)
 
-fun MapCameraPositionImpl.toCamera(): Camera {
-    val targetPoint = GeoPointImpl.from(position).toPoint()
+fun MapCameraPosition.toCamera(): Camera {
+    val targetPoint = GeoPoint.from(position).toPoint()
     return calculateCameraForOrbitParameters(
         targetPoint = targetPoint,
         distance = converter.zoomLevelToDistance(zoom, position.latitude),
@@ -44,7 +44,7 @@ fun calculateDestinationPoint(
     lon: Double,
     bearing: Double,
     distance: Double,
-): GeoPoint {
+): GeoPointInterface {
     val latRad = lat.toRadians()
     val lonRad = lon.toRadians()
     val bearingRad = bearing.toRadians()
@@ -62,12 +62,12 @@ fun calculateDestinationPoint(
     // 経度を -180 ～ +180 の範囲に正規化
     destLonRad = (destLonRad + 3 * PI) % (2 * PI) - PI
 
-    return object : GeoPoint {
+    return object : GeoPointInterface {
         override val latitude: Double get() = destLatRad.toDegrees()
         override val longitude: Double get() = destLonRad.toDegrees()
         override val altitude: Double? get() = null
 
-        override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
+        override fun wrap(): GeoPointInterface = GeoPoint(latitude, longitude, altitude ?: 0.0).wrap()
     }
 }
 
@@ -106,14 +106,14 @@ fun calculateCameraForOrbitParameters(
     )
 }
 
-fun MapCameraPositionImpl.Companion.from(position: MapCameraPosition): MapCameraPositionImpl =
+fun MapCameraPosition.Companion.from(position: MapCameraPositionInterface): MapCameraPosition =
     when (position) {
-        is MapCameraPositionImpl -> position
+        is MapCameraPosition -> position
         else -> {
             val altitude = converter.zoomLevelToAltitude(position.zoom, position.position.latitude, position.tilt)
-            MapCameraPositionImpl(
+            MapCameraPosition(
                 position =
-                    GeoPointImpl.fromLongLat(
+                    GeoPoint.fromLongLat(
                         longitude = position.position.longitude,
                         latitude = position.position.latitude,
                         altitude = altitude,
@@ -148,9 +148,9 @@ fun Camera.withZoomLevel(zoomLevel: Double): Camera {
 }
 
 fun Camera.toMapCameraPosition() =
-    MapCameraPositionImpl(
+    MapCameraPosition(
         position =
-            GeoPointImpl.fromLongLat(
+            GeoPoint.fromLongLat(
                 longitude = this.location.x,
                 latitude = this.location.y,
                 altitude = this.location.z ?: 0.0,
@@ -160,6 +160,6 @@ fun Camera.toMapCameraPosition() =
                 .altitudeToZoomLevel(altitude = this.location.z ?: 0.0, latitude = this.location.y, tilt = this.pitch),
         bearing = (360 - this.heading) % 360,
         tilt = this.pitch,
-        paddings = MapPaddingsImpl.Zeros,
+        paddings = MapPaddings.Zeros,
         visibleRegion = null,
     )

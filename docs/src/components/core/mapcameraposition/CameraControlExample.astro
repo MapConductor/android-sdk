@@ -16,8 +16,8 @@ fun CameraControlExample(modifier: Modifier = Modifier) {
             id = "debug-tiles",
             styleJsonURL = "https://demotiles.maplibre.org/debug-tiles/style.json",
         ),
-        cameraPosition = MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
             zoom = 15.0
         ),
     )

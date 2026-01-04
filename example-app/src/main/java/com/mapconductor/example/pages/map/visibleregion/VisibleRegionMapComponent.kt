@@ -44,10 +44,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.Marker
@@ -62,11 +62,11 @@ import android.content.Context
 @Composable
 fun VisibleRegionMapComponent(
     modifier: Modifier = Modifier,
-    mapViewState: MapViewState<*>,
+    mapViewState: MapViewStateInterface<*>,
     onMapLoaded: OnMapLoadedHandler? = null,
-    onCameraChanged: ((MapCameraPosition) -> Unit)? = null,
+    onCameraChanged: ((MapCameraPositionInterface) -> Unit)? = null,
 ) {
-    var currentCameraPosition by remember { mutableStateOf<MapCameraPosition?>(null) }
+    var currentCameraPosition by remember { mutableStateOf<MapCameraPositionInterface?>(null) }
     var visibleRegionInfo by remember { mutableStateOf<VisibleRegionInfo?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -93,7 +93,7 @@ fun VisibleRegionMapComponent(
                     Marker(
                         MarkerState(
                             id = "center_marker",
-                            position = GeoPointImpl.fromLatLong(centerLat, centerLng),
+                            position = GeoPoint.fromLatLong(centerLat, centerLng),
                             icon = ColorDefaultIcon(fillColor = Color.Red, label = "Center"),
                         ),
                     )
@@ -180,7 +180,7 @@ fun VisibleRegionMapComponent(
 @Composable
 fun VisibleRegionInfoPanel(
     modifier: Modifier = Modifier,
-    cameraPosition: MapCameraPosition?,
+    cameraPosition: MapCameraPositionInterface?,
     visibleRegionInfo: VisibleRegionInfo?,
 ) {
     val context = LocalContext.current
@@ -285,7 +285,7 @@ fun VisibleRegionInfoPanel(
 @SuppressLint("DefaultLocale")
 @Composable
 fun CameraDataRow(
-    cameraPosition: MapCameraPosition?,
+    cameraPosition: MapCameraPositionInterface?,
     visibleRegionInfo: VisibleRegionInfo?,
 ) {
     Column(
@@ -450,7 +450,7 @@ private fun InfoRow(
 }
 
 @SuppressLint("DefaultLocale")
-private fun formatLatLng(position: GeoPoint): String =
+private fun formatLatLng(position: GeoPointInterface): String =
     "${String.format("%.6f", position.latitude)}, ${String.format("%.6f", position.longitude)}"
 
 private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.VisibleRegion): VisibleRegionInfo {
@@ -468,12 +468,12 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
     val widthKm =
         computeDistanceBetween(
             bounds.southWest!!,
-            GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
+            GeoPoint(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
         )
     val heightKm =
         computeDistanceBetween(
             bounds.southWest!!,
-            GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
+            GeoPoint(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
         )
 
     return VisibleRegionInfo(

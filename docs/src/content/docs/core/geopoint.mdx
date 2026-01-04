@@ -1,9 +1,9 @@
 ---
-title: "GeoPoint"
+title: "GeoPointInterface"
 ---
 
 import GeoPointInterface from '~/components/core/geopoint/GeoPointInterface.astro';
-import GeoPointImpl from '~/components/core/geopoint/GeoPointImpl.astro';
+import GeoPoint from '~/components/core/geopoint/GeoPoint.astro';
 import GeoPointFactoryMethods from '~/components/core/geopoint/GeoPointFactoryMethods.astro';
 import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.astro';
 import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
@@ -13,33 +13,33 @@ import WrapExample from '~/components/core/geopoint/WrapExample.astro';
 import EqualsExample from '~/components/core/geopoint/EqualsExample.astro';
 import ToUrlValueExample from '~/components/core/geopoint/ToUrlValueExample.astro';
 
-`GeoPoint` represents a geographic coordinate with latitude, longitude, and optional altitude.
+`GeoPointInterface` represents a geographic coordinate with latitude, longitude, and optional altitude.
 
 ## Interface and Implementation
 
-### GeoPoint Interface
+### GeoPointInterface Interface
 
-The GeoPoint interface has the following properties. It is used for unit testing and other purposes.
+The GeoPointInterface interface has the following properties. It is used for unit testing and other purposes.
 
 <GeoPointInterface />
 
-### GeoPointImpl
+### GeoPoint
 
-The GeoPointImpl class is an implementation of the GeoPoint interface.
+The GeoPoint class is an implementation of the GeoPointInterface interface.
 
-<GeoPointImpl />
+<GeoPoint />
 
 ## Creation Methods
 
 ### Factory Methods
 
-The GeoPointImpl class provides the following factory methods.
+The GeoPoint class provides the following factory methods.
 Developers can choose the method that is most convenient for them.
 
 <GeoPointFactoryMethods
   commentForFromLatLong="Specify values in latitude, longitude order"
   commentForFromLongLat="Specify values in longitude, latitude order"
-  commentForFrom="Create from an object with GeoPoint interface"
+  commentForFrom="Create from an object with GeoPointInterface interface"
   commentForConstructor="Create by passing values directly to constructor"
   latitude={37.7749}
   longitude={-122.4194}
@@ -76,7 +76,7 @@ Developers can choose the method that is most convenient for them.
 
 ### Validation
 
-The `isValid()` extension function checks if the coordinates of a GeoPoint are within valid ranges.
+The `isValid()` extension function checks if the coordinates of a GeoPointInterface are within valid ranges.
 
 - **Latitude**: Within the range -90.0 to 90.0
 - **Longitude**: Within the range -180.0 to 180.0
@@ -131,7 +131,7 @@ The difference between `normalize()` and `wrap()` is how they handle pole crossi
 
 ### equals()
 
-The `equals()` method of `GeoPointImpl` performs comparison considering floating-point errors.
+The `equals()` method of `GeoPoint` performs comparison considering floating-point errors.
 
 - **Tolerance**: 1e-7 (approximately 0.00000001 degrees, about 1.1cm)
 - **Comparison targets**: Latitude, longitude, and altitude

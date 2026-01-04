@@ -22,9 +22,9 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 
 コアランタイムと共有抽象化:
 
-- ジオメトリ型: `GeoPoint`, `GeoRectBounds`
-- カメラ型: `MapCameraPosition`, `VisibleRegion`
-- マップ抽象化: `MapViewState`, `MapViewController`, `MapViewBase`
+- ジオメトリ型: `GeoPointInterface`, `GeoRectBounds`
+- カメラ型: `MapCameraPositionInterface`, `VisibleRegion`
+- マップ抽象化: `MapViewStateInterface`, `MapViewControllerInterface`, `MapViewBase`
 - オーバーレイプリミティブ: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
 他のすべてのモジュールは `mapconductor-core` の上に構築されています。
@@ -36,33 +36,33 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 ### `mapconductor-for-googlemaps`
 
 - `GoogleMapView` Composable
-- `GoogleMapViewStateImpl`
+- `GoogleMapViewState`
 - Google Maps 固有のオーバーレイコントローラ
 
 ### `mapconductor-for-mapbox`
 
 - `MapboxMapView` Composable
-- `MapboxViewStateImpl`
+- `MapboxViewState`
 
 ### `mapconductor-for-here`
 
 - `HereMapView` Composable
-- `HereViewStateImpl`
+- `HereViewState`
 
 ### `mapconductor-for-arcgis`
 
 - `ArcGISMapView` Composable
-- `ArcGISMapViewStateImpl`
+- `ArcGISMapViewState`
 
 ### `mapconductor-for-maplibre`
 
 - `MapLibreMapView` Composable
-- `MapLibreViewStateImpl`
+- `MapLibreViewState`
 
 各地図SDKモジュールは:
 
-- `MapViewState` とコントローラバインディングを実装します
-- 地図SDK固有のカメラと表示可能領域を `MapCameraPosition` にマッピングします
+- `MapViewStateInterface` とコントローラバインディングを実装します
+- 地図SDK固有のカメラと表示可能領域を `MapCameraPositionInterface` にマッピングします
 - オーバーレイコントローラ（マーカー、ポリライン、ポリゴン、円、サポートされている場合はグラウンドイメージ）を公開します
 
 ## 実験的 / ユーティリティモジュール

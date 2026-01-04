@@ -7,7 +7,7 @@ const code = `class MarkerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        nativeManager = NativeMarkerManager(HexGeocellImpl.defaultGeocell())
+        nativeManager = NativeMarkerManager(HexGeocell.defaultGeocell())
     }
 
     override fun onDestroy() {

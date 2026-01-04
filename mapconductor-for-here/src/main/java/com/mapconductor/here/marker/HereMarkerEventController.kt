@@ -1,18 +1,18 @@
 package com.mapconductor.here.marker
 
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.here.HereActualMarker
 
-internal interface HereMarkerEventController {
-    fun find(position: GeoPointImpl): MarkerEntity<HereActualMarker>?
+internal interface HereMarkerEventControllerInterface {
+    fun find(position: GeoPoint): MarkerEntityInterface<HereActualMarker>?
 
-    fun getSelectedMarker(): MarkerEntity<HereActualMarker>?
+    fun getSelectedMarker(): MarkerEntityInterface<HereActualMarker>?
 
-    fun setSelectedMarker(entity: MarkerEntity<HereActualMarker>?)
+    fun setSelectedMarker(entity: MarkerEntityInterface<HereActualMarker>?)
 
     fun dispatchClick(state: MarkerState)
 
@@ -37,12 +37,12 @@ internal interface HereMarkerEventController {
 
 internal class DefaultHereMarkerEventController(
     private val controller: HereMarkerController,
-) : HereMarkerEventController {
-    override fun find(position: GeoPointImpl): MarkerEntity<HereActualMarker>? = controller.find(position)
+) : HereMarkerEventControllerInterface {
+    override fun find(position: GeoPoint): MarkerEntityInterface<HereActualMarker>? = controller.find(position)
 
-    override fun getSelectedMarker(): MarkerEntity<HereActualMarker>? = controller.selectedMarker
+    override fun getSelectedMarker(): MarkerEntityInterface<HereActualMarker>? = controller.selectedMarker
 
-    override fun setSelectedMarker(entity: MarkerEntity<HereActualMarker>?) {
+    override fun setSelectedMarker(entity: MarkerEntityInterface<HereActualMarker>?) {
         controller.selectedMarker = entity
     }
 
@@ -81,14 +81,14 @@ internal class DefaultHereMarkerEventController(
 
 internal class StrategyHereMarkerEventController(
     private val controller: StrategyMarkerController<HereActualMarker>,
-) : HereMarkerEventController {
-    private var selectedMarker: MarkerEntity<HereActualMarker>? = null
+) : HereMarkerEventControllerInterface {
+    private var selectedMarker: MarkerEntityInterface<HereActualMarker>? = null
 
-    override fun find(position: GeoPointImpl): MarkerEntity<HereActualMarker>? = controller.find(position)
+    override fun find(position: GeoPoint): MarkerEntityInterface<HereActualMarker>? = controller.find(position)
 
-    override fun getSelectedMarker(): MarkerEntity<HereActualMarker>? = selectedMarker
+    override fun getSelectedMarker(): MarkerEntityInterface<HereActualMarker>? = selectedMarker
 
-    override fun setSelectedMarker(entity: MarkerEntity<HereActualMarker>?) {
+    override fun setSelectedMarker(entity: MarkerEntityInterface<HereActualMarker>?) {
         selectedMarker = entity
     }
 

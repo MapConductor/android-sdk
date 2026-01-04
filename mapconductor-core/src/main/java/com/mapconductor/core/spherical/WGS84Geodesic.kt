@@ -1,7 +1,7 @@
 package com.mapconductor.core.spherical
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.projection.Earth
 import java.lang.Math.toRadians
 import kotlin.math.abs
@@ -24,8 +24,8 @@ object WGS84Geodesic {
      * Google Maps の測地線計算と互換性があります
      */
     fun computeDistanceBetween(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
     ): Double {
         val lat1 = toRadians(from.latitude)
         val lat2 = toRadians(to.latitude)
@@ -102,8 +102,8 @@ object WGS84Geodesic {
      * WGS84 楕円体上の方位角計算
      */
     fun computeHeading(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
     ): Double {
         val lat1 = Math.toRadians(from.latitude)
         val lat2 = Math.toRadians(to.latitude)
@@ -125,10 +125,10 @@ object WGS84Geodesic {
      * 短距離では球面補間で十分な精度が得られます
      */
     fun interpolate(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
         fraction: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         // 球面線形補間（Slerp）を使用
         // WGS84楕円体での正確な補間は複雑なので、まず球面補間で試す
 
@@ -172,7 +172,7 @@ object WGS84Geodesic {
                 else -> 0.0
             }
 
-        return GeoPointImpl(
+        return GeoPoint(
             latitude = Math.toDegrees(lat),
             longitude = Math.toDegrees(lng),
             altitude = interpolatedAltitude!!,
@@ -180,10 +180,10 @@ object WGS84Geodesic {
     }
 
     private fun computeOffset(
-        origin: GeoPoint,
+        origin: GeoPointInterface,
         distance: Double,
         heading: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         // Vincenty の直接解の簡易実装
         // 完全な実装は複雑なので、ここでは近似を使用
         val lat1 = Math.toRadians(origin.latitude)
@@ -245,7 +245,7 @@ object WGS84Geodesic {
                 )
         val lon2 = lon1 + longitudeDifferenceOffset
 
-        return GeoPointImpl(
+        return GeoPoint(
             latitude = Math.toDegrees(lat2),
             longitude = Math.toDegrees(lon2),
             altitude = origin.altitude ?: 0.0,

@@ -1,15 +1,15 @@
 package com.mapconductor.core.spherical
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import net.sf.geographiclib.Geodesic
 
 object GeographicLibCalculator {
     private val wgs84 = Geodesic.WGS84
 
     fun computeDistanceBetween(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
     ): Double {
         val result =
             wgs84.Inverse(
@@ -20,10 +20,10 @@ object GeographicLibCalculator {
     }
 
     fun interpolate(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
         fraction: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         val line =
             wgs84.InverseLine(
                 from.latitude, from.longitude,
@@ -40,6 +40,6 @@ object GeographicLibCalculator {
                 else -> 0.0
             }
 
-        return GeoPointImpl(result.lat2, result.lon2, altitude)
+        return GeoPoint(result.lat2, result.lon2, altitude)
     }
 }

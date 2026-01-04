@@ -9,9 +9,9 @@ import com.arcgismaps.mapping.layers.Layer
 import com.arcgismaps.mapping.layers.TileImageFormat
 import com.arcgismaps.mapping.layers.TileInfo
 import com.arcgismaps.mapping.layers.WebTiledLayer
-import com.mapconductor.arcgis.ArcGISMapViewHolder
-import com.mapconductor.core.raster.RasterLayerEntity
-import com.mapconductor.core.raster.RasterLayerOverlayRenderer
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
+import com.mapconductor.core.raster.RasterLayerEntityInterface
+import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterSource
 import com.mapconductor.core.raster.TileScheme
@@ -21,13 +21,13 @@ import android.util.Log
 
 class ArcGISRasterLayerOverlayRenderer(
     private val holder: ArcGISMapViewHolder,
-) : RasterLayerOverlayRenderer<Layer> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRenderer.AddParams>): List<Layer?> =
+) : RasterLayerOverlayRendererInterface<Layer> {
+    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<Layer?> =
         data.map { params ->
             addLayer(params.state)
         }
 
-    override suspend fun onChange(data: List<RasterLayerOverlayRenderer.ChangeParams<Layer>>): List<Layer?> =
+    override suspend fun onChange(data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<Layer>>): List<Layer?> =
         data.map { params ->
             val prev = params.prev
             val next = params.current.state
@@ -40,7 +40,7 @@ class ArcGISRasterLayerOverlayRenderer(
             }
         }
 
-    override suspend fun onRemove(data: List<RasterLayerEntity<Layer>>) {
+    override suspend fun onRemove(data: List<RasterLayerEntityInterface<Layer>>) {
         data.forEach { entity ->
             removeLayer(entity)
         }
@@ -72,7 +72,7 @@ class ArcGISRasterLayerOverlayRenderer(
         layer.isVisible = state.visible
     }
 
-    private fun removeLayer(entity: RasterLayerEntity<Layer>) {
+    private fun removeLayer(entity: RasterLayerEntityInterface<Layer>) {
         val scene = holder.map.scene ?: return
         scene.operationalLayers.remove(entity.layer)
     }

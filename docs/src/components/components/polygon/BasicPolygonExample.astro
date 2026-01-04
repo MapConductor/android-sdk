@@ -24,10 +24,10 @@ const {
 const code = `// ${commentForMapViewReplacement}
 MapLibreMapView(state = mapViewState) {
     val trianglePoints = listOf(
-        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
-        GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
-        GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
-        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude})
+        GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude}),
+        GeoPoint.fromLatLong(${secondLatitude}, ${secondLongitude}),
+        GeoPoint.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+        GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude})
     )
 
     Polygon(

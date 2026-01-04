@@ -1,22 +1,22 @@
 ---
-title: "MapViewHolder"
+title: "MapViewHolderInterface"
 ---
 
 import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
 import MapViewHolderAccessExample from '~/components/core/mapviewholder/MapViewHolderAccessExample.astro';
 import GoogleMapViewHolderExample from '~/components/core/mapviewholder/GoogleMapViewHolderExample.astro';
 
-`MapViewHolder` proporciona acceso a las instancias nativas de los SDK de mapas para casos de uso avanzados en los que la API unificada de MapConductor no cubre alguna funcionalidad específica del proveedor. Aunque MapConductor ofrece una interfaz común, no envuelve absolutamente todas las funciones nativas; `MapViewHolder` sirve como puente para esas necesidades.
+`MapViewHolderInterface` proporciona acceso a las instancias nativas de los SDK de mapas para casos de uso avanzados en los que la API unificada de MapConductor no cubre alguna funcionalidad específica del proveedor. Aunque MapConductor ofrece una interfaz común, no envuelve absolutamente todas las funciones nativas; `MapViewHolderInterface` sirve como puente para esas necesidades.
 
 ## Visión general
 
-MapConductor intenta ofrecer una API unificada entre proveedores, pero no siempre es posible conseguir paridad total de funcionalidades. `MapViewHolder` permite acceder a las instancias nativas subyacentes cuando necesitas características específicas de cada SDK.
+MapConductor intenta ofrecer una API unificada entre proveedores, pero no siempre es posible conseguir paridad total de funcionalidades. `MapViewHolderInterface` permite acceder a las instancias nativas subyacentes cuando necesitas características específicas de cada SDK.
 
 <MapViewHolderInterface />
 
-## Acceso a MapViewHolder
+## Acceso a MapViewHolderInterface
 
-Cada implementación de `MapViewState` aporta acceso a su `MapViewHolder` específico:
+Cada implementación de `MapViewStateInterface` aporta acceso a su `MapViewHolderInterface` específico:
 
 <MapViewHolderAccessExample />
 
@@ -51,9 +51,9 @@ Cada implementación de `MapViewState` aporta acceso a su `MapViewHolder` espec�
  <source src="/mapviewholder/map-view-holder-mapbox-example.mp4" type="video/mp4" />
 </video>
 
-## Cuándo usar MapViewHolder
+## Cuándo usar MapViewHolderInterface
 
-En la mayoría de los casos no necesitarás trabajar directamente con `MapViewHolder`; MapConductor ya ofrece la mayoría de las funciones comunes a través de la API unificada. Sin embargo, es útil cuando:
+En la mayoría de los casos no necesitarás trabajar directamente con `MapViewHolderInterface`; MapConductor ya ofrece la mayoría de las funciones comunes a través de la API unificada. Sin embargo, es útil cuando:
 
 - Necesitas acceder a una API nativa que todavía no está envuelta por MapConductor.
 - Quieres integrar extensiones o plugins propios del proveedor.

@@ -27,15 +27,15 @@ const {
   thirdPointLongitude = -122.4294
 } = Astro.props;
 
-const code = `fun extend(point: GeoPoint)
+const code = `fun extend(point: GeoPointInterface)
 
 // ${commentForUsage}
 val bounds = GeoRectBounds() // ${commentForStartEmpty}
 
 val points = listOf(
-    GeoPointImpl.fromLatLong(${firstPointLatitude}, ${firstPointLongitude}),
-    GeoPointImpl.fromLatLong(${secondPointLatitude}, ${secondPointLongitude}),
-    GeoPointImpl.fromLatLong(${thirdPointLatitude}, ${thirdPointLongitude})
+    GeoPoint.fromLatLong(${firstPointLatitude}, ${firstPointLongitude}),
+    GeoPoint.fromLatLong(${secondPointLatitude}, ${secondPointLongitude}),
+    GeoPoint.fromLatLong(${thirdPointLatitude}, ${thirdPointLongitude})
 )
 
 points.forEach { point ->

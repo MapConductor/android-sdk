@@ -17,8 +17,8 @@ import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -26,7 +26,7 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.here.HereMapViewControllerImpl.Companion.ZOOM_ADJUST_VALUE
+import com.mapconductor.here.HereMapViewController.Companion.ZOOM_ADJUST_VALUE
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
@@ -44,7 +44,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun HereMapView(
-    state: HereViewStateImpl,
+    state: HereViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -80,7 +80,7 @@ fun HereMapView(
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
 fun HereMapView(
-    state: HereViewStateImpl,
+    state: HereViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -101,11 +101,11 @@ fun HereMapView(
 ) {
     val holderRef = remember { Ref<HereViewHolder>() }
     val scope = remember { HereViewScope() }
-    val controllerRef = remember { Ref<HereMapViewControllerImpl>() }
+    val controllerRef = remember { Ref<HereMapViewController>() }
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -136,13 +136,13 @@ fun HereMapView(
 
             val lookAt =
                 MapCameraUpdateFactory.lookAt(
-                    GeoPointImpl.from(camera.position).toGeoCoordinates().toUpdate(),
+                    GeoPoint.from(camera.position).toGeoCoordinates().toUpdate(),
                     GeoOrientation(camera.bearing, camera.tilt).toUpdate(),
                     MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, camera.zoom + ZOOM_ADJUST_VALUE),
                 )
             mapView.camera.applyUpdate(lookAt)
 
-            HereViewHolderImpl(mapView, mapView.mapScene)
+            HereViewHolder(mapView, mapView.mapScene)
         },
         controllerProvider = { holder ->
             val markerController =
@@ -157,7 +157,7 @@ fun HereMapView(
             // Defer initial camera update until after controller is created and camera is moved
 
             val controller =
-                HereMapViewControllerImpl(
+                HereMapViewController(
                     holder = holder,
                     markerController = markerController,
                     polylineController = polylineController,
@@ -186,7 +186,7 @@ fun HereMapView(
             holderRef.value = controller.holder
             controllerRef.value = controller
 
-            return@MapViewBase suspendCancellableCoroutine<HereMapViewControllerImpl> { cont ->
+            return@MapViewBase suspendCancellableCoroutine<HereMapViewController> { cont ->
                 val resumed = AtomicBoolean(false)
                 controller.setCameraMoveListener {
                     if (!resumed.compareAndSet(false, true)) {

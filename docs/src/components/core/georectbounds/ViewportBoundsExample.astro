@@ -34,10 +34,10 @@ fun ViewportBoundsExample() {
     // ${commentForMarkerSimulation}
     val markers = remember {
         listOf(
-            GeoPointImpl.fromLatLong(${firstMarkerLatitude}, ${firstMarkerLongitude}),
-            GeoPointImpl.fromLatLong(${secondMarkerLatitude}, ${secondMarkerLongitude}),
-            GeoPointImpl.fromLatLong(${thirdMarkerLatitude}, ${thirdMarkerLongitude}),
-            GeoPointImpl.fromLatLong(${fourthMarkerLatitude}, ${fourthMarkerLongitude})
+            GeoPoint.fromLatLong(${firstMarkerLatitude}, ${firstMarkerLongitude}),
+            GeoPoint.fromLatLong(${secondMarkerLatitude}, ${secondMarkerLongitude}),
+            GeoPoint.fromLatLong(${thirdMarkerLatitude}, ${thirdMarkerLongitude}),
+            GeoPoint.fromLatLong(${fourthMarkerLatitude}, ${fourthMarkerLongitude})
         )
     }
 
@@ -67,9 +67,9 @@ fun ViewportBoundsExample() {
 
                 val boundsPolygon = listOf(
                     sw,
-                    GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                    GeoPoint.fromLatLong(sw.latitude, ne.longitude),
                     ne,
-                    GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                    GeoPoint.fromLatLong(ne.latitude, sw.longitude),
                     sw // Close the polygon
                 )
 

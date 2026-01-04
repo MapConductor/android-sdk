@@ -5,9 +5,9 @@ import com.google.android.gms.maps.GoogleMap.MAP_TYPE_NONE
 import com.google.android.gms.maps.GoogleMap.MAP_TYPE_NORMAL
 import com.google.android.gms.maps.GoogleMap.MAP_TYPE_SATELLITE
 import com.google.android.gms.maps.GoogleMap.MAP_TYPE_TERRAIN
-import com.mapconductor.core.map.MapDesignType
+import com.mapconductor.core.map.MapDesignTypeInterface
 
-typealias GoogleMapDesignType = MapDesignType<Int>
+typealias GoogleMapDesignType = MapDesignTypeInterface<Int>
 
 sealed class GoogleMapDesign(
     override val id: Int,

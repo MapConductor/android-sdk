@@ -12,10 +12,10 @@ const {
 const code = `@Composable
 fun PerformanceAdaptiveZoom() {
     val markerCount = 1000
-    var displayedMarkers by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+    var displayedMarkers by remember { mutableStateOf<List<GeoPointInterface>>(emptyList()) }
 
-    val cameraPosition = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+    val cameraPosition = MapCameraPosition(
+        position = GeoPoint.fromLatLong(37.7749, -122.4194),
         zoom = 12.0
     )
 

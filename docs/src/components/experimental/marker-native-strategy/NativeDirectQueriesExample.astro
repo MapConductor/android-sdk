@@ -2,10 +2,10 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `fun performNativeQueries(nativeManager: NativeMarkerManager<ActualMarker>) {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val center = GeoPoint.fromLatLong(37.7749, -122.4194)
     val bounds = GeoRectBounds(
-        southWest = GeoPointImpl.fromLatLong(37.7700, -122.4250),
-        northEast = GeoPointImpl.fromLatLong(37.7800, -122.4150)
+        southWest = GeoPoint.fromLatLong(37.7700, -122.4250),
+        northEast = GeoPoint.fromLatLong(37.7800, -122.4150)
     )
 
     // Native spatial queries are extremely fast

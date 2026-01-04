@@ -21,8 +21,8 @@ fun DynamicPolylineExample() {
         mutableStateOf(
             PolylineState(
                 points = listOf(
-                    GeoPointImpl.fromLatLong(${startLatitude}, ${startLongitude}),
-                    GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude})
+                    GeoPoint.fromLatLong(${startLatitude}, ${startLongitude}),
+                    GeoPoint.fromLatLong(${secondLatitude}, ${secondLongitude})
                 ),
                 strokeColor = Color.Red,
                 strokeWidth = 4.dp

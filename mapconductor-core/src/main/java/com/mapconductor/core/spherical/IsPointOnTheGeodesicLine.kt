@@ -2,26 +2,26 @@
 
 import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.spherical.GeoNearest.closestIntersection
 import com.mapconductor.core.spherical.Spherical
 
 fun isPointOnTheGeodesicLine(
-    points: List<GeoPoint>,
-    position: GeoPoint,
+    points: List<GeoPointInterface>,
+    position: GeoPointInterface,
     threshold: Double,
     debugDrawRectangle: (
         (GeoRectBounds, Color) -> Unit
     )?,
-    debugDrawCircle: ((GeoPoint, Double, Color) -> Unit)?,
-): Pair<GeoPoint, Double>? {
+    debugDrawCircle: ((GeoPointInterface, Double, Color) -> Unit)?,
+): Pair<GeoPointInterface, Double>? {
     if (points.size < 2) return null
 
     var minDistance = Double.MAX_VALUE
     var closestPoint: Int = 0
-    var start: GeoPoint? = null
-    var finish: GeoPoint? = null
+    var start: GeoPointInterface? = null
+    var finish: GeoPointInterface? = null
 
     for (i in 0 until points.size - 1) {
         val box = GeoRectBounds()
@@ -57,9 +57,9 @@ fun isPointOnTheGeodesicLine(
                 }
             }
 
-    val negLons = mutableListOf<GeoPoint>()
-    val posLons = mutableListOf<GeoPoint>()
-    val connect = mutableListOf<GeoPoint>()
+    val negLons = mutableListOf<GeoPointInterface>()
+    val posLons = mutableListOf<GeoPointInterface>()
+    val connect = mutableListOf<GeoPointInterface>()
     for (i in 0 until wayPoints.size) {
         if (wayPoints[i].longitude <= 0.0f) {
             negLons.add(wayPoints[i])
@@ -85,7 +85,7 @@ fun isPointOnTheGeodesicLine(
             (negLons.size >= 2) -> negLons
             (posLons.size >= 2) -> posLons
             (connect.size >= 2) -> connect
-            else -> emptyList<GeoPoint>()
+            else -> emptyList<GeoPointInterface>()
         }
     if (inspectPoints.isEmpty()) {
         return Pair(position, Double.MAX_VALUE)

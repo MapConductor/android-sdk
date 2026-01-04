@@ -8,12 +8,12 @@ import com.arcgismaps.mapping.view.PanChangeEvent
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.calculateCameraForOrbitParameters
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.fromLongLat
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
-import com.mapconductor.arcgis.marker.ArcGISMarkerEventController
+import com.mapconductor.arcgis.marker.ArcGISMarkerEventControllerInterface
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerEventController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
@@ -25,10 +25,10 @@ import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -45,7 +45,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ArcGISMapViewControllerImpl(
+class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     private val markerController: ArcGISMarkerController,
     private val polylineController: ArcGISPolylineOverlayController,
@@ -54,9 +54,9 @@ class ArcGISMapViewControllerImpl(
     private val rasterLayerController: ArcGISRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    ArcGISMapViewController {
-    private val markerEventControllers = mutableListOf<ArcGISMarkerEventController>()
-    private var activeDragController: ArcGISMarkerEventController? = null
+    ArcGISMapViewControllerInterface {
+    private val markerEventControllers = mutableListOf<ArcGISMarkerEventControllerInterface>()
+    private var activeDragController: ArcGISMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -149,7 +149,7 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    private suspend fun getMapCameraPosition(): MapCameraPositionImpl? {
+    private suspend fun getMapCameraPosition(): MapCameraPosition? {
         val mapWidth = holder.map.width.toFloat() - 1.0f
         val mapHeight = holder.map.height.toFloat() - 1.0f
         val nearLeft =
@@ -197,14 +197,14 @@ class ArcGISMapViewControllerImpl(
         val zoom = conv.altitudeToZoomLevel(alt, lat, tilt)
 
         val camera =
-            MapCameraPositionImpl(
+            MapCameraPosition(
                 position =
-                    GeoPointImpl
+                    GeoPoint
                         .fromLongLat(lon, lat, alt),
                 zoom = zoom,
                 bearing = bearing,
                 tilt = tilt,
-                paddings = MapPaddingsImpl.Zeros,
+                paddings = MapPaddings.Zeros,
                 visibleRegion = visibleRegion,
             )
         return camera
@@ -380,7 +380,7 @@ class ArcGISMapViewControllerImpl(
         this.circleController.clickListener = listener
     }
 
-    override fun moveCamera(position: MapCameraPositionImpl) {
+    override fun moveCamera(position: MapCameraPosition) {
         val dstCameraPosition = toCameraWithView(position)
 
         holder.map.setViewpointCamera(
@@ -392,7 +392,7 @@ class ArcGISMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         duration: Long,
     ) {
         val dstCameraPosition = toCameraWithView(position)
@@ -417,9 +417,9 @@ class ArcGISMapViewControllerImpl(
         return ZoomAltitudeConverter.computeZoom0DistanceForView(h, fovVerticalDegrees)
     }
 
-    private fun toCameraWithView(position: MapCameraPositionImpl): Camera {
+    private fun toCameraWithView(position: MapCameraPosition): Camera {
         val targetPoint =
-            GeoPointImpl
+            GeoPoint
                 .from(position.position)
                 .toPoint()
         // Use calibrated constant instead of dynamic calculation
@@ -471,10 +471,10 @@ class ArcGISMapViewControllerImpl(
         this.polygonController.clickListener = listener
     }
 
-    private var mapDesignType: ArcGISDesignType = ArcGISDesign.Streets
+    private var mapDesignType: ArcGISDesignTypeInterface = ArcGISDesign.Streets
     private var mapDesignTypeChangeListener: ArcGISDesignTypeChangeHandler? = null
 
-    override fun setMapDesignType(value: ArcGISDesignType) {
+    override fun setMapDesignType(value: ArcGISDesignTypeInterface) {
         holder.map.scene?.let { scene ->
             val baseMapStyle = ArcGISDesign.toBasemapStyle(value)
             val baseMap = Basemap(baseMapStyle)
@@ -501,7 +501,7 @@ class ArcGISMapViewControllerImpl(
         }
     }
 
-    internal fun registerMarkerEventController(controller: ArcGISMarkerEventController) {
+    internal fun registerMarkerEventController(controller: ArcGISMarkerEventControllerInterface) {
         if (markerEventControllers.contains(controller)) return
         markerEventControllers.add(controller)
         controller.setClickListener(markerClickListener)

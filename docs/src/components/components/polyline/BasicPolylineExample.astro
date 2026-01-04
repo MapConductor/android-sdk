@@ -17,11 +17,11 @@ const {
 
 const code = `@Composable
 fun BasicPolylineExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(${centerLat}, ${centerLng})
+    val center = GeoPoint.fromLatLong(${centerLat}, ${centerLng})
 
     // 地図の作成
     val camera =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position = center,
             zoom = ${zoom},
         )
@@ -30,15 +30,15 @@ fun BasicPolylineExample(modifier: Modifier = Modifier) {
             cameraPosition = camera,
         )
     val routePoints = listOf(
-        GeoPointImpl.fromLatLong(53.561011,9.989448),
-        GeoPointImpl.fromLatLong(53.563203,9.985800),
-        GeoPointImpl.fromLatLong(53.564579,9.983525),
-        GeoPointImpl.fromLatLong(53.566873,9.980822),
-        GeoPointImpl.fromLatLong(53.567943,9.982152),
-        GeoPointImpl.fromLatLong(53.570186,9.984813),
-        GeoPointImpl.fromLatLong(53.572683,9.986143),
-        GeoPointImpl.fromLatLong(53.572658,9.988675),
-        GeoPointImpl.fromLatLong(53.572709,9.990392)
+        GeoPoint.fromLatLong(53.561011,9.989448),
+        GeoPoint.fromLatLong(53.563203,9.985800),
+        GeoPoint.fromLatLong(53.564579,9.983525),
+        GeoPoint.fromLatLong(53.566873,9.980822),
+        GeoPoint.fromLatLong(53.567943,9.982152),
+        GeoPoint.fromLatLong(53.570186,9.984813),
+        GeoPoint.fromLatLong(53.572683,9.986143),
+        GeoPoint.fromLatLong(53.572658,9.988675),
+        GeoPoint.fromLatLong(53.572709,9.990392)
     )
 
     // ${commentForMapViewUsage}

@@ -3,8 +3,8 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(36.0, -160.0)
-    val camera = MapCameraPositionImpl(position = center, zoom = 4.0)
+    val center = GeoPoint.fromLatLong(36.0, -160.0)
+    val camera = MapCameraPosition(position = center, zoom = 4.0)
     val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
 
     var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
@@ -20,8 +20,8 @@ fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
         modifier = modifier
     ) {
         val longDistancePoints = listOf(
-            GeoPointImpl.fromLatLong(35.548852, 139.784086), // 羽田空港
-            GeoPointImpl.fromLatLong(37.615223, -122.389979)   // サンフランシスコ空港
+            GeoPoint.fromLatLong(35.548852, 139.784086), // 羽田空港
+            GeoPoint.fromLatLong(37.615223, -122.389979)   // サンフランシスコ空港
         )
 
         // 標準線

@@ -8,8 +8,8 @@ import com.here.sdk.mapview.datasource.RasterDataSourceConfiguration
 import com.here.sdk.mapview.datasource.TileUrlProviderCallback
 import com.here.sdk.mapview.datasource.TileUrlProviderFactory
 import com.here.sdk.mapview.datasource.TilingScheme
-import com.mapconductor.core.raster.RasterLayerEntity
-import com.mapconductor.core.raster.RasterLayerOverlayRenderer
+import com.mapconductor.core.raster.RasterLayerEntityInterface
+import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterSource
 import com.mapconductor.core.raster.TileScheme
@@ -18,14 +18,14 @@ import android.util.Log
 
 class HereRasterLayerOverlayRenderer(
     private val holder: HereViewHolder,
-) : RasterLayerOverlayRenderer<HereRasterLayerHandle> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRenderer.AddParams>): List<HereRasterLayerHandle?> =
+) : RasterLayerOverlayRendererInterface<HereRasterLayerHandle> {
+    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<HereRasterLayerHandle?> =
         data.map { params ->
             addLayer(params.state)
         }
 
     override suspend fun onChange(
-        data: List<RasterLayerOverlayRenderer.ChangeParams<HereRasterLayerHandle>>,
+        data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<HereRasterLayerHandle>>,
     ): List<HereRasterLayerHandle?> =
         data.map { params ->
             val prev = params.prev
@@ -39,7 +39,7 @@ class HereRasterLayerOverlayRenderer(
             }
         }
 
-    override suspend fun onRemove(data: List<RasterLayerEntity<HereRasterLayerHandle>>) {
+    override suspend fun onRemove(data: List<RasterLayerEntityInterface<HereRasterLayerHandle>>) {
         data.forEach { entity ->
             removeLayer(entity)
         }
@@ -98,7 +98,7 @@ class HereRasterLayerOverlayRenderer(
         handle.layer.setEnabled(state.visible)
     }
 
-    private fun removeLayer(entity: RasterLayerEntity<HereRasterLayerHandle>) {
+    private fun removeLayer(entity: RasterLayerEntityInterface<HereRasterLayerHandle>) {
         val handle = entity.layer
         handle.layer.destroy()
         handle.dataSource.destroy()

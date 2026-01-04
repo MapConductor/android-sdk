@@ -21,8 +21,8 @@ const {
   commentMarkerClicked = "マーカーがクリックされたときの処理"
 } = Astro.props;
 
-const code = `val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
-val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
+const code = `val marker1 = GeoPoint.fromLatLong(${marker1Lat}, ${marker1Long})
+val marker2 = GeoPoint.fromLatLong(${marker2Lat}, ${marker2Long})
 
 GoogleMapView(
     modifier = modifier.fillMaxSize(),

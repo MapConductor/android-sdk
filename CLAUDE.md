@@ -37,11 +37,11 @@ This command runs `ktlintFormat` and `lint` for all modules defined in `projects
 ### Core Module (`mapconductor-core`)
 - **Purpose**: Contains shared abstractions, base classes, and common functionality
 - **Key Components**:
-  - `MapViewController`: Abstract controller interface for all map providers
+  - `MapViewControllerInterface`: Abstract controller interface for all map providers
   - `MapViewBase`: Generic Compose-based map view component
-  - `MarkerManager`, `CircleManager`, `PolylineOverlayManager`: Feature management
-  - `HexGeocell`: Spatial indexing for efficient marker clustering
-  - Projection utilities (`WebMercator`, `WGS84`)
+  - `MarkerManager`, `CircleManagerInterface`, `PolylineOverlayManager`: Feature management
+  - `HexGeocellInterface`: Spatial indexing for efficient marker clustering
+  - ProjectionInterface utilities (`WebMercator`, `WGS84`)
 
 ### Provider-Specific Modules
 Each map provider has its own module that implements the core abstractions:
@@ -60,14 +60,14 @@ Each map provider has its own module that implements the core abstractions:
 ### Generic Type System
 The architecture uses extensive generics to maintain type safety while supporting multiple map SDKs:
 ```kotlin
-interface MapViewController<ActualMarker, ActualCircle, ActualPolyline>
+interface MapViewControllerInterface<ActualMarker, ActualCircle, ActualPolyline>
 class MapViewBase<SpecificState, SpecificController, ActualMapView, ActualMap, SpecificViewHolder>
 ```
 
 ### State Management
 - Uses Kotlin StateFlow for reactive state management
 - Debounced updates (100ms) to prevent excessive recomposition
-- `MapViewState` manages initialization lifecycle
+- `MapViewStateInterface` manages initialization lifecycle
 
 ### Overlay Management
 - Separate managers for markers, circles, and polylines

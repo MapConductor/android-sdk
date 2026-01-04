@@ -21,13 +21,13 @@ const {
 
 const code = `val circles = listOf(
     CircleState(
-        center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+        center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
         radiusMeters = ${outerRadiusMeters},
         fillColor = Color.Red.copy(alpha = 0.3f),
         zIndex = ${outerZIndex}
     ),
     CircleState(
-        center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+        center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
         radiusMeters = ${innerRadiusMeters},
         fillColor = Color.Blue.copy(alpha = 0.5f),
         zIndex = ${innerZIndex}

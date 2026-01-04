@@ -13,7 +13,7 @@ const {
   commentForBearing = "Direction of travel"
 } = Astro.props;
 
-const code = `val navigationCamera = MapCameraPositionImpl(
+const code = `val navigationCamera = MapCameraPosition(
     position = currentRoutePosition,
     zoom = ${navigationZoom},
     bearing = currentHeading,  // ${commentForBearing}

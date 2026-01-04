@@ -13,8 +13,8 @@ const code = `@Composable
 fun TestMapLibre() {
     val state = rememberMapLibreMapViewState(
         cameraPosition =
-            MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(0.0, 0.0),
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(0.0, 0.0),
                 zoom = 3.0,
             ),
         mapDesign = MapLibreDesignType(

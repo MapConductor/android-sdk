@@ -17,8 +17,8 @@ const {
   toLongitude = -74.006,
 } = Astro.props;
 
-const code = `val sanFrancisco = GeoPointImpl.fromLatLong(${fromLatitude}, ${fromLongitude})
-val newYork = GeoPointImpl.fromLatLong(${toLatitude}, ${toLongitude})
+const code = `val sanFrancisco = GeoPoint.fromLatLong(${fromLatitude}, ${fromLongitude})
+val newYork = GeoPoint.fromLatLong(${toLatitude}, ${toLongitude})
 
 val distanceMeters = Spherical.computeDistanceBetween(sanFrancisco, newYork)
 val distanceKm = distanceMeters / 1000.0

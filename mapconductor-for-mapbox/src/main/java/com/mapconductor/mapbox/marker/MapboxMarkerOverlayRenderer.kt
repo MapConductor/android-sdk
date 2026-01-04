@@ -5,14 +5,14 @@ import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerIconInterface
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
@@ -93,8 +93,8 @@ class MapboxMarkerOverlayRenderer(
     }
 
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Feature>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<Feature>,
+        position: GeoPoint,
     ) {
         val entities = markerManager.allEntities()
         val feature =
@@ -119,7 +119,7 @@ class MapboxMarkerOverlayRenderer(
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Feature> =
+    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<Feature> =
         withContext(Dispatchers.Main) {
             val style =
                 suspendCoroutine { continuation ->
@@ -143,7 +143,7 @@ class MapboxMarkerOverlayRenderer(
 
             data.map {
                 val featureId = "marker-${it.state.id}"
-                val position = GeoPointImpl.from(it.state.position).toPoint()
+                val position = GeoPoint.from(it.state.position).toPoint()
                 val properties =
                     JsonObject().apply {
                         if (it.state.icon != null) {
@@ -164,7 +164,7 @@ class MapboxMarkerOverlayRenderer(
             }
         }
 
-    override suspend fun onRemove(data: List<MarkerEntity<MapboxActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntityInterface<MapboxActualMarker>>) {
         withContext(Dispatchers.Main) {
             data.forEach { entity ->
                 entity.state.icon?.let { icon ->
@@ -188,7 +188,7 @@ class MapboxMarkerOverlayRenderer(
     }
 
     override suspend fun onChange(
-        data: List<MarkerOverlayRenderer.ChangeParams<MapboxActualMarker>>,
+        data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<MapboxActualMarker>>,
     ): List<MapboxActualMarker?> =
         data.map { params ->
             val prevFinger = params.prev.fingerPrint
@@ -243,7 +243,7 @@ class MapboxMarkerOverlayRenderer(
                 }
 
             val position =
-                GeoPointImpl.from(params.current.state.position).toPoint()
+                GeoPoint.from(params.current.state.position).toPoint()
             val featureId = "marker-${params.current.state.id}"
             Feature.fromGeometry(position, properties, featureId)
         }
@@ -256,5 +256,5 @@ class MapboxMarkerOverlayRenderer(
             add(-(icon.size.height * icon.anchor.y) / ResourceProvider.getDensity())
         }
 
-    private fun createIconOffset(icon: MarkerIcon): JsonArray = createIconOffset(icon.toBitmapIcon())
+    private fun createIconOffset(icon: MarkerIconInterface): JsonArray = createIconOffset(icon.toBitmapIcon())
 }

@@ -1,7 +1,7 @@
 package com.mapconductor.core.spherical
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.normalizeLng
 import com.mapconductor.core.projection.Earth
 import kotlin.math.abs
@@ -17,7 +17,7 @@ import kotlin.math.sqrt
  * and positions on Earth's surface using the spherical Earth model.
  *
  * This is a Kotlin port of the Cordova Google Maps plugin spherical.js utilities.
- * Uses GeoPoint instead of LatLng for coordinate representation.
+ * Uses GeoPointInterface instead of LatLng for coordinate representation.
  */
 object Spherical {
     // Mathematical constants
@@ -26,7 +26,7 @@ object Spherical {
     private const val DEG_TO_RAD = PI / 180.0
 
     /**
-     * Returns the distance, in meters, between two GeoPoint locations.
+     * Returns the distance, in meters, between two GeoPointInterface locations.
      * Uses the haversine formula.
      *
      * @param from Starting point
@@ -34,8 +34,8 @@ object Spherical {
      * @return Distance in meters
      */
     fun computeDistanceBetween(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
     ): Double {
         val lat1Rad = from.latitude * DEG_TO_RAD
         val lat2Rad = to.latitude * DEG_TO_RAD
@@ -53,7 +53,7 @@ object Spherical {
     }
 
     /**
-     * Returns the heading from one GeoPoint to another GeoPoint.
+     * Returns the heading from one GeoPointInterface to another GeoPointInterface.
      * Headings are expressed in degrees clockwise from North within the range (-180, 180).
      *
      * @param from Starting point
@@ -61,8 +61,8 @@ object Spherical {
      * @return Heading in degrees
      */
     fun computeHeading(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
     ): Double {
         val lat1Rad = from.latitude * DEG_TO_RAD
         val lat2Rad = to.latitude * DEG_TO_RAD
@@ -81,19 +81,19 @@ object Spherical {
     }
 
     /**
-     * Returns the GeoPoint resulting from moving a distance from an origin
+     * Returns the GeoPointInterface resulting from moving a distance from an origin
      * in the specified heading (expressed in degrees clockwise from north).
      *
      * @param origin Starting point
      * @param distance Distance to travel in meters
      * @param heading Direction to travel in degrees (0 = North, 90 = East)
-     * @return New GeoPoint position
+     * @return New GeoPointInterface position
      */
     fun computeOffset(
-        origin: GeoPoint,
+        origin: GeoPointInterface,
         distance: Double,
         heading: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         val distanceRad = distance / Earth.RADIUS_METERS
         val headingRad = heading * DEG_TO_RAD
         val lat1Rad = origin.latitude * DEG_TO_RAD
@@ -112,7 +112,7 @@ object Spherical {
                     cos(distanceRad) - sin(lat1Rad) * sin(lat2Rad),
                 )
 
-        return GeoPointImpl(
+        return GeoPoint(
             latitude = lat2Rad * RAD_TO_DEG,
             longitude = lng2Rad * RAD_TO_DEG,
             altitude = origin.altitude ?: 0.0,
@@ -120,20 +120,20 @@ object Spherical {
     }
 
     /**
-     * Returns the location of origin when provided with a GeoPoint destination,
+     * Returns the location of origin when provided with a GeoPointInterface destination,
      * meters travelled and original heading.
      * Headings are expressed in degrees clockwise from North.
      *
      * @param to Destination point
      * @param distance Distance travelled in meters
      * @param heading Original heading in degrees
-     * @return Origin GeoPoint position, or null if no solution is available
+     * @return Origin GeoPointInterface position, or null if no solution is available
      */
     fun computeOffsetOrigin(
-        to: GeoPoint,
+        to: GeoPointInterface,
         distance: Double,
         heading: Double,
-    ): GeoPointImpl? {
+    ): GeoPoint? {
         // Calculate the reverse heading
         val reverseHeading = (heading + 180) % 360
 
@@ -147,10 +147,10 @@ object Spherical {
     /**
      * Returns the length of the given path in meters.
      *
-     * @param path List of GeoPoint locations defining the path
+     * @param path List of GeoPointInterface locations defining the path
      * @return Length in meters
      */
-    fun computeLength(path: List<GeoPoint>): Double {
+    fun computeLength(path: List<GeoPointInterface>): Double {
         if (path.size < 2) return 0.0
 
         var length = 0.0
@@ -165,10 +165,10 @@ object Spherical {
      * Returns the area of a closed path in square meters.
      * The path should form a closed polygon.
      *
-     * @param path List of GeoPoint locations defining the closed path
+     * @param path List of GeoPointInterface locations defining the closed path
      * @return Area in square meters
      */
-    fun computeArea(path: List<GeoPoint>): Double = abs(computeSignedArea(path))
+    fun computeArea(path: List<GeoPointInterface>): Double = abs(computeSignedArea(path))
 
     /**
      * Returns the signed area of a closed path in square meters.
@@ -176,10 +176,10 @@ object Spherical {
      * Positive values indicate counter-clockwise orientation,
      * negative values indicate clockwise orientation.
      *
-     * @param path List of GeoPoint locations defining the closed path
+     * @param path List of GeoPointInterface locations defining the closed path
      * @return Signed area in square meters
      */
-    fun computeSignedArea(path: List<GeoPoint>): Double {
+    fun computeSignedArea(path: List<GeoPointInterface>): Double {
         if (path.size < 3) return 0.0
 
         var area = 0.0
@@ -198,19 +198,19 @@ object Spherical {
     }
 
     /**
-     * Interpolates between two GeoPoint locations along the great circle path using spherical linear interpolation (Slerp).
+     * Interpolates between two GeoPointInterface locations along the great circle path using spherical linear interpolation (Slerp).
      * This method considers Earth's curvature and provides high accuracy for any distance.
      *
      * @param from Starting point
      * @param to Ending point
      * @param fraction Interpolation fraction (0.0 = from, 1.0 = to)
-     * @return Interpolated GeoPoint position
+     * @return Interpolated GeoPointInterface position
      */
     fun sphericalInterpolate(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
         fraction: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         // ラジアンに変換
         val lat1 = from.latitude * DEG_TO_RAD
         val lng1 = from.longitude * DEG_TO_RAD
@@ -241,7 +241,7 @@ object Spherical {
                     else -> 0.0
                 }
 
-            return GeoPointImpl(
+            return GeoPoint(
                 latitude = from.latitude + fraction * (to.latitude - from.latitude),
                 longitude = from.longitude + fraction * (to.longitude - from.longitude),
                 altitude = interpolatedAltitude!!,
@@ -270,7 +270,7 @@ object Spherical {
                 else -> 0.0
             }
 
-        return GeoPointImpl(
+        return GeoPoint(
             latitude = lat,
             longitude = lng,
             altitude = interpolatedAltitude!!,
@@ -278,7 +278,7 @@ object Spherical {
     }
 
     /**
-     * Performs linear interpolation between two GeoPoint locations without considering Earth's curvature.
+     * Performs linear interpolation between two GeoPointInterface locations without considering Earth's curvature.
      * This method treats coordinates as if they were on a flat plane, which may result in
      * inaccurate results for large distances but is computationally faster.
      *
@@ -293,13 +293,13 @@ object Spherical {
      * @param from Starting point
      * @param to Ending point
      * @param fraction Interpolation fraction (0.0 = from, 1.0 = to)
-     * @return Linearly interpolated GeoPoint position
+     * @return Linearly interpolated GeoPointInterface position
      */
     fun linearInterpolate(
-        from: GeoPoint,
-        to: GeoPoint,
+        from: GeoPointInterface,
+        to: GeoPointInterface,
         fraction: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         val interpolatedAltitude =
             when {
                 from.altitude != null && to.altitude != null ->
@@ -331,7 +331,7 @@ object Spherical {
         // Normalize longitude to [-180, 180] range
         val normalizedLongitude = com.mapconductor.core.normalizeLng(interpolatedLongitude)
 
-        return GeoPointImpl(
+        return GeoPoint(
             latitude = interpolatedLatitude,
             longitude = normalizedLongitude,
             altitude = interpolatedAltitude!!,

@@ -16,8 +16,8 @@ fun InteractivePolygonExample() {
     val mapViewState =
         rememberMapLibreMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl.fromLatLong(37.7809, -122.4094),
+                MapCameraPosition(
+                    position = GeoPoint.fromLatLong(37.7809, -122.4094),
                     zoom = 13.5,
                 ),
         )
@@ -25,10 +25,10 @@ fun InteractivePolygonExample() {
     var vertices by remember {
         mutableStateOf(
             listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7799, -122.3994),
-                GeoPointImpl.fromLatLong(37.7649, -122.4094)
+                GeoPoint.fromLatLong(37.7749, -122.4194),
+                GeoPoint.fromLatLong(37.7849, -122.4094),
+                GeoPoint.fromLatLong(37.7799, -122.3994),
+                GeoPoint.fromLatLong(37.7649, -122.4094)
             )
         )
     }
@@ -50,7 +50,7 @@ fun InteractivePolygonExample() {
         val vertexIndex = markerState.extra as Int
         vertices = vertices.toMutableList().apply {
             if (vertexIndex < size) {
-                set(vertexIndex, GeoPointImpl.from(markerState.position))
+                set(vertexIndex, GeoPoint.from(markerState.position))
             }
         }
     }

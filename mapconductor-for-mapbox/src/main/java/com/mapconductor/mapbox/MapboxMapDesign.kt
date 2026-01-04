@@ -1,10 +1,10 @@
 package com.mapconductor.mapbox
 
 import com.mapbox.maps.Style
-import com.mapconductor.core.map.MapDesignType
+import com.mapconductor.core.map.MapDesignTypeInterface
 import com.mapconductor.mapbox.MapboxMapDesign.Companion.MAPBOX_URL
 
-typealias MapboxDesignType = MapDesignType<String>
+typealias MapboxDesignType = MapDesignTypeInterface<String>
 
 sealed class MapboxMapDesign(
     override val id: String,

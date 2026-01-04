@@ -8,8 +8,8 @@ import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Polygon as MBPolygon
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.splitByMeridian
 import com.mapconductor.mapbox.polygon.MapboxPolygonLayer
@@ -17,20 +17,20 @@ import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 
 internal fun createMapboxLines(
     id: String,
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
     geodesic: Boolean,
     strokeColor: Color,
     strokeWidth: Dp,
     zIndex: Int = 0,
 ): List<Feature> {
-    val geoPoints: List<GeoPoint> =
+    val geoPoints: List<GeoPointInterface> =
         when (geodesic) {
             true -> createInterpolatePoints(points)
             false -> createLinearInterpolatePoints(points)
         }.map { it.normalize() }
 
     return splitByMeridian(geoPoints, geodesic).mapIndexed { index, linePoints ->
-        val points = linePoints.map { GeoPointImpl.from(it).toPoint() }
+        val points = linePoints.map { GeoPoint.from(it).toPoint() }
         val id = "polyline-$id-$index"
 
         return@mapIndexed Feature.fromGeometry(
@@ -48,19 +48,19 @@ internal fun createMapboxLines(
 
 internal fun createMapboxPolygons(
     id: String,
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
     geodesic: Boolean,
     fillColor: Color,
     zIndex: Int,
 ): List<Feature> {
-    val geoPoints: List<GeoPoint> =
+    val geoPoints: List<GeoPointInterface> =
         when (geodesic) {
             true -> createInterpolatePoints(points)
             false -> createLinearInterpolatePoints(points)
         }.map { it.normalize() }
 
     return splitByMeridian(geoPoints, geodesic).mapIndexed { index, ringPoints ->
-        val pts = ringPoints.map { GeoPointImpl.from(it).toPoint() }
+        val pts = ringPoints.map { GeoPoint.from(it).toPoint() }
         val closed = if (pts.first() != pts.last()) pts + pts.first() else pts
         val fid = "polygon-$id-$index"
 

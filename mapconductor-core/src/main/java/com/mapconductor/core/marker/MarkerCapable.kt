@@ -1,6 +1,6 @@
 package com.mapconductor.core.marker
 
-interface MarkerCapable {
+interface MarkerCapableInterface {
     suspend fun compositionMarkers(data: List<MarkerState>)
 
     suspend fun updateMarker(state: MarkerState)

@@ -1,7 +1,7 @@
 package com.mapconductor.here
 
 import HereMapDesignTypeChangeHandler
-import HereMapViewController
+import HereMapViewControllerInterface
 import androidx.compose.ui.geometry.Offset
 import com.here.sdk.animation.AnimationState
 import com.here.sdk.core.GeoOrientation
@@ -17,14 +17,13 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
 import com.here.time.Duration
-import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.CircleCapableInterface
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -38,7 +37,7 @@ import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
 import com.mapconductor.here.marker.HereMarkerController
-import com.mapconductor.here.marker.HereMarkerEventController
+import com.mapconductor.here.marker.HereMarkerEventControllerInterface
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.raster.HereRasterLayerController
@@ -46,18 +45,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class HereMapViewControllerImpl(
+class HereMapViewController(
     private val markerController: HereMarkerController,
     private val polylineController: HerePolylineController,
     private val polygonController: HerePolygonController,
     private val circleController: HereCircleController,
     private val rasterLayerController: HereRasterLayerController,
-    override val holder: MapViewHolder<MapView, MapScene>,
+    override val holder: HereViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    CircleCapable,
-    HereMapViewController,
+    CircleCapableInterface,
+    HereMapViewControllerInterface,
     MapCameraListener,
     TapListener,
     LongPressListener {
@@ -65,8 +64,8 @@ class HereMapViewControllerImpl(
         internal const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
     }
 
-    private val markerEventControllers = mutableListOf<HereMarkerEventController>()
-    private var activeDragController: HereMarkerEventController? = null
+    private val markerEventControllers = mutableListOf<HereMarkerEventControllerInterface>()
+    private var activeDragController: HereMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -166,11 +165,11 @@ class HereMapViewControllerImpl(
         holder.mapView.gestures.longPressListener = this
     }
 
-    override fun moveCamera(position: MapCameraPositionImpl) {
+    override fun moveCamera(position: MapCameraPosition) {
         val camera = this.holder.mapView.camera
         val adjustCameraUpdate =
             MapCameraUpdateFactory.lookAt(
-                GeoPointImpl.from(position.position).toGeoCoordinates().toUpdate(),
+                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
             )
@@ -179,7 +178,7 @@ class HereMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         durationMillis: Long,
     ) {
         val camera = this.holder.mapView.camera
@@ -190,7 +189,7 @@ class HereMapViewControllerImpl(
         val bowFactor = 1.0
         val animation =
             MapCameraAnimationFactory.flyTo(
-                GeoPointImpl.from(position.position).toGeoCoordinates().toUpdate(),
+                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
                 MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
                 bowFactor,
@@ -223,7 +222,7 @@ class HereMapViewControllerImpl(
         }
     }
 
-    private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPositionImpl? {
+    private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {
         return holder.mapView.camera.boundingBox?.let { boundingBox ->
             val mapWidth = holder.mapView.width.toFloat()
             val mapHeight = holder.mapView.height.toFloat()
@@ -351,7 +350,7 @@ class HereMapViewControllerImpl(
         }
     }
 
-    private fun getGeoPointFromPoint(point: Point2D): GeoPointImpl? =
+    private fun getGeoPointFromPoint(point: Point2D): GeoPoint? =
         holder.mapView
             .viewToGeoCoordinates(point)
             ?.toGeoPoint()
@@ -386,7 +385,7 @@ class HereMapViewControllerImpl(
         listener(mapDesignType)
     }
 
-    internal fun registerMarkerEventController(controller: HereMarkerEventController) {
+    internal fun registerMarkerEventController(controller: HereMarkerEventControllerInterface) {
         if (markerEventControllers.contains(controller)) return
         markerEventControllers.add(controller)
         controller.setClickListener(markerClickListener)

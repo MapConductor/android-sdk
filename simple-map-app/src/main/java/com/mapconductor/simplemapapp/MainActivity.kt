@@ -19,10 +19,10 @@ import androidx.compose.ui.platform.LocalContext
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.heatmap.HeatmapPoint
 import com.mapconductor.core.heatmap.HeatmapPointState
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
@@ -64,11 +64,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GoogleMapHeatmapExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(35.681236, 139.767125)
+    val center = GeoPoint.fromLatLong(35.681236, 139.767125)
     val mapViewState =
         rememberMapLibreMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
+                MapCameraPosition(
                     position = center,
                     zoom = 11.0,
                 ),
@@ -98,9 +98,9 @@ fun GoogleMapHeatmapExample(modifier: Modifier = Modifier) {
 
 @Composable
 fun MapLibre(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(52.5163, 13.3777)
+    val center = GeoPoint.fromLatLong(52.5163, 13.3777)
 
-    val camera = MapCameraPositionImpl(position = center, zoom = 13.0)
+    val camera = MapCameraPosition(position = center, zoom = 13.0)
     val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
@@ -193,8 +193,8 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
 
 @Composable
 fun MarkerAnimationExample(modifier: Modifier = Modifier) {
-    val startPosition = GeoPointImpl.fromLatLong(37.775111, -122.419206)
-    val endPosition = GeoPointImpl.fromLatLong(37.780522, -122.412522)
+    val startPosition = GeoPoint.fromLatLong(37.775111, -122.419206)
+    val endPosition = GeoPoint.fromLatLong(37.780522, -122.412522)
 
     var markerState by remember {
         mutableStateOf(
@@ -225,7 +225,7 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
             for (i in 0..path.size - 2) {
                 idx += direction
                 markerState.position = path[idx]
-                println("$idx : ${GeoPointImpl.from(path[idx]).toUrlValue()}")
+                println("$idx : ${GeoPoint.from(path[idx]).toUrlValue()}")
                 delay(50)
             }
             direction = direction * -1
@@ -234,8 +234,8 @@ fun MarkerAnimationExample(modifier: Modifier = Modifier) {
     val mapViewState =
         rememberMapLibreMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl.fromLatLong(37.7791, -122.4144),
+                MapCameraPosition(
+                    position = GeoPoint.fromLatLong(37.7791, -122.4144),
                     zoom = 15.0,
                 ),
             mapDesign = MapLibreDesign.OsmBrightEn,
@@ -255,11 +255,11 @@ fun GoogleMapStrategyMarkerExample(
     postOfficeIcon: ImageIcon,
 ) {
     val context = LocalContext.current
-    val center = GeoPointImpl.fromLatLong(35.681236, 139.767125)
+    val center = GeoPoint.fromLatLong(35.681236, 139.767125)
     val mapViewState =
         rememberGoogleMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
+                MapCameraPosition(
                     position = center,
                     zoom = 14.0,
                 ),

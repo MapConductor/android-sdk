@@ -2,13 +2,13 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `// Country and state level
-val countryLevel = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(39.8283, -98.5795),
+val countryLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(39.8283, -98.5795),
     zoom = 6.0  // Shows entire country
 )
 
-val stateLevel = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(36.7783, -119.4179), // California center
+val stateLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(36.7783, -119.4179), // California center
     zoom = 8.0  // Shows state or large region
 )`;
 ---

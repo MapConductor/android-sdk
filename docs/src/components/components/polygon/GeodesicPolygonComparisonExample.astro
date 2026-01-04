@@ -48,18 +48,18 @@ fun MapView(modifier: Modifier = Modifier) {
     val mapViewState =
         rememberArcGISMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl(${centerLatitude}, ${centerLongitude}),
+                MapCameraPosition(
+                    position = GeoPoint(${centerLatitude}, ${centerLongitude}),
                     zoom = ${zoomLevel},
                 ),
         )
 
     val points =
         listOf(
-            GeoPointImpl.fromLongLat(${point1Longitude}, ${point1Latitude}),
-            GeoPointImpl.fromLongLat(${point2Longitude}, ${point2Latitude}),
-            GeoPointImpl.fromLongLat(${point3Longitude}, ${point3Latitude}),
-            GeoPointImpl.fromLongLat(${point4Longitude}, ${point4Latitude}),
+            GeoPoint.fromLongLat(${point1Longitude}, ${point1Latitude}),
+            GeoPoint.fromLongLat(${point2Longitude}, ${point2Latitude}),
+            GeoPoint.fromLongLat(${point3Longitude}, ${point3Latitude}),
+            GeoPoint.fromLongLat(${point4Longitude}, ${point4Latitude}),
         )
 
     var marker by remember { mutableStateOf<MarkerState?>(null) }

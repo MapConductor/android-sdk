@@ -1,11 +1,11 @@
 package com.mapconductor.maplibre.raster
 
-import com.mapconductor.core.raster.RasterLayerEntity
-import com.mapconductor.core.raster.RasterLayerOverlayRenderer
+import com.mapconductor.core.raster.RasterLayerEntityInterface
+import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterSource
 import com.mapconductor.core.raster.TileScheme
-import com.mapconductor.maplibre.MapLibreMapViewHolder
+import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.RasterLayer
@@ -14,15 +14,15 @@ import org.maplibre.android.style.sources.TileSet
 import android.util.Log
 
 class MapLibreRasterLayerOverlayRenderer(
-    private val holder: MapLibreMapViewHolder,
-) : RasterLayerOverlayRenderer<MapLibreRasterLayerHandle> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRenderer.AddParams>): List<MapLibreRasterLayerHandle?> =
+    private val holder: MapLibreMapViewHolderInterface,
+) : RasterLayerOverlayRendererInterface<MapLibreRasterLayerHandle> {
+    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<MapLibreRasterLayerHandle?> =
         data.map { params ->
             addLayer(params.state)
         }
 
     override suspend fun onChange(
-        data: List<RasterLayerOverlayRenderer.ChangeParams<MapLibreRasterLayerHandle>>,
+        data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<MapLibreRasterLayerHandle>>,
     ): List<MapLibreRasterLayerHandle?> =
         data.map { params ->
             val prev = params.prev
@@ -36,7 +36,7 @@ class MapLibreRasterLayerOverlayRenderer(
             }
         }
 
-    override suspend fun onRemove(data: List<RasterLayerEntity<MapLibreRasterLayerHandle>>) {
+    override suspend fun onRemove(data: List<RasterLayerEntityInterface<MapLibreRasterLayerHandle>>) {
         data.forEach { entity ->
             removeLayer(entity)
         }
@@ -86,7 +86,7 @@ class MapLibreRasterLayerOverlayRenderer(
         )
     }
 
-    private fun removeLayer(entity: RasterLayerEntity<MapLibreRasterLayerHandle>) {
+    private fun removeLayer(entity: RasterLayerEntityInterface<MapLibreRasterLayerHandle>) {
         val style = holder.map.style ?: return
         val handle = entity.layer
         try {

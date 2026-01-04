@@ -1,21 +1,21 @@
 package com.mapconductor.core.marker
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,
-    renderer: MarkerOverlayRenderer<ActualMarker>,
+    renderer: MarkerOverlayRendererInterface<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         MarkerState,
-        MarkerEntity<ActualMarker>,
+        MarkerEntityInterface<ActualMarker>,
         MarkerState,
     > {
-    open val renderer: MarkerOverlayRenderer<ActualMarker> = renderer
-    private val rendererRef: MarkerOverlayRenderer<ActualMarker> = renderer
+    open val renderer: MarkerOverlayRendererInterface<ActualMarker> = renderer
+    private val rendererRef: MarkerOverlayRendererInterface<ActualMarker> = renderer
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
     private val defaultMarkerIcon = DefaultMarkerIcon().toBitmapIcon()
@@ -71,11 +71,11 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
+            val modifiedEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
-            val updated = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
-            val removed = mutableListOf<MarkerEntity<ActualMarker>>()
+            val added = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker>>()
+            val removed = mutableListOf<MarkerEntityInterface<ActualMarker>>()
 
             data.forEach { state ->
 
@@ -84,21 +84,21 @@ abstract class AbstractMarkerController<ActualMarker>(
                     val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
 
                     updated.add(
-                        object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                            override val current: MarkerEntity<ActualMarker> =
-                                MarkerEntityImpl(
+                        object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
+                            override val current: MarkerEntityInterface<ActualMarker> =
+                                MarkerEntity(
                                     state = state,
                                     marker = prevEntity.marker,
                                     isRendered = true,
                                 )
                             override val bitmapIcon: BitmapIcon = markerIcon
-                            override val prev: MarkerEntity<ActualMarker> = prevEntity
+                            override val prev: MarkerEntityInterface<ActualMarker> = prevEntity
                         },
                     )
                     previous.remove(state.id)
                 } else {
                     added.add(
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state: MarkerState = state
                             override val bitmapIcon: BitmapIcon =
                                 state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -125,7 +125,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 marker = actualMarker,
                                 state = added[index].state,
                                 isRendered = true,
@@ -144,7 +144,7 @@ abstract class AbstractMarkerController<ActualMarker>(
                     actualMarker?.let {
                         val params = updated[index]
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 state = params.current.state,
                                 marker = actualMarker,
                                 isRendered = true,
@@ -176,7 +176,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
         // Update the entity in manager
         val entity =
-            MarkerEntityImpl(
+            MarkerEntity(
                 marker = prevEntity.marker,
                 state = state,
                 isRendered = prevEntity.isRendered,
@@ -190,23 +190,23 @@ abstract class AbstractMarkerController<ActualMarker>(
             val markerIcon = state.icon ?: defaultMarkerIcon
 
             val renderEntity =
-                MarkerEntityImpl(
+                MarkerEntity(
                     marker = marker,
                     state = state,
                     isRendered = true,
                 )
             val markerParams =
-                object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                    override val current: MarkerEntity<ActualMarker> = renderEntity
+                object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
+                    override val current: MarkerEntityInterface<ActualMarker> = renderEntity
                     override val bitmapIcon: BitmapIcon = markerIcon.toBitmapIcon()
-                    override val prev: MarkerEntity<ActualMarker> = prevEntity
+                    override val prev: MarkerEntityInterface<ActualMarker> = prevEntity
                 }
             val markers = renderer.onChange(listOf(markerParams))
 
             if (markers.size == 1) {
                 markers[0]?.let {
                     val finalEntity =
-                        MarkerEntityImpl<ActualMarker>(
+                        MarkerEntity<ActualMarker>(
                             marker = it,
                             state = state,
                             isRendered = true,
@@ -227,13 +227,13 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun clear() {
         semaphore.withPermit {
-            val entities: List<MarkerEntity<ActualMarker>> = markerManager.allEntities()
+            val entities: List<MarkerEntityInterface<ActualMarker>> = markerManager.allEntities()
             renderer.onRemove(entities)
             markerManager.clear()
         }
     }
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         // No-op for default marker flow.
     }
 

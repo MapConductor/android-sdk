@@ -16,7 +16,7 @@ fun ClusteringStrategyExample() {
             clusteringEnabled = true,
             clusterRadius = 50.0,       // 50-meter clustering
             maxMarkersPerCluster = 5,   // Small clusters
-            geocell = HexGeocellImpl(
+            geocell = HexGeocell(
                 baseHexSideLength = 100.0,  // Fine-grained spatial index
                 zoom = 18.0
             )
@@ -26,13 +26,13 @@ fun ClusteringStrategyExample() {
     // Add dense marker dataset
     LaunchedEffect(Unit) {
         val denseMarkers = generateDenseMarkerSet(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            center = GeoPoint.fromLatLong(37.7749, -122.4194),
             count = 500,
             radiusMeters = 200.0  // 200-meter radius
         )
 
         denseMarkers.forEach { markerData ->
-            val entity = MarkerEntity(
+            val entity = MarkerEntityInterface(
                 state = MarkerState(
                     id = markerData.id,
                     position = markerData.position,

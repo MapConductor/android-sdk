@@ -9,7 +9,7 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
 fun StoreMapPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { StoreMapPageViewModelImpl() }
+    val viewModel = remember { StoreMapPageViewModel() }
     val context = LocalContext.current
 
     DemoMapPageScaffold(

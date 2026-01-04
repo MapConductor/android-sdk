@@ -1,13 +1,13 @@
 package com.mapconductor.marker.strategy
 
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -18,7 +18,7 @@ import kotlinx.coroutines.sync.withPermit
  */
 class SimpleMarkerStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
     /**
      * Default MarkerManager instance provided by dependency injection.
@@ -30,8 +30,8 @@ class SimpleMarkerStrategy<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         semaphore.withPermit {
             // Simple strategy: just render all markers that aren't already rendered
@@ -42,7 +42,7 @@ class SimpleMarkerStrategy<ActualMarker>(
                 val defaultIcon = ColorDefaultIcon()
                 val addParams =
                     markersToRender.map { entity ->
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state: MarkerState = entity.state
                             override val bitmapIcon: BitmapIcon =
                                 entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()

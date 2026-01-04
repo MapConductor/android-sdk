@@ -23,8 +23,8 @@ fun MapViewHolderGoogleMapsExample(modifier: Modifier = Modifier) {
 
     // ${commentCameraPosition}
     val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(28.53456, 77.192845),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(28.53456, 77.192845),
             zoom = 12.0
         ),
     )

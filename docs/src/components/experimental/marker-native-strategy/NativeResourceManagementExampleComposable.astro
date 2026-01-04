@@ -13,7 +13,7 @@ const code = `@Composable
 fun ResourceManagementExample() {
     val nativeManager = remember {
         NativeMarkerManager<GoogleMapActualMarker>(
-            hexGeocell = HexGeocellImpl.defaultGeocell()
+            hexGeocell = HexGeocell.defaultGeocell()
         )
     }
 

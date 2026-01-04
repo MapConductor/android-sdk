@@ -1,18 +1,18 @@
 package com.mapconductor.marker.clustering
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.ColorDefaultIcon
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerEntityImpl
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerIconInterface
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.Spherical
@@ -42,22 +42,22 @@ class MarkerClusterStrategy<ActualMarker>(
     private val clusterRadiusPx: Double = DEFAULT_CLUSTER_RADIUS_PX,
     private val minClusterSize: Int = DEFAULT_MIN_CLUSTER_SIZE,
     private val expandMargin: Double = DEFAULT_EXPAND_MARGIN,
-    private val clusterIconProvider: (Int) -> MarkerIcon = DEFAULT_ICON_PROVIDER,
-    private val clusterIconProviderWithTurn: ((Int, Int) -> MarkerIcon)? = null,
+    private val clusterIconProvider: (Int) -> MarkerIconInterface = DEFAULT_ICON_PROVIDER,
+    private val clusterIconProviderWithTurn: ((Int, Int) -> MarkerIconInterface)? = null,
     private val includeTurnInClusterId: Boolean = false,
     private val onClusterClick: ((MarkerCluster) -> Unit)? = null,
     private val tileSize: Double = DEFAULT_TILE_SIZE,
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
     private val sourceStates = mutableMapOf<String, MarkerState>()
-    private var lastCameraPosition: MapCameraPositionImpl? = null
+    private var lastCameraPosition: MapCameraPosition? = null
     private var clusteringTurn = 0
     private var lastZoomKey: Int? = null
     private val debounceScope = CoroutineScope(Dispatchers.Default)
     private val cameraUpdateToken = AtomicLong(0)
-    private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
+    private var lastRenderer: MarkerOverlayRendererInterface<ActualMarker>? = null
     private var debounceJob: Job? = null
     private val _debugInfoFlow = MutableStateFlow<List<MarkerClusterDebugInfo>>(emptyList())
     val debugInfoFlow: StateFlow<List<MarkerClusterDebugInfo>> = _debugInfoFlow
@@ -71,7 +71,7 @@ class MarkerClusterStrategy<ActualMarker>(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         updateSourceStates(data)
         val cameraPosition = lastCameraPosition ?: return true
@@ -82,7 +82,7 @@ class MarkerClusterStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         sourceStates[state.id] = state
         val cameraPosition = lastCameraPosition ?: return true
@@ -91,8 +91,8 @@ class MarkerClusterStrategy<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         lastCameraPosition = cameraPosition
         lastRenderer = renderer
@@ -117,9 +117,9 @@ class MarkerClusterStrategy<ActualMarker>(
     }
 
     private suspend fun renderClusters(
-        cameraPosition: MapCameraPositionImpl,
+        cameraPosition: MapCameraPosition,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
         token: Long,
     ) {
         semaphore.withPermit {
@@ -153,7 +153,7 @@ class MarkerClusterStrategy<ActualMarker>(
                         val members = entry.value
                         val center = members.firstOrNull()?.position ?: return@mapNotNull null
                         ClusterCandidate(
-                            center = GeoPointImpl.from(center),
+                            center = GeoPoint.from(center),
                             members = members.toMutableList(),
                         )
                     }
@@ -215,7 +215,7 @@ class MarkerClusterStrategy<ActualMarker>(
 
     private suspend fun updateRenderedMarkers(
         desiredStates: List<MarkerState>,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val desiredById = desiredStates.associateBy { it.id }
         val existing = markerManager.allEntities()
@@ -236,7 +236,7 @@ class MarkerClusterStrategy<ActualMarker>(
         if (addStates.isNotEmpty()) {
             val addParams =
                 addStates.map { state ->
-                    object : MarkerOverlayRenderer.AddParams {
+                    object : MarkerOverlayRendererInterface.AddParamsInterface {
                         override val state: MarkerState = state
                         override val bitmapIcon =
                             state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -245,8 +245,8 @@ class MarkerClusterStrategy<ActualMarker>(
             val actualMarkers = renderer.onAdd(addParams)
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
-                    val entity: MarkerEntity<ActualMarker> =
-                        MarkerEntityImpl(
+                    val entity: MarkerEntityInterface<ActualMarker> =
+                        MarkerEntity(
                             marker = it as ActualMarker,
                             state = addParams[index].state,
                             isRendered = true,
@@ -256,13 +256,13 @@ class MarkerClusterStrategy<ActualMarker>(
             }
         }
 
-        val changeParams = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
-        val changeEntities = mutableListOf<MarkerEntity<ActualMarker>>()
+        val changeParams = mutableListOf<MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker>>()
+        val changeEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
 
         updateStates.forEach { state ->
             val prev = existingById[state.id] ?: return@forEach
-            val nextEntity: MarkerEntity<ActualMarker> =
-                MarkerEntityImpl(
+            val nextEntity: MarkerEntityInterface<ActualMarker> =
+                MarkerEntity(
                     marker = prev.marker,
                     state = state,
                     isRendered = true,
@@ -274,9 +274,9 @@ class MarkerClusterStrategy<ActualMarker>(
             }
 
             val change =
-                object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                    override val current: MarkerEntity<ActualMarker> = nextEntity
-                    override val prev: MarkerEntity<ActualMarker> = prev
+                object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
+                    override val current: MarkerEntityInterface<ActualMarker> = nextEntity
+                    override val prev: MarkerEntityInterface<ActualMarker> = prev
                     override val bitmapIcon =
                         state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                 }
@@ -288,8 +288,8 @@ class MarkerClusterStrategy<ActualMarker>(
             val actualMarkers = renderer.onChange(changeParams)
             actualMarkers.forEachIndexed { index, actualMarker ->
                 actualMarker?.let {
-                    val entity: MarkerEntity<ActualMarker> =
-                        MarkerEntityImpl(
+                    val entity: MarkerEntityInterface<ActualMarker> =
+                        MarkerEntity(
                             marker = it as ActualMarker,
                             state = changeEntities[index].state,
                             isRendered = true,
@@ -304,7 +304,7 @@ class MarkerClusterStrategy<ActualMarker>(
         }
     }
 
-    private fun averagePosition(states: List<MarkerState>): GeoPointImpl {
+    private fun averagePosition(states: List<MarkerState>): GeoPoint {
         var sumLat = 0.0
         var sumLon = 0.0
         states.forEach { state ->
@@ -312,7 +312,7 @@ class MarkerClusterStrategy<ActualMarker>(
             sumLon += state.position.longitude
         }
         val count = states.size.coerceAtLeast(1)
-        return GeoPointImpl.fromLatLong(
+        return GeoPoint.fromLatLong(
             latitude = sumLat / count,
             longitude = sumLon / count,
         )
@@ -330,7 +330,7 @@ class MarkerClusterStrategy<ActualMarker>(
         }
 
     private fun projectToPixel(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         tileSize: Double,
     ): Pair<Double, Double> {
@@ -356,7 +356,7 @@ class MarkerClusterStrategy<ActualMarker>(
     }
 
     private fun metersPerPixel(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         tileSize: Double,
     ): Double {
@@ -423,24 +423,24 @@ class MarkerClusterStrategy<ActualMarker>(
     }
 
     private data class ClusterCandidate(
-        val center: GeoPointImpl,
+        val center: GeoPoint,
         val members: MutableList<MarkerState>,
     )
 
     private data class MergedCluster(
-        val center: GeoPointImpl,
+        val center: GeoPoint,
         val members: List<MarkerState>,
     )
 
     private fun selectDenseCenter(
         members: List<MarkerState>,
         zoom: Double,
-    ): GeoPointImpl {
+    ): GeoPoint {
         if (members.isEmpty()) {
-            return GeoPointImpl.fromLatLong(0.0, 0.0)
+            return GeoPoint.fromLatLong(0.0, 0.0)
         }
         if (members.size == 1) {
-            return GeoPointImpl.from(members[0].position)
+            return GeoPoint.from(members[0].position)
         }
 
         val points =
@@ -501,11 +501,11 @@ class MarkerClusterStrategy<ActualMarker>(
             }
         }
 
-        return GeoPointImpl.from(bestPoint.member.position)
+        return GeoPoint.from(bestPoint.member.position)
     }
 
     private fun calculateClusterRadiusMeters(
-        center: GeoPointImpl,
+        center: GeoPoint,
         members: List<MarkerState>,
     ): Double {
         var maxDistance = 0.0
@@ -542,7 +542,7 @@ class MarkerClusterStrategy<ActualMarker>(
         private const val CAMERA_DEBOUNCE_MILLIS: Long = 100L
         private const val MAX_DENSE_CELLS: Int = 4
         private const val MAX_DENSE_CANDIDATES: Int = 50
-        val DEFAULT_ICON_PROVIDER: (Int) -> MarkerIcon =
+        val DEFAULT_ICON_PROVIDER: (Int) -> MarkerIconInterface =
             { count -> ColorDefaultIcon(label = count.toString()) }
         private const val DEG_TO_RAD: Double = Math.PI / 180.0
         private const val MAX_SIN_LAT: Double = 0.9999

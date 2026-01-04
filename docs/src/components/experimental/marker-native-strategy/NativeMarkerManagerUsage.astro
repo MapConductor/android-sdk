@@ -2,11 +2,11 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `import com.mapconductor.marker.nativestrategy.NativeMarkerManager
-import com.mapconductor.core.geocell.HexGeocellImpl
+import com.mapconductor.core.geocell.HexGeocell
 
 // Create native marker manager
 val nativeManager = NativeMarkerManager<ActualMarker>(
-    hexGeocell = HexGeocellImpl.defaultGeocell()
+    hexGeocell = HexGeocell.defaultGeocell()
 )
 
 // Use like standard MarkerManager

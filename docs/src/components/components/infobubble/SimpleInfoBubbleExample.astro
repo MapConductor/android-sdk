@@ -33,9 +33,9 @@ const {
 
 const code = `@Composable
 fun SimpleInfoBubbleExample() {
-    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude})
 
-    val camera = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
+    val camera = MapCameraPosition(position = center, zoom = ${zoomLevel})
     val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }

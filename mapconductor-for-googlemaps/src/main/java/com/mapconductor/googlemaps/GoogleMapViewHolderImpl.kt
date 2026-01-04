@@ -3,19 +3,19 @@ package com.mapconductor.googlemaps
 import androidx.compose.ui.geometry.Offset
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderInterface
 import android.graphics.Point
 
-class GoogleMapViewHolderImpl(
+class GoogleMapViewHolder(
     override val mapView: MapView,
     override val map: GoogleMap,
-) : MapViewHolder<MapView, GoogleMap> {
-    override fun toScreenOffset(position: GeoPoint): Offset? {
+) : MapViewHolderInterface<MapView, GoogleMap> {
+    override fun toScreenOffset(position: GeoPointInterface): Offset? {
         val point =
             map.projection.toScreenLocation(
-                GeoPointImpl.from(position).toLatLng(),
+                GeoPoint.from(position).toLatLng(),
             )
         return Offset(
             x = point.x.toFloat(),
@@ -23,7 +23,7 @@ class GoogleMapViewHolderImpl(
         )
     }
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? =
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
         map.projection
             .fromScreenLocation(
                 Point(

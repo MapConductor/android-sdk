@@ -8,13 +8,13 @@ import java.util.concurrent.ConcurrentHashMap
 class LocalTileServer private constructor(
     port: Int,
 ) : NanoHTTPD(port) {
-    private val providers = ConcurrentHashMap<String, TileProvider>()
+    private val providers = ConcurrentHashMap<String, TileProviderInterface>()
 
     val baseUrl: String = "http://127.0.0.1:$port"
 
     fun register(
         routeId: String,
-        provider: TileProvider,
+        provider: TileProviderInterface,
     ) {
         providers[routeId] = provider
     }

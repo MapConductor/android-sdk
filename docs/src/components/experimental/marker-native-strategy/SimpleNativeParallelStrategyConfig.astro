@@ -16,7 +16,7 @@ const code = `import com.mapconductor.marker.nativestrategy.SimpleNativeParallel
 val strategy = SimpleNativeParallelStrategy<ActualMarker>(
     expandMargin = ${expandMargin},        // Viewport expansion
     maxConcurrency = ${maxConcurrency},        // Parallel threads
-    geocell = HexGeocellImpl.defaultGeocell()
+    geocell = HexGeocell.defaultGeocell()
 )`;
 ---
 

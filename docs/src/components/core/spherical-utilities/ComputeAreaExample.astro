@@ -2,11 +2,11 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `val polygonPoints = listOf(
-    GeoPointImpl.fromLatLong(37.7749, -122.4194),
-    GeoPointImpl.fromLatLong(37.7849, -122.4094),
-    GeoPointImpl.fromLatLong(37.7849, -122.4294),
-    GeoPointImpl.fromLatLong(37.7749, -122.4294),
-    GeoPointImpl.fromLatLong(37.7749, -122.4194)  // Close the polygon
+    GeoPoint.fromLatLong(37.7749, -122.4194),
+    GeoPoint.fromLatLong(37.7849, -122.4094),
+    GeoPoint.fromLatLong(37.7849, -122.4294),
+    GeoPoint.fromLatLong(37.7749, -122.4294),
+    GeoPoint.fromLatLong(37.7749, -122.4194)  // Close the polygon
 )
 
 val area = Spherical.computeArea(polygonPoints)

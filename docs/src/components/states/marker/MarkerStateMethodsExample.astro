@@ -5,9 +5,9 @@ const code = `fun setAnimation(animation: MarkerAnimation?)
 
 fun copy(
     id: String? = this.id,
-    position: GeoPoint = this.position,
+    position: GeoPointInterface = this.position,
     extra: Serializable? = this.extra,
-    icon: MarkerIcon? = this.icon,
+    icon: MarkerIconInterface? = this.icon,
     clickable: Boolean? = this.clickable,
     draggable: Boolean? = this.draggable,
     onClick: OnMarkerEventHandler? = this.onClick,

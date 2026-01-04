@@ -3,14 +3,14 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun CameraControlExample() {
-    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
-    val camera = MapCameraPositionImpl(position = london, zoom = 8.0)
+    val london = GeoPoint.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPosition(position = london, zoom = 8.0)
     val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
     Column(modifier = modifier) {
         Button(
             onClick = {
-                val sanFrancisco = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+                val sanFrancisco = GeoPoint.fromLatLong(37.7749, -122.4194)
                 mapViewState.moveCameraTo(
                     position = sanFrancisco,
                     durationMillis = 3000

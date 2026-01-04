@@ -4,8 +4,8 @@ import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.rasterLayer
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.rasterSource
-import com.mapconductor.core.raster.RasterLayerEntity
-import com.mapconductor.core.raster.RasterLayerOverlayRenderer
+import com.mapconductor.core.raster.RasterLayerEntityInterface
+import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterSource
 import com.mapconductor.core.raster.TileScheme
@@ -14,14 +14,14 @@ import android.util.Log
 
 class MapboxRasterLayerOverlayRenderer(
     private val holder: MapboxMapViewHolder,
-) : RasterLayerOverlayRenderer<MapboxRasterLayerHandle> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRenderer.AddParams>): List<MapboxRasterLayerHandle?> =
+) : RasterLayerOverlayRendererInterface<MapboxRasterLayerHandle> {
+    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<MapboxRasterLayerHandle?> =
         data.map { params ->
             addLayer(params.state)
         }
 
     override suspend fun onChange(
-        data: List<RasterLayerOverlayRenderer.ChangeParams<MapboxRasterLayerHandle>>,
+        data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<MapboxRasterLayerHandle>>,
     ): List<MapboxRasterLayerHandle?> =
         data.map { params ->
             val prev = params.prev
@@ -35,7 +35,7 @@ class MapboxRasterLayerOverlayRenderer(
             }
         }
 
-    override suspend fun onRemove(data: List<RasterLayerEntity<MapboxRasterLayerHandle>>) {
+    override suspend fun onRemove(data: List<RasterLayerEntityInterface<MapboxRasterLayerHandle>>) {
         data.forEach { entity ->
             removeLayer(entity)
         }
@@ -97,7 +97,7 @@ class MapboxRasterLayerOverlayRenderer(
         }
     }
 
-    private fun removeLayer(entity: RasterLayerEntity<MapboxRasterLayerHandle>) {
+    private fun removeLayer(entity: RasterLayerEntityInterface<MapboxRasterLayerHandle>) {
         val style = holder.map.style ?: return
         val handle = entity.layer
         try {

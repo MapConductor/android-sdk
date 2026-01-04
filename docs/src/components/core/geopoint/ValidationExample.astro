@@ -16,7 +16,7 @@ const {
 } = Astro.props;
 
 const code = `// ${commentForUsage}
-val point = GeoPointImpl.fromLatLong(${latitude}, ${longitude})
+val point = GeoPoint.fromLatLong(${latitude}, ${longitude})
 if (point.isValid()) {
     // ${commentForUse}
 }`;

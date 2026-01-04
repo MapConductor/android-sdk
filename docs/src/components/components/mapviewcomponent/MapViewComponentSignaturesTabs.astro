@@ -2,9 +2,9 @@
 import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
 
 const googleMapsCode = `GoogleMapView(
-    state: GoogleMapViewStateImpl,
+    state: GoogleMapViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<GoogleMapActualMarker>? = null,
+    markerRenderingStrategy: MarkerRenderingStrategyInterface<GoogleMapActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -15,9 +15,9 @@ const googleMapsCode = `GoogleMapView(
 
 
 const mapboxCode = `MapboxMapView(
-    state: MapboxViewStateImpl,
+    state: MapboxViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    markerRenderingStrategy: MarkerRenderingStrategyInterface<MapboxActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -28,9 +28,9 @@ const mapboxCode = `MapboxMapView(
 
 
 const hereMapCode = `HereMapView(
-    state: HereViewStateImpl,
+    state: HereViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<HereActualMarker>? = null,
+    markerRenderingStrategy: MarkerRenderingStrategyInterface<HereActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -40,9 +40,9 @@ const hereMapCode = `HereMapView(
 )`;
 
 const mapLibreCode = `MapLibreMapView(
-    state: MapLibreViewStateImpl,
+    state: MapLibreViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
+    markerRenderingStrategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -52,9 +52,9 @@ const mapLibreCode = `MapLibreMapView(
 )`;
 
 const arcGISMapCode = `ArcGISMapView(
-    state: ArcGISMapViewStateImpl,
+    state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<ArcGISActualMarker>? = null,
+    markerRenderingStrategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,

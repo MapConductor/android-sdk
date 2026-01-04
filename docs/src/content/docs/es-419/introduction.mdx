@@ -15,19 +15,19 @@ MapConductor te permite trabajar con diferentes proveedores de mapas utilizando 
 
 ### Proveedores de mapas compatibles
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
-- **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
-- **HERE Maps**: `HereViewStateImpl` / `HereMapView`
-- **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
-- **MapLibre**: `MapLibreViewStateImpl` / `MapLibreMapView`
+- **Google Maps**: `GoogleMapViewState` / `GoogleMapView`
+- **Mapbox**: `MapboxViewState` / `MapboxMapView`
+- **HERE Maps**: `HereViewState` / `HereMapView`
+- **ArcGIS**: `ArcGISMapViewState` / `ArcGISMapView`
+- **MapLibre**: `MapLibreViewState` / `MapLibreMapView`
 
 ### Clases principales
 
 El SDK proporciona clases geográficas fundamentales:
 
-- **GeoPoint**: Representa coordenadas geográficas (latitud, longitud, altitud).
+- **GeoPointInterface**: Representa coordenadas geográficas (latitud, longitud, altitud).
 - **GeoRectBounds**: Define áreas geográficas rectangulares usando las esquinas suroeste/noreste.
-- **MapCameraPosition**: Representa la posición de la cámara (objetivo, zoom, orientación, inclinación, márgenes).
+- **MapCameraPositionInterface**: Representa la posición de la cámara (objetivo, zoom, orientación, inclinación, márgenes).
 
 ### Componentes clave
 
@@ -89,7 +89,7 @@ Ejemplo de creación de una vista de mapa con un marcador y un círculo:
 
 ### 4. Cambio de proveedor de mapas
 
-Para cambiar de proveedor de mapas, basta con cambiar la implementación de `MapViewState`:
+Para cambiar de proveedor de mapas, basta con cambiar la implementación de `MapViewStateInterface`:
 
 <ProviderStateExamples />
 
@@ -106,7 +106,7 @@ En comparación con la versión 1.1.0, los cambios principales de la v{BOM_MODUL
 En comparación con la versión 1.0.0, los cambios principales de la v1.1.0 incluyen:
 
 - Manejo unificado de eventos de movimiento de cámara (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) en todos los proveedores
-- Mejoras en la gestión de la posición de la cámara de `MapViewState` y su integración con `VisibleRegion`
+- Mejoras en la gestión de la posición de la cámara de `MapViewStateInterface` y su integración con `VisibleRegion`
 - Interfaces de control de marcadores refactorizadas para integraciones de proveedores más claras
 - Ejemplos ampliados en la app de ejemplo para demostrar flujos avanzados de cámara y `VisibleRegion`
 

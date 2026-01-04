@@ -9,16 +9,16 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualPolygon
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonState
 import kotlin.collections.set
 import kotlinx.coroutines.CoroutineScope
@@ -60,8 +60,8 @@ class ArcGISPolygonOverlayRenderer(
 
     override suspend fun updatePolygonProperties(
         polygon: ArcGISActualPolygon,
-        current: PolygonEntity<ArcGISActualPolygon>,
-        prev: PolygonEntity<ArcGISActualPolygon>,
+        current: PolygonEntityInterface<ArcGISActualPolygon>,
+        prev: PolygonEntityInterface<ArcGISActualPolygon>,
     ): ArcGISActualPolygon? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -93,7 +93,7 @@ class ArcGISPolygonOverlayRenderer(
             polygon
         }
 
-    override suspend fun removePolygon(entity: PolygonEntity<ArcGISActualPolygon>) {
+    override suspend fun removePolygon(entity: PolygonEntityInterface<ArcGISActualPolygon>) {
         coroutine.launch {
             polygonLayer.graphics.remove(entity.polygon)
         }
@@ -112,7 +112,7 @@ class ArcGISPolygonOverlayRenderer(
     }
 
     private fun createGeometry(state: PolygonState): Geometry {
-        val geoPoints: List<GeoPoint> =
+        val geoPoints: List<GeoPointInterface> =
             when (state.geodesic) {
                 true -> createInterpolatePoints(state.points)
                 false -> createLinearInterpolatePoints(state.points)
@@ -120,7 +120,7 @@ class ArcGISPolygonOverlayRenderer(
         val polygonBuilder =
             PolygonBuilder().also { builder ->
                 geoPoints.forEach {
-                    builder.addPoint(GeoPointImpl.from(it).toPoint())
+                    builder.addPoint(GeoPoint.from(it).toPoint())
                 }
             }
         return polygonBuilder.toGeometry()

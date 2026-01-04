@@ -8,12 +8,12 @@ class GeoRectBoundsTest {
     @Test
     fun testIntersects_normalCase() {
         val bounds1 = GeoRectBounds()
-        bounds1.extend(GeoPointImpl(10.0, 10.0))
-        bounds1.extend(GeoPointImpl(20.0, 20.0))
+        bounds1.extend(GeoPoint(10.0, 10.0))
+        bounds1.extend(GeoPoint(20.0, 20.0))
 
         val bounds2 = GeoRectBounds()
-        bounds2.extend(GeoPointImpl(15.0, 15.0))
-        bounds2.extend(GeoPointImpl(25.0, 25.0))
+        bounds2.extend(GeoPoint(15.0, 15.0))
+        bounds2.extend(GeoPoint(25.0, 25.0))
 
         assertTrue("Overlapping bounds should intersect", bounds1.intersects(bounds2))
         assertTrue("Intersect should be symmetric", bounds2.intersects(bounds1))
@@ -22,12 +22,12 @@ class GeoRectBoundsTest {
     @Test
     fun testIntersects_noOverlap() {
         val bounds1 = GeoRectBounds()
-        bounds1.extend(GeoPointImpl(10.0, 10.0))
-        bounds1.extend(GeoPointImpl(20.0, 20.0))
+        bounds1.extend(GeoPoint(10.0, 10.0))
+        bounds1.extend(GeoPoint(20.0, 20.0))
 
         val bounds2 = GeoRectBounds()
-        bounds2.extend(GeoPointImpl(30.0, 30.0))
-        bounds2.extend(GeoPointImpl(40.0, 40.0))
+        bounds2.extend(GeoPoint(30.0, 30.0))
+        bounds2.extend(GeoPoint(40.0, 40.0))
 
         assertFalse("Non-overlapping bounds should not intersect", bounds1.intersects(bounds2))
         assertFalse("Intersect should be symmetric", bounds2.intersects(bounds1))

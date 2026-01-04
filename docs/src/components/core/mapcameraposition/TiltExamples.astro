@@ -30,21 +30,21 @@ const {
 } = Astro.props;
 
 const code = `// ${topDownComment}
-val topDown = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val topDown = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     tilt = ${topDownTilt}
 )
 
 // ${angledComment}
-val angled = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val angled = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     tilt = ${angledTilt},
     zoom = ${angledZoom}
 )
 
 // ${streetLevelComment}
-val streetLevel = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val streetLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     tilt = ${streetTilt},
     bearing = ${streetBearing},
     zoom = ${streetZoom}

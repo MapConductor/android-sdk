@@ -15,19 +15,19 @@ The MapConductor SDK allows you to use a single API to work with different map p
 
 ### Supported Map Providers
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
-- **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
-- **HERE Maps**: `HereViewStateImpl` / `HereMapView`
-- **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
-- **MapLibre**: `MapLibreViewStateImpl` / `MapLibreMapView`
+- **Google Maps**: `GoogleMapViewState` / `GoogleMapView`
+- **Mapbox**: `MapboxViewState` / `MapboxMapView`
+- **HERE Maps**: `HereViewState` / `HereMapView`
+- **ArcGIS**: `ArcGISMapViewState` / `ArcGISMapView`
+- **MapLibre**: `MapLibreViewState` / `MapLibreMapView`
 
 ### Core Classes
 
 The SDK provides fundamental geographic classes:
 
-- **GeoPoint**: Represents geographic coordinates (latitude, longitude, altitude)
+- **GeoPointInterface**: Represents geographic coordinates (latitude, longitude, altitude)
 - **GeoRectBounds**: Defines rectangular geographic areas with southwest/northeast corners
-- **MapCameraPosition**: Represents camera position (target, zoom, bearing, tilt, paddings)
+- **MapCameraPositionInterface**: Represents camera position (target, zoom, bearing, tilt, paddings)
 
 ### Key Components
 
@@ -74,7 +74,7 @@ Create a map view with a marker and a circle:
 
 ### 4. Switching Map Providers
 
-To switch between map providers, simply change the `MapViewState` implementation:
+To switch between map providers, simply change the `MapViewStateInterface` implementation:
 
 <ProviderStateExamples />
 
@@ -91,7 +91,7 @@ Compared to v1.1.0, v{BOM_MODULE_VERSION} includes:
 Compared to v1.0.0, v1.1.0 includes:
 
 - Unified camera move event handling (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) across all providers
-- Improved `MapViewState` camera position handling and `VisibleRegion` integration
+- Improved `MapViewStateInterface` camera position handling and `VisibleRegion` integration
 - Refactored marker controller interfaces for clearer provider integrations
 - Expanded example app with advanced camera control and `VisibleRegion` usage examples
 

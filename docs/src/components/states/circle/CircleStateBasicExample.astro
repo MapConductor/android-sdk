@@ -14,7 +14,7 @@ const {
 } = Astro.props;
 
 const code = `val circleState = CircleState(
-    center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+    center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
     radiusMeters = ${radiusMeters},
     strokeColor = Color.Blue,
     fillColor = Color.Blue.copy(alpha = 0.3f)

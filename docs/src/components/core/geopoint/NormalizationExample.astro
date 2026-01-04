@@ -17,10 +17,10 @@ const {
   invalidLongitude = 200.0
 } = Astro.props;
 
-const code = `fun GeoPoint.normalize(): GeoPointImpl
+const code = `fun GeoPointInterface.normalize(): GeoPoint
 
 // ${commentForUsage}
-val invalidPoint = GeoPointImpl.fromLatLong(${invalidLatitude}, ${invalidLongitude}) // ${commentForInvalid}
+val invalidPoint = GeoPoint.fromLatLong(${invalidLatitude}, ${invalidLongitude}) // ${commentForInvalid}
 val validPoint = invalidPoint.normalize() // ${commentForValid}`;
 ---
 

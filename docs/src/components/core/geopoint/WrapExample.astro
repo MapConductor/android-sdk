@@ -16,7 +16,7 @@ const {
 } = Astro.props;
 
 const code = `// ${commentForExample}
-val point = GeoPointImpl(${latitude}, ${longitude}) // ${commentForOverflow}
+val point = GeoPoint(${latitude}, ${longitude}) // ${commentForOverflow}
 val wrapped = point.wrap() // 緯度: -85.0, 経度: 190.0 → -170.0`;
 ---
 

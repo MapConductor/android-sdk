@@ -22,8 +22,8 @@ fun BoundsEditorExample() {
     var bounds by remember {
         mutableStateOf(
             GeoRectBounds(
-                southWest = GeoPointImpl.fromLatLong(${initialSouthWestLatitude}, ${initialSouthWestLongitude}),
-                northEast = GeoPointImpl.fromLatLong(${initialNorthEastLatitude}, ${initialNorthEastLongitude})
+                southWest = GeoPoint.fromLatLong(${initialSouthWestLatitude}, ${initialSouthWestLongitude}),
+                northEast = GeoPoint.fromLatLong(${initialNorthEastLatitude}, ${initialNorthEastLongitude})
             )
         )
     }
@@ -33,14 +33,14 @@ fun BoundsEditorExample() {
         when (markerState.extra) {
             "SW" -> {
                 bounds = GeoRectBounds(
-                    southWest = newPosition as GeoPointImpl,
+                    southWest = newPosition as GeoPoint,
                     northEast = bounds.northEast
                 )
             }
             "NE" -> {
                 bounds = GeoRectBounds(
                     southWest = bounds.southWest,
-                    northEast = newPosition as GeoPointImpl
+                    northEast = newPosition as GeoPoint
                 )
             }
         }
@@ -59,9 +59,9 @@ fun BoundsEditorExample() {
             Polygon(
                 points = listOf(
                     sw,
-                    GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                    GeoPoint.fromLatLong(sw.latitude, ne.longitude),
                     ne,
-                    GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                    GeoPoint.fromLatLong(ne.latitude, sw.longitude),
                     sw
                 ),
                 strokeColor = Color.Red,

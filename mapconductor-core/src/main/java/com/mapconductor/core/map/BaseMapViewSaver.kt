@@ -1,14 +1,14 @@
 package com.mapconductor.core.map
 
 import androidx.compose.runtime.saveable.Saver
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import android.os.Bundle
 
 /**
  * Base class for MapView state savers
- * @param T MapViewState type
+ * @param T MapViewStateInterface type
  */
-abstract class BaseMapViewSaver<T : MapViewState<*>> {
+abstract class BaseMapViewSaver<T : MapViewStateInterface<*>> {
     /**
      * Save map design type to bundle
      */
@@ -23,13 +23,13 @@ abstract class BaseMapViewSaver<T : MapViewState<*>> {
     protected abstract fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPositionImpl,
+        cameraPosition: MapCameraPosition,
     ): T
 
     /**
      * Get paddings for restored camera position (can be overridden by subclasses)
      */
-    protected open fun getCameraPaddings(): MapPaddings? = null
+    protected open fun getCameraPaddings(): MapPaddingsInterface? = null
 
     /**
      * Create the actual Saver instance
@@ -76,10 +76,10 @@ abstract class BaseMapViewSaver<T : MapViewState<*>> {
             }
         }
 
-    private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPositionImpl =
-        MapCameraPositionImpl(
+    private fun createCameraPositionFromBundle(cameraBundle: Bundle?): MapCameraPosition =
+        MapCameraPosition(
             position =
-                GeoPointImpl.fromLatLong(
+                GeoPoint.fromLatLong(
                     latitude = cameraBundle?.getDouble("latitude") ?: 0.0,
                     longitude = cameraBundle?.getDouble("longitude") ?: 0.0,
                 ),

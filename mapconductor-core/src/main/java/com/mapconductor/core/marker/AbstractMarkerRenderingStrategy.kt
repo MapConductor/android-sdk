@@ -5,7 +5,7 @@ import kotlinx.coroutines.sync.Semaphore
 
 abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
     protected val semaphore: Semaphore,
-) : MarkerRenderingStrategy<ActualMarker> {
+) : MarkerRenderingStrategyInterface<ActualMarker> {
     protected val defaultMarkerIcon = DefaultMarkerIcon().toBitmapIcon()
 
     override fun clear() {
@@ -21,7 +21,7 @@ abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         // Do nothing here
         return false
@@ -30,7 +30,7 @@ abstract class AbstractMarkerRenderingStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         // Do nothing here
         return false

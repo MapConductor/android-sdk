@@ -43,12 +43,12 @@ import com.mapconductor.googlemaps.rememberGoogleMapViewState
 @Composable
 fun MapWithMarkers(modifier: Modifier = Modifier) {
     // ${commentCoords}
-    val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
-    val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
+    val marker1 = GeoPoint.fromLatLong(${marker1Lat}, ${marker1Long})
+    val marker2 = GeoPoint.fromLatLong(${marker2Lat}, ${marker2Long})
 
     // ${commentInitialPosition}
-    val initialCamera = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(${initialLat}, ${initialLong}),
+    val initialCamera = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${initialLat}, ${initialLong}),
         zoom = ${zoom}
     )
 

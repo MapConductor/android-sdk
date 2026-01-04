@@ -3,12 +3,12 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun DynamicPolylineExample() {
-    val center = GeoPointImpl.fromLatLong(53.566853, 9.988269)
+    val center = GeoPoint.fromLatLong(53.566853, 9.988269)
 
-    val camera = MapCameraPositionImpl(position = center, zoom = 14.0)
+    val camera = MapCameraPosition(position = center, zoom = 14.0)
     val mapViewState = rememberMapLibreMapViewState(cameraPosition = camera)
 
-    var points by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+    var points by remember { mutableStateOf<List<GeoPointInterface>>(emptyList()) }
     var isDrawing by remember { mutableStateOf(false) }
 
     Column(modifier = modifier) {

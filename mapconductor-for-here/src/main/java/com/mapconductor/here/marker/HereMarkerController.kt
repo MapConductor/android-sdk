@@ -1,9 +1,9 @@
 package com.mapconductor.here.marker
 
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.AbstractMarkerController
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
@@ -16,9 +16,9 @@ class HereMarkerController private constructor(
         markerManager = markerManager,
         renderer = renderer,
     ) {
-    private var internalSelectedMarker: MarkerEntity<HereActualMarker>? = null
+    private var internalSelectedMarker: MarkerEntityInterface<HereActualMarker>? = null
 
-    internal var selectedMarker: MarkerEntity<HereActualMarker>?
+    internal var selectedMarker: MarkerEntityInterface<HereActualMarker>?
         set(value) {
             if (value == null) {
                 internalSelectedMarker?.let {
@@ -33,7 +33,7 @@ class HereMarkerController private constructor(
         }
         get() = internalSelectedMarker
 
-    override fun find(position: GeoPoint): MarkerEntity<HereActualMarker>? {
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<HereActualMarker>? {
         val nearest = markerManager.findNearest(position) ?: return null
 
         val touchScreen = renderer.holder.toScreenOffset(position) ?: return null

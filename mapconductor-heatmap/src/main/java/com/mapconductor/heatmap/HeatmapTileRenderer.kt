@@ -1,7 +1,7 @@
 package com.mapconductor.heatmap
 
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.tileserver.TileProvider
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.tileserver.TileProviderInterface
 import com.mapconductor.tileserver.TileRequest
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ConcurrentHashMap
@@ -18,7 +18,7 @@ import android.util.LruCache
 class HeatmapTileRenderer(
     val tileSize: Int = DEFAULT_TILE_SIZE,
     cacheSizeKb: Int = DEFAULT_CACHE_SIZE_KB,
-) : TileProvider {
+) : TileProviderInterface {
     private val cacheLock = Any()
     private val cache =
         object : LruCache<String, ByteArray>(cacheSizeKb) {
@@ -207,7 +207,7 @@ class HeatmapTileRenderer(
         return weightedPoints
     }
 
-    private fun toWorldPoint(position: GeoPoint): WorldPoint {
+    private fun toWorldPoint(position: GeoPointInterface): WorldPoint {
         val x = position.longitude / 360.0 + 0.5
         val siny = sin(Math.toRadians(position.latitude)).coerceIn(-0.9999, 0.9999)
         val y = 0.5 * ln((1 + siny) / (1 - siny)) / -(2 * PI) + 0.5

@@ -8,9 +8,9 @@ import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
-import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.here.HereActualCircle
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toGeoCoordinates
@@ -41,7 +41,7 @@ class HereCircleOverlayRenderer(
         return mapCircle
     }
 
-    override suspend fun removeCircle(entity: CircleEntity<HereActualCircle>) {
+    override suspend fun removeCircle(entity: CircleEntityInterface<HereActualCircle>) {
         coroutine.launch {
             holder.map.removeMapPolygon(entity.circle)
         }
@@ -49,8 +49,8 @@ class HereCircleOverlayRenderer(
 
     override suspend fun updateCircleProperties(
         circle: HereActualCircle,
-        current: CircleEntity<HereActualCircle>,
-        prev: CircleEntity<HereActualCircle>,
+        current: CircleEntityInterface<HereActualCircle>,
+        prev: CircleEntityInterface<HereActualCircle>,
     ): HereActualCircle? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -103,7 +103,7 @@ class HereCircleOverlayRenderer(
      * Creates a circle that approximates a circle by generating points around the circumference
      */
     private fun createCirclePolygon(state: CircleState): GeoPolygon {
-        val center = GeoPointImpl.from(state.center).toGeoCoordinates()
+        val center = GeoPoint.from(state.center).toGeoCoordinates()
         if (state.geodesic) {
             // Native geodesic circle
             val geoCircle = GeoCircle(center, state.radiusMeters)

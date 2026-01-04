@@ -24,7 +24,7 @@ fun InteractiveCircleExample() {
     var circleState by remember {
         mutableStateOf(
             CircleState(
-                center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+                center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
                 radiusMeters = ${initialRadiusMeters},
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f),

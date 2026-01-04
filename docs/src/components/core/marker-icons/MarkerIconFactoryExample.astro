@@ -2,7 +2,7 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `object MarkerIconFactory {
-    fun createLocationIcon(color: Color, label: String? = null): MarkerIcon {
+    fun createLocationIcon(color: Color, label: String? = null): MarkerIconInterface {
         return DefaultMarkerIcon(
             fillColor = color,
             strokeColor = Color.White,
@@ -12,7 +12,7 @@ const code = `object MarkerIconFactory {
         )
     }
 
-    fun createCustomIcon(context: Context, drawableRes: Int, scale: Float = 1.0f): MarkerIcon? {
+    fun createCustomIcon(context: Context, drawableRes: Int, scale: Float = 1.0f): MarkerIconInterface? {
         return AppCompatResources.getDrawable(context, drawableRes)?.let {
             DrawableDefaultIcon(
                 backgroundDrawable = it,
@@ -21,7 +21,7 @@ const code = `object MarkerIconFactory {
         }
     }
 
-    fun createDirectionalIcon(context: Context, direction: Float): MarkerIcon? {
+    fun createDirectionalIcon(context: Context, direction: Float): MarkerIconInterface? {
         return AppCompatResources.getDrawable(context, R.drawable.arrow)?.let { drawable ->
             // Apply rotation to drawable if needed
             val rotatedDrawable = drawable.mutate()

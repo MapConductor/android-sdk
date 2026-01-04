@@ -3,10 +3,10 @@ package com.mapconductor.here.marker
 import com.here.sdk.core.Metadata
 import com.here.sdk.mapview.MapMarker
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toAnchor2D
@@ -28,20 +28,20 @@ class HereMarkerRenderer(
         coroutine = coroutine,
     ) {
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<HereActualMarker>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<HereActualMarker>,
+        position: GeoPoint,
     ) {
         coroutine.launch {
             markerEntity.marker?.coordinates = position.toGeoCoordinates()
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<HereActualMarker?> {
         val markers =
             data.map { params ->
                 val marker =
                     MapMarker(
-                        GeoPointImpl.from(params.state.position).toGeoCoordinates(),
+                        GeoPoint.from(params.state.position).toGeoCoordinates(),
                         params.bitmapIcon.toMapImage(),
                         params.bitmapIcon.toAnchor2D(),
                     ).apply {
@@ -63,7 +63,7 @@ class HereMarkerRenderer(
         return markers
     }
 
-    override suspend fun onRemove(data: List<MarkerEntity<HereActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntityInterface<HereActualMarker>>) {
         coroutine.launch {
             val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
             if (markers.isNotEmpty()) {
@@ -77,7 +77,7 @@ class HereMarkerRenderer(
     }
 
     override suspend fun onChange(
-        changes: List<MarkerOverlayRenderer.ChangeParams<HereActualMarker>>,
+        changes: List<MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker>>,
     ): List<HereActualMarker?> =
         changes.mapNotNull { params ->
             val prevFinger = params.prev.fingerPrint
@@ -90,7 +90,7 @@ class HereMarkerRenderer(
                 marker.anchor = params.bitmapIcon.toAnchor2D()
             }
             marker.coordinates =
-                GeoPointImpl.from(params.current.state.position).toGeoCoordinates()
+                GeoPoint.from(params.current.state.position).toGeoCoordinates()
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
             marker

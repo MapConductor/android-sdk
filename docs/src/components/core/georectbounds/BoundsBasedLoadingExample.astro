@@ -32,12 +32,12 @@ const {
 const code = `@Composable
 fun BoundsBasedLoadingExample() {
     var currentBounds by remember { mutableStateOf<GeoRectBounds?>(null) }
-    var markersInBounds by remember { mutableStateOf<List<GeoPointImpl>>(emptyList()) }
+    var markersInBounds by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
 
     // ${commentForAllMarkersSimulation}
     val allMarkers = remember {
         List(100) { i ->
-            GeoPointImpl.fromLatLong(
+            GeoPoint.fromLatLong(
                 ${baseLatitude} + (i % 10) * ${latitudeStep},
                 ${baseLongitude} + (i / 10) * ${longitudeStep}
             )
@@ -64,8 +64,8 @@ fun BoundsBasedLoadingExample() {
             onClick = {
                 // ${commentForViewportSimulation}
                 currentBounds = GeoRectBounds(
-                    southWest = GeoPointImpl.fromLatLong(${viewportSouthWestLatitude}, ${viewportSouthWestLongitude}),
-                    northEast = GeoPointImpl.fromLatLong(${viewportNorthEastLatitude}, ${viewportNorthEastLongitude})
+                    southWest = GeoPoint.fromLatLong(${viewportSouthWestLatitude}, ${viewportSouthWestLongitude}),
+                    northEast = GeoPoint.fromLatLong(${viewportNorthEastLatitude}, ${viewportNorthEastLongitude})
                 )
             }
         ) {
@@ -94,9 +94,9 @@ fun BoundsBasedLoadingExample() {
                     Polygon(
                         points = listOf(
                             sw,
-                            GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                            GeoPoint.fromLatLong(sw.latitude, ne.longitude),
                             ne,
-                            GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                            GeoPoint.fromLatLong(ne.latitude, sw.longitude),
                             sw
                         ),
                         strokeColor = Color.Blue,

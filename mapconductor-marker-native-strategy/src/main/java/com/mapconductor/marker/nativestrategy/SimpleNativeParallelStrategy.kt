@@ -1,9 +1,9 @@
 package com.mapconductor.marker.nativestrategy
 
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.geocell.HexGeocellInterface
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -26,7 +26,7 @@ import kotlinx.coroutines.sync.withPermit
  */
 class SimpleNativeParallelStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = NativeHexGeocell.defaultGeocell(),
     private val addOnlyMode: Boolean = false,
     private val minBatchSize: Int = 200,
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
@@ -35,8 +35,8 @@ class SimpleNativeParallelStrategy<ActualMarker>(
      * Compatible with ArcGIS and other map providers.
      */
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         semaphore.withPermit {
             if (addOnlyMode) {
@@ -65,7 +65,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
                 if (markersToRender.isNotEmpty()) {
                     val addParams =
                         markersToRender.map { entity ->
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state = entity.state
                                 override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
@@ -88,8 +88,8 @@ class SimpleNativeParallelStrategy<ActualMarker>(
                 val allMarkers = markerManager.allEntities()
 
                 // Simple viewport filtering: render markers within bounds that aren't rendered
-                val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
-                val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
+                val markersToRender = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+                val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
                 allMarkers.forEach { entity ->
                     // Since Mapbox needs to render all markers even before rendered,
                     // we don't consider "entity.isRendered" at this point.
@@ -109,7 +109,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
                 if (markersToRender.isNotEmpty()) {
                     val addParams =
                         markersToRender.map { entity ->
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state = entity.state
                                 override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
@@ -137,7 +137,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
          */
         fun <T> forLargeDatasets(
             semaphore: Semaphore = Semaphore(1),
-            geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
+            geocell: HexGeocellInterface = NativeHexGeocell.defaultGeocell(),
             minBatchSize: Int = 1000,
         ): SimpleNativeParallelStrategy<T> =
             SimpleNativeParallelStrategy(semaphore, geocell, addOnlyMode = true, minBatchSize)
@@ -148,7 +148,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
          */
         fun <T> balanced(
             semaphore: Semaphore = Semaphore(1),
-            geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
+            geocell: HexGeocellInterface = NativeHexGeocell.defaultGeocell(),
             minBatchSize: Int = 200,
         ): SimpleNativeParallelStrategy<T> =
             SimpleNativeParallelStrategy(semaphore, geocell, addOnlyMode = false, minBatchSize)
@@ -159,7 +159,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
          */
         fun <T> forSmallDatasets(
             semaphore: Semaphore = Semaphore(1),
-            geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
+            geocell: HexGeocellInterface = NativeHexGeocell.defaultGeocell(),
         ): SimpleNativeParallelStrategy<T> =
             SimpleNativeParallelStrategy(semaphore, geocell, addOnlyMode = false, minBatchSize = Int.MAX_VALUE)
     }
@@ -167,7 +167,7 @@ class SimpleNativeParallelStrategy<ActualMarker>(
 
 // Usage example:
 // val semaphore = Semaphore(1)
-// val geocell = HexGeocellImpl(WebMercator())
+// val geocell = HexGeocell(WebMercator())
 // val strategy = SimpleNativeParallelStrategy.balanced<YourMarkerType>(semaphore, geocell)
 // strategy.onCameraChanged(cameraPosition, renderer)
 

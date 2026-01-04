@@ -19,7 +19,7 @@ interface Props {
 
 const {
   functionName = "CustomMapConfiguration",
-  mapViewStateImplType = "GoogleMapViewStateImpl",
+  mapViewStateImplType = "GoogleMapViewState",
   mapViewType = "GoogleMapView",
   latitude = 37.7749,
   longitude = -122.4194,
@@ -52,8 +52,8 @@ const code = `@Composable
 fun ${functionName}() {
     val mapViewState = remember {
         ${mapViewStateImplType}().apply {
-${cameraCommentLine}            initCameraPosition = MapCameraPositionImpl(
-                target = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+${cameraCommentLine}            initCameraPosition = MapCameraPosition(
+                target = GeoPoint.fromLatLong(${latitude}, ${longitude}),
                 zoom = ${zoom}f,
                 bearing = ${bearing}f,
                 tilt = ${tilt}f

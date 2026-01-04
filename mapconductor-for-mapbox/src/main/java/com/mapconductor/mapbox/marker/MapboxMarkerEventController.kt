@@ -1,21 +1,21 @@
 package com.mapconductor.mapbox.marker
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.mapbox.MapboxActualMarker
 
-internal interface MapboxMarkerEventController {
+internal interface MapboxMarkerEventControllerInterface {
     val renderer: MapboxMarkerOverlayRenderer
 
-    fun find(position: GeoPoint): MarkerEntity<MapboxActualMarker>?
+    fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>?
 
-    fun getSelectedMarker(): MarkerEntity<MapboxActualMarker>?
+    fun getSelectedMarker(): MarkerEntityInterface<MapboxActualMarker>?
 
-    fun setSelectedMarker(entity: MarkerEntity<MapboxActualMarker>?)
+    fun setSelectedMarker(entity: MarkerEntityInterface<MapboxActualMarker>?)
 
     fun dispatchClick(state: MarkerState)
 
@@ -40,14 +40,14 @@ internal interface MapboxMarkerEventController {
 
 internal class DefaultMapboxMarkerEventController(
     private val controller: MapboxMarkerController,
-) : MapboxMarkerEventController {
+) : MapboxMarkerEventControllerInterface {
     override val renderer: MapboxMarkerOverlayRenderer = controller.renderer
 
-    override fun find(position: GeoPoint): MarkerEntity<MapboxActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? = controller.find(position)
 
-    override fun getSelectedMarker(): MarkerEntity<MapboxActualMarker>? = controller.selectedMarker
+    override fun getSelectedMarker(): MarkerEntityInterface<MapboxActualMarker>? = controller.selectedMarker
 
-    override fun setSelectedMarker(entity: MarkerEntity<MapboxActualMarker>?) {
+    override fun setSelectedMarker(entity: MarkerEntityInterface<MapboxActualMarker>?) {
         controller.selectedMarker = entity
     }
 
@@ -87,17 +87,17 @@ internal class DefaultMapboxMarkerEventController(
 internal class StrategyMapboxMarkerEventController(
     private val controller: StrategyMarkerController<MapboxActualMarker>,
     override val renderer: MapboxMarkerOverlayRenderer,
-) : MapboxMarkerEventController {
-    private var selectedMarker: MarkerEntity<MapboxActualMarker>? = null
+) : MapboxMarkerEventControllerInterface {
+    private var selectedMarker: MarkerEntityInterface<MapboxActualMarker>? = null
 
-    override fun find(position: GeoPoint): MarkerEntity<MapboxActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? = controller.find(position)
 
-    override fun getSelectedMarker(): MarkerEntity<MapboxActualMarker>? = selectedMarker
+    override fun getSelectedMarker(): MarkerEntityInterface<MapboxActualMarker>? = selectedMarker
 
-    override fun setSelectedMarker(entity: MarkerEntity<MapboxActualMarker>?) {
+    override fun setSelectedMarker(entity: MarkerEntityInterface<MapboxActualMarker>?) {
         if (entity == null) {
             selectedMarker?.let {
-                renderer.dragLayer.updatePosition(GeoPointImpl.from(it.state.position))
+                renderer.dragLayer.updatePosition(GeoPoint.from(it.state.position))
                 renderer.dragLayer.selected = null
                 renderer.drawDragLayer()
                 controller.markerManager.registerEntity(it)
@@ -109,7 +109,7 @@ internal class StrategyMapboxMarkerEventController(
         selectedMarker = entity
         controller.markerManager.removeEntity(entity.state.id)
         renderer.dragLayer.selected = entity
-        renderer.dragLayer.updatePosition(GeoPointImpl.from(entity.state.position))
+        renderer.dragLayer.updatePosition(GeoPoint.from(entity.state.position))
         renderer.redraw()
         renderer.drawDragLayer()
     }

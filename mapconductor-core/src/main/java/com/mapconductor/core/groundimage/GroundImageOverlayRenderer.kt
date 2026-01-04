@@ -1,20 +1,20 @@
 package com.mapconductor.core.groundimage
 
-interface GroundImageOverlayRenderer<ActualGroundImage> {
-    interface AddParams {
+interface GroundImageOverlayRendererInterface<ActualGroundImage> {
+    interface AddParamsInterface {
         val state: GroundImageState
     }
 
-    interface ChangeParams<ActualGroundImage> {
-        val current: GroundImageEntity<ActualGroundImage>
-        val prev: GroundImageEntity<ActualGroundImage>
+    interface ChangeParamsInterface<ActualGroundImage> {
+        val current: GroundImageEntityInterface<ActualGroundImage>
+        val prev: GroundImageEntityInterface<ActualGroundImage>
     }
 
-    suspend fun onAdd(data: List<AddParams>): List<ActualGroundImage?>
+    suspend fun onAdd(data: List<AddParamsInterface>): List<ActualGroundImage?>
 
-    suspend fun onChange(data: List<ChangeParams<ActualGroundImage>>): List<ActualGroundImage?>
+    suspend fun onChange(data: List<ChangeParamsInterface<ActualGroundImage>>): List<ActualGroundImage?>
 
-    suspend fun onRemove(data: List<GroundImageEntity<ActualGroundImage>>)
+    suspend fun onRemove(data: List<GroundImageEntityInterface<ActualGroundImage>>)
 
     suspend fun onPostProcess()
 }

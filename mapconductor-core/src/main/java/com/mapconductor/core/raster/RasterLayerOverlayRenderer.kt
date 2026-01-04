@@ -1,24 +1,24 @@
 package com.mapconductor.core.raster
 
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 
-interface RasterLayerOverlayRenderer<ActualLayer> {
-    interface AddParams {
+interface RasterLayerOverlayRendererInterface<ActualLayer> {
+    interface AddParamsInterface {
         val state: RasterLayerState
     }
 
-    interface ChangeParams<ActualLayer> {
-        val current: RasterLayerEntity<ActualLayer>
-        val prev: RasterLayerEntity<ActualLayer>
+    interface ChangeParamsInterface<ActualLayer> {
+        val current: RasterLayerEntityInterface<ActualLayer>
+        val prev: RasterLayerEntityInterface<ActualLayer>
     }
 
-    suspend fun onAdd(data: List<AddParams>): List<ActualLayer?>
+    suspend fun onAdd(data: List<AddParamsInterface>): List<ActualLayer?>
 
-    suspend fun onChange(data: List<ChangeParams<ActualLayer>>): List<ActualLayer?>
+    suspend fun onChange(data: List<ChangeParamsInterface<ActualLayer>>): List<ActualLayer?>
 
-    suspend fun onRemove(data: List<RasterLayerEntity<ActualLayer>>)
+    suspend fun onRemove(data: List<RasterLayerEntityInterface<ActualLayer>>)
 
-    suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 
     suspend fun onPostProcess()
 }

@@ -1,6 +1,6 @@
 package com.mapconductor.maplibre.marker
 
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.maplibre.MapLibreActualMarker
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap
@@ -39,7 +39,7 @@ open class MarkerLayer(
         )
 
     fun draw(
-        entities: List<MarkerEntity<Feature>>,
+        entities: List<MarkerEntityInterface<Feature>>,
         style: org.maplibre.android.maps.Style,
     ) {
         val visibleEntities = entities.filter { it.visible && it.marker != null }

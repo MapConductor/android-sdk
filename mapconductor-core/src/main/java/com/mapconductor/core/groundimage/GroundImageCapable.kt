@@ -1,6 +1,6 @@
 package com.mapconductor.core.groundimage
 
-interface GroundImageCapable {
+interface GroundImageCapableInterface {
     suspend fun compositionGroundImages(data: List<GroundImageState>)
 
     suspend fun updateGroundImage(state: GroundImageState)

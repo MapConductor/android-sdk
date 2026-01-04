@@ -31,10 +31,10 @@ fun EditablePolygonExample() {
         mutableStateOf(
             PolygonState(
                 points = listOf(
-                    GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
-                    GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
-                    GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
-                    GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude})
+                    GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude}),
+                    GeoPoint.fromLatLong(${secondLatitude}, ${secondLongitude}),
+                    GeoPoint.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+                    GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude})
                 ),
                 strokeColor = Color.Red,
                 fillColor = Color.Red.copy(alpha = 0.2f),

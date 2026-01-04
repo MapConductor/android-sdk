@@ -9,8 +9,8 @@ fun GroundImageEventHandlingExample(overlayImage: Drawable) {
         state = mapViewState
     ) {
         val imageBounds = GeoRectBounds(
-            northWest = GeoPointImpl.fromLatLong(37.8, -122.5),
-            southEast = GeoPointImpl.fromLatLong(37.7, -122.4)
+            northWest = GeoPoint.fromLatLong(37.8, -122.5),
+            southEast = GeoPoint.fromLatLong(37.7, -122.4)
         )
 
         GroundImage(

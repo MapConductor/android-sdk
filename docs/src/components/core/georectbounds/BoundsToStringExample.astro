@@ -17,8 +17,8 @@ const {
 
 const code = `// For debugging
 val bounds = GeoRectBounds(
-    southWest = GeoPointImpl.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
-    northEast = GeoPointImpl.fromLatLong(${northEastLatitude}, ${northEastLongitude})
+    southWest = GeoPoint.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
+    northEast = GeoPoint.fromLatLong(${northEastLatitude}, ${northEastLongitude})
 )
 
 println(bounds.toString())

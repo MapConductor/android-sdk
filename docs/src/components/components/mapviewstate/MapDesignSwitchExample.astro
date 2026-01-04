@@ -3,8 +3,8 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun MapDesignSwitchExample() {
-    val london = GeoPointImpl.fromLatLong(51.4985, 0.0)
-    val camera = MapCameraPositionImpl(position = london, zoom = 8.0)
+    val london = GeoPoint.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPosition(position = london, zoom = 8.0)
     val mapViewState = rememberHereMapViewState(
         cameraPosition = camera,
         mapDesign = HereMapDesign.NormalDay

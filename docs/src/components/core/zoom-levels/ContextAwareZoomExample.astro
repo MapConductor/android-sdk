@@ -13,7 +13,7 @@ const {
 
 const code = `@Composable
 fun ContextAwareZoom() {
-    val userLocation = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val userLocation = GeoPoint.fromLatLong(37.7749, -122.4194)
     val searchResults = remember { /* your search results */ }
 
     // Select zoom based on context
@@ -29,7 +29,7 @@ fun ContextAwareZoom() {
         }
     }
 
-    val cameraPosition = MapCameraPositionImpl(
+    val cameraPosition = MapCameraPosition(
         position = if (searchResults.isEmpty()) userLocation else bounds.center!!,
         zoom = contextualZoom
     )

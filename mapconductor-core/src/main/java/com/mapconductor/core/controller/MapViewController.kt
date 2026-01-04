@@ -1,13 +1,13 @@
 package com.mapconductor.core.controller
 
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewHolderInterface
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import kotlinx.coroutines.CoroutineScope
 
-interface MapViewController {
-    val holder: MapViewHolder<*, *>
+interface MapViewControllerInterface {
+    val holder: MapViewHolderInterface<*, *>
     val coroutine: CoroutineScope
 
     suspend fun clearOverlays()
@@ -22,12 +22,12 @@ interface MapViewController {
 
     fun setMapLongClickListener(listener: OnMapEventHandler?)
 
-    fun moveCamera(position: MapCameraPositionImpl)
+    fun moveCamera(position: MapCameraPosition)
 
     fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         duration: Long,
     )
 
-    fun registerOverlayController(controller: OverlayController<*, *, *>) {}
+    fun registerOverlayController(controller: OverlayControllerInterface<*, *, *>) {}
 }

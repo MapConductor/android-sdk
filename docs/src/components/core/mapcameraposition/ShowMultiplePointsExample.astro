@@ -14,8 +14,8 @@ val allPoints = listOf(/* your points */)
 val bounds = GeoRectBounds()
 allPoints.forEach { bounds.extend(it) }
 
-val centerCamera = MapCameraPositionImpl(
-    position = bounds.center ?: GeoPointImpl.fromLatLong(0.0, 0.0),
+val centerCamera = MapCameraPosition(
+    position = bounds.center ?: GeoPoint.fromLatLong(0.0, 0.0),
     zoom = calculateZoomForBounds(bounds),  // ${commentForZoomCalculation}
     bearing = 0.0,
     tilt = 0.0

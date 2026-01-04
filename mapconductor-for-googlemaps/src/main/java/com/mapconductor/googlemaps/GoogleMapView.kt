@@ -13,9 +13,9 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -39,7 +39,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
 fun GoogleMapView(
-    state: GoogleMapViewStateImpl,
+    state: GoogleMapViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -77,7 +77,7 @@ fun GoogleMapView(
 @Deprecated("Use GroundImageState onClick instead.")
 @Composable
 fun GoogleMapView(
-    state: GoogleMapViewStateImpl,
+    state: GoogleMapViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -100,7 +100,7 @@ fun GoogleMapView(
     val scope = remember { GoogleMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -112,7 +112,7 @@ fun GoogleMapView(
                     CameraPosition
                         .Builder()
                         .apply {
-                            target(GeoPointImpl.from(camera.position).toLatLng())
+                            target(GeoPoint.from(camera.position).toLatLng())
                             zoom(camera.zoom.toFloat())
                             bearing(camera.bearing.toFloat())
                             tilt(camera.tilt.toFloat())
@@ -130,9 +130,9 @@ fun GoogleMapView(
         },
         holderProvider = { mapView ->
 
-            suspendCancellableCoroutine<GoogleMapViewHolderImpl> { cont ->
+            suspendCancellableCoroutine<GoogleMapViewHolder> { cont ->
                 mapView.getMapAsync { map ->
-                    val holder = GoogleMapViewHolderImpl(mapView, map)
+                    val holder = GoogleMapViewHolder(mapView, map)
                     cont.resume(holder) {}
                 }
             }
@@ -150,7 +150,7 @@ fun GoogleMapView(
 
             // Defer initial camera update until controller is created and view is laid out
 
-            GoogleMapViewControllerImpl(
+            GoogleMapViewController(
                 markerController = markerController,
                 groundImageController = groundImageController,
                 polylineController = polylineController,

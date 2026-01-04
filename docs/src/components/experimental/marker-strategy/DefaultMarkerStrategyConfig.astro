@@ -14,7 +14,7 @@ const code = `import com.mapconductor.marker.strategy.DefaultMarkerStrategy
 val defaultStrategy = DefaultMarkerStrategy<GoogleMapActualMarker>(
     expandMargin = ${expandMargin},  // 20% viewport expansion
     semaphore = Semaphore(1),
-    geocell = HexGeocellImpl.defaultGeocell()
+    geocell = HexGeocell.defaultGeocell()
 )`;
 ---
 

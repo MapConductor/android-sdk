@@ -13,13 +13,13 @@ const code = `// ${commentForMapViewUsage}
 MapView(state = mapViewState) {
     // Basic red marker
     Marker(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        position = GeoPoint.fromLatLong(37.7749, -122.4194),
         icon = DefaultMarkerIcon()
     )
 
     // Custom colored marker with label
     Marker(
-        position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+        position = GeoPoint.fromLatLong(37.7849, -122.4094),
         icon = DefaultIcon(
             scale = 1.2f,
             label = "SF",
@@ -31,7 +31,7 @@ MapView(state = mapViewState) {
 
     // Small marker with custom styling
     Marker(
-        position = GeoPointImpl.fromLatLong(37.7649, -122.4294),
+        position = GeoPoint.fromLatLong(37.7649, -122.4294),
         icon = DefaultIcon(
             scale = 0.8f,
             fillColor = Color.Green,

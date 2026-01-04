@@ -11,7 +11,7 @@ const {
   zoomLevel = 16.0
 } = Astro.props;
 
-const code = `val userLocationCamera = MapCameraPositionImpl(
+const code = `val userLocationCamera = MapCameraPosition(
     position = userCurrentLocation,
     zoom = ${zoomLevel},  // ${commentForZoom}
     bearing = 0.0,

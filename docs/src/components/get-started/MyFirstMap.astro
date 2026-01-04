@@ -23,18 +23,18 @@ const {
 
 const code = `import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.mapconductor.core.GeoPointImpl
-import com.mapconductor.core.MapCameraPositionImpl
+import com.mapconductor.core.GeoPoint
+import com.mapconductor.core.MapCameraPosition
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 
 @Composable
 fun MyFirstMap(modifier: Modifier = Modifier) {
     // ${commentTokyoCoords}
-    val tokyo = GeoPointImpl.fromLatLong(${lat}, ${long})
+    val tokyo = GeoPoint.fromLatLong(${lat}, ${long})
 
     // ${commentInitialCamera}
-    val initialCamera = MapCameraPositionImpl(
+    val initialCamera = MapCameraPosition(
         position = tokyo,
         zoom = ${zoom}
     )

@@ -1,14 +1,14 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `typealias HereMapViewHolder = MapViewHolder<MapView, MapScene>
+const code = `typealias HereViewHolder = MapViewHolderInterface<MapView, MapScene>
 
-class HereMapViewHolderImpl(
+class HereViewHolder(
     override val mapView: MapView,
     override val map: MapScene,
-) : MapViewHolder<MapView, MapScene> {
-    fun toScreenOffset(position: GeoPoint): Offset?
-    suspend fun fromScreenOffset(offset: Offset): GeoPointImpl?
+) : MapViewHolderInterface<MapView, MapScene> {
+    fun toScreenOffset(position: GeoPointInterface): Offset?
+    suspend fun fromScreenOffset(offset: Offset): GeoPoint?
 }`;
 ---
 

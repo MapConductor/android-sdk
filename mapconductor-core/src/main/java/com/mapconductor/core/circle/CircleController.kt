@@ -1,18 +1,18 @@
 package com.mapconductor.core.circle
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 abstract class CircleController<ActualCircle>(
-    val circleManager: CircleManager<ActualCircle>,
-    open val renderer: CircleOverlayRenderer<ActualCircle>,
+    val circleManager: CircleManagerInterface<ActualCircle>,
+    open val renderer: CircleOverlayRendererInterface<ActualCircle>,
     override var clickListener: OnCircleEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         CircleState,
-        CircleEntity<ActualCircle>,
+        CircleEntityInterface<ActualCircle>,
         CircleEvent,
     > {
     override val zIndex: Int = 3
@@ -25,29 +25,29 @@ abstract class CircleController<ActualCircle>(
 
     override suspend fun add(data: List<CircleState>) {
         semaphore.withPermit {
-            val modifiedEntities = mutableListOf<CircleEntity<ActualCircle>>()
+            val modifiedEntities = mutableListOf<CircleEntityInterface<ActualCircle>>()
             val previous = circleManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<CircleOverlayRenderer.AddParams>()
-            val updated = mutableListOf<CircleOverlayRenderer.ChangeParams<ActualCircle>>()
-            val removed = mutableListOf<CircleEntity<ActualCircle>>()
+            val added = mutableListOf<CircleOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<CircleOverlayRendererInterface.ChangeParamsInterface<ActualCircle>>()
+            val removed = mutableListOf<CircleEntityInterface<ActualCircle>>()
 
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     val prevEntity = circleManager.getEntity(state.id)!!
                     updated.add(
-                        object : CircleOverlayRenderer.ChangeParams<ActualCircle> {
-                            override val current: CircleEntity<ActualCircle> =
-                                CircleEntityImpl(
+                        object : CircleOverlayRendererInterface.ChangeParamsInterface<ActualCircle> {
+                            override val current: CircleEntityInterface<ActualCircle> =
+                                CircleEntity(
                                     state = state,
                                     circle = prevEntity.circle,
                                 )
-                            override val prev: CircleEntity<ActualCircle> = prevEntity
+                            override val prev: CircleEntityInterface<ActualCircle> = prevEntity
                         },
                     )
                     previous.remove(state.id)
                 } else {
                     added.add(
-                        object : CircleOverlayRenderer.AddParams {
+                        object : CircleOverlayRendererInterface.AddParamsInterface {
                             override val state: CircleState = state
                         },
                     )
@@ -72,7 +72,7 @@ abstract class CircleController<ActualCircle>(
                 actualCircles.forEachIndexed { index, circle ->
                     circle?.let {
                         val entity =
-                            CircleEntityImpl<ActualCircle>(
+                            CircleEntity<ActualCircle>(
                                 circle = circle,
                                 state = added[index].state,
                             )
@@ -89,7 +89,7 @@ abstract class CircleController<ActualCircle>(
                     circle?.let {
                         val params = updated[index]
                         val entity =
-                            CircleEntityImpl<ActualCircle>(
+                            CircleEntity<ActualCircle>(
                                 state = params.current.state,
                                 circle = circle,
                             )
@@ -113,20 +113,20 @@ abstract class CircleController<ActualCircle>(
 
             val circle = prevEntity.circle
             val entity =
-                CircleEntityImpl(
+                CircleEntity(
                     circle = circle,
                     state = state,
                 )
             val circleParams =
-                object : CircleOverlayRenderer.ChangeParams<ActualCircle> {
-                    override val current: CircleEntity<ActualCircle> = entity
-                    override val prev: CircleEntity<ActualCircle> = prevEntity
+                object : CircleOverlayRendererInterface.ChangeParamsInterface<ActualCircle> {
+                    override val current: CircleEntityInterface<ActualCircle> = entity
+                    override val prev: CircleEntityInterface<ActualCircle> = prevEntity
                 }
             val circles = renderer.onChange(listOf(circleParams))
 
             circles[0]?.let {
                 val entity =
-                    CircleEntityImpl<ActualCircle>(
+                    CircleEntity<ActualCircle>(
                         circle = it,
                         state = state,
                     )
@@ -137,15 +137,15 @@ abstract class CircleController<ActualCircle>(
 
     override suspend fun clear() {
         semaphore.withPermit {
-            val entities: List<CircleEntity<ActualCircle>> = circleManager.allEntities()
+            val entities: List<CircleEntityInterface<ActualCircle>> = circleManager.allEntities()
             renderer.onRemove(entities)
             circleManager.clear()
         }
     }
 
-    override fun find(position: GeoPoint): CircleEntity<ActualCircle>? = circleManager.find(position)
+    override fun find(position: GeoPointInterface): CircleEntityInterface<ActualCircle>? = circleManager.find(position)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 
     override fun destroy() {
         // No native resources to clean up for circles

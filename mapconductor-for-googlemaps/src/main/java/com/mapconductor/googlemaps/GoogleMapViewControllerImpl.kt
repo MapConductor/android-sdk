@@ -18,7 +18,7 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -33,7 +33,7 @@ import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
-import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventController
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventControllerInterface
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class GoogleMapViewControllerImpl(
+class GoogleMapViewController(
     override val holder: GoogleMapViewHolder,
     private val markerController: GoogleMapMarkerController,
     private val polylineController: GoogleMapPolylineController,
@@ -54,7 +54,7 @@ class GoogleMapViewControllerImpl(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    GoogleMapViewController,
+    GoogleMapViewControllerInterface,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
@@ -63,7 +63,7 @@ class GoogleMapViewControllerImpl(
     OnMarkerClickListener,
     OnMarkerDragListener,
     GoogleMap.OnMapLoadedCallback {
-    private val markerEventControllers = mutableListOf<GoogleMapMarkerEventController>()
+    private val markerEventControllers = mutableListOf<GoogleMapMarkerEventControllerInterface>()
     private val _mapLoadedState = MutableStateFlow(false)
     val mapLoadedState: StateFlow<Boolean> = _mapLoadedState
     private var markerClickListener: OnMarkerEventHandler? = null
@@ -94,7 +94,7 @@ class GoogleMapViewControllerImpl(
         holder.map.setOnMarkerDragListener(this)
     }
 
-    override fun moveCamera(position: MapCameraPositionImpl) {
+    override fun moveCamera(position: MapCameraPosition) {
         coroutine.launch {
             val dstCameraPosition = position.toCameraPosition()
             val cameraUpdate = CameraUpdateFactory.newCameraPosition(dstCameraPosition)
@@ -103,7 +103,7 @@ class GoogleMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         duration: Long,
     ) {
         val dstCameraPosition = position.toCameraPosition()
@@ -176,7 +176,7 @@ class GoogleMapViewControllerImpl(
         cameraMoveEndCallback?.invoke(getMapCameraPosition())
     }
 
-    private fun getMapCameraPosition(): MapCameraPositionImpl {
+    private fun getMapCameraPosition(): MapCameraPosition {
         val camera = holder.map.cameraPosition.toMapCameraPosition()
         holder.map.projection.visibleRegion.let {
             val visibleRegion =
@@ -362,7 +362,7 @@ class GoogleMapViewControllerImpl(
         private const val INITIAL_CAMERA_UPDATE_MAX_ATTEMPTS = 10
     }
 
-    internal fun registerMarkerEventController(controller: GoogleMapMarkerEventController) {
+    internal fun registerMarkerEventController(controller: GoogleMapMarkerEventControllerInterface) {
         if (markerEventControllers.contains(controller)) return
         markerEventControllers.add(controller)
         controller.setClickListener(markerClickListener)

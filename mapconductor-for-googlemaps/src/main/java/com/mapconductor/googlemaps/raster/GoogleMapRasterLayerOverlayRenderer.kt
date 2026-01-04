@@ -3,8 +3,8 @@ package com.mapconductor.googlemaps.raster
 import com.google.android.gms.maps.model.TileOverlay
 import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.android.gms.maps.model.UrlTileProvider
-import com.mapconductor.core.raster.RasterLayerEntity
-import com.mapconductor.core.raster.RasterLayerOverlayRenderer
+import com.mapconductor.core.raster.RasterLayerEntityInterface
+import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterSource
 import com.mapconductor.core.raster.TileScheme
@@ -14,14 +14,14 @@ import android.util.Log
 
 class GoogleMapRasterLayerOverlayRenderer(
     private val holder: GoogleMapViewHolder,
-) : RasterLayerOverlayRenderer<TileOverlay> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRenderer.AddParams>): List<TileOverlay?> =
+) : RasterLayerOverlayRendererInterface<TileOverlay> {
+    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<TileOverlay?> =
         data.map { params ->
             addLayer(params.state)
         }
 
     override suspend fun onChange(
-        data: List<RasterLayerOverlayRenderer.ChangeParams<TileOverlay>>,
+        data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<TileOverlay>>,
     ): List<TileOverlay?> =
         data.map { params ->
             val prev = params.prev
@@ -35,7 +35,7 @@ class GoogleMapRasterLayerOverlayRenderer(
             }
         }
 
-    override suspend fun onRemove(data: List<RasterLayerEntity<TileOverlay>>) {
+    override suspend fun onRemove(data: List<RasterLayerEntityInterface<TileOverlay>>) {
         data.forEach { entity ->
             entity.layer.remove()
         }

@@ -3,7 +3,7 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun DynamicPolygonExample() {
-    var polygonPoints by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+    var polygonPoints by remember { mutableStateOf<List<GeoPointInterface>>(emptyList()) }
     var isCreating by remember { mutableStateOf(false) }
 
     Column {

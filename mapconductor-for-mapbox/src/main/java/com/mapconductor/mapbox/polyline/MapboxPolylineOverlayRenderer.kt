@@ -2,8 +2,8 @@ package com.mapconductor.mapbox.polyline
 
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
-import com.mapconductor.core.polyline.PolylineEntity
-import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.polyline.PolylineEntityInterface
+import com.mapconductor.core.polyline.PolylineManagerInterface
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.MapboxActualPolyline
 import com.mapconductor.mapbox.MapboxMapViewHolder
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class MapboxPolylineOverlayRenderer(
     val layer: MapboxPolylineLayer,
-    val polylineManager: PolylineManager<MapboxActualPolyline>,
+    val polylineManager: PolylineManagerInterface<MapboxActualPolyline>,
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolylineOverlayRenderer<MapboxActualPolyline>() {
@@ -30,8 +30,8 @@ class MapboxPolylineOverlayRenderer(
 
     override suspend fun updatePolylineProperties(
         polyline: MapboxActualPolyline,
-        current: PolylineEntity<MapboxActualPolyline>,
-        prev: PolylineEntity<MapboxActualPolyline>,
+        current: PolylineEntityInterface<MapboxActualPolyline>,
+        prev: PolylineEntityInterface<MapboxActualPolyline>,
     ): MapboxActualPolyline? {
         // For Mapbox, we need to recreate the features when properties change
         return createMapboxLines(
@@ -44,7 +44,7 @@ class MapboxPolylineOverlayRenderer(
         )
     }
 
-    override suspend fun removePolyline(entity: PolylineEntity<MapboxActualPolyline>) {
+    override suspend fun removePolyline(entity: PolylineEntityInterface<MapboxActualPolyline>) {
         val featureIds =
             entity.polyline.map { feature ->
                 feature.getStringProperty("id")
@@ -60,7 +60,7 @@ class MapboxPolylineOverlayRenderer(
         }
     }
 
-    private fun getAllPolylineEntities(): List<PolylineEntity<MapboxActualPolyline>> {
+    private fun getAllPolylineEntities(): List<PolylineEntityInterface<MapboxActualPolyline>> {
         // This would need access to the polyline manager
         // For now, we'll implement a simple workaround
         return polylineManager.allEntities()

@@ -1,5 +1,5 @@
 ---
-title: "MapViewState"
+title: "MapViewStateInterface"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -9,18 +9,18 @@ import MoveCameraToGeoPointSignature from '~/components/components/mapviewstate/
 import MoveCameraToCameraPositionSignature from '~/components/components/mapviewstate/MoveCameraToCameraPositionSignature.astro';
 import MapViewStateEventHandlingExample from '~/components/components/mapviewstate/MapViewStateEventHandlingExample.astro';
 
-`MapViewState` es un componente principal que gestiona la inicialización del mapa, la posición de la cámara y el estado general del mapa.
+`MapViewStateInterface` es un componente principal que gestiona la inicialización del mapa, la posición de la cámara y el estado general del mapa.
 Cada SDK de mapa tiene su propia implementación, pero MapConductor proporciona una API unificada en todos los proveedores.
 
 ## Implementaciones de SDK de Mapa
 
-MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `MapViewState`:
+MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `MapViewStateInterface`:
 
-- `GoogleMapViewStateImpl` - Google Maps
-- `MapboxViewStateImpl` - Mapbox Map
-- `HereViewStateImpl` - HERE Map
-- `ArcGISMapViewStateImpl` - ArcGIS Map
-- `MapLibreViewStateImpl` - MapLibre Map
+- `GoogleMapViewState` - Google Maps
+- `MapboxViewState` - Mapbox Map
+- `HereViewState` - HERE Map
+- `ArcGISMapViewState` - ArcGIS Map
+- `MapLibreViewState` - MapLibre Map
 
 ## Propiedades Principales
 
@@ -34,7 +34,7 @@ MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `M
 
 ### Gestión de Cámara
 
-- **`cameraPosition: MapCameraPositionImpl`**: Posición de cámara actual y posición de cámara inicial cuando se carga el mapa
+- **`cameraPosition: MapCameraPosition`**: Posición de cámara actual y posición de cámara inicial cuando se carga el mapa
 
 ### Diseño de Mapa
 
@@ -44,7 +44,7 @@ MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `M
 
 <Tabs>
 <TabItem label="Movimiento Simple">
-- `moveCameraTo(GeoPointImpl, Long?)`
+- `moveCameraTo(GeoPoint, Long?)`
 
     <MoveCameraToGeoPointSignature />
 
@@ -52,11 +52,11 @@ MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `M
     - Cuando se especifica `durationMillis` en milisegundos, la cámara se mueve con animación.
 </TabItem>
 <TabItem label="Movimiento con Opciones de Cámara">
-- `moveCameraTo(MapCameraPositionImpl, Long?)`
+- `moveCameraTo(MapCameraPosition, Long?)`
 
     <MoveCameraToCameraPositionSignature />
 
-    - Mueve la cámara usando `MapCameraPositionImpl`. Se pueden especificar zoom e inclinación al mismo tiempo. Las propiedades que se omiten mantienen sus valores desde cuando se llamó a `moveCameraTo`.
+    - Mueve la cámara usando `MapCameraPosition`. Se pueden especificar zoom e inclinación al mismo tiempo. Las propiedades que se omiten mantienen sus valores desde cuando se llamó a `moveCameraTo`.
     - Cuando se especifica `durationMillis` en milisegundos, la cámara se mueve con animación.
 </TabItem>
 </Tabs>
@@ -83,7 +83,7 @@ MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `M
 
 ## Manejo de Eventos
 
-`MapViewState` funciona con el componente de proveedor de mapa elegido para proporcionar manejo de eventos integral:
+`MapViewStateInterface` funciona con el componente de proveedor de mapa elegido para proporcionar manejo de eventos integral:
 
 <MapViewStateEventHandlingExample
   commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
@@ -94,7 +94,7 @@ MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `M
 
 ## Mejores Prácticas
 
-1. **Inicialización del Estado**: Inicializar MapViewState con posición de cámara y límites apropiados
+1. **Inicialización del Estado**: Inicializar MapViewStateInterface con posición de cámara y límites apropiados
 2. **Animación de Cámara**: Usar duraciones de animación razonables para experiencia de usuario fluida (500ms - 3000ms)
 3. **Estabilidad del Estado**: Usar `remember` para mantener el estado entre recomposiciones
 4. **Actualizaciones Reactivas**: Usar StateFlow para actualizaciones reactivas del estado de inicialización

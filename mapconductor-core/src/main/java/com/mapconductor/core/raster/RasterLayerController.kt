@@ -1,18 +1,18 @@
 package com.mapconductor.core.raster
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 abstract class RasterLayerController<ActualLayer : Any>(
-    val rasterLayerManager: RasterLayerManager<ActualLayer>,
-    open val renderer: RasterLayerOverlayRenderer<ActualLayer>,
+    val rasterLayerManager: RasterLayerManagerInterface<ActualLayer>,
+    open val renderer: RasterLayerOverlayRendererInterface<ActualLayer>,
     override var clickListener: OnRasterLayerEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         RasterLayerState,
-        RasterLayerEntity<ActualLayer>,
+        RasterLayerEntityInterface<ActualLayer>,
         RasterLayerEvent,
     > {
     override val zIndex: Int = 0
@@ -21,27 +21,27 @@ abstract class RasterLayerController<ActualLayer : Any>(
     override suspend fun add(data: List<RasterLayerState>) {
         semaphore.withPermit {
             val previous = rasterLayerManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<RasterLayerOverlayRenderer.AddParams>()
-            val updated = mutableListOf<RasterLayerOverlayRenderer.ChangeParams<ActualLayer>>()
-            val removed = mutableListOf<RasterLayerEntity<ActualLayer>>()
+            val added = mutableListOf<RasterLayerOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<RasterLayerOverlayRendererInterface.ChangeParamsInterface<ActualLayer>>()
+            val removed = mutableListOf<RasterLayerEntityInterface<ActualLayer>>()
 
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     val prevEntity = rasterLayerManager.getEntity(state.id) ?: return@forEach
                     updated.add(
-                        object : RasterLayerOverlayRenderer.ChangeParams<ActualLayer> {
-                            override val current: RasterLayerEntity<ActualLayer> =
-                                RasterLayerEntityImpl(
+                        object : RasterLayerOverlayRendererInterface.ChangeParamsInterface<ActualLayer> {
+                            override val current: RasterLayerEntityInterface<ActualLayer> =
+                                RasterLayerEntity(
                                     layer = prevEntity.layer,
                                     state = state,
                                 )
-                            override val prev: RasterLayerEntity<ActualLayer> = prevEntity
+                            override val prev: RasterLayerEntityInterface<ActualLayer> = prevEntity
                         },
                     )
                     previous.remove(state.id)
                 } else {
                     added.add(
-                        object : RasterLayerOverlayRenderer.AddParams {
+                        object : RasterLayerOverlayRendererInterface.AddParamsInterface {
                             override val state: RasterLayerState = state
                         },
                     )
@@ -64,7 +64,7 @@ abstract class RasterLayerController<ActualLayer : Any>(
                 actualLayers.forEachIndexed { index, actualLayer ->
                     actualLayer?.let {
                         val entity =
-                            RasterLayerEntityImpl(
+                            RasterLayerEntity(
                                 layer = it,
                                 state = added[index].state,
                             )
@@ -79,7 +79,7 @@ abstract class RasterLayerController<ActualLayer : Any>(
                     actualLayer?.let {
                         val state = updated[index].current.state
                         val entity =
-                            RasterLayerEntityImpl(
+                            RasterLayerEntity(
                                 layer = it,
                                 state = state,
                             )
@@ -102,19 +102,19 @@ abstract class RasterLayerController<ActualLayer : Any>(
             }
 
             val entity =
-                RasterLayerEntityImpl(
+                RasterLayerEntity(
                     layer = prevEntity.layer,
                     state = state,
                 )
             val params =
-                object : RasterLayerOverlayRenderer.ChangeParams<ActualLayer> {
-                    override val current: RasterLayerEntity<ActualLayer> = entity
-                    override val prev: RasterLayerEntity<ActualLayer> = prevEntity
+                object : RasterLayerOverlayRendererInterface.ChangeParamsInterface<ActualLayer> {
+                    override val current: RasterLayerEntityInterface<ActualLayer> = entity
+                    override val prev: RasterLayerEntityInterface<ActualLayer> = prevEntity
                 }
             val layers = renderer.onChange(listOf(params))
             layers[0]?.let {
                 val updatedEntity =
-                    RasterLayerEntityImpl(
+                    RasterLayerEntity(
                         layer = it,
                         state = state,
                     )
@@ -126,16 +126,16 @@ abstract class RasterLayerController<ActualLayer : Any>(
 
     override suspend fun clear() {
         semaphore.withPermit {
-            val entities: List<RasterLayerEntity<ActualLayer>> = rasterLayerManager.allEntities()
+            val entities: List<RasterLayerEntityInterface<ActualLayer>> = rasterLayerManager.allEntities()
             renderer.onRemove(entities)
             renderer.onPostProcess()
             rasterLayerManager.clear()
         }
     }
 
-    override fun find(position: GeoPoint): RasterLayerEntity<ActualLayer>? = null
+    override fun find(position: GeoPointInterface): RasterLayerEntityInterface<ActualLayer>? = null
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         renderer.onCameraChanged(mapCameraPosition)
     }
 

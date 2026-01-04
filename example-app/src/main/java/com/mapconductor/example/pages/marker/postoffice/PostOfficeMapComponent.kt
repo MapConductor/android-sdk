@@ -8,19 +8,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
 
 @Composable
 fun PostOfficeMapComponent(
     modifier: Modifier = Modifier,
-    mapViewState: MapViewState<*>,
-    renderingStrategy: MarkerRenderingStrategy<*>?,
+    mapViewState: MapViewStateInterface<*>,
+    renderingStrategy: MarkerRenderingStrategyInterface<*>?,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapLoaded: OnMapLoadedHandler? = null,

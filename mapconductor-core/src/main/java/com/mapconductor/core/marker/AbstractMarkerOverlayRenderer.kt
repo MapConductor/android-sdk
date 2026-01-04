@@ -1,8 +1,8 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapViewHolderInterface
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.settings.Settings
 import kotlin.math.min
@@ -19,23 +19,23 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 
 abstract class AbstractMarkerOverlayRenderer<
-    MapViewHolderType : MapViewHolder<*, *>,
+    MapViewHolderType : MapViewHolderInterface<*, *>,
     ActualMarker,
 >(
     val holder: MapViewHolderType,
     val coroutine: CoroutineScope,
     val dropAnimateDuration: Long = Settings.Default.markerDropAnimateDuration,
     val bounceAnimateDuration: Long = Settings.Default.markerBounceAnimateDuration,
-) : MarkerOverlayRenderer<ActualMarker> {
+) : MarkerOverlayRendererInterface<ActualMarker> {
     override var animateStartListener: OnMarkerEventHandler? = null
     override var animateEndListener: OnMarkerEventHandler? = null
 
     abstract fun setMarkerPosition(
-        markerEntity: MarkerEntity<ActualMarker>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<ActualMarker>,
+        position: GeoPoint,
     )
 
-    override suspend fun onAnimate(entity: MarkerEntity<ActualMarker>) {
+    override suspend fun onAnimate(entity: MarkerEntityInterface<ActualMarker>) {
         val animation = entity.state.getAnimation()
         when (animation) {
             MarkerAnimation.Drop ->
@@ -58,7 +58,7 @@ abstract class AbstractMarkerOverlayRenderer<
     ): Double = Earth.CIRCUMFERENCE_METERS / (tileSize * 2.0.pow(zoom))
 
     fun animateMarkerDrop(
-        entity: MarkerEntity<ActualMarker>,
+        entity: MarkerEntityInterface<ActualMarker>,
         duration: Long,
     ) {
         // アニメーションの最終的な目標地点(地理座標)
@@ -90,7 +90,7 @@ abstract class AbstractMarkerOverlayRenderer<
             val interpolatedLongitude = t * target.longitude + (1f - t) * startLatLng.longitude
 
             // 現在の座標をマーカーに適用
-            val newPosition = GeoPointImpl.fromLatLong(interpolatedLatitude, interpolatedLongitude)
+            val newPosition = GeoPoint.fromLatLong(interpolatedLatitude, interpolatedLongitude)
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             entity.state.position = target
@@ -100,7 +100,7 @@ abstract class AbstractMarkerOverlayRenderer<
     }
 
     fun animateMarkerBounce(
-        entity: MarkerEntity<ActualMarker>,
+        entity: MarkerEntityInterface<ActualMarker>,
         duration: Long,
     ) {
         val target = entity.state.position
@@ -123,7 +123,7 @@ abstract class AbstractMarkerOverlayRenderer<
             val interpolatedLatitude = t * target.latitude + (1f - t) * startLatLng.latitude
 
             // 現在の座標をマーカーに適用
-            val newPosition = GeoPointImpl.fromLatLong(interpolatedLatitude, interpolatedLongitude)
+            val newPosition = GeoPoint.fromLatLong(interpolatedLatitude, interpolatedLongitude)
             setMarkerPosition(entity, newPosition)
         }.onCompletion {
             // 最終的にマーカー位置を正確な着地点に戻す（補間誤差などを吸収）

@@ -3,10 +3,10 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun MapViewScope.Marker(
-    position: GeoPoint,
+    position: GeoPointInterface,
     clickable: Boolean = true,
     draggable: Boolean = false,
-    icon: MarkerIcon? = null,
+    icon: MarkerIconInterface? = null,
     extra: Serializable? = null,
     id: String? = null,
     onClick: OnMarkerEventHandler? = null,

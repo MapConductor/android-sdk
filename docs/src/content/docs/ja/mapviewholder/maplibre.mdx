@@ -1,5 +1,5 @@
 ---
-title: "MapLibreMapViewHolder"
+title: "MapLibreMapViewHolderInterface"
 ---
 
 import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
@@ -16,17 +16,17 @@ import LifecycleAwareMapExample from '~/components/core/mapviewholder/LifecycleA
 import NullSafetyAccessExample from '~/components/core/mapviewholder/NullSafetyAccessExample.astro';
 import SafeNativeAccessExample from '~/components/core/mapviewholder/SafeNativeAccessExample.astro';
 
-`MapViewHolder` は、MapConductor の統一 API でカバーされていない特定の地図SDK機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolder がこのギャップを埋めます。
+`MapViewHolderInterface` は、MapConductor の統一 API でカバーされていない特定の地図SDK機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolderInterface がこのギャップを埋めます。
 
 ## 概要
 
-MapConductor は地図SDK間で統一された API を提供することを目指していますが、完全な機能パリティは必ずしも可能ではありません。MapViewHolder を使用すると、開発者は地図SDK固有の機能が必要な場合に、基盤となるネイティブ地図インスタンスにアクセスできます。
+MapConductor は地図SDK間で統一された API を提供することを目指していますが、完全な機能パリティは必ずしも可能ではありません。MapViewHolderInterface を使用すると、開発者は地図SDK固有の機能が必要な場合に、基盤となるネイティブ地図インスタンスにアクセスできます。
 
 <MapViewHolderInterface />
 
-## MapViewHolder へのアクセス
+## MapViewHolderInterface へのアクセス
 
-各地図SDKの `MapViewState` 実装は、その特定の `MapViewHolder` へのアクセスを提供します:
+各地図SDKの `MapViewStateInterface` 実装は、その特定の `MapViewHolderInterface` へのアクセスを提供します:
 
 <MapViewHolderAccessExample />
 
@@ -152,5 +152,5 @@ MapConductor は地図SDK間で統一された API を提供することを目�
 4. **機能パリティ**: すべての地図SDKが同等のネイティブ機能をサポートしているわけではありません
 5. **MapConductor 統合**: ネイティブの変更は MapConductor の状態管理と統合されない可能性があります
 
-MapViewHolder は高度なユースケースのための強力なエスケープハッチですが、MapConductor の統一 API アプローチの利点を維持するために慎重に使用する必要があります。
+MapViewHolderInterface は高度なユースケースのための強力なエスケープハッチですが、MapConductor の統一 API アプローチの利点を維持するために慎重に使用する必要があります。
 

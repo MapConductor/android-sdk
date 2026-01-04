@@ -18,13 +18,13 @@ const {
 const code = `@Composable
 fun AnimatedCameraExample() {
     val locations = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // San Francisco
-        GeoPointImpl.fromLatLong(40.7128, -74.0060),  // New York
-        GeoPointImpl.fromLatLong(51.5074, -0.1278)    // London
+        GeoPoint.fromLatLong(37.7749, -122.4194), // San Francisco
+        GeoPoint.fromLatLong(40.7128, -74.0060),  // New York
+        GeoPoint.fromLatLong(51.5074, -0.1278)    // London
     )
 
     val mapViewState = rememberHereMapViewState(
-        cameraPosition = MapCameraPositionImpl(
+        cameraPosition = MapCameraPosition(
             position = locations[0],
             zoom = 6.0
         ),
@@ -38,7 +38,7 @@ fun AnimatedCameraExample() {
             delay(${animationIntervalMillis})
             currentIndex = (currentIndex + 1) % locations.size
 
-            val targetPosition = MapCameraPositionImpl(
+            val targetPosition = MapCameraPosition(
                 position = locations[currentIndex],
                 zoom = 6.0,
                 bearing = 0.0,

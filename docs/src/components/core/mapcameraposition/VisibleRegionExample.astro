@@ -17,8 +17,8 @@ const code = `@Composable
 fun VisibleRegionExample() {
 
     val mapViewState = rememberMapboxMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
             zoom = 15.0
         ),
     )
@@ -45,9 +45,9 @@ fun VisibleRegionExample() {
                     Polygon(
                         points = listOf(
                             sw,
-                            GeoPointImpl.fromLatLong(sw.latitude, ne.longitude),
+                            GeoPoint.fromLatLong(sw.latitude, ne.longitude),
                             ne,
-                            GeoPointImpl.fromLatLong(ne.latitude, sw.longitude),
+                            GeoPoint.fromLatLong(ne.latitude, sw.longitude),
                             sw
                         ),
                         strokeColor = Color.Blue,

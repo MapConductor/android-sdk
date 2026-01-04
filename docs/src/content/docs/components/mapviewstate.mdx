@@ -1,5 +1,5 @@
 ---
-title: "MapViewState"
+title: "MapViewStateInterface"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -9,18 +9,18 @@ import MoveCameraToGeoPointSignature from '~/components/components/mapviewstate/
 import MoveCameraToCameraPositionSignature from '~/components/components/mapviewstate/MoveCameraToCameraPositionSignature.astro';
 import MapViewStateEventHandlingExample from '~/components/components/mapviewstate/MapViewStateEventHandlingExample.astro';
 
-`MapViewState` is a core component that manages map initialization, camera position, and overall map state.
+`MapViewStateInterface` is a core component that manages map initialization, camera position, and overall map state.
 Each map SDK has its own implementation, but MapConductor provides a unified API across all providers.
 
 ## Map SDK Implementations
 
-MapConductor supports 5 map SDKs, each with its own `MapViewState` implementation:
+MapConductor supports 5 map SDKs, each with its own `MapViewStateInterface` implementation:
 
-- `GoogleMapViewStateImpl` - Google Maps
-- `MapboxViewStateImpl` - Mapbox Map
-- `HereViewStateImpl` - HERE Map
-- `ArcGISMapViewStateImpl` - ArcGIS Map
-- `MapLibreViewStateImpl` - MapLibre Map
+- `GoogleMapViewState` - Google Maps
+- `MapboxViewState` - Mapbox Map
+- `HereViewState` - HERE Map
+- `ArcGISMapViewState` - ArcGIS Map
+- `MapLibreViewState` - MapLibre Map
 
 ## Core Properties
 
@@ -34,7 +34,7 @@ MapConductor supports 5 map SDKs, each with its own `MapViewState` implementatio
 
 ### Camera Management
 
-- **`cameraPosition: MapCameraPositionImpl`**: Current camera position and initial camera position when the map loads
+- **`cameraPosition: MapCameraPosition`**: Current camera position and initial camera position when the map loads
 
 ### Map Design
 
@@ -44,7 +44,7 @@ MapConductor supports 5 map SDKs, each with its own `MapViewState` implementatio
 
 <Tabs>
 <TabItem label="Simple Movement">
-- `moveCameraTo(GeoPointImpl, Long?)`
+- `moveCameraTo(GeoPoint, Long?)`
 
     <MoveCameraToGeoPointSignature />
 
@@ -52,11 +52,11 @@ MapConductor supports 5 map SDKs, each with its own `MapViewState` implementatio
     - When `durationMillis` is specified in milliseconds, the camera moves with animation.
 </TabItem>
 <TabItem label="Movement with Camera Options">
-- `moveCameraTo(MapCameraPositionImpl, Long?)`
+- `moveCameraTo(MapCameraPosition, Long?)`
 
     <MoveCameraToCameraPositionSignature />
 
-    - Moves the camera using a `MapCameraPositionImpl`. Zoom and tilt can be specified at the same time. Properties that are omitted maintain their values from when `moveCameraTo` is called.
+    - Moves the camera using a `MapCameraPosition`. Zoom and tilt can be specified at the same time. Properties that are omitted maintain their values from when `moveCameraTo` is called.
     - When `durationMillis` is specified in milliseconds, the camera moves with animation.
 </TabItem>
 </Tabs>
@@ -83,13 +83,13 @@ MapConductor supports 5 map SDKs, each with its own `MapViewState` implementatio
 
 ## Event Handling
 
-`MapViewState` works with your chosen map provider component to provide comprehensive event handling:
+`MapViewStateInterface` works with your chosen map provider component to provide comprehensive event handling:
 
 <MapViewStateEventHandlingExample />
 
 ## Best Practices
 
-1. **State Initialization**: Initialize MapViewState with appropriate camera position and bounds
+1. **State Initialization**: Initialize MapViewStateInterface with appropriate camera position and bounds
 2. **Camera Animation**: Use reasonable animation durations for smooth user experience (500ms - 3000ms)
 3. **State Stability**: Use `remember` to maintain state across recompositions
 4. **Reactive Updates**: Use StateFlow for reactive updates to initialization state

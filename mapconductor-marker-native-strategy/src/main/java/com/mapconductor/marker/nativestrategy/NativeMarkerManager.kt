@@ -1,10 +1,10 @@
 package com.mapconductor.marker.nativestrategy
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.geocell.HexCell
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.geocell.HexGeocellInterface
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerManager
 
 /**
@@ -32,10 +32,10 @@ data class NativeMarkerManagerStats(
  * - Reduced memory footprint by ~90% vs original MarkerManager
  */
 class NativeMarkerManager<ActualMarker>(
-    private val hexGeocell: HexGeocell,
+    private val hexGeocell: HexGeocellInterface,
 ) : MarkerManager<ActualMarker>(hexGeocell) {
     // Public access to geocell for spatial operations
-    val geocellInstance: HexGeocell get() = hexGeocell
+    val geocellInstance: HexGeocellInterface get() = hexGeocell
 
     // Native index is the ONLY storage - no Java entity duplication
     private val nativeIndex: NativeMarkerIndex =
@@ -50,7 +50,7 @@ class NativeMarkerManager<ActualMarker>(
     private var isDestroyed = false
 
     // Override parent storage completely - don't call super methods
-    override fun getEntity(id: String): MarkerEntity<ActualMarker>? {
+    override fun getEntity(id: String): MarkerEntityInterface<ActualMarker>? {
         checkNotDestroyed()
         // Use parent's entity storage but with native consistency check
         val entity = super.getEntity(id)
@@ -72,7 +72,7 @@ class NativeMarkerManager<ActualMarker>(
         return nativeIndex.hasMarker(id)
     }
 
-    override fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
+    override fun removeEntity(id: String): MarkerEntityInterface<ActualMarker>? {
         checkNotDestroyed()
         // Remove from native first (source of truth)
         val wasRemoved = nativeIndex.removeMarker(id)
@@ -84,7 +84,7 @@ class NativeMarkerManager<ActualMarker>(
     }
 
     override fun metersPerPixel(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         pixels: Double,
         tileSize: Int,
@@ -93,7 +93,7 @@ class NativeMarkerManager<ActualMarker>(
         return nativeIndex.metersPerPixel(position, zoom, pixels, tileSize)
     }
 
-    override fun findNearest(position: GeoPoint): MarkerEntity<ActualMarker>? {
+    override fun findNearest(position: GeoPointInterface): MarkerEntityInterface<ActualMarker>? {
         checkNotDestroyed()
         // Use native spatial query for performance - bypasses parent's threshold logic
         val nearestId = nativeIndex.findNearest(position) ?: return null
@@ -107,7 +107,7 @@ class NativeMarkerManager<ActualMarker>(
         return emptyList()
     }
 
-    override fun registerEntity(entity: MarkerEntity<ActualMarker>) {
+    override fun registerEntity(entity: MarkerEntityInterface<ActualMarker>) {
         checkNotDestroyed()
         // Register in native index first (source of truth)
         nativeIndex.registerMarker(
@@ -119,7 +119,7 @@ class NativeMarkerManager<ActualMarker>(
         super.registerEntity(entity)
     }
 
-    override fun updateEntity(entity: MarkerEntity<ActualMarker>) {
+    override fun updateEntity(entity: MarkerEntityInterface<ActualMarker>) {
         checkNotDestroyed()
         // Update native index first
         nativeIndex.updateMarker(
@@ -131,7 +131,7 @@ class NativeMarkerManager<ActualMarker>(
         super.updateEntity(entity)
     }
 
-    override fun allEntities(): List<MarkerEntity<ActualMarker>> {
+    override fun allEntities(): List<MarkerEntityInterface<ActualMarker>> {
         checkNotDestroyed()
         return super.allEntities()
     }
@@ -142,7 +142,7 @@ class NativeMarkerManager<ActualMarker>(
         super.clear() // Clear Java storage
     }
 
-    override fun findMarkersInBounds(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+    override fun findMarkersInBounds(bounds: GeoRectBounds): List<MarkerEntityInterface<ActualMarker>> {
         checkNotDestroyed()
         if (bounds.isEmpty) return emptyList()
 

@@ -9,23 +9,23 @@ fun MapView(
     val mapViewState =
         rememberGoogleMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl(51.511649,-0.100761),
+                MapCameraPosition(
+                    position = GeoPoint(51.511649,-0.100761),
                     zoom = 12.0,
                 ),
         )
 
     var marker1 by remember { mutableStateOf(MarkerState(
-        position = GeoPointImpl.fromLatLong(51.476747,-0.167729),
+        position = GeoPoint.fromLatLong(51.476747,-0.167729),
         draggable = true,
     )) }
     var marker2 by remember { mutableStateOf(MarkerState(
-        position = GeoPointImpl.fromLatLong(51.546550,-0.033792),
+        position = GeoPoint.fromLatLong(51.546550,-0.033792),
         draggable = true,
     )) }
     val bounds = GeoRectBounds(
-        southWest = marker1.position as GeoPointImpl,
-        northEast = marker2.position as GeoPointImpl,
+        southWest = marker1.position as GeoPoint,
+        northEast = marker2.position as GeoPoint,
     )
     var opacity by remember { mutableStateOf(0.7f) }
 

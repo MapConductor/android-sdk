@@ -33,7 +33,7 @@ fun DynamicMarkerExample() {
     var markerState by remember {
         mutableStateOf(
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${initialLatitude}, ${initialLongitude}),
+                position = GeoPoint.fromLatLong(${initialLatitude}, ${initialLongitude}),
                 icon = DefaultIcon(fillColor = Color.Red, label = "${initialLabel}"),
                 extra = "${initialExtra}"
             )

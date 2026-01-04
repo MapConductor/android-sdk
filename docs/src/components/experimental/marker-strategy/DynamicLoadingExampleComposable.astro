@@ -28,7 +28,7 @@ fun DynamicLoadingExample() {
 
             newMarkers.forEach { markerData ->
                 if (markerData.id !in loadedMarkers) {
-                    val entity = MarkerEntity(
+                    val entity = MarkerEntityInterface(
                         state = MarkerState(
                             id = markerData.id,
                             position = markerData.position,

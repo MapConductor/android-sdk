@@ -3,7 +3,7 @@ import { Code } from '@astrojs/starlight/components';
 
 const code = `@Composable
 fun InteractiveCircleExample() {
-    val circleCenter = GeoPointImpl.fromLatLong(21.382314, -157.933097)
+    val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
 
     // calculatePositionAtDistance is a MapConductor utility function
     // Calculates position 1000m away from circleCenter, rotated 180 degrees clockwise
@@ -47,7 +47,7 @@ fun InteractiveCircleExample() {
     }
 
     // Create map
-    val camera = MapCameraPositionImpl(
+    val camera = MapCameraPosition(
         position = circleCenter,
         zoom = 13.0,
     )

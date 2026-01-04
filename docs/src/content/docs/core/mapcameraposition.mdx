@@ -1,9 +1,9 @@
 ---
-title: "MapCameraPosition"
+title: "MapCameraPositionInterface"
 ---
 
 import MapCameraPositionInterface from '~/components/core/mapcameraposition/MapCameraPositionInterface.astro';
-import MapCameraPositionImpl from '~/components/core/mapcameraposition/MapCameraPositionImpl.astro';
+import MapCameraPosition from '~/components/core/mapcameraposition/MapCameraPosition.astro';
 import DefaultCameraPositionExample from '~/components/core/mapcameraposition/DefaultCameraPositionExample.astro';
 import CustomCameraPositionsExample from '~/components/core/mapcameraposition/CustomCameraPositionsExample.astro';
 import ZoomLevelsExample from '~/components/core/mapcameraposition/ZoomLevelsExample.astro';
@@ -17,32 +17,32 @@ import UserLocationCameraExample from '~/components/core/mapcameraposition/UserL
 import ShowMultiplePointsExample from '~/components/core/mapcameraposition/ShowMultiplePointsExample.astro';
 import NavigationCameraExample from '~/components/core/mapcameraposition/NavigationCameraExample.astro';
 
-`MapCameraPosition` represents the camera's viewing position, orientation, and visible area on the map. It defines where the camera is looking, how much of the map is visible, and the perspective from which the map is viewed.
+`MapCameraPositionInterface` represents the camera's viewing position, orientation, and visible area on the map. It defines where the camera is looking, how much of the map is visible, and the perspective from which the map is viewed.
 
 ## Interface and Implementation
 
-### MapCameraPosition Interface
+### MapCameraPositionInterface Interface
 
 <MapCameraPositionInterface />
 
-### MapCameraPositionImpl
+### MapCameraPosition
 
 The main implementation provides immutable camera position data:
 
-<MapCameraPositionImpl />
+<MapCameraPosition />
 
 ## Properties
 
 ### Camera Location
 
-- **`position: GeoPoint`**: Geographic center point of the camera's view
+- **`position: GeoPointInterface`**: Geographic center point of the camera's view
 - **`zoom: Double`**: Zoom level (approximately follows Google Maps scale)
 - **`bearing: Double`**: Compass direction in degrees (0 = North, 90 = East)
 - **`tilt: Double`**: Camera tilt angle in degrees (0 = top-down, 90 = horizontal)
 
 ### View Configuration
 
-- **`paddings: MapPaddings?`**: Viewport padding that affects the visible region
+- **`paddings: MapPaddingsInterface?`**: Viewport padding that affects the visible region
 - **`visibleRegion: VisibleRegion?`**: `(Readonly)` The actual geographic bounds visible on screen. **Note: this property does not work in v{BOM_MODULE_VERSION} yet**.
 
 ## Creation Methods
@@ -150,10 +150,10 @@ The visible region describes the actual geographic area shown on screen after co
 ### Properties
 
 - **`bounds: GeoRectBounds`**: The rectangular geographic bounds that encompass the entire visible area. This is the minimum bounding rectangle that contains all visible content.
-- **`nearLeft: GeoPoint?`**: The geographic coordinate of the bottom-left corner of the visible region. "Near" refers to the side closest to the camera position.
-- **`nearRight: GeoPoint?`**: The geographic coordinate of the bottom-right corner of the visible region.
-- **`farLeft: GeoPoint?`**: The geographic coordinate of the top-left corner of the visible region. "Far" refers to the side furthest from the camera position.
-- **`farRight: GeoPoint?`**: The geographic coordinate of the top-right corner of the visible region.
+- **`nearLeft: GeoPointInterface?`**: The geographic coordinate of the bottom-left corner of the visible region. "Near" refers to the side closest to the camera position.
+- **`nearRight: GeoPointInterface?`**: The geographic coordinate of the bottom-right corner of the visible region.
+- **`farLeft: GeoPointInterface?`**: The geographic coordinate of the top-left corner of the visible region. "Far" refers to the side furthest from the camera position.
+- **`farRight: GeoPointInterface?`**: The geographic coordinate of the top-right corner of the visible region.
 
 ### Using Visible Region
 

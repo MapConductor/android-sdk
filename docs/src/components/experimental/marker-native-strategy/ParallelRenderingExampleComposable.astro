@@ -15,7 +15,7 @@ fun ParallelRenderingExample() {
         SimpleNativeParallelStrategy<GoogleMapActualMarker>(
             expandMargin = 0.3,        // Larger viewport expansion
             maxConcurrency = 6,        // More parallel threads
-            geocell = HexGeocellImpl(
+            geocell = HexGeocell(
                 baseHexSideLength = 1000.0,  // Optimized cell size
                 zoom = 15.0
             )

@@ -27,8 +27,8 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
     val mapViewState =
         rememberArcGISMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+                MapCameraPosition(
+                    position = GeoPoint.fromLatLong(35.6812, 139.7671),
                     zoom = 12.0,
                 ),
         )

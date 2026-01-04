@@ -11,7 +11,7 @@ const {
   commentForUnavailable = "Map not yet initialized or unavailable"
 } = Astro.props;
 
-const code = `fun accessNativeMap(mapViewState: GoogleMapViewStateImpl) {
+const code = `fun accessNativeMap(mapViewState: GoogleMapViewState) {
     val holder = mapViewState.getMapViewHolder()
 
     if (holder != null) {
@@ -26,7 +26,7 @@ const code = `fun accessNativeMap(mapViewState: GoogleMapViewStateImpl) {
         }
     } else {
         // ${commentForUnavailable}
-        Log.w("MapAccess", "MapViewHolder not available")
+        Log.w("MapAccess", "MapViewHolderInterface not available")
     }
 }`;
 ---

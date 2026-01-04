@@ -1,14 +1,14 @@
 package com.mapconductor.maplibre.raster
 
 import com.mapconductor.core.raster.RasterLayerController
-import com.mapconductor.core.raster.RasterLayerEntityImpl
+import com.mapconductor.core.raster.RasterLayerEntity
+import com.mapconductor.core.raster.RasterLayerManagerInterface
 import com.mapconductor.core.raster.RasterLayerManager
-import com.mapconductor.core.raster.RasterLayerManagerImpl
-import com.mapconductor.core.raster.RasterLayerOverlayRenderer
+import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 
 class MapLibreRasterLayerController(
-    rasterLayerManager: RasterLayerManager<MapLibreRasterLayerHandle> = RasterLayerManagerImpl(),
+    rasterLayerManager: RasterLayerManagerInterface<MapLibreRasterLayerHandle> = RasterLayerManager(),
     renderer: MapLibreRasterLayerOverlayRenderer,
 ) : RasterLayerController<MapLibreRasterLayerHandle>(rasterLayerManager, renderer) {
     suspend fun reapplyStyle() {
@@ -16,7 +16,7 @@ class MapLibreRasterLayerController(
         if (states.isEmpty()) return
         val addParams =
             states.map { state ->
-                object : RasterLayerOverlayRenderer.AddParams {
+                object : RasterLayerOverlayRendererInterface.AddParamsInterface {
                     override val state: RasterLayerState = state
                 }
             }
@@ -24,7 +24,7 @@ class MapLibreRasterLayerController(
         layers.forEachIndexed { index, layer ->
             layer?.let {
                 rasterLayerManager.registerEntity(
-                    RasterLayerEntityImpl(
+                    RasterLayerEntity(
                         layer = it,
                         state = states[index],
                     ),

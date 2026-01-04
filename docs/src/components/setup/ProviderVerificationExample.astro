@@ -28,8 +28,8 @@ const code = `@Composable
 fun ${functionName}() {
     val mapState = ${stateFunction}(
         cameraPosition =
-            MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(${lat}, ${long}),
                 zoom = ${zoom},
             ),
     )

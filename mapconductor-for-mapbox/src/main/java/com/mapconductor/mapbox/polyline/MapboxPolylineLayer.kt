@@ -6,7 +6,7 @@ import com.mapbox.maps.extension.style.layers.generated.lineLayer
 import com.mapbox.maps.extension.style.layers.properties.generated.LineCap
 import com.mapbox.maps.extension.style.layers.properties.generated.LineJoin
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
-import com.mapconductor.core.polyline.PolylineEntity
+import com.mapconductor.core.polyline.PolylineEntityInterface
 import com.mapconductor.mapbox.MapboxActualPolyline
 
 class MapboxPolylineLayer(
@@ -41,7 +41,7 @@ class MapboxPolylineLayer(
             )
         }
 
-    fun draw(entities: List<PolylineEntity<MapboxActualPolyline>>) {
+    fun draw(entities: List<PolylineEntityInterface<MapboxActualPolyline>>) {
         val featureSet = entities.map { it.polyline }
 
         source.featureCollection(

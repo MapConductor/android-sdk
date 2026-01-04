@@ -1,10 +1,10 @@
 package com.mapconductor.core.projection
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 
-interface Projection {
-    fun project(position: GeoPoint): Offset
+interface ProjectionInterface {
+    fun project(position: GeoPointInterface): Offset
 
-    fun unproject(point: Offset): GeoPoint
+    fun unproject(point: Offset): GeoPointInterface
 }

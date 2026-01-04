@@ -13,10 +13,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
@@ -28,18 +28,18 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 @Composable
 fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
-        MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        MapCameraPosition(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
             zoom = 15.0,
         )
     var selectedMarkers by remember { mutableStateOf(setOf<String>()) }
-    var mapViewState by remember { mutableStateOf<MapViewState<Any>?>(null) }
+    var mapViewState by remember { mutableStateOf<MapViewStateInterface<Any>?>(null) }
     val markerData =
         remember {
             listOf(
-                Triple(GeoPointImpl.fromLatLong(37.7749, -122.4194), "Restaurant A", Color.Red),
-                Triple(GeoPointImpl.fromLatLong(37.7849, -122.4094), "Hotel B", Color.Blue),
-                Triple(GeoPointImpl.fromLatLong(37.7649, -122.4294), "Shop C", Color.Green),
+                Triple(GeoPoint.fromLatLong(37.7749, -122.4194), "Restaurant A", Color.Red),
+                Triple(GeoPoint.fromLatLong(37.7849, -122.4094), "Hotel B", Color.Blue),
+                Triple(GeoPoint.fromLatLong(37.7649, -122.4294), "Shop C", Color.Green),
             )
         }
     val onMarkerClick: OnMarkerEventHandler = { markerState ->
@@ -72,7 +72,7 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
         menuItems = DefaultMapViewItems(initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
-            mapViewState = state as MapViewState<Any>
+            mapViewState = state as MapViewStateInterface<Any>
         },
     ) {
         mapViewState?.let {

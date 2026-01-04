@@ -22,18 +22,18 @@ const {
 const code = `@Composable
 fun CompatibilityAwareMap() {
     val mapViewState = rememberGoogleMapViewState()
-    val supportsGroundImage = mapViewState is GoogleMapViewStateImpl
+    val supportsGroundImage = mapViewState is GoogleMapViewState
 
     // ${comment}
     ${mapProvider}(state = mapViewState) {
         // ${alwaysSupportedComment}
         Marker(
-            position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+            position = GeoPoint.fromLatLong(${lat}, ${long}),
             icon = DefaultIcon()
         )
 
         Circle(
-            center = GeoPointImpl.fromLatLong(${lat}, ${long}),
+            center = GeoPoint.fromLatLong(${lat}, ${long}),
             radiusMeters = 1000.0,
             fillColor = Color.Blue.copy(alpha = 0.3f)
         )

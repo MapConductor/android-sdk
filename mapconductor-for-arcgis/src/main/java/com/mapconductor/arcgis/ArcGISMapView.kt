@@ -14,7 +14,7 @@ import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
@@ -25,7 +25,7 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -44,7 +44,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun ArcGISMapView(
-    state: ArcGISMapViewStateImpl,
+    state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -80,7 +80,7 @@ fun ArcGISMapView(
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
 fun ArcGISMapView(
-    state: ArcGISMapViewStateImpl,
+    state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -105,7 +105,7 @@ fun ArcGISMapView(
     val owner = LocalLifecycleOwner.current
     owner.lifecycle
     val basemapStyle = remember { ArcGISDesign.toBasemapStyle(state.mapDesignType) }
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -144,14 +144,14 @@ fun ArcGISMapView(
 
             val coroutine = CoroutineScope(Dispatchers.Default)
 
-            suspendCancellableCoroutine<ArcGISMapViewHolderImpl> { cont ->
+            suspendCancellableCoroutine<ArcGISMapViewHolder> { cont ->
                 coroutine.launch {
                     scene.loadStatus.collect {
                         when (it) {
                             is LoadStatus.Loaded -> {
                                 wrapView.sceneView.scene = scene
                                 val holder =
-                                    ArcGISMapViewHolderImpl(
+                                    ArcGISMapViewHolder(
                                         mapView = wrapView,
                                         map = wrapView.sceneView,
                                     )
@@ -181,7 +181,7 @@ fun ArcGISMapView(
 
             // Defer initial camera update until controller is created and view is laid out
 
-            ArcGISMapViewControllerImpl(
+            ArcGISMapViewController(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,

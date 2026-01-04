@@ -69,21 +69,21 @@ fun MarkerListExample() {
     val markerStates = remember {
         mutableStateListOf(
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${listMarker1Latitude}, ${listMarker1Longitude}),
+                position = GeoPoint.fromLatLong(${listMarker1Latitude}, ${listMarker1Longitude}),
                 extra = "${listMarker1Extra}",
                 onClick = { clickedMarker ->
                     selectedMarker = clickedMarker
                 }
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${listMarker2Latitude}, ${listMarker2Longitude}),
+                position = GeoPoint.fromLatLong(${listMarker2Latitude}, ${listMarker2Longitude}),
                 extra = "${listMarker2Extra}",
                 onClick = { clickedMarker ->
                     selectedMarker = clickedMarker
                 }
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${listMarker3Latitude}, ${listMarker3Longitude}),
+                position = GeoPoint.fromLatLong(${listMarker3Latitude}, ${listMarker3Longitude}),
                 extra = "${listMarker3Extra}",
                 onClick = { clickedMarker ->
                     selectedMarker = clickedMarker
@@ -124,7 +124,7 @@ fun CustomIconMarkerExample() {
     val markerStates = remember {
         listOf(
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${customMarkerLatitude}, ${customMarkerLongitude}),
+                position = GeoPoint.fromLatLong(${customMarkerLatitude}, ${customMarkerLongitude}),
                 icon = DefaultIcon(
                     scale = 1.5f,
                     fillColor = Color.Red,
@@ -135,7 +135,7 @@ fun CustomIconMarkerExample() {
                 extra = "${customMarkerExtra}"
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${drawableMarkerLatitude}, ${drawableMarkerLongitude}),
+                position = GeoPoint.fromLatLong(${drawableMarkerLatitude}, ${drawableMarkerLongitude}),
                 icon = AppCompatResources.getDrawable(context, R.drawable.custom_pin)?.let { drawable ->
                     DrawableDefaultIcon(
                         backgroundDrawable = drawable,
@@ -145,7 +145,7 @@ fun CustomIconMarkerExample() {
                 extra = "${drawableMarkerExtra}"
             ),
             MarkerState(
-                position = GeoPointImpl.fromLatLong(${weatherMarkerLatitude}, ${weatherMarkerLongitude}),
+                position = GeoPoint.fromLatLong(${weatherMarkerLatitude}, ${weatherMarkerLongitude}),
                 icon = AppCompatResources.getDrawable(context, R.drawable.weather_icon)?.let { drawable ->
                     ImageIcon(
                         drawable = drawable,
@@ -169,7 +169,7 @@ fun CustomIconMarkerExample() {
 fun MarkerStateObserver() {
     val markerState = remember {
         MarkerState(
-            position = GeoPointImpl.fromLatLong(${observerMarkerLatitude}, ${observerMarkerLongitude}),
+            position = GeoPoint.fromLatLong(${observerMarkerLatitude}, ${observerMarkerLongitude}),
             extra = "${observerMarkerExtra}"
         )
     }

@@ -18,7 +18,7 @@ const {
 } = Astro.props;
 
 const code = `// ${commentForPosition}
-val sanFrancisco = GeoPointImpl.fromLatLong(${latitude}, ${longitude})
+val sanFrancisco = GeoPoint.fromLatLong(${latitude}, ${longitude})
 
 // ${commentForMapView}
 MapViewContainer(state = mapViewState) {

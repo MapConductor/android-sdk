@@ -12,7 +12,7 @@ import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.map.ArcGISMapViewScope
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.marker.ColorDefaultIcon
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerIconInterface
 import com.mapconductor.marker.clustering.MarkerCluster
 import com.mapconductor.marker.clustering.MarkerClusterStrategy
 
@@ -21,7 +21,7 @@ fun ArcGISMapViewScope.MarkerClusterGroup(
     clusterRadiusPx: Double = MarkerClusterStrategy.DEFAULT_CLUSTER_RADIUS_PX,
     minClusterSize: Int = MarkerClusterStrategy.DEFAULT_MIN_CLUSTER_SIZE,
     expandMargin: Double = MarkerClusterStrategy.DEFAULT_EXPAND_MARGIN,
-    clusterIconProvider: (Int) -> MarkerIcon = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
+    clusterIconProvider: (Int) -> MarkerIconInterface = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
     onClusterClick: ((MarkerCluster) -> Unit)? = null,
     debugClusterTurnLabel: Boolean = false,
     showClusterRadiusCircle: Boolean = false,

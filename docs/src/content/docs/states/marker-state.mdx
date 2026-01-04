@@ -23,12 +23,12 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 ### Core Properties
 
 - **`id: String`**: Unique ID for the marker (auto-generated if not provided)
-- **`position: GeoPoint`**: Current marker position
+- **`position: GeoPointInterface`**: Current marker position
 - **`extra: Serializable?`**: Additional data attached to the marker
 
 ### Visual Properties
 
-- **`icon: MarkerIcon?`**: Marker icon (uses the default icon if not specified)
+- **`icon: MarkerIconInterface?`**: Marker icon (uses the default icon if not specified)
 - **`clickable: Boolean`**: Whether the marker responds to click events
 - **`draggable: Boolean`**: Whether the user can drag the marker
 
@@ -72,8 +72,8 @@ You can create a new `MarkerState` by changing only some properties, and generat
 
 **Log output**
 ```
-Marker dragged to: GeoPointImpl(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
-Marker dragged to: GeoPointImpl(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+Marker dragged to: GeoPoint(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+Marker dragged to: GeoPoint(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
 ...
 Clicked marker: Draggable San Francisco marker
 ```

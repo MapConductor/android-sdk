@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import java.io.Serializable
 import android.graphics.drawable.Drawable
@@ -70,7 +70,7 @@ data class GroundImageFingerPrint(
 
 data class GroundImageEvent(
     val state: GroundImageState,
-    val clicked: GeoPointImpl?,
+    val clicked: GeoPoint?,
 )
 
 typealias OnGroundImageEventHandler = (GroundImageEvent) -> Unit

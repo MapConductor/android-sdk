@@ -1,8 +1,8 @@
 package com.mapconductor.core.polyline
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.map.MapOverlay
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.map.MapOverlayInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -13,11 +13,11 @@ val LocalPolylineCollector =
 
 class PolylineOverlay(
     override val flow: StateFlow<MutableMap<String, PolylineState>>,
-) : MapOverlay<PolylineState> {
+) : MapOverlayInterface<PolylineState> {
     override suspend fun render(
         data: MutableMap<String, PolylineState>,
-        controller: MapViewController,
+        controller: MapViewControllerInterface,
     ) {
-        (controller as? PolylineCapable)?.compositionPolylines(data.values.toList())
+        (controller as? PolylineCapableInterface)?.compositionPolylines(data.values.toList())
     }
 }

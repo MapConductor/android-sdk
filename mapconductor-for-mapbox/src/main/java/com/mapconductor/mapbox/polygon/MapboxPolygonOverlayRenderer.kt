@@ -1,9 +1,9 @@
 package com.mapconductor.mapbox.polygon
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonManager
+import com.mapconductor.core.polygon.PolygonEntityInterface
+import com.mapconductor.core.polygon.PolygonManagerInterface
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.mapbox.MapboxActualPolygon
@@ -15,11 +15,11 @@ import kotlinx.coroutines.launch
 
 class MapboxPolygonOverlayRenderer(
     val layer: MapboxPolygonLayer,
-    val polygonManager: PolygonManager<MapboxActualPolygon>,
+    val polygonManager: PolygonManagerInterface<MapboxActualPolygon>,
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolygonOverlayRenderer<MapboxActualPolygon>() {
-    override suspend fun onRemove(data: List<PolygonEntity<MapboxActualPolygon>>) {
+    override suspend fun onRemove(data: List<PolygonEntityInterface<MapboxActualPolygon>>) {
 //        val featureIds = data.map { entity ->
 //            entity.polygon.getStringProperty("id")
 //        }
@@ -33,7 +33,7 @@ class MapboxPolygonOverlayRenderer(
         }
     }
 
-    override suspend fun removePolygon(entity: PolygonEntity<MapboxActualPolygon>) {
+    override suspend fun removePolygon(entity: PolygonEntityInterface<MapboxActualPolygon>) {
 //        val featureIds =
 //            listOf(entity.polygon.getStringProperty("id"))
 //        layer.source.removeGeoJSONSourceFeatures(featureIds)
@@ -50,8 +50,8 @@ class MapboxPolygonOverlayRenderer(
 
     override suspend fun updatePolygonProperties(
         polygon: MapboxActualPolygon,
-        current: PolygonEntity<MapboxActualPolygon>,
-        prev: PolygonEntity<MapboxActualPolygon>,
+        current: PolygonEntityInterface<MapboxActualPolygon>,
+        prev: PolygonEntityInterface<MapboxActualPolygon>,
     ): MapboxActualPolygon? {
         val finger = current.fingerPrint
         val prevFinger = prev.fingerPrint
@@ -72,12 +72,12 @@ class MapboxPolygonOverlayRenderer(
      * @return List of points with interpolated vertices along geodesic paths
      */
     private fun createGeodesicPolygonPoints(
-        points: List<GeoPoint>,
+        points: List<GeoPointInterface>,
         maxSegmentLength: Double = 1000.0,
-    ): List<GeoPoint> {
+    ): List<GeoPointInterface> {
         if (points.size < 3) return points
 
-        val results = mutableListOf<GeoPoint>()
+        val results = mutableListOf<GeoPointInterface>()
 
         for (i in points.indices) {
             val currentPoint = points[i]
@@ -109,7 +109,7 @@ class MapboxPolygonOverlayRenderer(
         return results
     }
 
-    private fun getAllPolygonEntities(): List<PolygonEntity<MapboxActualPolygon>> {
+    private fun getAllPolygonEntities(): List<PolygonEntityInterface<MapboxActualPolygon>> {
         // This would need access to the polygon manager
         // For now, we'll implement a simple workaround
         return polygonManager.allEntities()

@@ -1,5 +1,5 @@
 ---
-title: "MapViewState"
+title: "MapViewStateInterface"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -9,18 +9,18 @@ import MoveCameraToGeoPointSignature from '~/components/components/mapviewstate/
 import MoveCameraToCameraPositionSignature from '~/components/components/mapviewstate/MoveCameraToCameraPositionSignature.astro';
 import MapViewStateEventHandlingExample from '~/components/components/mapviewstate/MapViewStateEventHandlingExample.astro';
 
-`MapViewState` は、地図の初期化、カメラ位置、および全体的な地図状態を管理するコアコンポーネントです。
+`MapViewStateInterface` は、地図の初期化、カメラ位置、および全体的な地図状態を管理するコアコンポーネントです。
 各地図SDKには独自の実装がありますが、MapConductorがそれらを統一したAPIを提供しています。
 
 ## 地図SDK実装
 
-MapConductor は5つの地図SDKをサポートしており、それぞれに独自の `MapViewState` 実装があります:
+MapConductor は5つの地図SDKをサポートしており、それぞれに独自の `MapViewStateInterface` 実装があります:
 
-- `GoogleMapViewStateImpl` - Google Maps
-- `MapboxViewStateImpl` - Mapbox Map
-- `HereViewStateImpl` - HERE Map
-- `ArcGISMapViewStateImpl` - ArcGIS Map
-- `MapLibreViewStateImpl` - MapLibre Map
+- `GoogleMapViewState` - Google Maps
+- `MapboxViewState` - Mapbox Map
+- `HereViewState` - HERE Map
+- `ArcGISMapViewState` - ArcGIS Map
+- `MapLibreViewState` - MapLibre Map
 
 ## コアプロパティ
 
@@ -34,7 +34,7 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
 
 ### カメラ管理
 
-- **`cameraPosition: MapCameraPositionImpl`**: 現在のカメラ位置, 地図読み込み時の初期カメラ位置
+- **`cameraPosition: MapCameraPosition`**: 現在のカメラ位置, 地図読み込み時の初期カメラ位置
 
 ### 地図デザイン
 
@@ -44,7 +44,7 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
 
 <Tabs>
 <TabItem label="シンプルに移動">
-- `moveCameraTo(GeoPointImpl, Long?)`
+- `moveCameraTo(GeoPoint, Long?)`
 
     <MoveCameraToGeoPointSignature />
 
@@ -52,11 +52,11 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
     - `durationMillis`にミリ秒を指定すると、アニメーション付きでカメラを移動します。
 </TabItem>
 <TabItem label="カメラオプションを指定して移動">
-- `moveCameraTo(MapCameraPositionImpl, Long?)`
+- `moveCameraTo(MapCameraPosition, Long?)`
 
     <MoveCameraToCameraPositionSignature />
 
-    - `MapCameraPositionImpl` を指定して、カメラを特定の位置に移動します。ズームや傾きなどを同時に指定することができます。省略したプロパティは、`moveCameraTo`を実行したときの値を維持します。
+    - `MapCameraPosition` を指定して、カメラを特定の位置に移動します。ズームや傾きなどを同時に指定することができます。省略したプロパティは、`moveCameraTo`を実行したときの値を維持します。
     - `durationMillis`にミリ秒を指定すると、アニメーション付きでカメラを移動します。
 </TabItem>
 </Tabs>
@@ -82,7 +82,7 @@ MapConductor は5つの地図SDKをサポートしており、それぞれに独
 
 ## イベント処理
 
-`MapViewState` は選択した地図SDKコンポーネントと連携して、包括的なイベント処理を提供します:
+`MapViewStateInterface` は選択した地図SDKコンポーネントと連携して、包括的なイベント処理を提供します:
 
 <MapViewStateEventHandlingExample
   commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"

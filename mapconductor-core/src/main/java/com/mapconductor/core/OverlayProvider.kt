@@ -5,11 +5,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import com.mapconductor.core.circle.CircleOverlay
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.controller.MapViewController
+import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.groundimage.GroundImageOverlay
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
-import com.mapconductor.core.map.MapOverlay
+import com.mapconductor.core.map.MapOverlayInterface
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerOverlay
 import com.mapconductor.core.polygon.PolygonOverlay
@@ -110,11 +110,11 @@ open class MapViewScope {
 @Composable
 fun CollectAndRenderOverlays(
     registry: MapOverlayRegistry,
-    controller: MapViewController,
+    controller: MapViewControllerInterface,
 ) {
     registry.getAll().forEach { overlay ->
         @Suppress("UNCHECKED_CAST")
-        val typedOverlay = overlay as MapOverlay<Any>
+        val typedOverlay = overlay as MapOverlayInterface<Any>
         val flowState = typedOverlay.flow.collectAsState()
 
         LaunchedEffect(flowState.value) {

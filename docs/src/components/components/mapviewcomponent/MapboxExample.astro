@@ -41,8 +41,8 @@ const {
 
 const code = `@Composable
 fun MapboxExample() {
-    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
-    val camera = MapCameraPositionImpl(position = center, zoom = ${zoomLevel})
+    val center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val camera = MapCameraPosition(position = center, zoom = ${zoomLevel})
     val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
 
     MapboxMapView(
@@ -52,16 +52,16 @@ fun MapboxExample() {
         }
     ) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${markerLatitude}, ${markerLongitude}),
+            position = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
             icon = DefaultIcon(label = "${markerLabel}"),
             extra = "${markerExtra}"
         )
 
         Polyline(
             points = listOf(
-                GeoPointImpl.fromLatLong(${polylinePoint1Latitude}, ${polylinePoint1Longitude}),
-                GeoPointImpl.fromLatLong(${polylinePoint2Latitude}, ${polylinePoint2Longitude}),
-                GeoPointImpl.fromLatLong(${polylinePoint3Latitude}, ${polylinePoint3Longitude})
+                GeoPoint.fromLatLong(${polylinePoint1Latitude}, ${polylinePoint1Longitude}),
+                GeoPoint.fromLatLong(${polylinePoint2Latitude}, ${polylinePoint2Longitude}),
+                GeoPoint.fromLatLong(${polylinePoint3Latitude}, ${polylinePoint3Longitude})
             ),
             strokeColor = ${polylineStrokeColorExpr},
             strokeWidth = ${polylineStrokeWidthDp}.dp

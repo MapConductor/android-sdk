@@ -26,20 +26,20 @@ const {
 } = Astro.props;
 
 const code = `// ${northUpComment}
-val northUp = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val northUp = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     bearing = ${bearingNorth}
 )
 
 // ${eastUpComment}
-val eastUp = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val eastUp = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     bearing = ${bearingEast}
 )
 
 // ${followingBearingComment}
-val routeBearing = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val routeBearing = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     bearing = ${bearingRoute},  // ${routeComment}
     zoom = 18.0
 )`;

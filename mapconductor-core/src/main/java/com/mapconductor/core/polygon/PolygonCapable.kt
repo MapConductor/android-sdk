@@ -1,6 +1,6 @@
 package com.mapconductor.core.polygon
 
-interface PolygonCapable {
+interface PolygonCapableInterface {
     suspend fun compositionPolygons(data: List<PolygonState>)
 
     suspend fun updatePolygon(state: PolygonState)

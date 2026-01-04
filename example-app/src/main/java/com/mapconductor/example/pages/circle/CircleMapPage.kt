@@ -21,7 +21,7 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { CirclePageViewModelImpl() }
+    val viewModel = remember { CirclePageViewModel() }
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,

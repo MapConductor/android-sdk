@@ -1,20 +1,20 @@
 package com.mapconductor.core.circle
 
-interface CircleOverlayRenderer<ActualCircle> {
-    interface AddParams {
+interface CircleOverlayRendererInterface<ActualCircle> {
+    interface AddParamsInterface {
         val state: CircleState
     }
 
-    interface ChangeParams<ActualCircle> {
-        val current: CircleEntity<ActualCircle>
-        val prev: CircleEntity<ActualCircle>
+    interface ChangeParamsInterface<ActualCircle> {
+        val current: CircleEntityInterface<ActualCircle>
+        val prev: CircleEntityInterface<ActualCircle>
     }
 
-    suspend fun onAdd(data: List<AddParams>): List<ActualCircle?>
+    suspend fun onAdd(data: List<AddParamsInterface>): List<ActualCircle?>
 
-    suspend fun onChange(data: List<ChangeParams<ActualCircle>>): List<ActualCircle?>
+    suspend fun onChange(data: List<ChangeParamsInterface<ActualCircle>>): List<ActualCircle?>
 
-    suspend fun onRemove(data: List<CircleEntity<ActualCircle>>)
+    suspend fun onRemove(data: List<CircleEntityInterface<ActualCircle>>)
 
     suspend fun onPostProcess()
 }

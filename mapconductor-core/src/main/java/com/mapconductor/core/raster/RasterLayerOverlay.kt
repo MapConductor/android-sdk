@@ -1,8 +1,8 @@
 package com.mapconductor.core.raster
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.map.MapOverlay
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.map.MapOverlayInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -13,11 +13,11 @@ val LocalRasterLayerCollector =
 
 class RasterLayerOverlay(
     override val flow: StateFlow<MutableMap<String, RasterLayerState>>,
-) : MapOverlay<RasterLayerState> {
+) : MapOverlayInterface<RasterLayerState> {
     override suspend fun render(
         data: MutableMap<String, RasterLayerState>,
-        controller: MapViewController,
+        controller: MapViewControllerInterface,
     ) {
-        (controller as? RasterLayerCapable)?.compositionRasterLayers(data.values.toList())
+        (controller as? RasterLayerCapableInterface)?.compositionRasterLayers(data.values.toList())
     }
 }

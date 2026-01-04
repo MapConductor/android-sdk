@@ -4,22 +4,22 @@ import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.spherical.Spherical
 import android.util.Log
 
-interface PolylineEntity<ActualPolyline> {
+interface PolylineEntityInterface<ActualPolyline> {
     val polyline: ActualPolyline
     val state: PolylineState
     val fingerPrint: PolylineFingerPrint
     val bounds: GeoRectBounds
 }
 
-class PolylineEntityImpl<ActualPolyline>(
+class PolylineEntity<ActualPolyline>(
     override val polyline: ActualPolyline,
     override val state: PolylineState,
-) : PolylineEntity<ActualPolyline> {
+) : PolylineEntityInterface<ActualPolyline> {
     override val fingerPrint: PolylineFingerPrint = state.fingerPrint()
 
     private var cachedBounds: GeoRectBounds? = null
     private var boundsFingerprint: Int? = null
-    private val tag = "PolylineEntity"
+    private val tag = "PolylineEntityInterface"
 
     override val bounds: GeoRectBounds
         get() {
@@ -63,7 +63,7 @@ class PolylineEntityImpl<ActualPolyline>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as PolylineEntityImpl<*>
+        other as PolylineEntity<*>
 
         if (polyline != other.polyline) return false
         if (state != other.state) return false

@@ -24,12 +24,12 @@ fun BasicIconExample() {
     // ${commentForMapViewUsage}
     MapView(state = mapViewState) {
         Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
             icon = circleIcon
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            position = GeoPoint.fromLatLong(37.7849, -122.4094),
             icon = flagIcon
         )
     }

@@ -58,14 +58,14 @@ fun CompleteSample(modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     // ${commentPositions}
-    val marker1 = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long})
-    val marker2 = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
+    val marker1 = GeoPoint.fromLatLong(${marker1Lat}, ${marker1Long})
+    val marker2 = GeoPoint.fromLatLong(${marker2Lat}, ${marker2Long})
 
     // ${commentClickedPosition}
-    var clickedPosition by remember { mutableStateOf<GeoPoint?>(null) }
+    var clickedPosition by remember { mutableStateOf<GeoPointInterface?>(null) }
 
-    val initialCamera = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(${centerLat}, ${centerLong}),
+    val initialCamera = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${centerLat}, ${centerLong}),
         zoom = 12.0
     )
 
@@ -94,7 +94,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             Button(onClick = {
                 scope.launch {
                     mapViewState.moveCameraTo(
-                        MapCameraPositionImpl(position = marker1, zoom = 15.0),
+                        MapCameraPosition(position = marker1, zoom = 15.0),
                         durationMillis = 1000
                     )
                 }
@@ -105,7 +105,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             Button(onClick = {
                 scope.launch {
                     mapViewState.moveCameraTo(
-                        MapCameraPositionImpl(position = marker2, zoom = 15.0),
+                        MapCameraPosition(position = marker2, zoom = 15.0),
                         durationMillis = 1000
                     )
                 }

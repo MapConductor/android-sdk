@@ -1,13 +1,13 @@
 package com.mapconductor.googlemaps.marker
 
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 
-internal interface GoogleMapMarkerEventController {
-    fun getEntity(id: String): MarkerEntity<GoogleMapActualMarker>?
+internal interface GoogleMapMarkerEventControllerInterface {
+    fun getEntity(id: String): MarkerEntityInterface<GoogleMapActualMarker>?
 
     fun dispatchClick(state: MarkerState)
 
@@ -32,8 +32,8 @@ internal interface GoogleMapMarkerEventController {
 
 internal class DefaultGoogleMapMarkerEventController(
     private val controller: GoogleMapMarkerController,
-) : GoogleMapMarkerEventController {
-    override fun getEntity(id: String): MarkerEntity<GoogleMapActualMarker>? = controller.markerManager.getEntity(id)
+) : GoogleMapMarkerEventControllerInterface {
+    override fun getEntity(id: String): MarkerEntityInterface<GoogleMapActualMarker>? = controller.markerManager.getEntity(id)
 
     override fun dispatchClick(state: MarkerState) = controller.dispatchClick(state)
 
@@ -70,8 +70,8 @@ internal class DefaultGoogleMapMarkerEventController(
 
 internal class StrategyGoogleMapMarkerEventController(
     private val controller: StrategyMarkerController<GoogleMapActualMarker>,
-) : GoogleMapMarkerEventController {
-    override fun getEntity(id: String): MarkerEntity<GoogleMapActualMarker>? = controller.getEntity(id)
+) : GoogleMapMarkerEventControllerInterface {
+    override fun getEntity(id: String): MarkerEntityInterface<GoogleMapActualMarker>? = controller.getEntity(id)
 
     override fun dispatchClick(state: MarkerState) = controller.dispatchClick(state)
 

@@ -1,7 +1,7 @@
 package com.mapconductor.heatmap
 
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 
-interface HeatmapOverlayRenderer : MarkerOverlayRenderer<Unit> {
+interface HeatmapOverlayRendererInterface : MarkerOverlayRendererInterface<Unit> {
     fun updateHeatmap(points: List<HeatmapPoint>)
 }

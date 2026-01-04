@@ -1,6 +1,6 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 import android.util.Log
 
@@ -13,8 +13,8 @@ object LineSegmentUtils {
     }
 
     fun createSegmentBounds(
-        point1: GeoPoint,
-        point2: GeoPoint,
+        point1: GeoPointInterface,
+        point2: GeoPointInterface,
         geodesic: Boolean = false,
     ): GeoRectBounds {
         val bounds = GeoRectBounds()
@@ -35,8 +35,8 @@ object LineSegmentUtils {
     }
 
     fun segmentIntersectsRegion(
-        start: GeoPoint,
-        end: GeoPoint,
+        start: GeoPointInterface,
+        end: GeoPointInterface,
         region: GeoRectBounds,
         geodesic: Boolean = false,
     ): Boolean {

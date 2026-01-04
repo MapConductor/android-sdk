@@ -14,7 +14,7 @@ const {
 } = Astro.props;
 
 const code = `val markerState = MarkerState(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     extra = "${extraLabel}"
 )
 

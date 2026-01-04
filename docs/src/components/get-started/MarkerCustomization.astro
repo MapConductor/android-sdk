@@ -16,7 +16,7 @@ const {
 } = Astro.props;
 
 const code = `Marker(
-    position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+    position = GeoPoint.fromLatLong(${lat}, ${long}),
     icon = DefaultIcon(
         label = "${label}",
         backgroundColor = Color.Red,

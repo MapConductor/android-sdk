@@ -1,53 +1,53 @@
 package com.mapconductor.core.circle
 
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.spherical.Spherical
 import java.util.concurrent.ConcurrentHashMap
 
-interface CircleManager<ActualCircle> {
-    fun registerEntity(entity: CircleEntity<ActualCircle>)
+interface CircleManagerInterface<ActualCircle> {
+    fun registerEntity(entity: CircleEntityInterface<ActualCircle>)
 
-    fun removeEntity(id: String): CircleEntity<ActualCircle>?
+    fun removeEntity(id: String): CircleEntityInterface<ActualCircle>?
 
-    fun getEntity(id: String): CircleEntity<ActualCircle>?
+    fun getEntity(id: String): CircleEntityInterface<ActualCircle>?
 
     fun hasEntity(id: String): Boolean
 
-    fun allEntities(): List<CircleEntity<ActualCircle>>
+    fun allEntities(): List<CircleEntityInterface<ActualCircle>>
 
     fun clear()
 
-    fun find(position: GeoPoint): CircleEntity<ActualCircle>?
+    fun find(position: GeoPointInterface): CircleEntityInterface<ActualCircle>?
 }
 
-class CircleManagerImpl<ActualCircle> : CircleManager<ActualCircle> {
-    private val entities: ConcurrentHashMap<String, CircleEntity<ActualCircle>> = ConcurrentHashMap()
+class CircleManager<ActualCircle> : CircleManagerInterface<ActualCircle> {
+    private val entities: ConcurrentHashMap<String, CircleEntityInterface<ActualCircle>> = ConcurrentHashMap()
 
-    override fun getEntity(id: String): CircleEntity<ActualCircle>? = entities.get(id)
+    override fun getEntity(id: String): CircleEntityInterface<ActualCircle>? = entities.get(id)
 
     override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
-    override fun removeEntity(id: String): CircleEntity<ActualCircle>? {
+    override fun removeEntity(id: String): CircleEntityInterface<ActualCircle>? {
         val removed = entities.remove(id)
         return removed
     }
 
-    override fun registerEntity(entity: CircleEntity<ActualCircle>) {
+    override fun registerEntity(entity: CircleEntityInterface<ActualCircle>) {
         entities[entity.state.id] = entity
     }
 
-    fun updateEntity(entity: CircleEntity<ActualCircle>) {
+    fun updateEntity(entity: CircleEntityInterface<ActualCircle>) {
         entities[entity.state.id] = entity
     }
 
-    override fun allEntities(): List<CircleEntity<ActualCircle>> = entities.values.toList()
+    override fun allEntities(): List<CircleEntityInterface<ActualCircle>> = entities.values.toList()
 
     override fun clear() {
         entities.clear()
     }
 
-    override fun find(position: GeoPoint): CircleEntity<ActualCircle>? {
+    override fun find(position: GeoPointInterface): CircleEntityInterface<ActualCircle>? {
         val filtered =
             allEntities().filter { entity ->
                 val centerPos = entity.state.center

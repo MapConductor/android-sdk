@@ -20,7 +20,7 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { PolygonMapPageViewModelImpl() }
+    val viewModel = remember { PolygonMapPageViewModel() }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),

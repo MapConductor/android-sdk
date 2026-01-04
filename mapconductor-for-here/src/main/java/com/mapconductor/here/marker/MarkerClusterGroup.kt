@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.marker.ColorDefaultIcon
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerIconInterface
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewScope
 import com.mapconductor.marker.clustering.MarkerCluster
@@ -21,7 +21,7 @@ fun HereViewScope.MarkerClusterGroup(
     clusterRadiusPx: Double = MarkerClusterStrategy.DEFAULT_CLUSTER_RADIUS_PX,
     minClusterSize: Int = MarkerClusterStrategy.DEFAULT_MIN_CLUSTER_SIZE,
     expandMargin: Double = MarkerClusterStrategy.DEFAULT_EXPAND_MARGIN,
-    clusterIconProvider: (Int) -> MarkerIcon = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
+    clusterIconProvider: (Int) -> MarkerIconInterface = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
     onClusterClick: ((MarkerCluster) -> Unit)? = null,
     debugClusterTurnLabel: Boolean = false,
     showClusterRadiusCircle: Boolean = false,

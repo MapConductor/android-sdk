@@ -23,12 +23,12 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 ### Propiedades básicas
 
 - **`id: String`**: ID único del marcador (se genera automáticamente si no se proporciona)
-- **`position: GeoPoint`**: Posición actual del marcador
+- **`position: GeoPointInterface`**: Posición actual del marcador
 - **`extra: Serializable?`**: Datos adicionales asociados al marcador
 
 ### Propiedades visuales
 
-- **`icon: MarkerIcon?`**: Icono del marcador (usa el icono por defecto si no se especifica)
+- **`icon: MarkerIconInterface?`**: Icono del marcador (usa el icono por defecto si no se especifica)
 - **`clickable: Boolean`**: Indica si el marcador responde a eventos de clic
 - **`draggable: Boolean`**: Indica si el usuario puede arrastrar el marcador
 
@@ -72,8 +72,8 @@ Puedes crear un nuevo `MarkerState` cambiando solo algunas propiedades y generar
 
 **Salida del log**
 ```
-Marcador arrastrado a: GeoPointImpl(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
-Marcador arrastrado a: GeoPointImpl(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+Marcador arrastrado a: GeoPoint(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+Marcador arrastrado a: GeoPoint(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
 ...
 Marcador pulsado: Marcador de San Francisco arrastrable
 ```

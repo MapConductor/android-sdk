@@ -22,9 +22,9 @@ Bill of Materials para todos los artefactos de MapConductor.
 
 Runtime central y abstracciones compartidas:
 
-- Tipos de geometría: `GeoPoint`, `GeoRectBounds`
-- Tipos de cámara: `MapCameraPosition`, `VisibleRegion`
-- Abstracciones de mapa: `MapViewState`, `MapViewController`, `MapViewBase`
+- Tipos de geometría: `GeoPointInterface`, `GeoRectBounds`
+- Tipos de cámara: `MapCameraPositionInterface`, `VisibleRegion`
+- Abstracciones de mapa: `MapViewStateInterface`, `MapViewControllerInterface`, `MapViewBase`
 - Primitivas de overlay: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
 Todos los demás módulos se construyen sobre `mapconductor-core`.
@@ -36,33 +36,33 @@ Los módulos específicos de cada SDK implementan la API unificada:
 ### `mapconductor-for-googlemaps`
 
 - Composable `GoogleMapView`
-- `GoogleMapViewStateImpl`
+- `GoogleMapViewState`
 - Controladores de overlays específicos de Google Maps
 
 ### `mapconductor-for-mapbox`
 
 - Composable `MapboxMapView`
-- `MapboxViewStateImpl`
+- `MapboxViewState`
 
 ### `mapconductor-for-here`
 
 - Composable `HereMapView`
-- `HereViewStateImpl`
+- `HereViewState`
 
 ### `mapconductor-for-arcgis`
 
 - Composable `ArcGISMapView`
-- `ArcGISMapViewStateImpl`
+- `ArcGISMapViewState`
 
 ### `mapconductor-for-maplibre`
 
 - Composable `MapLibreMapView`
-- `MapLibreViewStateImpl`
+- `MapLibreViewState`
 
 Cada módulo de proveedor:
 
-- Implementa `MapViewState` y los bindings del controlador
-- Mapea la cámara y región visible específicas del proveedor a `MapCameraPosition`
+- Implementa `MapViewStateInterface` y los bindings del controlador
+- Mapea la cámara y región visible específicas del proveedor a `MapCameraPositionInterface`
 - Expone controladores de overlays (marcador, polilínea, polígono, círculo y ground image cuando se soporta)
 
 ## Módulos experimentales / utilitarios

@@ -13,8 +13,8 @@ const code = `@Composable
 fun TestArcGIS() {
     val state = rememberArcGISMapViewState(
         cameraPosition =
-            MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(0.0, 0.0),
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(0.0, 0.0),
                 zoom = 5.0,
             ),
     )

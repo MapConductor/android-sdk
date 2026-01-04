@@ -2,7 +2,7 @@ package com.mapconductor.core.polyline
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertTrue
@@ -13,9 +13,9 @@ class PolylineEntityTest {
     fun testBoundsCalculation() {
         val points =
             listOf(
-                GeoPointImpl(35.0, 139.0),
-                GeoPointImpl(36.0, 140.0),
-                GeoPointImpl(34.0, 138.0),
+                GeoPoint(35.0, 139.0),
+                GeoPoint(36.0, 140.0),
+                GeoPoint(34.0, 138.0),
             )
 
         val state =
@@ -26,7 +26,7 @@ class PolylineEntityTest {
             )
 
         val entity =
-            PolylineEntityImpl(
+            PolylineEntity(
                 polyline = "test_polyline",
                 state = state,
             )
@@ -48,8 +48,8 @@ class PolylineEntityTest {
     fun testBoundsLazyCalculation() {
         val initialPoints =
             listOf(
-                GeoPointImpl(35.0, 139.0),
-                GeoPointImpl(36.0, 140.0),
+                GeoPoint(35.0, 139.0),
+                GeoPoint(36.0, 140.0),
             )
 
         val state =
@@ -60,7 +60,7 @@ class PolylineEntityTest {
             )
 
         val entity =
-            PolylineEntityImpl(
+            PolylineEntity(
                 polyline = "test_polyline",
                 state = state,
             )
@@ -74,9 +74,9 @@ class PolylineEntityTest {
         // Modify points and verify bounds are recalculated
         state.points =
             listOf(
-                GeoPointImpl(35.0, 139.0),
-                GeoPointImpl(36.0, 140.0),
-                GeoPointImpl(37.0, 141.0), // Add new point
+                GeoPoint(35.0, 139.0),
+                GeoPoint(36.0, 140.0),
+                GeoPoint(37.0, 141.0), // Add new point
             )
 
         val newBounds = entity.bounds
@@ -85,13 +85,13 @@ class PolylineEntityTest {
         assertNotSame("Bounds should be recalculated when points change", firstBounds, newBounds)
         assertTrue(
             "New bounds should contain the new point",
-            newBounds.contains(GeoPointImpl(37.0, 141.0)),
+            newBounds.contains(GeoPoint(37.0, 141.0)),
         )
     }
 
     @Test
     fun testBoundsWithSinglePoint() {
-        val singlePoint = listOf(GeoPointImpl(35.0, 139.0))
+        val singlePoint = listOf(GeoPoint(35.0, 139.0))
 
         val state =
             PolylineState(
@@ -101,7 +101,7 @@ class PolylineEntityTest {
             )
 
         val entity =
-            PolylineEntityImpl(
+            PolylineEntity(
                 polyline = "test_polyline",
                 state = state,
             )

@@ -4,11 +4,11 @@ import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.AbstractMarkerController
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.settings.Settings
@@ -42,7 +42,7 @@ class ArcGISMarkerController private constructor(
         }
         get() = internalSelectedMarker
 
-    override fun find(position: GeoPoint): MarkerEntity<ArcGISActualMarker>? {
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<ArcGISActualMarker>? {
         val nearest = markerManager.findNearest(position) ?: return null
 
         // タップ位置とマーカー位置のスクリーン座標を取得

@@ -1,15 +1,15 @@
 package com.mapconductor.mapbox
 
 import com.mapbox.geojson.Point
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 
-fun GeoPointImpl.toPoint(): Point = Point.fromLngLat(longitude, latitude, altitude)
+fun GeoPoint.toPoint(): Point = Point.fromLngLat(longitude, latitude, altitude)
 
-fun GeoPointImpl.Companion.from(point: Point) =
-    GeoPointImpl(
+fun GeoPoint.Companion.from(point: Point) =
+    GeoPoint(
         latitude = point.latitude(),
         longitude = point.longitude(),
         altitude = point.altitude(),
     )
 
-fun Point.toGeoPoint() = GeoPointImpl.fromLongLat(longitude(), latitude())
+fun Point.toGeoPoint() = GeoPoint.fromLongLat(longitude(), latitude())

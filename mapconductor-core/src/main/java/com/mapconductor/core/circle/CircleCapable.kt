@@ -1,6 +1,6 @@
 package com.mapconductor.core.circle
 
-interface CircleCapable {
+interface CircleCapableInterface {
     suspend fun compositionCircles(data: List<CircleState>)
 
     suspend fun updateCircle(state: CircleState)

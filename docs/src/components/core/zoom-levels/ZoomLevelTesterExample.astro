@@ -32,13 +32,13 @@ fun ZoomLevelTester() {
         // ${commentForMapViewUsage}
         MapView(
             state = mapViewState,
-            cameraPosition = MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            cameraPosition = MapCameraPosition(
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 zoom = testZoomLevels[currentTestIndex]
             )
         ) {
             Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 icon = DefaultMarkerIcon(fillColor = Color.Red)
             )
         }

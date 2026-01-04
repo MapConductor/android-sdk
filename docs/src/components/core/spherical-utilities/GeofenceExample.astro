@@ -17,10 +17,10 @@ const {
 
 const code = `@Composable
 fun GeofenceExample() {
-    val geofenceCenter = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val geofenceCenter = GeoPoint.fromLatLong(37.7749, -122.4194)
     val geofenceRadius = ${geofenceRadiusMeters}  // 1km
 
-    var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
+    var userLocation by remember { mutableStateOf<GeoPointInterface?>(null) }
     var insideGeofence by remember { mutableStateOf(false) }
 
     // Check geofence status

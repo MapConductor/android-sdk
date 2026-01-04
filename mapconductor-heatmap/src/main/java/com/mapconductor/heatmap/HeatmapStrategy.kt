@@ -1,13 +1,13 @@
 package com.mapconductor.heatmap
 
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
-import com.mapconductor.core.marker.MarkerEntityImpl
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
 import java.util.concurrent.atomic.AtomicLong
@@ -26,11 +26,11 @@ class HeatmapStrategy(
     private val weightProvider: (MarkerState) -> Double = DEFAULT_WEIGHT_PROVIDER,
     private val debounceMillis: Long = DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<Unit>(semaphore) {
     override val markerManager: MarkerManager<Unit> = MarkerManager(geocell)
     private val sourceStates = mutableMapOf<String, MarkerState>()
-    private var lastCameraPosition: MapCameraPositionImpl? = null
+    private var lastCameraPosition: MapCameraPosition? = null
     private val debounceScope = CoroutineScope(Dispatchers.Default)
     private val cameraUpdateToken = AtomicLong(0)
     private var debounceJob: Job? = null
@@ -43,7 +43,7 @@ class HeatmapStrategy(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<Unit>,
+        renderer: MarkerOverlayRendererInterface<Unit>,
     ): Boolean {
         val removedIds = updateSourceStates(data)
         syncMarkerEntities(data, removedIds)
@@ -54,12 +54,12 @@ class HeatmapStrategy(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<Unit>,
+        renderer: MarkerOverlayRendererInterface<Unit>,
     ): Boolean {
         sourceStates[state.id] = state
         val existing = markerManager.getEntity(state.id)
         val nextEntity =
-            MarkerEntityImpl(
+            MarkerEntity(
                 marker = existing?.marker,
                 state = state,
                 isRendered = true,
@@ -74,8 +74,8 @@ class HeatmapStrategy(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<Unit>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<Unit>,
     ) {
         lastCameraPosition = cameraPosition
         val token = cameraUpdateToken.incrementAndGet()
@@ -105,7 +105,7 @@ class HeatmapStrategy(
         data.forEach { state ->
             val existing = markerManager.getEntity(state.id)
             val nextEntity =
-                MarkerEntityImpl(
+                MarkerEntity(
                     marker = existing?.marker,
                     state = state,
                     isRendered = true,
@@ -120,7 +120,7 @@ class HeatmapStrategy(
 
     private suspend fun renderHeatmap(
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<Unit>,
+        renderer: MarkerOverlayRendererInterface<Unit>,
         token: Long,
     ) {
         semaphore.withPermit {
@@ -138,7 +138,7 @@ class HeatmapStrategy(
             }
 
             if (token != cameraUpdateToken.get()) return@withPermit
-            (renderer as? HeatmapOverlayRenderer)?.updateHeatmap(points)
+            (renderer as? HeatmapOverlayRendererInterface)?.updateHeatmap(points)
         }
     }
 

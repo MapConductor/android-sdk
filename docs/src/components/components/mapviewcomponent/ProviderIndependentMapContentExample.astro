@@ -28,13 +28,13 @@ const {
 const code = `@Composable
 fun MapContent() {
     Marker(
-        position = GeoPointImpl.fromLatLong(${markerLatitude}, ${markerLongitude}),
+        position = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
         icon = DefaultIcon(label = "${markerLabel}"),
         extra = "${markerExtra}"
     )
 
     Circle(
-        center = GeoPointImpl.fromLatLong(${markerLatitude}, ${markerLongitude}),
+        center = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
         radiusMeters = ${radiusMeters},
         strokeColor = ${strokeColorExpr},
         fillColor = ${fillColorExpr}
@@ -51,7 +51,7 @@ fun GoogleMapsScreen() {
 
 @Composable
 fun MapboxScreen() {
-    val state = remember { MapboxViewStateImpl() }
+    val state = remember { MapboxViewState() }
     MapboxMapView(state = state) {
         MapContent() // ${commentForSameContentDifferentSdk}
     }

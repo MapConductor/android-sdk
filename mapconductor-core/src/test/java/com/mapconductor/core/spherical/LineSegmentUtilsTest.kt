@@ -1,6 +1,6 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -9,8 +9,8 @@ import org.junit.Test
 class LineSegmentUtilsTest {
     @Test
     fun testCreateSegmentBounds() {
-        val point1 = GeoPointImpl(35.0, 139.0)
-        val point2 = GeoPointImpl(36.0, 140.0)
+        val point1 = GeoPoint(35.0, 139.0)
+        val point2 = GeoPoint(36.0, 140.0)
 
         val bounds = LineSegmentUtils.createSegmentBounds(point1, point2)
 
@@ -38,12 +38,12 @@ class LineSegmentUtilsTest {
 
     @Test
     fun testSegmentIntersectsRegion_nonIntersecting() {
-        val segmentStart = GeoPointImpl(35.0, 139.0)
-        val segmentEnd = GeoPointImpl(36.0, 140.0)
+        val segmentStart = GeoPoint(35.0, 139.0)
+        val segmentEnd = GeoPoint(36.0, 140.0)
 
         val region = GeoRectBounds()
-        region.extend(GeoPointImpl(40.0, 145.0))
-        region.extend(GeoPointImpl(41.0, 146.0))
+        region.extend(GeoPoint(40.0, 145.0))
+        region.extend(GeoPoint(41.0, 146.0))
 
         assertFalse(
             "Segment should not intersect with distant region",
@@ -53,8 +53,8 @@ class LineSegmentUtilsTest {
 
     @Test
     fun testSegmentIntersectsRegion_emptyRegion() {
-        val segmentStart = GeoPointImpl(35.0, 139.0)
-        val segmentEnd = GeoPointImpl(36.0, 140.0)
+        val segmentStart = GeoPoint(35.0, 139.0)
+        val segmentEnd = GeoPoint(36.0, 140.0)
 
         val emptyRegion = GeoRectBounds()
 

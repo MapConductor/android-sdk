@@ -23,10 +23,10 @@ const {
 
 const code = `val polygonState = PolygonState(
     points = listOf(
-        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}),
-        GeoPointImpl.fromLatLong(${secondLatitude}, ${secondLongitude}),
-        GeoPointImpl.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
-        GeoPointImpl.fromLatLong(${firstLatitude}, ${firstLongitude}) // ${commentForClosingPolygon}
+        GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude}),
+        GeoPoint.fromLatLong(${secondLatitude}, ${secondLongitude}),
+        GeoPoint.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+        GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude}) // ${commentForClosingPolygon}
     ),
     strokeColor = Color.Blue,
     strokeWidth = 2.dp,

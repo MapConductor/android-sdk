@@ -1,10 +1,10 @@
 package com.mapconductor.marker.strategy.spatial
 
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.marker.MarkerEntityImpl
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
@@ -32,7 +32,7 @@ internal class SpatialMarkerService : Service() {
         val markerData: MutableMap<String, MarkerDataDTO> = ConcurrentHashMap(),
         val renderedMarkers: MutableSet<String> = ConcurrentHashMap.newKeySet(),
         val semaphore: Semaphore = Semaphore(1),
-        val geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+        val geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
         val cellBucketsByZoom: MutableMap<Int, MutableMap<String, MutableSet<String>>> = ConcurrentHashMap(),
         val markerCellByZoom: MutableMap<Int, MutableMap<String, String>> = ConcurrentHashMap(),
     )
@@ -78,14 +78,14 @@ internal class SpatialMarkerService : Service() {
                         limited.map { dto ->
                             MarkerState(
                                 id = dto.id,
-                                position = GeoPointImpl.fromLatLong(dto.latitude, dto.longitude),
+                                position = GeoPoint.fromLatLong(dto.latitude, dto.longitude),
                                 clickable = dto.clickable,
                             )
                         }
                     runBlocking {
                         markerStates.forEach { state ->
                             val entity =
-                                MarkerEntityImpl<String>(
+                                MarkerEntity<String>(
                                     state = state,
                                     marker = state.id,
                                     isRendered = false,
@@ -152,8 +152,8 @@ internal class SpatialMarkerService : Service() {
 
                     val bounds =
                         GeoRectBounds(
-                            southWest = GeoPointImpl.fromLatLong(camera.boundsMinLat, camera.boundsMinLng),
-                            northEast = GeoPointImpl.fromLatLong(camera.boundsMaxLat, camera.boundsMaxLng),
+                            southWest = GeoPoint.fromLatLong(camera.boundsMinLat, camera.boundsMinLng),
+                            northEast = GeoPoint.fromLatLong(camera.boundsMaxLat, camera.boundsMaxLng),
                         )
                     val expandedBounds = expandBounds(bounds, session.config.expandMargin)
 
@@ -162,12 +162,12 @@ internal class SpatialMarkerService : Service() {
 
                     // Build coverage cells for expanded bounds
                     val center =
-                        expandedBounds.center ?: GeoPointImpl.fromLatLong(camera.centerLatitude, camera.centerLongitude)
+                        expandedBounds.center ?: GeoPoint.fromLatLong(camera.centerLatitude, camera.centerLongitude)
                     val centerCoord = session.geocell.latLngToHexCoord(center, indexZoom.toDouble())
                     val sw = expandedBounds.southWest ?: center
                     val ne = expandedBounds.northEast ?: center
-                    val se = GeoPointImpl.fromLongLat(ne.longitude, sw.latitude)
-                    val nw = GeoPointImpl.fromLongLat(sw.longitude, ne.latitude)
+                    val se = GeoPoint.fromLongLat(ne.longitude, sw.latitude)
+                    val nw = GeoPoint.fromLongLat(sw.longitude, ne.latitude)
                     val swc = session.geocell.latLngToHexCoord(sw, indexZoom.toDouble())
                     val nec = session.geocell.latLngToHexCoord(ne, indexZoom.toDouble())
                     val sec = session.geocell.latLngToHexCoord(se, indexZoom.toDouble())
@@ -217,7 +217,7 @@ internal class SpatialMarkerService : Service() {
             ): String? {
                 return try {
                     val session = sessions[sessionId] ?: return null
-                    val position = GeoPointImpl.fromLatLong(latitude, longitude)
+                    val position = GeoPoint.fromLatLong(latitude, longitude)
                     session.markerManager
                         .findNearest(position)
                         ?.state
@@ -295,12 +295,12 @@ internal class SpatialMarkerService : Service() {
         }
 
     private fun latLngToCellId(
-        geocell: HexGeocell,
+        geocell: HexGeocellInterface,
         lat: Double,
         lng: Double,
         z: Int,
     ): String {
-        val coord = geocell.latLngToHexCoord(GeoPointImpl.fromLatLong(lat, lng), z.toDouble())
+        val coord = geocell.latLngToHexCoord(GeoPoint.fromLatLong(lat, lng), z.toDouble())
         return geocell.hexToCellId(coord, z.toDouble())
     }
 

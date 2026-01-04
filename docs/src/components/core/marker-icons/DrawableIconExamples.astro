@@ -22,7 +22,7 @@ fun DrawableIconExamples() {
         // ${commentForCustomDrawable}
         AppCompatResources.getDrawable(context, R.drawable.custom_marker)?.let { drawable ->
             Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 icon = DrawableDefaultIcon(
                     backgroundDrawable = drawable,
                     scale = 1.0f
@@ -33,7 +33,7 @@ fun DrawableIconExamples() {
         // ${commentForCustomBorder}
         AppCompatResources.getDrawable(context, R.drawable.pin_icon)?.let { drawable ->
             Marker(
-                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+                position = GeoPoint.fromLatLong(37.7849, -122.4094),
                 icon = DrawableDefaultIcon(
                     backgroundDrawable = drawable,
                     scale = 1.5f,

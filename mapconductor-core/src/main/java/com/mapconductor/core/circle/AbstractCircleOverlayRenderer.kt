@@ -1,30 +1,30 @@
 package com.mapconductor.core.circle
 
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderInterface
 import kotlinx.coroutines.CoroutineScope
 
-abstract class AbstractCircleOverlayRenderer<ActualCircle> : CircleOverlayRenderer<ActualCircle> {
-    abstract val holder: MapViewHolder<*, *>
+abstract class AbstractCircleOverlayRenderer<ActualCircle> : CircleOverlayRendererInterface<ActualCircle> {
+    abstract val holder: MapViewHolderInterface<*, *>
     abstract val coroutine: CoroutineScope
 
     override suspend fun onPostProcess() {
         // Default implementation - can be overridden by subclasses
     }
 
-    abstract suspend fun removeCircle(entity: CircleEntity<ActualCircle>)
+    abstract suspend fun removeCircle(entity: CircleEntityInterface<ActualCircle>)
 
     abstract suspend fun createCircle(state: CircleState): ActualCircle?
 
     abstract suspend fun updateCircleProperties(
         circle: ActualCircle,
-        current: CircleEntity<ActualCircle>,
-        prev: CircleEntity<ActualCircle>,
+        current: CircleEntityInterface<ActualCircle>,
+        prev: CircleEntityInterface<ActualCircle>,
     ): ActualCircle?
 
-    override suspend fun onAdd(data: List<CircleOverlayRenderer.AddParams>): List<ActualCircle?> =
+    override suspend fun onAdd(data: List<CircleOverlayRendererInterface.AddParamsInterface>): List<ActualCircle?> =
         data.map { params -> createCircle(params.state) }
 
-    override suspend fun onChange(data: List<CircleOverlayRenderer.ChangeParams<ActualCircle>>): List<ActualCircle?> =
+    override suspend fun onChange(data: List<CircleOverlayRendererInterface.ChangeParamsInterface<ActualCircle>>): List<ActualCircle?> =
         data.map { params ->
             updateCircleProperties(
                 circle = params.prev.circle,
@@ -33,7 +33,7 @@ abstract class AbstractCircleOverlayRenderer<ActualCircle> : CircleOverlayRender
             )
         }
 
-    override suspend fun onRemove(data: List<CircleEntity<ActualCircle>>) {
+    override suspend fun onRemove(data: List<CircleEntityInterface<ActualCircle>>) {
         data.forEach { entity ->
             removeCircle(entity)
         }

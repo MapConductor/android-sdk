@@ -1,12 +1,12 @@
 package com.mapconductor.heatmap
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 
 class HeatmapCameraController(
     private val renderer: HeatmapTileRenderer,
-) : OverlayController<Unit, Unit, Unit> {
+) : OverlayControllerInterface<Unit, Unit, Unit> {
     override val zIndex: Int = 0
     override var clickListener: ((Unit) -> Unit)? = null
 
@@ -16,9 +16,9 @@ class HeatmapCameraController(
 
     override suspend fun clear() {}
 
-    override fun find(position: GeoPoint): Unit? = null
+    override fun find(position: GeoPointInterface): Unit? = null
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         renderer.updateCameraZoom(mapCameraPosition.zoom)
     }
 

@@ -15,19 +15,19 @@ MapConductor SDK を使うと、単一の API で複数の地図SDKを扱える�
 
 ### サポートされている地図SDK
 
-- **Google Maps**: `GoogleMapViewStateImpl` / `GoogleMapView`
-- **Mapbox**: `MapboxViewStateImpl` / `MapboxMapView`
-- **HERE Maps**: `HereViewStateImpl` / `HereMapView`
-- **ArcGIS**: `ArcGISMapViewStateImpl` / `ArcGISMapView`
-- **MapLibre**: `MapLibreViewStateImpl` / `MapLibreMapView`
+- **Google Maps**: `GoogleMapViewState` / `GoogleMapView`
+- **Mapbox**: `MapboxViewState` / `MapboxMapView`
+- **HERE Maps**: `HereViewState` / `HereMapView`
+- **ArcGIS**: `ArcGISMapViewState` / `ArcGISMapView`
+- **MapLibre**: `MapLibreViewState` / `MapLibreMapView`
 
 ### コアクラス
 
 SDK は、以下のような基本的な地理情報クラスを提供します。
 
-- **GeoPoint**: 緯度・経度・高度を表す地理座標
+- **GeoPointInterface**: 緯度・経度・高度を表す地理座標
 - **GeoRectBounds**: 南西・北東の2点で表される矩形の地理範囲
-- **MapCameraPosition**: カメラ位置（ターゲット、ズーム、方位、傾き、パディング）
+- **MapCameraPositionInterface**: カメラ位置（ターゲット、ズーム、方位、傾き、パディング）
 
 ### 主なコンポーネント
 
@@ -87,7 +87,7 @@ MapConductor をプロジェクトで利用するには、次のステップに�
 
 ### 4. マップ地図SDKの切り替え
 
-マップ地図SDKを切り替えるには、`MapViewState` の実装を変更するだけです。
+マップ地図SDKを切り替えるには、`MapViewStateInterface` の実装を変更するだけです。
 
 <ProviderStateExamples />
 
@@ -104,7 +104,7 @@ v1.1.0 と比較した v{BOM_MODULE_VERSION} の主な改善点は次のとお�
 v1.0.0 と比較した v1.1.0 の主な改善点は次のとおりです。
 
 - 各地図SDKでカメラ移動イベント (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) を統一
-- `MapViewState` のカメラ位置と `VisibleRegion` 連携の改善
+- `MapViewStateInterface` のカメラ位置と `VisibleRegion` 連携の改善
 - マーカーコントローラのインターフェースを整理し、地図SDK実装を明確化
 - 例示アプリに高度なカメラ制御と `VisibleRegion` の利用例を追加
 

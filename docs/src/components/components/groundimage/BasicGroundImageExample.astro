@@ -9,15 +9,15 @@ fun BasicGroundImageExample(
     val mapViewState =
         rememberGoogleMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl(51.511649,-0.100761),
+                MapCameraPosition(
+                    position = GeoPoint(51.511649,-0.100761),
                     zoom = 12.0,
                 ),
         )
 
     val bounds = GeoRectBounds(
-        southWest = GeoPointImpl.fromLatLng(51.476747, -0.167729),
-        northEast = GeoPointImpl.fromLatLng(51.546550,-0.033792),
+        southWest = GeoPoint.fromLatLng(51.476747, -0.167729),
+        northEast = GeoPoint.fromLatLng(51.546550,-0.033792),
     )
     GoogleMapView(
         modifier = modifier,

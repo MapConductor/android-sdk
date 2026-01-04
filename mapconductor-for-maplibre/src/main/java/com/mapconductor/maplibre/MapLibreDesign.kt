@@ -1,15 +1,15 @@
 package com.mapconductor.maplibre
 
-import com.mapconductor.core.map.MapDesignType
+import com.mapconductor.core.map.MapDesignTypeInterface
 
-interface MapLibreMapDesignType : MapDesignType<String> {
+interface MapLibreMapDesignTypeInterface : MapDesignTypeInterface<String> {
     val styleJsonURL: String
 }
 
 data class MapLibreDesign(
     override val id: String,
     override val styleJsonURL: String,
-) : MapLibreMapDesignType {
+) : MapLibreMapDesignTypeInterface {
     override fun getValue(): String = "mapDesign_id=$id,style=$styleJsonURL"
 
     companion object {

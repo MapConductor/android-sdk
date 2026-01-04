@@ -17,8 +17,8 @@ const {
 
 const code = `@Composable
 fun AnimatedMarkerExample() {
-    val startPosition = GeoPointImpl.fromLatLong(37.775111, -122.419206)
-    val endPosition = GeoPointImpl.fromLatLong(37.780522, -122.412522)
+    val startPosition = GeoPoint.fromLatLong(37.775111, -122.419206)
+    val endPosition = GeoPoint.fromLatLong(37.780522, -122.412522)
 
     var markerState by remember {
         mutableStateOf(
@@ -48,7 +48,7 @@ fun AnimatedMarkerExample() {
             for (i in 0..path.size - 2) {
                 idx += direction
                 markerState.position = path[idx]
-                println("$idx : \${GeoPointImpl.from(path[idx]).toUrlValue()}")
+                println("$idx : \${GeoPoint.from(path[idx]).toUrlValue()}")
                 delay(50)
             }
             direction = direction * -1
@@ -56,8 +56,8 @@ fun AnimatedMarkerExample() {
     }
     val mapViewState =
         rememberMapLibreMapViewState(
-            cameraPosition = MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(37.7791, -122.4144),
+            cameraPosition = MapCameraPosition(
+                position = GeoPoint.fromLatLong(37.7791, -122.4144),
                 zoom = 15.0,
             ),
             mapDesign = MapLibreDesign.OsmBrightEn,

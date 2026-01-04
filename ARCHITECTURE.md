@@ -23,19 +23,19 @@ graph TB
     end
 
     subgraph Provider Implementation Layer
-        GOOGLE[GoogleMapView<br/>GoogleMapViewController]
-        MAPBOX[MapboxMapView<br/>MapboxMapViewController]
-        HERE[HereMapView<br/>HereMapViewController]
-        ARCGIS[ArcGISMapView<br/>ArcGISMapViewController]
+        GOOGLE[GoogleMapView<br/>GoogleMapViewControllerInterface]
+        MAPBOX[MapboxMapView<br/>MapboxMapViewControllerInterface]
+        HERE[HereMapView<br/>HereMapViewControllerInterface]
+        ARCGIS[ArcGISMapView<br/>ArcGISMapViewControllerInterface]
         MAPLIBRE[MapLibreMapView<br/>MapLibreMapViewController]
     end
 
     subgraph Core Abstraction Layer
         CORE[mapconductor-core]
         MAPBASE[MapViewBase]
-        CONTROLLER[MapViewController]
+        CONTROLLER[MapViewControllerInterface]
         MANAGERS[Overlay Managers]
-        SPATIAL[Spatial Indexing<br/>HexGeocell, KDTree]
+        SPATIAL[Spatial Indexing<br/>HexGeocellInterface, KDTree]
         PROJECTION[Projections<br/>WebMercator, WGS84]
         GEOMETRY[Spherical Geometry]
     end
@@ -158,23 +158,23 @@ graph LR
 graph TB
     subgraph MapViewBase Component
         MVB[MapViewBase<br/>Generic Compose Component]
-        STATE[MapViewState<br/>StateFlow Management]
+        STATE[MapViewStateInterface<br/>StateFlow Management]
         CAMERA[MapCameraPositionBase<br/>Camera State]
-        HOLDER[MapViewHolder<br/>View Instance]
+        HOLDER[MapViewHolderInterface<br/>View Instance]
     end
 
     subgraph Controller Layer
-        MVC[MapViewController<br/>Abstract Interface]
-        OVERLAY[OverlayController<br/>Overlay Management]
-        RENDERER[OverlayRenderer<br/>Rendering Interface]
+        MVC[MapViewControllerInterface<br/>Abstract Interface]
+        OVERLAY[OverlayControllerInterface<br/>Overlay Management]
+        RENDERER[OverlayRendererInterface<br/>Rendering Interface]
     end
 
     subgraph Overlay Managers
         MARKER_MGR[MarkerManager<br/>Spatial Indexing]
-        CIRCLE_MGR[CircleManager]
-        POLYLINE_MGR[PolylineManager]
-        POLYGON_MGR[PolygonManager]
-        GROUND_MGR[GroundImageManager]
+        CIRCLE_MGR[CircleManagerInterface]
+        POLYLINE_MGR[PolylineManagerInterface]
+        POLYGON_MGR[PolygonManagerInterface]
+        GROUND_MGR[GroundImageManagerInterface]
     end
 
     subgraph Overlay Controllers
@@ -187,10 +187,10 @@ graph TB
 
     subgraph Overlay Renderers
         MARKER_RENDER[AbstractMarkerOverlayRenderer]
-        CIRCLE_RENDER[CircleOverlayRenderer]
-        POLYLINE_RENDER[PolylineOverlayRenderer]
-        POLYGON_RENDER[PolygonOverlayRenderer]
-        GROUND_RENDER[GroundImageOverlayRenderer]
+        CIRCLE_RENDER[CircleOverlayRendererInterface]
+        POLYLINE_RENDER[PolylineOverlayRendererInterface]
+        POLYGON_RENDER[PolygonOverlayRendererInterface]
+        GROUND_RENDER[GroundImageOverlayRendererInterface]
     end
 
     MVB --> STATE
@@ -234,28 +234,28 @@ graph TB
 graph TB
     subgraph Core Abstractions
         MAPBASE[MapViewBase]
-        CONTROLLER[MapViewController]
+        CONTROLLER[MapViewControllerInterface]
         MARKER_CTRL[AbstractMarkerController]
         MARKER_RENDER[AbstractMarkerOverlayRenderer]
     end
 
     subgraph Google Maps Implementation
         GOOGLE_VIEW[GoogleMapView]
-        GOOGLE_CTRL[GoogleMapViewController]
+        GOOGLE_CTRL[GoogleMapViewControllerInterface]
         GOOGLE_MARKER_CTRL[GoogleMarkerController]
         GOOGLE_MARKER_RENDER[GoogleMarkerOverlayRenderer]
     end
 
     subgraph Mapbox Implementation
         MAPBOX_VIEW[MapboxMapView]
-        MAPBOX_CTRL[MapboxMapViewController]
+        MAPBOX_CTRL[MapboxMapViewControllerInterface]
         MAPBOX_MARKER_CTRL[MapboxMarkerController]
         MAPBOX_MARKER_RENDER[MapboxMarkerOverlayRenderer]
     end
 
     subgraph HERE Implementation
         HERE_VIEW[HereMapView]
-        HERE_CTRL[HereMapViewController]
+        HERE_CTRL[HereMapViewControllerInterface]
         HERE_MARKER_CTRL[HereMarkerController]
         HERE_MARKER_RENDER[HereMarkerOverlayRenderer]
     end
@@ -314,14 +314,14 @@ graph TB
 
     subgraph Manager Layer
         MARKER_MGR[MarkerManager<br/>Spatial Indexing]
-        CIRCLE_MGR[CircleManager]
-        POLYLINE_MGR[PolylineManager]
-        POLYGON_MGR[PolygonManager]
-        GROUND_MGR[GroundImageManager]
+        CIRCLE_MGR[CircleManagerInterface]
+        POLYLINE_MGR[PolylineManagerInterface]
+        POLYGON_MGR[PolygonManagerInterface]
+        GROUND_MGR[GroundImageManagerInterface]
     end
 
     subgraph Spatial Indexing
-        HEX[HexGeocell<br/>Hexagonal Cells]
+        HEX[HexGeocellInterface<br/>Hexagonal Cells]
         KDTREE[KDTree<br/>Spatial Search]
         REGISTRY[HexCellRegistry]
     end
@@ -381,9 +381,9 @@ graph TB
         BRUTE[Use Brute Force]
     end
 
-    subgraph HexGeocell System
-        HEX[HexGeocell]
-        CALC[Calculate Cell ID<br/>from GeoPoint]
+    subgraph HexGeocellInterface System
+        HEX[HexGeocellInterface]
+        CALC[Calculate Cell ID<br/>from GeoPointInterface]
         REGISTRY[HexCellRegistry<br/>Cell → Markers Map]
     end
 
@@ -421,9 +421,9 @@ graph TB
 sequenceDiagram
     participant App as Application
     participant Compose as MapViewBase
-    participant State as MapViewState
+    participant State as MapViewStateInterface
     participant Flow as StateFlow
-    participant Controller as MapViewController
+    participant Controller as MapViewControllerInterface
     participant Native as Native Map SDK
 
     App->>Compose: @Composable MapView()
@@ -448,17 +448,17 @@ sequenceDiagram
 
 ---
 
-## Projection & Coordinate Systems
+## ProjectionInterface & Coordinate Systems
 
 ```mermaid
 graph TB
     subgraph Application Data
-        GEOPOINT[GeoPoint<br/>lat, lon]
+        GEOPOINT[GeoPointInterface<br/>lat, lon]
         BOUNDS[GeoRectBounds<br/>southwest, northeast]
     end
 
-    subgraph Projection Layer
-        PROJ_IFACE[Projection Interface]
+    subgraph ProjectionInterface Layer
+        PROJ_IFACE[ProjectionInterface Interface]
         WEBMERC[WebMercator<br/>EPSG:3857]
         WGS84[WGS84<br/>EPSG:4326]
     end
@@ -510,12 +510,12 @@ graph TB
     subgraph Application
         APP[Define Marker]
         MARKER_STATE[MarkerState]
-        ICON[MarkerIcon]
+        ICON[MarkerIconInterface]
         ANIM[MarkerAnimation]
     end
 
     subgraph Strategy Layer
-        STRATEGY[MarkerRenderingStrategy]
+        STRATEGY[MarkerRenderingStrategyInterface]
         NATIVE_STRAT[Native Strategy]
         CUSTOM_STRAT[Custom Strategy]
     end
@@ -527,7 +527,7 @@ graph TB
     end
 
     subgraph Renderer Layer
-        RENDERER[MarkerOverlayRenderer]
+        RENDERER[MarkerOverlayRendererInterface]
     end
 
     subgraph Provider Layer
@@ -571,34 +571,34 @@ android-sdk/
 ├── mapconductor-core/                     # Core abstractions (335 files)
 │   └── src/main/java/com/mapconductor/core/
 │       ├── controller/                    # Controllers & interfaces
-│       │   ├── MapViewController.kt       # Abstract map controller
+│       │   ├── MapViewControllerInterface.kt       # Abstract map controller
 │       │   ├── BaseMapViewController.kt   # Base implementation
-│       │   ├── OverlayController.kt       # Overlay management
-│       │   └── OverlayRenderer.kt         # Rendering interface
+│       │   ├── OverlayControllerInterface.kt       # Overlay management
+│       │   └── OverlayRendererInterface.kt         # Rendering interface
 │       ├── map/                           # Map components
 │       │   ├── MapViewBase.kt             # Generic Compose component
-│       │   ├── MapViewState.kt            # State management
+│       │   ├── MapViewStateInterface.kt            # State management
 │       │   ├── MapCameraPositionBase.kt   # Camera abstraction
-│       │   └── MapViewHolder.kt           # View holder
+│       │   └── MapViewHolderInterface.kt           # View holder
 │       ├── marker/                        # Marker system
 │       │   ├── Marker.kt                  # MarkerState definition
 │       │   ├── MarkerManager.kt           # Spatial indexing manager
 │       │   ├── AbstractMarkerController.kt
 │       │   ├── AbstractMarkerOverlayRenderer.kt
-│       │   ├── MarkerRenderingStrategy.kt
+│       │   ├── MarkerRenderingStrategyInterface.kt
 │       │   ├── MarkerAnimation.kt
-│       │   └── MarkerIcon.kt
+│       │   └── MarkerIconInterface.kt
 │       ├── circle/                        # Circle overlays
 │       ├── polyline/                      # Polyline overlays
 │       ├── polygon/                       # Polygon overlays
 │       ├── groundimage/                   # Ground image overlays
 │       ├── geocell/                       # Spatial indexing
-│       │   ├── HexGeocell.kt              # Hexagonal geocell interface
-│       │   ├── HexGeocellImpl.kt          # Implementation
+│       │   ├── HexGeocellInterface.kt              # Hexagonal geocell interface
+│       │   ├── HexGeocell.kt          # Implementation
 │       │   ├── HexCellRegistry.kt         # Cell registry
 │       │   └── KDTree.kt                  # KD-tree
 │       ├── projection/                    # Coordinate projections
-│       │   ├── Projection.kt              # Projection interface
+│       │   ├── ProjectionInterface.kt              # ProjectionInterface interface
 │       │   ├── WebMercator.kt             # EPSG:3857
 │       │   ├── WGS84.kt                   # EPSG:4326
 │       │   └── Earth.kt                   # Earth constants
@@ -609,7 +609,7 @@ android-sdk/
 │       │   ├── GeoNearest.kt
 │       │   └── GeographicLibCalculator.kt
 │       ├── features/                      # Core data types
-│       │   ├── GeoPoint.kt                # Geographic point
+│       │   ├── GeoPointInterface.kt                # Geographic point
 │       │   └── GeoRectBounds.kt           # Geographic bounds
 │       ├── info/                          # Info bubble/window
 │       │   ├── DrawInfoBubble.kt
@@ -624,9 +624,9 @@ android-sdk/
 ├── mapconductor-for-googlemaps/           # Google Maps implementation
 │   └── src/main/java/com/mapconductor/googlemaps/
 │       ├── GoogleMapView.kt               # Main Compose component
-│       ├── GoogleMapViewController.kt     # Controller interface
-│       ├── GoogleMapViewControllerImpl.kt # Implementation
-│       ├── GoogleMapViewStateImpl.kt      # State implementation
+│       ├── GoogleMapViewControllerInterface.kt     # Controller interface
+│       ├── GoogleMapViewController.kt # Implementation
+│       ├── GoogleMapViewState.kt      # State implementation
 │       ├── marker/
 │       │   ├── GoogleMarkerController.kt
 │       │   └── GoogleMarkerOverlayRenderer.kt
@@ -747,20 +747,20 @@ class MapViewBase<
 ### 3. Manager Pattern
 Centralized management of overlays:
 - `MarkerManager` - Manages all markers with spatial indexing
-- `CircleManager` - Manages circles
-- `PolylineManager` - Manages polylines
-- `PolygonManager` - Manages polygons
-- `GroundImageManager` - Manages ground images
+- `CircleManagerInterface` - Manages circles
+- `PolylineManagerInterface` - Manages polylines
+- `PolygonManagerInterface` - Manages polygons
+- `GroundImageManagerInterface` - Manages ground images
 
 ### 4. Renderer Pattern
 Abstract renderers with provider-specific implementations:
 - `AbstractMarkerOverlayRenderer` → `GoogleMarkerOverlayRenderer`
-- `CircleOverlayRenderer` → `MapboxCircleOverlayRenderer`
+- `CircleOverlayRendererInterface` → `MapboxCircleOverlayRenderer`
 - Pattern ensures consistent rendering interface
 
 ### 5. Strategy Pattern
 Flexible rendering strategies:
-- `MarkerRenderingStrategy` - Abstraction for marker rendering
+- `MarkerRenderingStrategyInterface` - Abstraction for marker rendering
 - `NativeStrategy` - Uses native map markers
 - Custom strategies possible for specialized rendering
 
@@ -768,7 +768,7 @@ Flexible rendering strategies:
 Each provider adapts native API to common interface:
 - Type aliases hide provider-specific types
 - Conversion functions between core and native types
-- `GeoPoint.kt` in each provider converts coordinates
+- `GeoPointInterface.kt` in each provider converts coordinates
 
 ### 7. Observer Pattern (Reactive)
 StateFlow-based reactive architecture:
@@ -780,7 +780,7 @@ StateFlow-based reactive architecture:
 Performance optimization:
 - Spatial indexing initialized only when marker count > 100
 - Brute-force search for small datasets
-- HexGeocell created on-demand
+- HexGeocellInterface created on-demand
 
 ### 9. Composition over Inheritance
 Jetpack Compose composables over View inheritance:
@@ -794,7 +794,7 @@ Jetpack Compose composables over View inheritance:
 
 MapConductor uses a **two-tier spatial indexing system** for efficient marker management:
 
-### Tier 1: Hexagonal Geocells (HexGeocell)
+### Tier 1: Hexagonal Geocells (HexGeocellInterface)
 ```
 Geographic Space → Hexagonal Grid → Cell IDs
 - Each cell covers approximately equal area
@@ -829,7 +829,7 @@ graph LR
         NATIVE[Native Map SDK]
     end
 
-    subgraph MapViewController
+    subgraph MapViewControllerInterface
         CONTROLLER[Controller Event Handler]
     end
 
@@ -866,7 +866,7 @@ graph LR
 ```mermaid
 sequenceDiagram
     participant App as Application
-    participant State as MapViewState
+    participant State as MapViewStateInterface
     participant Google as GoogleMapView
     participant Mapbox as MapboxMapView
     participant Native as Native SDK
@@ -898,26 +898,26 @@ sequenceDiagram
 
 ```kotlin
 import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 
 @Composable
 fun MyMapScreen() {
     GoogleMapView(
         modifier = Modifier.fillMaxSize(),
-        cameraPosition = MapCameraPosition(
-            center = GeoPoint(35.6812, 139.7671), // Tokyo
+        cameraPosition = MapCameraPositionInterface(
+            center = GeoPointInterface(35.6812, 139.7671), // Tokyo
             zoom = 12.0
         )
     ) {
         // Add markers
         Marker(
-            position = GeoPoint(35.6812, 139.7671),
+            position = GeoPointInterface(35.6812, 139.7671),
             title = "Tokyo Tower"
         )
 
         // Add circles
         Circle(
-            center = GeoPoint(35.6812, 139.7671),
+            center = GeoPointInterface(35.6812, 139.7671),
             radius = 1000.0, // meters
             fillColor = Color.Blue.copy(alpha = 0.3f),
             strokeColor = Color.Blue
@@ -926,8 +926,8 @@ fun MyMapScreen() {
         // Add polylines
         Polyline(
             points = listOf(
-                GeoPoint(35.6812, 139.7671),
-                GeoPoint(35.6895, 139.6917)
+                GeoPointInterface(35.6812, 139.7671),
+                GeoPointInterface(35.6895, 139.6917)
             ),
             color = Color.Red,
             width = 5.0f
@@ -961,7 +961,7 @@ Write once, switch providers by changing imports. No code changes required.
 Kotlin generics ensure compile-time type checking across all providers.
 
 ### 3. Performance Optimization
-Spatial indexing (HexGeocell + KDTree) provides O(log n) marker queries.
+Spatial indexing (HexGeocellInterface + KDTree) provides O(log n) marker queries.
 
 ### 4. Modern Android Development
 - Jetpack Compose for declarative UI
@@ -970,7 +970,7 @@ Spatial indexing (HexGeocell + KDTree) provides O(log n) marker queries.
 
 ### 5. Extensibility
 Easy to add new providers by implementing:
-- `MapViewController`
+- `MapViewControllerInterface`
 - Overlay controllers
 - Overlay renderers
 

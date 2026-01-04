@@ -1,6 +1,6 @@
 package com.mapconductor.mapbox
 
-import MapboxMapViewController
+import MapboxMapViewControllerInterface
 import androidx.compose.ui.geometry.Offset
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
@@ -25,7 +25,7 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -39,7 +39,7 @@ import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerEventController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
-import com.mapconductor.mapbox.marker.MapboxMarkerEventController
+import com.mapconductor.mapbox.marker.MapboxMarkerEventControllerInterface
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.raster.MapboxRasterLayerController
@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 
 typealias MapboxMapDesignTypeChangeHandler = (MapboxDesignType) -> Unit
 
-internal class MapboxMapViewControllerImpl(
+internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
     private val markerController: MapboxMarkerController,
     private val polylineController: MapboxPolylineController,
@@ -60,14 +60,14 @@ internal class MapboxMapViewControllerImpl(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    MapboxMapViewController,
+    MapboxMapViewControllerInterface,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
     // Track created z-indexed polygon layers to manage add/remove without enumerating style layers
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
-    private val markerEventControllers = mutableListOf<MapboxMarkerEventController>()
-    private var activeDragController: MapboxMarkerEventController? = null
+    private val markerEventControllers = mutableListOf<MapboxMarkerEventControllerInterface>()
+    private var activeDragController: MapboxMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -162,7 +162,7 @@ internal class MapboxMapViewControllerImpl(
                 sendInitialCameraUpdate()
 
                 style.toMapDesignType().let { mapDesign ->
-                    this@MapboxMapViewControllerImpl.mapDesignType = mapDesign
+                    this@MapboxMapViewController.mapDesignType = mapDesign
                     mapDesignTypeChangeListener?.invoke(mapDesign)
                 }
             }
@@ -240,7 +240,7 @@ internal class MapboxMapViewControllerImpl(
     override fun hasRasterLayer(state: RasterLayerState): Boolean =
         this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
-    private fun getMapCameraPosition(): MapCameraPositionImpl? {
+    private fun getMapCameraPosition(): MapCameraPosition? {
 //        val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
 
@@ -283,7 +283,7 @@ internal class MapboxMapViewControllerImpl(
         return mapCameraPosition
     }
 
-    override fun moveCamera(position: MapCameraPositionImpl) {
+    override fun moveCamera(position: MapCameraPosition) {
         val cameraOptions = position.toCameraOptions()
         coroutine.launch {
             holder.map.setCamera(cameraOptions)
@@ -291,7 +291,7 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         duration: Long,
     ) {
         val targetCamera = position.toCameraOptions()
@@ -598,7 +598,7 @@ internal class MapboxMapViewControllerImpl(
         }
     }
 
-    internal fun registerMarkerEventController(controller: MapboxMarkerEventController) {
+    internal fun registerMarkerEventController(controller: MapboxMarkerEventControllerInterface) {
         if (markerEventControllers.contains(controller)) return
         markerEventControllers.add(controller)
         controller.setClickListener(markerClickListener)

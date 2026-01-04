@@ -14,7 +14,7 @@ const {
 const code = `@Composable
 fun InteractiveCircleExample() {
     var centerPosition by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(37.7749, -122.4194))
+        mutableStateOf(GeoPoint.fromLatLong(37.7749, -122.4194))
     }
     var radiusMeters by remember { mutableStateOf(1000.0) }
 
@@ -23,7 +23,7 @@ fun InteractiveCircleExample() {
         // Calculate a point that's 'radiusMeters' meters away from center
         // ${commentForLatOffsetNote}
         val latOffset = radiusMeters / 111000.0 // Rough meters per degree latitude
-        GeoPointImpl.fromLatLong(
+        GeoPoint.fromLatLong(
             centerPosition.latitude + latOffset,
             centerPosition.longitude
         )

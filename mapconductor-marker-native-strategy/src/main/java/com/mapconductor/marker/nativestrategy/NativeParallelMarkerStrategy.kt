@@ -1,10 +1,10 @@
 package com.mapconductor.marker.nativestrategy
 
-import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.geocell.HexGeocellInterface
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -37,7 +37,7 @@ class NativeParallelMarkerStrategy<ActualMarker>(
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
     private val minBatchSize: Int = 100,
-    geocell: HexGeocell = NativeHexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = NativeHexGeocell.defaultGeocell(),
 ) : NativeAbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     companion object {
         init {
@@ -96,8 +96,8 @@ class NativeParallelMarkerStrategy<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
         checkNotDestroyed()
@@ -123,8 +123,8 @@ class NativeParallelMarkerStrategy<ActualMarker>(
             val allEntities = markerManager.allEntities()
             val visibleMarkerIdSet = visibleMarkerIds.toSet()
 
-            val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
-            val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
+            val markersToRender = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+            val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
 
             // Process visibility changes
             allEntities.forEach { entity ->
@@ -173,9 +173,9 @@ class NativeParallelMarkerStrategy<ActualMarker>(
      * Process the actual rendering operations (add/remove markers).
      */
     private suspend fun processRenderingOperations(
-        markersToRender: List<MarkerEntity<ActualMarker>>,
-        markersToRemove: List<MarkerEntity<ActualMarker>>,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        markersToRender: List<MarkerEntityInterface<ActualMarker>>,
+        markersToRemove: List<MarkerEntityInterface<ActualMarker>>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         // Remove markers that left the viewport
         if (markersToRemove.isNotEmpty()) {
@@ -190,7 +190,7 @@ class NativeParallelMarkerStrategy<ActualMarker>(
         if (markersToRender.isNotEmpty()) {
             val addParams =
                 markersToRender.map { entity ->
-                    object : MarkerOverlayRenderer.AddParams {
+                    object : MarkerOverlayRendererInterface.AddParamsInterface {
                         override val state = entity.state
                         override val bitmapIcon: BitmapIcon =
                             entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -251,7 +251,7 @@ object NativeParallelMarkerStrategies {
      */
     fun <ActualMarker> forLargeDatasets(
         semaphore: Semaphore,
-        geocell: HexGeocell,
+        geocell: HexGeocellInterface,
         expandMargin: Double = 0.5,
         minBatchSize: Int = 500,
     ): NativeParallelMarkerStrategy<ActualMarker> =
@@ -269,7 +269,7 @@ object NativeParallelMarkerStrategies {
      */
     fun <ActualMarker> balanced(
         semaphore: Semaphore,
-        geocell: HexGeocell,
+        geocell: HexGeocellInterface,
         expandMargin: Double = 0.3,
         minBatchSize: Int = 200,
     ): NativeParallelMarkerStrategy<ActualMarker> =
@@ -287,7 +287,7 @@ object NativeParallelMarkerStrategies {
      */
     fun <ActualMarker> conservative(
         semaphore: Semaphore,
-        geocell: HexGeocell,
+        geocell: HexGeocellInterface,
         expandMargin: Double = 0.2,
         minBatchSize: Int = 100,
     ): NativeParallelMarkerStrategy<ActualMarker> =

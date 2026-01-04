@@ -26,13 +26,13 @@ const {
 } = Astro.props;
 
 const code = `val bounds1 = GeoRectBounds(
-    southWest = GeoPointImpl.fromLatLong(${firstSouthWestLatitude}, ${firstSouthWestLongitude}),
-    northEast = GeoPointImpl.fromLatLong(${firstNorthEastLatitude}, ${firstNorthEastLongitude})
+    southWest = GeoPoint.fromLatLong(${firstSouthWestLatitude}, ${firstSouthWestLongitude}),
+    northEast = GeoPoint.fromLatLong(${firstNorthEastLatitude}, ${firstNorthEastLongitude})
 )
 
 val bounds2 = GeoRectBounds(
-    southWest = GeoPointImpl.fromLatLong(${secondSouthWestLatitude}, ${secondSouthWestLongitude}),
-    northEast = GeoPointImpl.fromLatLong(${secondNorthEastLatitude}, ${secondNorthEastLongitude})
+    southWest = GeoPoint.fromLatLong(${secondSouthWestLatitude}, ${secondSouthWestLongitude}),
+    northEast = GeoPoint.fromLatLong(${secondNorthEastLatitude}, ${secondNorthEastLongitude})
 )
 
 val combinedBounds = bounds1.union(bounds2) // ${commentForCombinedBounds}`;

@@ -50,17 +50,17 @@ fun MultipleBubblesExample() {
     val markerData = remember {
         listOf(
             Triple(
-                GeoPointImpl.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
+                GeoPoint.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
                 "${marker1Name}",
                 ${marker1ColorExpr}
             ),
             Triple(
-                GeoPointImpl.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
+                GeoPoint.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
                 "${marker2Name}",
                 ${marker2ColorExpr}
             ),
             Triple(
-                GeoPointImpl.fromLatLong(${marker3Latitude}, ${marker3Longitude}),
+                GeoPoint.fromLatLong(${marker3Latitude}, ${marker3Longitude}),
                 "${marker3Name}",
                 ${marker3ColorExpr}
             )

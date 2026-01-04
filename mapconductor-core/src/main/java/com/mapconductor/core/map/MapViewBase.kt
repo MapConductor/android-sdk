@@ -34,23 +34,23 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.CircleCapableInterface
 import com.mapconductor.core.circle.LocalCircleCollector
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.groundimage.GroundImageCapable
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.groundimage.GroundImageCapableInterface
 import com.mapconductor.core.groundimage.LocalGroundImageCollector
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.LocalMarkerCollector
-import com.mapconductor.core.marker.MarkerCapable
+import com.mapconductor.core.marker.MarkerCapableInterface
 import com.mapconductor.core.polygon.LocalPolygonCollector
-import com.mapconductor.core.polygon.PolygonCapable
+import com.mapconductor.core.polygon.PolygonCapableInterface
 import com.mapconductor.core.polyline.LocalPolylineCollector
-import com.mapconductor.core.polyline.PolylineCapable
+import com.mapconductor.core.polyline.PolylineCapableInterface
 import com.mapconductor.core.raster.LocalRasterLayerCollector
-import com.mapconductor.core.raster.RasterLayerCapable
+import com.mapconductor.core.raster.RasterLayerCapableInterface
 import com.mapconductor.settings.Settings
 import android.util.Log
 import android.view.View
@@ -62,28 +62,28 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-typealias OnMapLoadedHandler = (MapViewState<*>) -> Unit
+typealias OnMapLoadedHandler = (MapViewStateInterface<*>) -> Unit
 internal typealias InternalOnMapLoadedHandler = () -> Unit
-typealias OnMapEventHandler = (GeoPointImpl) -> Unit
-typealias OnCameraMoveHandler = (MapCameraPositionImpl) -> Unit
+typealias OnMapEventHandler = (GeoPoint) -> Unit
+typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
 
 @OptIn(FlowPreview::class)
 @Composable
 fun <
-    SpecificState : MapViewState<*>,
-    // Replace Any with a base MapViewController if you have one
+    SpecificState : MapViewStateInterface<*>,
+    // Replace Any with a base MapViewControllerInterface if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewController,
+    SpecificController : MapViewControllerInterface,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
-    // SpecificViewHolder is now constrained by your MapViewHolder interface
+    // SpecificViewHolder is now constrained by your MapViewHolderInterface interface
     // and uses the ActualMapView and ActualMap generic types.
     SpecificScope : MapViewScope,
-    SpecificHolder : MapViewHolder<ActualMapView, ActualMap>,
+    SpecificHolder : MapViewHolderInterface<ActualMapView, ActualMap>,
 > MapViewBase(
     state: SpecificState,
-    cameraState: MutableState<MapCameraPosition?>,
+    cameraState: MutableState<MapCameraPositionInterface?>,
     modifier: Modifier = Modifier,
     viewProvider: () -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
@@ -112,7 +112,7 @@ fun <
         )
 
         val groundImage = scope.groundImageFlow.collectAsState()
-        (controller as? GroundImageCapable)?.let { groundImageCapable ->
+        (controller as? GroundImageCapableInterface)?.let { groundImageCapable ->
             groundImage.value.values.forEach { groundImageState ->
                 LaunchedEffect(groundImageState.id) {
                     groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
@@ -124,7 +124,7 @@ fun <
             }
         }
         val rasterLayers = scope.rasterLayerFlow.collectAsState()
-        (controller as? RasterLayerCapable)?.let { rasterLayerCapable ->
+        (controller as? RasterLayerCapableInterface)?.let { rasterLayerCapable ->
             rasterLayers.value.values.forEach { rasterLayerState ->
                 LaunchedEffect(rasterLayerState.id) {
                     rasterLayerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
@@ -139,7 +139,7 @@ fun <
         polygons.value.values.forEach { polygonState ->
             LaunchedEffect(polygonState.id) {
                 polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolygonCapable)?.let { polygonCapable ->
+                    (controller as? PolygonCapableInterface)?.let { polygonCapable ->
                         if (polygonCapable.hasPolygon(polygonState)) {
                             polygonCapable.updatePolygon(polygonState)
                         }
@@ -151,7 +151,7 @@ fun <
         polylines.value.values.forEach { polylineState ->
             LaunchedEffect(polylineState.id) {
                 polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolylineCapable)?.let { polylineCapable ->
+                    (controller as? PolylineCapableInterface)?.let { polylineCapable ->
                         if (polylineCapable.hasPolyline(polylineState)) {
                             polylineCapable.updatePolyline(polylineState)
                         }
@@ -163,7 +163,7 @@ fun <
         circles.value.values.forEach { circleState ->
             LaunchedEffect(circleState.id) {
                 circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? CircleCapable)?.let { circleCapable ->
+                    (controller as? CircleCapableInterface)?.let { circleCapable ->
                         if (circleCapable.hasCircle(circleState)) {
                             circleCapable.updateCircle(circleState)
                         }
@@ -176,7 +176,7 @@ fun <
             markers.value.values.forEach { markerState ->
                 LaunchedEffect(markerState.id) {
                     markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        (controller as? MarkerCapable)?.let { markerCapable ->
+                        (controller as? MarkerCapableInterface)?.let { markerCapable ->
                             if (markerCapable.hasMarker(markerState)) {
                                 markerCapable.updateMarker(markerState)
                             }
@@ -357,7 +357,7 @@ private fun BasicMessage(text: String) {
     }
 }
 
-private fun cameraInvalidationKey(camera: MapCameraPositionImpl?): Long {
+private fun cameraInvalidationKey(camera: MapCameraPosition?): Long {
     if (camera == null) return 0L
     val latE5 = (camera.position.latitude * 1e5).toInt()
     val lonE5 = (camera.position.longitude * 1e5).toInt()

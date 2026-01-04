@@ -14,13 +14,13 @@ fun CategoryIconExample() {
     data class POI(
         val name: String,
         val category: String,
-        val position: GeoPoint
+        val position: GeoPointInterface
     ) : java.io.Serializable
 
     val pois = listOf(
-        POI("Restaurant", "food", GeoPointImpl.fromLatLong(37.7749, -122.4194)),
-        POI("Hotel", "lodging", GeoPointImpl.fromLatLong(37.7849, -122.4094)),
-        POI("Gas Station", "fuel", GeoPointImpl.fromLatLong(37.7649, -122.4294))
+        POI("Restaurant", "food", GeoPoint.fromLatLong(37.7749, -122.4194)),
+        POI("Hotel", "lodging", GeoPoint.fromLatLong(37.7849, -122.4094)),
+        POI("Gas Station", "fuel", GeoPoint.fromLatLong(37.7649, -122.4294))
     )
 
     fun getIconForCategory(category: String) = when (category) {

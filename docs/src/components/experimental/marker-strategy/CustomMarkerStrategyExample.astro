@@ -19,12 +19,12 @@ const {
 
 const code = `class CustomMarkerStrategy<ActualMarker>(
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell()
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell()
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>
     ) {
         semaphore.withPermit {
             // ${commentForCustomRenderingLogic}
@@ -41,7 +41,7 @@ const code = `class CustomMarkerStrategy<ActualMarker>(
 
             if (markersToShow.isNotEmpty()) {
                 val addParams = markersToShow.map { entity ->
-                    object : MarkerOverlayRenderer.AddParams {
+                    object : MarkerOverlayRendererInterface.AddParamsInterface {
                         override val state: MarkerState = entity.state
                         override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
                     }
@@ -53,12 +53,12 @@ const code = `class CustomMarkerStrategy<ActualMarker>(
         }
     }
 
-    private fun determineVisibleMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+    private fun determineVisibleMarkers(bounds: GeoRectBounds): List<MarkerEntityInterface<ActualMarker>> {
         // ${commentForVisibleLogic}
         return markerManager.findMarkersInBounds(bounds)
     }
 
-    private fun determineHiddenMarkers(bounds: GeoRectBounds): List<MarkerEntity<ActualMarker>> {
+    private fun determineHiddenMarkers(bounds: GeoRectBounds): List<MarkerEntityInterface<ActualMarker>> {
         // ${commentForHiddenLogic}
         return markerManager.allEntities().filter { entity ->
             entity.isRendered && !bounds.contains(entity.state.position)

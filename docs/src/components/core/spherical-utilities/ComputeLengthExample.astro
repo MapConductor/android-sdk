@@ -10,10 +10,10 @@ const {
 } = Astro.props;
 
 const code = `val routePoints = listOf(
-    GeoPointImpl.fromLatLong(37.7749, -122.4194), // San Francisco
-    GeoPointImpl.fromLatLong(37.7849, -122.4094), // North Beach
-    GeoPointImpl.fromLatLong(37.7949, -122.3994), // Russian Hill
-    GeoPointImpl.fromLatLong(37.8049, -122.3894)  // Fisherman's Wharf
+    GeoPoint.fromLatLong(37.7749, -122.4194), // San Francisco
+    GeoPoint.fromLatLong(37.7849, -122.4094), // North Beach
+    GeoPoint.fromLatLong(37.7949, -122.3994), // Russian Hill
+    GeoPoint.fromLatLong(37.8049, -122.3894)  // Fisherman's Wharf
 )
 
 val totalDistance = Spherical.computeLength(routePoints)

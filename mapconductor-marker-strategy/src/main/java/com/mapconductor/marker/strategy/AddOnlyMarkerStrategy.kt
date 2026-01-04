@@ -1,11 +1,11 @@
 package com.mapconductor.marker.strategy
 
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -22,11 +22,11 @@ import kotlinx.coroutines.sync.withPermit
 class AddOnlyMarkerStrategy<ActualMarker>(
     private val expandMargin: Double = 0.5,
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
         val viewportBounds = expandBounds(visibleRegion.bounds, margin = expandMargin)
@@ -41,7 +41,7 @@ class AddOnlyMarkerStrategy<ActualMarker>(
             semaphore.withPermit {
                 val addParams =
                     toAdd.map { entity ->
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state = entity.state
                             override val bitmapIcon =
                                 entity.state.icon?.toBitmapIcon()

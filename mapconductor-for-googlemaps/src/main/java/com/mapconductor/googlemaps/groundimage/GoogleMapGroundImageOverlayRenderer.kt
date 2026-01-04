@@ -4,7 +4,7 @@ import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.GroundOverlayOptions
 import com.mapconductor.core.groundimage.AbstractGroundImageOverlayRenderer
-import com.mapconductor.core.groundimage.GroundImageEntity
+import com.mapconductor.core.groundimage.GroundImageEntityInterface
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.googlemaps.GoogleMapActualGroundImage
 import com.mapconductor.googlemaps.GoogleMapViewHolder
@@ -33,7 +33,7 @@ class GoogleMapGroundImageOverlayRenderer(
             }
         }
 
-    override suspend fun removeGroundImage(entity: GroundImageEntity<GoogleMapActualGroundImage>) {
+    override suspend fun removeGroundImage(entity: GroundImageEntityInterface<GoogleMapActualGroundImage>) {
         coroutine.launch {
             entity.groundImage.remove()
         }
@@ -41,8 +41,8 @@ class GoogleMapGroundImageOverlayRenderer(
 
     override suspend fun updateGroundImageProperties(
         groundImage: GoogleMapActualGroundImage,
-        current: GroundImageEntity<GoogleMapActualGroundImage>,
-        prev: GroundImageEntity<GoogleMapActualGroundImage>,
+        current: GroundImageEntityInterface<GoogleMapActualGroundImage>,
+        prev: GroundImageEntityInterface<GoogleMapActualGroundImage>,
     ): GoogleMapActualGroundImage? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint

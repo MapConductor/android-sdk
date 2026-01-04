@@ -20,7 +20,7 @@ const {
 const code = `@Composable
 fun ZoomControls() {
     var currentZoom by remember { mutableStateOf(15.0) }
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val center = GeoPoint.fromLatLong(37.7749, -122.4194)
 
     Column {
         // Zoom level display
@@ -51,7 +51,7 @@ fun ZoomControls() {
         // ${commentForMapViewUsage}
         MapView(
             state = mapViewState,
-            cameraPosition = MapCameraPositionImpl(
+            cameraPosition = MapCameraPosition(
                 position = center,
                 zoom = currentZoom
             )

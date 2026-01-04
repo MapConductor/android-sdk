@@ -5,9 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.mapconductor.core.circle.CircleManagerImpl
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -15,9 +15,9 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonManagerImpl
+import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineManagerImpl
+import com.mapconductor.core.polyline.PolylineManager
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.circle.MapLibreCircleLayer
 import com.mapconductor.maplibre.circle.MapLibreCircleOverlayRenderer
@@ -45,7 +45,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun MapLibreMapView(
-    state: MapLibreViewStateImpl,
+    state: MapLibreViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -81,7 +81,7 @@ fun MapLibreMapView(
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
 fun MapLibreMapView(
-    state: MapLibreViewStateImpl,
+    state: MapLibreViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -103,7 +103,7 @@ fun MapLibreMapView(
     val context = LocalContext.current
     val scope = remember { MapLibreMapViewScope() }
     val registry = remember { scope.buildRegistry() }
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -130,7 +130,7 @@ fun MapLibreMapView(
                     // Set style and wait for it to load completely
                     map.setStyle(state.mapDesignType.styleJsonURL) {
                         // Resume only after style is fully loaded
-                        continuation.resume(MapLibreMapViewHolderImpl(mapView, map)) {}
+                        continuation.resume(MapLibreMapViewHolder(mapView, map)) {}
                     }
                 }
             }
@@ -153,7 +153,7 @@ fun MapLibreMapView(
 
             // Defer initial camera update until controller is created and view is laid out
 
-            MapLibreViewControllerImpl(
+            MapLibreViewController(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,
@@ -209,7 +209,7 @@ fun MapLibreMapView(
     )
 }
 
-internal fun getMarkerController(holder: MapLibreMapViewHolder): MapLibreMarkerController {
+internal fun getMarkerController(holder: MapLibreMapViewHolderInterface): MapLibreMarkerController {
     val manager = MarkerManager.defaultManager<MapLibreActualMarker>()
     val markerLayer: MarkerLayer =
         MarkerLayer(
@@ -236,13 +236,13 @@ internal fun getMarkerController(holder: MapLibreMapViewHolder): MapLibreMarkerC
     return controller
 }
 
-internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolylineController {
+internal fun getPolylineController(holder: MapLibreMapViewHolderInterface): MapLibrePolylineController {
     val polylineLayer: MapLibrePolylineLayer =
         MapLibrePolylineLayer(
             sourceId = "polyline-source",
             layerId = "polyline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapLibreActualPolyline>()
+    val polylineManager = PolylineManager<MapLibreActualPolyline>()
 
     val renderer =
         MapLibrePolylineOverlayRenderer(
@@ -258,13 +258,13 @@ internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolyl
     return controller
 }
 
-internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygonConductor {
+internal fun getPolygonController(holder: MapLibreMapViewHolderInterface): MapLibrePolygonConductor {
     val polylineLayer =
         MapLibrePolylineLayer(
             sourceId = "polygon-outline-source",
             layerId = "polygon-outline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapLibreActualPolyline>()
+    val polylineManager = PolylineManager<MapLibreActualPolyline>()
     val polylineOverlayRenderer =
         MapLibrePolylineOverlayRenderer(
             layer = polylineLayer,
@@ -272,7 +272,7 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
             holder = holder,
         )
 
-    val polygonManager = PolygonManagerImpl<MapLibreActualPolygon>()
+    val polygonManager = PolygonManager<MapLibreActualPolygon>()
     val polygonLayer =
         MapLibrePolygonLayer(
             sourceId = "polygon-fill-source",
@@ -291,13 +291,13 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
     )
 }
 
-internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleController {
+internal fun getCircleController(holder: MapLibreMapViewHolderInterface): MapLibreCircleController {
     val circleLayer =
         MapLibreCircleLayer(
             sourceId = "circle-source",
             layerId = "circle-layer",
         )
-    val circleManager = CircleManagerImpl<MapLibreActualCircle>()
+    val circleManager = CircleManager<MapLibreActualCircle>()
     val renderer =
         MapLibreCircleOverlayRenderer(
             layer = circleLayer,
@@ -310,7 +310,7 @@ internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleC
     )
 }
 
-internal fun getRasterLayerController(holder: MapLibreMapViewHolder): MapLibreRasterLayerController {
+internal fun getRasterLayerController(holder: MapLibreMapViewHolderInterface): MapLibreRasterLayerController {
     val renderer =
         MapLibreRasterLayerOverlayRenderer(
             holder = holder,

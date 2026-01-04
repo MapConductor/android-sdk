@@ -1,12 +1,12 @@
 package com.mapconductor.marker.strategy.spatial
 
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerEntityImpl
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -117,9 +117,9 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
     }
 
     // Cache last camera and renderer to allow recalculation after batches are sent
-    @Volatile private var lastCamera: MapCameraPositionImpl? = null
+    @Volatile private var lastCamera: MapCameraPosition? = null
 
-    @Volatile private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
+    @Volatile private var lastRenderer: MarkerOverlayRendererInterface<ActualMarker>? = null
     private val cameraSeq = AtomicLong(0L)
 
     private fun startBatchProcessor() {
@@ -158,8 +158,8 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
 
     // Fallback path to complete add outside of Compose composition when it cancels mid-flight
     private fun fallbackAddAsync(
-        params: List<MarkerOverlayRenderer.AddParams>,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        params: List<MarkerOverlayRendererInterface.AddParamsInterface>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         if (params.isEmpty()) return
         batchScope.launch {
@@ -176,7 +176,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                             actualMarker?.let {
                                 val state = chunk[i].state
                                 val entity =
-                                    MarkerEntityImpl<ActualMarker>(
+                                    MarkerEntity<ActualMarker>(
                                         state = state,
                                         marker = actualMarker,
                                         isRendered = true,
@@ -195,7 +195,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
         }
     }
 
-    private fun buildCameraDto(cameraPosition: MapCameraPositionImpl): CameraPositionDTO? {
+    private fun buildCameraDto(cameraPosition: MapCameraPosition): CameraPositionDTO? {
         val visibleRegion = cameraPosition.visibleRegion ?: return null
         return CameraPositionDTO(
             centerLatitude = cameraPosition.position.latitude,
@@ -265,8 +265,8 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
         // Cache last known camera and renderer
@@ -326,10 +326,10 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
 
     private suspend fun processRenderingChanges(
         result: SpatialResultDTO,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
-        val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
-        val markersToAdd = mutableListOf<MarkerOverlayRenderer.AddParams>()
+        val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+        val markersToAdd = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
 
         // Handle markers to remove
         result.markersToRemove.forEach { markerId ->
@@ -345,7 +345,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
             markerManager.getEntity(markerId)?.let { entity ->
                 if (!entity.isRendered) {
                     markersToAdd.add(
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state = entity.state
                             override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                         },
@@ -385,15 +385,15 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean =
         withContext(Dispatchers.Default) {
             try {
                 // Yield after processing each chunk to allow other coroutines
                 yield()
 
-                val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
-                val markersToRegister = mutableListOf<MarkerEntityImpl<ActualMarker>>()
+                val markersToRender = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
+                val markersToRegister = mutableListOf<MarkerEntity<ActualMarker>>()
 
                 data.forEach { state ->
                     val isInViewport = viewport.contains(state.position)
@@ -401,7 +401,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                     if (isInViewport) {
                         // Marker is in viewport - add to render list
                         markersToRender.add(
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state = state
                                 override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             },
@@ -409,7 +409,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                     } else {
                         // Marker outside viewport - just register without rendering
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 state = state,
                                 marker = null,
                                 isRendered = false,
@@ -429,7 +429,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                     actualMarkers.forEachIndexed { index, actualMarker ->
                         actualMarker?.let {
                             val entity =
-                                MarkerEntityImpl<ActualMarker>(
+                                MarkerEntity<ActualMarker>(
                                     state = markersToRender[index].state,
                                     marker = actualMarker,
                                     isRendered = true,
@@ -462,7 +462,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                     // Reconstruct params for fallback from the input data
                     val params =
                         data.map { state ->
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state: MarkerState = state
                                 override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
@@ -479,7 +479,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         return try {
             val entity = markerManager.getEntity(state.id) ?: return false
@@ -489,7 +489,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
             if (isInViewport && !wasRendered) {
                 // Marker moved into viewport - render it
                 val addParams =
-                    object : MarkerOverlayRenderer.AddParams {
+                    object : MarkerOverlayRendererInterface.AddParamsInterface {
                         override val state = state
                         override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                     }
@@ -497,7 +497,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                 val actualMarkers = renderer.onAdd(listOf(addParams))
                 actualMarkers.firstOrNull()?.let { actualMarker ->
                     val updatedEntity =
-                        MarkerEntityImpl<ActualMarker>(
+                        MarkerEntity<ActualMarker>(
                             state = state,
                             marker = actualMarker,
                             isRendered = true,
@@ -509,7 +509,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                 // Marker moved out of viewport - remove it (only if not add-only mode)
                 renderer.onRemove(listOf(entity))
                 val updatedEntity =
-                    MarkerEntityImpl<ActualMarker>(
+                    MarkerEntity<ActualMarker>(
                         state = state,
                         marker = null,
                         isRendered = false,
@@ -519,9 +519,9 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
             } else if (isInViewport && wasRendered) {
                 // Marker is in viewport and was already rendered - update it
                 val changeParams =
-                    object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
+                    object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
                         override val current =
-                            MarkerEntityImpl(
+                            MarkerEntity(
                                 state = state,
                                 marker = entity.marker,
                                 isRendered = true,
@@ -533,7 +533,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
                 val actualMarkers = renderer.onChange(listOf(changeParams))
                 actualMarkers.firstOrNull()?.let { actualMarker ->
                     val updatedEntity =
-                        MarkerEntityImpl<ActualMarker>(
+                        MarkerEntity<ActualMarker>(
                             state = state,
                             marker = actualMarker,
                             isRendered = true,
@@ -544,7 +544,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
             } else {
                 // Marker outside viewport and not rendered - just update state
                 val updatedEntity =
-                    MarkerEntityImpl<ActualMarker>(
+                    MarkerEntity<ActualMarker>(
                         state = state,
                         marker = null,
                         isRendered = false,
@@ -575,7 +575,7 @@ class RemoteSpatialMarkerStrategy<ActualMarker>(
     fun findNearestMarker(
         latitude: Double,
         longitude: Double,
-    ): MarkerEntity<ActualMarker>? {
+    ): MarkerEntityInterface<ActualMarker>? {
         return try {
             if (!waitForServiceConnection()) return null
             val id = spatialService?.findNearestMarker(sessionId, latitude, longitude)

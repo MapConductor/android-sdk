@@ -8,7 +8,6 @@
 
 # Keep HERE Maps specific implementations
 -keep class com.mapconductor.here.HereMapViewController { *; }
--keep class com.mapconductor.here.HereMapViewControllerImpl { *; }
 -keep class com.mapconductor.here.HereMapView { *; }
 
 # Keep marker, circle, polyline implementations

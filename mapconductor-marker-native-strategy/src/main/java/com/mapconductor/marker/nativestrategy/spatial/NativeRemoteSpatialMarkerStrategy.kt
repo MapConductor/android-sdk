@@ -1,13 +1,13 @@
 package com.mapconductor.marker.nativestrategy.spatial
 
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerEntityImpl
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
 import java.util.UUID
@@ -63,9 +63,9 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     private val renderingMutex = kotlinx.coroutines.sync.Mutex()
 
     // Cache last camera and renderer to allow recalculation after batches are sent
-    @Volatile private var lastCamera: MapCameraPositionImpl? = null
+    @Volatile private var lastCamera: MapCameraPosition? = null
 
-    @Volatile private var lastRenderer: MarkerOverlayRenderer<ActualMarker>? = null
+    @Volatile private var lastRenderer: MarkerOverlayRendererInterface<ActualMarker>? = null
     private val cameraSeq =
         java.util.concurrent.atomic
             .AtomicLong(0L)
@@ -193,7 +193,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
         }
     }
 
-    private fun buildCameraDto(cameraPosition: MapCameraPositionImpl): NativeCameraPositionDTO? {
+    private fun buildCameraDto(cameraPosition: MapCameraPosition): NativeCameraPositionDTO? {
         val visibleRegion = cameraPosition.visibleRegion ?: return null
         return NativeCameraPositionDTO(
             latitude = cameraPosition.position.latitude,
@@ -255,8 +255,8 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     }
 
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
         // Cache last known camera and renderer
@@ -358,10 +358,10 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
 
     private suspend fun processRenderingChanges(
         result: NativeSpatialResultDTO,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
-        val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
-        val markersToAdd = mutableListOf<MarkerOverlayRenderer.AddParams>()
+        val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+        val markersToAdd = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
 
         // Gather removals
         result.markersToRemove.forEach { markerId ->
@@ -377,7 +377,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
             markerManager.getEntity(markerId)?.let { entity ->
                 if (!entity.isRendered) {
                     markersToAdd.add(
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state = entity.state
                             override val bitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                         },
@@ -416,8 +416,8 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
 
     // Fallback path to complete add outside of Compose composition when it cancels mid-flight
     private fun fallbackAddAsync(
-        params: List<MarkerOverlayRenderer.AddParams>,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        params: List<MarkerOverlayRendererInterface.AddParamsInterface>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         if (params.isEmpty()) return
         batchScope.launch {
@@ -433,7 +433,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                             actualMarker?.let {
                                 val state = chunk[i].state
                                 val entity =
-                                    MarkerEntityImpl<ActualMarker>(
+                                    MarkerEntity<ActualMarker>(
                                         state = state,
                                         marker = actualMarker,
                                         isRendered = true,
@@ -455,29 +455,29 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean =
         withContext(Dispatchers.Default) {
             try {
                 // Yield after processing each chunk to allow other coroutines
                 yield()
 
-                val markersToRender = mutableListOf<MarkerOverlayRenderer.AddParams>()
-                val markersToRegister = mutableListOf<MarkerEntityImpl<ActualMarker>>()
+                val markersToRender = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
+                val markersToRegister = mutableListOf<MarkerEntity<ActualMarker>>()
 
                 data.forEach { state ->
                     val isInViewport = viewport.contains(state.position)
 
                     if (isInViewport) {
                         markersToRender.add(
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state = state
                                 override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             },
                         )
                     } else {
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 state = state,
                                 marker = null,
                                 isRendered = false,
@@ -494,7 +494,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                     actualMarkers.forEachIndexed { index, actualMarker ->
                         actualMarker?.let {
                             val entity =
-                                MarkerEntityImpl<ActualMarker>(
+                                MarkerEntity<ActualMarker>(
                                     state = markersToRender[index].state,
                                     marker = actualMarker,
                                     isRendered = true,
@@ -524,7 +524,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                     // Reconstruct params for fallback from the input data
                     val params =
                         data.map { state ->
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state: MarkerState = state
                                 override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
@@ -541,7 +541,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         return try {
             semaphore.withPermit {
@@ -552,7 +552,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
 
                     if (isInViewport && !wasRendered) {
                         val addParams =
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state = state
                                 override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
@@ -569,9 +569,9 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         renderer.onPostProcess()
                     } else if (isInViewport && wasRendered) {
                         val changeParams =
-                            object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
+                            object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
                                 override val current =
-                                    MarkerEntityImpl(state = state, marker = entity.marker, isRendered = true)
+                                    MarkerEntity(state = state, marker = entity.marker, isRendered = true)
                                 override val prev = entity
                                 override val bitmapIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
                             }
@@ -605,7 +605,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
     suspend fun findNearestMarker(
         latitude: Double,
         longitude: Double,
-    ): MarkerEntity<ActualMarker>? =
+    ): MarkerEntityInterface<ActualMarker>? =
         try {
             renderingMutex.withLock {
                 if (waitForServiceConnection()) {
@@ -619,7 +619,7 @@ class NativeRemoteSpatialMarkerStrategy<ActualMarker>(
                         null
                     }
                 } else {
-                    markerManager.findNearest(GeoPointImpl.fromLatLong(latitude, longitude))
+                    markerManager.findNearest(GeoPoint.fromLatLong(latitude, longitude))
                 }
             }
         } catch (e: Exception) {

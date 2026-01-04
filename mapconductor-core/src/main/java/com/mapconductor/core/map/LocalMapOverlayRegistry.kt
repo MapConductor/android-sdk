@@ -8,6 +8,6 @@ val LocalMapOverlayRegistry =
     }
 
 val LocalMapViewController =
-    compositionLocalOf<com.mapconductor.core.controller.MapViewController> {
+    compositionLocalOf<com.mapconductor.core.controller.MapViewControllerInterface> {
         error("Map controller must be available under the <MapView />")
     }

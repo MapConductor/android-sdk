@@ -1,40 +1,40 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.ui.geometry.Offset
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderInterface
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import android.graphics.PointF
 
-interface MapLibreMapViewHolder : MapViewHolder<MapView, MapLibreMap> {
-    fun getController(): MapLibreViewControllerImpl?
+interface MapLibreMapViewHolderInterface : MapViewHolderInterface<MapView, MapLibreMap> {
+    fun getController(): MapLibreViewController?
 }
 
-internal class MapLibreMapViewHolderImpl(
+internal class MapLibreMapViewHolder(
     override val mapView: MapView,
     override val map: MapLibreMap,
-) : MapLibreMapViewHolder {
-    private var controller: MapLibreViewControllerImpl? = null
+) : MapLibreMapViewHolderInterface {
+    private var controller: MapLibreViewController? = null
 
-    fun setController(ctrl: MapLibreViewControllerImpl) {
+    fun setController(ctrl: MapLibreViewController) {
         controller = ctrl
     }
 
-    override fun getController(): MapLibreViewControllerImpl? = controller
+    override fun getController(): MapLibreViewController? = controller
 
-    override fun toScreenOffset(position: GeoPoint): Offset? {
+    override fun toScreenOffset(position: GeoPointInterface): Offset? {
         val pixel =
-            map.projection.toScreenLocation(GeoPointImpl.from(position).toLatLng())
+            map.projection.toScreenLocation(GeoPoint.from(position).toLatLng())
         return Offset(
             x = pixel.x,
             y = pixel.y,
         )
     }
 
-    override fun fromScreenOffsetSync(offset: Offset): GeoPointImpl? =
+    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
         map.projection.fromScreenLocation(PointF(offset.x, offset.y)).toGeoPoint()
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? = fromScreenOffsetSync(offset)
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? = fromScreenOffsetSync(offset)
 }

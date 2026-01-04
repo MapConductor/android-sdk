@@ -1,14 +1,14 @@
 package com.mapconductor.core.raster
 
-interface RasterLayerEntity<ActualLayer> {
+interface RasterLayerEntityInterface<ActualLayer> {
     val layer: ActualLayer
     val state: RasterLayerState
     val fingerPrint: RasterLayerFingerPrint
 }
 
-data class RasterLayerEntityImpl<ActualLayer>(
+data class RasterLayerEntity<ActualLayer>(
     override val layer: ActualLayer,
     override val state: RasterLayerState,
-) : RasterLayerEntity<ActualLayer> {
+) : RasterLayerEntityInterface<ActualLayer> {
     override val fingerPrint: RasterLayerFingerPrint = state.fingerPrint()
 }

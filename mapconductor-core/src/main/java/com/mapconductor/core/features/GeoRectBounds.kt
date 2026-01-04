@@ -3,8 +3,8 @@ package com.mapconductor.core.features
 import android.util.Log
 
 class GeoRectBounds(
-    southWest: GeoPointImpl? = null,
-    northEast: GeoPointImpl? = null,
+    southWest: GeoPoint? = null,
+    northEast: GeoPoint? = null,
 ) {
     companion object {
         private const val DEBUG_INTERSECTS = true
@@ -15,20 +15,20 @@ class GeoRectBounds(
         }
     }
 
-    private var _southWest: GeoPointImpl? = southWest
-    private var _northEast: GeoPointImpl? = northEast
+    private var _southWest: GeoPoint? = southWest
+    private var _northEast: GeoPoint? = northEast
 
     val isEmpty: Boolean
         get() = _southWest == null || _northEast == null
 
-    val southWest: GeoPointImpl?
+    val southWest: GeoPoint?
         get() = _southWest
 
-    val northEast: GeoPointImpl?
+    val northEast: GeoPoint?
         get() = _northEast
 
-    fun extend(point: GeoPoint) {
-        val position = GeoPointImpl.from(point).wrap() as GeoPointImpl
+    fun extend(point: GeoPointInterface) {
+        val position = GeoPoint.from(point).wrap() as GeoPoint
 
         when {
             // 初期化
@@ -46,8 +46,8 @@ class GeoRectBounds(
                 val west = minOf(sw.longitude, position.longitude)
                 val east = maxOf(sw.longitude, position.longitude)
 
-                _southWest = GeoPointImpl(south, west)
-                _northEast = GeoPointImpl(north, east)
+                _southWest = GeoPoint(south, west)
+                _northEast = GeoPoint(north, east)
                 return
             }
 
@@ -59,8 +59,8 @@ class GeoRectBounds(
                 val west = minOf(ne.longitude, position.longitude)
                 val east = maxOf(ne.longitude, position.longitude)
 
-                _southWest = GeoPointImpl(south, west)
-                _northEast = GeoPointImpl(north, east)
+                _southWest = GeoPoint(south, west)
+                _northEast = GeoPoint(north, east)
                 return
             }
 
@@ -92,8 +92,8 @@ class GeoRectBounds(
                     east = newEast
                 }
 
-                _southWest = GeoPointImpl(south, west)
-                _northEast = GeoPointImpl(north, east)
+                _southWest = GeoPoint(south, west)
+                _northEast = GeoPoint(north, east)
             }
         }
     }
@@ -125,10 +125,10 @@ class GeoRectBounds(
             lon >= west || lon <= east
         }
 
-    fun contains(point: GeoPoint): Boolean {
+    fun contains(point: GeoPointInterface): Boolean {
         if (isEmpty) return false
 
-        val wrappedPoint = GeoPointImpl.from(point).wrap()
+        val wrappedPoint = GeoPoint.from(point).wrap()
         val sw = _southWest!!.wrap()
         val ne = _northEast!!.wrap()
 
@@ -138,7 +138,7 @@ class GeoRectBounds(
         return withinLat && withinLng
     }
 
-    val center: GeoPointImpl?
+    val center: GeoPoint?
         get() {
             if (isEmpty) return null
 
@@ -157,7 +157,7 @@ class GeoRectBounds(
                     if (centerLongitude > 180) centerLongitude - 360 else centerLongitude
                 }
 
-            return GeoPointImpl(centerLat, centerLng)
+            return GeoPoint(centerLat, centerLng)
         }
 
     fun union(other: GeoRectBounds): GeoRectBounds {
@@ -178,7 +178,7 @@ class GeoRectBounds(
         return newBounds
     }
 
-    fun toSpan(): GeoPointImpl? {
+    fun toSpan(): GeoPoint? {
         if (isEmpty) return null
 
         val sw = _southWest!!.wrap()
@@ -187,7 +187,7 @@ class GeoRectBounds(
         val latSpan = ne.latitude - sw.latitude
         val lngSpan = ((ne.longitude - sw.longitude + 360) % 360).takeIf { it != 0.0 } ?: 360.0
 
-        return GeoPointImpl(latSpan, lngSpan)
+        return GeoPoint(latSpan, lngSpan)
     }
 
     fun toUrlValue(precision: Int = 6): String {
@@ -237,8 +237,8 @@ class GeoRectBounds(
         }
 
         return GeoRectBounds(
-            southWest = GeoPointImpl(south, west),
-            northEast = GeoPointImpl(north, east),
+            southWest = GeoPoint(south, west),
+            northEast = GeoPoint(north, east),
         )
     }
 

@@ -40,8 +40,8 @@ fun BasicMapExample(
 ) {
     // ${commentCameraPosition}
     val mapViewState = rememberArcGISMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(40.40195, -3.68698),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(40.40195, -3.68698),
             zoom = 8.0
         ),
     )

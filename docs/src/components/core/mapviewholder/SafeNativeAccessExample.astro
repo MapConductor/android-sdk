@@ -13,7 +13,7 @@ const {
 
 const code = `@Composable
 fun SafeNativeAccess() {
-    val mapViewState = remember { MapboxViewStateImpl() }
+    val mapViewState = remember { MapboxViewState() }
     var isMapReady by remember { mutableStateOf(false) }
 
     LaunchedEffect(mapViewState) {

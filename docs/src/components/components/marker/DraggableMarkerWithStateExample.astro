@@ -12,14 +12,14 @@ const {
 const code = `@Composable
 fun DraggableMarkerExample() {
     val markerState = MarkerState(
-        position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        position = GeoPoint.fromLatLong(37.7749, -122.4194),
         draggable = true,
         icon = DefaultIcon(
             label = "Drag me",
             fillColor = Color.Green
         ),
         onDrag = { markerState ->
-            println("position: ${'${'}GeoPointImpl.from(markerState.position).toUrlValue(6)}")
+            println("position: ${'${'}GeoPoint.from(markerState.position).toUrlValue(6)}")
         }
     )
 

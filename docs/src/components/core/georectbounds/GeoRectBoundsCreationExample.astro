@@ -21,8 +21,8 @@ const {
 
 const code = `// ${commentForDefineArea}
 val bounds = GeoRectBounds(
-    southWest = GeoPointImpl.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
-    northeast = GeoPointImpl.fromLatLong(${northEastLatitude}, ${northEastLongitude})
+    southWest = GeoPoint.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
+    northeast = GeoPoint.fromLatLong(${northEastLatitude}, ${northEastLongitude})
 )
 
 // ${commentForEmptyBounds}

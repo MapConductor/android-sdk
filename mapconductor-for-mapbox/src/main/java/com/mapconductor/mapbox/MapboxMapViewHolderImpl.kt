@@ -6,25 +6,25 @@ import com.mapbox.maps.MapboxLifecycleObserver
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.plugin.lifecycle.lifecycle
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderInterface
 
-typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
+typealias MapboxMapViewHolderInterface = MapViewHolderInterface<MapView, MapboxMap>
 
-class MapboxMapViewHolderImpl(
+class MapboxMapViewHolder(
     override val mapView: MapView,
     override val map: MapboxMap,
-) : MapViewHolder<MapView, MapboxMap>,
+) : MapViewHolderInterface<MapView, MapboxMap>,
     MapboxLifecycleObserver {
     init {
         this.mapView.lifecycle.registerLifecycleObserver(this.mapView, this)
     }
 
-    override fun toScreenOffset(position: GeoPoint): Offset? {
+    override fun toScreenOffset(position: GeoPointInterface): Offset? {
         val pixel =
             map.pixelForCoordinate(
-                coordinate = GeoPointImpl.from(position).toPoint(),
+                coordinate = GeoPoint.from(position).toPoint(),
             )
         return Offset(
             x = pixel.x.toFloat(),
@@ -32,12 +32,12 @@ class MapboxMapViewHolderImpl(
         )
     }
 
-    override fun fromScreenOffsetSync(offset: Offset): GeoPointImpl? =
+    override fun fromScreenOffsetSync(offset: Offset): GeoPoint? =
         map.coordinateForPixel(ScreenCoordinate(offset.x.toDouble(), offset.y.toDouble())).toGeoPoint()
 
-    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPointImpl? = map.coordinateForPixel(coordinate).toGeoPoint()
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint? = map.coordinateForPixel(coordinate).toGeoPoint()
 
-    override suspend fun fromScreenOffset(offset: Offset): GeoPointImpl? =
+    override suspend fun fromScreenOffset(offset: Offset): GeoPoint? =
         fromScreenOffset(
             ScreenCoordinate(
                 offset.x.toDouble(),

@@ -2,27 +2,27 @@ package com.mapconductor.arcgis.marker
 
 import com.arcgismaps.geometry.Point
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 
-internal interface ArcGISMarkerEventController {
-    fun find(position: GeoPointImpl): MarkerEntity<ArcGISActualMarker>?
+internal interface ArcGISMarkerEventControllerInterface {
+    fun find(position: GeoPoint): MarkerEntityInterface<ArcGISActualMarker>?
 
     fun getSelectedState(): MarkerState?
 
-    fun startDrag(entity: MarkerEntity<ArcGISActualMarker>)
+    fun startDrag(entity: MarkerEntityInterface<ArcGISActualMarker>)
 
     fun updateDrag(
         point: Point,
-        position: GeoPointImpl,
+        position: GeoPoint,
     )
 
     fun endDrag(
         point: Point,
-        position: GeoPointImpl,
+        position: GeoPoint,
     )
 
     fun dispatchClick(state: MarkerState)
@@ -48,12 +48,12 @@ internal interface ArcGISMarkerEventController {
 
 internal class DefaultArcGISMarkerEventController(
     private val controller: ArcGISMarkerController,
-) : ArcGISMarkerEventController {
-    override fun find(position: GeoPointImpl): MarkerEntity<ArcGISActualMarker>? = controller.find(position)
+) : ArcGISMarkerEventControllerInterface {
+    override fun find(position: GeoPoint): MarkerEntityInterface<ArcGISActualMarker>? = controller.find(position)
 
     override fun getSelectedState(): MarkerState? = controller.selectedMarker?.state
 
-    override fun startDrag(entity: MarkerEntity<ArcGISActualMarker>) {
+    override fun startDrag(entity: MarkerEntityInterface<ArcGISActualMarker>) {
         val graphic = entity.marker ?: return
         controller.selectedMarker =
             SelectedMarker(
@@ -64,7 +64,7 @@ internal class DefaultArcGISMarkerEventController(
 
     override fun updateDrag(
         point: Point,
-        position: GeoPointImpl,
+        position: GeoPoint,
     ) {
         controller.selectedMarker?.also {
             it.graphic.geometry = point
@@ -74,7 +74,7 @@ internal class DefaultArcGISMarkerEventController(
 
     override fun endDrag(
         point: Point,
-        position: GeoPointImpl,
+        position: GeoPoint,
     ) {
         controller.selectedMarker?.also {
             it.graphic.geometry = point
@@ -118,20 +118,20 @@ internal class DefaultArcGISMarkerEventController(
 
 internal class StrategyArcGISMarkerEventController(
     private val controller: StrategyMarkerController<ArcGISActualMarker>,
-) : ArcGISMarkerEventController {
-    private var selectedMarker: MarkerEntity<ArcGISActualMarker>? = null
+) : ArcGISMarkerEventControllerInterface {
+    private var selectedMarker: MarkerEntityInterface<ArcGISActualMarker>? = null
 
-    override fun find(position: GeoPointImpl): MarkerEntity<ArcGISActualMarker>? = controller.find(position)
+    override fun find(position: GeoPoint): MarkerEntityInterface<ArcGISActualMarker>? = controller.find(position)
 
     override fun getSelectedState(): MarkerState? = selectedMarker?.state
 
-    override fun startDrag(entity: MarkerEntity<ArcGISActualMarker>) {
+    override fun startDrag(entity: MarkerEntityInterface<ArcGISActualMarker>) {
         selectedMarker = entity
     }
 
     override fun updateDrag(
         point: Point,
-        position: GeoPointImpl,
+        position: GeoPoint,
     ) {
         selectedMarker?.also { entity ->
             entity.marker?.geometry = point
@@ -141,7 +141,7 @@ internal class StrategyArcGISMarkerEventController(
 
     override fun endDrag(
         point: Point,
-        position: GeoPointImpl,
+        position: GeoPoint,
     ) {
         selectedMarker?.also { entity ->
             entity.marker?.geometry = point

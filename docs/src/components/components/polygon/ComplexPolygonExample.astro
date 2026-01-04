@@ -36,7 +36,7 @@ fun ComplexPolygonExample() {
                 val radiusMeters = if (i % 2 == 0) outerRadius else innerRadius
                 val lat = centerLat + radiusMeters * cos(angle)
                 val lng = centerLng + radiusMeters * sin(angle)
-                add(GeoPointImpl.fromLatLong(lat, lng))
+                add(GeoPoint.fromLatLong(lat, lng))
             }
             add(first())
         }
@@ -52,7 +52,7 @@ fun ComplexPolygonExample() {
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            position = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
             icon = DefaultIcon(
                 fillColor = Color.Magenta,
                 label = "${markerLabel}"

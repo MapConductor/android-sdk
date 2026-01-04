@@ -4,9 +4,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
@@ -14,25 +14,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface PolylinePageViewModel {
-    val initCameraPosition: MapCameraPositionImpl
-    val mapViewState: StateFlow<MapViewState<*>?>
+interface PolylinePageViewModelInterface {
+    val initCameraPosition: MapCameraPosition
+    val mapViewState: StateFlow<MapViewStateInterface<*>?>
 
     val wayPointMarkers: List<MarkerState>
     val polylineState: PolylineState
 
-    fun onMapViewChanged(state: MapViewState<*>)
+    fun onMapViewChanged(state: MapViewStateInterface<*>)
 
     fun onMarkerDrag(dragged: MarkerState)
 }
 
-class PolylinePageViewModelImpl :
+class PolylinePageViewModel :
     ViewModel(),
-    PolylinePageViewModel {
+    PolylinePageViewModelInterface {
     override val initCameraPosition =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position =
-                GeoPointImpl.fromLatLong(
+                GeoPoint.fromLatLong(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
@@ -44,12 +44,12 @@ class PolylinePageViewModelImpl :
 
     private val polylinePoints =
         mutableStateListOf(
-            GeoPointImpl.fromLatLong(21.382314, -157.933097), // Honolulu center
-            GeoPointImpl.fromLatLong(21.385314, -157.930097), // Northeast
-            GeoPointImpl.fromLatLong(21.387314, -157.935097), // Northwest
-            GeoPointImpl.fromLatLong(21.380314, -157.937097), // Southwest
-            GeoPointImpl.fromLatLong(21.378314, -157.930097), // Southeast
-            GeoPointImpl.fromLatLong(21.382314, -157.933097), // Back to center
+            GeoPoint.fromLatLong(21.382314, -157.933097), // Honolulu center
+            GeoPoint.fromLatLong(21.385314, -157.930097), // Northeast
+            GeoPoint.fromLatLong(21.387314, -157.935097), // Northwest
+            GeoPoint.fromLatLong(21.380314, -157.937097), // Southwest
+            GeoPoint.fromLatLong(21.378314, -157.930097), // Southeast
+            GeoPoint.fromLatLong(21.382314, -157.933097), // Back to center
         )
 
     override val wayPointMarkers: List<MarkerState> =
@@ -93,10 +93,10 @@ class PolylinePageViewModelImpl :
                 geodesic = true,
             )
 
-    private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
+    override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
-    override fun onMapViewChanged(state: MapViewState<*>) {
+    override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         mapViewState.value?.cameraPosition?.let {
             state.moveCameraTo(it)
         }
@@ -106,7 +106,7 @@ class PolylinePageViewModelImpl :
     override fun onMarkerDrag(dragged: MarkerState) {
         (dragged.extra as? Int)?.let { index ->
             if (index >= 0 && index < polylinePoints.size) {
-                polylinePoints[index] = GeoPointImpl.from(dragged.position)
+                polylinePoints[index] = GeoPoint.from(dragged.position)
             }
         }
     }

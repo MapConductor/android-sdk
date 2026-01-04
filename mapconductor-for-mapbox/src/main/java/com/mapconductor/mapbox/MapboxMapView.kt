@@ -12,9 +12,9 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
-import com.mapconductor.core.circle.CircleManagerImpl
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -22,9 +22,9 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonManagerImpl
+import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineManagerImpl
+import com.mapconductor.core.polyline.PolylineManager
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
@@ -47,7 +47,7 @@ import android.view.ViewGroup
 
 @Composable
 fun MapboxMapView(
-    state: MapboxViewStateImpl,
+    state: MapboxViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -83,7 +83,7 @@ fun MapboxMapView(
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
 fun MapboxMapView(
-    state: MapboxViewStateImpl,
+    state: MapboxViewState,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -104,11 +104,11 @@ fun MapboxMapView(
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
     val context = LocalContext.current
-    val controllerRef = remember { Ref<MapboxMapViewControllerImpl>() }
+    val controllerRef = remember { Ref<MapboxMapViewController>() }
     val scope = remember { MapboxMapViewScope() }
     val registry = remember { scope.buildRegistry() }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -132,7 +132,7 @@ fun MapboxMapView(
                 it.onStart()
             }
         },
-        holderProvider = { mapView -> MapboxMapViewHolderImpl(mapView, mapView.mapboxMap) },
+        holderProvider = { mapView -> MapboxMapViewHolder(mapView, mapView.mapboxMap) },
         controllerProvider = { holder ->
 
             val markerController =
@@ -146,7 +146,7 @@ fun MapboxMapView(
 
             // Defer initial camera update until after controller is created and view is laid out
 
-            MapboxMapViewControllerImpl(
+            MapboxMapViewController(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,
@@ -248,7 +248,7 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
             sourceId = "polygon-outline-source",
             layerId = "polygon-outline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapboxActualPolyline>()
+    val polylineManager = PolylineManager<MapboxActualPolyline>()
     val polylineOverlayRenderer =
         MapboxPolylineOverlayRenderer(
             layer = polylineLayer,
@@ -256,7 +256,7 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
             holder = holder,
         )
 
-    val polygonManager = PolygonManagerImpl<MapboxActualPolygon>()
+    val polygonManager = PolygonManager<MapboxActualPolygon>()
     val polygonLayer: MapboxPolygonLayer =
         MapboxPolygonLayer(
             sourceId = "polygon-fill-source",
@@ -283,7 +283,7 @@ internal fun getCircleController(holder: MapboxMapViewHolder): MapboxCircleContr
             sourceId = "circle-source",
             layerId = "circle-layer",
         )
-    val circleManager = CircleManagerImpl<MapboxActualCircle>()
+    val circleManager = CircleManager<MapboxActualCircle>()
 
     val renderer =
         MapboxCircleOverlayRenderer(
@@ -305,7 +305,7 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
             sourceId = "polyline-source",
             layerId = "polyline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapboxActualPolyline>()
+    val polylineManager = PolylineManager<MapboxActualPolyline>()
 
     val renderer =
         MapboxPolylineOverlayRenderer(

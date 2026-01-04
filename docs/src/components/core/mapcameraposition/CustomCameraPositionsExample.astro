@@ -36,14 +36,14 @@ const {
 } = Astro.props;
 
 const code = `// ${commentForBasic}
-val sanFrancisco = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val sanFrancisco = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     zoom = ${basicZoom}
 )
 
 // ${commentForAerial}
-val aerialView = MapCameraPositionImpl(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+val aerialView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     zoom = ${aerialZoom},
     bearing = ${aerialBearing},  // Northeast direction
     tilt = ${aerialTilt}      // Angled view

@@ -21,8 +21,8 @@ const code = `@Composable
 fun MapViewHolderHereMapsExample(modifier: Modifier = Modifier) {
     // ${commentCameraPosition}
     val mapViewState = rememberHereMapViewState(
-        cameraPosition = MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(35.6812, 139.7671),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(35.6812, 139.7671),
             zoom = 12.0
         ),
     )

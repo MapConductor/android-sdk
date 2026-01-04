@@ -17,10 +17,10 @@ const {
 
 const code = `@Composable
 fun ProximityAlert() {
-    val targetLocation = GeoPointImpl.fromLatLong(37.7749, -122.4194)
+    val targetLocation = GeoPoint.fromLatLong(37.7749, -122.4194)
     val alertRadius = ${alertRadiusMeters}  // 500 meters
 
-    var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
+    var userLocation by remember { mutableStateOf<GeoPointInterface?>(null) }
     var isNearTarget by remember { mutableStateOf(false) }
 
     // ${commentForProximity}

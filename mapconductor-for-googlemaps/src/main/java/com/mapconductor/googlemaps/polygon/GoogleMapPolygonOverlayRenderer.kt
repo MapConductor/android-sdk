@@ -5,9 +5,9 @@ import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.googlemaps.GoogleMapActualPolygon
 import com.mapconductor.googlemaps.GoogleMapViewHolder
@@ -22,7 +22,7 @@ class GoogleMapPolygonOverlayRenderer(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolygonOverlayRenderer<GoogleMapActualPolygon>() {
-    override suspend fun removePolygon(entity: PolygonEntity<GoogleMapActualPolygon>) {
+    override suspend fun removePolygon(entity: PolygonEntityInterface<GoogleMapActualPolygon>) {
         coroutine.launch {
             entity.polygon.remove()
         }
@@ -35,7 +35,7 @@ class GoogleMapPolygonOverlayRenderer(
                     true -> createInterpolatePoints(state.points)
                     false -> createLinearInterpolatePoints(state.points)
                 }
-            val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
+            val points = geoPoints.map { GeoPoint.from(it).toLatLng() }
             val options =
                 PolygonOptions()
                     .addAll(points)
@@ -51,8 +51,8 @@ class GoogleMapPolygonOverlayRenderer(
 
     override suspend fun updatePolygonProperties(
         polygon: GoogleMapActualPolygon,
-        current: PolygonEntity<GoogleMapActualPolygon>,
-        prev: PolygonEntity<GoogleMapActualPolygon>,
+        current: PolygonEntityInterface<GoogleMapActualPolygon>,
+        prev: PolygonEntityInterface<GoogleMapActualPolygon>,
     ): GoogleMapActualPolygon? =
         withContext(coroutine.coroutineContext) {
             val polygon = current.polygon
@@ -65,7 +65,7 @@ class GoogleMapPolygonOverlayRenderer(
                         true -> createInterpolatePoints(current.state.points)
                         false -> createLinearInterpolatePoints(current.state.points)
                     }
-                val points = geoPoints.map { GeoPointImpl.from(it).toLatLng() }
+                val points = geoPoints.map { GeoPoint.from(it).toLatLng() }
                 polygon.points = points
             }
             polygon.strokeWidth = ResourceProvider.dpToPx(current.state.strokeWidth).toFloat()

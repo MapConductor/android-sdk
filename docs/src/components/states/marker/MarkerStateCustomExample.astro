@@ -20,7 +20,7 @@ const {
 } = Astro.props;
 
 const code = `val customMarkerState = MarkerState(
-    position = GeoPointImpl.fromLatLong(${latitude}, ${longitude}),
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
     icon = DefaultIcon(
         fillColor = Color.Blue,
         label = "${markerLabel}",

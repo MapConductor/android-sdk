@@ -3,16 +3,16 @@ package com.mapconductor.maplibre.marker
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerIcon
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerIconInterface
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreMapViewHolder
+import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import com.mapconductor.maplibre.toPoint
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
@@ -22,12 +22,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MapLibreMarkerOverlayRenderer(
-    holder: MapLibreMapViewHolder,
+    holder: MapLibreMapViewHolderInterface,
     val markerManager: MarkerManager<MapLibreActualMarker>,
     val markerLayer: MarkerLayer,
     val dragLayer: MarkerDragLayer,
     coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) : AbstractMarkerOverlayRenderer<MapLibreMapViewHolder, MapLibreActualMarker>(
+) : AbstractMarkerOverlayRenderer<MapLibreMapViewHolderInterface, MapLibreActualMarker>(
         holder = holder,
         coroutine = coroutine,
     ) {
@@ -80,8 +80,8 @@ class MapLibreMarkerOverlayRenderer(
     }
 
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<MapLibreActualMarker>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<MapLibreActualMarker>,
+        position: GeoPoint,
     ) {
         val entities = markerManager.allEntities()
         val feature =
@@ -106,7 +106,7 @@ class MapLibreMarkerOverlayRenderer(
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<MapLibreActualMarker?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<MapLibreActualMarker?> {
         // Get style from controller to use the same instance
         val style =
             holder.getController()?.getStyleInstance() ?: run {
@@ -131,7 +131,7 @@ class MapLibreMarkerOverlayRenderer(
 
         return data.map {
             val featureId = "marker-${it.state.id}"
-            val position = GeoPointImpl.from(it.state.position).toPoint()
+            val position = GeoPoint.from(it.state.position).toPoint()
             val properties =
                 JsonObject().apply {
                     if (it.state.icon != null) {
@@ -161,9 +161,9 @@ class MapLibreMarkerOverlayRenderer(
             add(-(icon.size.height * icon.anchor.y) / ResourceProvider.getDensity())
         }
 
-    private fun createIconOffset(icon: MarkerIcon): JsonArray = createIconOffset(icon.toBitmapIcon())
+    private fun createIconOffset(icon: MarkerIconInterface): JsonArray = createIconOffset(icon.toBitmapIcon())
 
-    override suspend fun onRemove(data: List<MarkerEntity<MapLibreActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntityInterface<MapLibreActualMarker>>) {
         coroutine.launch {
 //            data.forEach { params -> params.marker?.remove() }
         }
@@ -196,7 +196,7 @@ class MapLibreMarkerOverlayRenderer(
     }
 
     override suspend fun onChange(
-        data: List<MarkerOverlayRenderer.ChangeParams<MapLibreActualMarker>>,
+        data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<MapLibreActualMarker>>,
     ): List<MapLibreActualMarker?> =
         data.map { params ->
             val prevFinger = params.prev.fingerPrint
@@ -251,7 +251,7 @@ class MapLibreMarkerOverlayRenderer(
                 }
 
             val position =
-                GeoPointImpl.from(params.current.state.position).toPoint()
+                GeoPoint.from(params.current.state.position).toPoint()
             val featureId = "marker-${params.current.state.id}"
             Feature.fromGeometry(position, properties, featureId)
         }

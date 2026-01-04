@@ -18,13 +18,13 @@ const {
 } = Astro.props;
 
 const providerLower = provider.toLowerCase();
-const stateFunction = `remember${provider}MapViewState`;
+const stateFunction = `remember${provider}MapViewStateInterface`;
 const viewComponent = `${provider}MapView`;
 
 const code = `@Composable
 fun MyMap() {
-    val cameraPosition = MapCameraPositionImpl(
-        position = GeoPointImpl.fromLatLong(${lat}, ${long}),
+    val cameraPosition = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${lat}, ${long}),
         zoom = ${zoom},
     )
 

@@ -1,8 +1,8 @@
 package com.mapconductor.core.geocell
 
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -18,7 +18,7 @@ import kotlin.math.sqrt
  * @param zoom The zoom level for this registry
  */
 class HexCellRegistry<ActualMarker>(
-    private val geocell: HexGeocell,
+    private val geocell: HexGeocellInterface,
     private val zoom: Double,
 ) {
     private var kdTree: KDTree? = null
@@ -33,7 +33,7 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Get the hex cell for a given entity without registering it
      */
-    fun getCell(entity: MarkerEntity<ActualMarker>): HexCell {
+    fun getCell(entity: MarkerEntityInterface<ActualMarker>): HexCell {
         val coord = geocell.latLngToHexCoord(entity.state.position, zoom)
         val centerLatLng = geocell.hexToLatLngCenter(coord, entity.state.position.latitude, zoom)
         val centerXY = geocell.projection.project(centerLatLng)
@@ -45,7 +45,7 @@ class HexCellRegistry<ActualMarker>(
      * Register or update a point in the registry
      * @return The hex cell containing the point
      */
-    fun setPoint(entity: MarkerEntity<ActualMarker>): HexCell =
+    fun setPoint(entity: MarkerEntityInterface<ActualMarker>): HexCell =
         lock.write {
             val entityId = entity.state.id
 
@@ -79,7 +79,7 @@ class HexCellRegistry<ActualMarker>(
      * Remove a point from the registry
      * @return true if the point was removed, false if it wasn't found
      */
-    fun removePoint(entity: MarkerEntity<ActualMarker>): Boolean =
+    fun removePoint(entity: MarkerEntityInterface<ActualMarker>): Boolean =
         lock.write {
             val entityId = entity.state.id
             val cellId = allEntries[entityId] ?: return false
@@ -150,7 +150,7 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Find the nearest hex cell to a point
      */
-    fun findNearest(point: GeoPoint): HexCell? =
+    fun findNearest(point: GeoPointInterface): HexCell? =
         lock.read {
             rebuildIfNeeded()
             return kdTree?.nearest(geocell.projection.project(point))
@@ -159,7 +159,7 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Find the nearest hex cell with distance
      */
-    fun findNearestWithDistance(point: GeoPoint): HexCellWithDistance? =
+    fun findNearestWithDistance(point: GeoPointInterface): HexCellWithDistance? =
         lock.read {
             rebuildIfNeeded()
             return kdTree?.nearestWithDistance(geocell.projection.project(point))
@@ -169,7 +169,7 @@ class HexCellRegistry<ActualMarker>(
      * Find k nearest hex cells with distances
      */
     fun findNearestKWithDistance(
-        point: GeoPoint,
+        point: GeoPointInterface,
         k: Int,
     ): List<HexCellWithDistance> =
         lock.read {
@@ -181,7 +181,7 @@ class HexCellRegistry<ActualMarker>(
      * Find all hex cells within a radius with distances
      */
     fun findWithinRadiusWithDistance(
-        point: GeoPoint,
+        point: GeoPointInterface,
         radius: Double,
     ): List<HexCellWithDistance> =
         lock.read {
@@ -207,7 +207,7 @@ class HexCellRegistry<ActualMarker>(
      * Verify that your projection implementation meets this requirement.
      */
     fun metersPerPixel(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
@@ -230,12 +230,12 @@ class HexCellRegistry<ActualMarker>(
         val p1 = geocell.projection.project(position)
         val p2 =
             geocell.projection.project(
-                object : GeoPoint {
+                object : GeoPointInterface {
                     override val latitude = position.latitude
                     override val longitude = newLng
                     override val altitude = position.altitude
 
-                    override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
+                    override fun wrap(): GeoPointInterface = GeoPoint(latitude, longitude, altitude ?: 0.0).wrap()
                 },
             )
 
@@ -248,7 +248,7 @@ class HexCellRegistry<ActualMarker>(
      * Find hex cells within a pixel radius
      */
     fun findWithinPixelRadius(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,

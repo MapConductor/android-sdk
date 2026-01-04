@@ -21,7 +21,7 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun AnimationMapPage(
-    viewModel: AnimationPageViewModel = AnimationPageViewModelImpl(),
+    viewModel: AnimationPageViewModelInterface = AnimationPageViewModel(),
     onToggleSidebar: () -> Unit = {},
 ) {
     DemoMapPageScaffold(

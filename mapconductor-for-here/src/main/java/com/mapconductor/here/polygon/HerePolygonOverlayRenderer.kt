@@ -7,10 +7,10 @@ import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
-import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.here.HereActualPolygon
 import com.mapconductor.here.HereViewHolder
@@ -24,7 +24,7 @@ class HerePolygonOverlayRenderer(
     override val holder: HereViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : AbstractPolygonOverlayRenderer<HereActualPolygon>() {
-    override suspend fun removePolygon(entity: PolygonEntity<HereActualPolygon>) {
+    override suspend fun removePolygon(entity: PolygonEntityInterface<HereActualPolygon>) {
         coroutine.launch {
             holder.map.removeMapPolygon(entity.polygon)
         }
@@ -50,8 +50,8 @@ class HerePolygonOverlayRenderer(
 
     override suspend fun updatePolygonProperties(
         polygon: HereActualPolygon,
-        current: PolygonEntity<HereActualPolygon>,
-        prev: PolygonEntity<HereActualPolygon>,
+        current: PolygonEntityInterface<HereActualPolygon>,
+        prev: PolygonEntityInterface<HereActualPolygon>,
     ): HereActualPolygon? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -88,12 +88,12 @@ class HerePolygonOverlayRenderer(
         }
 
     private fun createGeoPolygon(state: PolygonState): GeoPolygon {
-        val geoPoints: List<GeoPoint> =
+        val geoPoints: List<GeoPointInterface> =
             when (state.geodesic) {
                 true -> createInterpolatePoints(state.points)
                 false -> createLinearInterpolatePoints(state.points)
             }
-        val points = geoPoints.map { GeoPointImpl.from(it).toGeoCoordinates() }
+        val points = geoPoints.map { GeoPoint.from(it).toGeoCoordinates() }
         // Ensure the polygon is closed by adding the first point at the end if not already closed
         val closedPoints =
             if (points.first() != points.last()) {

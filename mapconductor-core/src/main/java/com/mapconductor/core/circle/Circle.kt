@@ -7,14 +7,14 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerState
 import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class CircleState(
-    center: GeoPoint,
+    center: GeoPointInterface,
     radiusMeters: Double,
     geodesic: Boolean = true,
     clickable: Boolean = true,
@@ -82,7 +82,7 @@ class CircleState(
     fun asFlow(): Flow<CircleFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
 
     fun copy(
-        center: GeoPoint = this.center,
+        center: GeoPointInterface = this.center,
         radiusMeters: Double = this.radiusMeters,
         geodesic: Boolean = this.geodesic,
         strokeColor: Color = this.strokeColor,
@@ -147,7 +147,7 @@ data class CircleFingerPrint(
 
 data class CircleEvent(
     val state: CircleState,
-    val clicked: GeoPoint,
+    val clicked: GeoPointInterface,
 )
 
 typealias OnCircleEventHandler = (CircleEvent) -> Unit

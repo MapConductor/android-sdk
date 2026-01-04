@@ -1,17 +1,17 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `typealias MapboxMapViewHolder = MapViewHolder<MapView, MapboxMap>
+const code = `typealias MapboxMapViewHolder = MapViewHolderInterface<MapView, MapboxMap>
 
-class MapboxMapViewHolderImpl(
+class MapboxMapViewHolder(
     override val mapView: MapView,
     override val map: MapboxMap,
-) : MapViewHolder<MapView, MapboxMap>,
+) : MapViewHolderInterface<MapView, MapboxMap>,
     MapboxLifecycleObserver {
-    fun toScreenOffset(position: GeoPoint): Offset?
-    fun fromScreenOffsetSync(offset: Offset): GeoPointImpl?
-    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPointImpl?
-    suspend fun fromScreenOffset(offset: Offset): GeoPointImpl?
+    fun toScreenOffset(position: GeoPointInterface): Offset?
+    fun fromScreenOffsetSync(offset: Offset): GeoPoint?
+    fun fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint?
+    suspend fun fromScreenOffset(offset: Offset): GeoPoint?
 }`;
 ---
 

@@ -1,10 +1,10 @@
 package com.mapconductor.core.groundimage
 
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderInterface
 import kotlinx.coroutines.CoroutineScope
 
-abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundImageOverlayRenderer<ActualGroundImage> {
-    abstract val holder: MapViewHolder<*, *>
+abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundImageOverlayRendererInterface<ActualGroundImage> {
+    abstract val holder: MapViewHolderInterface<*, *>
     abstract val coroutine: CoroutineScope
 
     override suspend fun onPostProcess() {
@@ -15,19 +15,19 @@ abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundIma
 
     abstract suspend fun updateGroundImageProperties(
         groundImage: ActualGroundImage,
-        current: GroundImageEntity<ActualGroundImage>,
-        prev: GroundImageEntity<ActualGroundImage>,
+        current: GroundImageEntityInterface<ActualGroundImage>,
+        prev: GroundImageEntityInterface<ActualGroundImage>,
     ): ActualGroundImage?
 
-    abstract suspend fun removeGroundImage(entity: GroundImageEntity<ActualGroundImage>)
+    abstract suspend fun removeGroundImage(entity: GroundImageEntityInterface<ActualGroundImage>)
 
-    override suspend fun onAdd(data: List<GroundImageOverlayRenderer.AddParams>): List<ActualGroundImage?> =
+    override suspend fun onAdd(data: List<GroundImageOverlayRendererInterface.AddParamsInterface>): List<ActualGroundImage?> =
         data.map { params ->
             createGroundImage(params.state)
         }
 
     override suspend fun onChange(
-        data: List<GroundImageOverlayRenderer.ChangeParams<ActualGroundImage>>,
+        data: List<GroundImageOverlayRendererInterface.ChangeParamsInterface<ActualGroundImage>>,
     ): List<ActualGroundImage?> =
         data.map { params ->
             updateGroundImageProperties(
@@ -37,7 +37,7 @@ abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundIma
             )
         }
 
-    override suspend fun onRemove(data: List<GroundImageEntity<ActualGroundImage>>) {
+    override suspend fun onRemove(data: List<GroundImageEntityInterface<ActualGroundImage>>) {
         data.forEach { entity ->
             removeGroundImage(entity)
         }

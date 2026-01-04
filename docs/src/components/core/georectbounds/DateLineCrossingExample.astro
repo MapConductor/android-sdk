@@ -21,11 +21,11 @@ const {
 
 const code = `// Bounds crossing the date line
 val pacificBounds = GeoRectBounds(
-    southWest = GeoPointImpl.fromLatLong(${southWestLatitude}, ${southWestLongitude}),  // West of date line
-    northEast = GeoPointImpl.fromLatLong(${northEastLatitude}, ${northEastLongitude})  // East of date line
+    southWest = GeoPoint.fromLatLong(${southWestLatitude}, ${southWestLongitude}),  // West of date line
+    northEast = GeoPoint.fromLatLong(${northEastLatitude}, ${northEastLongitude})  // East of date line
 )
 
-val pointInPacific = GeoPointImpl.fromLatLong(${pointLatitude}, ${pointLongitude})
+val pointInPacific = GeoPoint.fromLatLong(${pointLatitude}, ${pointLongitude})
 val containsPoint = pacificBounds.contains(pointInPacific) // true`;
 ---
 

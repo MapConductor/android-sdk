@@ -14,7 +14,7 @@ interface Props {
 const {
   commentForFromLatLong = "Standard creation - latitude first (common pattern)",
   commentForFromLongLat = "Alternative - longitude first",
-  commentForFrom = "From existing GeoPoint",
+  commentForFrom = "From existing GeoPointInterface",
   commentForConstructor = "Direct constructor",
   latitude = 37.7749,
   longitude = -122.4194,
@@ -22,16 +22,16 @@ const {
 } = Astro.props;
 
 const code = `// ${commentForFromLatLong}
-GeoPointImpl.fromLatLong(${latitude}, ${longitude})
+GeoPoint.fromLatLong(${latitude}, ${longitude})
 
 // ${commentForFromLongLat}
-GeoPointImpl.fromLongLat(${longitude}, ${latitude})
+GeoPoint.fromLongLat(${longitude}, ${latitude})
 
 // ${commentForFrom}
-GeoPointImpl.from(existingGeoPoint)
+GeoPoint.from(existingGeoPoint)
 
 // ${commentForConstructor}
-GeoPointImpl(latitude = ${latitude}, longitude = ${longitude}, altitude = ${altitude})`;
+GeoPoint(latitude = ${latitude}, longitude = ${longitude}, altitude = ${altitude})`;
 ---
 
 <Code code={code} lang="kotlin" />

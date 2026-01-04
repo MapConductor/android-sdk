@@ -16,26 +16,26 @@ fun NativeClusteringExample() {
             clusteringEnabled = true,
             clusterThreshold = 50,     // Cluster when > 50 markers nearby
             clusterRadius = 100.0,     // 100-meter clustering radius
-            geocell = HexGeocellImpl.defaultGeocell()
+            geocell = HexGeocell.defaultGeocell()
         )
     }
 
     val nativeManager = remember {
         NativeMarkerManager<GoogleMapActualMarker>(
-            hexGeocell = HexGeocellImpl.defaultGeocell()
+            hexGeocell = HexGeocell.defaultGeocell()
         )
     }
 
     // Add large dataset for clustering
     LaunchedEffect(Unit) {
         val denseMarkers = generateDenseMarkerCluster(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            center = GeoPoint.fromLatLong(37.7749, -122.4194),
             count = 1000,
             radiusMeters = 500.0 // 500 meters
         )
 
         denseMarkers.forEach { markerData ->
-            val entity = MarkerEntity(
+            val entity = MarkerEntityInterface(
                 state = MarkerState(
                     id = markerData.id,
                     position = markerData.position,

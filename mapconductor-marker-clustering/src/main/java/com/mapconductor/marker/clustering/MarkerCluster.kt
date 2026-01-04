@@ -9,7 +9,7 @@ data class MarkerCluster(
 
 data class MarkerClusterDebugInfo(
     val id: String,
-    val center: com.mapconductor.core.features.GeoPoint,
+    val center: com.mapconductor.core.features.GeoPointInterface,
     val radiusMeters: Double,
     val count: Int,
 ) : Serializable

@@ -13,7 +13,7 @@ const code = `// ${commentForMapViewUsage}
 MapView(state = mapViewState) {
     // Solid red circle
     Circle(
-        center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        center = GeoPoint.fromLatLong(37.7749, -122.4194),
         radiusMeters = 500.0,
         strokeColor = Color.Red,
         strokeWidth = 3.dp,
@@ -23,7 +23,7 @@ MapView(state = mapViewState) {
 
     // Blue circle with thick border
     Circle(
-        center = GeoPointImpl.fromLatLong(37.7849, -122.4194),
+        center = GeoPoint.fromLatLong(37.7849, -122.4194),
         radiusMeters = 750.0,
         strokeColor = Color.Blue,
         strokeWidth = 5.dp,
@@ -33,7 +33,7 @@ MapView(state = mapViewState) {
 
     // Green circle with pattern
     Circle(
-        center = GeoPointImpl.fromLatLong(37.7649, -122.4194),
+        center = GeoPoint.fromLatLong(37.7649, -122.4194),
         radiusMeters = 300.0,
         strokeColor = Color.Green,
         strokeWidth = 2.dp,

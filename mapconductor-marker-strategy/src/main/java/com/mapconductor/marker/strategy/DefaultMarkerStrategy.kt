@@ -1,12 +1,12 @@
 package com.mapconductor.marker.strategy
 
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
@@ -25,11 +25,11 @@ import kotlinx.coroutines.sync.withPermit
 class DefaultMarkerStrategy<ActualMarker>(
     private val expandMargin: Double = 0.2,
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         semaphore.withPermit {
             val visibleRegion = cameraPosition.visibleRegion ?: return
@@ -40,8 +40,8 @@ class DefaultMarkerStrategy<ActualMarker>(
 
                 // Get all entities and separate them by viewport status
                 val allMarkers = markerManager.allEntities()
-                val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
-                val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
+                val markersToRender = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+                val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
 
                 allMarkers.forEach { entity ->
                     val isInViewport = expandedBounds.contains(entity.state.position)
@@ -76,7 +76,7 @@ class DefaultMarkerStrategy<ActualMarker>(
                 if (markersToRender.isNotEmpty()) {
                     val addParams =
                         markersToRender.map { entity ->
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state: MarkerState = entity.state
                                 override val bitmapIcon: BitmapIcon =
                                     entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon

@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import android.graphics.Bitmap
@@ -15,10 +15,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-    position: GeoPoint,
+    position: GeoPointInterface,
     id: String? = null,
     var extra: Serializable? = null,
-    icon: MarkerIcon? = null,
+    icon: MarkerIconInterface? = null,
     animation: MarkerAnimation? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
@@ -48,7 +48,7 @@ class MarkerState(
             31 * result + hashCode
         }
 
-    var icon by mutableStateOf<MarkerIcon?>(icon)
+    var icon by mutableStateOf<MarkerIconInterface?>(icon)
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
     var onClick by mutableStateOf(onClick)
@@ -67,7 +67,7 @@ class MarkerState(
     internal fun getAnimation(): MarkerAnimation? = internalAnimation
 
     private val currentPosition = mutableStateOf(position)
-    var position: GeoPoint
+    var position: GeoPointInterface
         get() {
             return currentPosition.value
         }
@@ -77,9 +77,9 @@ class MarkerState(
 
     fun copy(
         id: String? = this.id,
-        position: GeoPoint = this.position,
+        position: GeoPointInterface = this.position,
         extra: Serializable? = this.extra,
-        icon: MarkerIcon? = this.icon,
+        icon: MarkerIconInterface? = this.icon,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
         onClick: OnMarkerEventHandler? = this.onClick,

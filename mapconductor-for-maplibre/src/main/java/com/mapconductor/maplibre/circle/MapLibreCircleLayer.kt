@@ -1,6 +1,6 @@
 package com.mapconductor.maplibre.circle
 
-import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.maplibre.MapLibreActualCircle
 import org.maplibre.android.style.expressions.Expression
@@ -76,7 +76,7 @@ class MapLibreCircleLayer(
         }
 
     fun draw(
-        entities: List<CircleEntity<MapLibreActualCircle>>,
+        entities: List<CircleEntityInterface<MapLibreActualCircle>>,
         style: org.maplibre.android.maps.Style,
     ) {
         val features = entities.map { it.circle }

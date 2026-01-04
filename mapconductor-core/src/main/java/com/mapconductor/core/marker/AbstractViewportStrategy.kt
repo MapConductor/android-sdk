@@ -1,7 +1,7 @@
 package com.mapconductor.core.marker
 
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellInterface
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.withPermit
  */
 abstract class AbstractViewportStrategy<ActualMarker>(
     semaphore: Semaphore,
-    geocell: HexGeocell,
+    geocell: HexGeocellInterface,
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
     /**
      * Default MarkerManager instance provided by dependency injection.
@@ -27,14 +27,14 @@ abstract class AbstractViewportStrategy<ActualMarker>(
     override suspend fun onAdd(
         data: List<MarkerState>,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         semaphore.withPermit {
-            val modifiedEntities = mutableListOf<MarkerEntity<ActualMarker>>()
+            val modifiedEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<MarkerOverlayRenderer.AddParams>()
-            val updated = mutableListOf<MarkerOverlayRenderer.ChangeParams<ActualMarker>>()
-            val removed = mutableListOf<MarkerEntity<ActualMarker>>()
+            val added = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker>>()
+            val removed = mutableListOf<MarkerEntityInterface<ActualMarker>>()
             val viewportBounds = viewport
 
             data.forEach { state ->
@@ -47,21 +47,21 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                     // Only add to update list if marker is in viewport
                     if (isInViewport) {
                         updated.add(
-                            object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                                override val current: MarkerEntity<ActualMarker> =
-                                    MarkerEntityImpl(
+                            object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
+                                override val current: MarkerEntityInterface<ActualMarker> =
+                                    MarkerEntity(
                                         state = state,
                                         marker = prevEntity.marker,
                                         isRendered = true,
                                     )
                                 override val bitmapIcon: BitmapIcon = markerIcon
-                                override val prev: MarkerEntity<ActualMarker> = prevEntity
+                                override val prev: MarkerEntityInterface<ActualMarker> = prevEntity
                             },
                         )
                     } else {
                         // Register entity without rendering for markers outside viewport
                         val entity =
-                            MarkerEntityImpl(
+                            MarkerEntity(
                                 state = state,
                                 marker = prevEntity.marker,
                                 isRendered = true,
@@ -73,7 +73,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                     // Only add to render list if marker is in viewport
                     if (isInViewport) {
                         added.add(
-                            object : MarkerOverlayRenderer.AddParams {
+                            object : MarkerOverlayRendererInterface.AddParamsInterface {
                                 override val state: MarkerState = state
                                 override val bitmapIcon: BitmapIcon =
                                     state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -82,7 +82,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                     } else {
                         // Register entity without rendering for new markers outside viewport
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 marker = null,
                                 state = state,
                                 isRendered = true,
@@ -110,7 +110,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                 actualMarkers.forEachIndexed { index, actualMarker ->
                     actualMarker?.let {
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 marker = actualMarker,
                                 state = added[index].state,
                                 isRendered = true,
@@ -129,7 +129,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                     actualMarker?.let {
                         val params = updated[index]
                         val entity =
-                            MarkerEntityImpl<ActualMarker>(
+                            MarkerEntity<ActualMarker>(
                                 state = params.current.state,
                                 marker = actualMarker,
                                 isRendered = true,
@@ -152,7 +152,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
     override suspend fun onUpdate(
         state: MarkerState,
         viewport: GeoRectBounds,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
         // Fast path: Check entity existence without semaphore to avoid blocking during initial marker addition
         if (!markerManager.hasEntity(state.id)) return true
@@ -167,7 +167,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
 
             // Always update the entity in the manager
             val entity =
-                MarkerEntityImpl(
+                MarkerEntity(
                     marker = prevEntity.marker,
                     state = state,
                     isRendered = prevEntity.isRendered,
@@ -181,21 +181,21 @@ abstract class AbstractViewportStrategy<ActualMarker>(
                 val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
 
                 val renderEntity =
-                    MarkerEntityImpl(
+                    MarkerEntity(
                         marker = marker,
                         state = state,
                     )
                 val markerParams =
-                    object : MarkerOverlayRenderer.ChangeParams<ActualMarker> {
-                        override val current: MarkerEntity<ActualMarker> = renderEntity
+                    object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
+                        override val current: MarkerEntityInterface<ActualMarker> = renderEntity
                         override val bitmapIcon: BitmapIcon = markerIcon
-                        override val prev: MarkerEntity<ActualMarker> = prevEntity
+                        override val prev: MarkerEntityInterface<ActualMarker> = prevEntity
                     }
                 val markers = renderer.onChange(listOf(markerParams))
 
                 markers[0]?.let {
                     val finalEntity =
-                        MarkerEntityImpl<ActualMarker>(
+                        MarkerEntity<ActualMarker>(
                             marker = it,
                             state = state,
                             isRendered = true,

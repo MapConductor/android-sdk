@@ -6,8 +6,8 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -21,7 +21,7 @@ import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.marker.DefaultMapLibreMarkerEventController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
-import com.mapconductor.maplibre.marker.MapLibreMarkerEventController
+import com.mapconductor.maplibre.marker.MapLibreMarkerEventControllerInterface
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
@@ -45,10 +45,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-typealias MapLibreDesignTypeChangeHandler = (MapLibreMapDesignType) -> Unit
+typealias MapLibreDesignTypeChangeHandler = (MapLibreMapDesignTypeInterface) -> Unit
 
-class MapLibreViewControllerImpl(
-    override val holder: MapLibreMapViewHolder,
+class MapLibreViewController(
+    override val holder: MapLibreMapViewHolderInterface,
     private val markerController: MapLibreMarkerController,
     private val polylineController: MapLibrePolylineController,
     private val polygonController: MapLibrePolygonConductor,
@@ -57,7 +57,7 @@ class MapLibreViewControllerImpl(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    MapLibreViewController,
+    MapLibreViewControllerInterface,
     MapLibreMap.OnMapClickListener,
     MapLibreMap.OnMapLongClickListener,
     MapLibreMap.OnMoveListener,
@@ -68,8 +68,8 @@ class MapLibreViewControllerImpl(
     private var wasScrollEnabledBeforeDrag: Boolean? = null
     private var dragTouchInterceptor: View.OnTouchListener? = null
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
-    private val markerEventControllers = mutableListOf<MapLibreMarkerEventController>()
-    private var activeDragController: MapLibreMarkerEventController? = null
+    private val markerEventControllers = mutableListOf<MapLibreMarkerEventControllerInterface>()
+    private var activeDragController: MapLibreMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -250,7 +250,7 @@ class MapLibreViewControllerImpl(
         rasterLayerController.clear()
     }
 
-    override fun moveCamera(position: MapCameraPositionImpl) {
+    override fun moveCamera(position: MapCameraPosition) {
         coroutine.launch {
             val cameraPos = position.toCameraPosition()
             val cameraUpdate =
@@ -262,7 +262,7 @@ class MapLibreViewControllerImpl(
     }
 
     override fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         duration: Long,
     ) {
         coroutine.launch {
@@ -275,11 +275,11 @@ class MapLibreViewControllerImpl(
         }
     }
 
-    private var mapDesignType: MapLibreMapDesignType = MapLibreDesign.DemoTiles
+    private var mapDesignType: MapLibreMapDesignTypeInterface = MapLibreDesign.DemoTiles
 
     private var mapDesignTypeChangeListener: MapLibreDesignTypeChangeHandler? = null
 
-    override fun setMapDesignType(value: MapLibreMapDesignType) {
+    override fun setMapDesignType(value: MapLibreMapDesignTypeInterface) {
         coroutine.launch {
             holder.map.setStyle(value.styleJsonURL) { newStyle ->
                 Log.d("MapLibre", "Style changed to ${value.styleJsonURL}")
@@ -572,7 +572,7 @@ class MapLibreViewControllerImpl(
         }
     }
 
-    private fun getMapCameraPosition(camera: MapCameraPosition): MapCameraPositionImpl? {
+    private fun getMapCameraPosition(camera: MapCameraPositionInterface): MapCameraPosition? {
         val mapWidth = holder.mapView.width.toFloat()
         val mapHeight = holder.mapView.height.toFloat()
         val nearLeft =
@@ -606,7 +606,7 @@ class MapLibreViewControllerImpl(
                 farRight = farRight,
             )
         val mapCameraPosition =
-            MapCameraPositionImpl.Companion.from(camera).copy(
+            MapCameraPosition.Companion.from(camera).copy(
                 visibleRegion = visibleRegion,
             )
         return mapCameraPosition
@@ -719,7 +719,7 @@ class MapLibreViewControllerImpl(
         }
     }
 
-    internal fun registerMarkerEventController(controller: MapLibreMarkerEventController) {
+    internal fun registerMarkerEventController(controller: MapLibreMarkerEventControllerInterface) {
         if (markerEventControllers.contains(controller)) return
         markerEventControllers.add(controller)
         controller.setClickListener(markerClickListener)

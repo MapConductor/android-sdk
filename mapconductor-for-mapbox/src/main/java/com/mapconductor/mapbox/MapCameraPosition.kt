@@ -4,9 +4,9 @@ import com.mapbox.maps.CameraChanged
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.EdgeInsets
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapCameraPositionImpl
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import com.mapconductor.mapbox.zoom.ZoomAltitudeConverter
 
@@ -24,10 +24,10 @@ fun CameraChanged.toMapCameraPosition() =
         .pitch(cameraState.pitch)
         .build()
 
-fun MapCameraPositionImpl.toCameraOptions(): CameraOptions =
+fun MapCameraPosition.toCameraOptions(): CameraOptions =
     CameraOptions
         .Builder()
-        .center(GeoPointImpl.from(position).toPoint())
+        .center(GeoPoint.from(position).toPoint())
         .zoom(zoom - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
         .pitch(tilt)
         .bearing(bearing)
@@ -35,32 +35,32 @@ fun MapCameraPositionImpl.toCameraOptions(): CameraOptions =
 //    .padding(paddings?.toEdgeInsects())
         .build()
 
-fun MapCameraPositionImpl.toCameraState(): CameraState =
+fun MapCameraPosition.toCameraState(): CameraState =
     CameraState(
-        GeoPointImpl.from(position).toPoint(),
+        GeoPoint.from(position).toPoint(),
         EdgeInsets(0.0, 0.0, 0.0, 0.0),
         zoom - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
         bearing,
         tilt,
     )
 
-fun MapCameraPositionImpl.Companion.from(cameraPosition: MapCameraPosition) =
+fun MapCameraPosition.Companion.from(cameraPosition: MapCameraPositionInterface) =
     when (cameraPosition) {
-        is MapCameraPositionImpl -> cameraPosition
+        is MapCameraPosition -> cameraPosition
         else ->
-            MapCameraPositionImpl(
+            MapCameraPosition(
                 position = cameraPosition.position,
                 zoom = cameraPosition.zoom,
                 bearing = cameraPosition.bearing,
                 tilt = cameraPosition.tilt,
-                paddings = MapboxPaddings.fromImpl(cameraPosition.paddings),
+                paddings = MapboxPaddings.from(cameraPosition.paddings),
                 visibleRegion = cameraPosition.visibleRegion,
             )
     }
 
 fun CameraOptions.toMapCameraPosition() =
-    MapCameraPositionImpl(
-        position = center?.toGeoPoint() ?: GeoPointImpl.fromLongLat(0.0, 0.0),
+    MapCameraPosition(
+        position = center?.toGeoPoint() ?: GeoPoint.fromLongLat(0.0, 0.0),
         zoom = (zoom ?: 2.0) + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
         bearing = bearing ?: 0.0,
         tilt = pitch ?: 0.0,
@@ -69,7 +69,7 @@ fun CameraOptions.toMapCameraPosition() =
     )
 
 fun CameraState.toMapCameraPosition() =
-    MapCameraPositionImpl(
+    MapCameraPosition(
         position = center.toGeoPoint(),
         zoom = zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
         bearing = bearing,

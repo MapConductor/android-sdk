@@ -28,14 +28,14 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 
 ### 角の点
 
-- **`southWest: GeoPointImpl?`**: 矩形の南西角（左下）
-- **`northEast: GeoPointImpl?`**: 矩形の北東角（右上）
+- **`southWest: GeoPoint?`**: 矩形の南西角（左下）
+- **`northEast: GeoPoint?`**: 矩形の北東角（右上）
 - **`isEmpty: Boolean`**: 境界が定義されていない場合は `true` を返します
 
 ### 計算されるプロパティ
 
-- **`center: GeoPointImpl?`**: 境界の中心点
-- **`toSpan(): GeoPointImpl?`**: GeoPoint として範囲（幅/高さ）を返します
+- **`center: GeoPoint?`**: 境界の中心点
+- **`toSpan(): GeoPoint?`**: GeoPointInterface として範囲（幅/高さ）を返します
 
 ## 基本的な使用方法
 

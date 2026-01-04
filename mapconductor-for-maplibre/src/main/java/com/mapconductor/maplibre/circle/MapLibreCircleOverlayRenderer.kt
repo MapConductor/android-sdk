@@ -2,12 +2,12 @@ package com.mapconductor.maplibre.circle
 
 import com.google.gson.JsonObject
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
-import com.mapconductor.core.circle.CircleEntity
-import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleEntityInterface
+import com.mapconductor.core.circle.CircleManagerInterface
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.maplibre.MapLibreActualCircle
-import com.mapconductor.maplibre.MapLibreMapViewHolder
+import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import com.mapconductor.maplibre.toMapLibreColorString
 import com.mapconductor.maplibre.toPoint
 import org.maplibre.geojson.Feature
@@ -19,12 +19,12 @@ import kotlinx.coroutines.launch
 
 class MapLibreCircleOverlayRenderer(
     val layer: MapLibreCircleLayer,
-    val circleManager: CircleManager<MapLibreActualCircle>,
-    override val holder: MapLibreMapViewHolder,
+    val circleManager: CircleManagerInterface<MapLibreActualCircle>,
+    override val holder: MapLibreMapViewHolderInterface,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractCircleOverlayRenderer<MapLibreActualCircle>() {
     override suspend fun createCircle(state: CircleState): MapLibreActualCircle? {
-        val center = GeoPointImpl.from(state.center).toPoint()
+        val center = GeoPoint.from(state.center).toPoint()
         val latCorr = if (state.geodesic) cos(Math.toRadians(center.latitude())) else 1.0
         return Feature.fromGeometry(
             Point.fromLngLat(center.longitude(), center.latitude()),
@@ -41,11 +41,11 @@ class MapLibreCircleOverlayRenderer(
 
     override suspend fun updateCircleProperties(
         circle: MapLibreActualCircle,
-        current: CircleEntity<MapLibreActualCircle>,
-        prev: CircleEntity<MapLibreActualCircle>,
+        current: CircleEntityInterface<MapLibreActualCircle>,
+        prev: CircleEntityInterface<MapLibreActualCircle>,
     ): MapLibreActualCircle? {
         val state = current.state
-        val center = GeoPointImpl.from(state.center).toPoint()
+        val center = GeoPoint.from(state.center).toPoint()
         val latCorr = if (state.geodesic) cos(Math.toRadians(center.latitude())) else 1.0
         return Feature.fromGeometry(
             Point.fromLngLat(center.longitude(), center.latitude()),
@@ -60,7 +60,7 @@ class MapLibreCircleOverlayRenderer(
         )
     }
 
-    override suspend fun removeCircle(entity: CircleEntity<MapLibreActualCircle>) {
+    override suspend fun removeCircle(entity: CircleEntityInterface<MapLibreActualCircle>) {
         // Remove by redrawing remaining; nothing to do here
     }
 

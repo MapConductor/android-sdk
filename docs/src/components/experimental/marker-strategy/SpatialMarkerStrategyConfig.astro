@@ -17,7 +17,7 @@ val spatialStrategy = SpatialMarkerStrategy<HereActualMarker>(
     clusteringEnabled = true,
     clusterRadius = ${clusterRadius},      // Clustering radius (meters)
     maxMarkersPerCluster = ${maxMarkersPerCluster},  // Maximum markers in a cluster
-    geocell = HexGeocellImpl.defaultGeocell()
+    geocell = HexGeocell.defaultGeocell()
 )`;
 ---
 

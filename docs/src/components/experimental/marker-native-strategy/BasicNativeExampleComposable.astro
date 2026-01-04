@@ -16,7 +16,7 @@ fun BasicNativeExample() {
     // Create native marker manager
     val nativeManager = remember {
         NativeMarkerManager<GoogleMapActualMarker>(
-            hexGeocell = HexGeocellImpl.defaultGeocell()
+            hexGeocell = HexGeocell.defaultGeocell()
         )
     }
 
@@ -24,7 +24,7 @@ fun BasicNativeExample() {
     LaunchedEffect(Unit) {
         val markers = generateLargeMarkerDataset() // ${datasetComment}
         markers.forEach { markerData ->
-            val entity = MarkerEntity(
+            val entity = MarkerEntityInterface(
                 state = MarkerState(
                     id = markerData.id,
                     position = markerData.position,

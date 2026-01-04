@@ -1,9 +1,9 @@
 ---
-title: "MapCameraPosition（カメラ位置）"
+title: "MapCameraPositionInterface（カメラ位置）"
 ---
 
 import MapCameraPositionInterface from '~/components/core/mapcameraposition/MapCameraPositionInterface.astro';
-import MapCameraPositionImpl from '~/components/core/mapcameraposition/MapCameraPositionImpl.astro';
+import MapCameraPosition from '~/components/core/mapcameraposition/MapCameraPosition.astro';
 import DefaultCameraPositionExample from '~/components/core/mapcameraposition/DefaultCameraPositionExample.astro';
 import CustomCameraPositionsExample from '~/components/core/mapcameraposition/CustomCameraPositionsExample.astro';
 import ZoomLevelsExample from '~/components/core/mapcameraposition/ZoomLevelsExample.astro';
@@ -17,32 +17,32 @@ import UserLocationCameraExample from '~/components/core/mapcameraposition/UserL
 import ShowMultiplePointsExample from '~/components/core/mapcameraposition/ShowMultiplePointsExample.astro';
 import NavigationCameraExample from '~/components/core/mapcameraposition/NavigationCameraExample.astro';
 
-`MapCameraPosition` は、カメラの視野位置、方向、および地図上の可視領域を表します。カメラがどこを見ているか、地図のどの程度が表示されるか、地図を表示する視点を定義します。
+`MapCameraPositionInterface` は、カメラの視野位置、方向、および地図上の可視領域を表します。カメラがどこを見ているか、地図のどの程度が表示されるか、地図を表示する視点を定義します。
 
 ## インターフェースと実装
 
-### MapCameraPosition インターフェース
+### MapCameraPositionInterface インターフェース
 
 <MapCameraPositionInterface />
 
-### MapCameraPositionImpl
+### MapCameraPosition
 
 メイン実装は不変のカメラ位置データを提供します:
 
-<MapCameraPositionImpl />
+<MapCameraPosition />
 
 ## プロパティ
 
 ### カメラ位置
 
-- **`position: GeoPoint`**: カメラの視野の地理的中心点
+- **`position: GeoPointInterface`**: カメラの視野の地理的中心点
 - **`zoom: Double`**: ズームレベル（おおよそ Google Maps のスケールに従います）
 - **`bearing: Double`**: コンパスの方向（度数）（0 = 北、90 = 東）
 - **`tilt: Double`**: カメラの傾斜角度（度数）（0 = 真上から、90 = 水平）
 
 ### ビュー構成
 
-- **`paddings: MapPaddings?`**: 可視領域に影響するビューポートのパディング
+- **`paddings: MapPaddingsInterface?`**: 可視領域に影響するビューポートのパディング
 - **`visibleRegion: VisibleRegion?`**: `(読み込み専用)` 画面上で実際に表示される地理的境界
 
 ## 生成メソッド
@@ -145,10 +145,10 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
 ### プロパティ
 
 - **`bounds: GeoRectBounds`**: 可視領域全体を包含する矩形の地理的境界。これは、すべての可視コンテンツを含む最小の境界矩形です。
-- **`nearLeft: GeoPoint?`**: 可視領域の左下角の地理的座標。「near」はカメラ位置に最も近い側を指します。
-- **`nearRight: GeoPoint?`**: 可視領域の右下角の地理的座標。
-- **`farLeft: GeoPoint?`**: 可視領域の左上角の地理的座標。「far」はカメラ位置から最も遠い側を指します。
-- **`farRight: GeoPoint?`**: 可視領域の右上角の地理的座標。
+- **`nearLeft: GeoPointInterface?`**: 可視領域の左下角の地理的座標。「near」はカメラ位置に最も近い側を指します。
+- **`nearRight: GeoPointInterface?`**: 可視領域の右下角の地理的座標。
+- **`farLeft: GeoPointInterface?`**: 可視領域の左上角の地理的座標。「far」はカメラ位置から最も遠い側を指します。
+- **`farRight: GeoPointInterface?`**: 可視領域の右上角の地理的座標。
 
 ### VisibleRegion の使用
 

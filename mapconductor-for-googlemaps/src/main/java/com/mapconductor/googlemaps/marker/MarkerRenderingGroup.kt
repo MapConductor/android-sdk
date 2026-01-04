@@ -11,10 +11,10 @@ import androidx.compose.runtime.setValue
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCollector
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewControllerImpl
+import com.mapconductor.googlemaps.GoogleMapViewController
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.FlowPreview
@@ -24,11 +24,11 @@ import kotlinx.coroutines.flow.debounce
 @OptIn(FlowPreview::class)
 @Composable
 fun MarkerRenderingGroup(
-    strategy: MarkerRenderingStrategy<GoogleMapActualMarker>,
+    strategy: MarkerRenderingStrategyInterface<GoogleMapActualMarker>,
     content: @Composable () -> Unit,
 ) {
     val mapController = LocalMapViewController.current
-    val googleMapController = mapController as? GoogleMapViewControllerImpl ?: return
+    val googleMapController = mapController as? GoogleMapViewController ?: return
     val holder = googleMapController.holder as? GoogleMapViewHolder ?: return
     val markerCollector =
         remember {

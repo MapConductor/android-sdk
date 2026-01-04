@@ -25,7 +25,7 @@ fun GroundImageMapPage(
     groundImageResources: GroundImageResources,
     onToggleSidebar: () -> Unit = {},
 ) {
-    val viewModel = remember { GroundImageMapPageViewModelImpl(groundImageResources) }
+    val viewModel = remember { GroundImageMapPageViewModel(groundImageResources) }
 
     DemoMapPageScaffold(
         menuItems = GroundImageCapableMapViewItems(viewModel.initCameraPosition),

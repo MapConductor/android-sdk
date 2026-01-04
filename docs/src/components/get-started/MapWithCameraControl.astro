@@ -39,11 +39,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MapWithCameraControl(modifier: Modifier = Modifier) {
-    val marker1 = GeoPointImpl.fromLatLong(${button1Lat}, ${button1Long})
-    val marker2 = GeoPointImpl.fromLatLong(${button2Lat}, ${button2Long})
+    val marker1 = GeoPoint.fromLatLong(${button1Lat}, ${button1Long})
+    val marker2 = GeoPoint.fromLatLong(${button2Lat}, ${button2Long})
 
     val mapViewState = rememberGoogleMapViewState(
-        cameraPosition = MapCameraPositionImpl(
+        cameraPosition = MapCameraPosition(
             position = marker1,
             zoom = 12.0
         )
@@ -60,7 +60,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
             Button(onClick = {
                 scope.launch {
                     mapViewState.moveCameraTo(
-                        MapCameraPositionImpl(
+                        MapCameraPosition(
                             position = marker1,
                             zoom = ${button1Zoom}
                         ),
@@ -74,7 +74,7 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
             Button(onClick = {
                 scope.launch {
                     mapViewState.moveCameraTo(
-                        MapCameraPositionImpl(
+                        MapCameraPosition(
                             position = marker2,
                             zoom = ${button2Zoom}
                         ),

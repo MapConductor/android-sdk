@@ -1,13 +1,13 @@
 package com.mapconductor.marker.strategy
 
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractViewportStrategy
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.spherical.expandBounds
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -39,11 +39,11 @@ class SpatialMarkerStrategy<ActualMarker>(
     private val expandMargin: Double = 0.3,
     private val addOnlyMode: Boolean = false,
     semaphore: Semaphore = Semaphore(1),
-    geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractViewportStrategy<ActualMarker>(semaphore, geocell) {
     override suspend fun onCameraChanged(
-        cameraPosition: MapCameraPositionImpl,
-        renderer: MarkerOverlayRenderer<ActualMarker>,
+        cameraPosition: MapCameraPosition,
+        renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ) {
         val visibleRegion = cameraPosition.visibleRegion ?: return
         semaphore.withPermit {
@@ -52,8 +52,8 @@ class SpatialMarkerStrategy<ActualMarker>(
 
             // Get all entities and separate them by viewport status (similar to DefaultMarkerStrategy)
             val allMarkers = markerManager.allEntities()
-            val markersToRender = mutableListOf<MarkerEntity<ActualMarker>>()
-            val markersToRemove = mutableListOf<MarkerEntity<ActualMarker>>()
+            val markersToRender = mutableListOf<MarkerEntityInterface<ActualMarker>>()
+            val markersToRemove = mutableListOf<MarkerEntityInterface<ActualMarker>>()
 
             allMarkers.forEach { entity ->
                 val isInViewport = expandedBounds.contains(entity.state.position)
@@ -89,7 +89,7 @@ class SpatialMarkerStrategy<ActualMarker>(
                 val defaultMarkerIcon = DefaultMarkerIcon()
                 val addParams =
                     markersToRender.map { entity ->
-                        object : MarkerOverlayRenderer.AddParams {
+                        object : MarkerOverlayRendererInterface.AddParamsInterface {
                             override val state = entity.state
                             override val bitmapIcon: BitmapIcon =
                                 entity.state.icon?.toBitmapIcon() ?: defaultMarkerIcon.toBitmapIcon()
@@ -123,7 +123,7 @@ object SpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> withAddRemoveMode(
         semaphore: Semaphore = Semaphore(1),
-        geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+        geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
         expandMargin: Double = 0.2,
     ): SpatialMarkerStrategy<ActualMarker> =
         SpatialMarkerStrategy(
@@ -140,7 +140,7 @@ object SpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> withAddOnlyMode(
         semaphore: Semaphore = Semaphore(1),
-        geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+        geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
         expandMargin: Double = 0.5,
     ): SpatialMarkerStrategy<ActualMarker> =
         SpatialMarkerStrategy(
@@ -156,7 +156,7 @@ object SpatialMarkerRenderingStrategies {
      */
     fun <ActualMarker> forLargeDatasets(
         semaphore: Semaphore = Semaphore(1),
-        geocell: HexGeocell = HexGeocellImpl.defaultGeocell(),
+        geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
         expandMargin: Double = 0.8,
     ): SpatialMarkerStrategy<ActualMarker> =
         SpatialMarkerStrategy(

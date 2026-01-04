@@ -41,8 +41,8 @@ fun AnimatedGroundImageExample() {
     val groundImageState = drawable?.let {
         GroundImageState(
             bounds = GeoRectBounds(
-                southwest = GeoPointImpl.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
-                northeast = GeoPointImpl.fromLatLong(${northeastLatitude}, ${northeastLongitude})
+                southwest = GeoPoint.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
+                northeast = GeoPoint.fromLatLong(${northeastLatitude}, ${northeastLongitude})
             ),
             image = it,
             opacity = opacity,

@@ -26,10 +26,10 @@ const {
 const code = `@Composable
 fun DynamicBoundsExample() {
     var southwest by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(${southwestLatitude}, ${southwestLongitude}))
+        mutableStateOf(GeoPoint.fromLatLong(${southwestLatitude}, ${southwestLongitude}))
     }
     var northeast by remember {
-        mutableStateOf(GeoPointImpl.fromLatLong(${northeastLatitude}, ${northeastLongitude}))
+        mutableStateOf(GeoPoint.fromLatLong(${northeastLatitude}, ${northeastLongitude}))
     }
 
     val context = LocalContext.current

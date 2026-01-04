@@ -13,7 +13,7 @@ const {
 
 const code = `@Composable
 fun AnalyticsIntegration() {
-    val mapViewState = remember { MapboxViewStateImpl() }
+    val mapViewState = remember { MapboxViewState() }
 
     LaunchedEffect(mapViewState) {
         mapViewState.getMapViewHolder()?.let { holder ->

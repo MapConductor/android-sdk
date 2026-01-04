@@ -1,10 +1,10 @@
 package com.mapconductor.core.marker
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
-import com.mapconductor.core.geocell.HexGeocellImpl
 import com.mapconductor.core.projection.Earth
 
 /**
@@ -18,10 +18,10 @@ data class MarkerManagerStats(
 )
 
 open class MarkerManager<ActualMarker>(
-    protected val geocell: HexGeocell,
+    protected val geocell: HexGeocellInterface,
 ) {
     // Primary storage - single source of truth
-    private val entities = mutableMapOf<String, MarkerEntity<ActualMarker>>()
+    private val entities = mutableMapOf<String, MarkerEntityInterface<ActualMarker>>()
 
     // Lazy-initialized spatial index only when needed
     private var cellRegistry: HexCellRegistry<ActualMarker>? = null
@@ -29,7 +29,7 @@ open class MarkerManager<ActualMarker>(
     @Volatile
     private var isDestroyed = false
 
-    open fun getEntity(id: String): MarkerEntity<ActualMarker>? {
+    open fun getEntity(id: String): MarkerEntityInterface<ActualMarker>? {
         checkNotDestroyed()
         return entities.get(id)
     }
@@ -39,7 +39,7 @@ open class MarkerManager<ActualMarker>(
         return entities.containsKey(id)
     }
 
-    open fun removeEntity(id: String): MarkerEntity<ActualMarker>? {
+    open fun removeEntity(id: String): MarkerEntityInterface<ActualMarker>? {
         checkNotDestroyed()
         val removed = entities.remove(id)
         if (removed != null) {
@@ -50,7 +50,7 @@ open class MarkerManager<ActualMarker>(
     }
 
     open fun metersPerPixel(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,
@@ -61,7 +61,7 @@ open class MarkerManager<ActualMarker>(
         return Earth.CIRCUMFERENCE_METERS / pixelsAtZoom * Math.cos(Math.toRadians(position.latitude)) * pixels
     }
 
-    open fun findNearest(position: GeoPoint): MarkerEntity<ActualMarker>? {
+    open fun findNearest(position: GeoPointInterface): MarkerEntityInterface<ActualMarker>? {
         checkNotDestroyed()
         return if (entities.size > 50) { // Use spatial index for larger datasets
             val registry = ensureCellRegistry()
@@ -83,7 +83,7 @@ open class MarkerManager<ActualMarker>(
         }
     }
 
-    private fun bruteForceNearest(position: GeoPoint): MarkerEntity<ActualMarker>? =
+    private fun bruteForceNearest(position: GeoPointInterface): MarkerEntityInterface<ActualMarker>? =
         entities.values.minByOrNull { entity ->
             val dx = entity.state.position.latitude - position.latitude
             val dy = entity.state.position.longitude - position.longitude
@@ -95,7 +95,7 @@ open class MarkerManager<ActualMarker>(
         return cellRegistry?.findByIdPrefix(prefix) ?: emptyList()
     }
 
-    open fun registerEntity(entity: MarkerEntity<ActualMarker>) {
+    open fun registerEntity(entity: MarkerEntityInterface<ActualMarker>) {
         checkNotDestroyed()
         entities[entity.state.id] = entity
         // Only update spatial index if it exists
@@ -117,14 +117,14 @@ open class MarkerManager<ActualMarker>(
         return cellRegistry!!
     }
 
-    open fun updateEntity(entity: MarkerEntity<ActualMarker>) {
+    open fun updateEntity(entity: MarkerEntityInterface<ActualMarker>) {
         checkNotDestroyed()
         entities[entity.state.id] = entity
         // Only update spatial index if it exists
         cellRegistry?.setPoint(entity)
     }
 
-    open fun allEntities(): List<MarkerEntity<ActualMarker>> {
+    open fun allEntities(): List<MarkerEntityInterface<ActualMarker>> {
         checkNotDestroyed()
         return entities.values.toList()
     }
@@ -158,7 +158,7 @@ open class MarkerManager<ActualMarker>(
 
     open fun findMarkersInBounds(
         bounds: com.mapconductor.core.features.GeoRectBounds,
-    ): List<MarkerEntity<ActualMarker>> {
+    ): List<MarkerEntityInterface<ActualMarker>> {
         checkNotDestroyed()
         if (bounds.isEmpty) return emptyList()
 
@@ -200,9 +200,9 @@ open class MarkerManager<ActualMarker>(
     }
 
     companion object {
-        fun <ActualMarker> defaultManager(geocell: HexGeocell? = null): MarkerManager<ActualMarker> =
+        fun <ActualMarker> defaultManager(geocell: HexGeocellInterface? = null): MarkerManager<ActualMarker> =
             MarkerManager<ActualMarker>(
-                geocell = geocell ?: HexGeocellImpl.defaultGeocell(),
+                geocell = geocell ?: HexGeocell.defaultGeocell(),
             )
     }
 }

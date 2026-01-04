@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.Polyline
@@ -13,7 +13,7 @@ import com.mapconductor.example.MapViewContainer
 
 @Composable
 fun FlyToMapComponent(
-    mapViewState: MapViewState<*>?,
+    mapViewState: MapViewStateInterface<*>?,
     polylines: List<PolylineState>,
     markers: List<MarkerState>,
     modifier: Modifier = Modifier,

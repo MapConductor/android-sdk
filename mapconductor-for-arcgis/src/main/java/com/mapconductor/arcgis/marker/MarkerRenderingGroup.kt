@@ -7,12 +7,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapViewHolder
-import com.mapconductor.arcgis.map.ArcGISMapViewControllerImpl
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewController
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCollector
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.settings.Settings
 import kotlinx.coroutines.FlowPreview
@@ -22,11 +22,11 @@ import kotlinx.coroutines.flow.debounce
 @OptIn(FlowPreview::class)
 @Composable
 fun MarkerRenderingGroup(
-    strategy: MarkerRenderingStrategy<ArcGISActualMarker>,
+    strategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
     content: @Composable () -> Unit,
 ) {
     val mapController = LocalMapViewController.current
-    val arcgisController = mapController as? ArcGISMapViewControllerImpl ?: return
+    val arcgisController = mapController as? ArcGISMapViewController ?: return
     val holder = arcgisController.holder as? ArcGISMapViewHolder ?: return
     val markerCollector = remember { MarkerCollector() }
     val markerLayer = remember { GraphicsOverlay() }

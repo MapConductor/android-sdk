@@ -1,18 +1,18 @@
 package com.mapconductor.core.groundimage
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 abstract class GroundImageController<ActualGroundImage>(
-    val groundImageManager: GroundImageManager<ActualGroundImage>,
-    open val renderer: GroundImageOverlayRenderer<ActualGroundImage>,
+    val groundImageManager: GroundImageManagerInterface<ActualGroundImage>,
+    open val renderer: GroundImageOverlayRendererInterface<ActualGroundImage>,
     override var clickListener: OnGroundImageEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         GroundImageState,
-        GroundImageEntity<ActualGroundImage>,
+        GroundImageEntityInterface<ActualGroundImage>,
         GroundImageEvent,
     > {
     override val zIndex: Int = 2
@@ -25,29 +25,29 @@ abstract class GroundImageController<ActualGroundImage>(
 
     override suspend fun add(data: List<GroundImageState>) {
         semaphore.withPermit {
-            val modifiedEntities = mutableListOf<GroundImageEntity<ActualGroundImage>>()
+            val modifiedEntities = mutableListOf<GroundImageEntityInterface<ActualGroundImage>>()
             val previous = groundImageManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<GroundImageOverlayRenderer.AddParams>()
-            val updated = mutableListOf<GroundImageOverlayRenderer.ChangeParams<ActualGroundImage>>()
-            val removed = mutableListOf<GroundImageEntity<ActualGroundImage>>()
+            val added = mutableListOf<GroundImageOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<GroundImageOverlayRendererInterface.ChangeParamsInterface<ActualGroundImage>>()
+            val removed = mutableListOf<GroundImageEntityInterface<ActualGroundImage>>()
 
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     val prevEntity = groundImageManager.getEntity(state.id)!!
                     updated.add(
-                        object : GroundImageOverlayRenderer.ChangeParams<ActualGroundImage> {
-                            override val current: GroundImageEntity<ActualGroundImage> =
-                                GroundImageEntityImpl(
+                        object : GroundImageOverlayRendererInterface.ChangeParamsInterface<ActualGroundImage> {
+                            override val current: GroundImageEntityInterface<ActualGroundImage> =
+                                GroundImageEntity(
                                     groundImage = prevEntity.groundImage,
                                     state = state,
                                 )
-                            override val prev: GroundImageEntity<ActualGroundImage> = prevEntity
+                            override val prev: GroundImageEntityInterface<ActualGroundImage> = prevEntity
                         },
                     )
                     previous.remove(state.id)
                 } else {
                     added.add(
-                        object : GroundImageOverlayRenderer.AddParams {
+                        object : GroundImageOverlayRendererInterface.AddParamsInterface {
                             override val state: GroundImageState = state
                         },
                     )
@@ -70,7 +70,7 @@ abstract class GroundImageController<ActualGroundImage>(
                 actualOverlays.forEachIndexed { index, actualOverlay ->
                     actualOverlay?.let {
                         val entity =
-                            GroundImageEntityImpl<ActualGroundImage>(
+                            GroundImageEntity<ActualGroundImage>(
                                 groundImage = it,
                                 state = added[index].state,
                             )
@@ -86,7 +86,7 @@ abstract class GroundImageController<ActualGroundImage>(
                     actualOverlay?.let {
                         val state = updated[index].current.state
                         val entity =
-                            GroundImageEntityImpl<ActualGroundImage>(
+                            GroundImageEntity<ActualGroundImage>(
                                 groundImage = it,
                                 state = state,
                             )
@@ -110,20 +110,20 @@ abstract class GroundImageController<ActualGroundImage>(
 
             val groundImage = prevEntity.groundImage
             val entity =
-                GroundImageEntityImpl(
+                GroundImageEntity(
                     groundImage = groundImage,
                     state = state,
                 )
             val groundImageParams =
-                object : GroundImageOverlayRenderer.ChangeParams<ActualGroundImage> {
-                    override val current: GroundImageEntity<ActualGroundImage> = entity
-                    override val prev: GroundImageEntity<ActualGroundImage> = prevEntity
+                object : GroundImageOverlayRendererInterface.ChangeParamsInterface<ActualGroundImage> {
+                    override val current: GroundImageEntityInterface<ActualGroundImage> = entity
+                    override val prev: GroundImageEntityInterface<ActualGroundImage> = prevEntity
                 }
             val groundImages = renderer.onChange(listOf(groundImageParams))
 
             groundImages[0]?.let {
                 val entity =
-                    GroundImageEntityImpl<ActualGroundImage>(
+                    GroundImageEntity<ActualGroundImage>(
                         groundImage = it,
                         state = state,
                     )
@@ -135,16 +135,16 @@ abstract class GroundImageController<ActualGroundImage>(
 
     override suspend fun clear() {
         semaphore.withPermit {
-            val entities: List<GroundImageEntity<ActualGroundImage>> = groundImageManager.allEntities()
+            val entities: List<GroundImageEntityInterface<ActualGroundImage>> = groundImageManager.allEntities()
             renderer.onRemove(entities)
             renderer.onPostProcess()
             groundImageManager.clear()
         }
     }
 
-    override fun find(position: GeoPoint): GroundImageEntity<ActualGroundImage>? = groundImageManager.find(position)
+    override fun find(position: GeoPointInterface): GroundImageEntityInterface<ActualGroundImage>? = groundImageManager.find(position)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 
     override fun destroy() {
         // No native resources to clean up

@@ -23,12 +23,12 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 ### 基本プロパティ
 
 - **`id: String`**: マーカーの一意な ID（未指定の場合は自動生成）
-- **`position: GeoPoint`**: 現在のマーカー位置
+- **`position: GeoPointInterface`**: 現在のマーカー位置
 - **`extra: Serializable?`**: 追加情報など、任意の付帯データ
 
 ### 表示に関するプロパティ
 
-- **`icon: MarkerIcon?`**: マーカーのアイコン（未指定の場合はデフォルトアイコン）
+- **`icon: MarkerIconInterface?`**: マーカーのアイコン（未指定の場合はデフォルトアイコン）
 - **`clickable: Boolean`**: マーカーがクリックイベントに反応するかどうか
 - **`draggable: Boolean`**: マーカーをユーザーがドラッグできるかどうか
 
@@ -72,8 +72,8 @@ import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/Ma
 
 **実行結果のログ**
 ```
-マーカーがドラッグされました: GeoPointImpl(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
-マーカーがドラッグされました: GeoPointImpl(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+マーカーがドラッグされました: GeoPoint(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+マーカーがドラッグされました: GeoPoint(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
 ...
 クリックされたマーカー: ドラッグ可能なサンフランシスコのマーカー
 ```

@@ -17,9 +17,9 @@ const code = `@Composable
 fun ContentBasedZoom() {
     val markers = remember {
         listOf(
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7849, -122.4094),
-            GeoPointImpl.fromLatLong(37.7949, -122.3994)
+            GeoPoint.fromLatLong(37.7749, -122.4194),
+            GeoPoint.fromLatLong(37.7849, -122.4094),
+            GeoPoint.fromLatLong(37.7949, -122.3994)
         )
     }
 
@@ -42,7 +42,7 @@ fun ContentBasedZoom() {
         }
     }
 
-    val cameraPosition = MapCameraPositionImpl(
+    val cameraPosition = MapCameraPosition(
         position = bounds.center ?: markers.first(),
         zoom = appropriateZoom
     )

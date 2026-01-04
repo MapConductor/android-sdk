@@ -7,13 +7,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class PolylineState(
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
     id: String? = null,
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
@@ -36,7 +36,7 @@ class PolylineState(
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
-    var points by mutableStateOf<List<GeoPoint>>(points)
+    var points by mutableStateOf<List<GeoPointInterface>>(points)
     var extra by mutableStateOf(extra)
     var onClick by mutableStateOf(onClick)
 
@@ -60,7 +60,7 @@ class PolylineState(
     }
 
     fun copy(
-        points: List<GeoPoint> = this.points,
+        points: List<GeoPointInterface> = this.points,
         id: String? = this.id,
         strokeColor: Color = this.strokeColor,
         strokeWidth: Dp = this.strokeWidth,
@@ -110,7 +110,7 @@ data class PolylineFingerPrint(
 
 data class PolylineEvent(
     val state: PolylineState,
-    val clicked: GeoPoint,
+    val clicked: GeoPointInterface,
 )
 
 typealias OnPolylineEventHandler = (PolylineEvent) -> Unit

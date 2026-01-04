@@ -30,14 +30,14 @@ const code = `GoogleMapView(
     state = mapViewState
 ) {
     // ${commentMarker}
-    Marker(position = GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long}), icon = DefaultIcon(label = "${marker1Label}"))
-    Marker(position = GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long}), icon = DefaultIcon(label = "${marker2Label}"))
+    Marker(position = GeoPoint.fromLatLong(${marker1Lat}, ${marker1Long}), icon = DefaultIcon(label = "${marker1Label}"))
+    Marker(position = GeoPoint.fromLatLong(${marker2Lat}, ${marker2Long}), icon = DefaultIcon(label = "${marker2Label}"))
 
     // ${commentDrawLine}
     Polyline(
         points = listOf(
-            GeoPointImpl.fromLatLong(${marker1Lat}, ${marker1Long}),
-            GeoPointImpl.fromLatLong(${marker2Lat}, ${marker2Long})
+            GeoPoint.fromLatLong(${marker1Lat}, ${marker1Long}),
+            GeoPoint.fromLatLong(${marker2Lat}, ${marker2Long})
         ),
         strokeColor = Color.Red,
         strokeWidth = ${strokeWidth}

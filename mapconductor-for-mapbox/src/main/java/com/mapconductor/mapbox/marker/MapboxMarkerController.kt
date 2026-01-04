@@ -1,10 +1,10 @@
 package com.mapconductor.mapbox.marker
 
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
 import com.mapconductor.core.marker.AbstractMarkerController
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.settings.Settings
 
@@ -14,13 +14,13 @@ class MapboxMarkerController(
         markerManager = renderer.markerManager,
         renderer = renderer,
     ) {
-    private var internalSelectedMarker: MarkerEntity<MapboxActualMarker>? = null
+    private var internalSelectedMarker: MarkerEntityInterface<MapboxActualMarker>? = null
 
-    internal var selectedMarker: MarkerEntity<MapboxActualMarker>?
+    internal var selectedMarker: MarkerEntityInterface<MapboxActualMarker>?
         set(value) {
             if (value == null) {
                 internalSelectedMarker?.let {
-                    renderer.dragLayer.updatePosition(GeoPointImpl.from(it.state.position))
+                    renderer.dragLayer.updatePosition(GeoPoint.from(it.state.position))
                     // Restore the recomposition for the position property
                     setDraggingState(it.state, false)
                     // Clear drag layer selection to avoid duplicate icon after drop
@@ -37,13 +37,13 @@ class MapboxMarkerController(
             // Suppress the recomposition for the position property
             setDraggingState(value.state, true)
             renderer.dragLayer.selected = value
-            renderer.dragLayer.updatePosition(GeoPointImpl.from(value.state.position))
+            renderer.dragLayer.updatePosition(GeoPoint.from(value.state.position))
             renderer.redraw()
             renderer.drawDragLayer()
         }
         get() = internalSelectedMarker
 
-    override fun find(position: GeoPoint): MarkerEntity<MapboxActualMarker>? {
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? {
         val nearest = markerManager.findNearest(position) ?: return null
 
         val touchScreen = renderer.holder.toScreenOffset(position) ?: return null

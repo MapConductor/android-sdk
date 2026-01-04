@@ -63,7 +63,7 @@ fun SimpleMapExample() {
 
     GoogleMapView(state = mapViewState) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${googleMapsLat}, ${googleMapsLong}),
+            position = GeoPoint.fromLatLong(${googleMapsLat}, ${googleMapsLong}),
             icon = DefaultIcon(label = "${googleMapsLabel}"),
             extra = "${googleMapsExtra}"
         )
@@ -76,7 +76,7 @@ fun SimpleMapExample() {
 
     MapboxMapView(state = mapViewState) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${mapboxLat}, ${mapboxLong}),
+            position = GeoPoint.fromLatLong(${mapboxLat}, ${mapboxLong}),
             icon = DefaultIcon(label = "${mapboxLabel}"),
             extra = "${mapboxExtra}"
         )
@@ -89,7 +89,7 @@ fun SimpleMapExample() {
 
     HereMapView(state = mapViewState) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${hereLat}, ${hereLong}),
+            position = GeoPoint.fromLatLong(${hereLat}, ${hereLong}),
             icon = DefaultIcon(label = "${hereLabel}"),
             extra = "${hereExtra}"
         )
@@ -102,7 +102,7 @@ fun SimpleMapExample() {
 
     ArcGISMapView(state = mapViewState) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${arcgisLat}, ${arcgisLong}),
+            position = GeoPoint.fromLatLong(${arcgisLat}, ${arcgisLong}),
             icon = DefaultIcon(label = "${arcgisLabel}"),
             extra = "${arcgisExtra}"
         )
@@ -115,7 +115,7 @@ fun SimpleMapExample() {
 
     MapLibreMapView(state = mapViewState) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${maplibreLat}, ${maplibreLong}),
+            position = GeoPoint.fromLatLong(${maplibreLat}, ${maplibreLong}),
             icon = DefaultIcon(label = "${maplibreLabel}"),
             extra = "${maplibreExtra}"
         )

@@ -1,27 +1,27 @@
 package com.mapconductor.core.marker
 
-interface MarkerOverlayRenderer<ActualMarker> {
+interface MarkerOverlayRendererInterface<ActualMarker> {
     var animateStartListener: OnMarkerEventHandler?
     var animateEndListener: OnMarkerEventHandler?
 
-    interface AddParams {
+    interface AddParamsInterface {
         val state: MarkerState
         val bitmapIcon: BitmapIcon
     }
 
-    interface ChangeParams<ActualMarker> {
-        val current: MarkerEntity<ActualMarker>
+    interface ChangeParamsInterface<ActualMarker> {
+        val current: MarkerEntityInterface<ActualMarker>
         val bitmapIcon: BitmapIcon
-        val prev: MarkerEntity<ActualMarker>
+        val prev: MarkerEntityInterface<ActualMarker>
     }
 
-    suspend fun onAdd(data: List<AddParams>): List<ActualMarker?>
+    suspend fun onAdd(data: List<AddParamsInterface>): List<ActualMarker?>
 
-    suspend fun onChange(data: List<ChangeParams<ActualMarker>>): List<ActualMarker?>
+    suspend fun onChange(data: List<ChangeParamsInterface<ActualMarker>>): List<ActualMarker?>
 
-    suspend fun onRemove(data: List<MarkerEntity<ActualMarker>>)
+    suspend fun onRemove(data: List<MarkerEntityInterface<ActualMarker>>)
 
-    suspend fun onAnimate(entity: MarkerEntity<ActualMarker>)
+    suspend fun onAnimate(entity: MarkerEntityInterface<ActualMarker>)
 
     suspend fun onPostProcess()
 }

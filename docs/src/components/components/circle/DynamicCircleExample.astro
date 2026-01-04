@@ -39,7 +39,7 @@ fun DynamicCircleExample() {
         // ${commentForMapViewUsage}
         MapView(state = mapViewState) {
             Circle(
-                center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                center = GeoPoint.fromLatLong(37.7749, -122.4194),
                 radiusMeters = circleRadius,
                 strokeColor = circleColor,
                 fillColor = circleColor.copy(alpha = 0.3f)
@@ -47,7 +47,7 @@ fun DynamicCircleExample() {
 
             // Center marker
             Marker(
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 icon = DefaultIcon(
                     fillColor = circleColor,
                     label = "${'${'}circleRadius.toInt()}m"

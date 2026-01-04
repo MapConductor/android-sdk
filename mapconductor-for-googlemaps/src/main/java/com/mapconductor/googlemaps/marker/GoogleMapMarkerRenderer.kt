@@ -2,10 +2,10 @@ package com.mapconductor.googlemaps.marker
 
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
@@ -22,21 +22,21 @@ class GoogleMapMarkerRenderer(
         coroutine = coroutine,
     ) {
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<GoogleMapActualMarker>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<GoogleMapActualMarker>,
+        position: GeoPoint,
     ) {
         coroutine.launch {
             markerEntity.marker?.position = position.toLatLng()
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<GoogleMapActualMarker?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<GoogleMapActualMarker?> {
         return withContext(coroutine.coroutineContext) {
             data.map { params ->
                 val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                 val options =
                     MarkerOptions()
-                        .position(GeoPointImpl.from(params.state.position).toLatLng())
+                        .position(GeoPoint.from(params.state.position).toLatLng())
                         .anchor(
                             params.bitmapIcon.anchor.x,
                             params.bitmapIcon.anchor.y,
@@ -51,7 +51,7 @@ class GoogleMapMarkerRenderer(
         }
     }
 
-    override suspend fun onRemove(data: List<MarkerEntity<GoogleMapActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntityInterface<GoogleMapActualMarker>>) {
         withContext(coroutine.coroutineContext) {
             data.forEach { params ->
                 params.marker?.let { marker ->
@@ -67,7 +67,7 @@ class GoogleMapMarkerRenderer(
     }
 
     override suspend fun onChange(
-        changes: List<MarkerOverlayRenderer.ChangeParams<GoogleMapActualMarker>>,
+        changes: List<MarkerOverlayRendererInterface.ChangeParamsInterface<GoogleMapActualMarker>>,
     ): List<Marker> =
         withContext(coroutine.coroutineContext) {
             changes.mapNotNull { params ->
@@ -80,7 +80,7 @@ class GoogleMapMarkerRenderer(
                         val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
                         val options =
                             MarkerOptions()
-                                .position(GeoPointImpl.from(params.current.state.position).toLatLng())
+                                .position(GeoPoint.from(params.current.state.position).toLatLng())
                                 .anchor(
                                     params.bitmapIcon.anchor.x,
                                     params.bitmapIcon.anchor.y,
@@ -98,7 +98,7 @@ class GoogleMapMarkerRenderer(
                     marker.setIcon(bitmapDescriptor)
                 }
                 marker.position =
-                    GeoPointImpl.from(params.current.state.position).toLatLng()
+                    GeoPoint.from(params.current.state.position).toLatLng()
                 marker.isVisible = params.current.visible
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す

@@ -1,6 +1,6 @@
 package com.mapconductor.core.polyline
 
-interface PolylineCapable {
+interface PolylineCapableInterface {
     suspend fun compositionPolylines(data: List<PolylineState>)
 
     suspend fun updatePolyline(state: PolylineState)

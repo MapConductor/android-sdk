@@ -21,8 +21,8 @@ const {
   altitude2 = 100.00000001
 } = Astro.props;
 
-const code = `val point1 = GeoPointImpl(${latitude1}, ${longitude1}, ${altitude1})
-val point2 = GeoPointImpl(${latitude2}, ${longitude2}, ${altitude2})
+const code = `val point1 = GeoPoint(${latitude1}, ${longitude1}, ${altitude1})
+val point2 = GeoPoint(${latitude2}, ${longitude2}, ${altitude2})
 val isEqual = point1 == point2 // true（${commentForTolerance}）`;
 ---
 

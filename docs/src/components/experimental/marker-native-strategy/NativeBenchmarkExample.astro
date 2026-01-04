@@ -2,8 +2,8 @@
 import { Code } from '@astrojs/starlight/components';
 
 const code = `suspend fun benchmarkNativePerformance() {
-    val standardManager = MarkerManager<ActualMarker>(HexGeocellImpl.defaultGeocell())
-    val nativeManager = NativeMarkerManager<ActualMarker>(HexGeocellImpl.defaultGeocell())
+    val standardManager = MarkerManager<ActualMarker>(HexGeocell.defaultGeocell())
+    val nativeManager = NativeMarkerManager<ActualMarker>(HexGeocell.defaultGeocell())
 
     val testMarkers = generateTestDataset(50000) // 50,000 markers
 
@@ -18,8 +18,8 @@ const code = `suspend fun benchmarkNativePerformance() {
 
     // Benchmark spatial queries
     val testBounds = GeoRectBounds(
-        southWest = GeoPointImpl.fromLatLong(37.7700, -122.4250),
-        northEast = GeoPointImpl.fromLatLong(37.7800, -122.4150)
+        southWest = GeoPoint.fromLatLong(37.7700, -122.4250),
+        northEast = GeoPoint.fromLatLong(37.7800, -122.4150)
     )
 
     val standardQueryTime = measureTimeMillis {

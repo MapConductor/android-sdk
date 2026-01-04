@@ -36,7 +36,7 @@ fun GoogleMapsExample() {
         }
     ) {
         Marker(
-            position = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            position = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
             icon = DefaultIcon(label = "${markerLabel}"),
             extra = "${markerExtra}",
             onClick = { markerState ->
@@ -45,7 +45,7 @@ fun GoogleMapsExample() {
         )
 
         Circle(
-            center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
             radiusMeters = ${circleRadiusMeters},
             strokeColor = ${circleStrokeColorExpr},
             fillColor = ${circleFillColorExpr}

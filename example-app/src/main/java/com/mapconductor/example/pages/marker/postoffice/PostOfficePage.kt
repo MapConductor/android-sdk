@@ -61,14 +61,14 @@ fun PostOfficeMapPage(
             )
         }
 
-    val viewModel: PostOfficeViewModel =
-        viewModel<PostOfficeViewModelImpl>(
+    val viewModel: PostOfficeViewModelInterface =
+        viewModel<PostOfficeViewModel>(
             factory =
                 object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        if (modelClass.isAssignableFrom(PostOfficeViewModelImpl::class.java)) {
+                        if (modelClass.isAssignableFrom(PostOfficeViewModel::class.java)) {
                             @Suppress("UNCHECKED_CAST")
-                            return PostOfficeViewModelImpl(
+                            return PostOfficeViewModel(
                                 strategies = strategies,
                                 postOfficeIcon = postOfficeIcon,
                                 dataLoader = dataLoader,

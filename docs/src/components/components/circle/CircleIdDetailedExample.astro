@@ -17,7 +17,7 @@ fun CircleIdentificationExample() {
     // Create circles with unique IDs
     val circles = listOf(
         CircleState(
-            center = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+            center = GeoPoint.fromLatLong(37.7749, -122.4194),
             radiusMeters = 1000.0,
             strokeColor = Color.Red,
             fillColor = Color.Red.copy(alpha = 0.3f),
@@ -25,7 +25,7 @@ fun CircleIdentificationExample() {
             onClick = onCircleClick
         ),
         CircleState(
-            center = GeoPointImpl.fromLatLong(37.7849, -122.4094),
+            center = GeoPoint.fromLatLong(37.7849, -122.4094),
             radiusMeters = 1500.0,
             strokeColor = Color.Blue,
             fillColor = Color.Blue.copy(alpha = 0.3f),

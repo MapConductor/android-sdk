@@ -39,11 +39,11 @@ const {
 
 const code = `@Composable
 fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude})
     val mapViewState =
         rememberMapLibreMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
+                MapCameraPosition(
                     position = center,
                     zoom = ${zoomLevel},
                 ),
@@ -66,7 +66,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
         mutableStateOf(
             MarkerState(
                 id = "marker1",
-                position = GeoPointImpl.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
+                position = GeoPoint.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
                 icon =
                     DefaultIcon(
                         fillColor = Color.Blue,
@@ -85,7 +85,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
         mutableStateOf(
             MarkerState(
                 id = "marker2",
-                position = GeoPointImpl.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
+                position = GeoPoint.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
                 icon =
                     DefaultIcon(
                         fillColor = Color.Red,
@@ -112,7 +112,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
 
         // ${commentForSelectedMarkerInfo}
         selectedMarker?.let { marker ->
-            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
+            val text = GeoPoint.from(marker.position).toUrlValue(6)
             // ${commentForRightSideTailExample}
             InfoBubbleCustom(
                 marker = marker,

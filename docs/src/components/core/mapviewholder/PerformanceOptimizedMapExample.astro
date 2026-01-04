@@ -15,7 +15,7 @@ const {
 
 const code = `@Composable
 fun PerformanceOptimizedMap() {
-    val mapViewState = remember { HereViewStateImpl() }
+    val mapViewState = remember { HereViewState() }
 
     LaunchedEffect(mapViewState) {
         mapViewState.getMapViewHolder()?.let { holder ->

@@ -27,27 +27,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.arcgis.map.ArcGISDesign
-import com.mapconductor.arcgis.map.ArcGISMapViewStateImpl
+import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.arcgis.map.rememberArcGISMapViewState
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.MapViewStateImpl
 import com.mapconductor.example.R
 import com.mapconductor.googlemaps.GoogleMapDesign
-import com.mapconductor.googlemaps.GoogleMapViewStateImpl
+import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
-import com.mapconductor.here.HereViewStateImpl
+import com.mapconductor.here.HereViewState
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
-import com.mapconductor.mapbox.MapboxViewStateImpl
+import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
-import com.mapconductor.maplibre.MapLibreViewStateImpl
+import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 
 @Composable
-fun GetGoogleMapViewItem(initCameraPosition: MapCameraPosition): IconItem<GoogleMapViewStateImpl> {
+fun GetGoogleMapViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<GoogleMapViewState> {
     val googleMapState =
         rememberGoogleMapViewState(
             mapDesign = GoogleMapDesign.Normal,
@@ -63,7 +63,7 @@ fun GetGoogleMapViewItem(initCameraPosition: MapCameraPosition): IconItem<Google
 }
 
 @Composable
-fun GetMapboxViewItem(initCameraPosition: MapCameraPosition): IconItem<MapboxViewStateImpl> {
+fun GetMapboxViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapboxViewState> {
     val mapboxMapState =
         rememberMapboxMapViewState(
             mapDesign = MapboxMapDesign.Standard,
@@ -79,7 +79,7 @@ fun GetMapboxViewItem(initCameraPosition: MapCameraPosition): IconItem<MapboxVie
 }
 
 @Composable
-fun GetHereViewItem(initCameraPosition: MapCameraPosition): IconItem<HereViewStateImpl> {
+fun GetHereViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<HereViewState> {
     val hereMapState =
         rememberHereMapViewState(
             mapDesign = HereMapDesign.NormalDay,
@@ -95,7 +95,7 @@ fun GetHereViewItem(initCameraPosition: MapCameraPosition): IconItem<HereViewSta
 }
 
 @Composable
-fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMapViewStateImpl> {
+fun GetArcGISViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<ArcGISMapViewState> {
     val elevationSources =
         listOf(
             "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
@@ -115,7 +115,7 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPosition): IconItem<ArcGISMap
 }
 
 @Composable
-fun GetMapLibreViewItem(initCameraPosition: MapCameraPosition): IconItem<MapLibreViewStateImpl> {
+fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapLibreViewState> {
     val mapLibreMapState =
         rememberMapLibreMapViewState(
             mapDesign = MapLibreDesign.DemoTiles,
@@ -131,7 +131,7 @@ fun GetMapLibreViewItem(initCameraPosition: MapCameraPosition): IconItem<MapLibr
 }
 
 @Composable
-fun DefaultMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<out MapViewStateImpl<out Any>>> =
+fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
         GetMapboxViewItem(initCameraPosition),
@@ -142,18 +142,18 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPosition): List<IconItem<ou
 
 @Composable
 fun GroundImageCapableMapViewItems(
-    initCameraPosition: MapCameraPosition,
-): List<IconItem<out MapViewStateImpl<out Any>>> =
+    initCameraPosition: MapCameraPositionInterface,
+): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
     )
 
 @Composable
 fun DemoMapPageScaffold(
-    menuItems: List<IconItem<out MapViewStateImpl<out Any>>>,
+    menuItems: List<IconItem<out MapViewState<out Any>>>,
     initSelect: Int = 0,
     onToggleSidebar: () -> Unit,
-    onMapViewStateChanged: (MapViewState<*>) -> Unit = {},
+    onMapViewStateChanged: (MapViewStateInterface<*>) -> Unit = {},
     content: @Composable (BoxScope.(PaddingValues) -> Unit) = {},
 ) {
     var selectedIndex by rememberSaveable { mutableIntStateOf(initSelect) }

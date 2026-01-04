@@ -1,9 +1,9 @@
 package com.mapconductor.googlemaps.marker
 
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.AbstractMarkerController
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.googlemaps.GoogleMapActualMarker
@@ -17,7 +17,7 @@ class GoogleMapMarkerController private constructor(
         markerManager = markerManager,
         renderer = renderer,
     ) {
-    override fun find(position: GeoPoint): MarkerEntity<GoogleMapActualMarker>? {
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<GoogleMapActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
             val zoom =
                 renderer.holder.map.cameraPosition.zoom

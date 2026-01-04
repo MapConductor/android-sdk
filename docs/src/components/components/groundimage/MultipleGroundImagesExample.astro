@@ -10,8 +10,8 @@ fun MultipleGroundImagesExample() {
         AppCompatResources.getDrawable(context, R.drawable.satellite_base)?.let { drawable ->
             GroundImage(
                 bounds = GeoRectBounds(
-                    southwest = GeoPointImpl.fromLatLong(37.7549, -122.4394),
-                    northeast = GeoPointImpl.fromLatLong(37.7949, -122.3994)
+                    southwest = GeoPoint.fromLatLong(37.7549, -122.4394),
+                    northeast = GeoPoint.fromLatLong(37.7949, -122.3994)
                 ),
                 image = drawable,
                 opacity = 0.3f,
@@ -23,8 +23,8 @@ fun MultipleGroundImagesExample() {
         AppCompatResources.getDrawable(context, R.drawable.weather_overlay)?.let { drawable ->
             GroundImage(
                 bounds = GeoRectBounds(
-                    southwest = GeoPointImpl.fromLatLong(37.7649, -122.4294),
-                    northeast = GeoPointImpl.fromLatLong(37.7849, -122.4094)
+                    southwest = GeoPoint.fromLatLong(37.7649, -122.4294),
+                    northeast = GeoPoint.fromLatLong(37.7849, -122.4094)
                 ),
                 image = drawable,
                 opacity = 0.6f,
@@ -36,8 +36,8 @@ fun MultipleGroundImagesExample() {
         AppCompatResources.getDrawable(context, R.drawable.traffic_overlay)?.let { drawable ->
             GroundImage(
                 bounds = GeoRectBounds(
-                    southwest = GeoPointImpl.fromLatLong(37.7699, -122.4244),
-                    northeast = GeoPointImpl.fromLatLong(37.7799, -122.4144)
+                    southwest = GeoPoint.fromLatLong(37.7699, -122.4244),
+                    northeast = GeoPoint.fromLatLong(37.7799, -122.4144)
                 ),
                 image = drawable,
                 opacity = 0.8f,

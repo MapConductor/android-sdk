@@ -1,6 +1,6 @@
 package com.mapconductor.marker.nativestrategy
 
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 
 internal class NativeMarkerIndex private constructor(
@@ -105,7 +105,7 @@ internal class NativeMarkerIndex private constructor(
 
     fun registerMarker(
         id: String,
-        position: GeoPoint,
+        position: GeoPointInterface,
         clickable: Boolean = true,
     ) {
         checkNotDestroyed()
@@ -114,7 +114,7 @@ internal class NativeMarkerIndex private constructor(
 
     fun updateMarker(
         id: String,
-        position: GeoPoint,
+        position: GeoPointInterface,
         clickable: Boolean = true,
     ) {
         checkNotDestroyed()
@@ -131,7 +131,7 @@ internal class NativeMarkerIndex private constructor(
         return nativeHasMarker(nativeHandle, id)
     }
 
-    fun findNearest(position: GeoPoint): String? {
+    fun findNearest(position: GeoPointInterface): String? {
         checkNotDestroyed()
         return nativeFindNearest(nativeHandle, position.latitude, position.longitude)
     }
@@ -165,7 +165,7 @@ internal class NativeMarkerIndex private constructor(
     }
 
     fun metersPerPixel(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
         pixels: Double,
         tileSize: Int = 256,

@@ -28,14 +28,14 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 
 ### Esquinas
 
-- **`southWest: GeoPointImpl?`**: esquina suroeste (inferior izquierda) del rectángulo.
-- **`northEast: GeoPointImpl?`**: esquina noreste (superior derecha) del rectángulo.
+- **`southWest: GeoPoint?`**: esquina suroeste (inferior izquierda) del rectángulo.
+- **`northEast: GeoPoint?`**: esquina noreste (superior derecha) del rectángulo.
 - **`isEmpty: Boolean`**: devuelve `true` si los límites no están definidos.
 
 ### Propiedades calculadas
 
-- **`center: GeoPointImpl?`**: punto central de los límites.
-- **`toSpan(): GeoPointImpl?`**: devuelve el “span” (ancho/alto) como un `GeoPoint`.
+- **`center: GeoPoint?`**: punto central de los límites.
+- **`toSpan(): GeoPoint?`**: devuelve el “span” (ancho/alto) como un `GeoPointInterface`.
 
 ## Pruebas con puntos y límites
 

@@ -25,8 +25,8 @@ const {
 const googleMapsCode = `@Composable
 fun MyMap() {
     // ${commentForInit}
-    val targetPosition = GeoPointImpl.fromLatLong(37.7749, -122.419)
-    val initCamera = MapCameraPositionImpl(
+    val targetPosition = GeoPoint.fromLatLong(37.7749, -122.419)
+    val initCamera = MapCameraPosition(
         position = targetPosition,
         zoom = 12.0,
     )
@@ -51,8 +51,8 @@ fun MyMap() {
 const mapboxCode = `@Composable
 fun MyMap() {
     // ${commentForInit}
-    val targetPosition = GeoPointImpl.fromLatLong(38.911254, -77.033458)
-    val initCamera = MapCameraPositionImpl(
+    val targetPosition = GeoPoint.fromLatLong(38.911254, -77.033458)
+    val initCamera = MapCameraPosition(
         position = targetPosition,
         zoom = 12.0,
     )
@@ -78,8 +78,8 @@ fun MyMap() {
 const hereCode = `@Composable
 fun MyMap() {
     // ${commentForInit}
-    val targetPosition = GeoPointImpl.fromLatLong(51.43901, 5.47191)
-    val initCamera = MapCameraPositionImpl(
+    val targetPosition = GeoPoint.fromLatLong(51.43901, 5.47191)
+    val initCamera = MapCameraPosition(
         position = targetPosition,
         zoom = 12.0,
     )

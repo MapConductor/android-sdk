@@ -1,22 +1,22 @@
 package com.mapconductor.arcgis.map
 
-import com.mapconductor.core.circle.CircleCapable
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.marker.MarkerCapable
-import com.mapconductor.core.polygon.PolygonCapable
-import com.mapconductor.core.polyline.PolylineCapable
-import com.mapconductor.core.raster.RasterLayerCapable
+import com.mapconductor.core.circle.CircleCapableInterface
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.marker.MarkerCapableInterface
+import com.mapconductor.core.polygon.PolygonCapableInterface
+import com.mapconductor.core.polyline.PolylineCapableInterface
+import com.mapconductor.core.raster.RasterLayerCapableInterface
 
-typealias ArcGISDesignTypeChangeHandler = (ArcGISDesignType) -> Unit
+typealias ArcGISDesignTypeChangeHandler = (ArcGISDesignTypeInterface) -> Unit
 
-interface ArcGISMapViewController :
-    MapViewController,
-    MarkerCapable,
-    PolylineCapable,
-    PolygonCapable,
-    CircleCapable,
-    RasterLayerCapable {
-    fun setMapDesignType(value: ArcGISDesignType)
+interface ArcGISMapViewControllerInterface :
+    MapViewControllerInterface,
+    MarkerCapableInterface,
+    PolylineCapableInterface,
+    PolygonCapableInterface,
+    CircleCapableInterface,
+    RasterLayerCapableInterface {
+    fun setMapDesignType(value: ArcGISDesignTypeInterface)
 
     fun setMapDesignTypeChangeListener(listener: ArcGISDesignTypeChangeHandler)
 }

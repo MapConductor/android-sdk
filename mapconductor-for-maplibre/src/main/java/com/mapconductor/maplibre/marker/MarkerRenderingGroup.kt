@@ -8,11 +8,11 @@ import androidx.compose.runtime.remember
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCollector
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreMapViewHolder
-import com.mapconductor.maplibre.MapLibreViewControllerImpl
+import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
+import com.mapconductor.maplibre.MapLibreViewController
 import com.mapconductor.settings.Settings
 import java.util.UUID
 import kotlinx.coroutines.FlowPreview
@@ -22,12 +22,12 @@ import kotlinx.coroutines.flow.debounce
 @OptIn(FlowPreview::class)
 @Composable
 fun MarkerRenderingGroup(
-    strategy: MarkerRenderingStrategy<MapLibreActualMarker>,
+    strategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
     content: @Composable () -> Unit,
 ) {
     val mapController = LocalMapViewController.current
-    val mapLibreController = mapController as? MapLibreViewControllerImpl ?: return
-    val holder = mapLibreController.holder as? MapLibreMapViewHolder ?: return
+    val mapLibreController = mapController as? MapLibreViewController ?: return
+    val holder = mapLibreController.holder as? MapLibreMapViewHolderInterface ?: return
     val markerCollector = remember { MarkerCollector() }
     val groupId = remember { UUID.randomUUID().toString() }
     val markerLayer =

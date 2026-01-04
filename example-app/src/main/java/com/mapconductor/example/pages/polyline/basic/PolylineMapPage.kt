@@ -10,7 +10,7 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 
 @Composable
 fun PolylineMapPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { PolylinePageViewModelImpl() }
+    val viewModel = remember { PolylinePageViewModel() }
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,

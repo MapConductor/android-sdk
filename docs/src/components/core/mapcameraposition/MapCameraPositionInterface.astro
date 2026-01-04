@@ -1,12 +1,12 @@
 ---
 import { Code } from '@astrojs/starlight/components';
 
-const code = `interface MapCameraPosition {
-    val position: GeoPoint
+const code = `interface MapCameraPositionInterface {
+    val position: GeoPointInterface
     val zoom: Double
     val bearing: Double
     val tilt: Double
-    val paddings: MapPaddings?
+    val paddings: MapPaddingsInterface?
     val visibleRegion: VisibleRegion?
 }`;
 ---

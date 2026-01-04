@@ -1,10 +1,10 @@
 package com.mapconductor.here.raster
 
 import com.mapconductor.core.raster.RasterLayerController
+import com.mapconductor.core.raster.RasterLayerManagerInterface
 import com.mapconductor.core.raster.RasterLayerManager
-import com.mapconductor.core.raster.RasterLayerManagerImpl
 
 class HereRasterLayerController(
-    rasterLayerManager: RasterLayerManager<HereRasterLayerHandle> = RasterLayerManagerImpl(),
+    rasterLayerManager: RasterLayerManagerInterface<HereRasterLayerHandle> = RasterLayerManager(),
     renderer: HereRasterLayerOverlayRenderer,
 ) : RasterLayerController<HereRasterLayerHandle>(rasterLayerManager, renderer)

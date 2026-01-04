@@ -1,23 +1,23 @@
 package com.mapconductor.core.marker
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 class StrategyMarkerController<ActualMarker>(
-    private val strategy: MarkerRenderingStrategy<ActualMarker>,
-    private val renderer: MarkerOverlayRenderer<ActualMarker>,
+    private val strategy: MarkerRenderingStrategyInterface<ActualMarker>,
+    private val renderer: MarkerOverlayRendererInterface<ActualMarker>,
     override var clickListener: OnMarkerEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         MarkerState,
-        MarkerEntity<ActualMarker>,
+        MarkerEntityInterface<ActualMarker>,
         MarkerState,
     > {
     val markerManager: MarkerManager<ActualMarker> = strategy.markerManager
     override val zIndex: Int = 10
-    private var mapCameraPosition: MapCameraPositionImpl? = null
+    private var mapCameraPosition: MapCameraPosition? = null
     private val semaphore = Semaphore(1)
     private var pendingStates: List<MarkerState>? = null
 
@@ -92,11 +92,11 @@ class StrategyMarkerController<ActualMarker>(
         strategy.clear()
     }
 
-    fun getEntity(id: String): MarkerEntity<ActualMarker>? = strategy.markerManager.getEntity(id)
+    fun getEntity(id: String): MarkerEntityInterface<ActualMarker>? = strategy.markerManager.getEntity(id)
 
-    override fun find(position: GeoPoint): MarkerEntity<ActualMarker>? = strategy.markerManager.findNearest(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<ActualMarker>? = strategy.markerManager.findNearest(position)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         this.mapCameraPosition = mapCameraPosition
         semaphore.withPermit {
             strategy.onCameraChanged(mapCameraPosition, renderer)
