@@ -57,6 +57,12 @@ android {
     kotlinOptions {
         jvmTarget = project.property("jvmTarget").toString()
     }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDir(rootProject.projectDir.resolve("mapconductor-core-domain/src/main/java"))
+        }
+    }
 }
 
 dependencies {
@@ -171,3 +177,4 @@ afterEvaluate {
 }
 
 // Central Portal configuration is handled in root build.gradle.kts
+

@@ -17,7 +17,7 @@ lifecycleViewmodelCompose = "2.9.0"
 
 # https://developer.android.com/develop/ui/compose/bom/bom-mapping
 
-# gradle.propertiesのkotlinCompilerExtensionVersionと一致させる
+# gradle.properties?kotlinCompilerExtensionVersion??????
 compose = "1.8.1"
 composeBom = "2025.05.00"
 runner = "1.6.2"
@@ -39,7 +39,7 @@ runtime = "1.9.3"
 runtimeVersion = "1.9.5"
 
 [libraries]
-# Android 基本
+# Android ??
 androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -52,7 +52,7 @@ androidx-lifecycle-common-java8 = { group = "androidx.lifecycle", name = "lifecy
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 
-# Jetpack Compose（with BOM）
+# Jetpack Compose?with BOM?
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation" }
@@ -89,7 +89,7 @@ arcgis-maps-kotlin-toolkit-geoview-compose = { group = "com.esri", name = "arcgi
 arcgis-maps-kotlin-toolkit-authentication = { group = "com.esri", name = "arcgis-maps-kotlin-toolkit-authentication" }
 
 
-# テスト用
+# ????
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -103,5 +103,7 @@ androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", versi
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 jlleitschuh-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint"}
+

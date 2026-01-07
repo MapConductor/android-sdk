@@ -1,20 +1,10 @@
-package com.mapconductor.core.features
+﻿package com.mapconductor.core.features
 
-import android.util.Log
 
 class GeoRectBounds(
     southWest: GeoPoint? = null,
     northEast: GeoPoint? = null,
 ) {
-    companion object {
-        private const val DEBUG_INTERSECTS = true
-        private const val TAG = "GeoRectBounds"
-
-        private fun d(msg: String) {
-            if (DEBUG_INTERSECTS) Log.d(TAG, msg)
-        }
-    }
-
     private var _southWest: GeoPoint? = southWest
     private var _northEast: GeoPoint? = northEast
 
@@ -307,3 +297,4 @@ class GeoRectBounds(
 
     fun equals(other: GeoRectBounds): Boolean = this.southWest == other.southWest && this.northEast == other.northEast
 }
+
