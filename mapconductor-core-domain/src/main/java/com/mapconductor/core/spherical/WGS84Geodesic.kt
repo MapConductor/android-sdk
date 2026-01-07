@@ -1,7 +1,7 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.projection.Earth
 import java.lang.Math.toRadians
 import kotlin.math.abs

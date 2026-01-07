@@ -7,10 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
-import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.mapbox.MapboxMapDesign.Standard
 import java.util.UUID
 import android.os.Bundle

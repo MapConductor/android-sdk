@@ -1,8 +1,8 @@
 package com.mapconductor.mapbox.marker
 
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.mapbox.MapboxActualMarker

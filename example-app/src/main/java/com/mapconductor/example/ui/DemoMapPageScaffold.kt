@@ -30,8 +30,8 @@ import com.mapconductor.arcgis.map.ArcGISDesign
 import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.map.MapCameraPositionInterface
-import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.R
 import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.GoogleMapViewState

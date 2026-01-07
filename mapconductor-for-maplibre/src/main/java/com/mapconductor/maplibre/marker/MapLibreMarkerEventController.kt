@@ -1,7 +1,7 @@
 package com.mapconductor.maplibre.marker
 
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -43,7 +43,9 @@ internal class DefaultMapLibreMarkerEventController(
 ) : MapLibreMarkerEventControllerInterface {
     override val renderer: MapLibreMarkerOverlayRenderer = controller.renderer
 
-    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>? =
+        controller
+            .find(position)
 
     override fun getSelectedMarker(): MarkerEntityInterface<MapLibreActualMarker>? = controller.selectedMarker
 
@@ -90,7 +92,9 @@ internal class StrategyMapLibreMarkerEventController(
 ) : MapLibreMarkerEventControllerInterface {
     private var selectedMarker: MarkerEntityInterface<MapLibreActualMarker>? = null
 
-    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>? =
+        controller
+            .find(position)
 
     override fun getSelectedMarker(): MarkerEntityInterface<MapLibreActualMarker>? = selectedMarker
 

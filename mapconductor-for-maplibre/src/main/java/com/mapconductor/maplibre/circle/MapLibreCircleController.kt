@@ -1,8 +1,8 @@
 package com.mapconductor.maplibre.circle
 
 import com.mapconductor.core.circle.CircleController
-import com.mapconductor.core.circle.CircleManagerInterface
 import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleManagerInterface
 import com.mapconductor.maplibre.MapLibreActualCircle
 
 class MapLibreCircleController(

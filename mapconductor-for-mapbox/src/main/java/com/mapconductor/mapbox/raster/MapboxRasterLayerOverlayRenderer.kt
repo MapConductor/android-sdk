@@ -15,7 +15,9 @@ import android.util.Log
 class MapboxRasterLayerOverlayRenderer(
     private val holder: MapboxMapViewHolder,
 ) : RasterLayerOverlayRendererInterface<MapboxRasterLayerHandle> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<MapboxRasterLayerHandle?> =
+    override suspend fun onAdd(
+        data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
+    ): List<MapboxRasterLayerHandle?> =
         data.map { params ->
             addLayer(params.state)
         }

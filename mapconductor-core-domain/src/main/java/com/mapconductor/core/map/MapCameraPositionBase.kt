@@ -1,7 +1,7 @@
 package com.mapconductor.core.map
 
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 import kotlin.math.abs
 

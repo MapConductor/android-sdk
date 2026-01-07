@@ -7,8 +7,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.map.ArcGISMapViewController
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCollector

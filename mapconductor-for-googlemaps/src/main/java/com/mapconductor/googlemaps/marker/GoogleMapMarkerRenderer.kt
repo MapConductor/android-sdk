@@ -30,7 +30,9 @@ class GoogleMapMarkerRenderer(
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<GoogleMapActualMarker?> {
+    override suspend fun onAdd(
+        data: List<MarkerOverlayRendererInterface.AddParamsInterface>,
+    ): List<GoogleMapActualMarker?> {
         return withContext(coroutine.coroutineContext) {
             data.map { params ->
                 val bitmapDescriptor = BitmapDescriptorCache.fromBitmap(params.bitmapIcon.bitmap)
@@ -67,10 +69,10 @@ class GoogleMapMarkerRenderer(
     }
 
     override suspend fun onChange(
-        changes: List<MarkerOverlayRendererInterface.ChangeParamsInterface<GoogleMapActualMarker>>,
+        data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<GoogleMapActualMarker>>,
     ): List<Marker> =
         withContext(coroutine.coroutineContext) {
-            changes.mapNotNull { params ->
+            data.mapNotNull { params ->
                 val prevFinger = params.prev.fingerPrint
                 val currentFinger = params.current.fingerPrint
                 val marker =

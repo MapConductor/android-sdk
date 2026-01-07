@@ -24,8 +24,6 @@ abstract class PolylineController<ActualPolyline>(
         clickListener?.invoke(event)
     }
 
-
-
     override suspend fun add(data: List<PolylineState>) {
         semaphore.withPermit {
             val modifiedEntities = mutableListOf<PolylineEntityInterface<ActualPolyline>>()

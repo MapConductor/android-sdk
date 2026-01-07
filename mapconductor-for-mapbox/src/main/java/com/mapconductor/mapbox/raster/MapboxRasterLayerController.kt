@@ -2,8 +2,8 @@ package com.mapconductor.mapbox.raster
 
 import com.mapconductor.core.raster.RasterLayerController
 import com.mapconductor.core.raster.RasterLayerEntity
-import com.mapconductor.core.raster.RasterLayerManagerInterface
 import com.mapconductor.core.raster.RasterLayerManager
+import com.mapconductor.core.raster.RasterLayerManagerInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
 

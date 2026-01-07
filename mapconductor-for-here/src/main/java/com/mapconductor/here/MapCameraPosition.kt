@@ -7,8 +7,8 @@ import com.here.sdk.mapview.MapCameraUpdate
 import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import com.mapconductor.here.zoom.ZoomAltitudeConverter
 

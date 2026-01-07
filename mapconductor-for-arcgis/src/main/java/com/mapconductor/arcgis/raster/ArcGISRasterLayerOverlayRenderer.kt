@@ -27,7 +27,9 @@ class ArcGISRasterLayerOverlayRenderer(
             addLayer(params.state)
         }
 
-    override suspend fun onChange(data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<Layer>>): List<Layer?> =
+    override suspend fun onChange(
+        data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<Layer>>,
+    ): List<Layer?> =
         data.map { params ->
             val prev = params.prev
             val next = params.current.state

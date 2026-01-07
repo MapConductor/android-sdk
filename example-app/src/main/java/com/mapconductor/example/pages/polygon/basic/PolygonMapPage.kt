@@ -34,10 +34,6 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
             mapViewState = mapViewState.value,
             polygonState = viewModel.polygonState,
             polygonVertexMarkers = viewModel.polygonVertexMarkers,
-            modifier =
-                Modifier.padding(
-                    bottom = paddingValues.calculateBottomPadding(),
-                ),
         )
         MessageCard(
             title = "Polygon Example",

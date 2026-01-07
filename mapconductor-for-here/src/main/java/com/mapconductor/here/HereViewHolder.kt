@@ -4,8 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import com.here.sdk.core.Point2D
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapView
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapViewHolderInterface
 
 class HereViewHolder(

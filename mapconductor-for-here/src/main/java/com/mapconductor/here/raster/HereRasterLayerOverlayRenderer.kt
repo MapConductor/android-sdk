@@ -19,7 +19,9 @@ import android.util.Log
 class HereRasterLayerOverlayRenderer(
     private val holder: HereViewHolder,
 ) : RasterLayerOverlayRendererInterface<HereRasterLayerHandle> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<HereRasterLayerHandle?> =
+    override suspend fun onAdd(
+        data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
+    ): List<HereRasterLayerHandle?> =
         data.map { params ->
             addLayer(params.state)
         }

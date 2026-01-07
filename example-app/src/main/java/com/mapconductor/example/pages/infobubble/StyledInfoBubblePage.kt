@@ -52,6 +52,7 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
         menuItems = DefaultMapViewItems(initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
+            @Suppress("UNCHECKED_CAST")
             mapViewState = state as MapViewStateInterface<Any>
         },
     ) {

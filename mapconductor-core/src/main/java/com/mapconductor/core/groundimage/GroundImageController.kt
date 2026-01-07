@@ -142,7 +142,9 @@ abstract class GroundImageController<ActualGroundImage>(
         }
     }
 
-    override fun find(position: GeoPointInterface): GroundImageEntityInterface<ActualGroundImage>? = groundImageManager.find(position)
+    override fun find(position: GeoPointInterface): GroundImageEntityInterface<ActualGroundImage>? =
+        groundImageManager
+            .find(position)
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 

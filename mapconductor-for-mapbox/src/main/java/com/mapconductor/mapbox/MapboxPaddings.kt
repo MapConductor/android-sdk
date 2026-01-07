@@ -2,8 +2,8 @@ package com.mapconductor.mapbox
 
 import androidx.annotation.Keep
 import com.mapbox.maps.EdgeInsets
-import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.map.MapPaddings
+import com.mapconductor.core.map.MapPaddingsInterface
 
 interface IMapboxPaddingsInterface : MapPaddingsInterface {
     fun toEdgeInsects(): EdgeInsets

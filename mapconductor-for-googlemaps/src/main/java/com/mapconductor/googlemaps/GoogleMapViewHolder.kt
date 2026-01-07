@@ -3,8 +3,8 @@ package com.mapconductor.googlemaps
 import androidx.compose.ui.geometry.Offset
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapViewHolderInterface
 import android.graphics.Point
 

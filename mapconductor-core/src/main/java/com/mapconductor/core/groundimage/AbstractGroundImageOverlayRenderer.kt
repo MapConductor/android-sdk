@@ -3,7 +3,8 @@ package com.mapconductor.core.groundimage
 import com.mapconductor.core.map.MapViewHolderInterface
 import kotlinx.coroutines.CoroutineScope
 
-abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundImageOverlayRendererInterface<ActualGroundImage> {
+abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> :
+    GroundImageOverlayRendererInterface<ActualGroundImage> {
     abstract val holder: MapViewHolderInterface<*, *>
     abstract val coroutine: CoroutineScope
 
@@ -21,7 +22,9 @@ abstract class AbstractGroundImageOverlayRenderer<ActualGroundImage> : GroundIma
 
     abstract suspend fun removeGroundImage(entity: GroundImageEntityInterface<ActualGroundImage>)
 
-    override suspend fun onAdd(data: List<GroundImageOverlayRendererInterface.AddParamsInterface>): List<ActualGroundImage?> =
+    override suspend fun onAdd(
+        data: List<GroundImageOverlayRendererInterface.AddParamsInterface>,
+    ): List<ActualGroundImage?> =
         data.map { params ->
             createGroundImage(params.state)
         }

@@ -24,7 +24,9 @@ abstract class AbstractCircleOverlayRenderer<ActualCircle> : CircleOverlayRender
     override suspend fun onAdd(data: List<CircleOverlayRendererInterface.AddParamsInterface>): List<ActualCircle?> =
         data.map { params -> createCircle(params.state) }
 
-    override suspend fun onChange(data: List<CircleOverlayRendererInterface.ChangeParamsInterface<ActualCircle>>): List<ActualCircle?> =
+    override suspend fun onChange(
+        data: List<CircleOverlayRendererInterface.ChangeParamsInterface<ActualCircle>>,
+    ): List<ActualCircle?> =
         data.map { params ->
             updateCircleProperties(
                 circle = params.prev.circle,

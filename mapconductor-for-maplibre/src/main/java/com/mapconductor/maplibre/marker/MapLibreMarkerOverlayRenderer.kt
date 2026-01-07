@@ -106,7 +106,9 @@ class MapLibreMarkerOverlayRenderer(
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<MapLibreActualMarker?> {
+    override suspend fun onAdd(
+        data: List<MarkerOverlayRendererInterface.AddParamsInterface>,
+    ): List<MapLibreActualMarker?> {
         // Get style from controller to use the same instance
         val style =
             holder.getController()?.getStyleInstance() ?: run {

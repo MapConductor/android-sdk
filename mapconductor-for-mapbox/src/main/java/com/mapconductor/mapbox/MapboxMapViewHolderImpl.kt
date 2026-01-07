@@ -6,8 +6,8 @@ import com.mapbox.maps.MapboxLifecycleObserver
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.ScreenCoordinate
 import com.mapbox.maps.plugin.lifecycle.lifecycle
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapViewHolderInterface
 
 typealias MapboxMapViewHolderInterface = MapViewHolderInterface<MapView, MapboxMap>

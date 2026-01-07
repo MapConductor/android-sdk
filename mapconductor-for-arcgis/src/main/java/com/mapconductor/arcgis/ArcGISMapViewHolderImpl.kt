@@ -6,8 +6,8 @@ import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.ScreenCoordinate
 import com.mapconductor.arcgis.toGeoPoint
 import com.mapconductor.arcgis.toPoint
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapViewHolderInterface
 import android.content.Context
 import android.content.pm.PackageManager

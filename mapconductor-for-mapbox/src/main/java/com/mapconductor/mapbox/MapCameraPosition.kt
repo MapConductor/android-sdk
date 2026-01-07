@@ -5,8 +5,8 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.CameraState
 import com.mapbox.maps.EdgeInsets
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import com.mapconductor.mapbox.zoom.ZoomAltitudeConverter
 

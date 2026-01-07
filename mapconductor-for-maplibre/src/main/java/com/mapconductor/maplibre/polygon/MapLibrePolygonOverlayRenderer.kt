@@ -100,5 +100,7 @@ class MapLibrePolygonOverlayRenderer(
         return results
     }
 
-    private fun getAllPolygonEntities(): List<PolygonEntityInterface<MapLibreActualPolygon>> = polygonManager.allEntities()
+    private fun getAllPolygonEntities(): List<PolygonEntityInterface<MapLibreActualPolygon>> =
+        polygonManager
+            .allEntities()
 }

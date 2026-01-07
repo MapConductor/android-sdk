@@ -14,9 +14,9 @@ import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
-import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
@@ -155,7 +155,7 @@ fun ArcGISMapView(
                                         mapView = wrapView,
                                         map = wrapView.sceneView,
                                     )
-                                cont.resume(holder) {}
+                                cont.resume(holder, onCancellation = {})
                             }
                             is LoadStatus.FailedToLoad -> {
                                 cont.cancel(it.error)

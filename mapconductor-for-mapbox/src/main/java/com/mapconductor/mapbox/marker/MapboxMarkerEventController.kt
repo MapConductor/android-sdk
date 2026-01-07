@@ -1,7 +1,7 @@
 package com.mapconductor.mapbox.marker
 
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
@@ -43,7 +43,9 @@ internal class DefaultMapboxMarkerEventController(
 ) : MapboxMarkerEventControllerInterface {
     override val renderer: MapboxMarkerOverlayRenderer = controller.renderer
 
-    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? =
+        controller
+            .find(position)
 
     override fun getSelectedMarker(): MarkerEntityInterface<MapboxActualMarker>? = controller.selectedMarker
 
@@ -90,7 +92,9 @@ internal class StrategyMapboxMarkerEventController(
 ) : MapboxMarkerEventControllerInterface {
     private var selectedMarker: MarkerEntityInterface<MapboxActualMarker>? = null
 
-    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? = controller.find(position)
+    override fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>? =
+        controller
+            .find(position)
 
     override fun getSelectedMarker(): MarkerEntityInterface<MapboxActualMarker>? = selectedMarker
 

@@ -207,7 +207,7 @@ fun HereMapView(
                         state.updateCameraPosition(it)
                         onCameraMoveEnd?.invoke(it)
                     }
-                    cont.resume(controller) { }
+                    cont.resume(controller, onCancellation = {})
                 }
             }
         },

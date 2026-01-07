@@ -2,10 +2,10 @@ package com.mapconductor.arcgis
 
 import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.arcgis.zoom.ZoomAltitudeConverter
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter

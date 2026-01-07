@@ -143,7 +143,9 @@ abstract class PolygonController<ActualPolygon>(
         }
     }
 
-    override fun find(position: GeoPointInterface): PolygonEntityInterface<ActualPolygon>? = polygonManager.find(position)
+    override fun find(position: GeoPointInterface): PolygonEntityInterface<ActualPolygon>? =
+        polygonManager
+            .find(position)
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 

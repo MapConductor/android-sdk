@@ -5,8 +5,8 @@ import androidx.compose.ui.unit.Dp
 import com.google.gson.JsonObject
 import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.createLinearInterpolatePoints
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.normalize
 import com.mapconductor.core.splitByMeridian
 import com.mapconductor.maplibre.polygon.MapLibrePolygonLayer

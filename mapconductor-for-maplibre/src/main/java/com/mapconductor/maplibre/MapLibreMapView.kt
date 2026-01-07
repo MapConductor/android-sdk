@@ -130,7 +130,10 @@ fun MapLibreMapView(
                     // Set style and wait for it to load completely
                     map.setStyle(state.mapDesignType.styleJsonURL) {
                         // Resume only after style is fully loaded
-                        continuation.resume(MapLibreMapViewHolder(mapView, map)) {}
+                        continuation.resume(
+                            MapLibreMapViewHolder(mapView, map),
+                            onCancellation = {},
+                        )
                     }
                 }
             }

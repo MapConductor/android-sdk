@@ -104,11 +104,6 @@ android {
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
 
-    kotlinOptions {
-
-        jvmTarget = project.property("jvmTarget").toString()
-    }
-
     buildFeatures {
 
         compose = true
@@ -134,6 +129,16 @@ android {
 
             isIncludeAndroidResources = true
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(
+                project.property("jvmTarget").toString(),
+            ),
+        )
     }
 }
 

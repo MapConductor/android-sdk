@@ -1,8 +1,8 @@
 package com.mapconductor.maplibre
 
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import org.maplibre.android.camera.CameraPosition
 import kotlin.math.max
 

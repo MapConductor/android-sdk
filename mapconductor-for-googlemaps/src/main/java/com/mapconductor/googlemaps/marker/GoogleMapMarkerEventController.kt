@@ -33,7 +33,8 @@ internal interface GoogleMapMarkerEventControllerInterface {
 internal class DefaultGoogleMapMarkerEventController(
     private val controller: GoogleMapMarkerController,
 ) : GoogleMapMarkerEventControllerInterface {
-    override fun getEntity(id: String): MarkerEntityInterface<GoogleMapActualMarker>? = controller.markerManager.getEntity(id)
+    override fun getEntity(id: String): MarkerEntityInterface<GoogleMapActualMarker>? =
+        controller.markerManager.getEntity(id)
 
     override fun dispatchClick(state: MarkerState) = controller.dispatchClick(state)
 

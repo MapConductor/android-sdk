@@ -16,7 +16,9 @@ import android.util.Log
 class MapLibreRasterLayerOverlayRenderer(
     private val holder: MapLibreMapViewHolderInterface,
 ) : RasterLayerOverlayRendererInterface<MapLibreRasterLayerHandle> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<MapLibreRasterLayerHandle?> =
+    override suspend fun onAdd(
+        data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
+    ): List<MapLibreRasterLayerHandle?> =
         data.map { params ->
             addLayer(params.state)
         }

@@ -3,8 +3,8 @@ package com.mapconductor.maplibre.polygon
 import com.mapconductor.core.controller.OverlayControllerInterface
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineEntity
@@ -77,6 +77,7 @@ class MapLibrePolygonConductor(
 
     override var clickListener: ((PolygonEvent) -> Unit)? = null
 
+    @Suppress("UNCHECKED_CAST")
     override fun find(position: GeoPointInterface): PolygonEntityInterface<PolygonState>? =
         polygonOverlay.polygonManager.find(position) as? PolygonEntityInterface<PolygonState>
 

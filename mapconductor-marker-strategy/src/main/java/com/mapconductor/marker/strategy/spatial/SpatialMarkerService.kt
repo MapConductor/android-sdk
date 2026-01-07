@@ -2,8 +2,8 @@ package com.mapconductor.marker.strategy.spatial
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerState

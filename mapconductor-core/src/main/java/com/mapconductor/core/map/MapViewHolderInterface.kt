@@ -1,8 +1,8 @@
 package com.mapconductor.core.map
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 
 interface MapViewHolderInterface<ActualMapView, ActualMap> {
     val mapView: ActualMapView

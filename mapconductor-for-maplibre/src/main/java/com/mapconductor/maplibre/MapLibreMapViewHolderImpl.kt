@@ -1,8 +1,8 @@
 package com.mapconductor.maplibre
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapViewHolderInterface
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView

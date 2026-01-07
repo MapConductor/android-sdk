@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.dp
 data class IconItem<T>(
     val key: String,
     val label: String,
-    @DrawableRes val lightIconResId: Int,
-    @DrawableRes val darkIconResId: Int,
+    @field:DrawableRes val lightIconResId: Int,
+    @field:DrawableRes val darkIconResId: Int,
     val value: T,
 )
 

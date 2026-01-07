@@ -221,6 +221,7 @@ internal class MapboxMapViewController(
 
     override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
 
+    @Deprecated("Use CircleState.onClick instead.")
     override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
         this.circleController.clickListener = listener
     }
@@ -430,40 +431,48 @@ internal class MapboxMapViewController(
         activeDragController = null
     }
 
+    @Deprecated("Use MarkerState.onDragStart instead.")
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
         markerDragStartListener = listener
         markerEventControllers.forEach { it.setDragStartListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onDrag instead.")
     override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
         markerDragListener = listener
         markerEventControllers.forEach { it.setDragListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onDragEnd instead.")
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
         markerDragEndListener = listener
         markerEventControllers.forEach { it.setDragEndListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onAnimateStart instead.")
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
         markerAnimateStartListener = listener
         markerEventControllers.forEach { it.setAnimateStartListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onAnimateEnd instead.")
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
         markerAnimateEndListener = listener
         markerEventControllers.forEach { it.setAnimateEndListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onClick instead.")
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
         markerClickListener = listener
         markerEventControllers.forEach { it.setClickListener(listener) }
     }
 
+    @Deprecated("Use PolylineState.onClick instead.")
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
         polylineController.clickListener = listener
     }
 
+    @Deprecated("Use PolygonState.onClick instead.")
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         polygonController.clickListener = listener
     }

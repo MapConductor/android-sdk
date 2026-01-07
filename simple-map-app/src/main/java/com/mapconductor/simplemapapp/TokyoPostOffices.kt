@@ -1,7 +1,7 @@
 package com.mapconductor.example.pages.marker.postoffice
 
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 
 data class PostOffice(

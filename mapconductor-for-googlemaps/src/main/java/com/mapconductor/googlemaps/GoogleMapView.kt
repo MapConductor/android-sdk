@@ -35,6 +35,7 @@ import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerOverlayRenderer
 import android.view.ViewGroup
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
@@ -74,6 +75,8 @@ fun GoogleMapView(
     )
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
+@Suppress("DEPRECATION")
 @Deprecated("Use GroundImageState onClick instead.")
 @Composable
 fun GoogleMapView(
@@ -133,7 +136,7 @@ fun GoogleMapView(
             suspendCancellableCoroutine<GoogleMapViewHolder> { cont ->
                 mapView.getMapAsync { map ->
                     val holder = GoogleMapViewHolder(mapView, map)
-                    cont.resume(holder) {}
+                    cont.resume(holder, onCancellation = {})
                 }
             }
         },
@@ -176,16 +179,19 @@ fun GoogleMapView(
                     onCameraMoveEnd?.invoke(it)
                 }
                 controller.setMapClickListener(onMapClick)
-                controller.setOnMarkerClickListener(onMarkerClick)
-                controller.setOnMarkerDragStart(onMarkerDragStart)
-                controller.setOnMarkerDrag(onMarkerDrag)
-                controller.setOnMarkerDragEnd(onMarkerDragEnd)
-                controller.setOnCircleClickListener(onCircleClick)
-                controller.setOnPolylineClickListener(onPolylineClick)
-                controller.setOnPolygonClickListener(onPolygonClick)
-                controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
-                controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-                controller.setOnGroundImageClickListener(onGroundImageClick)
+                @Suppress("DEPRECATION")
+                run {
+                    controller.setOnMarkerClickListener(onMarkerClick)
+                    controller.setOnMarkerDragStart(onMarkerDragStart)
+                    controller.setOnMarkerDrag(onMarkerDrag)
+                    controller.setOnMarkerDragEnd(onMarkerDragEnd)
+                    controller.setOnCircleClickListener(onCircleClick)
+                    controller.setOnPolylineClickListener(onPolylineClick)
+                    controller.setOnPolygonClickListener(onPolygonClick)
+                    controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                    controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                    controller.setOnGroundImageClickListener(onGroundImageClick)
+                }
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 // Post an initial camera update once the MapView is laid out
                 holder.mapView.post { controller.sendInitialCameraUpdate() }

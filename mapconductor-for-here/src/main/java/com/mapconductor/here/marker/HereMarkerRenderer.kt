@@ -77,9 +77,9 @@ class HereMarkerRenderer(
     }
 
     override suspend fun onChange(
-        changes: List<MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker>>,
+        data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker>>,
     ): List<HereActualMarker?> =
-        changes.mapNotNull { params ->
+        data.mapNotNull { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint
             if (!params.current.visible) return@mapNotNull null

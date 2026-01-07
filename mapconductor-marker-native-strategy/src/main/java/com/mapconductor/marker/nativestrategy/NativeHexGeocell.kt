@@ -1,8 +1,8 @@
 ﻿package com.mapconductor.marker.nativestrategy
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCoord
 import com.mapconductor.core.geocell.HexGeocellInterface

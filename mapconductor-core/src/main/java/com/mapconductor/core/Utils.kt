@@ -1,10 +1,10 @@
 ﻿package com.mapconductor.core
 
-import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import kotlin.time.Duration
+import android.util.Log
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

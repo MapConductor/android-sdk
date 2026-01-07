@@ -1,6 +1,5 @@
 ﻿package com.mapconductor.core.features
 
-
 class GeoRectBounds(
     southWest: GeoPoint? = null,
     northEast: GeoPoint? = null,
@@ -297,4 +296,3 @@ class GeoRectBounds(
 
     fun equals(other: GeoRectBounds): Boolean = this.southWest == other.southWest && this.northEast == other.northEast
 }
-

@@ -1,7 +1,7 @@
 package com.mapconductor.core.spherical
 
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import net.sf.geographiclib.Geodesic
 
 object GeographicLibCalculator {

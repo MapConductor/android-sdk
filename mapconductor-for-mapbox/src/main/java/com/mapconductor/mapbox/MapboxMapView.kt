@@ -80,6 +80,7 @@ fun MapboxMapView(
     )
 }
 
+@Suppress("DEPRECATION")
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
 fun MapboxMapView(

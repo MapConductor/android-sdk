@@ -39,5 +39,3 @@ object LineSegmentUtils {
         return result
     }
 }
-
-

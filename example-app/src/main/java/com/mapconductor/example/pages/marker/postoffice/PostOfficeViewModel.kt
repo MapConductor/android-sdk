@@ -165,6 +165,7 @@ class PostOfficeViewModel(
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
+        @Suppress("UNCHECKED_CAST")
         _renderingStrategy.value =
             when (mapViewState) {
                 is GoogleMapViewStateInterface -> strategies.google

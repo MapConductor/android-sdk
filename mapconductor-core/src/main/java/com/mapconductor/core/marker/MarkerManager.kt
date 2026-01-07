@@ -3,8 +3,8 @@ package com.mapconductor.core.marker
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.geocell.HexCell
 import com.mapconductor.core.geocell.HexCellRegistry
-import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.projection.Earth
 
 /**

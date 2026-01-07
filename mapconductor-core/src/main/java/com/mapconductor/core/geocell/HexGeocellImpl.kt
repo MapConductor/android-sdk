@@ -1,8 +1,8 @@
 ﻿package com.mapconductor.core.geocell
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.ProjectionInterface
 import com.mapconductor.core.projection.WebMercator

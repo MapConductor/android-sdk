@@ -1,8 +1,8 @@
 package com.mapconductor.heatmap
 
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.geocell.HexGeocell
+import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerEntity

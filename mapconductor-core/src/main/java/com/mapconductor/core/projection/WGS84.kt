@@ -1,8 +1,8 @@
 package com.mapconductor.core.projection
 
 import androidx.compose.ui.geometry.Offset
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 
 /*
  * Copyright 2013 Google Inc.
