@@ -9,8 +9,12 @@ import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
@@ -22,9 +26,14 @@ import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.marker.DefaultMapLibreMarkerEventController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerEventControllerInterface
+import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
+import com.mapconductor.maplibre.marker.MarkerDragLayer
+import com.mapconductor.maplibre.marker.MarkerLayer
+import com.mapconductor.maplibre.marker.StrategyMapLibreMarkerEventController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
+import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -38,6 +47,7 @@ import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.sources.GeoJsonSource
 import android.graphics.PointF
+import java.util.UUID
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -58,6 +68,7 @@ class MapLibreViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapLibreViewControllerInterface,
+    MarkerRenderingSupport<MapLibreActualMarker>,
     MapLibreMap.OnMapClickListener,
     MapLibreMap.OnMapLongClickListener,
     MapLibreMap.OnMoveListener,
@@ -757,5 +768,43 @@ class MapLibreViewController(
             controller.renderer.redraw()
             controller.renderer.drawDragLayer()
         }
+    }
+
+    override fun createMarkerRenderer(
+        strategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
+    ): MarkerOverlayRendererInterface<MapLibreActualMarker> {
+        val groupId = UUID.randomUUID().toString()
+        val markerLayer =
+            MarkerLayer(
+                sourceId = "markers-source-$groupId",
+                layerId = "markers-layer-$groupId",
+            )
+        val dragLayer =
+            MarkerDragLayer(
+                sourceId = "marker-drag-source-$groupId",
+                layerId = "marker-drag-layer-$groupId",
+            )
+        return MapLibreMarkerOverlayRenderer(
+            holder = holder,
+            markerManager = strategy.markerManager,
+            markerLayer = markerLayer,
+            dragLayer = dragLayer,
+        )
+    }
+
+    override fun createMarkerEventController(
+        controller: StrategyMarkerController<MapLibreActualMarker>,
+        renderer: MarkerOverlayRendererInterface<MapLibreActualMarker>,
+    ): MarkerEventControllerInterface<MapLibreActualMarker> =
+        StrategyMapLibreMarkerEventController(
+            controller = controller,
+            renderer = renderer as MapLibreMarkerOverlayRenderer,
+        )
+
+    override fun registerMarkerEventController(
+        controller: MarkerEventControllerInterface<MapLibreActualMarker>,
+    ) {
+        val typed = controller as? MapLibreMarkerEventControllerInterface ?: return
+        registerMarkerEventController(typed)
     }
 }

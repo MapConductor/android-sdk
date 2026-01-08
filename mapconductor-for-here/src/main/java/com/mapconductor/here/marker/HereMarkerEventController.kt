@@ -2,12 +2,14 @@ package com.mapconductor.here.marker
 
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.here.HereActualMarker
 
-internal interface HereMarkerEventControllerInterface {
+internal interface HereMarkerEventControllerInterface :
+    MarkerEventControllerInterface<HereActualMarker> {
     fun find(position: GeoPoint): MarkerEntityInterface<HereActualMarker>?
 
     fun getSelectedMarker(): MarkerEntityInterface<HereActualMarker>?

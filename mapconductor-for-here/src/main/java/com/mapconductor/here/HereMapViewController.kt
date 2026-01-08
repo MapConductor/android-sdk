@@ -23,8 +23,12 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
@@ -36,9 +40,12 @@ import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.marker.HereMarkerEventControllerInterface
+import com.mapconductor.here.marker.HereMarkerRenderer
+import com.mapconductor.here.marker.StrategyHereMarkerEventController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.raster.HereRasterLayerController
+import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,6 +62,7 @@ class HereMapViewController(
 ) : BaseMapViewController(),
     CircleCapableInterface,
     HereMapViewControllerInterface,
+    MarkerRenderingSupport<HereActualMarker>,
     MapCameraListener,
     TapListener,
     LongPressListener {
@@ -401,5 +409,21 @@ class HereMapViewController(
         controller.setDragEndListener(markerDragEndListener)
         controller.setAnimateStartListener(markerAnimateStartListener)
         controller.setAnimateEndListener(markerAnimateEndListener)
+    }
+
+    override fun createMarkerRenderer(
+        strategy: MarkerRenderingStrategyInterface<HereActualMarker>,
+    ): MarkerOverlayRendererInterface<HereActualMarker> = HereMarkerRenderer(holder = holder)
+
+    override fun createMarkerEventController(
+        controller: StrategyMarkerController<HereActualMarker>,
+        renderer: MarkerOverlayRendererInterface<HereActualMarker>,
+    ): MarkerEventControllerInterface<HereActualMarker> = StrategyHereMarkerEventController(controller)
+
+    override fun registerMarkerEventController(
+        controller: MarkerEventControllerInterface<HereActualMarker>,
+    ) {
+        val typed = controller as? HereMarkerEventControllerInterface ?: return
+        registerMarkerEventController(typed)
     }
 }

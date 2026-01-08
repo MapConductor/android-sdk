@@ -3,12 +3,14 @@ package com.mapconductor.maplibre.marker
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.maplibre.MapLibreActualMarker
 
-internal interface MapLibreMarkerEventControllerInterface {
+internal interface MapLibreMarkerEventControllerInterface :
+    MarkerEventControllerInterface<MapLibreActualMarker> {
     val renderer: MapLibreMarkerOverlayRenderer
 
     fun find(position: GeoPointInterface): MarkerEntityInterface<MapLibreActualMarker>?

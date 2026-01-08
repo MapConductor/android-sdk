@@ -1,12 +1,14 @@
 package com.mapconductor.googlemaps.marker
 
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 
-internal interface GoogleMapMarkerEventControllerInterface {
+internal interface GoogleMapMarkerEventControllerInterface :
+    MarkerEventControllerInterface<GoogleMapActualMarker> {
     fun getEntity(id: String): MarkerEntityInterface<GoogleMapActualMarker>?
 
     fun dispatchClick(state: MarkerState)

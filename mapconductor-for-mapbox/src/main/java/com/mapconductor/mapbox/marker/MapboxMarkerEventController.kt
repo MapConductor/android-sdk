@@ -3,12 +3,14 @@ package com.mapconductor.mapbox.marker
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.mapbox.MapboxActualMarker
 
-internal interface MapboxMarkerEventControllerInterface {
+internal interface MapboxMarkerEventControllerInterface :
+    MarkerEventControllerInterface<MapboxActualMarker> {
     val renderer: MapboxMarkerOverlayRenderer
 
     fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>?

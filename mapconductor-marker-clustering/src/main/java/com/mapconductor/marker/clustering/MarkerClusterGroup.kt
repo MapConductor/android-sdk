@@ -1,4 +1,4 @@
-package com.mapconductor.googlemaps.marker
+package com.mapconductor.marker.clustering
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,16 +8,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerIconInterface
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewScope
-import com.mapconductor.marker.clustering.MarkerCluster
-import com.mapconductor.marker.clustering.MarkerClusterStrategy
 
 @Composable
-fun GoogleMapViewScope.MarkerClusterGroup(
+fun <ActualMarker> MapViewScope.MarkerClusterGroup(
+    state: MarkerClusterGroupState<ActualMarker>,
+    content: @Composable () -> Unit,
+) {
+    MarkerClusterGroup<ActualMarker>(
+        clusterRadiusPx = state.clusterRadiusPx,
+        minClusterSize = state.minClusterSize,
+        expandMargin = state.expandMargin,
+        clusterIconProvider = state.clusterIconProvider,
+        onClusterClick = state.onClusterClick,
+        debugClusterTurnLabel = state.debugClusterTurnLabel,
+        showClusterRadiusCircle = state.showClusterRadiusCircle,
+        clusterRadiusStrokeColor = state.clusterRadiusStrokeColor,
+        clusterRadiusStrokeWidth = state.clusterRadiusStrokeWidth,
+        clusterRadiusFillColor = state.clusterRadiusFillColor,
+        content = content,
+    )
+}
+
+@Composable
+fun <ActualMarker> MapViewScope.MarkerClusterGroup(
     clusterRadiusPx: Double = MarkerClusterStrategy.DEFAULT_CLUSTER_RADIUS_PX,
     minClusterSize: Int = MarkerClusterStrategy.DEFAULT_MIN_CLUSTER_SIZE,
     expandMargin: Double = MarkerClusterStrategy.DEFAULT_EXPAND_MARGIN,
@@ -47,7 +64,7 @@ fun GoogleMapViewScope.MarkerClusterGroup(
             onClusterClick,
             debugClusterTurnLabel,
         ) {
-            MarkerClusterStrategy<GoogleMapActualMarker>(
+            MarkerClusterStrategy<ActualMarker>(
                 clusterRadiusPx = clusterRadiusPx,
                 minClusterSize = minClusterSize,
                 expandMargin = expandMargin,
@@ -59,7 +76,13 @@ fun GoogleMapViewScope.MarkerClusterGroup(
         }
 
     val debugInfos by strategy.debugInfoFlow.collectAsState()
-    LaunchedEffect(showClusterRadiusCircle, debugInfos) {
+    LaunchedEffect(
+        showClusterRadiusCircle,
+        clusterRadiusStrokeColor,
+        clusterRadiusStrokeWidth,
+        clusterRadiusFillColor,
+        debugInfos,
+    ) {
         val prefix = CLUSTER_CIRCLE_ID_PREFIX
         val nextMap = circleFlow.value.toMutableMap()
         nextMap.keys.filter { it.startsWith(prefix) }.forEach { nextMap.remove(it) }

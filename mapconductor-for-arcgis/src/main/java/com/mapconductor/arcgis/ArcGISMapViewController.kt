@@ -12,9 +12,12 @@ import com.mapconductor.arcgis.calculateCameraForOrbitParameters
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.fromLongLat
 import com.mapconductor.arcgis.map.ArcGISMapViewHolder
+import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerEventControllerInterface
+import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
 import com.mapconductor.arcgis.marker.DefaultArcGISMarkerEventController
+import com.mapconductor.arcgis.marker.StrategyArcGISMarkerEventController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
@@ -30,8 +33,12 @@ import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
@@ -39,6 +46,7 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
+import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import com.mapconductor.settings.Settings
 import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
@@ -54,7 +62,8 @@ class ArcGISMapViewController(
     private val rasterLayerController: ArcGISRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    ArcGISMapViewControllerInterface {
+    ArcGISMapViewControllerInterface,
+    MarkerRenderingSupport<ArcGISActualMarker> {
     private val markerEventControllers = mutableListOf<ArcGISMarkerEventControllerInterface>()
     private var activeDragController: ArcGISMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
@@ -519,6 +528,29 @@ class ArcGISMapViewController(
         controller.setDragEndListener(markerDragEndListener)
         controller.setAnimateStartListener(markerAnimateStartListener)
         controller.setAnimateEndListener(markerAnimateEndListener)
+    }
+
+    override fun createMarkerRenderer(
+        strategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
+    ): MarkerOverlayRendererInterface<ArcGISActualMarker> {
+        val markerLayer = com.arcgismaps.mapping.view.GraphicsOverlay()
+        registerMarkerOverlayLayer(markerLayer)
+        return ArcGISMarkerRenderer(
+            markerLayer = markerLayer,
+            holder = holder,
+        )
+    }
+
+    override fun createMarkerEventController(
+        controller: StrategyMarkerController<ArcGISActualMarker>,
+        renderer: MarkerOverlayRendererInterface<ArcGISActualMarker>,
+    ): MarkerEventControllerInterface<ArcGISActualMarker> = StrategyArcGISMarkerEventController(controller)
+
+    override fun registerMarkerEventController(
+        controller: MarkerEventControllerInterface<ArcGISActualMarker>,
+    ) {
+        val typed = controller as? ArcGISMarkerEventControllerInterface ?: return
+        registerMarkerEventController(typed)
     }
 
     internal fun registerMarkerOverlayLayer(layer: com.arcgismaps.mapping.view.GraphicsOverlay) {

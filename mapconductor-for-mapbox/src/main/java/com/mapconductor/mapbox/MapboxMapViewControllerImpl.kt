@@ -27,8 +27,12 @@ import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
@@ -40,10 +44,16 @@ import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.marker.DefaultMapboxMarkerEventController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.marker.MapboxMarkerEventControllerInterface
+import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
+import com.mapconductor.mapbox.marker.MarkerDragLayer
+import com.mapconductor.mapbox.marker.MarkerLayer
+import com.mapconductor.mapbox.marker.StrategyMapboxMarkerEventController
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.raster.MapboxRasterLayerController
+import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import android.animation.Animator
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,6 +71,7 @@ internal class MapboxMapViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapboxMapViewControllerInterface,
+    MarkerRenderingSupport<MapboxActualMarker>,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
@@ -622,5 +633,43 @@ internal class MapboxMapViewController(
             controller.renderer.ensureStyleImages(style)
             controller.renderer.redraw()
         }
+    }
+
+    override fun createMarkerRenderer(
+        strategy: MarkerRenderingStrategyInterface<MapboxActualMarker>,
+    ): MarkerOverlayRendererInterface<MapboxActualMarker> {
+        val groupId = UUID.randomUUID().toString()
+        val markerLayer =
+            MarkerLayer(
+                sourceId = "markers-source-$groupId",
+                layerId = "markers-layer-$groupId",
+            )
+        val dragLayer =
+            MarkerDragLayer(
+                sourceId = "marker-drag-source-$groupId",
+                layerId = "marker-drag-layer-$groupId",
+            )
+        return MapboxMarkerOverlayRenderer(
+            holder = holder,
+            markerManager = strategy.markerManager,
+            markerLayer = markerLayer,
+            dragLayer = dragLayer,
+        )
+    }
+
+    override fun createMarkerEventController(
+        controller: StrategyMarkerController<MapboxActualMarker>,
+        renderer: MarkerOverlayRendererInterface<MapboxActualMarker>,
+    ): MarkerEventControllerInterface<MapboxActualMarker> =
+        StrategyMapboxMarkerEventController(
+            controller = controller,
+            renderer = renderer as MapboxMarkerOverlayRenderer,
+        )
+
+    override fun registerMarkerEventController(
+        controller: MarkerEventControllerInterface<MapboxActualMarker>,
+    ) {
+        val typed = controller as? MapboxMarkerEventControllerInterface ?: return
+        registerMarkerEventController(typed)
     }
 }

@@ -4,11 +4,13 @@ import com.arcgismaps.geometry.Point
 import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 
-internal interface ArcGISMarkerEventControllerInterface {
+internal interface ArcGISMarkerEventControllerInterface :
+    MarkerEventControllerInterface<ArcGISActualMarker> {
     fun find(position: GeoPoint): MarkerEntityInterface<ArcGISActualMarker>?
 
     fun getSelectedState(): MarkerState?

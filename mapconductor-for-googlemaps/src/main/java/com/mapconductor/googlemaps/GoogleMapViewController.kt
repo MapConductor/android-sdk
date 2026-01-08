@@ -20,8 +20,12 @@ import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
@@ -29,14 +33,17 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventControllerInterface
+import com.mapconductor.googlemaps.marker.StrategyGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
+import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +62,7 @@ class GoogleMapViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     GoogleMapViewControllerInterface,
+    MarkerRenderingSupport<GoogleMapActualMarker>,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
@@ -65,7 +73,7 @@ class GoogleMapViewController(
     GoogleMap.OnMapLoadedCallback {
     private val markerEventControllers = mutableListOf<GoogleMapMarkerEventControllerInterface>()
     private val _mapLoadedState = MutableStateFlow(false)
-    val mapLoadedState: StateFlow<Boolean> = _mapLoadedState
+    override val mapLoadedState: StateFlow<Boolean> = _mapLoadedState
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -366,6 +374,26 @@ class GoogleMapViewController(
         initialCameraUpdateAttempts = 0
         val mapCameraPosition = getMapCameraPosition()
         backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
+    }
+
+    override fun createMarkerRenderer(
+        strategy: MarkerRenderingStrategyInterface<GoogleMapActualMarker>,
+    ): MarkerOverlayRendererInterface<GoogleMapActualMarker> = GoogleMapMarkerRenderer(holder = holder)
+
+    override fun createMarkerEventController(
+        controller: StrategyMarkerController<GoogleMapActualMarker>,
+        renderer: MarkerOverlayRendererInterface<GoogleMapActualMarker>,
+    ): MarkerEventControllerInterface<GoogleMapActualMarker> = StrategyGoogleMapMarkerEventController(controller)
+
+    override fun registerMarkerEventController(
+        controller: MarkerEventControllerInterface<GoogleMapActualMarker>,
+    ) {
+        val typed = controller as? GoogleMapMarkerEventControllerInterface ?: return
+        registerMarkerEventController(typed)
+    }
+
+    override fun onMarkerRenderingReady() {
+        sendInitialCameraUpdate()
     }
 
     companion object {

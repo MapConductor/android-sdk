@@ -42,6 +42,12 @@ android {
 
     buildFeatures {
         aidl = true
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion =
+            project.property("kotlinCompilerExtensionVersion").toString()
     }
 
     publishing {
@@ -62,12 +68,13 @@ kotlin {
 }
 
 dependencies {
-    compileOnly(project(":mapconductor-core"))
+    api(project(":mapconductor-core"))
 
     // Compose dependencies for DefaultIcon
-    compileOnly(libs.androidx.ui)
-    compileOnly(libs.androidx.foundation)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.foundation)
 
     // Coroutines for Semaphore and withPermit
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
