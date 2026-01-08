@@ -1,4 +1,4 @@
-package com.mapconductor.example
+﻿package com.mapconductor.example
 
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Box
@@ -26,6 +26,7 @@ import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
 import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
+import com.mapconductor.example.pages.marker.postofficecluster.PostOfficeMapPage as PostOfficeClusterMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
@@ -115,6 +116,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "marker-postoffice",
                 title = "Bunch of Markers",
+            ),
+            SidebarItem(
+                id = "marker-postoffice-cluster",
+                title = "Marker Clustering",
             ),
             SidebarItem(
                 id = "circle",
@@ -216,6 +221,12 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "marker-postoffice-cluster" -> {
+                        PostOfficeClusterMapPage(
+                            postOfficeIcon = postOfficeIcon,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "circle" -> {
                         CircleMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
@@ -268,3 +279,5 @@ fun DemoAppScreen(initPage: String = "map") {
         }
     }
 }
+
+

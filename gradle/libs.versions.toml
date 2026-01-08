@@ -71,6 +71,7 @@ mapconductor-arcgis = { module = "com.mapconductor:for-arcgis" }
 mapconductor-maplibre = { module = "com.mapconductor:for-maplibre" }
 mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
 mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
+mapconductor-marker-clustering = { module = "com.mapconductor:marker-clustering" }
 
 # Mapbox
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
@@ -106,4 +107,3 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 jlleitschuh-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint"}
-

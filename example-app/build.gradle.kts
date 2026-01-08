@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -202,6 +202,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.maplibre)
     releaseImplementation(libs.mapconductor.marker.strategy)
     releaseImplementation(libs.mapconductor.marker.native.strategy)
+    releaseImplementation(libs.mapconductor.marker.clustering)
 
     debugImplementation(project(":mapconductor-core"))
     debugImplementation(project(":mapconductor-icons"))
@@ -212,6 +213,7 @@ dependencies {
     debugImplementation(project(":mapconductor-for-maplibre"))
     debugImplementation(project(":mapconductor-marker-strategy"))
     debugImplementation(project(":mapconductor-marker-native-strategy"))
+    debugImplementation(project(":mapconductor-marker-clustering"))
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)
@@ -225,3 +227,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
