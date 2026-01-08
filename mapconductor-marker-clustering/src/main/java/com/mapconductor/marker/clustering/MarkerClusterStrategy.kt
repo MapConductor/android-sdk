@@ -52,7 +52,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private val debugIncludeRenderCount: Boolean = false,
     private val cameraIdleDebounceMillis: Long = DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     private val tileSize: Double = DEFAULT_TILE_SIZE,
-    semaphore: Semaphore = Semaphore(1),
+    semaphore: Semaphore = Semaphore(3),
     geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
@@ -193,7 +193,11 @@ class MarkerClusterStrategy<ActualMarker>(
             val turn = zoomChange.turn
             val zoomChanged = zoomChange.zoomChanged
 
-            cleanupStaleMarkers(zoom, renderer)
+            cleanupStaleMarkers(
+                currentZoom = zoom,
+                renderer = renderer,
+                skipClusterRemoval = enableZoomAnimation && zoomChanged,
+            )
 
             val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
             val debugInfos = mutableListOf<MarkerClusterDebugInfo>()
@@ -321,21 +325,24 @@ class MarkerClusterStrategy<ActualMarker>(
         nextClusterPositions: Map<String, GeoPoint>,
     ) {
         val desiredById = desiredStates.associateBy { it.id }
+        val animateZoom = enableZoomAnimation && zoomChanged && zoomAnimationDurationMillis > 0L
         val existing = markerManager.allEntities()
         val existingById = existing.associateBy { it.state.id }
 
-        val orphanedIds = existingById.keys - desiredById.keys
-        val orphanedEntitiesBeforeAnimation =
-            orphanedIds.mapNotNull { id ->
-                renderedMarkerEntities[id]
+        if (!animateZoom) {
+            val orphanedIds = existingById.keys - desiredById.keys
+            val orphanedEntitiesBeforeAnimation =
+                orphanedIds.mapNotNull { id ->
+                    renderedMarkerEntities[id]
+                }
+            if (orphanedEntitiesBeforeAnimation.isNotEmpty()) {
+                renderer.onRemove(orphanedEntitiesBeforeAnimation)
+                orphanedEntitiesBeforeAnimation.forEach { entity ->
+                    renderedMarkerEntities.remove(entity.state.id)
+                    markerManager.removeEntity(entity.state.id)
+                }
+                renderer.onPostProcess()
             }
-        if (orphanedEntitiesBeforeAnimation.isNotEmpty()) {
-            renderer.onRemove(orphanedEntitiesBeforeAnimation)
-            orphanedEntitiesBeforeAnimation.forEach { entity ->
-                renderedMarkerEntities.remove(entity.state.id)
-                markerManager.removeEntity(entity.state.id)
-            }
-            renderer.onPostProcess()
         }
 
         val existingAfterCleanup = markerManager.allEntities()
@@ -344,7 +351,6 @@ class MarkerClusterStrategy<ActualMarker>(
         val removeIds = existingByIdAfterCleanup.keys - desiredById.keys
         val addStates = desiredById.filterKeys { it !in existingByIdAfterCleanup }.values
         val updateStates = desiredById.filterKeys { it in existingByIdAfterCleanup }.values
-        val animateZoom = enableZoomAnimation && zoomChanged && zoomAnimationDurationMillis > 0L
 
         val animatedRemoveEntries =
             if (animateZoom) {
@@ -689,6 +695,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private suspend fun cleanupStaleMarkers(
         currentZoom: Double,
         renderer: MarkerOverlayRendererInterface<ActualMarker>,
+        skipClusterRemoval: Boolean,
     ) {
         val currentZoomKey = currentZoom.roundToInt()
         val staleEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
@@ -699,12 +706,16 @@ class MarkerClusterStrategy<ActualMarker>(
 
             val isStale =
                 if (isCluster) {
+                    if (skipClusterRemoval) {
+                        false
+                    } else {
                     val parts = id.split("_")
                     if (parts.size >= 4) {
                         val markerZoomKey = parts[1].toIntOrNull() ?: -1
                         markerZoomKey != currentZoomKey
                     } else {
                         false
+                    }
                     }
                 } else {
                     !sourceStates.containsKey(id)
