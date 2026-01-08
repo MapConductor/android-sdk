@@ -19,6 +19,10 @@ class MarkerClusterGroupState<ActualMarker>(
     clusterRadiusStrokeColor: Color = Color.Red,
     clusterRadiusStrokeWidth: Dp = 1.dp,
     clusterRadiusFillColor: Color = Color.Transparent,
+    enableZoomAnimation: Boolean = false,
+    zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
+    debugIncludeRenderCount: Boolean = false,
+    cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
 ) {
     var clusterRadiusPx by mutableStateOf(clusterRadiusPx)
     var minClusterSize by mutableStateOf(minClusterSize)
@@ -30,4 +34,8 @@ class MarkerClusterGroupState<ActualMarker>(
     var clusterRadiusStrokeColor by mutableStateOf(clusterRadiusStrokeColor)
     var clusterRadiusStrokeWidth by mutableStateOf(clusterRadiusStrokeWidth)
     var clusterRadiusFillColor by mutableStateOf(clusterRadiusFillColor)
+    var enableZoomAnimation by mutableStateOf(enableZoomAnimation)
+    var zoomAnimationDurationMillis by mutableStateOf(zoomAnimationDurationMillis)
+    var debugIncludeRenderCount by mutableStateOf(debugIncludeRenderCount)
+    var cameraIdleDebounceMillis by mutableStateOf(cameraIdleDebounceMillis)
 }

@@ -24,11 +24,14 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
         expandMargin = state.expandMargin,
         clusterIconProvider = state.clusterIconProvider,
         onClusterClick = state.onClusterClick,
-        debugClusterTurnLabel = state.debugClusterTurnLabel,
         showClusterRadiusCircle = state.showClusterRadiusCircle,
         clusterRadiusStrokeColor = state.clusterRadiusStrokeColor,
         clusterRadiusStrokeWidth = state.clusterRadiusStrokeWidth,
         clusterRadiusFillColor = state.clusterRadiusFillColor,
+        enableZoomAnimation = state.enableZoomAnimation,
+        zoomAnimationDurationMillis = state.zoomAnimationDurationMillis,
+        debugIncludeRenderCount = state.debugIncludeRenderCount,
+        cameraIdleDebounceMillis = state.cameraIdleDebounceMillis,
         content = content,
     )
 }
@@ -40,21 +43,16 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
     expandMargin: Double = MarkerClusterStrategy.DEFAULT_EXPAND_MARGIN,
     clusterIconProvider: (Int) -> MarkerIconInterface = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
     onClusterClick: ((MarkerCluster) -> Unit)? = null,
-    debugClusterTurnLabel: Boolean = false,
     showClusterRadiusCircle: Boolean = false,
     clusterRadiusStrokeColor: Color = Color.Red,
     clusterRadiusStrokeWidth: Dp = 1.dp,
     clusterRadiusFillColor: Color = Color.Transparent,
+    enableZoomAnimation: Boolean = false,
+    zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
+    debugIncludeRenderCount: Boolean = false,
+    cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     content: @Composable () -> Unit,
 ) {
-    val iconProviderWithTurn =
-        remember(clusterIconProvider, debugClusterTurnLabel) {
-            if (debugClusterTurnLabel) {
-                { _: Int, turn: Int -> ColorDefaultIcon(label = turn.toString()) }
-            } else {
-                null
-            }
-        }
     val strategy =
         remember(
             clusterRadiusPx,
@@ -62,16 +60,21 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
             expandMargin,
             clusterIconProvider,
             onClusterClick,
-            debugClusterTurnLabel,
+            enableZoomAnimation,
+            zoomAnimationDurationMillis,
+            debugIncludeRenderCount,
+            cameraIdleDebounceMillis,
         ) {
             MarkerClusterStrategy<ActualMarker>(
                 clusterRadiusPx = clusterRadiusPx,
                 minClusterSize = minClusterSize,
                 expandMargin = expandMargin,
                 clusterIconProvider = clusterIconProvider,
-                clusterIconProviderWithTurn = iconProviderWithTurn,
-                includeTurnInClusterId = debugClusterTurnLabel,
                 onClusterClick = onClusterClick,
+                enableZoomAnimation = enableZoomAnimation,
+                zoomAnimationDurationMillis = zoomAnimationDurationMillis,
+                debugIncludeRenderCount = debugIncludeRenderCount,
+                cameraIdleDebounceMillis = cameraIdleDebounceMillis,
             )
         }
 
