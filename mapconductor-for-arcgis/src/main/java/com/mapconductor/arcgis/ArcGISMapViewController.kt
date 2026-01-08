@@ -8,11 +8,10 @@ import com.arcgismaps.mapping.view.PanChangeEvent
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.mapping.view.UpEvent
 import com.arcgismaps.mapping.view.extensions.motionEvent
+import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.calculateCameraForOrbitParameters
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.fromLongLat
-import com.mapconductor.arcgis.map.ArcGISMapViewHolder
-import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerEventControllerInterface
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
@@ -533,7 +532,9 @@ class ArcGISMapViewController(
     override fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
     ): MarkerOverlayRendererInterface<ArcGISActualMarker> {
-        val markerLayer = com.arcgismaps.mapping.view.GraphicsOverlay()
+        val markerLayer =
+            com.arcgismaps.mapping.view
+                .GraphicsOverlay()
         registerMarkerOverlayLayer(markerLayer)
         return ArcGISMarkerRenderer(
             markerLayer = markerLayer,
@@ -546,9 +547,7 @@ class ArcGISMapViewController(
         renderer: MarkerOverlayRendererInterface<ArcGISActualMarker>,
     ): MarkerEventControllerInterface<ArcGISActualMarker> = StrategyArcGISMarkerEventController(controller)
 
-    override fun registerMarkerEventController(
-        controller: MarkerEventControllerInterface<ArcGISActualMarker>,
-    ) {
+    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<ArcGISActualMarker>) {
         val typed = controller as? ArcGISMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

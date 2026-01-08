@@ -279,5 +279,3 @@ fun DemoAppScreen(initPage: String = "map") {
         }
     }
 }
-
-

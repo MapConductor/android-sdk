@@ -420,9 +420,7 @@ class HereMapViewController(
         renderer: MarkerOverlayRendererInterface<HereActualMarker>,
     ): MarkerEventControllerInterface<HereActualMarker> = StrategyHereMarkerEventController(controller)
 
-    override fun registerMarkerEventController(
-        controller: MarkerEventControllerInterface<HereActualMarker>,
-    ) {
+    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<HereActualMarker>) {
         val typed = controller as? HereMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

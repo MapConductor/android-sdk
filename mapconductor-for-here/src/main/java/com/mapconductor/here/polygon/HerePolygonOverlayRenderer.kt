@@ -5,13 +5,13 @@ import com.here.sdk.core.Color
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.spherical.createInterpolatePoints
+import com.mapconductor.core.spherical.createLinearInterpolatePoints
 import com.mapconductor.here.HereActualPolygon
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toGeoCoordinates

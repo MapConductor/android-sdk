@@ -4,13 +4,13 @@ import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineEntityInterface
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.createInterpolatePoints
+import com.mapconductor.core.spherical.createLinearInterpolatePoints
 import com.mapconductor.googlemaps.GoogleMapActualPolyline
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng

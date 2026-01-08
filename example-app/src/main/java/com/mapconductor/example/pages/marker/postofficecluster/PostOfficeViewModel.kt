@@ -183,4 +183,3 @@ class PostOfficeViewModel(
         (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }
-

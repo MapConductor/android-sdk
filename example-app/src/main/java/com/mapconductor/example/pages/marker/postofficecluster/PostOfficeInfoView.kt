@@ -33,4 +33,3 @@ fun PostOfficeInfoView(
         Text(address, fontSize = 13.sp)
     }
 }
-

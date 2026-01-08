@@ -25,6 +25,7 @@ fun <ActualMarker> MarkerRenderingGroup(
     content: @Composable () -> Unit,
 ) {
     val mapController = LocalMapViewController.current
+
     @Suppress("UNCHECKED_CAST")
     val renderingSupport = mapController as? MarkerRenderingSupport<ActualMarker> ?: return
     val markerCollector = remember { MarkerCollector() }

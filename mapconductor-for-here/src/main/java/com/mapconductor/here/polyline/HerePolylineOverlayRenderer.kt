@@ -8,13 +8,13 @@ import com.here.sdk.mapview.MapMeasureDependentRenderSize
 import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
 import com.mapconductor.core.polyline.PolylineEntityInterface
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.createInterpolatePoints
+import com.mapconductor.core.spherical.createLinearInterpolatePoints
 import com.mapconductor.here.HereActualPolyline
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toGeoCoordinates

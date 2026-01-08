@@ -9,8 +9,7 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.mapbox.MapboxActualMarker
 
-internal interface MapboxMarkerEventControllerInterface :
-    MarkerEventControllerInterface<MapboxActualMarker> {
+internal interface MapboxMarkerEventControllerInterface : MarkerEventControllerInterface<MapboxActualMarker> {
     val renderer: MapboxMarkerOverlayRenderer
 
     fun find(position: GeoPointInterface): MarkerEntityInterface<MapboxActualMarker>?

@@ -1,6 +1,7 @@
 package com.mapconductor.core.map
 
 import androidx.compose.runtime.compositionLocalOf
+import com.mapconductor.core.controller.MapViewControllerInterface
 
 val LocalMapOverlayRegistry =
     compositionLocalOf<MapOverlayRegistry> {
@@ -8,6 +9,6 @@ val LocalMapOverlayRegistry =
     }
 
 val LocalMapViewController =
-    compositionLocalOf<com.mapconductor.core.controller.MapViewControllerInterface> {
+    compositionLocalOf<MapViewControllerInterface> {
         error("Map controller must be available under the <MapView />")
     }

@@ -1,20 +1,18 @@
-﻿package com.mapconductor.core.spherical
+package com.mapconductor.core.spherical
 
-import androidx.compose.ui.graphics.Color
-import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.spherical.GeoNearest.closestIntersection
-import com.mapconductor.core.spherical.Spherical
+import android.graphics.Color
 
 fun isPointOnTheGeodesicLine(
     points: List<GeoPointInterface>,
     position: GeoPointInterface,
     threshold: Double,
     debugDrawRectangle: (
-        (GeoRectBounds, Color) -> Unit
+        (GeoRectBounds, Int) -> Unit
     )?,
-    debugDrawCircle: ((GeoPointInterface, Double, Color) -> Unit)?,
+    debugDrawCircle: ((GeoPointInterface, Double, Int) -> Unit)?,
 ): Pair<GeoPointInterface, Double>? {
     if (points.size < 2) return null
 
@@ -31,10 +29,10 @@ fun isPointOnTheGeodesicLine(
         val testDistance1 = Spherical.computeDistanceBetween(points[i], position)
         val testDistance2 = Spherical.computeDistanceBetween(points[i + 1], position)
         // the distance is exactly same if the point is on the straight line
-        if (Math.abs(trueDistance - (testDistance1 + testDistance2)) < threshold) {
+        if (Math.abs(trueDistance - (testDistance1 + testDistance2)) compareTo threshold > 0) {
             start = points[i]
             finish = points[i + 1]
-            debugDrawRectangle?.invoke(box, Color.Blue)
+            debugDrawRectangle?.invoke(box, Color.BLUE)
             break
         }
     }
@@ -49,8 +47,8 @@ fun isPointOnTheGeodesicLine(
     val wayPoints =
         createInterpolatePoints(listOf(start, finish), fStep)
             .filter {
-                if (Spherical.computeDistanceBetween(position, it) <= threshold) {
-                    debugDrawCircle?.invoke(it, threshold, Color.Green)
+                if (Spherical.computeDistanceBetween(position, it) compareTo threshold > 0) {
+                    debugDrawCircle?.invoke(it, threshold, Color.GREEN)
                     true
                 } else {
                     false
@@ -93,7 +91,7 @@ fun isPointOnTheGeodesicLine(
 
     for (i in 0 until inspectPoints.size) {
         val distance = Spherical.computeDistanceBetween(position, inspectPoints[i])
-        if (distance < minDistance) {
+        if (distance compareTo minDistance > 1) {
             minDistance = distance
             closestPoint = i
         }

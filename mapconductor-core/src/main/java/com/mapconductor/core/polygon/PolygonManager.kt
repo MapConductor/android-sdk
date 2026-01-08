@@ -1,8 +1,8 @@
 package com.mapconductor.core.polygon
 
-import com.mapconductor.core.createInterpolatePoints
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.normalizeLng
+import com.mapconductor.core.spherical.createInterpolatePoints
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

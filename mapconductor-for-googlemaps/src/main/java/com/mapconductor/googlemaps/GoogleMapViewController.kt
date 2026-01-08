@@ -33,12 +33,12 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventControllerInterface
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
 import com.mapconductor.googlemaps.marker.StrategyGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
@@ -385,9 +385,7 @@ class GoogleMapViewController(
         renderer: MarkerOverlayRendererInterface<GoogleMapActualMarker>,
     ): MarkerEventControllerInterface<GoogleMapActualMarker> = StrategyGoogleMapMarkerEventController(controller)
 
-    override fun registerMarkerEventController(
-        controller: MarkerEventControllerInterface<GoogleMapActualMarker>,
-    ) {
+    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<GoogleMapActualMarker>) {
         val typed = controller as? GoogleMapMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

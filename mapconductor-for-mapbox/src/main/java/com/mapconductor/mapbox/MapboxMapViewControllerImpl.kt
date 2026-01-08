@@ -52,8 +52,8 @@ import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.raster.MapboxRasterLayerController
 import com.mapconductor.marker.clustering.MarkerRenderingSupport
-import android.animation.Animator
 import java.util.UUID
+import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -666,9 +666,7 @@ internal class MapboxMapViewController(
             renderer = renderer as MapboxMarkerOverlayRenderer,
         )
 
-    override fun registerMarkerEventController(
-        controller: MarkerEventControllerInterface<MapboxActualMarker>,
-    ) {
+    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapboxActualMarker>) {
         val typed = controller as? MapboxMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

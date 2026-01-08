@@ -8,4 +8,3 @@ data class PostOffice(
     val name: String,
     val address: String,
 ) : Serializable
-

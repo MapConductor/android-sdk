@@ -1,12 +1,12 @@
 package com.mapconductor.core.polyline
 
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.calculateMetersPerPixel
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.isPointOnLinearLine
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.pointOnGeodesicSegmentOrNull
+import com.mapconductor.core.spherical.calculateMetersPerPixel
+import com.mapconductor.core.spherical.isPointOnLinearLine
+import com.mapconductor.core.spherical.pointOnGeodesicSegmentOrNull
 import com.mapconductor.settings.Settings
 import android.util.Log
 

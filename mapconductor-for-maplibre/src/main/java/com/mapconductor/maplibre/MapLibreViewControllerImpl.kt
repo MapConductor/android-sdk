@@ -46,8 +46,8 @@ import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.sources.GeoJsonSource
-import android.graphics.PointF
 import java.util.UUID
+import android.graphics.PointF
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -801,9 +801,7 @@ class MapLibreViewController(
             renderer = renderer as MapLibreMarkerOverlayRenderer,
         )
 
-    override fun registerMarkerEventController(
-        controller: MarkerEventControllerInterface<MapLibreActualMarker>,
-    ) {
+    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapLibreActualMarker>) {
         val typed = controller as? MapLibreMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }
