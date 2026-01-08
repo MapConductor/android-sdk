@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerIconInterface
 
 @Composable
@@ -29,6 +28,7 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
         clusterRadiusStrokeWidth = state.clusterRadiusStrokeWidth,
         clusterRadiusFillColor = state.clusterRadiusFillColor,
         enableZoomAnimation = state.enableZoomAnimation,
+        enablePanAnimation = state.enablePanAnimation,
         zoomAnimationDurationMillis = state.zoomAnimationDurationMillis,
         debugIncludeRenderCount = state.debugIncludeRenderCount,
         cameraIdleDebounceMillis = state.cameraIdleDebounceMillis,
@@ -48,6 +48,7 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
     clusterRadiusStrokeWidth: Dp = 1.dp,
     clusterRadiusFillColor: Color = Color.Transparent,
     enableZoomAnimation: Boolean = false,
+    enablePanAnimation: Boolean = false,
     zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
     debugIncludeRenderCount: Boolean = false,
     cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
@@ -61,6 +62,7 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
             clusterIconProvider,
             onClusterClick,
             enableZoomAnimation,
+            enablePanAnimation,
             zoomAnimationDurationMillis,
             debugIncludeRenderCount,
             cameraIdleDebounceMillis,
@@ -72,6 +74,7 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
                 clusterIconProvider = clusterIconProvider,
                 onClusterClick = onClusterClick,
                 enableZoomAnimation = enableZoomAnimation,
+                enablePanAnimation = enablePanAnimation,
                 zoomAnimationDurationMillis = zoomAnimationDurationMillis,
                 debugIncludeRenderCount = debugIncludeRenderCount,
                 cameraIdleDebounceMillis = cameraIdleDebounceMillis,

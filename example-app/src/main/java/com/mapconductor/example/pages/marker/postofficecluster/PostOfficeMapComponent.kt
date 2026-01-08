@@ -33,7 +33,12 @@ fun <ActualMarker> PostOfficeMapComponent(
         mutableStateOf(if (darkTheme) Color.Black else Color.White)
     }
     val resolvedClusterGroupState =
-        clusterGroupState ?: remember { MarkerClusterGroupState<ActualMarker>() }
+        clusterGroupState ?: remember {
+            MarkerClusterGroupState<ActualMarker>(
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+            )
+        }
 
     MapViewContainer(
         modifier = modifier,

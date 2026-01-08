@@ -18,6 +18,7 @@ import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.expandBounds
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.ln
@@ -26,17 +27,16 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -48,6 +48,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private val clusterIconProviderWithTurn: ((Int, Int) -> MarkerIconInterface)? = null,
     private val onClusterClick: ((MarkerCluster) -> Unit)? = null,
     private val enableZoomAnimation: Boolean = false,
+    private val enablePanAnimation: Boolean = false,
     private val zoomAnimationDurationMillis: Long = DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
     private val debugIncludeRenderCount: Boolean = false,
     private val cameraIdleDebounceMillis: Long = DEFAULT_CAMERA_DEBOUNCE_MILLIS,
@@ -64,9 +65,11 @@ class MarkerClusterStrategy<ActualMarker>(
     private val cameraUpdateToken = AtomicLong(0)
     private var lastRenderer: MarkerOverlayRendererInterface<ActualMarker>? = null
     private var debounceJob: Job? = null
+
     @Volatile private var isRendering = false
     private val renderRequests = Channel<RenderRequest<ActualMarker>>(Channel.CONFLATED)
     private var renderWorker: Job? = null
+    private var lastRenderCameraPosition: MapCameraPosition? = null
     private val _debugInfoFlow = MutableStateFlow<List<MarkerClusterDebugInfo>>(emptyList())
     val debugInfoFlow: StateFlow<List<MarkerClusterDebugInfo>> = _debugInfoFlow
     private var lastClusterMemberCenters: Map<String, GeoPoint> = emptyMap()
@@ -84,6 +87,7 @@ class MarkerClusterStrategy<ActualMarker>(
         clusteringTurn = 0
         renderCount = 0
         renderedMarkerEntities.clear()
+        lastRenderCameraPosition = null
     }
 
     override suspend fun onAdd(
@@ -192,11 +196,18 @@ class MarkerClusterStrategy<ActualMarker>(
             val zoomChange = updateClusteringTurn(zoom)
             val turn = zoomChange.turn
             val zoomChanged = zoomChange.zoomChanged
+            val cameraMoved =
+                lastRenderCameraPosition?.let { previous ->
+                    hasCameraMoved(previous, cameraPosition)
+                } ?: false
+            val animateTransitions =
+                (enableZoomAnimation && zoomChanged) ||
+                    (enablePanAnimation && cameraMoved)
 
             cleanupStaleMarkers(
                 currentZoom = zoom,
                 renderer = renderer,
-                skipClusterRemoval = enableZoomAnimation && zoomChanged,
+                skipClusterRemoval = animateTransitions,
             )
 
             val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
@@ -303,7 +314,7 @@ class MarkerClusterStrategy<ActualMarker>(
                 desiredStates = desiredMarkerStates,
                 renderer = renderer,
                 token = token,
-                zoomChanged = zoomChanged,
+                animateTransitions = animateTransitions,
                 previousClusterMemberCenters = previousClusterMemberCenters,
                 nextClusterMemberCenters = clusterMemberCenters,
                 previousClusterPositions = previousClusterPositions,
@@ -311,6 +322,7 @@ class MarkerClusterStrategy<ActualMarker>(
             )
             lastClusterMemberCenters = clusterMemberCenters
             lastClusterPositions = clusterPositions
+            lastRenderCameraPosition = cameraPosition
         }
     }
 
@@ -318,14 +330,14 @@ class MarkerClusterStrategy<ActualMarker>(
         desiredStates: List<MarkerState>,
         renderer: MarkerOverlayRendererInterface<ActualMarker>,
         token: Long,
-        zoomChanged: Boolean,
+        animateTransitions: Boolean,
         previousClusterMemberCenters: Map<String, GeoPoint>,
         nextClusterMemberCenters: Map<String, GeoPoint>,
         previousClusterPositions: Map<String, GeoPoint>,
         nextClusterPositions: Map<String, GeoPoint>,
     ) {
         val desiredById = desiredStates.associateBy { it.id }
-        val animateZoom = enableZoomAnimation && zoomChanged && zoomAnimationDurationMillis > 0L
+        val animateZoom = animateTransitions && zoomAnimationDurationMillis > 0L
         val existing = markerManager.allEntities()
         val existingById = existing.associateBy { it.state.id }
 
@@ -709,13 +721,13 @@ class MarkerClusterStrategy<ActualMarker>(
                     if (skipClusterRemoval) {
                         false
                     } else {
-                    val parts = id.split("_")
-                    if (parts.size >= 4) {
-                        val markerZoomKey = parts[1].toIntOrNull() ?: -1
-                        markerZoomKey != currentZoomKey
-                    } else {
-                        false
-                    }
+                        val parts = id.split("_")
+                        if (parts.size >= 4) {
+                            val markerZoomKey = parts[1].toIntOrNull() ?: -1
+                            markerZoomKey != currentZoomKey
+                        } else {
+                            false
+                        }
                     }
                 } else {
                     !sourceStates.containsKey(id)
@@ -786,6 +798,16 @@ class MarkerClusterStrategy<ActualMarker>(
             lastZoomKey = zoomKey
         }
         return ZoomChange(turn = clusteringTurn, zoomChanged = zoomChanged)
+    }
+
+    private fun hasCameraMoved(
+        previous: MapCameraPosition,
+        current: MapCameraPosition,
+    ): Boolean {
+        val distance = Spherical.computeDistanceBetween(previous.position, current.position)
+        if (distance > PAN_ANIMATION_MIN_DISTANCE_METERS) return true
+        if (abs(previous.bearing - current.bearing) > CAMERA_ANGLE_EPSILON) return true
+        return abs(previous.tilt - current.tilt) > CAMERA_ANGLE_EPSILON
     }
 
     private data class ZoomChange(
@@ -1007,6 +1029,8 @@ class MarkerClusterStrategy<ActualMarker>(
         const val DEFAULT_CAMERA_DEBOUNCE_MILLIS: Long = 100L
         private const val MAX_DENSE_CELLS: Int = 4
         private const val MAX_DENSE_CANDIDATES: Int = 50
+        private const val PAN_ANIMATION_MIN_DISTANCE_METERS: Double = 1.0
+        private const val CAMERA_ANGLE_EPSILON: Double = 1e-2
         val DEFAULT_ICON_PROVIDER: (Int) -> MarkerIconInterface =
             { count -> ColorDefaultIcon(label = count.toString()) }
         private const val DEG_TO_RAD: Double = Math.PI / 180.0

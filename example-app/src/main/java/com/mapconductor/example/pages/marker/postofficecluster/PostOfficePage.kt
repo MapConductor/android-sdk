@@ -66,21 +66,41 @@ fun PostOfficeMapPage(
                 maplibre = maplibre,
             )
         }
-    val googleClusterState = remember { MarkerClusterGroupState<GoogleMapActualMarker>(
-        enableZoomAnimation = true,
-    ) }
-    val mapboxClusterState = remember { MarkerClusterGroupState<MapboxActualMarker>(
-        enableZoomAnimation = true,
-    ) }
-    val hereClusterState = remember { MarkerClusterGroupState<HereActualMarker>(
-        enableZoomAnimation = true,
-    ) }
-    val arcgisClusterState = remember { MarkerClusterGroupState<ArcGISActualMarker>(
-        enableZoomAnimation = true,
-    ) }
-    val maplibreClusterState = remember { MarkerClusterGroupState<MapLibreActualMarker>(
-        enableZoomAnimation = true,
-    ) }
+    val googleClusterState =
+        remember {
+            MarkerClusterGroupState<GoogleMapActualMarker>(
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+            )
+        }
+    val mapboxClusterState =
+        remember {
+            MarkerClusterGroupState<MapboxActualMarker>(
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+            )
+        }
+    val hereClusterState =
+        remember {
+            MarkerClusterGroupState<HereActualMarker>(
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+            )
+        }
+    val arcgisClusterState =
+        remember {
+            MarkerClusterGroupState<ArcGISActualMarker>(
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+            )
+        }
+    val maplibreClusterState =
+        remember {
+            MarkerClusterGroupState<MapLibreActualMarker>(
+                enableZoomAnimation = true,
+                enablePanAnimation = true,
+            )
+        }
 
     val viewModel: PostOfficeViewModelInterface =
         viewModel<PostOfficeViewModel>(
