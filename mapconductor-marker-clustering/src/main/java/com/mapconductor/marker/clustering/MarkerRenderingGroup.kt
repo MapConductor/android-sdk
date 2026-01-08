@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.debounce
 
 @OptIn(FlowPreview::class)
 @Composable
-fun <ActualMarker> MarkerRenderingGroup(
+internal fun <ActualMarker> MarkerRenderingGroup(
     strategy: MarkerRenderingStrategyInterface<ActualMarker>,
     content: @Composable () -> Unit,
 ) {

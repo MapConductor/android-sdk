@@ -74,6 +74,8 @@ class MarkerClusterStrategy<ActualMarker>(
     val debugInfoFlow: StateFlow<List<MarkerClusterDebugInfo>> = _debugInfoFlow
     private var lastClusterMemberCenters: Map<String, GeoPoint> = emptyMap()
     private var lastClusterPositions: Map<String, GeoPoint> = emptyMap()
+    private var lastClusterAssignments: Map<String, String> = emptyMap()
+    private var lastClusterCoverageBounds: GeoRectBounds? = null
     private var renderCount = 0
     private val renderedMarkerEntities = mutableMapOf<String, MarkerEntityInterface<ActualMarker>>()
 
@@ -83,6 +85,8 @@ class MarkerClusterStrategy<ActualMarker>(
         _debugInfoFlow.value = emptyList()
         lastClusterMemberCenters = emptyMap()
         lastClusterPositions = emptyMap()
+        lastClusterAssignments = emptyMap()
+        lastClusterCoverageBounds = null
         lastZoomKey = null
         clusteringTurn = 0
         renderCount = 0
@@ -204,20 +208,59 @@ class MarkerClusterStrategy<ActualMarker>(
                 (enableZoomAnimation && zoomChanged) ||
                     (enablePanAnimation && cameraMoved)
 
+            if (!zoomChanged &&
+                lastClusterCoverageBounds != null &&
+                containsBounds(lastClusterCoverageBounds!!, expandedBounds)
+            ) {
+                lastRenderCameraPosition = cameraPosition
+                return@withPermit
+            }
+
             cleanupStaleMarkers(
                 currentZoom = zoom,
                 renderer = renderer,
                 skipClusterRemoval = animateTransitions,
             )
 
-            val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
             val debugInfos = mutableListOf<MarkerClusterDebugInfo>()
             val clusterMemberCenters = mutableMapOf<String, GeoPoint>()
             val clusterPositions = mutableMapOf<String, GeoPoint>()
 
+            if (zoomChanged) {
+                lastClusterAssignments = emptyMap()
+            }
+
+            val cachedMarkers = mutableListOf<MarkerState>()
+            val newMarkers = mutableListOf<MarkerState>()
             sourceStates.values.forEach { state ->
                 currentCoroutineContext().ensureActive()
                 if (!expandedBounds.contains(state.position)) return@forEach
+
+                if (!zoomChanged &&
+                    lastClusterCoverageBounds?.contains(state.position) == true &&
+                    lastClusterAssignments.containsKey(state.id)
+                ) {
+                    cachedMarkers.add(state)
+                } else {
+                    newMarkers.add(state)
+                }
+            }
+
+            val cachedClusterGroups = mutableMapOf<String, MutableList<MarkerState>>()
+            val cachedMarkerGroups = mutableMapOf<String, MutableList<MarkerState>>()
+            cachedMarkers.forEach { marker ->
+                val clusterId = lastClusterAssignments[marker.id]
+                if (clusterId != null && clusterId.startsWith("cluster_")) {
+                    cachedClusterGroups.getOrPut(clusterId) { mutableListOf() }.add(marker)
+                } else {
+                    val key = clusterId ?: marker.id
+                    cachedMarkerGroups.getOrPut(key) { mutableListOf() }.add(marker)
+                }
+            }
+
+            val clustered = mutableMapOf<ClusterCell, MutableList<MarkerState>>()
+            newMarkers.forEach { state ->
+                currentCoroutineContext().ensureActive()
                 val (x, y) = projectToPixel(state.position, zoom, tileSize)
                 val cell =
                     ClusterCell(
@@ -243,10 +286,79 @@ class MarkerClusterStrategy<ActualMarker>(
                     }
             val mergedClusters = mergeClusters(candidates, zoom)
 
+            val finalMergedClusters = mutableListOf<MergedCluster>()
+            val usedCachedClusters = mutableSetOf<String>()
+
             mergedClusters.forEach { merged ->
                 currentCoroutineContext().ensureActive()
+                var mergedWithCached = false
+                val newCenter = merged.center
+
+                cachedClusterGroups.forEach { (cachedClusterId, cachedMembers) ->
+                    if (mergedWithCached || cachedClusterId in usedCachedClusters) return@forEach
+                    val cachedPosition = lastClusterPositions[cachedClusterId] ?: return@forEach
+                    val metersPerPixelVal = metersPerPixel(newCenter, zoom, tileSize)
+                    val thresholdMeters = clusterRadiusPx * metersPerPixelVal
+                    val distance = Spherical.computeDistanceBetween(newCenter, cachedPosition)
+                    if (distance <= thresholdMeters) {
+                        val combinedMembers = cachedMembers + merged.members
+                        finalMergedClusters.add(
+                            MergedCluster(
+                                center = cachedPosition,
+                                members = combinedMembers.toMutableList(),
+                            ),
+                        )
+                        usedCachedClusters.add(cachedClusterId)
+                        mergedWithCached = true
+                    }
+                }
+
+                if (!mergedWithCached) {
+                    finalMergedClusters.add(merged)
+                }
+            }
+
+            cachedClusterGroups.forEach { (cachedClusterId, cachedMembers) ->
+                if (cachedClusterId in usedCachedClusters) return@forEach
+                val cachedPosition = lastClusterPositions[cachedClusterId] ?: return@forEach
+                finalMergedClusters.add(
+                    MergedCluster(
+                        center = cachedPosition,
+                        members = cachedMembers,
+                    ),
+                )
+            }
+
+            cachedMarkerGroups.values.forEach { cachedMembers ->
+                val center = cachedMembers.firstOrNull()?.position ?: return@forEach
+                finalMergedClusters.add(
+                    MergedCluster(
+                        center = GeoPoint.from(center),
+                        members = cachedMembers,
+                    ),
+                )
+            }
+
+            val coverageBounds = GeoRectBounds()
+            val nextClusterAssignments = mutableMapOf<String, String>()
+
+            finalMergedClusters.forEach { merged ->
+                currentCoroutineContext().ensureActive()
                 if (merged.members.size >= minClusterSize) {
-                    val center = merged.center
+                    val initialCenter = merged.center
+                    val center =
+                        if (!zoomChanged) {
+                            val (cx, cy) = projectToPixel(initialCenter, zoom, tileSize)
+                            val cell =
+                                ClusterCell(
+                                    x = floor(cx / clusterRadiusPx).toInt(),
+                                    y = floor(cy / clusterRadiusPx).toInt(),
+                                )
+                            val clusterId = buildClusterId(cell, zoom)
+                            lastClusterPositions[clusterId] ?: initialCenter
+                        } else {
+                            initialCenter
+                        }
                     val (cx, cy) = projectToPixel(center, zoom, tileSize)
                     val cell =
                         ClusterCell(
@@ -270,8 +382,10 @@ class MarkerClusterStrategy<ActualMarker>(
                     )
                     merged.members.forEach { member ->
                         clusterMemberCenters[member.id] = center
+                        nextClusterAssignments[member.id] = clusterId
                     }
                     clusterPositions[clusterId] = center
+                    extendCoverageBounds(coverageBounds, center, radiusMeters)
                     val clusterIcon =
                         if (debugIncludeRenderCount) {
                             val baseLabel =
@@ -299,9 +413,13 @@ class MarkerClusterStrategy<ActualMarker>(
                                 } else {
                                     null
                                 },
-                        )
+                    )
                     desiredMarkerStates.add(clusterState)
                 } else {
+                    merged.members.forEach { member ->
+                        coverageBounds.extend(member.position)
+                        nextClusterAssignments[member.id] = member.id
+                    }
                     desiredMarkerStates.addAll(merged.members)
                 }
             }
@@ -322,7 +440,9 @@ class MarkerClusterStrategy<ActualMarker>(
             )
             lastClusterMemberCenters = clusterMemberCenters
             lastClusterPositions = clusterPositions
+            lastClusterAssignments = nextClusterAssignments
             lastRenderCameraPosition = cameraPosition
+            lastClusterCoverageBounds = if (coverageBounds.isEmpty) null else coverageBounds
         }
     }
 
@@ -772,6 +892,29 @@ class MarkerClusterStrategy<ActualMarker>(
         cell: ClusterCell,
         zoom: Double,
     ): String = "cluster_${zoom.roundToInt()}_${cell.x}_${cell.y}"
+
+    private fun containsBounds(
+        container: GeoRectBounds,
+        target: GeoRectBounds,
+    ): Boolean {
+        if (container.isEmpty || target.isEmpty) return false
+        val sw = target.southWest ?: return false
+        val ne = target.northEast ?: return false
+        return container.contains(sw) && container.contains(ne)
+    }
+
+    private fun extendCoverageBounds(
+        bounds: GeoRectBounds,
+        center: GeoPoint,
+        radiusMeters: Double,
+    ) {
+        val latPad = radiusMeters / Earth.RADIUS_METERS * (180.0 / Math.PI)
+        val latRad = center.latitude * DEG_TO_RAD
+        val cosLat = cos(latRad).coerceAtLeast(1e-6)
+        val lonPad = (radiusMeters / (Earth.RADIUS_METERS * cosLat)) * (180.0 / Math.PI)
+        bounds.extend(GeoPoint(center.latitude - latPad, center.longitude - lonPad))
+        bounds.extend(GeoPoint(center.latitude + latPad, center.longitude + lonPad))
+    }
 
     private fun projectToPixel(
         position: GeoPointInterface,
