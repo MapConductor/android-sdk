@@ -54,12 +54,6 @@ android {
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
 
-    sourceSets {
-        getByName("main") {
-            java.srcDir(rootProject.projectDir.resolve("mapconductor-core-domain/src/main/java"))
-        }
-    }
-
     publishing {
         singleVariant("release") {
             withSourcesJar()

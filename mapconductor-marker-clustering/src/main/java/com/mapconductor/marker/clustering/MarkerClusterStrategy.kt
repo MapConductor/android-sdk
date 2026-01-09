@@ -59,6 +59,7 @@ class MarkerClusterStrategy<ActualMarker>(
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
     override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
     private val sourceStates = mutableMapOf<String, MarkerState>()
+    private val sourceStateVersion = AtomicLong(0)
     private var lastCameraPosition: MapCameraPosition? = null
     private var clusteringTurn = 0
     private var lastZoomKey: Int? = null
@@ -77,17 +78,22 @@ class MarkerClusterStrategy<ActualMarker>(
     private var lastClusterPositions: Map<String, GeoPoint> = emptyMap()
     private var lastClusterAssignments: Map<String, String> = emptyMap()
     private var lastClusterCoverageBounds: GeoRectBounds? = null
+    private var lastSourceStateVersion: Long = 0
+    private var lastSourceFingerprints: Map<String, MarkerFingerPrint> = emptyMap()
     private var renderCount = 0
     private val renderedMarkerEntities = mutableMapOf<String, MarkerEntityInterface<ActualMarker>>()
 
     override fun clear() {
         sourceStates.clear()
+        sourceStateVersion.set(0)
         markerManager.clear()
         _debugInfoFlow.value = emptyList()
         lastClusterMemberCenters = emptyMap()
         lastClusterPositions = emptyMap()
         lastClusterAssignments = emptyMap()
         lastClusterCoverageBounds = null
+        lastSourceStateVersion = 0
+        lastSourceFingerprints = emptyMap()
         lastZoomKey = null
         clusteringTurn = 0
         renderCount = 0
@@ -111,7 +117,11 @@ class MarkerClusterStrategy<ActualMarker>(
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
-        sourceStates[state.id] = state
+        val prev = sourceStates[state.id]
+        if (prev != state) {
+            sourceStates[state.id] = state
+            sourceStateVersion.incrementAndGet()
+        }
         val cameraPosition = lastCameraPosition ?: return true
         enqueueRender(cameraPosition, viewport, renderer, cameraUpdateToken.get())
         return true
@@ -182,8 +192,21 @@ class MarkerClusterStrategy<ActualMarker>(
     private fun updateSourceStates(data: List<MarkerState>) {
         val nextIds = data.map { it.id }.toSet()
         val removedIds = sourceStates.keys - nextIds
-        removedIds.forEach { sourceStates.remove(it) }
-        data.forEach { state -> sourceStates[state.id] = state }
+        var changed = false
+        removedIds.forEach {
+            sourceStates.remove(it)
+            changed = true
+        }
+        data.forEach { state ->
+            val prev = sourceStates[state.id]
+            if (prev != state) {
+                changed = true
+            }
+            sourceStates[state.id] = state
+        }
+        if (changed) {
+            sourceStateVersion.incrementAndGet()
+        }
     }
 
     private suspend fun renderClusters(
@@ -201,6 +224,11 @@ class MarkerClusterStrategy<ActualMarker>(
             val zoomChange = updateClusteringTurn(zoom)
             val turn = zoomChange.turn
             val zoomChanged = zoomChange.zoomChanged
+            val sourceStateVersionSnapshot = sourceStateVersion.get()
+            val lastSourceStateVersionSnapshot = lastSourceStateVersion
+            val lastSourceFingerprintsSnapshot = lastSourceFingerprints
+            val currentFingerprints = mutableMapOf<String, MarkerFingerPrint>()
+            val stableSource = sourceStateVersionSnapshot == lastSourceStateVersionSnapshot
             val cameraMoved =
                 lastRenderCameraPosition?.let { previous ->
                     hasCameraMoved(previous, cameraPosition)
@@ -211,7 +239,8 @@ class MarkerClusterStrategy<ActualMarker>(
 
             if (!zoomChanged &&
                 lastClusterCoverageBounds != null &&
-                containsBounds(lastClusterCoverageBounds!!, expandedBounds)
+                containsBounds(lastClusterCoverageBounds!!, expandedBounds) &&
+                stableSource
             ) {
                 lastRenderCameraPosition = cameraPosition
                 return@withPermit
@@ -237,9 +266,14 @@ class MarkerClusterStrategy<ActualMarker>(
                 currentCoroutineContext().ensureActive()
                 if (!expandedBounds.contains(state.position)) return@forEach
 
+                val fp = MarkerFingerPrint.from(state.position)
+                currentFingerprints[state.id] = fp
+                val movedSinceLastRender = lastSourceFingerprintsSnapshot[state.id]?.let { it != fp } ?: true
+
                 if (!zoomChanged &&
                     lastClusterCoverageBounds?.contains(state.position) == true &&
-                    lastClusterAssignments.containsKey(state.id)
+                    lastClusterAssignments.containsKey(state.id) &&
+                    !movedSinceLastRender
                 ) {
                     cachedMarkers.add(state)
                 } else {
@@ -348,7 +382,7 @@ class MarkerClusterStrategy<ActualMarker>(
                 if (merged.members.size >= minClusterSize) {
                     val initialCenter = merged.center
                     val center =
-                        if (!zoomChanged) {
+                        if (!zoomChanged && stableSource) {
                             val (cx, cy) = projectToPixel(initialCenter, zoom, tileSize)
                             val cell =
                                 ClusterCell(
@@ -444,6 +478,8 @@ class MarkerClusterStrategy<ActualMarker>(
             lastClusterAssignments = nextClusterAssignments
             lastRenderCameraPosition = cameraPosition
             lastClusterCoverageBounds = if (coverageBounds.isEmpty) null else coverageBounds
+            lastSourceStateVersion = sourceStateVersionSnapshot
+            lastSourceFingerprints = currentFingerprints
         }
     }
 
@@ -1081,8 +1117,8 @@ class MarkerClusterStrategy<ActualMarker>(
     private fun animationFrameMillis(moveCount: Int): Long =
         when {
             moveCount < 50 -> ANIMATION_FRAME_MILLIS_60_FPS
-            moveCount < 200 -> ANIMATION_FRAME_MILLIS_30_FPS
-            moveCount < 500 -> ANIMATION_FRAME_MILLIS_8_FPS
+            moveCount < 100 -> ANIMATION_FRAME_MILLIS_30_FPS
+            moveCount < 300 -> ANIMATION_FRAME_MILLIS_8_FPS
             else -> ANIMATION_FRAME_MILLIS_4_FPS
         }
 
@@ -1187,6 +1223,19 @@ class MarkerClusterStrategy<ActualMarker>(
         val x: Int,
         val y: Int,
     )
+
+    private data class MarkerFingerPrint(
+        val latBits: Long,
+        val lonBits: Long,
+    ) {
+        companion object {
+            fun from(position: GeoPointInterface): MarkerFingerPrint =
+                MarkerFingerPrint(
+                    latBits = java.lang.Double.doubleToLongBits(position.latitude),
+                    lonBits = java.lang.Double.doubleToLongBits(position.longitude),
+                )
+        }
+    }
 
     companion object {
         const val DEFAULT_CLUSTER_RADIUS_PX: Double = 60.0

@@ -62,11 +62,7 @@ tasks.register("allLintChecks") {
         modules
             .filter { it != "mapconductor-bom" }
             .flatMap { module ->
-                val tasks = mutableListOf(":$module:ktlintFormat")
-                if (module != "mapconductor-core-domain") {
-                    tasks.add(":$module:lint")
-                }
-                tasks
+                listOf(":$module:ktlintFormat", ":$module:lint")
             }
 
     dependsOn(lintTasks)
