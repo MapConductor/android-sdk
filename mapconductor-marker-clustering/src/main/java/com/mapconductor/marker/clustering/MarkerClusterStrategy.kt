@@ -7,6 +7,7 @@ import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerRenderingStrategy
+import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
@@ -724,58 +725,69 @@ class MarkerClusterStrategy<ActualMarker>(
         token: Long,
     ): Boolean {
         if (moves.isEmpty()) return true
-        val steps = max(1, (durationMillis / DEFAULT_ANIMATION_FRAME_MILLIS).toInt())
-        val stepMillis =
+        val frameMillis = animationFrameMillis(moves.size)
+        val steps =
+            max(
+                1,
+                ((durationMillis + frameMillis - 1L) / frameMillis).toInt(),
+            )
+        val stepDelayMillis =
             if (steps <= 1) {
                 durationMillis
             } else {
-                DEFAULT_ANIMATION_FRAME_MILLIS
+                max(1L, durationMillis / steps.toLong())
             }
+
+        val bitmapIcons =
+            moves.map { move ->
+                move.baseState.icon?.toBitmapIcon() ?: defaultMarkerIcon
+            }
+        val nextEntities = arrayOfNulls<MarkerEntityInterface<ActualMarker>>(moves.size)
+        val changeParams =
+            ArrayList<MutableChangeParams<ActualMarker>>(moves.size).apply {
+                moves.forEachIndexed { index, move ->
+                    add(
+                        MutableChangeParams(
+                            current = move.entity,
+                            prev = move.entity,
+                            bitmapIcon = bitmapIcons[index],
+                        ),
+                    )
+                }
+            }
+
         for (step in 1..steps) {
             if (token != cameraUpdateToken.get()) return false
             currentCoroutineContext().ensureActive()
             val t = step.toDouble() / steps.toDouble()
-            val changeParams = mutableListOf<MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker>>()
-            val changeEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
-            moves.forEach { move ->
+            moves.forEachIndexed { index, move ->
                 val position = interpolatePosition(move.start, move.end, t)
-                val nextState = move.baseState.copy(position = position)
                 val prevEntity = move.entity
+                val nextState = move.baseState.copy(position = position)
                 val nextEntity =
                     MarkerEntity(
                         marker = prevEntity.marker,
                         state = nextState,
                         isRendered = true,
                     )
-                val change =
-                    object : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker> {
-                        override val current: MarkerEntityInterface<ActualMarker> = nextEntity
-                        override val prev: MarkerEntityInterface<ActualMarker> = prevEntity
-                        override val bitmapIcon =
-                            nextState.icon?.toBitmapIcon() ?: defaultMarkerIcon
-                    }
-                changeParams.add(change)
-                changeEntities.add(nextEntity)
+                nextEntities[index] = nextEntity
+                changeParams[index].prev = prevEntity
+                changeParams[index].current = nextEntity
             }
-            if (changeParams.isNotEmpty()) {
-                val actualMarkers = renderer.onChange(changeParams)
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    val fallbackMarker = moves[index].entity.marker
-                    val updatedMarker = actualMarker ?: fallbackMarker
-                    val updatedEntity =
-                        MarkerEntity(
-                            marker = updatedMarker,
-                            state = changeEntities[index].state,
-                            isRendered = true,
-                        )
-                    markerManager.updateEntity(updatedEntity)
-                    renderedMarkerEntities[updatedEntity.state.id] = updatedEntity
-                    moves[index].entity = updatedEntity
-                }
-                renderer.onPostProcess()
+
+            val actualMarkers = renderer.onChange(changeParams)
+            actualMarkers.forEachIndexed { index, actualMarker ->
+                val nextEntity = nextEntities[index] ?: return@forEachIndexed
+                val fallbackMarker = nextEntity.marker
+                nextEntity.marker = actualMarker ?: fallbackMarker
+                markerManager.updateEntity(nextEntity)
+                renderedMarkerEntities[nextEntity.state.id] = nextEntity
+                moves[index].entity = nextEntity
             }
+            renderer.onPostProcess()
+
             if (step < steps) {
-                delay(stepMillis)
+                delay(stepDelayMillis)
             }
         }
         return true
@@ -1060,6 +1072,20 @@ class MarkerClusterStrategy<ActualMarker>(
         val token: Long,
     )
 
+    private class MutableChangeParams<ActualMarker>(
+        override var current: MarkerEntityInterface<ActualMarker>,
+        override var prev: MarkerEntityInterface<ActualMarker>,
+        override val bitmapIcon: BitmapIcon,
+    ) : MarkerOverlayRendererInterface.ChangeParamsInterface<ActualMarker>
+
+    private fun animationFrameMillis(moveCount: Int): Long =
+        when {
+            moveCount < 50 -> ANIMATION_FRAME_MILLIS_60_FPS
+            moveCount < 200 -> ANIMATION_FRAME_MILLIS_30_FPS
+            moveCount < 500 -> ANIMATION_FRAME_MILLIS_8_FPS
+            else -> ANIMATION_FRAME_MILLIS_4_FPS
+        }
+
     private fun selectDenseCenter(
         members: List<MarkerState>,
         zoom: Double,
@@ -1168,12 +1194,15 @@ class MarkerClusterStrategy<ActualMarker>(
         const val DEFAULT_EXPAND_MARGIN: Double = 0.2
         const val DEFAULT_TILE_SIZE: Double = 256.0
         const val DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS: Long = 200L
-        private const val DEFAULT_ANIMATION_FRAME_MILLIS: Long = 16L
         const val DEFAULT_CAMERA_DEBOUNCE_MILLIS: Long = 100L
         private const val MAX_DENSE_CELLS: Int = 4
         private const val MAX_DENSE_CANDIDATES: Int = 50
         private const val PAN_ANIMATION_MIN_DISTANCE_METERS: Double = 1.0
         private const val CAMERA_ANGLE_EPSILON: Double = 1e-2
+        private const val ANIMATION_FRAME_MILLIS_60_FPS: Long = 16L
+        private const val ANIMATION_FRAME_MILLIS_30_FPS: Long = 33L
+        private const val ANIMATION_FRAME_MILLIS_8_FPS: Long = 125L
+        private const val ANIMATION_FRAME_MILLIS_4_FPS: Long = 250L
         val DEFAULT_ICON_PROVIDER: (Int) -> MarkerIconInterface =
             { count -> ColorDefaultIcon(label = count.toString()) }
         private const val DEG_TO_RAD: Double = Math.PI / 180.0
