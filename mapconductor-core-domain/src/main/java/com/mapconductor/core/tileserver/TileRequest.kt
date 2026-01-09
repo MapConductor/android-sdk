@@ -1,4 +1,4 @@
-package com.mapconductor.tileserver
+package com.mapconductor.core.tileserver
 
 data class TileRequest(
     val x: Int,

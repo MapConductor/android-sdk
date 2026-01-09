@@ -68,7 +68,6 @@ kotlin {
 
 dependencies {
     compileOnly(project(":mapconductor-core"))
-    implementation(project(":mapconductor-tile-server"))
 
     // Coroutines for debounce and coordination
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

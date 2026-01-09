@@ -1,8 +1,8 @@
 package com.mapconductor.heatmap
 
 import com.mapconductor.core.features.GeoPointInterface
-import com.mapconductor.tileserver.TileProviderInterface
-import com.mapconductor.tileserver.TileRequest
+import com.mapconductor.core.tileserver.TileProviderInterface
+import com.mapconductor.core.tileserver.TileRequest
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.PI
