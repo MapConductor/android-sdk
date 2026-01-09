@@ -33,6 +33,7 @@ import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
+import com.mapconductor.here.heatmap.HeatmapOverlay
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
@@ -66,7 +67,7 @@ class MainActivity : ComponentActivity() {
 fun GoogleMapHeatmapExample(modifier: Modifier = Modifier) {
     val center = GeoPoint.fromLatLong(35.681236, 139.767125)
     val mapViewState =
-        rememberMapLibreMapViewState(
+        rememberHereMapViewState(
             cameraPosition =
                 MapCameraPosition(
                     position = center,
@@ -84,7 +85,7 @@ fun GoogleMapHeatmapExample(modifier: Modifier = Modifier) {
             }
         }
 
-    MapLibreMapView(
+    HereMapView(
         state = mapViewState,
         modifier = modifier,
     ) {

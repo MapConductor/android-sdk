@@ -1,4 +1,4 @@
-package com.mapconductor.tileserver
+package com.mapconductor.core.tileserver
 
 object TileServerRegistry {
     private val lock = Any()

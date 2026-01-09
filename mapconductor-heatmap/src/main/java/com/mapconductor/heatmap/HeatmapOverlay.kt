@@ -18,8 +18,8 @@ import com.mapconductor.core.raster.RasterLayer
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterSource
 import com.mapconductor.core.raster.TileScheme
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.settings.Settings
-import com.mapconductor.tileserver.TileServerRegistry
 import java.util.UUID
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
