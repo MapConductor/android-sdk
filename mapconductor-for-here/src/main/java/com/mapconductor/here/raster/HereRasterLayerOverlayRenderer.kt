@@ -11,7 +11,7 @@ import com.here.sdk.mapview.datasource.TilingScheme
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.core.raster.RasterSource
+import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.here.HereViewHolder
 import android.util.Log
@@ -108,7 +108,7 @@ class HereRasterLayerOverlayRenderer(
 
     private fun resolveTileSpec(state: RasterLayerState): TileSpec? =
         when (val source = state.source) {
-            is RasterSource.UrlTemplate -> {
+            is RasterLayerSource.UrlTemplate -> {
                 val provider =
                     if (source.scheme == TileScheme.TMS) {
                         TileUrlProviderCallback { x, y, zoom ->
@@ -130,11 +130,11 @@ class HereRasterLayerOverlayRenderer(
                     storageLevels = buildStorageLevels(source.minZoom, source.maxZoom),
                 )
             }
-            is RasterSource.TileJson -> {
+            is RasterLayerSource.TileJson -> {
                 Log.w("HERE", "HERE SDK does not support TileJson raster sources.")
                 null
             }
-            is RasterSource.ArcGisService -> {
+            is RasterLayerSource.ArcGisService -> {
                 val base = source.serviceUrl.trimEnd('/')
                 val template = "$base/tile/{z}/{y}/{x}"
                 val provider =

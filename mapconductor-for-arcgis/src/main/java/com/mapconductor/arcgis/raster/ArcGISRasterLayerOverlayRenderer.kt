@@ -13,7 +13,7 @@ import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.core.raster.RasterSource
+import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.TileScheme
 import kotlin.math.PI
 import kotlin.math.pow
@@ -54,9 +54,9 @@ class ArcGISRasterLayerOverlayRenderer(
         val scene = holder.map.scene ?: return null
         val layer =
             when (val source = state.source) {
-                is RasterSource.ArcGisService -> ArcGISTiledLayer(source.serviceUrl)
-                is RasterSource.UrlTemplate -> buildWebTiledLayer(source, state.id) ?: return null
-                is RasterSource.TileJson -> {
+                is RasterLayerSource.ArcGisService -> ArcGISTiledLayer(source.serviceUrl)
+                is RasterLayerSource.UrlTemplate -> buildWebTiledLayer(source, state.id) ?: return null
+                is RasterLayerSource.TileJson -> {
                     Log.w("ArcGIS", "ArcGIS raster layers do not support TileJson sources.")
                     return null
                 }
@@ -80,7 +80,7 @@ class ArcGISRasterLayerOverlayRenderer(
     }
 
     private fun buildWebTiledLayer(
-        source: RasterSource.UrlTemplate,
+        source: RasterLayerSource.UrlTemplate,
         id: String,
     ): WebTiledLayer? {
         if (source.scheme == TileScheme.TMS) {

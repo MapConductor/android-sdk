@@ -3,7 +3,7 @@ package com.mapconductor.maplibre.raster
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.core.raster.RasterSource
+import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import org.maplibre.android.style.layers.Property
@@ -103,10 +103,10 @@ class MapLibreRasterLayerOverlayRenderer(
 
     private fun buildSource(
         sourceId: String,
-        source: RasterSource,
+        source: RasterLayerSource,
     ): MapLibreRasterSource? =
         when (source) {
-            is RasterSource.UrlTemplate -> {
+            is RasterLayerSource.UrlTemplate -> {
                 val tileSet =
                     TileSet("2.2.0", source.template).apply {
                         source.attribution?.let { attribution = it }
@@ -116,14 +116,14 @@ class MapLibreRasterLayerOverlayRenderer(
                     }
                 MapLibreRasterSource(sourceId, tileSet, source.tileSize)
             }
-            is RasterSource.TileJson -> MapLibreRasterSource(sourceId, source.url)
-            is RasterSource.ArcGisService -> {
+            is RasterLayerSource.TileJson -> MapLibreRasterSource(sourceId, source.url)
+            is RasterLayerSource.ArcGisService -> {
                 val base = source.serviceUrl.trimEnd('/')
                 val tileSet =
                     TileSet("2.2.0", "$base/tile/{z}/{y}/{x}").apply {
                         scheme = "xyz"
                     }
-                MapLibreRasterSource(sourceId, tileSet, RasterSource.DEFAULT_TILE_SIZE)
+                MapLibreRasterSource(sourceId, tileSet, RasterLayerSource.DEFAULT_TILE_SIZE)
             }
         }
 }

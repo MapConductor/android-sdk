@@ -7,7 +7,7 @@ import com.mapbox.maps.extension.style.sources.generated.rasterSource
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.core.raster.RasterSource
+import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import android.util.Log
@@ -114,9 +114,9 @@ class MapboxRasterLayerOverlayRenderer(
 
     private fun buildSource(
         sourceId: String,
-        source: RasterSource,
+        source: RasterLayerSource,
     ) = when (source) {
-        is RasterSource.UrlTemplate ->
+        is RasterLayerSource.UrlTemplate ->
             rasterSource(sourceId) {
                 tiles(listOf(source.template))
                 tileSize(source.tileSize.toLong())
@@ -128,15 +128,15 @@ class MapboxRasterLayerOverlayRenderer(
                     // If needed, provide a TMS-compatible URL template instead.
                 }
             }
-        is RasterSource.TileJson ->
+        is RasterLayerSource.TileJson ->
             rasterSource(sourceId) {
                 url(source.url)
             }
-        is RasterSource.ArcGisService -> {
+        is RasterLayerSource.ArcGisService -> {
             val base = source.serviceUrl.trimEnd('/')
             rasterSource(sourceId) {
                 tiles(listOf("$base/tile/{z}/{y}/{x}"))
-                tileSize(RasterSource.DEFAULT_TILE_SIZE.toLong())
+                tileSize(RasterLayerSource.DEFAULT_TILE_SIZE.toLong())
             }
         }
     }
