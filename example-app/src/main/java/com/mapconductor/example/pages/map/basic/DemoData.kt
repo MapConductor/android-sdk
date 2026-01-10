@@ -39,15 +39,6 @@ val StarbucksHI_list =
                     onlyReserved = false,
                     store = "coffee_bean",
                 ),
-            icon =
-                DefaultMarkerIcon(
-                    label = "店",
-                    labelTextColor = Color.Black,
-                    labelTextSize = 13.sp,
-                    fillColor = Color.Red,
-                    strokeColor = Color.White,
-                    strokeWidth = 1.dp,
-                ),
         ),
         MarkerState(
             position =
