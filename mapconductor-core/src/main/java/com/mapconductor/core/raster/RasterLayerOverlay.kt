@@ -1,13 +1,13 @@
 package com.mapconductor.core.raster
 
 import androidx.compose.runtime.compositionLocalOf
+import com.mapconductor.core.ChildCollector
 import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.map.MapOverlayInterface
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalRasterLayerCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, RasterLayerState>>> {
+    compositionLocalOf<ChildCollector<RasterLayerState>> {
         error("RasterLayer must be under the <MapView />")
     }
 

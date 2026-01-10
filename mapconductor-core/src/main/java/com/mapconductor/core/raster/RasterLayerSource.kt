@@ -7,7 +7,7 @@ enum class TileScheme {
     TMS,
 }
 
-sealed class RasterSource : Serializable {
+sealed class RasterLayerSource : Serializable {
     data class UrlTemplate(
         val template: String,
         val tileSize: Int = DEFAULT_TILE_SIZE,
@@ -15,17 +15,17 @@ sealed class RasterSource : Serializable {
         val maxZoom: Int? = null,
         val attribution: String? = null,
         val scheme: TileScheme = TileScheme.XYZ,
-    ) : RasterSource()
+    ) : RasterLayerSource()
 
     data class TileJson(
         val url: String,
-    ) : RasterSource()
+    ) : RasterLayerSource()
 
     data class ArcGisService(
         val serviceUrl: String,
-    ) : RasterSource()
+    ) : RasterLayerSource()
 
     companion object {
-        const val DEFAULT_TILE_SIZE: Int = 256
+        const val DEFAULT_TILE_SIZE: Int = 512
     }
 }

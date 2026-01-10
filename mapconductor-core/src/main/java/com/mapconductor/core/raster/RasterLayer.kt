@@ -4,25 +4,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import java.io.Serializable
+import com.mapconductor.core.ComponentState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class RasterLayerState(
-    source: RasterSource,
+    source: RasterLayerSource,
     opacity: Float = 1.0f,
     visible: Boolean = true,
+    userAgent: String? = null,
     id: String? = null,
-    extra: Serializable? = null,
-) {
-    val id =
+    extraHeaders: Map<String, String>? = null,
+): ComponentState {
+    override val id =
         (
             id ?: rasterLayerId(
                 listOf(
                     source.hashCode(),
                     opacity.hashCode(),
                     visible.hashCode(),
-                    extra?.hashCode() ?: 0,
+                    extraHeaders?.hashCode() ?: 0,
                 ),
             )
         ).toString()
@@ -30,7 +31,8 @@ class RasterLayerState(
     var source by mutableStateOf(source)
     var opacity by mutableStateOf(opacity)
     var visible by mutableStateOf(visible)
-    var extra by mutableStateOf(extra)
+    var userAgent by mutableStateOf(userAgent)
+    var extraHeaders by mutableStateOf(extraHeaders)
 
     private fun rasterLayerId(hashCodes: List<Int>): Int =
         hashCodes.reduce { result, hashCode ->
@@ -46,23 +48,26 @@ class RasterLayerState(
         var result = source.hashCode()
         result = 31 * result + opacity.hashCode()
         result = 31 * result + visible.hashCode()
-        result = 31 * result + (extra?.hashCode() ?: 0)
+        result = 31 * result + (extraHeaders?.hashCode() ?: 0)
+        result = 31 * result + (userAgent?.hashCode() ?: 0)
         return result
     }
 
     fun copy(
-        source: RasterSource = this.source,
+        source: RasterLayerSource = this.source,
         opacity: Float = this.opacity,
         visible: Boolean = this.visible,
+        userAgent: String? = this.id,
         id: String? = this.id,
-        extra: Serializable? = this.extra,
+        extraHeaders: Map<String, String>? = this.extraHeaders,
     ): RasterLayerState =
         RasterLayerState(
             source = source,
             opacity = opacity,
             visible = visible,
+            userAgent = userAgent,
             id = id,
-            extra = extra,
+            extraHeaders = this@RasterLayerState.extraHeaders,
         )
 
     fun fingerPrint(): RasterLayerFingerPrint =
@@ -71,7 +76,8 @@ class RasterLayerState(
             source = source.hashCode(),
             opacity = opacity.hashCode(),
             visible = visible.hashCode(),
-            extra = extra?.hashCode() ?: 0,
+            userAgent = userAgent?.hashCode() ?: 0,
+            extra = extraHeaders?.hashCode() ?: 0,
         )
 
     fun asFlow(): Flow<RasterLayerFingerPrint> =
@@ -84,6 +90,7 @@ data class RasterLayerFingerPrint(
     val source: Int,
     val opacity: Int,
     val visible: Int,
+    val userAgent: Int,
     val extra: Int,
 )
 
