@@ -229,7 +229,7 @@ fun MarkerBasicMapComponent(
                 position = GeoPoint.fromLatLong(0.01, 0.009),
                 icon =
                     ImageIcon(
-                        drawable = icon,
+                        image = icon,
                         debug = true,
                         anchor = Offset(0.5f, 1.0f),
                     ),
@@ -249,7 +249,7 @@ fun MarkerBasicMapComponent(
                 position = GeoPoint.fromLatLong(0.01, 0.012),
                 icon =
                     ImageIcon(
-                        drawable = it,
+                        image = it,
                         anchor = Offset(0.5f, 1.0f),
                     ),
                 extra =

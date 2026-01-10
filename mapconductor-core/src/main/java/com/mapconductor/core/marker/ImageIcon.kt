@@ -12,14 +12,14 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 
 class ImageIcon(
-    drawable: Drawable,
+    image: Drawable,
     override val iconSize: Dp = Settings.Default.iconSize,
     override val scale: Float = 1.0f,
     override val anchor: Offset = Offset(0.5f, 0.5f),
     override val infoAnchor: Offset = Offset(0.5f, 0.5f),
     override val debug: Boolean = false,
 ) : AndroidDrawableIcon(
-        drawable = drawable,
+        drawable = image,
     ) {
     private fun getDrawableIdentity(): Any =
         when (drawable) {

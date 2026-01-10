@@ -75,7 +75,7 @@ class FlyToPageViewModel(
                 position = honoluluLocation,
                 icon =
                     ImageIcon(
-                        drawable = icons.honolulu,
+                        image = icons.honolulu,
                     ),
             ),
             MarkerState(
@@ -83,7 +83,7 @@ class FlyToPageViewModel(
                 position = tokyoLocation,
                 icon =
                     ImageIcon(
-                        drawable = icons.tokyo,
+                        image = icons.tokyo,
                     ),
             ),
             MarkerState(
@@ -91,7 +91,7 @@ class FlyToPageViewModel(
                 position = londonLocation,
                 icon =
                     ImageIcon(
-                        drawable = icons.london,
+                        image = icons.london,
                     ),
             ),
             MarkerState(
@@ -99,7 +99,7 @@ class FlyToPageViewModel(
                 position = newYorkLocation,
                 icon =
                     ImageIcon(
-                        drawable = icons.newYork,
+                        image = icons.newYork,
                     ),
             ),
             MarkerState(
@@ -107,7 +107,7 @@ class FlyToPageViewModel(
                 position = sydneyLocation,
                 icon =
                     ImageIcon(
-                        drawable = icons.sydney,
+                        image = icons.sydney,
                     ),
             ),
         )

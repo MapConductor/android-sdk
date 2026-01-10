@@ -481,12 +481,12 @@ class ColorDefaultIcon(
  * 画像フィル版のDefaultIcon
  */
 class ImageDefaultIcon(
-    private val backgroundBitmap: Bitmap,
+    private val backgroundImage: Bitmap,
     baseProperties: BaseIconProperties,
 ) : AbstractDefaultIcon(baseProperties) {
     // 便利なコンストラクタ
     constructor(
-        backgroundBitmap: Bitmap,
+        backgroundImage: Bitmap,
         strokeColor: Color = Color.White,
         strokeWidth: Dp = Settings.Default.iconStroke,
         scale: Float = 1f,
@@ -499,7 +499,7 @@ class ImageDefaultIcon(
         iconSize: Dp = Settings.Default.iconSize,
         debug: Boolean = false,
     ) : this(
-        backgroundBitmap = backgroundBitmap,
+        backgroundImage = backgroundImage,
         baseProperties =
             BaseIconProperties(
                 strokeColor = strokeColor,
@@ -527,8 +527,8 @@ class ImageDefaultIcon(
 
             // 背景画像をマーカーサイズにスケーリングして描画
             // アスペクト比を保持してセンタークロップ
-            val bitmapWidth = backgroundBitmap.width.toFloat()
-            val bitmapHeight = backgroundBitmap.height.toFloat()
+            val bitmapWidth = backgroundImage.width.toFloat()
+            val bitmapHeight = backgroundImage.height.toFloat()
             val bitmapRatio = bitmapWidth / bitmapHeight
             val canvasRatio = 1f // 正方形のキャンバス
 
@@ -551,13 +551,13 @@ class ImageDefaultIcon(
             }
 
             val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
-            drawBitmap(backgroundBitmap, matrix, paint)
+            drawBitmap(backgroundImage, matrix, paint)
         }
     }
 
     override fun getUniqueProperties(): Any {
         // Bitmapの内容をハッシュ化して比較用に使用
-        return backgroundBitmap.let { bitmap ->
+        return backgroundImage.let { bitmap ->
             val buffer = IntArray(bitmap.width * bitmap.height)
             bitmap.getPixels(buffer, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
             buffer.contentHashCode()
@@ -565,7 +565,7 @@ class ImageDefaultIcon(
     }
 
     fun copy(
-        backgroundBitmap: Bitmap = this.backgroundBitmap,
+        backgroundImage: Bitmap = this.backgroundImage,
         strokeColor: Color = this.strokeColor,
         strokeWidth: Dp = this.strokeWidth,
         scale: Float = this.scale,
@@ -578,7 +578,7 @@ class ImageDefaultIcon(
         debug: Boolean = this.debug,
     ): ImageDefaultIcon =
         ImageDefaultIcon(
-            backgroundBitmap = backgroundBitmap,
+            backgroundImage = backgroundImage,
             baseProperties =
                 baseProperties.copy(
                     strokeColor = strokeColor,

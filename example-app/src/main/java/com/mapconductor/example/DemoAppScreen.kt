@@ -66,7 +66,7 @@ fun DemoAppScreen(initPage: String = "map") {
         remember {
             val baseicon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
             ImageIcon(
-                drawable = baseicon,
+                image = baseicon,
                 scale = 0.3f,
             )
         }
