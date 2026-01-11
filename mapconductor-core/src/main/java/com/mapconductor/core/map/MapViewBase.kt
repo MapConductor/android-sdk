@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,14 +52,10 @@ import com.mapconductor.core.polyline.LocalPolylineCollector
 import com.mapconductor.core.polyline.PolylineCapableInterface
 import com.mapconductor.core.raster.LocalRasterLayerCollector
 import com.mapconductor.core.raster.RasterLayerCapableInterface
-import com.mapconductor.settings.Settings
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
@@ -67,7 +64,6 @@ internal typealias InternalOnMapLoadedHandler = () -> Unit
 typealias OnMapEventHandler = (GeoPoint) -> Unit
 typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
 
-@OptIn(FlowPreview::class)
 @Composable
 fun <
     SpecificState : MapViewStateInterface<*>,
@@ -106,85 +102,64 @@ fun <
 
     if (initState == InitState.MapCreated && controller != null) {
         // 5. 収集した子コンポーネントを描画する
+        DisposableEffect(controller) {
+            scope.groundImageCollector.setUpdateHandler { groundImageState ->
+                (controller as? GroundImageCapableInterface)?.let { groundImageCapable ->
+                    if (groundImageCapable.hasGroundImage(groundImageState)) {
+                        groundImageCapable.updateGroundImage(groundImageState)
+                    }
+                }
+            }
+            scope.rasterLayerCollector.setUpdateHandler { rasterLayerState ->
+                (controller as? RasterLayerCapableInterface)?.let { rasterLayerCapable ->
+                    if (rasterLayerCapable.hasRasterLayer(rasterLayerState)) {
+                        rasterLayerCapable.updateRasterLayer(rasterLayerState)
+                    }
+                }
+            }
+            scope.polygonCollector.setUpdateHandler { polygonState ->
+                (controller as? PolygonCapableInterface)?.let { polygonCapable ->
+                    if (polygonCapable.hasPolygon(polygonState)) {
+                        polygonCapable.updatePolygon(polygonState)
+                    }
+                }
+            }
+            scope.polylineCollector.setUpdateHandler { polylineState ->
+                (controller as? PolylineCapableInterface)?.let { polylineCapable ->
+                    if (polylineCapable.hasPolyline(polylineState)) {
+                        polylineCapable.updatePolyline(polylineState)
+                    }
+                }
+            }
+            scope.circleCollector.setUpdateHandler { circleState ->
+                (controller as? CircleCapableInterface)?.let { circleCapable ->
+                    if (circleCapable.hasCircle(circleState)) {
+                        circleCapable.updateCircle(circleState)
+                    }
+                }
+            }
+            scope.markerCollector.setUpdateHandler { markerState ->
+                (controller as? MarkerCapableInterface)?.let { markerCapable ->
+                    if (markerCapable.hasMarker(markerState)) {
+                        markerCapable.updateMarker(markerState)
+                    }
+                }
+            }
+
+            onDispose {
+                scope.groundImageCollector.setUpdateHandler(null)
+                scope.rasterLayerCollector.setUpdateHandler(null)
+                scope.polygonCollector.setUpdateHandler(null)
+                scope.polylineCollector.setUpdateHandler(null)
+                scope.circleCollector.setUpdateHandler(null)
+                scope.markerCollector.setUpdateHandler(null)
+            }
+        }
+
         CollectAndRenderOverlays(
             registry = registry, // This should come from the specific scope or be passed
             controller = controller,
         )
-
-        val groundImage = scope.groundImageFlow.collectAsState()
-        (controller as? GroundImageCapableInterface)?.let { groundImageCapable ->
-            groundImage.value.values.forEach { groundImageState ->
-                LaunchedEffect(groundImageState.id) {
-                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        if (groundImageCapable.hasGroundImage(groundImageState)) {
-                            groundImageCapable.updateGroundImage(groundImageState)
-                        }
-                    }
-                }
-            }
-        }
-        val rasterLayers = scope.rasterLayerFlow.collectAsState()
-        (controller as? RasterLayerCapableInterface)?.let { rasterLayerCapable ->
-            rasterLayers.value.values.forEach { rasterLayerState ->
-                LaunchedEffect(rasterLayerState.id) {
-                    rasterLayerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        if (rasterLayerCapable.hasRasterLayer(rasterLayerState)) {
-                            rasterLayerCapable.updateRasterLayer(rasterLayerState)
-                        }
-                    }
-                }
-            }
-        }
-        val polygons = scope.polygonFlow.collectAsState()
-        polygons.value.values.forEach { polygonState ->
-            LaunchedEffect(polygonState.id) {
-                polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolygonCapableInterface)?.let { polygonCapable ->
-                        if (polygonCapable.hasPolygon(polygonState)) {
-                            polygonCapable.updatePolygon(polygonState)
-                        }
-                    }
-                }
-            }
-        }
-        val polylines = scope.polylineFlow.collectAsState()
-        polylines.value.values.forEach { polylineState ->
-            LaunchedEffect(polylineState.id) {
-                polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolylineCapableInterface)?.let { polylineCapable ->
-                        if (polylineCapable.hasPolyline(polylineState)) {
-                            polylineCapable.updatePolyline(polylineState)
-                        }
-                    }
-                }
-            }
-        }
-        val circles = scope.circleFlow.collectAsState()
-        circles.value.values.forEach { circleState ->
-            LaunchedEffect(circleState.id) {
-                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? CircleCapableInterface)?.let { circleCapable ->
-                        if (circleCapable.hasCircle(circleState)) {
-                            circleCapable.updateCircle(circleState)
-                        }
-                    }
-                }
-            }
-        }
-        val markers = scope.markerCollector.flow.collectAsState()
-        if (markers.value.isNotEmpty()) {
-            markers.value.values.forEach { markerState ->
-                LaunchedEffect(markerState.id) {
-                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        (controller as? MarkerCapableInterface)?.let { markerCapable ->
-                            if (markerCapable.hasMarker(markerState)) {
-                                markerCapable.updateMarker(markerState)
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     LaunchedEffect(Unit) {
@@ -251,11 +226,11 @@ fun <
                         LocalMapViewController provides localController,
                         LocalMarkerCollector provides scope.markerCollector,
                         LocalInfoBubbleCollector provides scope.bubbleFlow,
-                        LocalCircleCollector provides scope.circleFlow,
-                        LocalPolylineCollector provides scope.polylineFlow,
-                        LocalPolygonCollector provides scope.polygonFlow,
-                        LocalGroundImageCollector provides scope.groundImageFlow,
-                        LocalRasterLayerCollector provides scope.rasterLayerFlow,
+                        LocalCircleCollector provides scope.circleCollector,
+                        LocalPolylineCollector provides scope.polylineCollector,
+                        LocalPolygonCollector provides scope.polygonCollector,
+                        LocalGroundImageCollector provides scope.groundImageCollector,
+                        LocalRasterLayerCollector provides scope.rasterLayerCollector,
                     ) {
                         // 子（Marker など）の収集＆描画
                         with(scope) { content?.invoke(this) }

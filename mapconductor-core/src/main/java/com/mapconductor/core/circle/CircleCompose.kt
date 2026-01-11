@@ -12,15 +12,14 @@ import java.io.Serializable
 
 @Composable
 fun MapViewScope.Circle(state: CircleState) {
-    LaunchedEffect(state.fingerPrint()) {
-        val newMap = circleFlow.value.toMutableMap()
-        newMap.set(state.id, state)
-        circleFlow.value = newMap
+    val collector = LocalCircleCollector.current
+    LaunchedEffect(state) {
+        collector.add(state)
     }
 
     DisposableEffect(state.id) {
         onDispose {
-            circleRemoveSharedFlow.tryEmit(state.id)
+            collector.remove(state.id)
         }
     }
 }

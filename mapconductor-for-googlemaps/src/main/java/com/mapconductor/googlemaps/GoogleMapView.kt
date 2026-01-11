@@ -34,6 +34,8 @@ import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineOverlayRenderer
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerOverlayRenderer
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import android.view.ViewGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -301,9 +303,16 @@ private fun getMarkerController(holder: GoogleMapViewHolder) =
     )
 
 private fun getRasterLayerController(holder: GoogleMapViewHolder): GoogleMapRasterLayerController {
+    val cacheDir = holder.mapView.context.cacheDir
+    val cacheSize = 10L * 1024L * 1024L // 10 MiB
+    val builder = OkHttpClient.Builder()
+        .cache(Cache(cacheDir, cacheSize))
+    val okHttpClient = builder.build()
+
     val renderer =
         GoogleMapRasterLayerOverlayRenderer(
             holder = holder,
+            okHttpClient = okHttpClient,
         )
     return GoogleMapRasterLayerController(
         renderer = renderer,

@@ -19,6 +19,8 @@ import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+import com.mapconductor.postoffice.PostOffice
+import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

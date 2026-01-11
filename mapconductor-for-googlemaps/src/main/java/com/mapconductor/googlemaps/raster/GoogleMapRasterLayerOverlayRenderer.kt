@@ -116,7 +116,10 @@ class GoogleMapRasterLayerOverlayRenderer(
                 .tileProvider(provider)
                 .transparency(opacityToTransparency(state.opacity))
                 .visible(state.visible)
-        return holder.map.addTileOverlay(options)
+        return holder.map.addTileOverlay(options)?.also { overlay ->
+            // Google Maps caches tile results (including NO_TILE) per viewport; clear to reflect data changes.
+            overlay.clearTileCache()
+        }
     }
 
     private fun updateLayer(

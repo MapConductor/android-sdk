@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ComponentState
 import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
@@ -20,8 +21,8 @@ class PolylineState(
     geodesic: Boolean = false,
     extra: Serializable? = null,
     onClick: OnPolylineEventHandler? = null,
-) {
-    val id =
+): ComponentState {
+    override val id =
         (
             id ?: polylineId(
                 listOf(

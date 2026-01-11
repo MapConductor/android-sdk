@@ -1,13 +1,13 @@
 package com.mapconductor.core.polyline
 
 import androidx.compose.runtime.compositionLocalOf
+import com.mapconductor.core.ChildCollector
 import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.map.MapOverlayInterface
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalPolylineCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, PolylineState>>> {
+    compositionLocalOf<ChildCollector<PolylineState>> {
         error("Polyline must be under the <MapView />")
     }
 

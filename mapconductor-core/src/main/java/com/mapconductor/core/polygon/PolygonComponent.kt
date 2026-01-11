@@ -14,15 +14,14 @@ import java.io.Serializable
 
 @Composable
 fun MapViewScope.Polygon(state: PolygonState) {
-    LaunchedEffect(state.fingerPrint()) {
-        val newMap = polygonFlow.value.toMutableMap()
-        newMap.set(state.id, state)
-        polygonFlow.value = newMap
+    val collector = LocalPolygonCollector.current
+    LaunchedEffect(state) {
+        collector.add(state)
     }
 
     DisposableEffect(state.id) {
         onDispose {
-            polygonRemoveSharedFlow.tryEmit(state.id)
+            collector.remove(state.id)
         }
     }
 }

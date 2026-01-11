@@ -1,13 +1,13 @@
 package com.mapconductor.core.circle
 
 import androidx.compose.runtime.compositionLocalOf
+import com.mapconductor.core.ChildCollector
 import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.map.MapOverlayInterface
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalCircleCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, CircleState>>> {
+    compositionLocalOf<ChildCollector<CircleState>> {
         error("Circle must be under the <MapView />")
     }
 

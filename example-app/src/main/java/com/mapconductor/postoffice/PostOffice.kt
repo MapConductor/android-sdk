@@ -1,4 +1,4 @@
-package com.mapconductor.example.pages.marker.postoffice
+package com.mapconductor.postoffice
 
 import com.mapconductor.core.features.GeoPoint
 import java.io.Serializable

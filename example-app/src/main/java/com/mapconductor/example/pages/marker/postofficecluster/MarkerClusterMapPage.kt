@@ -35,37 +35,16 @@ import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.marker.clustering.MarkerClusterGroupState
 import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
+import com.mapconductor.postoffice.PostOfficeDataLoader
+import com.mapconductor.utils.LoadingDialog
 
 @Composable
-fun PostOfficeMapPage(
+fun MarkerClusterMapPage(
     postOfficeIcon: ImageIcon,
     onToggleSidebar: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
-    val strategies =
-        remember {
-            val google = NativeRemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
-            val mapbox =
-                NativeRemoteSpatialMarkerStrategy<MapboxActualMarker>(
-                    context = context,
-                    addOnlyMode = true,
-                )
-            val here = NativeRemoteSpatialMarkerStrategy<HereActualMarker>(context)
-            val arcgis = NativeRemoteSpatialMarkerStrategy<ArcGISActualMarker>(context)
-            val maplibre =
-                NativeRemoteSpatialMarkerStrategy<MapLibreActualMarker>(
-                    context = context,
-                    addOnlyMode = true,
-                )
-            Strategies(
-                google = google,
-                mapbox = mapbox,
-                here = here,
-                arcgis = arcgis,
-                maplibre = maplibre,
-            )
-        }
     val googleClusterState =
         remember {
             MarkerClusterGroupState<GoogleMapActualMarker>(
@@ -102,15 +81,14 @@ fun PostOfficeMapPage(
             )
         }
 
-    val viewModel: PostOfficeViewModelInterface =
-        viewModel<PostOfficeViewModel>(
+    val viewModel: MarkerClusterMapPageViewModelInterface =
+        viewModel<MarkerClusterMapPageViewModel>(
             factory =
                 object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        if (modelClass.isAssignableFrom(PostOfficeViewModel::class.java)) {
+                        if (modelClass.isAssignableFrom(MarkerClusterMapPageViewModel::class.java)) {
                             @Suppress("UNCHECKED_CAST")
-                            return PostOfficeViewModel(
-                                strategies = strategies,
+                            return MarkerClusterMapPageViewModel(
                                 postOfficeIcon = postOfficeIcon,
                                 dataLoader = dataLoader,
                             ) as T
@@ -143,7 +121,7 @@ fun PostOfficeMapPage(
             mapViewState?.let { mapViewState ->
                 when (mapViewState) {
                     is GoogleMapViewStateInterface ->
-                        PostOfficeMapComponent<GoogleMapActualMarker>(
+                        MarkerClusterMapComponent<GoogleMapActualMarker>(
                             mapViewState = mapViewState,
                             selectedMarker = selectedMarker,
                             markers = markers,
@@ -153,7 +131,7 @@ fun PostOfficeMapPage(
                             clusterGroupState = googleClusterState,
                         )
                     is MapboxViewStateInterface ->
-                        PostOfficeMapComponent<MapboxActualMarker>(
+                        MarkerClusterMapComponent<MapboxActualMarker>(
                             mapViewState = mapViewState,
                             selectedMarker = selectedMarker,
                             markers = markers,
@@ -163,7 +141,7 @@ fun PostOfficeMapPage(
                             clusterGroupState = mapboxClusterState,
                         )
                     is HereViewStateInterface ->
-                        PostOfficeMapComponent<HereActualMarker>(
+                        MarkerClusterMapComponent<HereActualMarker>(
                             mapViewState = mapViewState,
                             selectedMarker = selectedMarker,
                             markers = markers,
@@ -173,7 +151,7 @@ fun PostOfficeMapPage(
                             clusterGroupState = hereClusterState,
                         )
                     is ArcGISMapViewStateInterface ->
-                        PostOfficeMapComponent<ArcGISActualMarker>(
+                        MarkerClusterMapComponent<ArcGISActualMarker>(
                             mapViewState = mapViewState,
                             selectedMarker = selectedMarker,
                             markers = markers,
@@ -183,7 +161,7 @@ fun PostOfficeMapPage(
                             clusterGroupState = arcgisClusterState,
                         )
                     is MapLibreViewStateInterface ->
-                        PostOfficeMapComponent<MapLibreActualMarker>(
+                        MarkerClusterMapComponent<MapLibreActualMarker>(
                             mapViewState = mapViewState,
                             selectedMarker = selectedMarker,
                             markers = markers,
@@ -205,27 +183,3 @@ fun PostOfficeMapPage(
     }
 }
 
-@Composable
-private fun LoadingDialog(
-    title: String,
-    message: String,
-) {
-    Dialog(onDismissRequest = { /* block dismiss while loading */ }) {
-        Card(
-            shape = MaterialTheme.shapes.medium,
-        ) {
-            androidx.compose.foundation.layout.Column(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                androidx.compose.foundation.layout
-                    .Spacer(modifier = Modifier.padding(top = 8.dp))
-                CircularProgressIndicator()
-                androidx.compose.foundation.layout
-                    .Spacer(modifier = Modifier.padding(top = 8.dp))
-                Text(text = message, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}

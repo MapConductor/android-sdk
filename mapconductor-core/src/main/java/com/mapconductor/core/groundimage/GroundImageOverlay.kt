@@ -1,13 +1,13 @@
 package com.mapconductor.core.groundimage
 
 import androidx.compose.runtime.compositionLocalOf
+import com.mapconductor.core.ChildCollector
 import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.map.MapOverlayInterface
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalGroundImageCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, GroundImageState>>> {
+    compositionLocalOf<ChildCollector<GroundImageState>> {
         error("GroundImage must be under the <MapView />")
     }
 

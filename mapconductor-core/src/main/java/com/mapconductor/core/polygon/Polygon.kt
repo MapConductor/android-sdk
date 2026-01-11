@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ComponentState
 import com.mapconductor.core.StateFlowDelegate
 import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
@@ -23,8 +24,8 @@ class PolygonState(
     zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolygonEventHandler? = null,
-) {
-    val id =
+): ComponentState {
+    override val id =
         (
             id ?: polygonId(
                 listOf(

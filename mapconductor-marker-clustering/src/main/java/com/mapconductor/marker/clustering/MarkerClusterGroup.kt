@@ -66,6 +66,7 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
     cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     content: @Composable () -> Unit,
 ) {
+    val circleCollector = com.mapconductor.core.circle.LocalCircleCollector.current
     val strategy =
         remember(
             clusterRadiusPx,
@@ -102,8 +103,9 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
         debugInfos,
     ) {
         val prefix = CLUSTER_CIRCLE_ID_PREFIX
-        val nextMap = circleFlow.value.toMutableMap()
-        nextMap.keys.filter { it.startsWith(prefix) }.forEach { nextMap.remove(it) }
+        circleCollector.flow.value.keys.filter { it.startsWith(prefix) }.forEach { id ->
+            circleCollector.remove(id)
+        }
         if (showClusterRadiusCircle) {
             debugInfos.forEach { info ->
                 val circleState =
@@ -118,10 +120,9 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
                         extra = info,
                         onClick = null,
                     )
-                nextMap[circleState.id] = circleState
+                circleCollector.add(circleState)
             }
         }
-        circleFlow.value = nextMap
     }
 
     MarkerRenderingGroup(strategy = strategy, content = content)

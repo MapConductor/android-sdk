@@ -10,15 +10,14 @@ import android.graphics.drawable.Drawable
 
 @Composable
 fun MapViewScope.GroundImage(state: GroundImageState) {
-    LaunchedEffect(state.fingerPrint()) {
-        val newMap = groundImageFlow.value.toMutableMap()
-        newMap.set(state.id, state)
-        groundImageFlow.value = newMap
+    val collector = LocalGroundImageCollector.current
+    LaunchedEffect(state) {
+        collector.add(state)
     }
 
     DisposableEffect(state.id) {
         onDispose {
-            groundImageRemoveSharedFlow.tryEmit(state.id)
+            collector.remove(state.id)
         }
     }
 }

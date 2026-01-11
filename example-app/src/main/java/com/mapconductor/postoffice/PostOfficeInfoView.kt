@@ -1,4 +1,4 @@
-﻿package com.mapconductor.example.pages.marker.postofficecluster
+﻿package com.mapconductor.postoffice
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme

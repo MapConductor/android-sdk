@@ -7,6 +7,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ComponentState
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerState
 import java.io.Serializable
@@ -31,7 +32,7 @@ class CircleState(
     zIndex: Int? = null,
     extra: Serializable? = null,
     onClick: OnCircleEventHandler? = null,
-) {
+): ComponentState {
     var center by mutableStateOf(center)
     var clickable by mutableStateOf(clickable)
     var radiusMeters by mutableStateOf(radiusMeters)
@@ -43,7 +44,7 @@ class CircleState(
     var zIndex by mutableStateOf<Int?>(zIndex)
     var onClick by mutableStateOf(onClick)
 
-    val id =
+    override val id =
         (
             id ?: circleId(
                 listOf(

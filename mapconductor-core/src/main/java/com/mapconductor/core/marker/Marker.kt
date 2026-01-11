@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import com.mapconductor.core.ComponentState
 import com.mapconductor.core.features.GeoPointInterface
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
@@ -28,8 +29,8 @@ class MarkerState(
     onDragEnd: OnMarkerEventHandler? = null,
     onAnimateStart: OnMarkerEventHandler? = null,
     onAnimateEnd: OnMarkerEventHandler? = null,
-) {
-    val id =
+): ComponentState {
+    override val id =
         (
             id ?: markerId(
                 listOf(

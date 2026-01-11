@@ -16,9 +16,11 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.marker.clustering.MarkerClusterGroup
 import com.mapconductor.marker.clustering.MarkerClusterGroupState
+import com.mapconductor.postoffice.PostOffice
+import com.mapconductor.postoffice.PostOfficeInfoView
 
 @Composable
-fun <ActualMarker> PostOfficeMapComponent(
+fun <ActualMarker> MarkerClusterMapComponent(
     modifier: Modifier = Modifier,
     mapViewState: MapViewStateInterface<*>,
     selectedMarker: MarkerState?,

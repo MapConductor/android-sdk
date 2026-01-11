@@ -4,104 +4,72 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import com.mapconductor.core.circle.CircleOverlay
+import com.mapconductor.core.circle.CircleFingerPrint
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.groundimage.GroundImageOverlay
+import com.mapconductor.core.groundimage.GroundImageFingerPrint
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubbleEntry
 import com.mapconductor.core.map.MapOverlayInterface
 import com.mapconductor.core.map.MapOverlayRegistry
 import com.mapconductor.core.marker.MarkerOverlay
+import com.mapconductor.core.marker.MarkerFingerPrint
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonOverlay
+import com.mapconductor.core.polygon.PolygonFingerPrint
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.PolylineOverlay
+import com.mapconductor.core.polyline.PolylineFingerPrint
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerOverlay
+import com.mapconductor.core.raster.RasterLayerFingerPrint
 import com.mapconductor.core.raster.RasterLayerState
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import com.mapconductor.settings.Settings
 
 open class MapViewScope {
     val markerCollector =
-        com.mapconductor.core.marker
-            .MarkerCollector()
+        ChildCollectorImpl<MarkerState, MarkerFingerPrint>(
+            asFlow = { it.asFlow() },
+            updateDebounce = Settings.Default.composeEventDebounce,
+        )
     val bubbleFlow = MutableStateFlow<MutableMap<String, InfoBubbleEntry>>(mutableMapOf())
-    val polylineFlow = MutableStateFlow<MutableMap<String, PolylineState>>(mutableMapOf())
-    val polylineRemoveSharedFlow = MutableSharedFlow<String>(1000)
-    val circleFlow = MutableStateFlow<MutableMap<String, CircleState>>(mutableMapOf())
-    val circleRemoveSharedFlow = MutableSharedFlow<String>(1000)
-    val polygonFlow = MutableStateFlow<MutableMap<String, PolygonState>>(mutableMapOf())
-    val polygonRemoveSharedFlow = MutableSharedFlow<String>(1000)
-    val groundImageFlow = MutableStateFlow<MutableMap<String, GroundImageState>>(mutableMapOf())
-    val groundImageRemoveSharedFlow = MutableSharedFlow<String>(1000)
-    val rasterLayerFlow = MutableStateFlow<MutableMap<String, RasterLayerState>>(mutableMapOf())
-    val rasterLayerRemoveSharedFlow = MutableSharedFlow<String>(1000)
-
-    init {
-        CoroutineScope(Dispatchers.IO).launch {
-            polylineRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
-                val newMap = polylineFlow.value.toMutableMap()
-                ids.forEach { id ->
-                    newMap.remove(id)
-                }
-                polylineFlow.value = newMap
-            }
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            circleRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
-                val newMap = circleFlow.value.toMutableMap()
-                ids.forEach { id ->
-                    newMap.remove(id)
-                }
-                circleFlow.value = newMap
-            }
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            polygonRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
-                val newMap = polygonFlow.value.toMutableMap()
-                ids.forEach { id ->
-                    newMap.remove(id)
-                }
-                polygonFlow.value = newMap
-            }
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            groundImageRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
-                val newMap = groundImageFlow.value.toMutableMap()
-                ids.forEach { id ->
-                    newMap.remove(id)
-                }
-                groundImageFlow.value = newMap
-            }
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            rasterLayerRemoveSharedFlow.debounceBatch(5.milliseconds, 300).collect { ids ->
-                val newMap = rasterLayerFlow.value.toMutableMap()
-                ids.forEach { id ->
-                    newMap.remove(id)
-                }
-                rasterLayerFlow.value = newMap
-            }
-        }
-    }
+    val polylineCollector =
+        ChildCollectorImpl<PolylineState, PolylineFingerPrint>(
+            asFlow = { it.asFlow() },
+            updateDebounce = Settings.Default.composeEventDebounce,
+        )
+    val circleCollector =
+        ChildCollectorImpl<CircleState, CircleFingerPrint>(
+            asFlow = { it.asFlow() },
+            updateDebounce = Settings.Default.composeEventDebounce,
+        )
+    val polygonCollector =
+        ChildCollectorImpl<PolygonState, PolygonFingerPrint>(
+            asFlow = { it.asFlow() },
+            updateDebounce = Settings.Default.composeEventDebounce,
+        )
+    val groundImageCollector =
+        ChildCollectorImpl<GroundImageState, GroundImageFingerPrint>(
+            asFlow = { it.asFlow() },
+            updateDebounce = Settings.Default.composeEventDebounce,
+        )
+    val rasterLayerCollector =
+        ChildCollectorImpl<RasterLayerState, RasterLayerFingerPrint>(
+            asFlow = { it.asFlow() },
+            updateDebounce = Settings.Default.composeEventDebounce,
+        )
 
     fun buildRegistry(): MapOverlayRegistry {
         val registry = MapOverlayRegistry()
         registry.register(MarkerOverlay(markerCollector.flow))
-        registry.register(CircleOverlay(circleFlow))
-        registry.register(PolylineOverlay(polylineFlow))
-        registry.register(PolygonOverlay(polygonFlow))
-        registry.register(GroundImageOverlay(groundImageFlow))
-        registry.register(RasterLayerOverlay(rasterLayerFlow))
+        registry.register(CircleOverlay(circleCollector.flow))
+        registry.register(PolylineOverlay(polylineCollector.flow))
+        registry.register(PolygonOverlay(polygonCollector.flow))
+        registry.register(GroundImageOverlay(groundImageCollector.flow))
+        registry.register(RasterLayerOverlay(rasterLayerCollector.flow))
         return registry
     }
 }

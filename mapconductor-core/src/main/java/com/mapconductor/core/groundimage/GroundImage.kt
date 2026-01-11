@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import com.mapconductor.core.ComponentState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import java.io.Serializable
@@ -18,8 +19,8 @@ class GroundImageState(
     id: String? = null,
     extra: Serializable? = null,
     onClick: OnGroundImageEventHandler? = null,
-) {
-    val id = (id ?: generateId(bounds, image, opacity, extra)).toString()
+): ComponentState {
+    override val id = (id ?: generateId(bounds, image, opacity, extra)).toString()
 
 //    var bounds by StateFlowDelegate(bounds)
     var bounds by mutableStateOf(bounds)

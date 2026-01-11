@@ -14,15 +14,14 @@ import java.io.Serializable
 
 @Composable
 fun MapViewScope.Polyline(state: PolylineState) {
-    LaunchedEffect(state.fingerPrint()) {
-        val newMap = polylineFlow.value.toMutableMap()
-        newMap.set(state.id, state)
-        polylineFlow.value = newMap
+    val collector = LocalPolylineCollector.current
+    LaunchedEffect(state) {
+        collector.add(state)
     }
 
     DisposableEffect(state.id) {
         onDispose {
-            polylineRemoveSharedFlow.tryEmit(state.id)
+            collector.remove(state.id)
         }
     }
 }

@@ -19,6 +19,8 @@ import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.marker.strategy.SimpleMarkerStrategy
 import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+import com.mapconductor.postoffice.PostOffice
+import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-interface PostOfficeViewModelInterface {
+interface MarkerClusterMapPageViewModelInterface {
     val initCameraPosition: MapCameraPosition
     val selectedMarker: StateFlow<MarkerState?>
     val markerList: StateFlow<List<MarkerState>>
@@ -50,21 +52,13 @@ interface PostOfficeViewModelInterface {
     fun loadPostOfficeData()
 }
 
-data class Strategies(
-    val google: MarkerRenderingStrategyInterface<GoogleMapActualMarker>,
-    val mapbox: MarkerRenderingStrategyInterface<MapboxActualMarker>,
-    val here: MarkerRenderingStrategyInterface<HereActualMarker>,
-    val arcgis: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
-    val maplibre: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
-)
 
-class PostOfficeViewModel(
-    private val strategies: Strategies,
+class MarkerClusterMapPageViewModel(
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
     private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
-    PostOfficeViewModelInterface {
+    MarkerClusterMapPageViewModelInterface {
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -113,7 +107,7 @@ class PostOfficeViewModel(
                         id = it.hashCode().toString(),
                         icon = postOfficeIcon,
                         extra = it,
-                        onClick = this@PostOfficeViewModel::onMarkerClick,
+                        onClick = this@MarkerClusterMapPageViewModel::onMarkerClick,
                     )
                 }
             _markerList.value = markerStates
@@ -165,16 +159,6 @@ class PostOfficeViewModel(
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
-        @Suppress("UNCHECKED_CAST")
-        _renderingStrategy.value =
-            when (mapViewState) {
-                is GoogleMapViewStateInterface -> strategies.google
-                is MapboxViewStateInterface -> strategies.mapbox
-                is HereViewStateInterface -> strategies.here
-                is ArcGISMapViewStateInterface -> strategies.arcgis
-                is MapLibreViewStateInterface -> strategies.maplibre
-                else -> SimpleMarkerStrategy<Any>()
-            } as MarkerRenderingStrategyInterface<Any>?
     }
 
     override fun onCleared() {

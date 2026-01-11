@@ -1,14 +1,14 @@
-package com.mapconductor.example.pages.marker.postoffice
+package com.mapconductor.postoffice
 
+import android.content.Context
 import com.mapconductor.core.features.GeoPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.zip.ZipInputStream
-import android.content.Context
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * Utility class for loading post office data from zip files in assets.
