@@ -4,7 +4,9 @@ import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CompletableFuture
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.ln
@@ -18,6 +20,7 @@ import android.util.LruCache
 class HeatmapTileRenderer(
     val tileSize: Int = DEFAULT_TILE_SIZE,
     cacheSizeKb: Int = DEFAULT_CACHE_SIZE_KB,
+    maxConcurrentRenders: Int = DEFAULT_MAX_CONCURRENT_RENDERS,
 ) : TileProviderInterface {
     private val cacheLock = Any()
     private val cache =
@@ -30,12 +33,22 @@ class HeatmapTileRenderer(
 
     private val emptyTileMarker = ByteArray(1)
     private val kernelCache = ConcurrentHashMap<Int, DoubleArray>()
+    private val inFlight = ConcurrentHashMap<String, CompletableFuture<ByteArray?>>()
+    private val renderQueue =
+        ArrayBlockingQueue<RenderJob>(
+            MAX_RENDER_QUEUE_SIZE,
+            /* fair = */ true,
+        )
+    private val workerCount = maxConcurrentRenders.coerceIn(1, MAX_MAX_CONCURRENT_RENDERS)
 
     @Volatile
     private var cameraZoom: Double? = null
 
     @Volatile
     private var cameraZoomKey: Int? = null
+
+    @Volatile
+    private var cacheEpoch: Long = 0L
 
     @Volatile
     private var state =
@@ -46,6 +59,15 @@ class HeatmapTileRenderer(
             colorMap = IntArray(COLOR_MAP_SIZE) { Color.TRANSPARENT },
             maxIntensities = DoubleArray(MAX_ZOOM_LEVEL),
         )
+
+    init {
+        repeat(workerCount) { index ->
+            Thread({ renderLoop() }, "HeatmapTileRenderer-$index").apply {
+                isDaemon = true
+                start()
+            }
+        }
+    }
 
     fun update(
         points: List<HeatmapPoint>,
@@ -72,6 +94,7 @@ class HeatmapTileRenderer(
                 maxIntensities = maxIntensities,
             )
         synchronized(cacheLock) {
+            cacheEpoch += 1
             cache.evictAll()
         }
     }
@@ -83,23 +106,73 @@ class HeatmapTileRenderer(
         if (prevKey != nextKey) {
             cameraZoomKey = nextKey
             synchronized(cacheLock) {
+                cacheEpoch += 1
                 cache.evictAll()
             }
         }
     }
 
     override fun renderTile(request: TileRequest): ByteArray? {
-        val key = "${request.z}/${request.x}/${request.y}"
+        val epoch = cacheEpoch
+        val key = "$epoch:${request.z}/${request.x}/${request.y}"
         synchronized(cacheLock) {
             cache.get(key)?.let { cached ->
                 return if (cached === emptyTileMarker) null else cached
             }
         }
-        val bytes = renderTileInternal(request, state)
-        synchronized(cacheLock) {
-            cache.put(key, bytes ?: emptyTileMarker)
+
+        val future = CompletableFuture<ByteArray?>()
+        val existing = inFlight.putIfAbsent(key, future)
+        if (existing != null) {
+            return existing.join()
         }
-        return bytes
+        val tileStateSnapshot = state
+        val job = RenderJob(key = key, epoch = epoch, request = request, state = tileStateSnapshot, future = future)
+        try {
+            // Backpressure instead of dropping tiles (dropping triggers parent-tile fallback seams).
+            renderQueue.put(job)
+        } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
+            inFlight.remove(key)
+            future.complete(null)
+            return null
+        }
+        return future.join()
+    }
+
+    private fun renderLoop() {
+        while (true) {
+            val job =
+                try {
+                    renderQueue.take()
+                } catch (_: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    return
+                }
+
+            try {
+                synchronized(cacheLock) {
+                    cache.get(job.key)?.let { cached ->
+                        job.future.complete(if (cached === emptyTileMarker) null else cached)
+                        continue
+                    }
+                }
+
+                val bytes = renderTileInternal(job.request, job.state)
+
+                synchronized(cacheLock) {
+                    if (cacheEpoch == job.epoch) {
+                        cache.put(job.key, bytes ?: emptyTileMarker)
+                    }
+                }
+
+                job.future.complete(bytes)
+            } catch (e: Exception) {
+                job.future.completeExceptionally(e)
+            } finally {
+                inFlight.remove(job.key)
+            }
+        }
     }
 
     private fun renderTileInternal(
@@ -510,5 +583,16 @@ class HeatmapTileRenderer(
         private const val DEFAULT_MAX_ZOOM = 11
         private const val MAX_ZOOM_LEVEL = 22
         private const val COLOR_MAP_SIZE = 1000
+        private const val DEFAULT_MAX_CONCURRENT_RENDERS = 2
+        private const val MAX_MAX_CONCURRENT_RENDERS = 8
+        private const val MAX_RENDER_QUEUE_SIZE = 2048
     }
+
+    private data class RenderJob(
+        val key: String,
+        val epoch: Long,
+        val request: TileRequest,
+        val state: TileState,
+        val future: CompletableFuture<ByteArray?>,
+    )
 }

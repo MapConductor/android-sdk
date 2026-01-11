@@ -214,6 +214,7 @@ dependencies {
     debugImplementation(project(":mapconductor-marker-strategy"))
     debugImplementation(project(":mapconductor-marker-native-strategy"))
     debugImplementation(project(":mapconductor-marker-clustering"))
+    debugImplementation(project(":mapconductor-heatmap"))
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)

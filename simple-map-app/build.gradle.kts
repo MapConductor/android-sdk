@@ -162,4 +162,5 @@ dependencies {
 
     implementation(project(":mapconductor-marker-strategy"))
     implementation(project(":mapconductor-marker-native-strategy"))
+    implementation(project(":mapconductor-heatmap"))
 }

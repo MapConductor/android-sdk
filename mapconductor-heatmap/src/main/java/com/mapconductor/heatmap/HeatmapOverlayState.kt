@@ -3,7 +3,6 @@ package com.mapconductor.heatmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.mapconductor.core.heatmap.HeatmapPointState
 
 /**
  * State holder for HeatmapOverlay.

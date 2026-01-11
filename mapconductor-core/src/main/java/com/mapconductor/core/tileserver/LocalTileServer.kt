@@ -1,5 +1,6 @@
 package com.mapconductor.core.tileserver
 
+import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.ServerSocket
@@ -11,6 +12,7 @@ class LocalTileServer private constructor(
     private val serverSocket: ServerSocket,
 ) {
     private val providers = ConcurrentHashMap<String, TileProviderInterface>()
+    private val loggedRoutes = ConcurrentHashMap.newKeySet<String>()
     private val running = AtomicBoolean(false)
     private val acceptThread = Thread { acceptLoop() }
 
@@ -180,6 +182,10 @@ class LocalTileServer private constructor(
         val z = segments[3].toIntOrNull() ?: return null
         val x = segments[4].toIntOrNull() ?: return null
         val y = segments[5].substringBefore('.').toIntOrNull() ?: return null
+
+        if (loggedRoutes.add(routeId)) {
+            Log.d("LocalTileServer", "First tile request route=$routeId v=$version z=$z x=$x y=$y")
+        }
 
         val provider = providers[routeId] ?: return null
         val bytes = provider.renderTile(TileRequest(x = x, y = y, z = z)) ?: return null

@@ -68,4 +68,5 @@ class HeatmapGradient(
 object HeatmapDefaults {
     const val DEFAULT_RADIUS_PX: Int = 20
     const val DEFAULT_OPACITY: Double = 0.7
+    const val DEFAULT_MAX_ZOOM: Int = 22
 }

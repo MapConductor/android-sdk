@@ -9,23 +9,32 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.mapconductor.core.ChildCollectorImpl
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.heatmap.HeatmapPointCollector
-import com.mapconductor.core.heatmap.HeatmapPointState
-import com.mapconductor.core.heatmap.LocalHeatmapPointCollector
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.raster.RasterLayer
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.core.raster.RasterSource
+import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.settings.Settings
 import java.util.UUID
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 
-@OptIn(FlowPreview::class)
+@Composable
+fun MapViewScope.HeatmapOverlay(
+    state: HeatmapOverlayState,
+    content: @Composable () -> Unit,
+) {
+    HeatmapOverlay(
+        radiusPx = state.radiusPx,
+        opacity = state.opacity,
+        gradient = state.gradient,
+        maxIntensity = state.maxIntensity,
+        weightProvider = state.weightProvider,
+        content = content,
+    )
+}
+
 @Composable
 fun MapViewScope.HeatmapOverlay(
     radiusPx: Int = HeatmapDefaults.DEFAULT_RADIUS_PX,
@@ -35,27 +44,35 @@ fun MapViewScope.HeatmapOverlay(
     weightProvider: (HeatmapPointState) -> Double = { state -> state.weight },
     content: @Composable () -> Unit,
 ) {
-    val pointCollector = remember { HeatmapPointCollector() }
+    val pointCollector =
+        remember {
+            ChildCollectorImpl<HeatmapPointState, HeatmapPointFingerPrint>(
+                asFlow = { it.asFlow() },
+                updateDebounce = Settings.Default.composeEventDebounce,
+            )
+        }
     val groupId = remember { UUID.randomUUID().toString() }
     val tileServer = remember { TileServerRegistry.get() }
     val renderer = remember { HeatmapTileRenderer() }
     val mapController = LocalMapViewController.current
     val cameraController = remember(renderer) { HeatmapCameraController(renderer) }
     var version by remember { mutableStateOf(0L) }
+    var isTileServerRegistered by remember { mutableStateOf(false) }
+    var hasRenderedOnce by remember { mutableStateOf(false) }
 
     val rasterLayerState =
         remember(groupId, tileServer, renderer) {
             RasterLayerState(
                 id = "heatmap-$groupId",
                 source =
-                    RasterSource.UrlTemplate(
+                    RasterLayerSource.UrlTemplate(
                         template = tileServer.urlTemplate(groupId, version),
                         tileSize = renderer.tileSize,
+                        maxZoom = HeatmapDefaults.DEFAULT_MAX_ZOOM,
                         scheme = TileScheme.XYZ,
                     ),
                 opacity = opacity.toFloat().coerceIn(0.0f, 1.0f),
                 visible = true,
-                extra = version,
             )
         }
 
@@ -65,8 +82,10 @@ fun MapViewScope.HeatmapOverlay(
 
     DisposableEffect(groupId, tileServer, renderer) {
         tileServer.register(groupId, renderer)
+        isTileServerRegistered = true
         onDispose {
             tileServer.unregister(groupId)
+            isTileServerRegistered = false
         }
     }
 
@@ -78,51 +97,62 @@ fun MapViewScope.HeatmapOverlay(
     }
 
     val points = pointCollector.flow.collectAsState()
-    val updateToken = remember { mutableStateOf(0L) }
+    var updateToken by remember { mutableStateOf(0L) }
 
-    points.value.values.forEach { pointState ->
-        LaunchedEffect(pointState.id, weightProvider) {
-            pointState
-                .asFlow()
-                .debounce(Settings.Default.composeEventDebounce)
-                .collectLatest {
-                    updateToken.value += 1
-                }
+    DisposableEffect(pointCollector) {
+        pointCollector.setUpdateHandler {
+            updateToken += 1
+        }
+        onDispose {
+            pointCollector.setUpdateHandler(null)
         }
     }
 
-    LaunchedEffect(points.value, updateToken.value, radiusPx, gradient, maxIntensity, weightProvider) {
+    LaunchedEffect(points.value, updateToken, radiusPx, gradient, maxIntensity, weightProvider) {
         val heatmapPoints =
             points.value.values.mapNotNull { pointState ->
                 val weight = weightProvider(pointState)
                 if (weight.isNaN() || weight <= 0.0) {
                     null
                 } else {
-                    HeatmapPoint(
+                    com.mapconductor.heatmap.HeatmapPoint(
                         position = pointState.position,
                         weight = weight,
                     )
                 }
             }
+        if (heatmapPoints.isEmpty()) {
+            hasRenderedOnce = false
+            renderer.update(
+                points = emptyList(),
+                radiusPx = radiusPx,
+                gradient = gradient,
+                maxIntensity = maxIntensity,
+            )
+            return@LaunchedEffect
+        }
         renderer.update(
             points = heatmapPoints,
             radiusPx = radiusPx,
             gradient = gradient,
             maxIntensity = maxIntensity,
         )
+        hasRenderedOnce = true
         version += 1
         rasterLayerState.source =
-            RasterSource.UrlTemplate(
+            RasterLayerSource.UrlTemplate(
                 template = tileServer.urlTemplate(groupId, version),
                 tileSize = renderer.tileSize,
+                maxZoom = HeatmapDefaults.DEFAULT_MAX_ZOOM,
                 scheme = TileScheme.XYZ,
             )
-        rasterLayerState.extra = version
     }
 
-    RasterLayer(state = rasterLayerState)
-
     CompositionLocalProvider(LocalHeatmapPointCollector provides pointCollector) {
+        // Avoid returning NO_TILE for the initial viewport (Google Maps may cache it).
+        if (isTileServerRegistered && hasRenderedOnce) {
+            RasterLayer(state = rasterLayerState)
+        }
         content()
     }
 }
