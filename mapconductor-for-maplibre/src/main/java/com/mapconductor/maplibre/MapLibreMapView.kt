@@ -18,9 +18,12 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.circle.MapLibreCircleLayer
 import com.mapconductor.maplibre.circle.MapLibreCircleOverlayRenderer
+import com.mapconductor.maplibre.groundimage.MapLibreGroundImageController
+import com.mapconductor.maplibre.groundimage.MapLibreGroundImageOverlayRenderer
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import com.mapconductor.maplibre.marker.MarkerDragLayer
@@ -151,6 +154,7 @@ fun MapLibreMapView(
                 getPolygonController(
                     holder = holder,
                 )
+            val groundImageController = getGroundImageController(holder)
             val circleController = getCircleController(holder)
             val rasterLayerController = getRasterLayerController(holder)
 
@@ -161,6 +165,7 @@ fun MapLibreMapView(
                 markerController = markerController,
                 polylineController = polylineController,
                 polygonController = polygonController,
+                groundImageController = groundImageController,
                 circleController = circleController,
                 rasterLayerController = rasterLayerController,
             ).also { controller ->
@@ -321,6 +326,16 @@ internal fun getRasterLayerController(holder: MapLibreMapViewHolderInterface): M
     return MapLibreRasterLayerController(
         renderer = renderer,
     )
+}
+
+internal fun getGroundImageController(holder: MapLibreMapViewHolderInterface): MapLibreGroundImageController {
+    val tileServer = TileServerRegistry.get()
+    val renderer =
+        MapLibreGroundImageOverlayRenderer(
+            holder = holder,
+            tileServer = tileServer,
+        )
+    return MapLibreGroundImageController(renderer = renderer)
 }
 
 internal fun Context.findActivity(): Activity? =

@@ -6,3 +6,4 @@ typealias MapLibreActualMarker = Feature
 typealias MapLibreActualPolyline = List<Feature>
 typealias MapLibreActualCircle = Feature
 typealias MapLibreActualPolygon = List<Feature>
+typealias MapLibreActualGroundImage = com.mapconductor.maplibre.groundimage.MapLibreGroundImageHandle

@@ -16,12 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.heatmap.HeatmapPoint
-import com.mapconductor.core.heatmap.HeatmapPointState
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
@@ -29,17 +30,15 @@ import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.Spherical
-import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
-import com.mapconductor.here.heatmap.HeatmapOverlay
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
-import com.mapconductor.maplibre.heatmap.HeatmapOverlay
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import kotlinx.coroutines.delay
 
@@ -48,10 +47,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val drawable = ContextCompat.getDrawable(this, R.drawable.overlayimg)!!
+
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    GoogleMapHeatmapExample(
+                    BasicGroundImageExample(
+                        drawable = drawable,
                         modifier =
                             Modifier
                                 .padding(innerPadding)
@@ -62,62 +64,34 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
-fun GoogleMapHeatmapExample(modifier: Modifier = Modifier) {
-    val center = GeoPoint.fromLatLong(35.681236, 139.767125)
+fun BasicGroundImageExample(
+    drawable: Drawable,
+    modifier: Modifier = Modifier,
+) {
     val mapViewState =
-        rememberHereMapViewState(
+        rememberMapLibreMapViewState(
             cameraPosition =
                 MapCameraPosition(
-                    position = center,
-                    zoom = 11.0,
+                    position = GeoPoint(51.511649,-0.100761),
+                    zoom = 12.0,
                 ),
+            mapDesign = MapLibreDesign.OsmBright,
         )
-    val points =
-        remember {
-            TokyoPostOffices.mapIndexed { index, postOffice ->
-                HeatmapPointState(
-                    id = "postoffice-$index",
-                    position = postOffice.position,
-                    weight = 1.0,
-                )
-            }
-        }
 
-    HereMapView(
-        state = mapViewState,
+    val bounds = GeoRectBounds(
+        southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
+        northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
+    )
+    MapLibreMapView(
         modifier = modifier,
-    ) {
-        HeatmapOverlay {
-            points.forEach { pointState ->
-                HeatmapPoint(pointState)
-            }
-        }
-    }
-}
-
-@Composable
-fun MapLibre(modifier: Modifier = Modifier) {
-    val center = GeoPoint.fromLatLong(52.5163, 13.3777)
-
-    val camera = MapCameraPosition(position = center, zoom = 13.0)
-    val mapViewState = rememberHereMapViewState(cameraPosition = camera)
-
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-
-    HereMapView(
         state = mapViewState,
-        modifier = modifier,
     ) {
-        val markerState =
-            MarkerState(
-                position = center,
-                id = "my-marker",
-                onClick = { markerState -> selectedMarker = markerState },
-            )
-        Marker(
-            markerState,
+        GroundImage(
+            id = "groundimage",
+            bounds = bounds,
+            image = drawable,
+            opacity = 0.6f
         )
     }
 }

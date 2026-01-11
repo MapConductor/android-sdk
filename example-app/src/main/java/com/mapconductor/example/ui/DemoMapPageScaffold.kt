@@ -146,6 +146,7 @@ fun GroundImageCapableMapViewItems(
 ): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         GetGoogleMapViewItem(initCameraPosition),
+        GetMapLibreViewItem(initCameraPosition),
     )
 
 @Composable
