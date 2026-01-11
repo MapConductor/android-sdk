@@ -27,3 +27,4 @@ compose-map-story/
 slides/
 *.secrets
 act.env
+.gradle-user-home
