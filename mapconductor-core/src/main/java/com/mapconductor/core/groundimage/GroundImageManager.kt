@@ -38,6 +38,7 @@ class GroundImageManager<ActualGroundImage> : GroundImageManagerInterface<Actual
     }
 
     override fun find(position: GeoPointInterface): GroundImageEntityInterface<ActualGroundImage>? =
-        entities.values
-            .firstOrNull()
+        entities.values.firstOrNull { entity ->
+            entity.state.bounds.contains(position)
+        }
 }

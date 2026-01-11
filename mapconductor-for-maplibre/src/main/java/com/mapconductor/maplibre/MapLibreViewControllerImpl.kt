@@ -6,6 +6,9 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.groundimage.GroundImageEvent
+import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.VisibleRegion
@@ -23,6 +26,7 @@ import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.maplibre.circle.MapLibreCircleController
+import com.mapconductor.maplibre.groundimage.MapLibreGroundImageController
 import com.mapconductor.maplibre.marker.DefaultMapLibreMarkerEventController
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerEventControllerInterface
@@ -62,6 +66,7 @@ class MapLibreViewController(
     private val markerController: MapLibreMarkerController,
     private val polylineController: MapLibrePolylineController,
     private val polygonController: MapLibrePolygonConductor,
+    private val groundImageController: MapLibreGroundImageController,
     private val circleController: MapLibreCircleController,
     private val rasterLayerController: MapLibreRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
@@ -217,6 +222,7 @@ class MapLibreViewController(
         polylineController.renderer.redraw()
 //        polygonController.polygonOverlay.onPostProcess()
         coroutine.launch {
+            groundImageController.reapplyStyle()
             rasterLayerController.reapplyStyle()
         }
     }
@@ -234,6 +240,7 @@ class MapLibreViewController(
         registerController(markerController)
         registerController(polylineController)
         registerController(polygonController)
+        registerController(groundImageController)
         registerController(circleController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultMapLibreMarkerEventController(markerController))
@@ -257,6 +264,7 @@ class MapLibreViewController(
         markerController.clear()
         polylineController.clear()
         polygonController.clear()
+        groundImageController.clear()
         circleController.clear()
         rasterLayerController.clear()
     }
@@ -311,6 +319,10 @@ class MapLibreViewController(
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
 
     override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
+
+    override suspend fun compositionGroundImages(data: List<GroundImageState>) = groundImageController.add(data)
+
+    override suspend fun updateGroundImage(state: GroundImageState) = groundImageController.update(state)
 
     override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
 
@@ -397,8 +409,16 @@ class MapLibreViewController(
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
+    override fun hasGroundImage(state: GroundImageState): Boolean =
+        this.groundImageController.groundImageManager.hasEntity(state.id)
+
     override fun hasRasterLayer(state: RasterLayerState): Boolean =
         this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
+
+    @Deprecated("Use GroundImageState.onClick instead.")
+    override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
+        this.groundImageController.clickListener = listener
+    }
 
     override fun onMapClick(point: LatLng): Boolean {
         val touchPosition = point.toGeoPoint()
@@ -413,6 +433,12 @@ class MapLibreViewController(
         circleController.find(touchPosition)?.let { entity ->
             val event = CircleEvent(state = entity.state, clicked = touchPosition)
             circleController.dispatchClick(event)
+            return true
+        }
+
+        groundImageController.find(touchPosition)?.let { entity ->
+            val event = GroundImageEvent(state = entity.state, clicked = touchPosition)
+            groundImageController.dispatchClick(event)
             return true
         }
 

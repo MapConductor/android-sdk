@@ -8,3 +8,4 @@ typealias HereActualMarker = MapMarker
 typealias HereActualCircle = MapPolygon
 typealias HereActualPolyline = MapPolyline
 typealias HereActualPolygon = MapPolygon
+typealias HereActualGroundImage = com.mapconductor.here.groundimage.HereGroundImageHandle

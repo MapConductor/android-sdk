@@ -5,16 +5,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -22,13 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.arcgismaps.mapping.ArcGISMap
+import androidx.core.content.ContextCompat
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
-import com.mapconductor.arcgis.map.ArcGISMapView
-import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
@@ -39,18 +33,14 @@ import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
-import com.mapconductor.heatmap.HeatmapOverlay
-import com.mapconductor.heatmap.HeatmapPoint
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
-import android.os.SystemClock
+import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
@@ -58,33 +48,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val image = ContextCompat.getDrawable(this, R.drawable.overlayimg)!!
+
         setContent {
-            val heatmapLogs = remember { HeatmapDebugLogBuffer() }
             MapConductorSDKTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    floatingActionButton = {
-                        Column {
-                            FloatingActionButton(
-                                onClick = { heatmapLogs.dumpToLogcat() },
-                            ) {
-                                Text("Dump logs")
-                            }
-                            Spacer(Modifier.height(12.dp))
-                            FloatingActionButton(
-                                onClick = { heatmapLogs.clear() },
-                            ) {
-                                Text("Clear")
-                            }
-                        }
-                    },
-                ) { innerPadding ->
-                    GoogleMapHeatmapExample(
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    BasicGroundImageExample(
+                        drawable = image,
                         modifier =
                             Modifier
                                 .padding(innerPadding)
                                 .fillMaxSize(),
-                        heatmapLogs = heatmapLogs,
                     )
                 }
             }
@@ -93,71 +67,33 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GoogleMapHeatmapExample(
+fun BasicGroundImageExample(
+    drawable: Drawable,
     modifier: Modifier = Modifier,
-    heatmapLogs: HeatmapDebugLogBuffer,
 ) {
-    val center = GeoPoint.fromLatLong(35.681236, 139.767125)
     val mapViewState =
-        rememberArcGISMapViewState(
+        rememberGoogleMapViewState(
             cameraPosition =
                 MapCameraPosition(
-                    position = center,
-                    zoom = 11.0,
+                    position = GeoPoint(51.511649,-0.100761),
+                    zoom = 12.0,
                 ),
         )
 
-    ArcGISMapView(
-        state = mapViewState,
+    val bounds = GeoRectBounds(
+        southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
+        northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
+    )
+    GoogleMapView(
         modifier = modifier,
+        state = mapViewState,
     ) {
-        key(Unit) {
-            HeatmapOverlay(
-                tileSize = 512,
-                debugLogger = heatmapLogs::add,
-            ) {
-                TokyoPostOffices.mapIndexed { index, postOffice ->
-                    HeatmapPoint(
-                        position = postOffice.position,
-                        weight = 1.0,
-                    )
-                }
-            }
-        }
-    }
-}
-
-class HeatmapDebugLogBuffer(
-    private val maxLines: Int = 4000,
-) {
-    private val lock = Any()
-    private val lines: MutableList<String> = mutableListOf()
-
-    fun add(message: String) {
-        val line = "${SystemClock.elapsedRealtime()} $message"
-        synchronized(lock) {
-            if (lines.size >= maxLines) {
-                // Drop oldest to bound memory.
-                lines.removeAt(0)
-            }
-            lines.add(line)
-        }
-    }
-
-    fun clear() {
-        synchronized(lock) {
-            lines.clear()
-        }
-    }
-
-    fun dumpToLogcat(tag: String = "HeatmapDebug") {
-        val snapshot =
-            synchronized(lock) {
-                lines.toList()
-            }
-        Log.i(tag, "---- dump start (${snapshot.size} lines) ----")
-        snapshot.forEach { Log.i(tag, it) }
-        Log.i(tag, "---- dump end ----")
+        GroundImage(
+            id = "groundimage",
+            bounds = bounds,
+            image = drawable,
+            opacity = 0.6f
+        )
     }
 }
 
