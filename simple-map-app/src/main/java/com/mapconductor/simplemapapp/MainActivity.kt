@@ -72,7 +72,7 @@ fun BasicGroundImageExample(
     modifier: Modifier = Modifier,
 ) {
     val mapViewState =
-        rememberMapboxMapViewState(
+        rememberHereMapViewState(
             cameraPosition =
                 MapCameraPosition(
                     position = GeoPoint(51.511649,-0.100761),
@@ -84,7 +84,7 @@ fun BasicGroundImageExample(
         southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
         northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
     )
-    MapboxMapView(
+    HereMapView(
         modifier = modifier,
         state = mapViewState,
     ) {

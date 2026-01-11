@@ -26,9 +26,12 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.here.HereMapViewController.Companion.ZOOM_ADJUST_VALUE
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
+import com.mapconductor.here.groundimage.HereGroundImageController
+import com.mapconductor.here.groundimage.HereGroundImageOverlayRenderer
 import com.mapconductor.here.marker.HereMarkerController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polygon.HerePolygonOverlayRenderer
@@ -151,6 +154,7 @@ fun HereMapView(
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
+            val groundImageController = getGroundImageController(holder)
             val circleController = getHereCircleController(holder)
             val rasterLayerController = getRasterLayerController(holder)
 
@@ -162,6 +166,7 @@ fun HereMapView(
                     markerController = markerController,
                     polylineController = polylineController,
                     polygonController = polygonController,
+                    groundImageController = groundImageController,
                     circleController = circleController,
                     rasterLayerController = rasterLayerController,
                 )
@@ -311,4 +316,14 @@ private fun getRasterLayerController(holder: HereViewHolder): HereRasterLayerCon
     return HereRasterLayerController(
         renderer = renderer,
     )
+}
+
+private fun getGroundImageController(holder: HereViewHolder): HereGroundImageController {
+    val tileServer = TileServerRegistry.get()
+    val renderer =
+        HereGroundImageOverlayRenderer(
+            holder = holder,
+            tileServer = tileServer,
+        )
+    return HereGroundImageController(renderer = renderer)
 }

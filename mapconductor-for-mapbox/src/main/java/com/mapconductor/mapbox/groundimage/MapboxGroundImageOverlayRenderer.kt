@@ -29,7 +29,7 @@ class MapboxGroundImageOverlayRenderer(
         withContext(coroutine.coroutineContext) {
             val routeId = buildSafeRouteId(state.id)
             val provider = GroundImageTileProvider()
-            provider.update(state)
+            provider.update(state, opacity = 1.0f)
             tileServer.register(routeId, provider)
 
             val sourceId = "groundimage-source-$routeId"
@@ -68,7 +68,7 @@ class MapboxGroundImageOverlayRenderer(
 
             val nextHandle =
                 if (tileContentChanged) {
-                    groundImage.tileProvider.update(current.state)
+                    groundImage.tileProvider.update(current.state, opacity = 1.0f)
                     groundImage.copy(version = groundImage.version + 1L)
                 } else {
                     groundImage

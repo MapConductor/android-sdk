@@ -39,10 +39,18 @@ class GroundImageTileProvider(
     @Volatile
     private var cacheEpoch: Long = 0L
 
-    fun update(state: GroundImageState) {
+    fun update(
+        state: GroundImageState,
+        opacity: Float = state.opacity,
+    ) {
         val snapshotBounds = GeoRectBounds(state.bounds.southWest, state.bounds.northEast)
         val bitmap = state.image.toBitmap()
-        overlay = Overlay(bounds = snapshotBounds, bitmap = bitmap)
+        overlay =
+            Overlay(
+                bounds = snapshotBounds,
+                bitmap = bitmap,
+                opacity = opacity.coerceIn(0.0f, 1.0f),
+            )
         synchronized(cacheLock) {
             cacheEpoch += 1
             cache.evictAll()
@@ -148,6 +156,7 @@ class GroundImageTileProvider(
         val paint =
             Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 isFilterBitmap = true
+                alpha = (overlay.opacity * 255.0f).toInt().coerceIn(0, 255)
             }
         canvas.drawBitmap(
             bitmap,
@@ -172,6 +181,7 @@ class GroundImageTileProvider(
     private data class Overlay(
         val bounds: GeoRectBounds,
         val bitmap: Bitmap,
+        val opacity: Float,
     )
 
     private object WebMercator {

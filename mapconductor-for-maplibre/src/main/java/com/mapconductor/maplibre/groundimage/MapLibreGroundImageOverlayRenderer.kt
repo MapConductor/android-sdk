@@ -28,7 +28,7 @@ class MapLibreGroundImageOverlayRenderer(
             val style = holder.map.style ?: return@withContext null
             val routeId = buildSafeRouteId(state.id)
             val provider = GroundImageTileProvider()
-            provider.update(state)
+            provider.update(state, opacity = 1.0f)
             tileServer.register(routeId, provider)
 
             val sourceId = "groundimage-source-$routeId"
@@ -67,7 +67,7 @@ class MapLibreGroundImageOverlayRenderer(
                 return@withContext groundImage
             }
 
-            groundImage.tileProvider.update(current.state)
+            groundImage.tileProvider.update(current.state, opacity = 1.0f)
             val nextHandle = groundImage.copy(version = groundImage.version + 1L)
             removeSourceAndLayerIfExists(nextHandle)
             addSourceAndLayer(nextHandle, current.state)
@@ -155,4 +155,3 @@ class MapLibreGroundImageOverlayRenderer(
         private const val BELOW_LAYER_ID = "polyline-layer"
     }
 }
-
