@@ -24,6 +24,8 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
@@ -33,6 +35,7 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.tileserver.TileServerRegistry
 import android.util.Log
 import android.widget.FrameLayout
 import kotlinx.coroutines.CoroutineScope
@@ -177,6 +180,7 @@ fun ArcGISMapView(
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
+            val groundImageController = getGroundImageController(holder)
             val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
@@ -187,6 +191,7 @@ fun ArcGISMapView(
                 polylineController = polylineController,
                 polygonController = polygonController,
                 circleController = circleController,
+                groundImageController = groundImageController,
                 rasterLayerController = rasterLayerController,
             ).also { controller ->
                 controller.setCameraMoveStartListener {
@@ -306,6 +311,16 @@ private fun getRasterLayerController(holder: ArcGISMapViewHolder): ArcGISRasterL
     return ArcGISRasterLayerController(
         renderer = renderer,
     )
+}
+
+private fun getGroundImageController(holder: ArcGISMapViewHolder): ArcGISGroundImageController {
+    val tileServer = TileServerRegistry.get()
+    val renderer =
+        ArcGISGroundImageOverlayRenderer(
+            holder = holder,
+            tileServer = tileServer,
+        )
+    return ArcGISGroundImageController(renderer = renderer)
 }
 
 /**

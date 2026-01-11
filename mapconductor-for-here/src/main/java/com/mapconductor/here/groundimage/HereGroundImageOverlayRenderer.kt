@@ -10,6 +10,7 @@ import com.mapconductor.core.groundimage.AbstractGroundImageOverlayRenderer
 import com.mapconductor.core.groundimage.GroundImageEntityInterface
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.GroundImageTileProvider
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.here.HereActualGroundImage
 import com.mapconductor.here.HereViewHolder
@@ -160,7 +161,6 @@ class HereGroundImageOverlayRenderer(
         } catch (_: Exception) {
         }
     }
-
     private fun buildSafeRouteId(id: String): String =
         buildString(id.length + 16) {
             append("groundimage-")

@@ -9,6 +9,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -20,6 +21,8 @@ import androidx.core.content.ContextCompat
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
+import com.mapconductor.arcgis.map.ArcGISMapView
+import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.groundimage.GroundImage
@@ -29,6 +32,7 @@ import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
@@ -72,7 +76,7 @@ fun BasicGroundImageExample(
     modifier: Modifier = Modifier,
 ) {
     val mapViewState =
-        rememberGoogleMapViewState(
+        rememberArcGISMapViewState(
             cameraPosition =
                 MapCameraPosition(
                     position = GeoPoint(51.511649,-0.100761),
@@ -80,20 +84,41 @@ fun BasicGroundImageExample(
                 ),
         )
 
-    val bounds = GeoRectBounds(
-        southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
-        northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
-    )
-    GoogleMapView(
+    val bounds = remember {
+        GeoRectBounds(
+            southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
+            northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
+        )
+    }
+    ArcGISMapView(
         modifier = modifier,
         state = mapViewState,
     ) {
-        GroundImage(
-            id = "groundimage",
-            bounds = bounds,
-            image = drawable,
-            opacity = 0.6f
-        )
+        key(bounds.hashCode()) {
+            Polyline(
+                points = listOf(
+                    bounds.southWest!!,
+                    GeoPoint.fromLatLong(
+                        latitude = bounds.northEast!!.latitude,
+                        longitude = bounds.southWest!!.longitude
+                    ),
+                    bounds.northEast!!,
+                    GeoPoint.fromLatLong(
+                        latitude = bounds.southWest!!.latitude,
+                        longitude = bounds.northEast!!.longitude
+                    ),
+                    bounds.southWest!!,
+                ),
+                strokeColor = Color.Red,
+            )
+
+            GroundImage(
+                id = "groundimage",
+                bounds = bounds,
+                image = drawable,
+                opacity = 0.6f
+            )
+        }
     }
 }
 

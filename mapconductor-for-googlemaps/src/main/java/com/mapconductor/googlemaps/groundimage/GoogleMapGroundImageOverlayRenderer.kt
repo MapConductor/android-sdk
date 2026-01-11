@@ -6,6 +6,7 @@ import com.google.android.gms.maps.model.GroundOverlayOptions
 import com.mapconductor.core.groundimage.AbstractGroundImageOverlayRenderer
 import com.mapconductor.core.groundimage.GroundImageEntityInterface
 import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.googlemaps.GoogleMapActualGroundImage
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLngBounds
