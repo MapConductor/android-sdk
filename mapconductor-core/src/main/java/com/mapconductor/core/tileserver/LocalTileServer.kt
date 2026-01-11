@@ -10,13 +10,21 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class LocalTileServer private constructor(
     private val serverSocket: ServerSocket,
+    forceNoStoreCache: Boolean,
 ) {
     private val providers = ConcurrentHashMap<String, TileProviderInterface>()
     private val loggedRoutes = ConcurrentHashMap.newKeySet<String>()
     private val running = AtomicBoolean(false)
     private val acceptThread = Thread { acceptLoop() }
 
+    @Volatile
+    private var forceNoStoreCache: Boolean = forceNoStoreCache
+
     val baseUrl: String = "http://127.0.0.1:${serverSocket.localPort}"
+
+    fun setForceNoStoreCache(value: Boolean) {
+        forceNoStoreCache = value
+    }
 
     fun register(
         routeId: String,
@@ -32,7 +40,8 @@ class LocalTileServer private constructor(
     fun urlTemplate(
         routeId: String,
         version: Long,
-    ): String = "$baseUrl/tiles/$routeId/$version/{z}/{x}/{y}.png"
+        tileSize: Int,
+    ): String = "$baseUrl/tiles/$routeId/$version/$tileSize/{z}/{x}/{y}.png"
 
     fun start() {
         if (running.compareAndSet(false, true)) {
@@ -75,6 +84,7 @@ class LocalTileServer private constructor(
                         break
                     }
 
+                    val startNs = System.nanoTime()
                     val method = request.method
                     val path = request.path.substringBefore('?').trim('/')
                     val keepAlive = shouldKeepAlive(request)
@@ -92,24 +102,44 @@ class LocalTileServer private constructor(
                     }
 
                     val tileResponse = resolveTile(path)
+                    val status: String
+                    val contentType: String
+                    val body: ByteArray
+                    val headers: Map<String, String>
                     if (tileResponse == null) {
-                        writeResponse(
-                            client,
-                            "404 Not Found",
-                            "text/plain",
-                            "Not found".toByteArray(),
-                            keepAlive = keepAlive,
-                            extraHeaders = mapOf("Cache-Control" to "no-store"),
-                        )
+                        status = "404 Not Found"
+                        contentType = "text/plain"
+                        body = "Not found".toByteArray()
+                        headers = cacheHeaders(NO_STORE_CACHE_CONTROL)
                     } else {
+                        status = "200 OK"
+                        contentType = "image/png"
+                        body = tileResponse.body
+                        headers = cacheHeaders(tileResponse.cacheControl)
+                    }
+
+                    val ok =
                         writeResponse(
                             client,
-                            "200 OK",
-                            "image/png",
-                            tileResponse.body,
+                            status,
+                            contentType,
+                            body,
                             keepAlive = keepAlive,
-                            extraHeaders = mapOf("Cache-Control" to tileResponse.cacheControl),
+                            extraHeaders = headers,
                         )
+
+                    val tookMs = (System.nanoTime() - startNs) / 1_000_000
+                    if (!ok) {
+                        Log.w(TAG, "Write failed (client canceled?) status=$status path=${request.path}")
+                        break
+                    }
+                    if (tookMs >= SLOW_RESPONSE_WARN_MS) {
+                        val key = parseTileKey(path)
+                        if (key != null) {
+                            Log.w(TAG, "Slow tile response took=${tookMs}ms route=${key.routeId} v=${key.version} tileSize=${key.tileSize} z=${key.z} x=${key.x} y=${key.y} status=$status")
+                        } else {
+                            Log.w(TAG, "Slow response took=${tookMs}ms status=$status path=${request.path}")
+                        }
                     }
 
                     handled += 1
@@ -151,13 +181,14 @@ class LocalTileServer private constructor(
             headers[key] = value
         }
 
-        return Request(
+        val req = Request(
             method = method,
             path = path,
             httpVersion = httpVersion,
             headers = headers,
             valid = valid,
         )
+        return req
     }
 
     private fun shouldKeepAlive(request: Request): Boolean {
@@ -170,28 +201,47 @@ class LocalTileServer private constructor(
     }
 
     private fun resolveTile(path: String): TileResponse? {
-        if (path.isEmpty()) {
-            return null
-        }
-        val segments = path.split("/").filter { it.isNotEmpty() }
-        if (segments.size < 6 || segments[0] != "tiles") {
-            return null
-        }
-        val routeId = segments[1]
-        val version = segments[2].toLongOrNull()
-        val z = segments[3].toIntOrNull() ?: return null
-        val x = segments[4].toIntOrNull() ?: return null
-        val y = segments[5].substringBefore('.').toIntOrNull() ?: return null
+        val key = parseTileKey(path) ?: return null
+        val routeId = key.routeId
+        val version = key.version
+        val z = key.z
+        val x = key.x
+        val y = key.y
 
         if (loggedRoutes.add(routeId)) {
-            Log.d("LocalTileServer", "First tile request route=$routeId v=$version z=$z x=$x y=$y")
+            Log.d("LocalTileServer", "First tile request route=$routeId v=$version tileSize=${key.tileSize} z=$z x=$x y=$y")
         }
 
         val provider = providers[routeId] ?: return null
         val bytes = provider.renderTile(TileRequest(x = x, y = y, z = z)) ?: return null
-        val cacheControl = if (version != null) LONG_CACHE_CONTROL else "no-store"
+        val cacheControl =
+            if (forceNoStoreCache || version == null) {
+                NO_STORE_CACHE_CONTROL
+            } else {
+                LONG_CACHE_CONTROL
+            }
         return TileResponse(bytes, cacheControl)
     }
+
+    private fun parseTileKey(path: String): TileKey? {
+        if (path.isEmpty()) return null
+        val segments = path.split("/").filter { it.isNotEmpty() }
+        if (segments.size < 7 || segments[0] != "tiles") return null
+        val routeId = segments[1]
+        val version = segments[2].toLongOrNull()
+        val tileSize = segments[3].toIntOrNull() ?: return null
+        val z = segments[4].toIntOrNull() ?: return null
+        val x = segments[5].toIntOrNull() ?: return null
+        val y = segments[6].substringBefore('.').toIntOrNull() ?: return null
+        return TileKey(routeId = routeId, version = version, tileSize = tileSize, z = z, x = x, y = y)
+    }
+
+    private fun cacheHeaders(cacheControl: String): Map<String, String> =
+        mapOf(
+            "Cache-Control" to cacheControl,
+            "Pragma" to "no-cache",
+            "Expires" to "0",
+        )
 
     private fun writeResponse(
         client: Socket,
@@ -200,7 +250,7 @@ class LocalTileServer private constructor(
         body: ByteArray,
         keepAlive: Boolean = false,
         extraHeaders: Map<String, String> = emptyMap(),
-    ) {
+    ): Boolean {
         try {
             val output = client.getOutputStream()
             val headers = StringBuilder()
@@ -219,8 +269,10 @@ class LocalTileServer private constructor(
             output.write(headers.toString().toByteArray())
             output.write(body)
             output.flush()
+            return true
         } catch (_: Exception) {
-            // Client closed the connection early; ignore.
+            // Client closed the connection early or canceled; ignore.
+            return false
         }
     }
 
@@ -237,13 +289,25 @@ class LocalTileServer private constructor(
         val cacheControl: String,
     )
 
-    companion object {
-        private const val MAX_KEEP_ALIVE_REQUESTS = 10
-        private const val LONG_CACHE_CONTROL = "public, max-age=31536000, immutable"
+    private data class TileKey(
+        val routeId: String,
+        val version: Long?,
+        val tileSize: Int,
+        val z: Int,
+        val x: Int,
+        val y: Int,
+    )
 
-        fun startServer(): LocalTileServer {
+    companion object {
+        private const val TAG = "LocalTileServer"
+        private const val MAX_KEEP_ALIVE_REQUESTS = 100
+        private const val LONG_CACHE_CONTROL = "public, max-age=31536000, immutable"
+        private const val NO_STORE_CACHE_CONTROL = "no-store, no-cache, must-revalidate, max-age=0"
+        private const val SLOW_RESPONSE_WARN_MS = 250L
+
+        fun startServer(forceNoStoreCache: Boolean = false): LocalTileServer {
             val socket = ServerSocket(0)
-            val server = LocalTileServer(socket)
+            val server = LocalTileServer(socket, forceNoStoreCache = forceNoStoreCache)
             server.start()
             return server
         }
