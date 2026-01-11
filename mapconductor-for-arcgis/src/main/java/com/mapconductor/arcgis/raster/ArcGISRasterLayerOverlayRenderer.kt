@@ -22,25 +22,34 @@ import android.util.Log
 class ArcGISRasterLayerOverlayRenderer(
     private val holder: ArcGISMapViewHolder,
 ) : RasterLayerOverlayRendererInterface<Layer> {
-    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<Layer?> =
-        data.map { params ->
-            addLayer(params.state)
+    override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<Layer?> {
+        val results = ArrayList<Layer?>(data.size)
+        for (params in data) {
+            results.add(addLayer(params.state))
         }
+        return results
+    }
 
     override suspend fun onChange(
         data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<Layer>>,
-    ): List<Layer?> =
-        data.map { params ->
+    ): List<Layer?> {
+        val results = ArrayList<Layer?>(data.size)
+        for (params in data) {
             val prev = params.prev
             val next = params.current.state
             if (prev.state.source != next.source) {
+                // Add new layer first to avoid losing in-flight tile requests
+                val newLayer = addLayer(next)
+                results.add(newLayer)
+                // Remove old layer after new one is added
                 removeLayer(prev)
-                addLayer(next)
             } else {
                 updateLayer(prev.layer, next)
-                prev.layer
+                results.add(prev.layer)
             }
         }
+        return results
+    }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<Layer>>) {
         data.forEach { entity ->
@@ -50,7 +59,7 @@ class ArcGISRasterLayerOverlayRenderer(
 
     override suspend fun onPostProcess() {}
 
-    private fun addLayer(state: RasterLayerState): Layer? {
+    private suspend fun addLayer(state: RasterLayerState): Layer? {
         val scene = holder.map.scene ?: return null
         val layer =
             when (val source = state.source) {
@@ -61,6 +70,16 @@ class ArcGISRasterLayerOverlayRenderer(
                     return null
                 }
             }
+
+        // Load layer before adding to scene to ensure TileInfo is fully initialized
+        val loadResult = layer.load()
+        if (loadResult.isFailure) {
+            val error = loadResult.exceptionOrNull()
+            Log.e("ArcGIS", "Failed to load raster layer id=${state.id}: ${error?.message}", error)
+            return null
+        }
+
+        // Add to scene only after successful initialization
         updateLayer(layer, state)
         scene.operationalLayers.add(layer)
         return layer
@@ -106,7 +125,11 @@ class ArcGISRasterLayerOverlayRenderer(
     ): TileInfo {
         val spatialReference = SpatialReference(WEB_MERCATOR_WKID)
         val origin = Point(WEB_MERCATOR_MIN, WEB_MERCATOR_MAX, spatialReference)
-        val levels = buildWebMercatorLevels(tileSize, minZoom, maxZoom)
+        // ArcGIS WebTiledLayer appears to compute tile (col,row) using a 256px grid regardless of
+        // the TileInfo tileWidth/tileHeight, which causes (z,x,y) mismatches when tileSize=512.
+        // Workaround: keep tileWidth/tileHeight as-is (so the SDK expects 512px images), but build
+        // the LOD resolutions using a 256px reference grid so the requested (z,x,y) matches XYZ.
+        val levels = buildWebMercatorLevels(resolveLodReferenceTileSize(tileSize), minZoom, maxZoom)
         return TileInfo(
             DEFAULT_DPI,
             TileImageFormat.Png,
@@ -134,6 +157,12 @@ class ArcGISRasterLayerOverlayRenderer(
         return levels
     }
 
+    private fun resolveLodReferenceTileSize(tileSize: Int): Int =
+        when (tileSize) {
+            512 -> 256
+            else -> tileSize
+        }
+
     private fun buildWebMercatorExtent(): Envelope =
         Envelope(
             WEB_MERCATOR_MIN,
@@ -151,6 +180,6 @@ class ArcGISRasterLayerOverlayRenderer(
         private const val DEFAULT_DPI = 96
         private const val INCHES_PER_METER = 39.37
         private const val DEFAULT_MIN_ZOOM = 0
-        private const val DEFAULT_MAX_ZOOM = 19
+        private const val DEFAULT_MAX_ZOOM = 22
     }
 }

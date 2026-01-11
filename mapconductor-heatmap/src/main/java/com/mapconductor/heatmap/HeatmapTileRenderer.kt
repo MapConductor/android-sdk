@@ -3,25 +3,40 @@ package com.mapconductor.heatmap
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
-import java.io.ByteArrayOutputStream
+import java.util.Arrays
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CompletableFuture
+import java.util.zip.Adler32
+import java.util.zip.CRC32
+import java.util.zip.Deflater
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import android.graphics.Bitmap
 import android.graphics.Color
+import android.util.Log
 import android.util.LruCache
 
 class HeatmapTileRenderer(
     val tileSize: Int = DEFAULT_TILE_SIZE,
     cacheSizeKb: Int = DEFAULT_CACHE_SIZE_KB,
     maxConcurrentRenders: Int = DEFAULT_MAX_CONCURRENT_RENDERS,
+    private val pngCompressionLevel: Int = DEFAULT_PNG_COMPRESSION_LEVEL,
+    private val adaptivePngCompression: Boolean = true,
 ) : TileProviderInterface {
+    @Volatile
+    var debugLogSink: ((String) -> Unit)? = null
+
+    private fun debugLog(message: String) {
+        debugLogSink?.invoke(message)
+    }
+
+    @Volatile
+    private var didWarmUp: Boolean = false
+
     private val cacheLock = Any()
     private val cache =
         object : LruCache<String, ByteArray>(cacheSizeKb) {
@@ -32,17 +47,27 @@ class HeatmapTileRenderer(
         }
 
     private val emptyTileMarker = ByteArray(1)
-    private val kernelCache = ConcurrentHashMap<Int, DoubleArray>()
+    private val transparentTileBytes: ByteArray by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        val colors = IntArray(tileSize * tileSize) { Color.TRANSPARENT }
+        encodePngRgba(
+            colors = colors,
+            width = tileSize,
+            height = tileSize,
+            buffers = PngBuffers(),
+            compressionLevel = pngCompressionLevel,
+        )
+    }
+    private val kernelCache = ConcurrentHashMap<Int, FloatArray>()
     private val inFlight = ConcurrentHashMap<String, CompletableFuture<ByteArray?>>()
     private val renderQueue =
         ArrayBlockingQueue<RenderJob>(
             MAX_RENDER_QUEUE_SIZE,
-            /* fair = */ true,
+            /* fair = */ false,
         )
     private val workerCount = maxConcurrentRenders.coerceIn(1, MAX_MAX_CONCURRENT_RENDERS)
 
     @Volatile
-    private var cameraZoom: Double? = null
+    private var cameraZoomQuantized: Double? = null
 
     @Volatile
     private var cameraZoomKey: Int? = null
@@ -54,6 +79,7 @@ class HeatmapTileRenderer(
     private var state =
         TileState(
             points = emptyList(),
+            index = null,
             bounds = null,
             radiusPx = DEFAULT_RADIUS_PX,
             colorMap = IntArray(COLOR_MAP_SIZE) { Color.TRANSPARENT },
@@ -78,6 +104,8 @@ class HeatmapTileRenderer(
         val safeRadius = radiusPx.coerceAtLeast(1)
         val weightedPoints = buildWeightedPoints(points)
         val bounds = if (weightedPoints.isEmpty()) null else calculateBounds(weightedPoints)
+        val index =
+            if (weightedPoints.size < INDEX_BUILD_THRESHOLD) null else buildPointIndex(weightedPoints)
         val colorMap = buildColorMap(gradient)
         val maxIntensities =
             if (bounds == null) {
@@ -85,9 +113,14 @@ class HeatmapTileRenderer(
             } else {
                 getMaxIntensities(weightedPoints, bounds, safeRadius, maxIntensity)
             }
+        if (!didWarmUp) {
+            didWarmUp = true
+            warmUp(colorMap)
+        }
         state =
             TileState(
                 points = weightedPoints,
+                index = index,
                 bounds = bounds,
                 radiusPx = safeRadius,
                 colorMap = colorMap,
@@ -99,35 +132,82 @@ class HeatmapTileRenderer(
         }
     }
 
-    fun updateCameraZoom(zoom: Double) {
-        val nextKey = (zoom * 100).roundToInt()
-        val prevKey = cameraZoomKey
-        cameraZoom = zoom
-        if (prevKey != nextKey) {
-            cameraZoomKey = nextKey
-            synchronized(cacheLock) {
-                cacheEpoch += 1
-                cache.evictAll()
-            }
+    private fun warmUp(colorMap: IntArray) {
+        // Warm up the critical hot paths to reduce first-tile spikes (ART JIT / profiles).
+        try {
+            val radius = 1
+            val tileSize = 8
+            val gridDim = tileSize + radius * 2
+            val kernel = resolveKernel(radius)
+            val input = FloatArray(gridDim * gridDim)
+            val intermediate = FloatArray(gridDim * gridDim)
+            val output = FloatArray(tileSize * tileSize)
+            val center = gridDim * (gridDim / 2) + (gridDim / 2)
+            input[center] = 1.0f
+            val nonZeroInput = intArrayOf(center)
+            val nonZeroIntermediate = IntArray(gridDim * gridDim)
+            convolveSparseToOutput(
+                input = input,
+                intermediate = intermediate,
+                output = output,
+                kernel = kernel,
+                gridDim = gridDim,
+                radius = radius,
+                tileSize = tileSize,
+                nonZeroInput = nonZeroInput,
+                nonZeroInputCount = nonZeroInput.size,
+                nonZeroIntermediate = nonZeroIntermediate,
+                nonZeroIntermediateCountOut = {},
+            )
+            encodePngFromIntensity(
+                intensity = output,
+                colorMap = colorMap,
+                maxIntensity = 1.0,
+                width = tileSize,
+                height = tileSize,
+                buffers = PngBuffers(),
+                compressionLevel = pngCompressionLevel,
+            )
+        } catch (_: Exception) {
+            // Ignore warm-up failures; rendering will proceed normally.
         }
+    }
+
+    fun updateCameraZoom(zoom: Double) {
+        val nextKey = (zoom * CAMERA_ZOOM_KEY_SCALE).roundToInt()
+        val prevKey = cameraZoomKey
+        if (prevKey == nextKey && cameraZoomQuantized != null) return
+        cameraZoomKey = nextKey
+        cameraZoomQuantized = nextKey.toDouble() / CAMERA_ZOOM_KEY_SCALE
     }
 
     override fun renderTile(request: TileRequest): ByteArray? {
         val epoch = cacheEpoch
-        val key = "$epoch:${request.z}/${request.x}/${request.y}"
+        val zoomKey = cameraZoomKey ?: (request.z * CAMERA_ZOOM_KEY_SCALE)
+        val key = "$epoch:$zoomKey:${request.z}/${request.x}/${request.y}"
         synchronized(cacheLock) {
             cache.get(key)?.let { cached ->
-                return if (cached === emptyTileMarker) null else cached
+                debugLog("cacheHit z=${request.z} x=${request.x} y=${request.y} zoomKey=$zoomKey")
+                return if (cached === emptyTileMarker) transparentTileBytes else cached
             }
         }
 
         val future = CompletableFuture<ByteArray?>()
         val existing = inFlight.putIfAbsent(key, future)
         if (existing != null) {
+            debugLog("joinInFlight z=${request.z} x=${request.x} y=${request.y} zoomKey=$zoomKey")
             return existing.join()
         }
         val tileStateSnapshot = state
-        val job = RenderJob(key = key, epoch = epoch, request = request, state = tileStateSnapshot, future = future)
+        val job =
+            RenderJob(
+                key = key,
+                epoch = epoch,
+                enqueuedAtNs = System.nanoTime(),
+                request = request,
+                state = tileStateSnapshot,
+                future = future,
+            )
         try {
             // Backpressure instead of dropping tiles (dropping triggers parent-tile fallback seams).
             renderQueue.put(job)
@@ -151,14 +231,24 @@ class HeatmapTileRenderer(
                 }
 
             try {
+                val workStartNs = System.nanoTime()
+                val queueWaitMs = (workStartNs - job.enqueuedAtNs) / 1_000_000.0
+                val timings = if (debugLogSink != null) phaseTimings().also { it.reset() } else null
                 synchronized(cacheLock) {
                     cache.get(job.key)?.let { cached ->
-                        job.future.complete(if (cached === emptyTileMarker) null else cached)
+                        debugLog(
+                            "cacheHitWorker z=${job.request.z} x=${job.request.x} y=${job.request.y} " +
+                                "queueWaitMs=${(queueWaitMs * 10.0).roundToInt() / 10.0}",
+                        )
+                        job.future.complete(if (cached === emptyTileMarker) transparentTileBytes else cached)
                         continue
                     }
                 }
 
-                val bytes = renderTileInternal(job.request, job.state)
+                val renderStartNs = System.nanoTime()
+                val bytes = renderTileInternal(job.request, job.state, timings)
+                val renderMs = (System.nanoTime() - renderStartNs) / 1_000_000.0
+                val responseBytes = bytes ?: transparentTileBytes
 
                 synchronized(cacheLock) {
                     if (cacheEpoch == job.epoch) {
@@ -166,7 +256,27 @@ class HeatmapTileRenderer(
                     }
                 }
 
-                job.future.complete(bytes)
+                val totalMs = queueWaitMs + renderMs
+                val qw = (queueWaitMs * 10.0).roundToInt() / 10.0
+                val rm = (renderMs * 10.0).roundToInt() / 10.0
+                val tm = (totalMs * 10.0).roundToInt() / 10.0
+                val isSlow = totalMs >= SLOW_TILE_LOG_THRESHOLD_MS
+                val phaseMsg =
+                    timings?.let {
+                        " effZoom=${it.effectiveZoom} radius=${it.radius} gridDim=${it.gridDim}" +
+                            " setup=${it.setupMs}ms bin=${it.binMs}ms conv=${it.convolveMs}ms " +
+                            "mapPng=${it.pngMs}ms pngLevel=${it.pngLevel}"
+                    } ?: ""
+                val msg =
+                    (if (isSlow) "Slow tile breakdown " else "Tile breakdown ") +
+                        "z=${job.request.z} x=${job.request.x} y=${job.request.y} " +
+                        "queueWait=${qw}ms render=${rm}ms total=${tm}ms points=${job.state.points.size} tileSize=$tileSize " +
+                        "isEmptyTile=${bytes == null}$phaseMsg"
+                debugLog(msg)
+                if (isSlow) {
+                    Log.w(TAG, msg)
+                }
+                job.future.complete(responseBytes)
             } catch (e: Exception) {
                 job.future.completeExceptionally(e)
             } finally {
@@ -178,12 +288,15 @@ class HeatmapTileRenderer(
     private fun renderTileInternal(
         request: TileRequest,
         tileState: TileState,
+        timings: PhaseTimings?,
     ): ByteArray? {
+        val setupStartNs = if (timings == null) 0L else System.nanoTime()
         val bounds = tileState.bounds ?: return null
         if (tileState.points.isEmpty()) return null
 
         val zoom = request.z.toDouble()
-        val zoomScale = 2.0.pow((cameraZoom ?: zoom) - zoom)
+        val effectiveZoom = cameraZoomQuantized ?: zoom
+        val zoomScale = 2.0.pow(effectiveZoom - zoom)
         val radius = (tileState.radiusPx / zoomScale).roundToInt().coerceAtLeast(1)
         val kernel = resolveKernel(radius)
         val tileWidth = WORLD_WIDTH / 2.0.pow(zoom)
@@ -191,6 +304,12 @@ class HeatmapTileRenderer(
         val tileWidthPadded = tileWidth + 2 * padding
         val gridDim = tileSize + radius * 2
         val bucketWidth = tileWidthPadded / gridDim
+
+        if (timings != null) {
+            timings.effectiveZoom = ((effectiveZoom * 10.0).roundToInt() / 10.0)
+            timings.radius = radius
+            timings.gridDim = gridDim
+        }
 
         val minX = request.x * tileWidth - padding
         val maxX = (request.x + 1) * tileWidth + padding
@@ -207,59 +326,146 @@ class HeatmapTileRenderer(
             )
         if (!tileBounds.intersects(paddedBounds)) return null
 
-        val intensity = Array(gridDim) { DoubleArray(gridDim) }
-        var hasPoints = false
+        val buffers = buffers()
+        buffers.ensure(gridDim = gridDim, tileSize = tileSize)
+        val gridLen = gridDim * gridDim
+        val tileLen = tileSize * tileSize
+        Arrays.fill(buffers.intensity, 0, gridLen, 0.0f)
+        Arrays.fill(buffers.intermediate, 0, gridLen, 0.0f)
+        Arrays.fill(buffers.output, 0, tileLen, 0.0f)
+        buffers.nonZeroIntensityCount = 0
+        buffers.nonZeroIntermediateCount = 0
 
-        var overlapMinX = 0.0
-        var overlapMaxX = 0.0
-        var xOffset = 0.0
-        if (minX < 0.0) {
-            overlapMinX = minX + WORLD_WIDTH
-            overlapMaxX = WORLD_WIDTH
-            xOffset = -WORLD_WIDTH
-        } else if (maxX > WORLD_WIDTH) {
-            overlapMinX = 0.0
-            overlapMaxX = maxX - WORLD_WIDTH
-            xOffset = WORLD_WIDTH
+        var hasPoints = false
+        if (timings != null) {
+            timings.setupMs = msSince(setupStartNs)
         }
 
+        val binStartNs = if (timings == null) 0L else System.nanoTime()
         fun addPoint(
-            worldX: Double,
+            adjustedWorldX: Double,
             worldY: Double,
             weight: Double,
         ) {
-            val bucketX = ((worldX - minX) / bucketWidth).toInt()
+            val bucketX = ((adjustedWorldX - minX) / bucketWidth).toInt()
             val bucketY = ((worldY - minY) / bucketWidth).toInt()
             if (bucketX !in 0 until gridDim || bucketY !in 0 until gridDim) return
-            intensity[bucketX][bucketY] += weight
+            val idx = bucketY * gridDim + bucketX
+            val prev = buffers.intensity[idx]
+            if (prev == 0.0f) {
+                buffers.nonZeroIntensity[buffers.nonZeroIntensityCount++] = idx
+            }
+            buffers.intensity[idx] = prev + weight.toFloat()
+            hasPoints = true
         }
 
-        tileState.points.forEach { point ->
-            if (point.y < minY || point.y > maxY) return@forEach
-            var added = false
-            if (point.x >= minX && point.x <= maxX) {
-                addPoint(point.x, point.y, point.intensity)
-                added = true
+        val pointIndex = tileState.index
+        if (pointIndex == null) {
+            tileState.points.forEach { point ->
+                if (point.y < minY || point.y > maxY) return@forEach
+                if (point.x >= minX && point.x <= maxX) {
+                    addPoint(point.x, point.y, point.intensity)
+                } else if (minX < 0.0 && point.x >= minX + WORLD_WIDTH) {
+                    addPoint(point.x - WORLD_WIDTH, point.y, point.intensity)
+                } else if (maxX > WORLD_WIDTH && point.x <= maxX - WORLD_WIDTH) {
+                    addPoint(point.x + WORLD_WIDTH, point.y, point.intensity)
+                }
             }
-            if (xOffset != 0.0 && point.x >= overlapMinX && point.x <= overlapMaxX) {
-                addPoint(point.x + xOffset, point.y, point.intensity)
-                added = true
+        } else {
+            val gridSize = pointIndex.gridSize
+            val heads = pointIndex.heads
+            val next = pointIndex.next
+            val yMin = minY.coerceAtLeast(0.0)
+            val yMax = maxY.coerceAtMost(WORLD_WIDTH)
+            if (yMin <= yMax) {
+                val cyStart = (yMin * gridSize).toInt().coerceIn(0, gridSize - 1)
+                val cyEnd = ((yMax * gridSize).toInt()).coerceIn(0, gridSize - 1)
+
+                val xRanges = buildTileXRanges(minX, maxX)
+                xRanges.forEach { range ->
+                    val min = range.min.coerceAtLeast(0.0)
+                    val max = range.max.coerceAtMost(WORLD_WIDTH)
+                    if (min > max) return@forEach
+                    val cxStart = (min * gridSize).toInt().coerceIn(0, gridSize - 1)
+                    val cxEnd = ((max * gridSize).toInt()).coerceIn(0, gridSize - 1)
+                    for (cy in cyStart..cyEnd) {
+                        val row = cy * gridSize
+                        for (cx in cxStart..cxEnd) {
+                            var i = heads[row + cx]
+                            while (i != -1) {
+                                val point = tileState.points[i]
+                                if (point.y >= minY && point.y <= maxY) {
+                                    val xAdj = point.x + range.offset
+                                    if (xAdj >= minX && xAdj <= maxX) {
+                                        addPoint(xAdj, point.y, point.intensity)
+                                    }
+                                }
+                                i = next[i]
+                            }
+                        }
+                    }
+                }
             }
-            if (added) hasPoints = true
         }
 
         if (!hasPoints) return null
+        if (timings != null) {
+            timings.binMs = msSince(binStartNs)
+        }
 
-        val convolved = convolve(intensity, kernel)
-        val intensityZoom = (cameraZoom ?: zoom).toInt().coerceIn(0, tileState.maxIntensities.lastIndex)
+        val convolveStartNs = if (timings == null) 0L else System.nanoTime()
+        convolveSparseToOutput(
+            input = buffers.intensity,
+            intermediate = buffers.intermediate,
+            output = buffers.output,
+            kernel = kernel,
+            gridDim = gridDim,
+            radius = radius,
+            tileSize = tileSize,
+            nonZeroInput = buffers.nonZeroIntensity,
+            nonZeroInputCount = buffers.nonZeroIntensityCount,
+            nonZeroIntermediate = buffers.nonZeroIntermediate,
+            nonZeroIntermediateCountOut = { buffers.nonZeroIntermediateCount = it },
+        )
+        if (timings != null) {
+            timings.convolveMs = msSince(convolveStartNs)
+        }
+        val intensityZoom = effectiveZoom.toInt().coerceIn(0, tileState.maxIntensities.lastIndex)
         val maxIntensity = tileState.maxIntensities[intensityZoom]
         if (maxIntensity <= 0.0) return null
 
-        val bitmap = colorize(convolved, tileState.colorMap, maxIntensity)
-        val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-        bitmap.recycle()
-        return stream.toByteArray()
+        val pngStartNs = if (timings == null) 0L else System.nanoTime()
+        val effectivePngCompressionLevel =
+            if (!adaptivePngCompression || pngCompressionLevel != DEFAULT_PNG_COMPRESSION_LEVEL) {
+                pngCompressionLevel
+            } else {
+                // Deflate can become CPU-heavy when the tile contains lots of non-zero signal
+                // (many different colors => poor compression); fall back to level 0 for latency.
+                if (radius >= PNG_COMPLEX_TILE_RADIUS_THRESHOLD_PX ||
+                    buffers.nonZeroIntensityCount >= PNG_COMPLEX_TILE_POINT_THRESHOLD
+                ) {
+                    0
+                } else {
+                    pngCompressionLevel
+                }
+            }
+        if (timings != null) {
+            timings.pngLevel = effectivePngCompressionLevel
+        }
+        val out =
+            encodePngFromIntensity(
+                intensity = buffers.output,
+                colorMap = tileState.colorMap,
+                maxIntensity = maxIntensity,
+                width = tileSize,
+                height = tileSize,
+                buffers = buffers.png,
+                compressionLevel = effectivePngCompressionLevel,
+            )
+        if (timings != null) {
+            timings.pngMs = msSince(pngStartNs)
+        }
+        return out
     }
 
     private fun buildWeightedPoints(points: List<HeatmapPoint>): List<WeightedPoint> {
@@ -301,8 +507,8 @@ class HeatmapTileRenderer(
         return Bounds(minX, maxX, minY, maxY)
     }
 
-    private fun resolveKernel(radius: Int): DoubleArray {
-        if (radius <= 0) return doubleArrayOf(1.0)
+    private fun resolveKernel(radius: Int): FloatArray {
+        if (radius <= 0) return floatArrayOf(1.0f)
         val cached = kernelCache[radius]
         if (cached != null) return cached
         val built = generateKernel(radius, radius / 3.0)
@@ -313,81 +519,245 @@ class HeatmapTileRenderer(
     private fun generateKernel(
         radius: Int,
         sd: Double,
-    ): DoubleArray {
-        val kernel = DoubleArray(radius * 2 + 1)
+    ): FloatArray {
+        val kernel = FloatArray(radius * 2 + 1)
         for (i in -radius..radius) {
-            kernel[i + radius] = exp(-i * i / (2 * sd * sd))
+            kernel[i + radius] = exp(-i * i / (2 * sd * sd)).toFloat()
         }
         return kernel
     }
 
-    private fun convolve(
-        grid: Array<DoubleArray>,
-        kernel: DoubleArray,
-    ): Array<DoubleArray> {
-        val radius = kernel.size / 2
-        val dimOld = grid.size
-        val dim = dimOld - 2 * radius
+    private fun convolveSparseToOutput(
+        input: FloatArray,
+        intermediate: FloatArray,
+        output: FloatArray,
+        kernel: FloatArray,
+        gridDim: Int,
+        radius: Int,
+        tileSize: Int,
+        nonZeroInput: IntArray,
+        nonZeroInputCount: Int,
+        nonZeroIntermediate: IntArray,
+        nonZeroIntermediateCountOut: (Int) -> Unit,
+    ) {
         val lowerLimit = radius
-        val upperLimit = radius + dim - 1
-        val intermediate = Array(dimOld) { DoubleArray(dimOld) }
+        val upperLimit = radius + tileSize - 1
 
-        for (x in 0 until dimOld) {
-            for (y in 0 until dimOld) {
-                val value = grid[x][y]
-                if (value == 0.0) continue
-                val xUpperLimit = (upperLimit.coerceAtMost(x + radius)) + 1
-                val initial = lowerLimit.coerceAtLeast(x - radius)
-                for (x2 in initial until xUpperLimit) {
-                    intermediate[x2][y] += value * kernel[x2 - (x - radius)]
+        // Horizontal spread into `intermediate` (row-major).
+        var nonZeroIntermediateCount = 0
+        var i = 0
+        while (i < nonZeroInputCount) {
+            val idx = nonZeroInput[i]
+            val y = idx / gridDim
+            val x = idx - y * gridDim
+            val value = input[idx]
+            val rowBase = y * gridDim
+            val xStart = lowerLimit.coerceAtLeast(x - radius)
+            val xEndExclusive = (upperLimit.coerceAtMost(x + radius)) + 1
+            var x2 = xStart
+            while (x2 < xEndExclusive) {
+                val j = rowBase + x2
+                val prev = intermediate[j]
+                if (prev == 0.0f) {
+                    nonZeroIntermediate[nonZeroIntermediateCount++] = j
                 }
+                intermediate[j] = prev + value * kernel[x2 - x + radius]
+                x2 += 1
             }
+            i += 1
         }
+        nonZeroIntermediateCountOut(nonZeroIntermediateCount)
 
-        val outputGrid = Array(dim) { DoubleArray(dim) }
-        for (x in lowerLimit..upperLimit) {
-            for (y in 0 until dimOld) {
-                val value = intermediate[x][y]
-                if (value == 0.0) continue
-                val yUpperLimit = (upperLimit.coerceAtMost(y + radius)) + 1
-                val initial = lowerLimit.coerceAtLeast(y - radius)
-                for (y2 in initial until yUpperLimit) {
-                    outputGrid[x - radius][y2 - radius] += value * kernel[y2 - (y - radius)]
-                }
+        // Vertical spread into `output` (tileSize x tileSize, row-major).
+        i = 0
+        while (i < nonZeroIntermediateCount) {
+            val idx = nonZeroIntermediate[i]
+            val y = idx / gridDim
+            val x = idx - y * gridDim
+            val value = intermediate[idx]
+            val yStart = lowerLimit.coerceAtLeast(y - radius)
+            val yEndExclusive = (upperLimit.coerceAtMost(y + radius)) + 1
+            val xOut = x - radius
+            var y2 = yStart
+            while (y2 < yEndExclusive) {
+                output[(y2 - radius) * tileSize + xOut] += value * kernel[y2 - y + radius]
+                y2 += 1
             }
+            i += 1
         }
-        return outputGrid
     }
 
-    private fun colorize(
-        grid: Array<DoubleArray>,
+    private fun colorizeToColors(
+        input: FloatArray,
+        colors: IntArray,
         colorMap: IntArray,
         max: Double,
-    ): Bitmap {
-        val maxColor = colorMap[colorMap.size - 1]
-        val colorMapScaling = (colorMap.size - 1) / max
-        val dim = grid.size
-        val colors = IntArray(dim * dim)
-        for (i in 0 until dim) {
-            for (j in 0 until dim) {
-                val value = grid[j][i]
-                val index = i * dim + j
-                if (value != 0.0) {
-                    val colorIndex = (value * colorMapScaling).toInt()
-                    colors[index] =
-                        if (colorIndex < colorMap.size) {
-                            colorMap[colorIndex]
-                        } else {
-                            maxColor
-                        }
-                } else {
-                    colors[index] = Color.TRANSPARENT
+    ) {
+        val lastIndex = colorMap.size - 1
+        val maxColor = colorMap[lastIndex]
+        val scaling = (lastIndex.toFloat() / max.toFloat())
+        var i = 0
+        val n = input.size
+        while (i < n) {
+            val value = input[i]
+            if (value == 0.0f) {
+                colors[i] = Color.TRANSPARENT
+            } else {
+                val colorIndex = (value * scaling).toInt()
+                colors[i] = if (colorIndex <= lastIndex) colorMap[colorIndex] else maxColor
+            }
+            i += 1
+        }
+    }
+
+    private fun encodePngFromIntensity(
+        intensity: FloatArray,
+        colorMap: IntArray,
+        maxIntensity: Double,
+        width: Int,
+        height: Int,
+        buffers: PngBuffers,
+        compressionLevel: Int,
+    ): ByteArray {
+        buffers.ensureRow(width)
+        buffers.ensureOutCapacity(width, height)
+        buffers.out.reset()
+
+        val out = buffers.out
+        writePngSignature(out)
+        writeIhdr(buffers.ihdr, width, height)
+        val crc32 = buffers.crc32
+        writePngChunk(out, PNG_IHDR, buffers.ihdr, 0, buffers.ihdr.size, crc32)
+
+        // Stream zlib output directly into a single IDAT chunk.
+        val idatLenPos = out.position()
+        out.writeInt32BE(0) // placeholder length
+        out.writeBytes(PNG_IDAT)
+        crc32.reset()
+        crc32.update(PNG_IDAT)
+        val idatDataStart = out.position()
+
+        val row = buffers.row
+        val lastIndex = colorMap.size - 1
+        val maxColor = colorMap[lastIndex]
+        val scaling = (lastIndex.toFloat() / maxIntensity.toFloat())
+
+        var srcIndex = 0
+        if (compressionLevel == 0) {
+            // Bypass Deflater; write a zlib stream with stored (uncompressed) DEFLATE blocks.
+            val adler32 = buffers.adler32
+            adler32.reset()
+            writeIdatData(out, crc32, ZLIB_HEADER_NO_COMPRESSION, 0, ZLIB_HEADER_NO_COMPRESSION.size)
+            for (y in 0 until height) {
+                val rowLen = fillRowRgba(row, intensity, colorMap, maxColor, scaling, srcIndex, width)
+                srcIndex += width
+                adler32.update(row, 0, rowLen)
+                writeZlibStoredBlock(out, crc32, buffers.zlibBlockHeader, row, 0, rowLen)
+            }
+            // Final empty block with BFINAL=1 and Adler32 checksum.
+            writeIdatData(out, crc32, ZLIB_FINAL_EMPTY_BLOCK, 0, ZLIB_FINAL_EMPTY_BLOCK.size)
+            writeInt32BE(buffers.adlerBuf, 0, adler32.value.toInt())
+            writeIdatData(out, crc32, buffers.adlerBuf, 0, 4)
+        } else {
+            val deflater = buffers.deflater
+            deflater.reset()
+            deflater.setLevel(compressionLevel.coerceIn(0, 9))
+            for (y in 0 until height) {
+                val rowLen = fillRowRgba(row, intensity, colorMap, maxColor, scaling, srcIndex, width)
+                srcIndex += width
+                deflater.setInput(row, 0, rowLen)
+                while (!deflater.needsInput()) {
+                    val n = deflater.deflate(buffers.deflateBuf)
+                    if (n > 0) {
+                        writeIdatData(out, crc32, buffers.deflateBuf, 0, n)
+                    }
+                }
+            }
+            deflater.finish()
+            while (!deflater.finished()) {
+                val n = deflater.deflate(buffers.deflateBuf)
+                if (n > 0) {
+                    writeIdatData(out, crc32, buffers.deflateBuf, 0, n)
                 }
             }
         }
-        val bitmap = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888)
-        bitmap.setPixels(colors, 0, dim, 0, 0, dim, dim)
-        return bitmap
+
+        val idatLen = out.position() - idatDataStart
+        out.setInt32BE(idatLenPos, idatLen)
+        out.writeInt32BE(crc32.value.toInt())
+
+        writePngChunk(out, PNG_IEND, EMPTY_BYTES, 0, 0, crc32)
+        return out.toByteArray()
+    }
+
+    private fun fillRowRgba(
+        row: ByteArray,
+        intensity: FloatArray,
+        colorMap: IntArray,
+        maxColor: Int,
+        scaling: Float,
+        srcIndexStart: Int,
+        width: Int,
+    ): Int {
+        row[0] = 0 // filter type 0 (None)
+        var p = 1
+        val rowEnd = srcIndexStart + width
+        var srcIndex = srcIndexStart
+        val lastIndex = colorMap.size - 1
+        while (srcIndex < rowEnd) {
+            val value = intensity[srcIndex]
+            if (value == 0.0f) {
+                var run = 1
+                while (srcIndex + run < rowEnd && intensity[srcIndex + run] == 0.0f) {
+                    run += 1
+                }
+                val end = p + run * 4
+                Arrays.fill(row, p, end, 0)
+                p = end
+                srcIndex += run
+                continue
+            }
+            val colorIndex = (value * scaling).toInt()
+            val c = if (colorIndex <= lastIndex) colorMap[colorIndex] else maxColor
+            row[p++] = ((c ushr 16) and 0xff).toByte() // r
+            row[p++] = ((c ushr 8) and 0xff).toByte() // g
+            row[p++] = (c and 0xff).toByte() // b
+            row[p++] = ((c ushr 24) and 0xff).toByte() // a
+            srcIndex += 1
+        }
+        return p
+    }
+
+    private fun writeIdatData(
+        out: ByteArrayBuilder,
+        crc32: CRC32,
+        data: ByteArray,
+        offset: Int,
+        len: Int,
+    ) {
+        if (len <= 0) return
+        out.writeBytes(data, offset, len)
+        crc32.update(data, offset, len)
+    }
+
+    private fun writeZlibStoredBlock(
+        out: ByteArrayBuilder,
+        crc32: CRC32,
+        header: ByteArray,
+        data: ByteArray,
+        offset: Int,
+        len: Int,
+    ) {
+        // One stored (uncompressed) DEFLATE block. This is valid as long as len <= 65535.
+        val safeLen = len.coerceIn(0, 65535)
+        header[0] = 0x00 // BFINAL=0, BTYPE=00
+        header[1] = (safeLen and 0xff).toByte()
+        header[2] = ((safeLen ushr 8) and 0xff).toByte()
+        val nlen = safeLen.inv() and 0xFFFF
+        header[3] = (nlen and 0xff).toByte()
+        header[4] = ((nlen ushr 8) and 0xff).toByte()
+        writeIdatData(out, crc32, header, 0, 5)
+        writeIdatData(out, crc32, data, offset, safeLen)
     }
 
     private fun buildColorMap(gradient: HeatmapGradient): IntArray {
@@ -566,14 +936,23 @@ class HeatmapTileRenderer(
 
     private data class TileState(
         val points: List<WeightedPoint>,
+        val index: PointIndex?,
         val bounds: Bounds?,
         val radiusPx: Int,
         val colorMap: IntArray,
         val maxIntensities: DoubleArray,
     )
 
+    private data class PointIndex(
+        val gridSize: Int,
+        val heads: IntArray,
+        val next: IntArray,
+    )
+
     companion object {
-        const val DEFAULT_TILE_SIZE = 512
+        // 256 is the de-facto standard tile size across map SDKs; some (e.g. ArcGIS WebTiledLayer)
+        // behave inconsistently when given 512 here, which can lead to mismatched (z,x,y) requests.
+        const val DEFAULT_TILE_SIZE = 256
         private const val DEFAULT_CACHE_SIZE_KB = 8 * 1024
         private const val DEFAULT_RADIUS_PX = 20
         private const val DEFAULT_INTENSITY = 1.0
@@ -586,13 +965,367 @@ class HeatmapTileRenderer(
         private const val DEFAULT_MAX_CONCURRENT_RENDERS = 2
         private const val MAX_MAX_CONCURRENT_RENDERS = 8
         private const val MAX_RENDER_QUEUE_SIZE = 2048
+        private const val DEFAULT_INDEX_GRID_SIZE = 128
+        const val DEFAULT_PNG_COMPRESSION_LEVEL = 1
+        private const val INDEX_BUILD_THRESHOLD = 1024
+        private const val CAMERA_ZOOM_KEY_SCALE = 4
+        private const val TAG = "HeatmapTileRenderer"
+        private const val SLOW_TILE_LOG_THRESHOLD_MS = 250.0
+        private const val PNG_COMPLEX_TILE_POINT_THRESHOLD = 128
+        private const val PNG_COMPLEX_TILE_RADIUS_THRESHOLD_PX = 8
+        private val PNG_SIGNATURE =
+            byteArrayOf(
+                0x89.toByte(),
+                0x50,
+                0x4E,
+                0x47,
+                0x0D,
+                0x0A,
+                0x1A,
+                0x0A,
+            )
+        private val PNG_IHDR = byteArrayOf(0x49, 0x48, 0x44, 0x52) // IHDR
+        private val PNG_IDAT = byteArrayOf(0x49, 0x44, 0x41, 0x54) // IDAT
+        private val PNG_IEND = byteArrayOf(0x49, 0x45, 0x4E, 0x44) // IEND
+        private val ZLIB_HEADER_NO_COMPRESSION = byteArrayOf(0x78.toByte(), 0x01)
+        private val ZLIB_FINAL_EMPTY_BLOCK = byteArrayOf(0x01, 0x00, 0x00, 0xFF.toByte(), 0xFF.toByte())
+        private val EMPTY_BYTES = ByteArray(0)
     }
 
     private data class RenderJob(
         val key: String,
         val epoch: Long,
+        val enqueuedAtNs: Long,
         val request: TileRequest,
         val state: TileState,
         val future: CompletableFuture<ByteArray?>,
     )
+
+    private data class XRange(
+        val min: Double,
+        val max: Double,
+        val offset: Double,
+    )
+
+    private fun buildTileXRanges(
+        minX: Double,
+        maxX: Double,
+    ): List<XRange> {
+        if (minX <= 0.0 && maxX >= WORLD_WIDTH) {
+            return listOf(XRange(min = 0.0, max = WORLD_WIDTH, offset = 0.0))
+        }
+        if (minX < 0.0) {
+            return listOf(
+                XRange(min = 0.0, max = maxX, offset = 0.0),
+                XRange(min = minX + WORLD_WIDTH, max = WORLD_WIDTH, offset = -WORLD_WIDTH),
+            )
+        }
+        if (maxX > WORLD_WIDTH) {
+            return listOf(
+                XRange(min = minX, max = WORLD_WIDTH, offset = 0.0),
+                XRange(min = 0.0, max = maxX - WORLD_WIDTH, offset = WORLD_WIDTH),
+            )
+        }
+        return listOf(XRange(min = minX, max = maxX, offset = 0.0))
+    }
+
+    private fun buildPointIndex(points: List<WeightedPoint>): PointIndex {
+        val gridSize = DEFAULT_INDEX_GRID_SIZE
+        val heads = IntArray(gridSize * gridSize) { -1 }
+        val next = IntArray(points.size) { -1 }
+        for (i in points.indices) {
+            val p = points[i]
+            val cx = (p.x * gridSize).toInt().coerceIn(0, gridSize - 1)
+            val cy = (p.y * gridSize).toInt().coerceIn(0, gridSize - 1)
+            val idx = cy * gridSize + cx
+            next[i] = heads[idx]
+            heads[idx] = i
+        }
+        return PointIndex(gridSize = gridSize, heads = heads, next = next)
+    }
+
+    private class RenderBuffers {
+        var gridDim: Int = 0
+        private var gridDimCapacity: Int = 0
+        var tileSize: Int = 0
+        var intensity: FloatArray = FloatArray(0)
+        var intermediate: FloatArray = FloatArray(0)
+        var output: FloatArray = FloatArray(0)
+        var colors: IntArray = IntArray(0)
+        var png: PngBuffers = PngBuffers()
+        var nonZeroIntensity: IntArray = IntArray(0)
+        var nonZeroIntermediate: IntArray = IntArray(0)
+        var nonZeroIntensityCount: Int = 0
+        var nonZeroIntermediateCount: Int = 0
+
+        fun ensure(
+            gridDim: Int,
+            tileSize: Int,
+        ) {
+            this.gridDim = gridDim
+            if (gridDimCapacity < gridDim) {
+                gridDimCapacity = gridDim
+                this.gridDim = gridDim
+                intensity = FloatArray(gridDimCapacity * gridDimCapacity)
+                intermediate = FloatArray(gridDimCapacity * gridDimCapacity)
+                nonZeroIntensity = IntArray(gridDimCapacity * gridDimCapacity)
+                nonZeroIntermediate = IntArray(gridDimCapacity * gridDimCapacity)
+            }
+            if (this.tileSize != tileSize) {
+                this.tileSize = tileSize
+                output = FloatArray(tileSize * tileSize)
+                colors = IntArray(tileSize * tileSize)
+            }
+        }
+    }
+
+    private class ByteArrayBuilder(initialCapacity: Int) {
+        private var buf: ByteArray = ByteArray(initialCapacity.coerceAtLeast(16))
+        private var count: Int = 0
+
+        fun position(): Int = count
+
+        fun reset() {
+            count = 0
+        }
+
+        fun ensureCapacity(minCapacity: Int) {
+            if (buf.size >= minCapacity) return
+            var newCap = buf.size
+            while (newCap < minCapacity) {
+                newCap = (newCap * 2).coerceAtLeast(16)
+            }
+            buf = buf.copyOf(newCap)
+        }
+
+        fun setInt32BE(offset: Int, value: Int) {
+            if (offset < 0 || offset + 4 > count) {
+                throw IndexOutOfBoundsException("offset=$offset count=$count")
+            }
+            buf[offset] = ((value ushr 24) and 0xff).toByte()
+            buf[offset + 1] = ((value ushr 16) and 0xff).toByte()
+            buf[offset + 2] = ((value ushr 8) and 0xff).toByte()
+            buf[offset + 3] = (value and 0xff).toByte()
+        }
+
+        fun writeByte(value: Int) {
+            ensureCapacity(count + 1)
+            buf[count++] = value.toByte()
+        }
+
+        fun writeInt32BE(value: Int) {
+            ensureCapacity(count + 4)
+            buf[count++] = ((value ushr 24) and 0xff).toByte()
+            buf[count++] = ((value ushr 16) and 0xff).toByte()
+            buf[count++] = ((value ushr 8) and 0xff).toByte()
+            buf[count++] = (value and 0xff).toByte()
+        }
+
+        fun writeBytes(bytes: ByteArray) {
+            writeBytes(bytes, 0, bytes.size)
+        }
+
+        fun writeBytes(bytes: ByteArray, offset: Int, len: Int) {
+            if (len <= 0) return
+            ensureCapacity(count + len)
+            System.arraycopy(bytes, offset, buf, count, len)
+            count += len
+        }
+
+        fun toByteArray(): ByteArray = buf.copyOf(count)
+    }
+
+    private class PngBuffers {
+        var row: ByteArray = ByteArray(0)
+        var zlibBlockHeader: ByteArray = ByteArray(5)
+        var adlerBuf: ByteArray = ByteArray(4)
+        var deflateBuf: ByteArray = ByteArray(128 * 1024)
+        var deflater: Deflater = Deflater(DEFAULT_PNG_COMPRESSION_LEVEL)
+        var crc32: CRC32 = CRC32()
+        var adler32: Adler32 = Adler32()
+        var ihdr: ByteArray = ByteArray(13)
+        var out: ByteArrayBuilder = ByteArrayBuilder(512 * 1024)
+
+        fun ensureRow(width: Int) {
+            val needed = 1 + width * 4
+            if (row.size != needed) {
+                row = ByteArray(needed)
+            }
+        }
+
+        fun ensureOutCapacity(width: Int, height: Int) {
+            // Rough estimate: signature + IHDR/IEND overhead + zlib stream ~ raw bytes (level 0).
+            val raw = height * (1 + width * 4)
+            val estimated = 8 + 64 + raw + raw / 64
+            out.ensureCapacity(estimated)
+        }
+    }
+
+    private fun encodePngRgba(
+        colors: IntArray,
+        width: Int,
+        height: Int,
+        buffers: PngBuffers,
+        compressionLevel: Int,
+    ): ByteArray {
+        buffers.ensureRow(width)
+        buffers.ensureOutCapacity(width, height)
+        buffers.out.reset()
+
+        val deflater = buffers.deflater
+        deflater.reset()
+        deflater.setLevel(compressionLevel.coerceIn(0, 9))
+
+        val out = buffers.out
+        writePngSignature(out)
+        writeIhdr(buffers.ihdr, width, height)
+        val crc32 = buffers.crc32
+        writePngChunk(out, PNG_IHDR, buffers.ihdr, 0, buffers.ihdr.size, crc32)
+
+        // Stream zlib output directly into a single IDAT chunk to avoid large intermediate buffers/copies.
+        val idatLenPos = out.position()
+        out.writeInt32BE(0) // placeholder length
+        out.writeBytes(PNG_IDAT)
+        crc32.reset()
+        crc32.update(PNG_IDAT)
+        val idatDataStart = out.position()
+
+        var srcIndex = 0
+        for (y in 0 until height) {
+            val row = buffers.row
+            row[0] = 0 // filter type 0 (None)
+            var p = 1
+            val rowEnd = srcIndex + width
+            while (srcIndex < rowEnd) {
+                val c = colors[srcIndex]
+                val a = (c ushr 24) and 0xff
+                val r = (c ushr 16) and 0xff
+                val g = (c ushr 8) and 0xff
+                val b = c and 0xff
+                row[p++] = r.toByte()
+                row[p++] = g.toByte()
+                row[p++] = b.toByte()
+                row[p++] = a.toByte()
+                srcIndex += 1
+            }
+            deflater.setInput(row, 0, p)
+            while (!deflater.needsInput()) {
+                val n = deflater.deflate(buffers.deflateBuf)
+                if (n > 0) {
+                    out.writeBytes(buffers.deflateBuf, 0, n)
+                    crc32.update(buffers.deflateBuf, 0, n)
+                }
+            }
+        }
+        deflater.finish()
+        while (!deflater.finished()) {
+            val n = deflater.deflate(buffers.deflateBuf)
+            if (n > 0) {
+                out.writeBytes(buffers.deflateBuf, 0, n)
+                crc32.update(buffers.deflateBuf, 0, n)
+            }
+        }
+
+        val idatLen = out.position() - idatDataStart
+        out.setInt32BE(idatLenPos, idatLen)
+        out.writeInt32BE(crc32.value.toInt())
+
+        writePngChunk(out, PNG_IEND, EMPTY_BYTES, 0, 0, crc32)
+        return out.toByteArray()
+    }
+
+    private fun writePngSignature(out: ByteArrayBuilder) {
+        out.writeBytes(PNG_SIGNATURE)
+    }
+
+    private fun writeIhdr(
+        out: ByteArray,
+        width: Int,
+        height: Int,
+    ) {
+        writeInt32BE(out, 0, width)
+        writeInt32BE(out, 4, height)
+        out[8] = 8 // bit depth
+        out[9] = 6 // color type: RGBA
+        out[10] = 0 // compression method
+        out[11] = 0 // filter method
+        out[12] = 0 // interlace method
+    }
+
+    private fun writePngChunk(
+        out: ByteArrayBuilder,
+        type: ByteArray,
+        data: ByteArray,
+        offset: Int,
+        len: Int,
+        crc32: CRC32,
+    ) {
+        out.writeInt32BE(len)
+        out.writeBytes(type)
+        if (len > 0) {
+            out.writeBytes(data, offset, len)
+        }
+        crc32.reset()
+        crc32.update(type)
+        if (len > 0) {
+            crc32.update(data, offset, len)
+        }
+        out.writeInt32BE(crc32.value.toInt())
+    }
+
+    private fun writeInt32BE(buf: ByteArray, offset: Int, value: Int) {
+        buf[offset] = ((value ushr 24) and 0xff).toByte()
+        buf[offset + 1] = ((value ushr 16) and 0xff).toByte()
+        buf[offset + 2] = ((value ushr 8) and 0xff).toByte()
+        buf[offset + 3] = (value and 0xff).toByte()
+    }
+
+    private val threadLocalBuffers = ThreadLocal<RenderBuffers>()
+
+    private class PhaseTimings {
+        var effectiveZoom: Double = 0.0
+        var radius: Int = 0
+        var gridDim: Int = 0
+        var setupMs: Double = 0.0
+        var binMs: Double = 0.0
+        var convolveMs: Double = 0.0
+        var colorizeMs: Double = 0.0
+        var pngMs: Double = 0.0
+        var pngLevel: Int = 0
+
+        fun reset() {
+            effectiveZoom = 0.0
+            radius = 0
+            gridDim = 0
+            setupMs = 0.0
+            binMs = 0.0
+            convolveMs = 0.0
+            colorizeMs = 0.0
+            pngMs = 0.0
+            pngLevel = 0
+        }
+    }
+
+    private val threadLocalPhaseTimings = ThreadLocal<PhaseTimings>()
+
+    private fun phaseTimings(): PhaseTimings {
+        val existing = threadLocalPhaseTimings.get()
+        if (existing != null) return existing
+        val created = PhaseTimings()
+        threadLocalPhaseTimings.set(created)
+        return created
+    }
+
+    private fun msSince(startNs: Long): Double {
+        val ms = (System.nanoTime() - startNs) / 1_000_000.0
+        return (ms * 10.0).roundToInt() / 10.0
+    }
+
+    private fun buffers(): RenderBuffers {
+        val existing = threadLocalBuffers.get()
+        if (existing != null) return existing
+        val created = RenderBuffers()
+        threadLocalBuffers.set(created)
+        return created
+    }
 }

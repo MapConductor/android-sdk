@@ -18,6 +18,8 @@ import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.settings.Settings
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 @Composable
@@ -42,6 +44,11 @@ fun MapViewScope.HeatmapOverlay(
     gradient: HeatmapGradient = HeatmapGradient.DEFAULT,
     maxIntensity: Double? = null,
     weightProvider: (HeatmapPointState) -> Double = { state -> state.weight },
+    tileSize: Int = HeatmapTileRenderer.DEFAULT_TILE_SIZE,
+    pngCompressionLevel: Int = HeatmapTileRenderer.DEFAULT_PNG_COMPRESSION_LEVEL,
+    adaptivePngCompression: Boolean = true,
+    debugLogger: ((String) -> Unit)? = null,
+    disableTileServerCache: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val pointCollector =
@@ -52,8 +59,26 @@ fun MapViewScope.HeatmapOverlay(
             )
         }
     val groupId = remember { UUID.randomUUID().toString() }
-    val tileServer = remember { TileServerRegistry.get() }
-    val renderer = remember { HeatmapTileRenderer() }
+    val tileServer =
+        remember(disableTileServerCache) {
+            TileServerRegistry.get(forceNoStoreCache = disableTileServerCache)
+        }
+    val renderer =
+        remember(tileSize, pngCompressionLevel, adaptivePngCompression) {
+            HeatmapTileRenderer(
+                tileSize = tileSize,
+                pngCompressionLevel = pngCompressionLevel,
+                adaptivePngCompression = adaptivePngCompression,
+            )
+        }
+    DisposableEffect(renderer, debugLogger) {
+        renderer.debugLogSink = debugLogger
+        onDispose {
+            if (renderer.debugLogSink === debugLogger) {
+                renderer.debugLogSink = null
+            }
+        }
+    }
     val mapController = LocalMapViewController.current
     val cameraController = remember(renderer) { HeatmapCameraController(renderer) }
     var version by remember { mutableStateOf(0L) }
@@ -66,7 +91,7 @@ fun MapViewScope.HeatmapOverlay(
                 id = "heatmap-$groupId",
                 source =
                     RasterLayerSource.UrlTemplate(
-                        template = tileServer.urlTemplate(groupId, version),
+                        template = tileServer.urlTemplate(groupId, version, renderer.tileSize),
                         tileSize = renderer.tileSize,
                         maxZoom = HeatmapDefaults.DEFAULT_MAX_ZOOM,
                         scheme = TileScheme.XYZ,
@@ -123,25 +148,29 @@ fun MapViewScope.HeatmapOverlay(
             }
         if (heatmapPoints.isEmpty()) {
             hasRenderedOnce = false
+            withContext(Dispatchers.Default) {
+                renderer.update(
+                    points = emptyList(),
+                    radiusPx = radiusPx,
+                    gradient = gradient,
+                    maxIntensity = maxIntensity,
+                )
+            }
+            return@LaunchedEffect
+        }
+        withContext(Dispatchers.Default) {
             renderer.update(
-                points = emptyList(),
+                points = heatmapPoints,
                 radiusPx = radiusPx,
                 gradient = gradient,
                 maxIntensity = maxIntensity,
             )
-            return@LaunchedEffect
         }
-        renderer.update(
-            points = heatmapPoints,
-            radiusPx = radiusPx,
-            gradient = gradient,
-            maxIntensity = maxIntensity,
-        )
         hasRenderedOnce = true
         version += 1
         rasterLayerState.source =
             RasterLayerSource.UrlTemplate(
-                template = tileServer.urlTemplate(groupId, version),
+                template = tileServer.urlTemplate(groupId, version, renderer.tileSize),
                 tileSize = renderer.tileSize,
                 maxZoom = HeatmapDefaults.DEFAULT_MAX_ZOOM,
                 scheme = TileScheme.XYZ,
