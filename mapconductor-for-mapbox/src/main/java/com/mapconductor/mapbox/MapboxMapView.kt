@@ -25,6 +25,9 @@ import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.tileserver.TileServerRegistry
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageController
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageOverlayRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
@@ -142,6 +145,7 @@ fun MapboxMapView(
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
+            val groundImageController = getGroundImageController(holder)
             val circleController = getCircleController(holder)
             val rasterLayerController = getRasterLayerController(holder)
 
@@ -152,6 +156,7 @@ fun MapboxMapView(
                 markerController = markerController,
                 polylineController = polylineController,
                 polygonController = polygonController,
+                groundImageController = groundImageController,
                 circleController = circleController,
                 rasterLayerController = rasterLayerController,
             ).also { controller ->
@@ -357,6 +362,16 @@ internal fun getRasterLayerController(holder: MapboxMapViewHolder): MapboxRaster
     return MapboxRasterLayerController(
         renderer = renderer,
     )
+}
+
+internal fun getGroundImageController(holder: MapboxMapViewHolder): MapboxGroundImageController {
+    val tileServer = TileServerRegistry.get()
+    val renderer =
+        MapboxGroundImageOverlayRenderer(
+            holder = holder,
+            tileServer = tileServer,
+        )
+    return MapboxGroundImageController(renderer = renderer)
 }
 
 internal fun Context.findActivity(): Activity? =

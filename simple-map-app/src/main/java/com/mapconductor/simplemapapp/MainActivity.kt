@@ -34,6 +34,8 @@ import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.mapbox.MapboxMapView
+import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
@@ -70,20 +72,19 @@ fun BasicGroundImageExample(
     modifier: Modifier = Modifier,
 ) {
     val mapViewState =
-        rememberMapLibreMapViewState(
+        rememberMapboxMapViewState(
             cameraPosition =
                 MapCameraPosition(
                     position = GeoPoint(51.511649,-0.100761),
                     zoom = 12.0,
                 ),
-            mapDesign = MapLibreDesign.OsmBright,
         )
 
     val bounds = GeoRectBounds(
         southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
         northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
     )
-    MapLibreMapView(
+    MapboxMapView(
         modifier = modifier,
         state = mapViewState,
     ) {
