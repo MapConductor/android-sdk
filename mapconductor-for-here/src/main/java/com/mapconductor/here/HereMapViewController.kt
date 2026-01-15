@@ -50,6 +50,7 @@ import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.raster.HereRasterLayerController
 import com.mapconductor.marker.clustering.MarkerRenderingSupport
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,6 +84,8 @@ class HereMapViewController(
     private var markerDragEndListener: OnMarkerEventHandler? = null
     private var markerAnimateStartListener: OnMarkerEventHandler? = null
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
+    private var lastRequestedCameraPosition: MapCameraPosition? = null
+    private val cameraRequestGeneration = AtomicLong(0L)
 
     override suspend fun clearOverlays() {
         markerController.clear()
@@ -198,6 +201,8 @@ class HereMapViewController(
     }
 
     override fun moveCamera(position: MapCameraPosition) {
+        lastRequestedCameraPosition = position
+        val request = cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
         val adjustCameraUpdate =
             MapCameraUpdateFactory.lookAt(
@@ -207,12 +212,23 @@ class HereMapViewController(
             )
 
         camera.applyUpdate(adjustCameraUpdate)
+
+        // If this runs before first layout, HERE may ignore it; retry once after layout.
+        if (holder.mapView.width == 0 || holder.mapView.height == 0) {
+            holder.mapView.post {
+                if (cameraRequestGeneration.get() == request) {
+                    camera.applyUpdate(adjustCameraUpdate)
+                }
+            }
+        }
     }
 
     override fun animateCamera(
         position: MapCameraPosition,
         duration: Long,
     ) {
+        lastRequestedCameraPosition = position
+        cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
 
 //      bowFactor > 0: 最初にズームアウト → 到達時にズームイン
@@ -415,6 +431,11 @@ class HereMapViewController(
         coroutine.launch {
             holder.mapView.mapScene.loadScene(scene) {
                 mapDesignType = value
+
+                // loadScene can reset camera; restore the last requested camera to prevent jumping.
+                lastRequestedCameraPosition?.let { cameraPosition ->
+                    holder.mapView.post { moveCamera(cameraPosition) }
+                }
 
                 mapLoadedCallback?.invoke()
                 mapLoadedCallback = null

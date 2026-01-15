@@ -19,6 +19,7 @@ import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
@@ -109,6 +110,8 @@ fun HereMapView(
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
+    // Capture the desired initial camera before any early camera callbacks can overwrite state.
+    val initialCameraPosition = remember(state.id) { state.cameraPosition }
 
     MapViewBase(
         state = state,
@@ -183,20 +186,19 @@ fun HereMapView(
             state.setController(controller)
             controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
 
-            controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
-                if (mapError != null) {
-                    throw Throwable("Loading map failed: mapError: " + mapError.name)
-                }
-            }
             holderRef.value = controller.holder
             controllerRef.value = controller
 
             return@MapViewBase suspendCancellableCoroutine<HereMapViewController> { cont ->
                 val resumed = AtomicBoolean(false)
-                controller.setCameraMoveListener {
-                    if (!resumed.compareAndSet(false, true)) {
-                        return@setCameraMoveListener
+
+                controller.holder.mapView.mapScene.loadScene(state.mapDesignType.getValue()) { mapError ->
+                    if (mapError != null) {
+                        throw Throwable("Loading map failed: mapError: " + mapError.name)
                     }
+
+                    // Start syncing camera only after the scene is ready; otherwise early camera updates
+                    // can overwrite the initial camera (and then we'd re-apply the wrong value).
                     controller.setCameraMoveStartListener {
                         cameraState.value = it
                         state.updateCameraPosition(it)
@@ -212,7 +214,14 @@ fun HereMapView(
                         state.updateCameraPosition(it)
                         onCameraMoveEnd?.invoke(it)
                     }
-                    cont.resume(controller, onCancellation = {})
+
+                    // loadScene can reset the camera; re-apply the desired initial camera afterwards.
+                    controller.holder.mapView.post {
+                        controller.moveCamera(MapCameraPosition.from(initialCameraPosition))
+                        if (resumed.compareAndSet(false, true)) {
+                            cont.resume(controller, onCancellation = {})
+                        }
+                    }
                 }
             }
         },
