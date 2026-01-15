@@ -1,18 +1,21 @@
 package com.mapconductor.googlemaps.polygon
 
 import androidx.compose.ui.graphics.toArgb
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.spherical.createInterpolatePoints
 import com.mapconductor.core.spherical.createLinearInterpolatePoints
+import com.mapconductor.googlemaps.AdaptiveInterpolation
 import com.mapconductor.googlemaps.GoogleMapActualPolygon
 import com.mapconductor.googlemaps.GoogleMapViewHolder
+import com.mapconductor.googlemaps.LatLngInterpolationCache
 import com.mapconductor.googlemaps.toLatLng
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +25,24 @@ class GoogleMapPolygonOverlayRenderer(
     override val holder: GoogleMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolygonOverlayRenderer<GoogleMapActualPolygon>() {
+    private val interpolationCache = LatLngInterpolationCache(maxEntries = 64)
+
+    private fun geodesicPoints(statePoints: List<GeoPointInterface>): List<LatLng> {
+        val camera = holder.map.cameraPosition
+        val maxSegmentLength =
+            AdaptiveInterpolation.maxSegmentLengthMeters(
+                zoom = camera.zoom,
+                latitude = camera.target.latitude,
+            )
+        val key = AdaptiveInterpolation.cacheKey(AdaptiveInterpolation.pointsHash(statePoints), maxSegmentLength)
+        interpolationCache.get(key)?.let { return it }
+
+        val geoPoints = createInterpolatePoints(statePoints, maxSegmentLength = maxSegmentLength)
+        val points = geoPoints.map { GeoPoint.from(it).toLatLng() }
+        interpolationCache.put(key, points)
+        return points
+    }
+
     override suspend fun removePolygon(entity: PolygonEntityInterface<GoogleMapActualPolygon>) {
         coroutine.launch {
             entity.polygon.remove()
@@ -30,12 +51,11 @@ class GoogleMapPolygonOverlayRenderer(
 
     override suspend fun createPolygon(state: PolygonState) =
         withContext(coroutine.coroutineContext) {
-            val geoPoints =
+            val points: List<LatLng> =
                 when (state.geodesic) {
-                    true -> createInterpolatePoints(state.points)
-                    false -> createLinearInterpolatePoints(state.points)
+                    true -> geodesicPoints(state.points)
+                    false -> createLinearInterpolatePoints(state.points).map { GeoPoint.from(it).toLatLng() }
                 }
-            val points = geoPoints.map { GeoPoint.from(it).toLatLng() }
             val options =
                 PolygonOptions()
                     .addAll(points)
@@ -58,14 +78,12 @@ class GoogleMapPolygonOverlayRenderer(
             val polygon = current.polygon
             val finger = current.fingerPrint
             val prevFinger = prev.fingerPrint
-            Log.d("GoogleMaps", "----->$finger, $prevFinger")
             if (finger.points != prevFinger.points || finger.geodesic != prevFinger.geodesic) {
-                val geoPoints =
+                val points: List<LatLng> =
                     when (current.state.geodesic) {
-                        true -> createInterpolatePoints(current.state.points)
-                        false -> createLinearInterpolatePoints(current.state.points)
+                        true -> geodesicPoints(current.state.points)
+                        false -> createLinearInterpolatePoints(current.state.points).map { GeoPoint.from(it).toLatLng() }
                     }
-                val points = geoPoints.map { GeoPoint.from(it).toLatLng() }
                 polygon.points = points
             }
             polygon.strokeWidth = ResourceProvider.dpToPx(current.state.strokeWidth).toFloat()
