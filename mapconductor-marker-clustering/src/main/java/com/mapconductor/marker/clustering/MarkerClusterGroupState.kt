@@ -24,6 +24,7 @@ class MarkerClusterGroupState<ActualMarker>(
     zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
     debugIncludeRenderCount: Boolean = false,
     cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
+    tileSize: Double = MarkerClusterStrategy.DEFAULT_TILE_SIZE,
 ) {
     var clusterRadiusPx by mutableStateOf(clusterRadiusPx)
     var minClusterSize by mutableStateOf(minClusterSize)
@@ -40,4 +41,5 @@ class MarkerClusterGroupState<ActualMarker>(
     var zoomAnimationDurationMillis by mutableStateOf(zoomAnimationDurationMillis)
     var debugIncludeRenderCount by mutableStateOf(debugIncludeRenderCount)
     var cameraIdleDebounceMillis by mutableStateOf(cameraIdleDebounceMillis)
+    var tileSize by mutableStateOf(tileSize)
 }

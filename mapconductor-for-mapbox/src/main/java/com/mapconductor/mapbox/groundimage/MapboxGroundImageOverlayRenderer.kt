@@ -37,7 +37,7 @@ class MapboxGroundImageOverlayRenderer(
             val handle =
                 MapboxGroundImageHandle(
                     routeId = routeId,
-                    version = 0L,
+                    generation = 0L,
                     sourceId = sourceId,
                     layerId = layerId,
                     tileProvider = provider,
@@ -78,7 +78,7 @@ class MapboxGroundImageOverlayRenderer(
                             groundImage.tileProvider
                         }
                     provider.update(current.state, opacity = 1.0f)
-                    groundImage.copy(version = groundImage.version + 1L, tileProvider = provider)
+                    groundImage.copy(generation = groundImage.generation + 1L, tileProvider = provider)
                 } else {
                     groundImage
                 }
@@ -118,7 +118,7 @@ class MapboxGroundImageOverlayRenderer(
     ) {
         val source =
             rasterSource(handle.sourceId) {
-                tiles(listOf(tileServer.urlTemplate(handle.routeId, handle.version, handle.tileProvider.tileSize)))
+                tiles(listOf("${tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize)}?g=${handle.generation}"))
                 tileSize(handle.tileProvider.tileSize.toLong())
                 minzoom(0L)
                 maxzoom(22L)

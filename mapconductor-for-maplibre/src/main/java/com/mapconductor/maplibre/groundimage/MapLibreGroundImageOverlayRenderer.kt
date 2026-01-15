@@ -36,7 +36,7 @@ class MapLibreGroundImageOverlayRenderer(
             val handle =
                 MapLibreGroundImageHandle(
                     routeId = routeId,
-                    version = 0L,
+                    generation = 0L,
                     sourceId = sourceId,
                     layerId = layerId,
                     tileProvider = provider,
@@ -80,7 +80,7 @@ class MapLibreGroundImageOverlayRenderer(
 
             val nextHandle =
                 groundImage.copy(
-                    version = groundImage.version + 1L,
+                    generation = groundImage.generation + 1L,
                     tileProvider = provider,
                 )
             removeSourceAndLayerIfExists(nextHandle)
@@ -103,7 +103,7 @@ class MapLibreGroundImageOverlayRenderer(
     ) {
         val style = holder.map.style ?: return
         val tileSet =
-            TileSet("2.2.0", tileServer.urlTemplate(handle.routeId, handle.version, handle.tileProvider.tileSize)).apply {
+            TileSet("2.2.0", "${tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize)}?g=${handle.generation}").apply {
                 scheme = "xyz"
                 setMinZoom(0f)
                 setMaxZoom(22f)

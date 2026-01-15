@@ -34,7 +34,7 @@ class HereGroundImageOverlayRenderer(
             val handle =
                 createHandle(
                     routeId = routeId,
-                    version = 0L,
+                    generation = 0L,
                     provider = provider,
                 ) ?: return@withContext null
 
@@ -73,13 +73,13 @@ class HereGroundImageOverlayRenderer(
                     groundImage.tileProvider
                 }
             provider.update(current.state, opacity = current.state.opacity)
-            val nextVersion = groundImage.version + 1L
+            val nextGeneration = groundImage.generation + 1L
 
             removeHandle(groundImage)
             val nextHandle =
                 createHandle(
                     routeId = groundImage.routeId,
-                    version = nextVersion,
+                    generation = nextGeneration,
                     provider = provider,
                 ) ?: return@withContext null
 
@@ -100,10 +100,10 @@ class HereGroundImageOverlayRenderer(
 
     private fun createHandle(
         routeId: String,
-        version: Long,
+        generation: Long,
         provider: GroundImageTileProvider,
     ): HereGroundImageHandle? {
-        val urlTemplate = tileServer.urlTemplate(routeId, version, provider.tileSize)
+        val urlTemplate = "${tileServer.urlTemplate(routeId, provider.tileSize)}?g=$generation"
         val urlProvider =
             TileUrlProviderFactory.fromXyzUrlTemplate(urlTemplate)
                 ?: return null
@@ -136,7 +136,7 @@ class HereGroundImageOverlayRenderer(
                     .build()
             HereGroundImageHandle(
                 routeId = routeId,
-                version = version,
+                generation = generation,
                 sourceName = sourceName,
                 layerName = layerName,
                 dataSource = dataSource,

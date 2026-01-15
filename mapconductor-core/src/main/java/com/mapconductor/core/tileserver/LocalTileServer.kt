@@ -39,9 +39,8 @@ class LocalTileServer private constructor(
 
     fun urlTemplate(
         routeId: String,
-        version: Long,
         tileSize: Int,
-    ): String = "$baseUrl/tiles/$routeId/$version/$tileSize/{z}/{x}/{y}.png"
+    ): String = "$baseUrl/tiles/$routeId/$tileSize/{z}/{x}/{y}.png"
 
     fun start() {
         if (running.compareAndSet(false, true)) {
@@ -136,7 +135,7 @@ class LocalTileServer private constructor(
                     if (tookMs >= SLOW_RESPONSE_WARN_MS) {
                         val key = parseTileKey(path)
                         if (key != null) {
-                            Log.w(TAG, "Slow tile response took=${tookMs}ms route=${key.routeId} v=${key.version} tileSize=${key.tileSize} z=${key.z} x=${key.x} y=${key.y} status=$status")
+                            Log.w(TAG, "Slow tile response took=${tookMs}ms route=${key.routeId} tileSize=${key.tileSize} z=${key.z} x=${key.x} y=${key.y} status=$status")
                         } else {
                             Log.w(TAG, "Slow response took=${tookMs}ms status=$status path=${request.path}")
                         }
@@ -203,19 +202,18 @@ class LocalTileServer private constructor(
     private fun resolveTile(path: String): TileResponse? {
         val key = parseTileKey(path) ?: return null
         val routeId = key.routeId
-        val version = key.version
         val z = key.z
         val x = key.x
         val y = key.y
 
         if (loggedRoutes.add(routeId)) {
-            Log.d("LocalTileServer", "First tile request route=$routeId v=$version tileSize=${key.tileSize} z=$z x=$x y=$y")
+            Log.d("LocalTileServer", "First tile request route=$routeId tileSize=${key.tileSize} z=$z x=$x y=$y")
         }
 
         val provider = providers[routeId] ?: return null
         val bytes = provider.renderTile(TileRequest(x = x, y = y, z = z)) ?: return null
         val cacheControl =
-            if (forceNoStoreCache || version == null) {
+            if (forceNoStoreCache) {
                 NO_STORE_CACHE_CONTROL
             } else {
                 LONG_CACHE_CONTROL
@@ -226,14 +224,13 @@ class LocalTileServer private constructor(
     private fun parseTileKey(path: String): TileKey? {
         if (path.isEmpty()) return null
         val segments = path.split("/").filter { it.isNotEmpty() }
-        if (segments.size < 7 || segments[0] != "tiles") return null
+        if (segments.size < 6 || segments[0] != "tiles") return null
         val routeId = segments[1]
-        val version = segments[2].toLongOrNull()
-        val tileSize = segments[3].toIntOrNull() ?: return null
-        val z = segments[4].toIntOrNull() ?: return null
-        val x = segments[5].toIntOrNull() ?: return null
-        val y = segments[6].substringBefore('.').toIntOrNull() ?: return null
-        return TileKey(routeId = routeId, version = version, tileSize = tileSize, z = z, x = x, y = y)
+        val tileSize = segments[2].toIntOrNull() ?: return null
+        val z = segments[3].toIntOrNull() ?: return null
+        val x = segments[4].toIntOrNull() ?: return null
+        val y = segments[5].substringBefore('.').toIntOrNull() ?: return null
+        return TileKey(routeId = routeId, tileSize = tileSize, z = z, x = x, y = y)
     }
 
     private fun cacheHeaders(cacheControl: String): Map<String, String> =
@@ -291,7 +288,6 @@ class LocalTileServer private constructor(
 
     private data class TileKey(
         val routeId: String,
-        val version: Long?,
         val tileSize: Int,
         val z: Int,
         val x: Int,

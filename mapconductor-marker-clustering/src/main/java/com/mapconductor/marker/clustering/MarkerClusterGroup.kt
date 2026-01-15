@@ -29,23 +29,68 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
     state: MarkerClusterGroupState<ActualMarker>,
     content: @Composable () -> Unit,
 ) {
-    MarkerClusterGroup<ActualMarker>(
-        clusterRadiusPx = state.clusterRadiusPx,
-        minClusterSize = state.minClusterSize,
-        expandMargin = state.expandMargin,
-        clusterIconProvider = state.clusterIconProvider,
-        onClusterClick = state.onClusterClick,
-        showClusterRadiusCircle = state.showClusterRadiusCircle,
-        clusterRadiusStrokeColor = state.clusterRadiusStrokeColor,
-        clusterRadiusStrokeWidth = state.clusterRadiusStrokeWidth,
-        clusterRadiusFillColor = state.clusterRadiusFillColor,
-        enableZoomAnimation = state.enableZoomAnimation,
-        enablePanAnimation = state.enablePanAnimation,
-        zoomAnimationDurationMillis = state.zoomAnimationDurationMillis,
-        debugIncludeRenderCount = state.debugIncludeRenderCount,
-        cameraIdleDebounceMillis = state.cameraIdleDebounceMillis,
-        content = content,
-    )
+    val circleCollector = com.mapconductor.core.circle.LocalCircleCollector.current
+    val strategy =
+        remember(
+            state.clusterRadiusPx,
+            state.minClusterSize,
+            state.expandMargin,
+            state.clusterIconProvider,
+            state.onClusterClick,
+            state.enableZoomAnimation,
+            state.enablePanAnimation,
+            state.zoomAnimationDurationMillis,
+            state.debugIncludeRenderCount,
+            state.cameraIdleDebounceMillis,
+            state.tileSize,
+        ) {
+            MarkerClusterStrategy<ActualMarker>(
+                clusterRadiusPx = state.clusterRadiusPx,
+                minClusterSize = state.minClusterSize,
+                expandMargin = state.expandMargin,
+                clusterIconProvider = state.clusterIconProvider,
+                onClusterClick = state.onClusterClick,
+                enableZoomAnimation = state.enableZoomAnimation,
+                enablePanAnimation = state.enablePanAnimation,
+                zoomAnimationDurationMillis = state.zoomAnimationDurationMillis,
+                debugIncludeRenderCount = state.debugIncludeRenderCount,
+                cameraIdleDebounceMillis = state.cameraIdleDebounceMillis,
+                tileSize = state.tileSize,
+            )
+        }
+
+    val debugInfos by strategy.debugInfoFlow.collectAsState()
+    LaunchedEffect(
+        state.showClusterRadiusCircle,
+        state.clusterRadiusStrokeColor,
+        state.clusterRadiusStrokeWidth,
+        state.clusterRadiusFillColor,
+        debugInfos,
+    ) {
+        val prefix = CLUSTER_CIRCLE_ID_PREFIX
+        circleCollector.flow.value.keys.filter { it.startsWith(prefix) }.forEach { id ->
+            circleCollector.remove(id)
+        }
+        if (state.showClusterRadiusCircle) {
+            debugInfos.forEach { info ->
+                val circleState =
+                    CircleState(
+                        center = info.center,
+                        radiusMeters = info.radiusMeters,
+                        clickable = false,
+                        strokeColor = state.clusterRadiusStrokeColor,
+                        strokeWidth = state.clusterRadiusStrokeWidth,
+                        fillColor = state.clusterRadiusFillColor,
+                        id = "$prefix${info.id}",
+                        extra = info,
+                        onClick = null,
+                    )
+                circleCollector.add(circleState)
+            }
+        }
+    }
+
+    MarkerRenderingGroup(strategy = strategy, content = content)
 }
 
 @Composable
@@ -64,68 +109,46 @@ fun <ActualMarker> MapViewScope.MarkerClusterGroup(
     zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
     debugIncludeRenderCount: Boolean = false,
     cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
+    tileSize: Double = MarkerClusterStrategy.DEFAULT_TILE_SIZE,
     content: @Composable () -> Unit,
 ) {
-    val circleCollector = com.mapconductor.core.circle.LocalCircleCollector.current
-    val strategy =
+    val state =
         remember(
             clusterRadiusPx,
             minClusterSize,
             expandMargin,
             clusterIconProvider,
             onClusterClick,
+            showClusterRadiusCircle,
+            clusterRadiusStrokeColor,
+            clusterRadiusStrokeWidth,
+            clusterRadiusFillColor,
             enableZoomAnimation,
             enablePanAnimation,
             zoomAnimationDurationMillis,
             debugIncludeRenderCount,
             cameraIdleDebounceMillis,
+            tileSize,
         ) {
-            MarkerClusterStrategy<ActualMarker>(
+            MarkerClusterGroupState<ActualMarker>(
                 clusterRadiusPx = clusterRadiusPx,
                 minClusterSize = minClusterSize,
                 expandMargin = expandMargin,
                 clusterIconProvider = clusterIconProvider,
                 onClusterClick = onClusterClick,
+                showClusterRadiusCircle = showClusterRadiusCircle,
+                clusterRadiusStrokeColor = clusterRadiusStrokeColor,
+                clusterRadiusStrokeWidth = clusterRadiusStrokeWidth,
+                clusterRadiusFillColor = clusterRadiusFillColor,
                 enableZoomAnimation = enableZoomAnimation,
                 enablePanAnimation = enablePanAnimation,
                 zoomAnimationDurationMillis = zoomAnimationDurationMillis,
                 debugIncludeRenderCount = debugIncludeRenderCount,
                 cameraIdleDebounceMillis = cameraIdleDebounceMillis,
+                tileSize = tileSize,
             )
         }
-
-    val debugInfos by strategy.debugInfoFlow.collectAsState()
-    LaunchedEffect(
-        showClusterRadiusCircle,
-        clusterRadiusStrokeColor,
-        clusterRadiusStrokeWidth,
-        clusterRadiusFillColor,
-        debugInfos,
-    ) {
-        val prefix = CLUSTER_CIRCLE_ID_PREFIX
-        circleCollector.flow.value.keys.filter { it.startsWith(prefix) }.forEach { id ->
-            circleCollector.remove(id)
-        }
-        if (showClusterRadiusCircle) {
-            debugInfos.forEach { info ->
-                val circleState =
-                    CircleState(
-                        center = info.center,
-                        radiusMeters = info.radiusMeters,
-                        clickable = false,
-                        strokeColor = clusterRadiusStrokeColor,
-                        strokeWidth = clusterRadiusStrokeWidth,
-                        fillColor = clusterRadiusFillColor,
-                        id = "$prefix${info.id}",
-                        extra = info,
-                        onClick = null,
-                    )
-                circleCollector.add(circleState)
-            }
-        }
-    }
-
-    MarkerRenderingGroup(strategy = strategy, content = content)
+    MarkerClusterGroup(state = state, content = content)
 }
 
 private const val CLUSTER_CIRCLE_ID_PREFIX = "cluster-circle-"
