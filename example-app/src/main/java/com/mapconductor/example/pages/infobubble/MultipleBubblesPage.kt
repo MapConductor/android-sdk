@@ -1,5 +1,6 @@
 package com.mapconductor.example.pages.infobubble
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -94,7 +95,16 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
                             bubbleColor = Color.White,
                             borderColor = Color.Black,
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier
+                                    .clickable(true,
+                                        onClick = {
+                                            val filtered = selectedMarkers
+                                                .filter { it != markerState.id }
+                                                .toSet()
+                                            selectedMarkers = filtered
+                                        })
+                            ) {
                                 Text(
                                     text = markerState.extra as String,
                                     style = MaterialTheme.typography.bodyMedium,
