@@ -20,6 +20,7 @@ import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
+import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
@@ -106,6 +107,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "map-visibleregion",
                 title = "VisibleRegion",
+            ),
+            SidebarItem(
+                id = "map-camerasync",
+                title = "Camera Sync",
             ),
             SidebarItem(
                 id = "marker-basic",
@@ -208,6 +213,11 @@ fun DemoAppScreen(initPage: String = "map") {
 //                        ZoomCalibrationPage(
 //                            onToggleSidebar = navigationViewModel::toggleSidebar,
 //                        )
+                    }
+                    "map-camerasync" -> {
+                        CameraSyncPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
                     }
                     "map-flyTo" -> {
                         FlyToMapPage(
