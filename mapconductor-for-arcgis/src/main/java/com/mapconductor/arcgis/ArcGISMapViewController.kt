@@ -48,6 +48,7 @@ import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import com.mapconductor.settings.Settings
 import android.view.MotionEvent
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,6 +72,9 @@ class ArcGISMapViewController(
     private var markerDragEndListener: OnMarkerEventHandler? = null
     private var markerAnimateStartListener: OnMarkerEventHandler? = null
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
+    private var lastRequestedCameraPosition: MapCameraPosition? = null
+    private val cameraRequestGeneration = AtomicLong(0L)
+    @Volatile private var pendingCameraRestoreRequest: Long = 0L
 
     init {
         holder.map.graphicsOverlays.clear()
@@ -153,6 +157,24 @@ class ArcGISMapViewController(
         mapLoadedCallback = null
 
         getMapCameraPosition()?.let { mapCameraPosition ->
+            val pending = pendingCameraRestoreRequest
+            val expected = lastRequestedCameraPosition
+            if (pending != 0L &&
+                pending == cameraRequestGeneration.get() &&
+                expected != null &&
+                !expected.equals(mapCameraPosition)
+            ) {
+                pendingCameraRestoreRequest = 0L
+                val dstCameraPosition = toCameraWithView(expected)
+                holder.mapView.post {
+                    if (!holder.mapView.isAttachedToWindow) return@post
+                    if (cameraRequestGeneration.get() != pending) return@post
+                    holder.map.setViewpointCamera(camera = dstCameraPosition)
+                }
+            } else if (pending != 0L && pending == cameraRequestGeneration.get()) {
+                // Consider the request settled once we observe any viewpoint update for it.
+                pendingCameraRestoreRequest = 0L
+            }
             notifyMapCameraPosition(mapCameraPosition)
         }
     }
@@ -390,11 +412,24 @@ class ArcGISMapViewController(
     }
 
     override fun moveCamera(position: MapCameraPosition) {
+        lastRequestedCameraPosition = position
+        val request = cameraRequestGeneration.incrementAndGet()
+        pendingCameraRestoreRequest = request
         val dstCameraPosition = toCameraWithView(position)
 
         holder.map.setViewpointCamera(
             camera = dstCameraPosition,
         )
+
+        // If this runs before first layout, ArcGIS may ignore it; retry once after layout.
+        if (holder.map.width == 0 || holder.map.height == 0) {
+            holder.mapView.post {
+                if (!holder.mapView.isAttachedToWindow) return@post
+                if (cameraRequestGeneration.get() == request) {
+                    holder.map.setViewpointCamera(camera = dstCameraPosition)
+                }
+            }
+        }
         coroutine.launch {
             invokeCameraMoveEndCallback()
         }
@@ -404,6 +439,9 @@ class ArcGISMapViewController(
         position: MapCameraPosition,
         duration: Long,
     ) {
+        lastRequestedCameraPosition = position
+        val request = cameraRequestGeneration.incrementAndGet()
+        pendingCameraRestoreRequest = request
         val dstCameraPosition = toCameraWithView(position)
 
         coroutine.launch {
@@ -497,6 +535,9 @@ class ArcGISMapViewController(
             val baseMap = Basemap(baseMapStyle)
             coroutine.launch {
                 scene.setBasemap(baseMap)
+                // Basemap changes can reset the viewpoint; mark the current request as pending so that
+                // the next viewpointChanged can restore the last requested camera if needed.
+                pendingCameraRestoreRequest = cameraRequestGeneration.get()
             }
         }
     }

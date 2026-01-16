@@ -1,9 +1,11 @@
 package com.mapconductor.arcgis.map
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.arcgismaps.ApiKey
@@ -16,6 +18,7 @@ import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
+import com.mapconductor.arcgis.from
 import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
@@ -25,6 +28,7 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
@@ -40,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.concurrent.atomic.AtomicLong
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
@@ -106,6 +111,8 @@ fun ArcGISMapView(
     owner.lifecycle
     val basemapStyle = remember { ArcGISDesign.toBasemapStyle(state.mapDesignType) }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
+    val controllerRef = remember { Ref<ArcGISMapViewController>() }
+    val controllerGeneration = remember { AtomicLong(0L) }
 
     MapViewBase(
         state = state,
@@ -189,16 +196,7 @@ fun ArcGISMapView(
                 circleController = circleController,
                 rasterLayerController = rasterLayerController,
             ).also { controller ->
-                controller.setCameraMoveStartListener {
-                    cameraState.value = it
-                    state.updateCameraPosition(it)
-                    onCameraMoveStart?.invoke(it)
-                }
-                controller.setCameraMoveListener {
-                    cameraState.value = it
-                    state.updateCameraPosition(it)
-                    onCameraMove?.invoke(it)
-                }
+                controllerRef.value = controller
                 controller.setMapClickListener(onMapClick)
                 controller.setOnCircleClickListener(onCircleClick)
                 controller.setOnPolylineClickListener(onPolylineClick)
@@ -212,18 +210,29 @@ fun ArcGISMapView(
                 controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 state.setController(controller)
 
-                controller.setCameraMoveEndListener {
-                    // Post an initial camera update after layout to compute visibleRegion correctly
-                    holder.mapView.post {
-                        val restoreCameraPosition = state.cameraPosition
-                        controller.moveCamera(restoreCameraPosition)
-                        controller.sendInitialCameraUpdate()
+                // Avoid early ArcGIS viewpoint updates overwriting the desired initial camera.
+                // Apply the initial camera after layout, then start syncing camera changes.
+                val initialCameraPosition = state.cameraPosition
+                val generation = controllerGeneration.incrementAndGet()
+                holder.mapView.post {
+                    if (controllerGeneration.get() != generation) return@post
+                    controller.moveCamera(MapCameraPosition.from(initialCameraPosition))
+                    controller.sendInitialCameraUpdate()
 
-                        controller.setCameraMoveEndListener {
-                            cameraState.value = it
-                            state.updateCameraPosition(it)
-                            onCameraMoveEnd?.invoke(it)
-                        }
+                    controller.setCameraMoveStartListener {
+                        cameraState.value = it
+                        state.updateCameraPosition(it)
+                        onCameraMoveStart?.invoke(it)
+                    }
+                    controller.setCameraMoveListener {
+                        cameraState.value = it
+                        state.updateCameraPosition(it)
+                        onCameraMove?.invoke(it)
+                    }
+                    controller.setCameraMoveEndListener {
+                        cameraState.value = it
+                        state.updateCameraPosition(it)
+                        onCameraMoveEnd?.invoke(it)
                     }
                 }
             }
@@ -232,6 +241,30 @@ fun ArcGISMapView(
             sdkInitialize?.invoke(context) ?: defaultArcGISInitialize(context)
         },
         onMapLoaded = onMapLoaded,
+        customDisposableEffect = { _, holderRef ->
+            DisposableEffect(state.id) {
+                onDispose {
+                    // Invalidate any pending `post { ... }` work that captured older controllers.
+                    controllerGeneration.incrementAndGet()
+                    // Detach callbacks so a disposed controller cannot keep overwriting state.cameraPosition
+                    // during rapid ArcGIS<->other provider switching.
+                    controllerRef.value?.apply {
+                        setCameraMoveStartListener(null)
+                        setCameraMoveListener(null)
+                        setCameraMoveEndListener(null)
+                        setMapClickListener(null)
+                        setMapLongClickListener(null)
+                    }
+                    controllerRef.value = null
+                    state.clearController()
+                    holderRef.value?.mapView?.apply {
+                        onPause(owner)
+                        onStop(owner)
+                        onDestroy(owner)
+                    }
+                }
+            }
+        },
         content = content,
     )
 }

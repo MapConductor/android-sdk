@@ -52,7 +52,10 @@ class ArcGISMapViewState(
     internal fun setController(controller: ArcGISMapViewControllerInterface) {
         this.controller = controller
         controller.setMapDesignType(_mapDesignType)
-        controller.moveCamera(cameraPosition)
+    }
+
+    internal fun clearController() {
+        this.controller = null
     }
 
     internal fun onMapDesignTypeChange(value: ArcGISDesignTypeInterface) {
