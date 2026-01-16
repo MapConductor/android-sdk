@@ -21,6 +21,19 @@ class GoogleMapMarkerRenderer(
         holder = holder,
         coroutine = coroutine,
     ) {
+    private var tiledOverlay: GoogleMapTiledMarkerOverlay? = null
+
+    internal fun getOrCreateTiledOverlay(): GoogleMapTiledMarkerOverlay {
+        val existing = tiledOverlay
+        if (existing != null) return existing
+        return GoogleMapTiledMarkerOverlay(map = this.holder.map).also { tiledOverlay = it }
+    }
+
+    internal fun removeTiledOverlay() {
+        tiledOverlay?.remove()
+        tiledOverlay = null
+    }
+
     override fun setMarkerPosition(
         markerEntity: MarkerEntityInterface<GoogleMapActualMarker>,
         position: GeoPoint,

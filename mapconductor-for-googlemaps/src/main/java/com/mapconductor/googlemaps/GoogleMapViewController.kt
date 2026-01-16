@@ -204,6 +204,12 @@ class GoogleMapViewController(
         backCoroutine.launch {
             val touchPosition = position.toGeoPoint()
 
+            markerController.find(touchPosition)?.let { entity ->
+                if (!entity.state.clickable) return@launch
+                coroutine.launch { markerController.dispatchClick(entity.state) }
+                return@launch
+            }
+
             circleController.find(touchPosition)?.let { entity ->
                 val event =
                     CircleEvent(

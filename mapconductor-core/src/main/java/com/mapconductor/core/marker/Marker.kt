@@ -65,7 +65,7 @@ class MarkerState(
         internalAnimation = animation
     }
 
-    internal fun getAnimation(): MarkerAnimation? = internalAnimation
+    fun getAnimation(): MarkerAnimation? = internalAnimation
 
     private val currentPosition = mutableStateOf(position)
     var position: GeoPointInterface

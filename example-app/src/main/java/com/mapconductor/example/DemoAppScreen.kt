@@ -27,6 +27,7 @@ import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
+import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage
 import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
@@ -39,6 +40,7 @@ import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
 import com.mapconductor.example.ui.theme.AppTheme
+import com.mapconductor.postoffice.PostOffice
 
 @Composable
 fun DemoAppScreen(initPage: String = "map") {
@@ -236,7 +238,7 @@ fun DemoAppScreen(initPage: String = "map") {
                         )
                     }
                     "marker-postoffice" -> {
-                        MarkerClusterMapPage(
+                        PostOfficePage(
                             postOfficeIcon = postOfficeIcon,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )

@@ -12,48 +12,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.here.HereActualMarker
-import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
 
 @Composable
-fun PostOfficeMapPage(
+fun PostOfficePage(
     postOfficeIcon: ImageIcon,
     onToggleSidebar: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
-    val strategies =
-        remember {
-            val google = NativeRemoteSpatialMarkerStrategy<GoogleMapActualMarker>(context)
-            val mapbox =
-                NativeRemoteSpatialMarkerStrategy<MapboxActualMarker>(
-                    context = context,
-                    addOnlyMode = true,
-                )
-            val here = NativeRemoteSpatialMarkerStrategy<HereActualMarker>(context)
-            val arcgis = NativeRemoteSpatialMarkerStrategy<ArcGISActualMarker>(context)
-            val maplibre =
-                NativeRemoteSpatialMarkerStrategy<MapLibreActualMarker>(
-                    context = context,
-                    addOnlyMode = true,
-                )
-            Strategies(
-                google = google,
-                mapbox = mapbox,
-                here = here,
-                arcgis = arcgis,
-                maplibre = maplibre,
-            )
-        }
 
     val viewModel: PostOfficeViewModel =
         viewModel<PostOfficeViewModel>(
@@ -63,7 +34,6 @@ fun PostOfficeMapPage(
                         if (modelClass.isAssignableFrom(PostOfficeViewModel::class.java)) {
                             @Suppress("UNCHECKED_CAST")
                             return PostOfficeViewModel(
-                                strategies = strategies,
                                 postOfficeIcon = postOfficeIcon,
                                 dataLoader = dataLoader,
                             ) as T
@@ -96,7 +66,6 @@ fun PostOfficeMapPage(
             mapViewState?.let { mapViewState ->
                 PostOfficeMapComponent(
                     mapViewState = mapViewState,
-                    renderingStrategy = viewModel.renderingStrategy.value,
                     selectedMarker = selectedMarker,
                     markers = markers,
                     onMapLoaded = viewModel::onMapLoaded,
