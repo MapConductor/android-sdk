@@ -12,6 +12,7 @@ import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.calculateCameraForOrbitParameters
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.fromLongLat
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerEventControllerInterface
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
@@ -29,6 +30,9 @@ import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.groundimage.GroundImageEvent
+import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.VisibleRegion
@@ -59,6 +63,7 @@ class ArcGISMapViewController(
     private val polylineController: ArcGISPolylineOverlayController,
     private val polygonController: ArcGISPolygonOverlayController,
     private val circleController: ArcGISCircleOverlayController,
+    private val groundImageController: ArcGISGroundImageController,
     private val rasterLayerController: ArcGISRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
@@ -87,6 +92,7 @@ class ArcGISMapViewController(
         registerController(polygonController)
         registerController(polylineController)
         registerController(circleController)
+        registerController(groundImageController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultArcGISMarkerEventController(markerController))
     }
@@ -124,6 +130,10 @@ class ArcGISMapViewController(
     override fun hasPolygon(state: PolygonState): Boolean = this.polygonController.polygonManager.hasEntity(state.id)
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
+
+    override fun hasGroundImage(state: GroundImageState): Boolean =
+        this.groundImageController.groundImageManager
+            .hasEntity(state.id)
 
     override fun hasRasterLayer(state: RasterLayerState): Boolean =
         this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
@@ -354,6 +364,16 @@ class ArcGISMapViewController(
             return
         }
 
+        groundImageController.find(touchPosition)?.let { entity ->
+            val event =
+                GroundImageEvent(
+                    state = entity.state,
+                    clicked = touchPosition,
+                )
+            groundImageController.dispatchClick(event)
+            return
+        }
+
         polylineController.findWithClosestPoint(touchPosition)?.let { hitResult ->
             val event =
                 PolylineEvent(
@@ -381,8 +401,10 @@ class ArcGISMapViewController(
 
     override suspend fun clearOverlays() {
         markerController.clear()
+        groundImageController.clear()
         polylineController.clear()
         polygonController.clear()
+        circleController.clear()
         rasterLayerController.clear()
     }
 
@@ -402,6 +424,10 @@ class ArcGISMapViewController(
 
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
 
+    override suspend fun compositionGroundImages(data: List<GroundImageState>) = groundImageController.add(data)
+
+    override suspend fun updateGroundImage(state: GroundImageState) = groundImageController.update(state)
+
     override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
 
     override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
@@ -409,6 +435,11 @@ class ArcGISMapViewController(
     @Deprecated("Use CircleState.onClick instead.")
     override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
         this.circleController.clickListener = listener
+    }
+
+    @Deprecated("Use GroundImageState.onClick instead.")
+    override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
+        this.groundImageController.clickListener = listener
     }
 
     override fun moveCamera(position: MapCameraPosition) {

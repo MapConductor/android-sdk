@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.example.ui.GroundImageCapableMapViewItems
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
