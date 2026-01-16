@@ -36,7 +36,8 @@ class ArcGISGroundImageOverlayRenderer(
             provider.update(state, opacity = 1.0f)
             tileServer.register(routeId, provider)
 
-            val handle = createHandle(routeId = routeId, generation = 0L, provider = provider) ?: return@withContext null
+            val handle = createHandle(routeId = routeId, generation = 0L, cacheKey = tileCacheKey(state), provider = provider)
+                ?: return@withContext null
             val loadResult = handle.layer.load()
             if (loadResult.isFailure) {
                 val error = loadResult.exceptionOrNull()
@@ -85,7 +86,12 @@ class ArcGISGroundImageOverlayRenderer(
 
             val nextGeneration = groundImage.generation + 1L
             val nextHandle =
-                createHandle(routeId = groundImage.routeId, generation = nextGeneration, provider = provider)
+                createHandle(
+                    routeId = groundImage.routeId,
+                    generation = nextGeneration,
+                    cacheKey = tileCacheKey(current.state),
+                    provider = provider,
+                )
                     ?: return@withContext null
             val loadResult = nextHandle.layer.load()
             if (loadResult.isFailure) {
@@ -121,9 +127,10 @@ class ArcGISGroundImageOverlayRenderer(
     private fun createHandle(
         routeId: String,
         generation: Long,
+        cacheKey: String,
         provider: GroundImageTileProvider,
     ): ArcGISGroundImageHandle? {
-        val urlTemplate = "${tileServer.urlTemplate(routeId, provider.tileSize)}?g=$generation"
+        val urlTemplate = tileServer.urlTemplate(routeId, provider.tileSize, cacheKey)
         val template =
             urlTemplate
                 .replace("{z}", "{level}")
@@ -136,6 +143,7 @@ class ArcGISGroundImageOverlayRenderer(
         return ArcGISGroundImageHandle(
             routeId = routeId,
             generation = generation,
+            cacheKey = cacheKey,
             tileProvider = provider,
             layer = layer,
         )
@@ -193,6 +201,17 @@ class ArcGISGroundImageOverlayRenderer(
                     else -> append('_')
                 }
             }
+        }
+
+    private fun tileCacheKey(state: GroundImageState): String =
+        buildString(64) {
+            append(state.bounds.hashCode())
+            append('-')
+            append(state.image.hashCode())
+            append('-')
+            append(state.tileSize.hashCode())
+            append('-')
+            append(state.extra?.hashCode() ?: 0)
         }
 
     companion object {

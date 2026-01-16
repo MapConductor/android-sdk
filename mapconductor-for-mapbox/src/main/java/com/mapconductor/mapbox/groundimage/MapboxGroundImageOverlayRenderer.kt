@@ -38,6 +38,7 @@ class MapboxGroundImageOverlayRenderer(
                 MapboxGroundImageHandle(
                     routeId = routeId,
                     generation = 0L,
+                    cacheKey = tileCacheKey(state),
                     sourceId = sourceId,
                     layerId = layerId,
                     tileProvider = provider,
@@ -78,7 +79,11 @@ class MapboxGroundImageOverlayRenderer(
                             groundImage.tileProvider
                         }
                     provider.update(current.state, opacity = 1.0f)
-                    groundImage.copy(generation = groundImage.generation + 1L, tileProvider = provider)
+                    groundImage.copy(
+                        generation = groundImage.generation + 1L,
+                        cacheKey = tileCacheKey(current.state),
+                        tileProvider = provider,
+                    )
                 } else {
                     groundImage
                 }
@@ -118,7 +123,7 @@ class MapboxGroundImageOverlayRenderer(
     ) {
         val source =
             rasterSource(handle.sourceId) {
-                tiles(listOf("${tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize)}?g=${handle.generation}"))
+                tiles(listOf(tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize, handle.cacheKey)))
                 tileSize(handle.tileProvider.tileSize.toLong())
                 minzoom(0L)
                 maxzoom(22L)
@@ -204,6 +209,17 @@ class MapboxGroundImageOverlayRenderer(
                     else -> append('_')
                 }
             }
+        }
+
+    private fun tileCacheKey(state: GroundImageState): String =
+        buildString(64) {
+            append(state.bounds.hashCode())
+            append('-')
+            append(state.image.hashCode())
+            append('-')
+            append(state.tileSize.hashCode())
+            append('-')
+            append(state.extra?.hashCode() ?: 0)
         }
 
     companion object {

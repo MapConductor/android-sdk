@@ -35,6 +35,7 @@ class HereGroundImageOverlayRenderer(
                 createHandle(
                     routeId = routeId,
                     generation = 0L,
+                    cacheKey = tileCacheKey(state),
                     provider = provider,
                 ) ?: return@withContext null
 
@@ -80,6 +81,7 @@ class HereGroundImageOverlayRenderer(
                 createHandle(
                     routeId = groundImage.routeId,
                     generation = nextGeneration,
+                    cacheKey = tileCacheKey(current.state),
                     provider = provider,
                 ) ?: return@withContext null
 
@@ -101,9 +103,10 @@ class HereGroundImageOverlayRenderer(
     private fun createHandle(
         routeId: String,
         generation: Long,
+        cacheKey: String,
         provider: GroundImageTileProvider,
     ): HereGroundImageHandle? {
-        val urlTemplate = "${tileServer.urlTemplate(routeId, provider.tileSize)}?g=$generation"
+        val urlTemplate = tileServer.urlTemplate(routeId, provider.tileSize, cacheKey)
         val urlProvider =
             TileUrlProviderFactory.fromXyzUrlTemplate(urlTemplate)
                 ?: return null
@@ -137,6 +140,7 @@ class HereGroundImageOverlayRenderer(
             HereGroundImageHandle(
                 routeId = routeId,
                 generation = generation,
+                cacheKey = cacheKey,
                 sourceName = sourceName,
                 layerName = layerName,
                 dataSource = dataSource,
@@ -172,6 +176,8 @@ class HereGroundImageOverlayRenderer(
                 }
             }
         }
+
+    private fun tileCacheKey(state: GroundImageState): String = state.fingerPrint().hashCode().toString()
 
     companion object {
         private val STORAGE_LEVELS: List<Int> = (0..22).toList()
