@@ -28,6 +28,7 @@ import kotlinx.coroutines.withContext
 class GoogleMapMarkerController private constructor(
     override val renderer: GoogleMapMarkerRenderer,
     markerManager: MarkerManager<GoogleMapActualMarker>,
+    private val tilingOptions: GoogleMapMarkerTilingOptions,
 ) : AbstractMarkerController<GoogleMapActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
@@ -38,12 +39,18 @@ class GoogleMapMarkerController private constructor(
     private val tiledBitmapCache = mutableMapOf<Int, Bitmap>()
     private var screenPxPerWorldPx: Double = 1.0
     private var pendingScaleSync: Boolean = false
+    @Volatile
+    private var lastKnownZoom: Double = 0.0
 
     override fun find(position: GeoPointInterface): MarkerEntityInterface<GoogleMapActualMarker>? {
+        return find(position = position, zoom = lastKnownZoom)
+    }
+
+    fun find(
+        position: GeoPointInterface,
+        zoom: Double,
+    ): MarkerEntityInterface<GoogleMapActualMarker>? {
         return markerManager.findNearest(position)?.let { nearest ->
-            val zoom =
-                renderer.holder.map.cameraPosition.zoom
-                    .toDouble()
             val tolerance =
                 Settings.Default.tapTolerance.value
                     .toDouble() * ResourceProvider.getDensity()
@@ -60,7 +67,7 @@ class GoogleMapMarkerController private constructor(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val tilingEnabled = data.size >= TILING_MIN_MARKER_COUNT
+            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
 
             val previousIds = markerManager.allEntities().map { it.state.id }.toMutableSet()
@@ -220,7 +227,8 @@ class GoogleMapMarkerController private constructor(
         if (currentFinger == prevFinger) return
 
         semaphore.withPermit {
-            val tilingEnabled = markerManager.allEntities().size >= TILING_MIN_MARKER_COUNT
+            val tilingEnabled =
+                tilingOptions.enabled && markerManager.allEntities().size >= tilingOptions.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -307,8 +315,9 @@ class GoogleMapMarkerController private constructor(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
-        val zoomInt = floor(mapCameraPosition.zoom).toInt().coerceAtLeast(0)
-        if (tiledMarkerIds.isEmpty()) return
+        lastKnownZoom = mapCameraPosition.zoom
+        val zoomInt = floor(lastKnownZoom).toInt().coerceAtLeast(0)
+        if (!tilingOptions.enabled || tiledMarkerIds.isEmpty()) return
         renderer.coroutine.launch {
             semaphore.withPermit {
                 val scaleChanged = updateScreenPxPerWorldPxAndCheckChange(zoomInt)
@@ -328,11 +337,17 @@ class GoogleMapMarkerController private constructor(
         super.destroy()
     }
 
-    private fun currentTileZoom(): Int = renderer.holder.map.cameraPosition.zoom.toInt().coerceAtLeast(0)
+    private fun currentTileZoom(): Int = floor(lastKnownZoom).toInt().coerceAtLeast(0)
 
     private suspend fun syncTiledOverlay(zoom: Int) {
         if (tiledMarkerIds.isEmpty()) {
             withContext(renderer.coroutine.coroutineContext) { renderer.removeTiledOverlay() }
+            return
+        }
+        if (!tilingOptions.enabled) {
+            withContext(renderer.coroutine.coroutineContext) { renderer.removeTiledOverlay() }
+            tiledMarkerIds.clear()
+            tiledMarkerIconsById.clear()
             return
         }
 
@@ -433,9 +448,10 @@ class GoogleMapMarkerController private constructor(
     }
 
     companion object {
-        private const val TILING_MIN_MARKER_COUNT = 2000
-
-        fun create(holder: GoogleMapViewHolder): GoogleMapMarkerController {
+        fun create(
+            holder: GoogleMapViewHolder,
+            tilingOptions: GoogleMapMarkerTilingOptions = GoogleMapMarkerTilingOptions(),
+        ): GoogleMapMarkerController {
             val markerManager = MarkerManager.defaultManager<GoogleMapActualMarker>()
             val renderer =
                 GoogleMapMarkerRenderer(
@@ -445,7 +461,9 @@ class GoogleMapMarkerController private constructor(
                 GoogleMapMarkerController(
                     renderer = renderer,
                     markerManager = markerManager,
+                    tilingOptions = tilingOptions,
                 )
+            controller.lastKnownZoom = holder.map.cameraPosition.zoom.toDouble()
             return controller
         }
     }

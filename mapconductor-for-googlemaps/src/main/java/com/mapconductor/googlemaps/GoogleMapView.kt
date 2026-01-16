@@ -28,6 +28,7 @@ import com.mapconductor.googlemaps.circle.GoogleMapCircleOverlayRenderer
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageController
 import com.mapconductor.googlemaps.groundimage.GoogleMapGroundImageOverlayRenderer
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerTilingOptions
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonOverlayRenderer
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
@@ -146,6 +147,7 @@ fun GoogleMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
+                    tilingOptions = state.markerTilingOptions,
                 )
             val groundImageController = getGroundImageController(holder)
             val polylineController = getPolylineController(holder)
@@ -297,10 +299,13 @@ private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylin
     return controller
 }
 
-private fun getMarkerController(holder: GoogleMapViewHolder) =
-    GoogleMapMarkerController.create(
-        holder = holder,
-    )
+private fun getMarkerController(
+    holder: GoogleMapViewHolder,
+    tilingOptions: GoogleMapMarkerTilingOptions,
+) = GoogleMapMarkerController.create(
+    holder = holder,
+    tilingOptions = tilingOptions,
+)
 
 private fun getRasterLayerController(holder: GoogleMapViewHolder): GoogleMapRasterLayerController {
     val cacheDir = holder.mapView.context.cacheDir

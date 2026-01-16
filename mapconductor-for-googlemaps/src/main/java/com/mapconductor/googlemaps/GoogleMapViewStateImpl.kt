@@ -11,6 +11,7 @@ import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerTilingOptions
 import java.util.UUID
 import android.os.Bundle
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,12 @@ class GoogleMapViewState(
     cameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewState<GoogleMapDesignType>(),
     GoogleMapViewStateInterface {
+    /**
+     * Marker tiling optimization options for Google Maps.
+     * Set this before the map is created (changing it after initialization currently requires recreating the map).
+     */
+    var markerTilingOptions: GoogleMapMarkerTilingOptions = GoogleMapMarkerTilingOptions()
+
     private var _cameraPosition: MapCameraPosition = cameraPosition
     override val cameraPosition: MapCameraPosition
         get() = _cameraPosition
