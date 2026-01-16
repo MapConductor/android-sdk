@@ -9,7 +9,11 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +23,9 @@ import com.mapconductor.example.toast.ToastHost
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun GroundImageMapPage(
@@ -26,6 +33,10 @@ fun GroundImageMapPage(
     onToggleSidebar: () -> Unit = {},
 ) {
     val viewModel = remember { GroundImageMapPageViewModel(groundImageResources) }
+    val coroutineScope = rememberCoroutineScope()
+    var sliderOpacity by remember { mutableStateOf(viewModel.opacity) }
+    var opacityJob by remember { mutableStateOf<Job?>(null) }
+    val debounceMs = 80L
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -52,11 +63,25 @@ fun GroundImageMapPage(
             title = "GroundImage Example",
         ) {
             Column {
-                Text("opacity: ${"%.2f".format(viewModel.opacity)}", color = Color.Black)
+                Text("opacity: ${"%.2f".format(sliderOpacity)}", color = Color.Black)
                 Slider(
-                    value = viewModel.opacity,
+                    value = sliderOpacity,
                     onValueChange = { newValue ->
-                        viewModel.opacity = newValue
+                        sliderOpacity = newValue
+                        opacityJob?.cancel()
+                        opacityJob =
+                            coroutineScope.launch {
+                                delay(debounceMs)
+                                viewModel.opacity = sliderOpacity
+                            }
+                    },
+                    onValueChangeFinished = {
+                        opacityJob?.cancel()
+                        opacityJob =
+                            coroutineScope.launch {
+                                delay(debounceMs)
+                                viewModel.opacity = sliderOpacity
+                            }
                     },
                     valueRange = 0.0f..1.0f, // スライダー範囲
                     steps = 0,
