@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mapconductor.example.toast.ToastHost
+import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.GroundImageCapableMapViewItems
 import com.mapconductor.example.ui.MessageCard
@@ -28,7 +29,7 @@ fun GroundImageMapPage(
     val viewModel = remember { GroundImageMapPageViewModel(groundImageResources) }
 
     DemoMapPageScaffold(
-        menuItems = GroundImageCapableMapViewItems(viewModel.initCameraPosition),
+        menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
