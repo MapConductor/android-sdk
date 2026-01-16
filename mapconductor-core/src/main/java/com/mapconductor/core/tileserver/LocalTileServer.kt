@@ -42,6 +42,12 @@ class LocalTileServer private constructor(
         tileSize: Int,
     ): String = "$baseUrl/tiles/$routeId/$tileSize/{z}/{x}/{y}.png"
 
+    fun urlTemplate(
+        routeId: String,
+        tileSize: Int,
+        cacheKey: String,
+    ): String = "$baseUrl/tiles/$routeId/$tileSize/$cacheKey/{z}/{x}/{y}.png"
+
     fun start() {
         if (running.compareAndSet(false, true)) {
             acceptThread.isDaemon = true
@@ -227,9 +233,13 @@ class LocalTileServer private constructor(
         if (segments.size < 6 || segments[0] != "tiles") return null
         val routeId = segments[1]
         val tileSize = segments[2].toIntOrNull() ?: return null
-        val z = segments[3].toIntOrNull() ?: return null
-        val x = segments[4].toIntOrNull() ?: return null
-        val y = segments[5].substringBefore('.').toIntOrNull() ?: return null
+        val withCacheKey = segments.size >= 7
+        val zIndex = if (withCacheKey) 4 else 3
+        val xIndex = if (withCacheKey) 5 else 4
+        val yIndex = if (withCacheKey) 6 else 5
+        val z = segments.getOrNull(zIndex)?.toIntOrNull() ?: return null
+        val x = segments.getOrNull(xIndex)?.toIntOrNull() ?: return null
+        val y = segments.getOrNull(yIndex)?.substringBefore('.')?.toIntOrNull() ?: return null
         return TileKey(routeId = routeId, tileSize = tileSize, z = z, x = x, y = y)
     }
 
