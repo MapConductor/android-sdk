@@ -23,6 +23,11 @@ class MarkerState(
     animation: MarkerAnimation? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
+    /**
+     * When true, the marker icon is zoom-scaled by the renderer (tiled overlays, etc).
+     * When false (default), the marker keeps a consistent screen size (no zoom scaling).
+     */
+    autoScalable: Boolean = false,
     onClick: OnMarkerEventHandler? = null,
     onDragStart: OnMarkerEventHandler? = null,
     onDrag: OnMarkerEventHandler? = null,
@@ -52,6 +57,7 @@ class MarkerState(
     var icon by mutableStateOf<MarkerIconInterface?>(icon)
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
+    var autoScalable by mutableStateOf(autoScalable)
     var onClick by mutableStateOf(onClick)
     var onDragStart by mutableStateOf(onDragStart)
     var onDrag by mutableStateOf(onDrag)
@@ -83,6 +89,7 @@ class MarkerState(
         icon: MarkerIconInterface? = this.icon,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
+        autoScalable: Boolean? = this.autoScalable,
         onClick: OnMarkerEventHandler? = this.onClick,
         onDragStart: OnMarkerEventHandler? = this.onDragStart,
         onDrag: OnMarkerEventHandler? = this.onDrag,
@@ -97,6 +104,7 @@ class MarkerState(
             icon = icon,
             clickable = clickable ?: this.clickable,
             draggable = draggable ?: this.draggable,
+            autoScalable = autoScalable ?: this.autoScalable,
             onClick = onClick,
             onDragStart = onDragStart,
             onDrag = onDrag,
@@ -114,6 +122,7 @@ class MarkerState(
         var result = extra?.hashCode() ?: 0
         result = 31 * result + clickable.hashCode()
         result = 31 * result + draggable.hashCode()
+        result = 31 * result + autoScalable.hashCode()
         result = 31 * result + currentPosition.value.latitude.hashCode()
         result = 31 * result + currentPosition.value.longitude.hashCode()
         result = 31 * result + currentPosition.value.altitude.hashCode()
@@ -127,6 +136,7 @@ class MarkerState(
             icon.hashCode(),
             clickable.hashCode(),
             draggable.hashCode(),
+            autoScalable.hashCode(),
             currentPosition.value.latitude.hashCode(),
             currentPosition.value.longitude.hashCode(),
             internalAnimation?.hashCode() ?: 1,
@@ -140,6 +150,7 @@ data class MarkerFingerPrint(
     val icon: Int?,
     val clickable: Int,
     val draggable: Int,
+    val autoScalable: Int,
     val latitude: Int,
     val longitude: Int,
     val animation: Int?,

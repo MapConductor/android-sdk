@@ -33,9 +33,11 @@ import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.R
+import com.mapconductor.example.BuildConfig
 import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import com.mapconductor.googlemaps.marker.GoogleMapMarkerTilingOptions
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereViewState
 import com.mapconductor.here.rememberHereMapViewState
@@ -53,6 +55,28 @@ fun GetGoogleMapViewItem(initCameraPosition: MapCameraPositionInterface): IconIt
             mapDesign = GoogleMapDesign.Normal,
             cameraPosition = initCameraPosition,
         )
+    if (BuildConfig.DEBUG) {
+        googleMapState.markerTilingOptions =
+	            GoogleMapMarkerTilingOptions(
+	                enabled = true,
+	                minMarkerCount = 2000,
+	                debugLogging = true,
+	                tileSize = 512,
+	                fixedMarkerPixelSize = true,
+	                slowOpThresholdMs = 10L,
+	                logSampleRate = 1,
+	                tileSummaryEvery = 10,
+	                markerScaleQuantizationStep = 0.125,
+	                finalTileDownscaleFilter = false,
+	                debugTileOverlay = false,
+                renderScaleOverride = 1,
+                declutterEnabled = false,
+                declutterMaxZoomInt = 7,
+                declutterMaxMarkersPerTile = 8000,
+                declutterIconPx = 16,
+                declutterCellPx = 4,
+            )
+    }
     return IconItem(
         key = "googlemap",
         label = "Google Map",

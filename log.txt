@@ -1,0 +1,70 @@
+2026-01-17 09:38:14.388  6618-6618  MapConductorTiling      com.mapconductor.example             I  enabled=true slowOpThresholdMs=10 logSampleRate=1 tileSummaryEvery=10
+2026-01-17 09:38:14.561  6618-6618  MapConductorTiling      com.mapconductor.example             I  MarkerController.add:total took 34ms | data=0 tilingEnabled=false tiledCount=0 nonTiledAdded=0 updated=0
+2026-01-17 09:38:14.567  6618-6618  MapConductorTiling      com.mapconductor.example             I  ---->zoom=10.0
+2026-01-17 09:38:15.150  6618-6618  MapConductorTiling      com.mapconductor.example             I  MarkerController.add:iterate took 418ms | data=24526 tilingEnabled=true wantsTiled=24526 newTiled=24526 newNonTiled=0 iconToBitmap=24526
+2026-01-17 09:38:15.576  6618-6654  MapConductorTiling      com.mapconductor.example             I  MarkerController.syncTiledOverlay:buildMarkerSnapshot took 410ms | tiledCount=24526
+2026-01-17 09:38:15.993  6618-6654  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 404ms | markers=24526 visible=24526 tiles=625 z=10 tileSize=512
+2026-01-17 09:38:15.993  6618-6654  MapConductorTiling      com.mapconductor.example             I  MarkerController.syncTiledOverlay:buildTileIndex took 408ms | markers=24526 zoom=10
+2026-01-17 09:38:16.129  6618-6654  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 119ms | markers=24526 visible=24526 tiles=1845 z=11 tileSize=512
+2026-01-17 09:38:16.300  6618-6618  MapConductorTiling      com.mapconductor.example             I  MarkerController.syncTiledOverlay:setMarkers(Main) took 62ms | markers=24526 tiles=625 zoom=10
+2026-01-17 09:38:16.305  6618-6618  MapConductorTiling      com.mapconductor.example             I  MarkerController.add:syncTiledOverlay took 1154ms | zoom=10 tiledCount=24526
+2026-01-17 09:38:16.305  6618-6618  MapConductorTiling      com.mapconductor.example             I  MarkerController.add:total took 1573ms | data=24526 tilingEnabled=true tiledCount=24526 nonTiledAdded=0 updated=0
+2026-01-17 09:38:16.734  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 158ms | z=10 x=910 y=403 candidates=2435 drawn=267 compressMs=65 tiles=625
+2026-01-17 09:38:16.816  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 80ms | z=10 x=909 y=404 candidates=2301 drawn=205 compressMs=43 tiles=625
+2026-01-17 09:38:16.837  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 258ms | z=10 x=908 y=403 candidates=2865 drawn=546 compressMs=97 tiles=625
+2026-01-17 09:38:16.933  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 95ms | z=10 x=908 y=402 candidates=2751 drawn=270 compressMs=67 tiles=625
+2026-01-17 09:38:16.939  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 368ms | z=10 x=909 y=403 candidates=3185 drawn=1161 compressMs=100 tiles=625
+2026-01-17 09:38:17.007  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 67ms | z=10 x=909 y=401 candidates=1546 drawn=128 compressMs=56 tiles=625
+2026-01-17 09:38:17.008  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 190ms | z=10 x=910 y=402 candidates=2439 drawn=193 compressMs=124 tiles=625
+2026-01-17 09:38:17.056  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 122ms | z=10 x=909 y=402 candidates=3108 drawn=603 compressMs=88 tiles=625
+2026-01-17 09:38:17.091  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 78ms | z=10 x=910 y=404 candidates=1710 drawn=70 compressMs=53 tiles=625
+2026-01-17 09:38:17.158  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 96ms | z=10 x=910 y=401 candidates=1354 drawn=115 compressMs=56 tiles=625
+2026-01-17 09:38:17.158  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile summary | rendered=10 cacheHits=0 avgMs=151.2 avgCompressMs=74.9 avgCandidates=2369.4 avgDrawn=355.8 maxMs=368 cacheBytes=1961589
+2026-01-17 09:38:17.190  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 97ms | z=10 x=908 y=401 candidates=1454 drawn=164 compressMs=77 tiles=625
+2026-01-17 09:38:17.206  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 193ms | z=10 x=908 y=404 candidates=2181 drawn=224 compressMs=153 tiles=625
+2026-01-17 09:38:21.881  6618-6650  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 151ms | markers=24526 visible=24526 tiles=209 z=9 tileSize=512
+2026-01-17 09:38:21.942  6618-6650  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 61ms | markers=24526 visible=24526 tiles=625 z=10 tileSize=512
+2026-01-17 09:38:22.268  6618-6654  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 23ms | markers=24526 visible=24526 tiles=33 z=7 tileSize=512
+2026-01-17 09:38:22.321  6618-6654  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 52ms | markers=24526 visible=24526 tiles=77 z=8 tileSize=512
+2026-01-17 09:38:22.445  6618-6618  MapConductorTiling      com.mapconductor.example             I  ---->zoom=7.444425582885742
+2026-01-17 09:38:22.656  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 99ms | z=7 x=114 y=50 candidates=8229 drawn=102 compressMs=62 tiles=33
+2026-01-17 09:38:22.746  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 195ms | z=7 x=113 y=49 candidates=14875 drawn=1914 compressMs=83 tiles=33
+2026-01-17 09:38:22.778  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 30ms | z=7 x=113 y=51 candidates=11257 drawn=15 compressMs=25 tiles=33
+2026-01-17 09:38:22.817  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 267ms | z=7 x=113 y=50 candidates=14063 drawn=5924 compressMs=96 tiles=33
+2026-01-17 09:38:22.860  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 42ms | z=7 x=112 y=49 candidates=15809 drawn=490 compressMs=27 tiles=33
+2026-01-17 09:38:22.909  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 49ms | z=7 x=113 y=48 candidates=4755 drawn=610 compressMs=35 tiles=33
+2026-01-17 09:38:22.919  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 139ms | z=7 x=114 y=49 candidates=9445 drawn=663 compressMs=82 tiles=33
+2026-01-17 09:38:22.931  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 21ms | z=7 x=114 y=51 candidates=5845 drawn=0 compressMs=19 tiles=33
+2026-01-17 09:38:22.931  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile summary | rendered=20 cacheHits=0 avgMs=132.2 avgCompressMs=70.4 avgCandidates=5580.4 avgDrawn=683.2 maxMs=368 cacheBytes=986027
+2026-01-17 09:38:22.956  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 299ms | z=7 x=112 y=50 candidates=16921 drawn=5219 compressMs=105 tiles=33
+2026-01-17 09:38:22.979  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 21ms | z=7 x=112 y=48 candidates=2911 drawn=0 compressMs=20 tiles=33
+2026-01-17 09:38:22.992  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 60ms | z=7 x=114 y=48 candidates=4402 drawn=703 compressMs=45 tiles=33
+2026-01-17 09:38:23.028  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 107ms | z=7 x=112 y=51 candidates=14721 drawn=439 compressMs=60 tiles=33
+2026-01-17 09:38:24.243  6618-6727  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 43ms | markers=24526 visible=24526 tiles=77 z=8 tileSize=512
+2026-01-17 09:38:24.289  6618-6727  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 46ms | markers=24526 visible=24526 tiles=209 z=9 tileSize=512
+2026-01-17 09:38:24.343  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 200ms | z=8 x=227 y=101 candidates=5838 drawn=583 compressMs=131 tiles=77
+2026-01-17 09:38:24.453  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 310ms | z=8 x=226 y=100 candidates=9355 drawn=1021 compressMs=235 tiles=77
+2026-01-17 09:38:24.499  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 357ms | z=8 x=227 y=100 candidates=7073 drawn=3759 compressMs=129 tiles=77
+2026-01-17 09:38:24.569  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 69ms | z=8 x=226 y=101 candidates=7875 drawn=616 compressMs=47 tiles=77
+2026-01-17 09:38:24.620  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 275ms | z=8 x=226 y=99 candidates=7297 drawn=601 compressMs=204 tiles=77
+2026-01-17 09:38:24.699  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 240ms | z=8 x=227 y=99 candidates=7090 drawn=528 compressMs=161 tiles=77
+2026-01-17 09:38:24.699  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile summary | rendered=30 cacheHits=0 avgMs=152.7 avgCompressMs=84.8 avgCandidates=6503.0 avgDrawn=904.4 maxMs=368 cacheBytes=1206924
+2026-01-17 09:38:24.763  6618-6654  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 102ms | markers=24526 visible=24526 tiles=209 z=9 tileSize=512
+2026-01-17 09:38:24.820  6618-6654  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.buildTileIndex took 56ms | markers=24526 visible=24526 tiles=625 z=10 tileSize=512
+2026-01-17 09:38:24.881  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 258ms | z=9 x=455 y=201 candidates=4259 drawn=589 compressMs=190 tiles=209
+2026-01-17 09:38:24.884  6618-6618  MapConductorTiling      com.mapconductor.example             I  ---->zoom=9.71132755279541
+2026-01-17 09:38:24.887  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 175ms | z=9 x=454 y=200 candidates=4459 drawn=472 compressMs=138 tiles=209
+2026-01-17 09:38:24.970  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 82ms | z=9 x=454 y=202 candidates=3915 drawn=446 compressMs=57 tiles=209
+2026-01-17 09:38:24.985  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 103ms | z=9 x=453 y=201 candidates=4591 drawn=217 compressMs=78 tiles=209
+2026-01-17 09:38:24.987  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 416ms | z=9 x=454 y=201 candidates=4919 drawn=2380 compressMs=329 tiles=209
+2026-01-17 09:38:25.028  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 41ms | z=9 x=455 y=202 candidates=3468 drawn=130 compressMs=34 tiles=209
+2026-01-17 09:38:25.055  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 84ms | z=9 x=455 y=200 candidates=4068 drawn=364 compressMs=74 tiles=209
+2026-01-17 09:38:25.061  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 32ms | z=9 x=454 y=199 candidates=1875 drawn=67 compressMs=28 tiles=209
+2026-01-17 09:38:25.084  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 23ms | z=9 x=454 y=203 candidates=832 drawn=11 compressMs=21 tiles=209
+2026-01-17 09:38:25.106  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 50ms | z=9 x=453 y=202 candidates=3737 drawn=269 compressMs=40 tiles=209
+2026-01-17 09:38:25.106  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile summary | rendered=40 cacheHits=0 avgMs=146.2 avgCompressMs=88.4 avgCandidates=5780.3 avgDrawn=802.0 maxMs=416 cacheBytes=1527289
+2026-01-17 09:38:25.126  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 19ms | z=9 x=455 y=203 candidates=544 drawn=0 compressMs=19 tiles=209
+2026-01-17 09:38:25.133  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 49ms | z=9 x=455 y=199 candidates=1463 drawn=184 compressMs=43 tiles=209
+2026-01-17 09:38:25.138  6618-6719  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 148ms | z=9 x=453 y=200 candidates=4137 drawn=272 compressMs=113 tiles=209
+2026-01-17 09:38:25.159  6618-6718  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 32ms | z=9 x=453 y=199 candidates=1754 drawn=100 compressMs=28 tiles=209
+2026-01-17 09:38:25.161  6618-6717  MapConductorTiling      com.mapconductor.example             I  TiledOverlay.getTile took 27ms | z=9 x=453 y=203 candidates=1012 drawn=34 compressMs=25 tiles=209

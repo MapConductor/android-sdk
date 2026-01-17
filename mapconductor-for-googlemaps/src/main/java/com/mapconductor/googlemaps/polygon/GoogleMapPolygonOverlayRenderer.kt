@@ -82,7 +82,10 @@ class GoogleMapPolygonOverlayRenderer(
                 val points: List<LatLng> =
                     when (current.state.geodesic) {
                         true -> geodesicPoints(current.state.points)
-                        false -> createLinearInterpolatePoints(current.state.points).map { GeoPoint.from(it).toLatLng() }
+                        false ->
+                            createLinearInterpolatePoints(current.state.points).map {
+                                GeoPoint.from(it).toLatLng()
+                            }
                     }
                 polygon.points = points
             }

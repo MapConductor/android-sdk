@@ -1,10 +1,10 @@
 package com.mapconductor.googlemaps.polyline
 
 import androidx.compose.ui.graphics.toArgb
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.mapconductor.core.ResourceProvider
-import com.google.android.gms.maps.model.LatLng
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
@@ -14,8 +14,8 @@ import com.mapconductor.core.spherical.createInterpolatePoints
 import com.mapconductor.core.spherical.createLinearInterpolatePoints
 import com.mapconductor.googlemaps.AdaptiveInterpolation
 import com.mapconductor.googlemaps.GoogleMapActualPolyline
-import com.mapconductor.googlemaps.LatLngInterpolationCache
 import com.mapconductor.googlemaps.GoogleMapViewHolder
+import com.mapconductor.googlemaps.LatLngInterpolationCache
 import com.mapconductor.googlemaps.toLatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,7 +77,10 @@ class GoogleMapPolylineOverlayRenderer(
                 val points: List<LatLng> =
                     when (current.state.geodesic) {
                         true -> geodesicPoints(current.state.points)
-                        false -> createLinearInterpolatePoints(current.state.points).map { GeoPoint.from(it).toLatLng() }
+                        false ->
+                            createLinearInterpolatePoints(current.state.points).map {
+                                GeoPoint.from(it).toLatLng()
+                            }
                     }
                 polyline.points = points
             }

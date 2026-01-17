@@ -13,6 +13,7 @@ class RasterLayerState(
     opacity: Float = 1.0f,
     visible: Boolean = true,
     userAgent: String? = null,
+    debug: Boolean = false,
     id: String? = null,
     extraHeaders: Map<String, String>? = null,
 ): ComponentState {
@@ -23,6 +24,7 @@ class RasterLayerState(
                     source.hashCode(),
                     opacity.hashCode(),
                     visible.hashCode(),
+                    debug.hashCode(),
                     extraHeaders?.hashCode() ?: 0,
                 ),
             )
@@ -32,6 +34,7 @@ class RasterLayerState(
     var opacity by mutableStateOf(opacity)
     var visible by mutableStateOf(visible)
     var userAgent by mutableStateOf(userAgent)
+    var debug by mutableStateOf(debug)
     var extraHeaders by mutableStateOf(extraHeaders)
 
     private fun rasterLayerId(hashCodes: List<Int>): Int =
@@ -48,6 +51,7 @@ class RasterLayerState(
         var result = source.hashCode()
         result = 31 * result + opacity.hashCode()
         result = 31 * result + visible.hashCode()
+        result = 31 * result + debug.hashCode()
         result = 31 * result + (extraHeaders?.hashCode() ?: 0)
         result = 31 * result + (userAgent?.hashCode() ?: 0)
         return result
@@ -57,7 +61,8 @@ class RasterLayerState(
         source: RasterLayerSource = this.source,
         opacity: Float = this.opacity,
         visible: Boolean = this.visible,
-        userAgent: String? = this.id,
+        debug: Boolean = this.debug,
+        userAgent: String? = this.userAgent,
         id: String? = this.id,
         extraHeaders: Map<String, String>? = this.extraHeaders,
     ): RasterLayerState =
@@ -66,8 +71,9 @@ class RasterLayerState(
             opacity = opacity,
             visible = visible,
             userAgent = userAgent,
+            debug = debug,
             id = id,
-            extraHeaders = this@RasterLayerState.extraHeaders,
+            extraHeaders = extraHeaders,
         )
 
     fun fingerPrint(): RasterLayerFingerPrint =
@@ -77,6 +83,7 @@ class RasterLayerState(
             opacity = opacity.hashCode(),
             visible = visible.hashCode(),
             userAgent = userAgent?.hashCode() ?: 0,
+            debug = debug.hashCode(),
             extra = extraHeaders?.hashCode() ?: 0,
         )
 
@@ -91,6 +98,7 @@ data class RasterLayerFingerPrint(
     val opacity: Int,
     val visible: Int,
     val userAgent: Int,
+    val debug: Int,
     val extra: Int,
 )
 

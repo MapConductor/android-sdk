@@ -11,11 +11,12 @@ import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.Markers
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeInfoView
+import android.util.Log
 
 @Composable
 fun PostOfficeMapComponent(
@@ -37,8 +38,11 @@ fun PostOfficeMapComponent(
         state = mapViewState,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
+        onCameraMoveEnd = {
+            Log.i("MapConductorTiling", "---->zoom=${mapViewState.cameraPosition.zoom}")
+        }
     ) {
-        markers.forEach { markerState -> Marker(markerState) }
+        Markers(markers)
 
         selectedMarker?.let {
             InfoBubble(

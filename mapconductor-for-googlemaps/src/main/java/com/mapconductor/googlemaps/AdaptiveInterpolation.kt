@@ -1,12 +1,12 @@
 package com.mapconductor.googlemaps
 
-import android.util.LruCache
 import com.google.android.gms.maps.model.LatLng
 import com.mapconductor.core.features.GeoPointInterface
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.roundToLong
+import android.util.LruCache
 
 internal object AdaptiveInterpolation {
     private const val earthRadiusMeters = 6_378_137.0
@@ -63,8 +63,10 @@ internal class LatLngInterpolationCache(
 
     fun get(key: String): List<LatLng>? = cache.get(key)
 
-    fun put(key: String, value: List<LatLng>) {
+    fun put(
+        key: String,
+        value: List<LatLng>,
+    ) {
         cache.put(key, value)
     }
 }
-

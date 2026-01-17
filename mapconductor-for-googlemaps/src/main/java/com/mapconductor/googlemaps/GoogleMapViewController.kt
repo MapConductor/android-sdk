@@ -202,7 +202,9 @@ class GoogleMapViewController(
 
     override fun onMapClick(position: LatLng) {
         val touchPosition = position.toGeoPoint()
-        val zoomSnapshot = holder.map.cameraPosition.zoom.toDouble()
+        val zoomSnapshot =
+            holder.map.cameraPosition.zoom
+                .toDouble()
         backCoroutine.launch {
             markerController.find(touchPosition, zoomSnapshot)?.let { entity ->
                 if (!entity.state.clickable) return@launch

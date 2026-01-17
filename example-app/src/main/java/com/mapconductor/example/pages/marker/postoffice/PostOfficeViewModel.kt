@@ -1,6 +1,8 @@
 package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.lifecycle.ViewModel
+import android.os.SystemClock
+import android.util.Log
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
@@ -8,9 +10,9 @@ import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
-import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +45,7 @@ class PostOfficeViewModel(
     private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
     PostOfficeViewModelInterface {
+    private val tag: String = "PostOfficeVM"
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -76,23 +79,33 @@ class PostOfficeViewModel(
         if (_markerList.value.isNotEmpty()) return
 
         coroutine.launch {
+            val start = SystemClock.elapsedRealtime()
             _isDataLoading.value = true
+            Log.i(tag, "loadPostOfficeData:start")
             val postOffices = dataLoader.loadAllPostOffices()
-            sleep(1000)
+            Log.i(tag, "loadAllPostOffices took ${SystemClock.elapsedRealtime() - start}ms | count=${postOffices.size}")
 
-            val markerStates =
-                postOffices.map { it ->
+            val mapStart = SystemClock.elapsedRealtime()
+            val markerStates = ArrayList<MarkerState>(postOffices.size)
+            postOffices.forEachIndexed { index, postOffice ->
+                markerStates.add(
                     MarkerState(
-                        position = it.position,
-                        id = it.hashCode().toString(),
+                        position = postOffice.position,
+                        id = index.toString(),
                         icon = postOfficeIcon,
-                        extra = it,
+                        extra = postOffice,
                         onClick = this@PostOfficeViewModel::onMarkerClick,
-                    )
-                }
+                        autoScalable = false,
+                    ),
+                )
+            }
+            Log.i(tag, "build MarkerState took ${SystemClock.elapsedRealtime() - mapStart}ms | count=${markerStates.size}")
             _markerList.value = markerStates
-            sleep(6000)
+            Log.i(tag, "_markerList updated")
+            // Keep this non-blocking so it doesn't starve other background work.
+            delay(6000)
             _isDataLoading.value = false
+            Log.i(tag, "loadPostOfficeData:done total ${SystemClock.elapsedRealtime() - start}ms")
         }
     }
 

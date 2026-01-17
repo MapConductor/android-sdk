@@ -310,8 +310,10 @@ private fun getMarkerController(
 private fun getRasterLayerController(holder: GoogleMapViewHolder): GoogleMapRasterLayerController {
     val cacheDir = holder.mapView.context.cacheDir
     val cacheSize = 10L * 1024L * 1024L // 10 MiB
-    val builder = OkHttpClient.Builder()
-        .cache(Cache(cacheDir, cacheSize))
+    val builder =
+        OkHttpClient
+            .Builder()
+            .cache(Cache(cacheDir, cacheSize))
     val okHttpClient = builder.build()
 
     val renderer =

@@ -1,20 +1,20 @@
 package com.mapconductor.googlemaps.circle
 
 import androidx.compose.ui.graphics.toArgb
-import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.googlemaps.GoogleMapActualCircle
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 class GoogleMapCircleOverlayRenderer(
     override val holder: GoogleMapViewHolder,
@@ -91,7 +91,10 @@ class GoogleMapCircleOverlayRenderer(
             circle
         }
 
-    private fun adjustedRadiusMeters(state: CircleState, center: com.google.android.gms.maps.model.LatLng): Double {
+    private fun adjustedRadiusMeters(
+        state: CircleState,
+        center: com.google.android.gms.maps.model.LatLng,
+    ): Double {
         val strokeWidthPx = ResourceProvider.dpToPx(state.strokeWidth).toDouble()
         if (strokeWidthPx <= 0.0) return state.radiusMeters
 
