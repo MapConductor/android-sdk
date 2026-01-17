@@ -99,6 +99,36 @@ internal class GoogleMapTiledMarkerOverlay(
     private val tilesDrawn = AtomicLong(0L)
     private val maxTileMs = AtomicLong(0L)
 
+    private fun tileCacheKey(
+        normalizedX: Int,
+        y: Int,
+        zoom: Int,
+        debug: Boolean,
+        cacheVersion: Int,
+    ): Long {
+        val version7 = (cacheVersion and 0x7f).toLong()
+        val debug1 = if (debug) 1L else 0L
+        // Fast path: pack into 64 bits without overlap.
+        // y: 24 bits, x: 24 bits, zoom: 6 bits, debug: 1 bit, version: 7 bits (2 spare bits)
+        if (zoom in 0..24 && normalizedX in 0 until (1 shl 24) && y in 0 until (1 shl 24)) {
+            return (y.toLong() and 0xFFFFFFL) or
+                ((normalizedX.toLong() and 0xFFFFFFL) shl 24) or
+                ((zoom.toLong() and 0x3fL) shl 48) or
+                (debug1 shl 54) or
+                (version7 shl 55)
+        }
+        // Fallback: mix into a hash-like key.
+        var k = (normalizedX.toLong() shl 32) xor (y.toLong() and 0xffffffffL)
+        k = k xor (zoom.toLong() shl 16)
+        k = k xor (debug1 shl 1)
+        k = k xor (version7 shl 2)
+        // Mix (Murmur-ish).
+        k *= -0x3d4d51cb3a1b5a75L
+        k = java.lang.Long.rotateLeft(k, 27)
+        k *= -0x52dce729L
+        return k
+    }
+
     fun setMarkers(
         markers: Map<String, RenderMarker>,
         zoom: Int,
@@ -224,9 +254,14 @@ internal class GoogleMapTiledMarkerOverlay(
         val worldTileCount = 1 shl zoom
         if (y !in 0 until worldTileCount) return NO_TILE
         val normalizedX = normalizeTileX(x, worldTileCount)
-        val debugBit = if (debugTileOverlay) (1L shl 47) else 0L
-        val versionBits = ((cacheVersion and 0x7f).toLong() shl 40)
-        val cacheKey = tileKey(normalizedX, y) xor (zoom.toLong() shl 48) xor debugBit xor versionBits
+        val cacheKey =
+            tileCacheKey(
+                normalizedX = normalizedX,
+                y = y,
+                zoom = zoom,
+                debug = debugTileOverlay,
+                cacheVersion = cacheVersion,
+            )
         tileCache.get(cacheKey)?.let { cached ->
             if (GoogleMapMarkerTilingPerfLog.enabled) {
                 tilesCacheHits.incrementAndGet()
@@ -425,6 +460,15 @@ internal class GoogleMapTiledMarkerOverlay(
                     drawnCount++
                 }
             }
+        }
+
+        if (!debugTileOverlay && drawnCount == 0) {
+            // Avoid expensive PNG compression for empty tiles (common when markers are near tile edges
+            // due to the neighbor-tile scan above).
+            if (!renderBitmap.isRecycled) renderBitmap.recycle()
+            scaledBitmaps.values.forEach { it.recycle() }
+            tileCache.put(cacheKey, emptyTileBytes)
+            return Tile(tileSize, tileSize, emptyTileBytes)
         }
 
         val compressStart = if (GoogleMapMarkerTilingPerfLog.enabled) SystemClock.elapsedRealtime() else 0L

@@ -412,14 +412,14 @@ class GoogleMapMarkerController private constructor(
         // Keep heavy work off the main thread; hop to Main only for GoogleMap API calls.
         withContext(Dispatchers.Default) {
             semaphore.withPermit {
-                val scaleChanged = updateScreenPxPerWorldPxAndCheckChange(zoomInt)
+                updateScreenPxPerWorldPxAndCheckChange(zoomInt)
                 val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
                 val zoomIndexes =
                     if (zoomInt != lastIndexedZoom) {
-                        val markers = lastTiledMarkersSnapshot
-                        val z0 = zoomInt
-                        val z1 = (zoomInt + 1).coerceAtLeast(0)
-                        mapOf(
+                val markers = lastTiledMarkersSnapshot
+                val z0 = zoomInt
+                val z1 = (zoomInt + 1).coerceAtLeast(0)
+                mapOf(
                             z0 to
                                 GoogleMapTiledMarkerOverlay.buildTileIndex(
                                     markers = markers,
@@ -461,7 +461,7 @@ class GoogleMapMarkerController private constructor(
                             indexedZoom = zoomInt,
                             bitmapPxToWorldPx = markerScale,
                         )
-                    } else if (scaleChanged || kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-4) {
+                    } else if (kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-4) {
                         lastAppliedMarkerScale = markerScale
                         overlay.setMarkerScale(markerScale)
                     }

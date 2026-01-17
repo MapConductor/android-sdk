@@ -95,7 +95,7 @@ class PostOfficeViewModel(
                         icon = postOfficeIcon,
                         extra = postOffice,
                         onClick = this@PostOfficeViewModel::onMarkerClick,
-                        autoScalable = true,
+                        autoScalable = false,
                     ),
                 )
             }
