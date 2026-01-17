@@ -56,6 +56,16 @@ internal class GoogleMapTiledMarkerOverlay(
     @Volatile
     private var indexedZoom: Int = -1
 
+    /**
+     * Reference zoom for [RenderMarker.autoScalable] scaling.
+     *
+     * This is intentionally decoupled from [indexedZoom]: tile indexes are refreshed on zoom changes,
+     * but the auto-scale reference should remain the zoom at which the current marker snapshot was set
+     * (i.e., when addMarker(s) produced the current tiled snapshot).
+     */
+    @Volatile
+    private var autoScaleReferenceZoom: Int = -1
+
     @Volatile
     private var tileToMarkerIds: Map<Long, List<String>> = emptyMap()
 
@@ -96,6 +106,7 @@ internal class GoogleMapTiledMarkerOverlay(
     ) {
         markersById = markers
         indexedZoom = zoom
+        autoScaleReferenceZoom = zoom
         tileToMarkerIds = tileIndex
         tileIndexByZoom = mapOf(zoom to tileIndex)
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
@@ -111,6 +122,7 @@ internal class GoogleMapTiledMarkerOverlay(
     ) {
         markersById = markers
         this.indexedZoom = indexedZoom
+        this.autoScaleReferenceZoom = indexedZoom
         tileIndexByZoom = indexes
         tileToMarkerIds = indexes[indexedZoom].orEmpty()
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
@@ -144,6 +156,7 @@ internal class GoogleMapTiledMarkerOverlay(
         // Deprecated: use setZoom(zoom, tileIndex) so the heavy index build can be done off-main.
         if (zoom == indexedZoom) return
         indexedZoom = zoom
+        autoScaleReferenceZoom = zoom
         tileToMarkerIds = emptyMap()
         tileIndexByZoom = emptyMap()
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
@@ -157,6 +170,7 @@ internal class GoogleMapTiledMarkerOverlay(
     ) {
         if (zoom == indexedZoom && tileIndex === tileToMarkerIds) return
         indexedZoom = zoom
+        autoScaleReferenceZoom = zoom
         tileToMarkerIds = tileIndex
         tileIndexByZoom = mapOf(zoom to tileIndex)
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
@@ -234,9 +248,21 @@ internal class GoogleMapTiledMarkerOverlay(
             }
         val worldPixelSize = worldTileCount.toDouble() * tileSize.toDouble()
         // Zoom-dependent scaling (business-logic specific).
-        // autoScalable=true: apply zoom-based scaling relative to fixedMarkerPixelSizeReferenceZoom.
+        // autoScalable=true: shrink when zoomed out relative to the zoom at which the current
+        // tiled snapshot was set (i.e., addMarker(s) time), but never grow beyond the icon's
+        // configured size. (Icon scale is already baked into the BitmapIcon dimensions.)
         // autoScalable=false: no zoom scaling (keeps the bitmap's screen size constant).
-        val pxToWorldFixed = Math.pow(2.0, (zoom - fixedMarkerPixelSizeReferenceZoom).toDouble())
+        val referenceZoom =
+            when {
+                autoScaleReferenceZoom >= 0 -> autoScaleReferenceZoom
+                indexedZoom >= 0 -> indexedZoom
+                else -> fixedMarkerPixelSizeReferenceZoom
+            }
+        val pxToWorldFixed =
+            minOf(
+                1.0,
+                Math.pow(2.0, (zoom - referenceZoom).toDouble()),
+            )
         val pxToWorldScalable = 1.0
         // For debug overlay display
         val zoomScale = pxToWorldFixed
