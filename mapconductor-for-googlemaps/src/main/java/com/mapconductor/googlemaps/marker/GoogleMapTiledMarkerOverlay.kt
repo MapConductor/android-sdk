@@ -75,6 +75,15 @@ internal class GoogleMapTiledMarkerOverlay(
     @Volatile
     private var bitmapPxToWorldPx: Double = 1.0
 
+    /**
+     * The zoomInt at which [bitmapPxToWorldPx] was computed.
+     *
+     * This must be decoupled from [indexedZoom] because [indexedZoom] can race with [getTile]
+     * during zoom transitions (Google Maps can request tiles for multiple zoom levels concurrently).
+     */
+    @Volatile
+    private var markerScaleZoomInt: Int = -1
+
     @Volatile
     private var cacheVersion: Int = 0
 
@@ -98,6 +107,27 @@ internal class GoogleMapTiledMarkerOverlay(
     private val tilesCandidates = AtomicLong(0L)
     private val tilesDrawn = AtomicLong(0L)
     private val maxTileMs = AtomicLong(0L)
+    private val stateEpoch = AtomicLong(0L)
+
+    private fun bumpStateEpoch(reason: String) {
+        val epoch = stateEpoch.incrementAndGet()
+        if (!GoogleMapMarkerTilingPerfLog.enabled) return
+        GoogleMapMarkerTilingPerfLog.logInfo(
+            "TiledOverlay.stateUpdate | e=$epoch reason=$reason ixZ=$indexedZoom msZ=$markerScaleZoomInt autoRefZ=$autoScaleReferenceZoom bmpPxToWorld=${"%.6f".format(bitmapPxToWorldPx)} cacheV=$cacheVersion tileToIds=${tileToMarkerIds.size} idxKeys=${tileIndexByZoom.keys.sorted()} idxId=${System.identityHashCode(tileIndexByZoom)} tileToIdsId=${System.identityHashCode(tileToMarkerIds)} markers=${markersById.size} thread=${Thread.currentThread().name}",
+        )
+    }
+
+    private fun effectivePxToWorldForZoom(
+        zoom: Int,
+        bitmapPxToWorldPx: Double,
+        markerScaleZoomInt: Int,
+        indexedZoom: Int,
+    ): Double {
+        if (!fixedMarkerPixelSize) return 1.0
+        val baseZoom = if (markerScaleZoomInt >= 0) markerScaleZoomInt else indexedZoom
+        if (baseZoom < 0 || zoom == baseZoom) return bitmapPxToWorldPx
+        return bitmapPxToWorldPx * Math.pow(2.0, (zoom - baseZoom).toDouble())
+    }
 
     private fun tileCacheKey(
         normalizedX: Int,
@@ -143,6 +173,7 @@ internal class GoogleMapTiledMarkerOverlay(
         tileCache.evictAll()
         emptyTileBytes = makeEmptyTilePng(tileSize)
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setMarkers")
     }
 
     fun setMarkersAndTileIndexes(
@@ -159,6 +190,7 @@ internal class GoogleMapTiledMarkerOverlay(
         tileCache.evictAll()
         emptyTileBytes = makeEmptyTilePng(tileSize)
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setMarkersAndTileIndexes")
     }
 
     fun setMarkersAndTileIndexesAndMarkerScale(
@@ -173,10 +205,12 @@ internal class GoogleMapTiledMarkerOverlay(
         tileIndexByZoom = indexes
         tileToMarkerIds = indexes[indexedZoom].orEmpty()
         this.bitmapPxToWorldPx = bitmapPxToWorldPx.coerceAtLeast(1e-6)
+        this.markerScaleZoomInt = indexedZoom
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         tileCache.evictAll()
         emptyTileBytes = makeEmptyTilePng(tileSize)
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setMarkersAndTileIndexesAndMarkerScale")
     }
 
     fun setTileIndexes(
@@ -189,15 +223,21 @@ internal class GoogleMapTiledMarkerOverlay(
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         tileCache.evictAll()
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setTileIndexes")
     }
 
-    fun setMarkerScale(bitmapPxToWorldPx: Double) {
+    fun setMarkerScale(
+        bitmapPxToWorldPx: Double,
+        markerScaleZoomInt: Int,
+    ) {
         val next = bitmapPxToWorldPx.coerceAtLeast(1e-6)
         if (kotlin.math.abs(this.bitmapPxToWorldPx - next) < 1e-4) return
         this.bitmapPxToWorldPx = next
+        this.markerScaleZoomInt = markerScaleZoomInt.coerceAtLeast(0)
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         tileCache.evictAll()
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setMarkerScale")
     }
 
     fun setTileIndexesAndMarkerScale(
@@ -205,13 +245,33 @@ internal class GoogleMapTiledMarkerOverlay(
         indexedZoom: Int,
         bitmapPxToWorldPx: Double,
     ) {
+        val prevIndexedZoom = this.indexedZoom
+        val prevMsZ = this.markerScaleZoomInt
+        val prevBmp = this.bitmapPxToWorldPx
+        val prevKeys = this.tileIndexByZoom.keys.toSet()
+
         this.indexedZoom = indexedZoom
         this.tileIndexByZoom = indexes
         this.tileToMarkerIds = indexes[indexedZoom].orEmpty()
-        this.bitmapPxToWorldPx = bitmapPxToWorldPx.coerceAtLeast(1e-6)
-        cacheVersion = (cacheVersion + 1) and 0x7fffffff
-        tileCache.evictAll()
-        tileOverlay.clearTileCache()
+        val nextBmp = bitmapPxToWorldPx.coerceAtLeast(1e-6)
+        this.bitmapPxToWorldPx = nextBmp
+        this.markerScaleZoomInt = indexedZoom
+
+        // Avoid nuking caches on zoom transitions if the effective per-zoom scale is unchanged.
+        // Clearing tileOverlay cache forces re-fetch and can cause visible holes when tiles are expensive to render.
+        val keysToCompare = prevKeys.intersect(indexes.keys)
+        val shouldInvalidateScale =
+            keysToCompare.any { z ->
+                val prevEff = effectivePxToWorldForZoom(z, prevBmp, prevMsZ, prevIndexedZoom)
+                val nextEff = effectivePxToWorldForZoom(z, nextBmp, indexedZoom, indexedZoom)
+                kotlin.math.abs(prevEff - nextEff) > 1e-6
+            }
+        if (shouldInvalidateScale) {
+            cacheVersion = (cacheVersion + 1) and 0x7fffffff
+            tileCache.evictAll()
+            tileOverlay.clearTileCache()
+        }
+        bumpStateEpoch("setTileIndexesAndMarkerScale")
     }
 
     fun setZoom(zoom: Int) {
@@ -224,6 +284,7 @@ internal class GoogleMapTiledMarkerOverlay(
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         tileCache.evictAll()
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setZoom(deprecated)")
     }
 
     fun setZoom(
@@ -238,6 +299,7 @@ internal class GoogleMapTiledMarkerOverlay(
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         tileCache.evictAll()
         tileOverlay.clearTileCache()
+        bumpStateEpoch("setZoom")
     }
 
     fun remove() {
@@ -249,299 +311,364 @@ internal class GoogleMapTiledMarkerOverlay(
         y: Int,
         zoom: Int,
     ): Tile {
-        val tileStart = if (GoogleMapMarkerTilingPerfLog.enabled) SystemClock.elapsedRealtime() else 0L
-        val zoomTileIndex = tileIndexByZoom[zoom] ?: if (zoom == indexedZoom) tileToMarkerIds else emptyMap()
-        val worldTileCount = 1 shl zoom
-        if (y !in 0 until worldTileCount) return NO_TILE
-        val normalizedX = normalizeTileX(x, worldTileCount)
-        val cacheKey =
-            tileCacheKey(
-                normalizedX = normalizedX,
-                y = y,
-                zoom = zoom,
-                debug = debugTileOverlay,
-                cacheVersion = cacheVersion,
-            )
-        tileCache.get(cacheKey)?.let { cached ->
-            if (GoogleMapMarkerTilingPerfLog.enabled) {
-                tilesCacheHits.incrementAndGet()
-            }
-            return Tile(tileSize, tileSize, cached)
-        }
-        var hasAny = false
-        for (dy in -1..1) {
-            val ny = y + dy
-            if (ny !in 0 until worldTileCount) continue
-            for (dx in -1..1) {
-                val nx = normalizeTileX(normalizedX + dx, worldTileCount)
-                val key = tileKey(nx, ny)
-                if (!zoomTileIndex[key].isNullOrEmpty()) {
-                    hasAny = true
-                    break
+        val perfEnabled = GoogleMapMarkerTilingPerfLog.enabled
+        val tileStart = if (perfEnabled) SystemClock.elapsedRealtime() else 0L
+
+        var attempt = 0
+        while (true) {
+            val epoch0 = stateEpoch.get()
+            val indexedZoom0 = indexedZoom
+            val markerScaleZoomInt0 = markerScaleZoomInt
+            val autoScaleReferenceZoom0 = autoScaleReferenceZoom
+            val bitmapPxToWorldPx0 = bitmapPxToWorldPx
+            val cacheVersion0 = cacheVersion
+            val tileIndexByZoom0 = tileIndexByZoom
+            val tileToMarkerIds0 = tileToMarkerIds
+            val markersById0 = markersById
+
+            val worldTileCount = 1 shl zoom
+            if (y !in 0 until worldTileCount) return NO_TILE
+            val normalizedX = normalizeTileX(x, worldTileCount)
+
+            fun maybeRetry(phase: String): Boolean {
+                val epochNow = stateEpoch.get()
+                if (epochNow == epoch0) return false
+                val nowEff = effectivePxToWorldForZoom(zoom, bitmapPxToWorldPx, markerScaleZoomInt, indexedZoom)
+                val snapshotEff = effectivePxToWorldForZoom(zoom, bitmapPxToWorldPx0, markerScaleZoomInt0, indexedZoom0)
+                val scaleChanged = kotlin.math.abs(nowEff - snapshotEff) > 1e-6
+                if (perfEnabled) {
+                    GoogleMapMarkerTilingPerfLog.logInfo(
+                        "TiledOverlay.getTile stateChanged | phase=$phase z=$zoom x=$normalizedX y=$y e0=$epoch0 eNow=$epochNow ixZ0=$indexedZoom0 ixZNow=$indexedZoom msZ0=$markerScaleZoomInt0 msZNow=$markerScaleZoomInt autoRefZ0=$autoScaleReferenceZoom0 autoRefZNow=$autoScaleReferenceZoom bmp0=${"%.6f".format(bitmapPxToWorldPx0)} bmpNow=${"%.6f".format(bitmapPxToWorldPx)} cacheV0=$cacheVersion0 cacheVNow=$cacheVersion thread=${Thread.currentThread().name}",
+                    )
                 }
+                if (!scaleChanged) return false
+                if (attempt >= 1) return false
+                attempt++
+                return true
             }
-            if (hasAny) break
-        }
-        if (!hasAny) {
-            // Return a real (transparent) tile to maximize caching and reduce re-requests.
-            val bytes =
-                if (debugTileOverlay) {
-                    renderDebugOnlyTile(
-                        tileSize = tileSize,
-                        zoom = zoom,
-                        x = normalizedX,
-                        y = y,
-                        candidates = 0,
-                        drawn = 0,
-                        compressMs = 0,
-                        cacheHit = false,
+
+            val zoomTileIndex =
+                tileIndexByZoom0[zoom] ?: if (zoom == indexedZoom0) tileToMarkerIds0 else emptyMap()
+
+            val cacheKey =
+                tileCacheKey(
+                    normalizedX = normalizedX,
+                    y = y,
+                    zoom = zoom,
+                    debug = debugTileOverlay,
+                    cacheVersion = cacheVersion0,
+                )
+            tileCache.get(cacheKey)?.let { cached ->
+                if (maybeRetry("cacheHit")) continue
+                if (perfEnabled) {
+                    tilesCacheHits.incrementAndGet()
+                }
+                return Tile(tileSize, tileSize, cached)
+            }
+
+            var hasAny = false
+            for (dy in -1..1) {
+                val ny = y + dy
+                if (ny !in 0 until worldTileCount) continue
+                for (dx in -1..1) {
+                    val nx = normalizeTileX(normalizedX + dx, worldTileCount)
+                    val key = tileKey(nx, ny)
+                    if (!zoomTileIndex[key].isNullOrEmpty()) {
+                        hasAny = true
+                        break
+                    }
+                }
+                if (hasAny) break
+            }
+            if (!hasAny) {
+                // Return a real (transparent) tile to maximize caching and reduce re-requests.
+                val bytes =
+                    if (debugTileOverlay) {
+                        renderDebugOnlyTile(
+                            tileSize = tileSize,
+                            zoom = zoom,
+                            x = normalizedX,
+                            y = y,
+                            candidates = 0,
+                            drawn = 0,
+                            compressMs = 0,
+                            cacheHit = false,
+                        )
+                    } else {
+                        emptyTileBytes
+                    }
+                if (maybeRetry("noMarkers")) continue
+                tileCache.put(cacheKey, bytes)
+                return Tile(tileSize, tileSize, bytes)
+            }
+
+            var candidateCount = 0
+            var drawnCount = 0
+            val renderBitmap = Bitmap.createBitmap(renderTileSize, renderTileSize, Bitmap.Config.ARGB_8888)
+            renderBitmap.density = DisplayMetrics.DENSITY_DEFAULT
+            val canvas = Canvas(renderBitmap)
+            val paint =
+                Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    isFilterBitmap = true
+                    isDither = true
+                }
+            val worldPixelSize = worldTileCount.toDouble() * tileSize.toDouble()
+            // Zoom-dependent scaling (business-logic specific).
+            // autoScalable=true: shrink when zoomed out relative to the zoom at which the current
+            // tiled snapshot was set (i.e., addMarker(s) time), but never grow beyond the icon's
+            // configured size. (Icon scale is already baked into the BitmapIcon dimensions.)
+            // autoScalable=false: no zoom scaling (keeps the bitmap's screen size constant).
+            val referenceZoom =
+                when {
+                    autoScaleReferenceZoom0 >= 0 -> autoScaleReferenceZoom0
+                    indexedZoom0 >= 0 -> indexedZoom0
+                    else -> fixedMarkerPixelSizeReferenceZoom
+                }
+            val pxToWorldFixed =
+                minOf(
+                    1.0,
+                    Math.pow(2.0, (zoom - referenceZoom).toDouble()),
+                )
+            val zoomScale = pxToWorldFixed
+            val pxToWorldScalable = 1.0
+            val markerScaleZ = if (markerScaleZoomInt0 >= 0) markerScaleZoomInt0 else indexedZoom0
+            val zoomToMarkerScale =
+                if (fixedMarkerPixelSize && markerScaleZ >= 0 && zoom != markerScaleZ) {
+                    Math.pow(2.0, (zoom - markerScaleZ).toDouble())
+                } else {
+                    1.0
+                }
+            val tileOriginX = normalizedX.toDouble() * tileSize.toDouble()
+            val tileOriginY = y.toDouble() * tileSize.toDouble()
+            val renderScaleDouble = renderScale.toDouble()
+            val renderBound = renderTileSize.toFloat()
+
+            val scaledBitmaps = HashMap<Int, Bitmap>()
+
+            fun getScaledBitmap(
+                bitmap: Bitmap,
+                width: Int,
+                height: Int,
+            ): Bitmap {
+                if (bitmap.isRecycled) return bitmap
+                if (bitmap.width == width && bitmap.height == height) {
+                    // No-op scaling. Never cache/recycle the shared source bitmap.
+                    return bitmap
+                }
+                val key =
+                    31 * (31 * System.identityHashCode(bitmap) + width) + height
+                scaledBitmaps[key]?.let { cached ->
+                    if (!cached.isRecycled) return cached
+                    scaledBitmaps.remove(key)
+                }
+                val scaled = Bitmap.createScaledBitmap(bitmap, width, height, true)
+                // createScaledBitmap may return the source bitmap when no scaling is needed (or on some implementations).
+                if (scaled === bitmap) return bitmap
+                scaled.density = Bitmap.DENSITY_NONE
+                scaledBitmaps[key] = scaled
+                return scaled
+            }
+
+            val shouldDeclutter =
+                declutterEnabled &&
+                    zoom <= declutterMaxZoomInt &&
+                    declutterMaxMarkersPerTile > 0 &&
+                    declutterCellPx > 0 &&
+                    declutterIconPx > 0
+            val occupancy =
+                if (shouldDeclutter) {
+                    TileOccupancy(
+                        width = renderTileSize,
+                        height = renderTileSize,
+                        cellPx = declutterCellPx * renderScale,
                     )
                 } else {
-                    emptyTileBytes
+                    null
                 }
-            tileCache.put(cacheKey, bytes)
-            return Tile(tileSize, tileSize, bytes)
-        }
 
-        var candidateCount = 0
-        var drawnCount = 0
-        val renderBitmap = Bitmap.createBitmap(renderTileSize, renderTileSize, Bitmap.Config.ARGB_8888)
-        renderBitmap.density = DisplayMetrics.DENSITY_DEFAULT
-        val canvas = Canvas(renderBitmap)
-        val paint =
-            Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                isFilterBitmap = true
-                isDither = true
-            }
-        val worldPixelSize = worldTileCount.toDouble() * tileSize.toDouble()
-        // Zoom-dependent scaling (business-logic specific).
-        // autoScalable=true: shrink when zoomed out relative to the zoom at which the current
-        // tiled snapshot was set (i.e., addMarker(s) time), but never grow beyond the icon's
-        // configured size. (Icon scale is already baked into the BitmapIcon dimensions.)
-        // autoScalable=false: no zoom scaling (keeps the bitmap's screen size constant).
-        val referenceZoom =
-            when {
-                autoScaleReferenceZoom >= 0 -> autoScaleReferenceZoom
-                indexedZoom >= 0 -> indexedZoom
-                else -> fixedMarkerPixelSizeReferenceZoom
-            }
-        val pxToWorldFixed =
-            minOf(
-                1.0,
-                Math.pow(2.0, (zoom - referenceZoom).toDouble()),
-            )
-        val zoomScale = pxToWorldFixed
-        val pxToWorldScalable = 1.0
-        val tileOriginX = normalizedX.toDouble() * tileSize.toDouble()
-        val tileOriginY = y.toDouble() * tileSize.toDouble()
-        val renderScaleDouble = renderScale.toDouble()
-        val renderBound = renderTileSize.toFloat()
-
-        val scaledBitmaps = HashMap<Int, Bitmap>()
-
-        fun getScaledBitmap(
-            bitmap: Bitmap,
-            width: Int,
-            height: Int,
-        ): Bitmap {
-            if (bitmap.isRecycled) return bitmap
-            if (bitmap.width == width && bitmap.height == height) {
-                // No-op scaling. Never cache/recycle the shared source bitmap.
-                return bitmap
-            }
-            val key =
-                31 * (31 * System.identityHashCode(bitmap) + width) + height
-            scaledBitmaps[key]?.let { cached ->
-                if (!cached.isRecycled) return cached
-                scaledBitmaps.remove(key)
-            }
-            val scaled = Bitmap.createScaledBitmap(bitmap, width, height, true)
-            // createScaledBitmap may return the source bitmap when no scaling is needed (or on some implementations).
-            if (scaled === bitmap) return bitmap
-            scaled.density = Bitmap.DENSITY_NONE
-            scaledBitmaps[key] = scaled
-            return scaled
-        }
-
-        val shouldDeclutter =
-            declutterEnabled &&
-                zoom <= declutterMaxZoomInt &&
-                declutterMaxMarkersPerTile > 0 &&
-                declutterCellPx > 0 &&
-                declutterIconPx > 0
-        val occupancy =
-            if (shouldDeclutter) {
-                TileOccupancy(
-                    width = renderTileSize,
-                    height = renderTileSize,
-                    cellPx = declutterCellPx * renderScale,
-                )
-            } else {
-                null
-            }
-
-        for (dy in -1..1) {
-            val ny = y + dy
-            if (ny !in 0 until worldTileCount) continue
-            for (dx in -1..1) {
-                val nx = normalizeTileX(normalizedX + dx, worldTileCount)
-                val key = tileKey(nx, ny)
-                val idsAll = zoomTileIndex[key].orEmpty()
-                val ids =
-                    if (shouldDeclutter) {
-                        // Deterministic ordering to avoid "random disappearance" complaints.
-                        // Keeping first N by stable hash gives stable visuals across runs.
-                        idsAll
-                            .asSequence()
-                            .sortedBy { stableHash(it) }
-                            .take(declutterMaxMarkersPerTile)
-                            .toList()
-                    } else {
-                        idsAll
-                    }
-                if (ids.isEmpty()) continue
-
-                for (id in ids) {
-                    candidateCount++
-                    val marker = markersById[id] ?: continue
-                    if (!marker.visible) continue
-                    if (marker.bitmap.isRecycled) continue
-                    val pixelX = marker.mercatorX * worldPixelSize
-                    val pixelY = (marker.mercatorY * worldPixelSize).coerceIn(0.0, worldPixelSize - 1.0)
-                    // Handle world-wrap: choose the delta that keeps markers near the current tile.
-                    val deltaX0 = pixelX - tileOriginX
-                    val deltaX =
-                        when {
-                            deltaX0 > worldPixelSize / 2.0 -> deltaX0 - worldPixelSize
-                            deltaX0 < -worldPixelSize / 2.0 -> deltaX0 + worldPixelSize
-                            else -> deltaX0
+            for (dy in -1..1) {
+                val ny = y + dy
+                if (ny !in 0 until worldTileCount) continue
+                for (dx in -1..1) {
+                    val nx = normalizeTileX(normalizedX + dx, worldTileCount)
+                    val key = tileKey(nx, ny)
+                    val idsAll = zoomTileIndex[key].orEmpty()
+                    val ids =
+                        if (shouldDeclutter) {
+                            // Deterministic ordering to avoid "random disappearance" complaints.
+                            // Keeping first N by stable hash gives stable visuals across runs.
+                            idsAll
+                                .asSequence()
+                                .sortedBy { stableHash(it) }
+                                .take(declutterMaxMarkersPerTile)
+                                .toList()
+                        } else {
+                            idsAll
                         }
-                    val localX = deltaX * renderScaleDouble
-                    val localY = (pixelY - tileOriginY) * renderScaleDouble
+                    if (ids.isEmpty()) continue
 
-                    // Convert bitmap pixels to world pixels.
-                    // When fixedMarkerPixelSize=true, bitmapPxToWorldPx is computed for `indexedZoom`, but Google Maps can
-                    // request tiles for `zoom` and `zoom+1` during animations. Adjust by 2^(zoom-indexedZoom) so marker
-                    // screen size stays stable even when tiles of multiple zoom levels are mixed on screen.
-                    val zoomToIndexedScale =
-                        if (fixedMarkerPixelSize && indexedZoom >= 0 && zoom != indexedZoom) {
-                            Math.pow(2.0, (zoom - indexedZoom).toDouble())
+                    for (id in ids) {
+                        candidateCount++
+                        val marker = markersById0[id] ?: continue
+                        if (!marker.visible) continue
+                        if (marker.bitmap.isRecycled) continue
+                        val pixelX = marker.mercatorX * worldPixelSize
+                        val pixelY = (marker.mercatorY * worldPixelSize).coerceIn(0.0, worldPixelSize - 1.0)
+                        // Handle world-wrap: choose the delta that keeps markers near the current tile.
+                        val deltaX0 = pixelX - tileOriginX
+                        val deltaX =
+                            when {
+                                deltaX0 > worldPixelSize / 2.0 -> deltaX0 - worldPixelSize
+                                deltaX0 < -worldPixelSize / 2.0 -> deltaX0 + worldPixelSize
+                                else -> deltaX0
+                            }
+                        val localX = deltaX * renderScaleDouble
+                        val localY = (pixelY - tileOriginY) * renderScaleDouble
+
+                        // Convert bitmap pixels to world pixels.
+                        // When fixedMarkerPixelSize=true, bitmapPxToWorldPx is computed for `markerScaleZoomInt`, but
+                        // Google Maps can request tiles for `zoom` and `zoom+1` during animations.
+                        val pxToWorldBase =
+                            if (fixedMarkerPixelSize) bitmapPxToWorldPx0 * zoomToMarkerScale else 1.0
+                        val pxToWorld =
+                            pxToWorldBase *
+                                if (marker.autoScalable) zoomScale else pxToWorldScalable
+                        val drawWidth = (marker.bitmap.width.toDouble() * pxToWorld).coerceAtLeast(1.0)
+                        val drawHeight = (marker.bitmap.height.toDouble() * pxToWorld).coerceAtLeast(1.0)
+                        val drawWidthPx = (drawWidth * renderScaleDouble).roundToInt().coerceAtLeast(1)
+                        val drawHeightPx = (drawHeight * renderScaleDouble).roundToInt().coerceAtLeast(1)
+
+                        val left = (localX - marker.anchorX * drawWidthPx.toDouble()).toFloat()
+                        val top = (localY - marker.anchorY * drawHeightPx.toDouble()).toFloat()
+                        val right = left + drawWidthPx.toFloat()
+                        val bottom = top + drawHeightPx.toFloat()
+                        if (right <= 0f || bottom <= 0f || left >= renderBound || top >= renderBound) continue
+
+                        if (occupancy != null) {
+                            // Approximate overlap culling in tile pixel space.
+                            // Use a smaller "virtual occupancy" than the real drawn bitmap size so we don't
+                            // over-prune at low zoom where icons are dense.
+                            val occW = minOf(drawWidthPx, declutterIconPx * renderScale)
+                            val occH = minOf(drawHeightPx, declutterIconPx * renderScale)
+                            val occLeft = (localX - marker.anchorX * occW.toDouble()).toFloat()
+                            val occTop = (localY - marker.anchorY * occH.toDouble()).toFloat()
+                            val occRight = occLeft + occW.toFloat()
+                            val occBottom = occTop + occH.toFloat()
+                            if (!occupancy.tryOccupy(occLeft, occTop, occRight, occBottom)) continue
+                        }
+
+                        val scaledBitmap = getScaledBitmap(marker.bitmap, drawWidthPx, drawHeightPx)
+                        canvas.drawBitmap(scaledBitmap, left, top, paint)
+                        drawnCount++
+                    }
+                }
+            }
+
+            if (!debugTileOverlay && drawnCount == 0) {
+                // Avoid expensive PNG compression for empty tiles (common when markers are near tile edges
+                // due to the neighbor-tile scan above).
+                if (!renderBitmap.isRecycled) renderBitmap.recycle()
+                scaledBitmaps.values.forEach { it.recycle() }
+                if (maybeRetry("drawn=0")) continue
+                tileCache.put(cacheKey, emptyTileBytes)
+                return Tile(tileSize, tileSize, emptyTileBytes)
+            }
+
+            if (perfEnabled) {
+                // Debug sizing drift during zoom transitions / mixed zoom tiles.
+                val seed = (normalizedX * 73856093) xor (y * 19349663) xor (zoom * 83492791)
+                if (GoogleMapMarkerTilingPerfLog.shouldSample(seed) && (zoomToMarkerScale != 1.0 || zoomScale != 1.0)) {
+                    val epochNow = stateEpoch.get()
+                    val indexedZoomNow = indexedZoom
+                    val markerScaleZoomIntNow = markerScaleZoomInt
+                    val markerScaleZNow = if (markerScaleZoomIntNow >= 0) markerScaleZoomIntNow else indexedZoomNow
+                    val zToMsNow =
+                        if (fixedMarkerPixelSize && markerScaleZNow >= 0 && zoom != markerScaleZNow) {
+                            Math.pow(2.0, (zoom - markerScaleZNow).toDouble())
                         } else {
                             1.0
                         }
-                    val pxToWorldBase = if (fixedMarkerPixelSize) bitmapPxToWorldPx * zoomToIndexedScale else 1.0
-                    val pxToWorld = pxToWorldBase * if (marker.autoScalable) zoomScale else pxToWorldScalable
-                    val drawWidth = (marker.bitmap.width.toDouble() * pxToWorld).coerceAtLeast(1.0)
-                    val drawHeight = (marker.bitmap.height.toDouble() * pxToWorld).coerceAtLeast(1.0)
-                    val drawWidthPx = (drawWidth * renderScaleDouble).roundToInt().coerceAtLeast(1)
-                    val drawHeightPx = (drawHeight * renderScaleDouble).roundToInt().coerceAtLeast(1)
-
-                    val left = (localX - marker.anchorX * drawWidthPx.toDouble()).toFloat()
-                    val top = (localY - marker.anchorY * drawHeightPx.toDouble()).toFloat()
-                    val right = left + drawWidthPx.toFloat()
-                    val bottom = top + drawHeightPx.toFloat()
-                    if (right <= 0f || bottom <= 0f || left >= renderBound || top >= renderBound) continue
-
-                    if (occupancy != null) {
-                        // Approximate overlap culling in tile pixel space.
-                        // Use a smaller "virtual occupancy" than the real drawn bitmap size so we don't
-                        // over-prune at low zoom where icons are dense.
-                        val occW = minOf(drawWidthPx, declutterIconPx * renderScale)
-                        val occH = minOf(drawHeightPx, declutterIconPx * renderScale)
-                        val occLeft = (localX - marker.anchorX * occW.toDouble()).toFloat()
-                        val occTop = (localY - marker.anchorY * occH.toDouble()).toFloat()
-                        val occRight = occLeft + occW.toFloat()
-                        val occBottom = occTop + occH.toFloat()
-                        if (!occupancy.tryOccupy(occLeft, occTop, occRight, occBottom)) continue
-                    }
-
-                    val scaledBitmap = getScaledBitmap(marker.bitmap, drawWidthPx, drawHeightPx)
-                    canvas.drawBitmap(scaledBitmap, left, top, paint)
-                    drawnCount++
+                    GoogleMapMarkerTilingPerfLog.logInfo(
+                        "TiledOverlay.getTile scaleMeta | z=$zoom x=$normalizedX y=$y e0=$epoch0 eNow=$epochNow ixZ0=$indexedZoom0 ixZNow=$indexedZoomNow msZ0=$markerScaleZoomInt0 msZNow=$markerScaleZoomIntNow refZ=$referenceZoom autoRefZ0=$autoScaleReferenceZoom0 autoRefZNow=$autoScaleReferenceZoom bmp0=${"%.6f".format(bitmapPxToWorldPx0)} bmpNow=${"%.6f".format(bitmapPxToWorldPx)} zToMs0=${"%.3f".format(zoomToMarkerScale)} zToMsNow=${"%.3f".format(zToMsNow)} zScale=${"%.3f".format(zoomScale)} fixedPx=$fixedMarkerPixelSize cacheV0=$cacheVersion0 cacheVNow=$cacheVersion idxKeys0=${tileIndexByZoom0.keys.sorted()} idxKeysNow=${tileIndexByZoom.keys.sorted()}",
+                    )
                 }
             }
-        }
 
-        if (!debugTileOverlay && drawnCount == 0) {
-            // Avoid expensive PNG compression for empty tiles (common when markers are near tile edges
-            // due to the neighbor-tile scan above).
-            if (!renderBitmap.isRecycled) renderBitmap.recycle()
-            scaledBitmaps.values.forEach { it.recycle() }
-            tileCache.put(cacheKey, emptyTileBytes)
-            return Tile(tileSize, tileSize, emptyTileBytes)
-        }
+            val compressStart = if (perfEnabled) SystemClock.elapsedRealtime() else 0L
+            val bitmap =
+                if (renderScale == 1) {
+                    renderBitmap
+                } else {
+                    Bitmap
+                        .createScaledBitmap(renderBitmap, tileSize, tileSize, finalTileDownscaleFilter)
+                        .also {
+                            it.density = DisplayMetrics.DENSITY_DEFAULT
+                        }.also {
+                            renderBitmap.recycle()
+                        }
+                }
 
-        val compressStart = if (GoogleMapMarkerTilingPerfLog.enabled) SystemClock.elapsedRealtime() else 0L
-        val bitmap =
-            if (renderScale == 1) {
-                renderBitmap
-            } else {
-                Bitmap
-                    .createScaledBitmap(renderBitmap, tileSize, tileSize, finalTileDownscaleFilter)
-                    .also {
-                        it.density = DisplayMetrics.DENSITY_DEFAULT
-                    }.also {
-                        renderBitmap.recycle()
-                    }
-            }
-
-        if (debugTileOverlay) {
-            drawDebugOverlay(
-                bitmap = bitmap,
-                tileSize = tileSize,
-                zoom = zoom,
-                x = normalizedX,
-                y = y,
-                candidates = candidateCount,
-                drawn = drawnCount,
-                compressMs = 0,
-                cacheHit = false,
-                zoomScale = zoomScale,
-            )
-        }
-
-        val output = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
-        val compressMs =
-            if (GoogleMapMarkerTilingPerfLog.enabled) SystemClock.elapsedRealtime() - compressStart else 0L
-        val bytes = output.toByteArray()
-        if (bitmap !== renderBitmap && !bitmap.isRecycled) bitmap.recycle()
-        if (!renderBitmap.isRecycled) renderBitmap.recycle()
-        scaledBitmaps.values.forEach { it.recycle() }
-        if (GoogleMapMarkerTilingPerfLog.enabled) {
-            val totalMs = SystemClock.elapsedRealtime() - tileStart
-            val seed = (normalizedX * 73856093) xor (y * 19349663) xor (zoom * 83492791)
-            GoogleMapMarkerTilingPerfLog.logSlow(
-                name = "TiledOverlay.getTile",
-                elapsedMs = totalMs,
-                meta = "z=$zoom x=$normalizedX y=$y candidates=$candidateCount drawn=$drawnCount compressMs=$compressMs tiles=${zoomTileIndex.size}",
-                sampleSeed = seed,
-            )
-
-            val n = tilesRendered.incrementAndGet()
-            tilesTotalMs.addAndGet(totalMs)
-            tilesCompressMs.addAndGet(compressMs)
-            tilesCandidates.addAndGet(candidateCount.toLong())
-            tilesDrawn.addAndGet(drawnCount.toLong())
-            while (true) {
-                val current = maxTileMs.get()
-                if (totalMs <= current) break
-                if (maxTileMs.compareAndSet(current, totalMs)) break
-            }
-            val every = GoogleMapMarkerTilingPerfLog.tileSummaryEvery
-            if (every > 0 && (n % every) == 0L) {
-                val avgMs = tilesTotalMs.get().toDouble() / n.toDouble()
-                val avgCompress = tilesCompressMs.get().toDouble() / n.toDouble()
-                val avgCandidates = tilesCandidates.get().toDouble() / n.toDouble()
-                val avgDrawn = tilesDrawn.get().toDouble() / n.toDouble()
-                val hits = tilesCacheHits.get()
-                GoogleMapMarkerTilingPerfLog.logInfo(
-                    "TiledOverlay.getTile summary | rendered=$n cacheHits=$hits avgMs=${"%.1f".format(avgMs)} avgCompressMs=${"%.1f".format(avgCompress)} avgCandidates=${"%.1f".format(avgCandidates)} avgDrawn=${"%.1f".format(avgDrawn)} maxMs=${maxTileMs.get()} cacheBytes=${tileCache.size()}",
+            if (debugTileOverlay) {
+                drawDebugOverlay(
+                    bitmap = bitmap,
+                    tileSize = tileSize,
+                    zoom = zoom,
+                    x = normalizedX,
+                    y = y,
+                    candidates = candidateCount,
+                    drawn = drawnCount,
+                    compressMs = 0,
+                    cacheHit = false,
+                    zoomScale = zoomScale,
                 )
             }
+
+            val output = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
+            val compressMs =
+                if (perfEnabled) SystemClock.elapsedRealtime() - compressStart else 0L
+            val bytes = output.toByteArray()
+            if (bitmap !== renderBitmap && !bitmap.isRecycled) bitmap.recycle()
+            if (!renderBitmap.isRecycled) renderBitmap.recycle()
+            scaledBitmaps.values.forEach { it.recycle() }
+
+            if (maybeRetry("beforeCachePut")) continue
+
+            if (perfEnabled) {
+                val totalMs = SystemClock.elapsedRealtime() - tileStart
+                val seed = (normalizedX * 73856093) xor (y * 19349663) xor (zoom * 83492791)
+                GoogleMapMarkerTilingPerfLog.logSlow(
+                    name = "TiledOverlay.getTile",
+                    elapsedMs = totalMs,
+                    meta = "z=$zoom x=$normalizedX y=$y candidates=$candidateCount drawn=$drawnCount compressMs=$compressMs tiles=${zoomTileIndex.size}",
+                    sampleSeed = seed,
+                )
+
+                val n = tilesRendered.incrementAndGet()
+                tilesTotalMs.addAndGet(totalMs)
+                tilesCompressMs.addAndGet(compressMs)
+                tilesCandidates.addAndGet(candidateCount.toLong())
+                tilesDrawn.addAndGet(drawnCount.toLong())
+                while (true) {
+                    val current = maxTileMs.get()
+                    if (totalMs <= current) break
+                    if (maxTileMs.compareAndSet(current, totalMs)) break
+                }
+                val every = GoogleMapMarkerTilingPerfLog.tileSummaryEvery
+                if (every > 0 && (n % every) == 0L) {
+                    val avgMs = tilesTotalMs.get().toDouble() / n.toDouble()
+                    val avgCompress = tilesCompressMs.get().toDouble() / n.toDouble()
+                    val avgCandidates = tilesCandidates.get().toDouble() / n.toDouble()
+                    val avgDrawn = tilesDrawn.get().toDouble() / n.toDouble()
+                    val hits = tilesCacheHits.get()
+                    GoogleMapMarkerTilingPerfLog.logInfo(
+                        "TiledOverlay.getTile summary | rendered=$n cacheHits=$hits avgMs=${"%.1f".format(avgMs)} avgCompressMs=${"%.1f".format(avgCompress)} avgCandidates=${"%.1f".format(avgCandidates)} avgDrawn=${"%.1f".format(avgDrawn)} maxMs=${maxTileMs.get()} cacheBytes=${tileCache.size()}",
+                    )
+                }
+            }
+            tileCache.put(cacheKey, bytes)
+            return Tile(tileSize, tileSize, bytes)
         }
-        tileCache.put(cacheKey, bytes)
-        return Tile(tileSize, tileSize, bytes)
     }
 
     companion object {

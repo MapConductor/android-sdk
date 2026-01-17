@@ -416,23 +416,25 @@ class GoogleMapMarkerController private constructor(
                 val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
                 val zoomIndexes =
                     if (zoomInt != lastIndexedZoom) {
-                val markers = lastTiledMarkersSnapshot
-                val z0 = zoomInt
-                val z1 = (zoomInt + 1).coerceAtLeast(0)
-                mapOf(
-                            z0 to
+                        val markers = lastTiledMarkersSnapshot
+                        val desiredZooms = LinkedHashSet<Int>(4)
+                        desiredZooms.add(zoomInt.coerceAtLeast(0))
+                        desiredZooms.add((zoomInt + 1).coerceAtLeast(0))
+                        if (lastIndexedZoom >= 0) {
+                            desiredZooms.add(lastIndexedZoom)
+                            desiredZooms.add(lastIndexedZoom + 1)
+                        }
+                        val out = lastTileIndexByZoom.filterKeys { it in desiredZooms }.toMutableMap()
+                        for (z in desiredZooms) {
+                            if (out.containsKey(z)) continue
+                            out[z] =
                                 GoogleMapTiledMarkerOverlay.buildTileIndex(
                                     markers = markers,
-                                    zoom = z0,
+                                    zoom = z,
                                     tileSize = tilingOptions.tileSize,
-                                ),
-                            z1 to
-                                GoogleMapTiledMarkerOverlay.buildTileIndex(
-                                    markers = markers,
-                                    zoom = z1,
-                                    tileSize = tilingOptions.tileSize,
-                                ),
-                        )
+                                )
+                        }
+                        out
                     } else {
                         null
                     }
@@ -463,7 +465,10 @@ class GoogleMapMarkerController private constructor(
                         )
                     } else if (kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-4) {
                         lastAppliedMarkerScale = markerScale
-                        overlay.setMarkerScale(markerScale)
+                        overlay.setMarkerScale(
+                            bitmapPxToWorldPx = markerScale,
+                            markerScaleZoomInt = zoomInt,
+                        )
                     }
                 }
             }
