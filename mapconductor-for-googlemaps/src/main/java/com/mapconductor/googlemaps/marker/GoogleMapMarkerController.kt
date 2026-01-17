@@ -413,12 +413,7 @@ class GoogleMapMarkerController private constructor(
         withContext(Dispatchers.Default) {
             semaphore.withPermit {
                 val scaleChanged = updateScreenPxPerWorldPxAndCheckChange(zoomInt)
-                val markerScale =
-                    if (tilingOptions.fixedMarkerPixelSize) {
-                        1.0
-                    } else {
-                        quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
-                    }
+                val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
                 val zoomIndexes =
                     if (zoomInt != lastIndexedZoom) {
                         val markers = lastTiledMarkersSnapshot
@@ -459,12 +454,14 @@ class GoogleMapMarkerController private constructor(
                     if (zoomInt != lastIndexedZoom) {
                         val indexes = requireNotNull(zoomIndexes)
                         lastTileIndexByZoom = indexes
-                        overlay.setTileIndexes(indexes, indexedZoom = zoomInt)
                         lastIndexedZoom = zoomInt
-                    }
-                    if (!tilingOptions.fixedMarkerPixelSize &&
-                        (scaleChanged || kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-4)
-                    ) {
+                        lastAppliedMarkerScale = markerScale
+                        overlay.setTileIndexesAndMarkerScale(
+                            indexes = indexes,
+                            indexedZoom = zoomInt,
+                            bitmapPxToWorldPx = markerScale,
+                        )
+                    } else if (scaleChanged || kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-4) {
                         lastAppliedMarkerScale = markerScale
                         overlay.setMarkerScale(markerScale)
                     }
@@ -574,12 +571,7 @@ class GoogleMapMarkerController private constructor(
                     tileSize = tilingOptions.tileSize,
                 )
             }
-        val markerScale =
-            if (tilingOptions.fixedMarkerPixelSize) {
-                1.0
-            } else {
-                quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
-            }
+        val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
         withContext(renderer.coroutine.coroutineContext) {
             val overlay =
                 renderer.getOrCreateTiledOverlay(
@@ -597,10 +589,11 @@ class GoogleMapMarkerController private constructor(
                 )
             val setStart = SystemClock.elapsedRealtime()
             lastTileIndexByZoom = mapOf(zoom to tileIndex, (zoom + 1).coerceAtLeast(0) to tileIndexNextZoom)
-            overlay.setMarkersAndTileIndexes(
+            overlay.setMarkersAndTileIndexesAndMarkerScale(
                 markers = markers,
                 indexes = lastTileIndexByZoom,
                 indexedZoom = zoom,
+                bitmapPxToWorldPx = markerScale,
             )
             GoogleMapMarkerTilingPerfLog.logSlow(
                 name = "MarkerController.syncTiledOverlay:setMarkers(Main)",
@@ -609,9 +602,6 @@ class GoogleMapMarkerController private constructor(
             )
             lastIndexedZoom = zoom
             lastAppliedMarkerScale = markerScale
-            if (!tilingOptions.fixedMarkerPixelSize) {
-                overlay.setMarkerScale(markerScale)
-            }
         }
     }
 

@@ -131,6 +131,24 @@ internal class GoogleMapTiledMarkerOverlay(
         tileOverlay.clearTileCache()
     }
 
+    fun setMarkersAndTileIndexesAndMarkerScale(
+        markers: Map<String, RenderMarker>,
+        indexes: Map<Int, Map<Long, List<String>>>,
+        indexedZoom: Int,
+        bitmapPxToWorldPx: Double,
+    ) {
+        markersById = markers
+        this.indexedZoom = indexedZoom
+        this.autoScaleReferenceZoom = indexedZoom
+        tileIndexByZoom = indexes
+        tileToMarkerIds = indexes[indexedZoom].orEmpty()
+        this.bitmapPxToWorldPx = bitmapPxToWorldPx.coerceAtLeast(1e-6)
+        cacheVersion = (cacheVersion + 1) and 0x7fffffff
+        tileCache.evictAll()
+        emptyTileBytes = makeEmptyTilePng(tileSize)
+        tileOverlay.clearTileCache()
+    }
+
     fun setTileIndexes(
         indexes: Map<Int, Map<Long, List<String>>>,
         indexedZoom: Int,
@@ -147,6 +165,20 @@ internal class GoogleMapTiledMarkerOverlay(
         val next = bitmapPxToWorldPx.coerceAtLeast(1e-6)
         if (kotlin.math.abs(this.bitmapPxToWorldPx - next) < 1e-4) return
         this.bitmapPxToWorldPx = next
+        cacheVersion = (cacheVersion + 1) and 0x7fffffff
+        tileCache.evictAll()
+        tileOverlay.clearTileCache()
+    }
+
+    fun setTileIndexesAndMarkerScale(
+        indexes: Map<Int, Map<Long, List<String>>>,
+        indexedZoom: Int,
+        bitmapPxToWorldPx: Double,
+    ) {
+        this.indexedZoom = indexedZoom
+        this.tileIndexByZoom = indexes
+        this.tileToMarkerIds = indexes[indexedZoom].orEmpty()
+        this.bitmapPxToWorldPx = bitmapPxToWorldPx.coerceAtLeast(1e-6)
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         tileCache.evictAll()
         tileOverlay.clearTileCache()
@@ -263,9 +295,8 @@ internal class GoogleMapTiledMarkerOverlay(
                 1.0,
                 Math.pow(2.0, (zoom - referenceZoom).toDouble()),
             )
-        val pxToWorldScalable = 1.0
-        // For debug overlay display
         val zoomScale = pxToWorldFixed
+        val pxToWorldScalable = 1.0
         val tileOriginX = normalizedX.toDouble() * tileSize.toDouble()
         val tileOriginY = y.toDouble() * tileSize.toDouble()
         val renderScaleDouble = renderScale.toDouble()
@@ -353,12 +384,20 @@ internal class GoogleMapTiledMarkerOverlay(
                     val localX = deltaX * renderScaleDouble
                     val localY = (pixelY - tileOriginY) * renderScaleDouble
 
-                    // Choose scale based on marker's autoScalable flag:
-                    // autoScalable=true: apply zoom-based scaling
-                    // autoScalable=false: no zoom scaling (fixed screen size)
-                    val markerScale = if (marker.autoScalable) pxToWorldFixed else pxToWorldScalable
-                    val drawWidth = (marker.bitmap.width.toDouble() * markerScale).coerceAtLeast(1.0)
-                    val drawHeight = (marker.bitmap.height.toDouble() * markerScale).coerceAtLeast(1.0)
+                    // Convert bitmap pixels to world pixels.
+                    // When fixedMarkerPixelSize=true, bitmapPxToWorldPx is computed for `indexedZoom`, but Google Maps can
+                    // request tiles for `zoom` and `zoom+1` during animations. Adjust by 2^(zoom-indexedZoom) so marker
+                    // screen size stays stable even when tiles of multiple zoom levels are mixed on screen.
+                    val zoomToIndexedScale =
+                        if (fixedMarkerPixelSize && indexedZoom >= 0 && zoom != indexedZoom) {
+                            Math.pow(2.0, (zoom - indexedZoom).toDouble())
+                        } else {
+                            1.0
+                        }
+                    val pxToWorldBase = if (fixedMarkerPixelSize) bitmapPxToWorldPx * zoomToIndexedScale else 1.0
+                    val pxToWorld = pxToWorldBase * if (marker.autoScalable) zoomScale else pxToWorldScalable
+                    val drawWidth = (marker.bitmap.width.toDouble() * pxToWorld).coerceAtLeast(1.0)
+                    val drawHeight = (marker.bitmap.height.toDouble() * pxToWorld).coerceAtLeast(1.0)
                     val drawWidthPx = (drawWidth * renderScaleDouble).roundToInt().coerceAtLeast(1)
                     val drawHeightPx = (drawHeight * renderScaleDouble).roundToInt().coerceAtLeast(1)
 
