@@ -18,9 +18,12 @@ import com.mapconductor.core.raster.TileScheme
 import kotlin.math.PI
 import kotlin.math.pow
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class ArcGISRasterLayerOverlayRenderer(
     private val holder: ArcGISMapViewHolder,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<Layer> {
     override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<Layer?> {
         val results = ArrayList<Layer?>(data.size)

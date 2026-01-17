@@ -21,44 +21,6 @@ class GoogleMapMarkerRenderer(
         holder = holder,
         coroutine = coroutine,
     ) {
-    private var tiledOverlay: GoogleMapTiledMarkerOverlay? = null
-
-    internal fun getOrCreateTiledOverlay(
-        finalTileDownscaleFilter: Boolean = true,
-        debugTileOverlay: Boolean = false,
-        renderScaleOverride: Int? = null,
-        tileSize: Int = 256,
-        declutterEnabled: Boolean = false,
-        declutterMaxZoomInt: Int = 7,
-        declutterMaxMarkersPerTile: Int = 800,
-        declutterIconPx: Int = 28,
-        declutterCellPx: Int = 8,
-        fixedMarkerPixelSize: Boolean = true,
-        fixedMarkerPixelSizeReferenceZoom: Int = 10,
-    ): GoogleMapTiledMarkerOverlay {
-        val existing = tiledOverlay
-        if (existing != null) return existing
-        return GoogleMapTiledMarkerOverlay(
-            map = this.holder.map,
-            tileSize = tileSize,
-            finalTileDownscaleFilter = finalTileDownscaleFilter,
-            debugTileOverlay = debugTileOverlay,
-            renderScaleOverride = renderScaleOverride,
-            declutterEnabled = declutterEnabled,
-            declutterMaxZoomInt = declutterMaxZoomInt,
-            declutterMaxMarkersPerTile = declutterMaxMarkersPerTile,
-            declutterIconPx = declutterIconPx,
-            declutterCellPx = declutterCellPx,
-            fixedMarkerPixelSize = fixedMarkerPixelSize,
-            fixedMarkerPixelSizeReferenceZoom = fixedMarkerPixelSizeReferenceZoom,
-        ).also { tiledOverlay = it }
-    }
-
-    internal fun removeTiledOverlay() {
-        tiledOverlay?.remove()
-        tiledOverlay = null
-    }
-
     override fun setMarkerPosition(
         markerEntity: MarkerEntityInterface<GoogleMapActualMarker>,
         position: GeoPoint,

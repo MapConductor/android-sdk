@@ -32,7 +32,7 @@ class CircleState(
     zIndex: Int? = null,
     extra: Serializable? = null,
     onClick: OnCircleEventHandler? = null,
-): ComponentState {
+) : ComponentState {
     var center by mutableStateOf(center)
     var clickable by mutableStateOf(clickable)
     var radiusMeters by mutableStateOf(radiusMeters)

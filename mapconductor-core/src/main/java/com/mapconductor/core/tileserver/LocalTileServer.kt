@@ -1,12 +1,12 @@
 package com.mapconductor.core.tileserver
 
-import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import android.util.Log
 
 class LocalTileServer private constructor(
     private val serverSocket: ServerSocket,
@@ -141,7 +141,11 @@ class LocalTileServer private constructor(
                     if (tookMs >= SLOW_RESPONSE_WARN_MS) {
                         val key = parseTileKey(path)
                         if (key != null) {
-                            Log.w(TAG, "Slow tile response took=${tookMs}ms route=${key.routeId} tileSize=${key.tileSize} z=${key.z} x=${key.x} y=${key.y} status=$status")
+                            Log.w(
+                                TAG,
+                                "Slow tile response took=${tookMs}ms route=${key.routeId} " +
+                                    "tileSize=${key.tileSize} z=${key.z} x=${key.x} y=${key.y} status=$status",
+                            )
                         } else {
                             Log.w(TAG, "Slow response took=${tookMs}ms status=$status path=${request.path}")
                         }
@@ -186,13 +190,14 @@ class LocalTileServer private constructor(
             headers[key] = value
         }
 
-        val req = Request(
-            method = method,
-            path = path,
-            httpVersion = httpVersion,
-            headers = headers,
-            valid = valid,
-        )
+        val req =
+            Request(
+                method = method,
+                path = path,
+                httpVersion = httpVersion,
+                headers = headers,
+                valid = valid,
+            )
         return req
     }
 

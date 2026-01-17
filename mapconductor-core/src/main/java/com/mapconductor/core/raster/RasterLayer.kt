@@ -16,7 +16,7 @@ class RasterLayerState(
     debug: Boolean = false,
     id: String? = null,
     extraHeaders: Map<String, String>? = null,
-): ComponentState {
+) : ComponentState {
     override val id =
         (
             id ?: rasterLayerId(

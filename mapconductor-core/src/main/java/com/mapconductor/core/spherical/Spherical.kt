@@ -12,7 +12,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
 /**
  * Spherical geometry utility functions for calculating distances, headings,
  * and positions on Earth's surface using the spherical Earth model.

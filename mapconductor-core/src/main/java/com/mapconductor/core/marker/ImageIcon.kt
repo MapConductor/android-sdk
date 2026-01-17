@@ -18,7 +18,7 @@ class ImageIcon(
     override val anchor: Offset = Offset(0.5f, 0.5f),
     override val infoAnchor: Offset = Offset(0.5f, 0.5f),
     override val debug: Boolean = false,
-    ) : AndroidDrawableIcon(
+) : AndroidDrawableIcon(
         drawable = image,
     ) {
     private fun getDrawableIdentity(): Int =

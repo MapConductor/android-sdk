@@ -21,7 +21,7 @@ class PolylineState(
     geodesic: Boolean = false,
     extra: Serializable? = null,
     onClick: OnPolylineEventHandler? = null,
-): ComponentState {
+) : ComponentState {
     override val id =
         (
             id ?: polylineId(

@@ -12,9 +12,12 @@ import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.sources.RasterSource as MapLibreRasterSource
 import org.maplibre.android.style.sources.TileSet
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class MapLibreRasterLayerOverlayRenderer(
     private val holder: MapLibreMapViewHolderInterface,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<MapLibreRasterLayerHandle> {
     override suspend fun onAdd(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,

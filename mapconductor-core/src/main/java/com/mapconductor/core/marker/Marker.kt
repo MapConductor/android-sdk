@@ -34,7 +34,7 @@ class MarkerState(
     onDragEnd: OnMarkerEventHandler? = null,
     onAnimateStart: OnMarkerEventHandler? = null,
     onAnimateEnd: OnMarkerEventHandler? = null,
-): ComponentState {
+) : ComponentState {
     override val id =
         (
             id ?: markerId(

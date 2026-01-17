@@ -24,7 +24,7 @@ class PolygonState(
     zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolygonEventHandler? = null,
-): ComponentState {
+) : ComponentState {
     override val id =
         (
             id ?: polygonId(

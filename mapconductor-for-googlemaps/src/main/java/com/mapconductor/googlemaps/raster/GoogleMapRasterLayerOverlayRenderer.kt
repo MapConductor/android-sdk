@@ -23,10 +23,14 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class GoogleMapRasterLayerOverlayRenderer(
     private val holder: GoogleMapViewHolder,
     private val okHttpClient: OkHttpClient,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<TileOverlay> {
     override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<TileOverlay?> =
         data.map { params ->
@@ -36,15 +40,17 @@ class GoogleMapRasterLayerOverlayRenderer(
     override suspend fun onChange(
         data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<TileOverlay>>,
     ): List<TileOverlay?> =
-        data.map { params ->
-            val prev = params.prev
-            val next = params.current.state
-            if (prev.state.source != next.source || prev.state.debug != next.debug) {
-                prev.layer.remove()
-                addLayer(next)
-            } else {
-                updateLayer(prev.layer, next)
-                prev.layer
+        withContext(coroutine.coroutineContext) {
+            data.map { params ->
+                val prev = params.prev
+                val next = params.current.state
+                if (prev.state.source != next.source || prev.state.debug != next.debug) {
+                    prev.layer.remove()
+                    addLayer(next)
+                } else {
+                    updateLayer(prev.layer, next)
+                    prev.layer
+                }
             }
         }
 

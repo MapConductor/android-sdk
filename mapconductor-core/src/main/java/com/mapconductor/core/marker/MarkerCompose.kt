@@ -84,6 +84,6 @@ fun MapViewScope.Marker(
             onDragEnd = onDragEnd,
             onAnimateStart = onAnimateStart,
             onAnimateEnd = onAnimateEnd,
-    )
+        )
     Marker(state)
 }

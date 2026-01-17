@@ -39,6 +39,7 @@ import com.mapconductor.googlemaps.marker.DefaultGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerController
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerEventControllerInterface
 import com.mapconductor.googlemaps.marker.GoogleMapMarkerRenderer
+import com.mapconductor.googlemaps.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.googlemaps.marker.StrategyGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
@@ -89,6 +90,25 @@ class GoogleMapViewController(
         registerController(circleController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultGoogleMapMarkerEventController(markerController))
+
+        // Wire up the RasterLayer callback for marker tile rendering
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.add(listOf(state))
+                } else {
+                    // Remove all marker tile layers
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity ->
+                        rasterLayerController.rasterLayerManager.removeEntity(entity.state.id)
+                        rasterLayerController.renderer.onRemove(listOf(entity))
+                    }
+                }
+            },
+        )
     }
 
     fun setupListeners() {

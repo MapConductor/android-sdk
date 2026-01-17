@@ -20,7 +20,7 @@ class GroundImageState(
     id: String? = null,
     extra: Serializable? = null,
     onClick: OnGroundImageEventHandler? = null,
-): ComponentState {
+) : ComponentState {
     override val id = (id ?: generateId(bounds, image, opacity, tileSize, extra)).toString()
 
 //    var bounds by StateFlowDelegate(bounds)
