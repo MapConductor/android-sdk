@@ -33,8 +33,10 @@ class GoogleMapRasterLayerOverlayRenderer(
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<TileOverlay> {
     override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<TileOverlay?> =
-        data.map { params ->
-            addLayer(params.state)
+        withContext(coroutine.coroutineContext) {
+            data.map { params ->
+                addLayer(params.state)
+            }
         }
 
     override suspend fun onChange(
@@ -55,8 +57,10 @@ class GoogleMapRasterLayerOverlayRenderer(
         }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<TileOverlay>>) {
-        data.forEach { entity ->
-            entity.layer.remove()
+        withContext(coroutine.coroutineContext) {
+            data.forEach { entity ->
+                entity.layer.remove()
+            }
         }
     }
 

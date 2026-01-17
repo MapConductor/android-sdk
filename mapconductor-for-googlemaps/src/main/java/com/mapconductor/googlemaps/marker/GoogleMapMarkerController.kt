@@ -81,6 +81,7 @@ class GoogleMapMarkerController private constructor(
     private var lastKnownZoom: Double = 0.0
     private var lastAppliedMarkerScale: Double = 1.0
     private var lastIndexedZoom: Int = -1
+    private var lastMarkerScaleZoomInt: Int = -1
     private var lastAutoScaleReferenceZoom: Int = -1
 
     @Volatile
@@ -448,52 +449,44 @@ class GoogleMapMarkerController private constructor(
             semaphore.withPermit {
                 updateScreenPxPerWorldPxAndCheckChange(zoomInt)
                 val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
-                val zoomIndexes =
-                    if (zoomInt != lastIndexedZoom) {
-                        val markers = lastTiledMarkersSnapshot
-                        val desiredZooms = LinkedHashSet<Int>(4)
-                        desiredZooms.add(zoomInt.coerceAtLeast(0))
-                        desiredZooms.add((zoomInt + 1).coerceAtLeast(0))
-                        if (lastIndexedZoom >= 0) {
-                            desiredZooms.add(lastIndexedZoom)
-                            desiredZooms.add(lastIndexedZoom + 1)
-                        }
-                        val out = lastTileIndexByZoom.filterKeys { it in desiredZooms }.toMutableMap()
-                        for (z in desiredZooms) {
-                            if (out.containsKey(z)) continue
-                            out[z] =
-                                MarkerTileRenderer.buildTileIndex(
-                                    markers = markers,
-                                    zoom = z,
-                                    tileSize = tilingOptions.tileSize,
-                                    bitmapPxToWorldPx = markerScale,
-                                    markerScaleZoomInt = zoomInt,
-                                    autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
-                                    fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                                    fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                                )
-                        }
-                        out
-                    } else {
-                        null
-                    }
+                val zoomChanged = zoomInt != lastIndexedZoom
+                val scaleChanged = kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-6
+                if (!zoomChanged && !scaleChanged) return@withPermit
+
+                val markers = lastTiledMarkersSnapshot
+                if (markers.isEmpty()) return@withPermit
+
+                val desiredZooms = computeDesiredZoomWindow(zoomInt, lastIndexedZoom)
+                val out = lastTileIndexByZoom.filterKeys { it in desiredZooms }.toMutableMap()
+                for (z in desiredZooms) {
+                    if (out.containsKey(z)) continue
+                    out[z] =
+                        MarkerTileRenderer.buildTileIndex(
+                            markers = markers,
+                            zoom = z,
+                            tileSize = tilingOptions.tileSize,
+                            bitmapPxToWorldPx = markerScale,
+                            markerScaleZoomInt = zoomInt,
+                            autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
+                            fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
+                            fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
+                        )
+                }
 
                 val tileRenderer = markerTileRenderer ?: return@withPermit
-                if (zoomInt != lastIndexedZoom) {
-                    val indexes = requireNotNull(zoomIndexes)
-                    lastTileIndexByZoom = indexes
-                    lastIndexedZoom = zoomInt
-                    lastAppliedMarkerScale = markerScale
-                    // Keep auto-scale reference zoom stable (snapshot-time zoom).
-                    if (lastAutoScaleReferenceZoom < 0) lastAutoScaleReferenceZoom = zoomInt
-                    tileRenderer.setTileIndexesAndMarkerScale(
-                        indexes = indexes,
-                        indexedZoom = zoomInt,
-                        bitmapPxToWorldPx = markerScale,
-                    )
-                    // Update RasterLayer source to invalidate cache
-                    updateRasterLayerSource()
-                }
+                lastTileIndexByZoom = out
+                lastIndexedZoom = zoomInt
+                lastMarkerScaleZoomInt = zoomInt
+                lastAppliedMarkerScale = markerScale
+                // Keep auto-scale reference zoom stable (snapshot-time zoom).
+                if (lastAutoScaleReferenceZoom < 0) lastAutoScaleReferenceZoom = zoomInt
+                tileRenderer.setTileIndexesAndMarkerScale(
+                    indexes = out,
+                    indexedZoom = zoomInt,
+                    bitmapPxToWorldPx = markerScale,
+                )
+                // Update RasterLayer source to invalidate cache
+                updateRasterLayerSource()
             }
         }
     }
@@ -520,20 +513,28 @@ class GoogleMapMarkerController private constructor(
 
     /**
      * Updates the RasterLayer source URL to trigger a cache refresh.
+     * Creates a new RasterLayerState to ensure proper change detection.
      */
     private suspend fun updateRasterLayerSource() {
         val groupId = markerTileGroupId ?: return
-        val renderer = markerTileRenderer ?: return
+        val tileRenderer = markerTileRenderer ?: return
+        val oldState = markerTileRasterLayerState ?: return
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
-        val state = markerTileRasterLayerState ?: return
-        state.source =
-            RasterLayerSource.UrlTemplate(
-                template = "${tileServer.urlTemplate(groupId, renderer.tileSize)}?v=$cacheVersion",
-                tileSize = renderer.tileSize,
-                maxZoom = 22,
-                scheme = TileScheme.XYZ,
+
+        // Create a new state object so RasterLayerController can detect the change
+        val newState =
+            oldState.copy(
+                source =
+                    RasterLayerSource.UrlTemplate(
+                        template = "${tileServer.urlTemplate(groupId, tileRenderer.tileSize)}?v=$cacheVersion",
+                        tileSize = tileRenderer.tileSize,
+                        maxZoom = 22,
+                        scheme = TileScheme.XYZ,
+                    ),
+                id = oldState.id,
             )
-        rasterLayerCallback?.onRasterLayerUpdate(state)
+        markerTileRasterLayerState = newState
+        rasterLayerCallback?.onRasterLayerUpdate(newState)
     }
 
     private fun currentTileZoom(): Int = floor(lastKnownZoom).toInt().coerceAtLeast(0)
@@ -608,56 +609,47 @@ class GoogleMapMarkerController private constructor(
         lastTiledMarkersSnapshot = markers
         lastAutoScaleReferenceZoom = zoom
         val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
-        val tileIndex =
+        val tileIndexes =
             withContext(Dispatchers.Default) {
                 GoogleMapMarkerTilingPerfLog.measure(
                     name = "MarkerController.syncTiledOverlay:buildTileIndex",
                     meta = { "markers=${markers.size} zoom=$zoom" },
                 ) {
-                    MarkerTileRenderer.buildTileIndex(
-                        markers = markers,
-                        zoom = zoom,
-                        tileSize = tilingOptions.tileSize,
-                        bitmapPxToWorldPx = markerScale,
-                        markerScaleZoomInt = zoom,
-                        autoScaleReferenceZoom = zoom,
-                        fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                        fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                    )
+                    val desiredZooms = computeDesiredZoomWindow(zoom, prevIndexedZoom = null)
+                    desiredZooms.associateWith { z ->
+                        MarkerTileRenderer.buildTileIndex(
+                            markers = markers,
+                            zoom = z,
+                            tileSize = tilingOptions.tileSize,
+                            bitmapPxToWorldPx = markerScale,
+                            markerScaleZoomInt = zoom,
+                            autoScaleReferenceZoom = zoom,
+                            fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
+                            fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
+                        )
+                    }
                 }
-            }
-        // Also compute the next zoom index to avoid blank tiles during fractional zoom transitions.
-        val tileIndexNextZoom =
-            withContext(Dispatchers.Default) {
-                MarkerTileRenderer.buildTileIndex(
-                    markers = markers,
-                    zoom = (zoom + 1).coerceAtLeast(0),
-                    tileSize = tilingOptions.tileSize,
-                    bitmapPxToWorldPx = markerScale,
-                    markerScaleZoomInt = zoom,
-                    autoScaleReferenceZoom = zoom,
-                    fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                    fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                )
             }
 
         // Get or create the tile renderer
         val tileRenderer = getOrCreateTileRenderer()
 
         val setStart = SystemClock.elapsedRealtime()
-        lastTileIndexByZoom = mapOf(zoom to tileIndex, (zoom + 1).coerceAtLeast(0) to tileIndexNextZoom)
+        lastTileIndexByZoom = tileIndexes
         tileRenderer.setMarkers(
             markers = markers,
-            indexes = lastTileIndexByZoom,
+            indexes = tileIndexes,
             indexedZoom = zoom,
             bitmapPxToWorldPx = markerScale,
         )
+        val zoomTileCount = tileIndexes[zoom]?.size ?: 0
         GoogleMapMarkerTilingPerfLog.logSlow(
             name = "MarkerController.syncTiledOverlay:setMarkers",
             elapsedMs = SystemClock.elapsedRealtime() - setStart,
-            meta = "markers=${markers.size} tiles=${tileIndex.size} zoom=$zoom",
+            meta = "markers=${markers.size} tiles=$zoomTileCount zoom=$zoom",
         )
         lastIndexedZoom = zoom
+        lastMarkerScaleZoomInt = zoom
         lastAppliedMarkerScale = markerScale
 
         // Update RasterLayer
@@ -727,41 +719,50 @@ class GoogleMapMarkerController private constructor(
         if (markers.isEmpty()) return
         val tileRenderer = markerTileRenderer ?: return
 
-        val tileIndex =
+        val markerScaleZoomInt = if (lastMarkerScaleZoomInt >= 0) lastMarkerScaleZoomInt else lastIndexedZoom
+        val desiredZooms = computeDesiredZoomWindow(zoom, prevIndexedZoom = lastIndexedZoom)
+        val indexes =
             withContext(Dispatchers.Default) {
-                MarkerTileRenderer.buildTileIndex(
-                    markers = markers,
-                    zoom = zoom,
-                    tileSize = tilingOptions.tileSize,
-                    bitmapPxToWorldPx = lastAppliedMarkerScale,
-                    markerScaleZoomInt = lastIndexedZoom,
-                    autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
-                    fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                    fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                )
+                desiredZooms.associateWith { z ->
+                    MarkerTileRenderer.buildTileIndex(
+                        markers = markers,
+                        zoom = z,
+                        tileSize = tilingOptions.tileSize,
+                        bitmapPxToWorldPx = lastAppliedMarkerScale,
+                        markerScaleZoomInt = markerScaleZoomInt,
+                        autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
+                        fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
+                        fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
+                    )
+                }
             }
-
-        // Keep current + next zoom indexes to avoid blank tiles mid-gesture.
-        val next = (zoom + 1).coerceAtLeast(0)
-        val nextIndex =
-            withContext(Dispatchers.Default) {
-                MarkerTileRenderer.buildTileIndex(
-                    markers = markers,
-                    zoom = next,
-                    tileSize = tilingOptions.tileSize,
-                    bitmapPxToWorldPx = lastAppliedMarkerScale,
-                    markerScaleZoomInt = lastIndexedZoom,
-                    autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
-                    fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                    fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                )
-            }
-        lastTileIndexByZoom = mapOf(zoom to tileIndex, next to nextIndex)
-        tileRenderer.setTileIndexes(lastTileIndexByZoom, indexedZoom = zoom)
+        lastTileIndexByZoom = indexes
+        tileRenderer.setTileIndexes(indexes, indexedZoom = zoom)
         lastIndexedZoom = zoom
 
         // Update RasterLayer source to invalidate cache
         updateRasterLayerSource()
+    }
+
+    private fun computeDesiredZoomWindow(
+        centerZoom: Int,
+        prevIndexedZoom: Int?,
+        maxZoom: Int = 22,
+    ): LinkedHashSet<Int> {
+        fun addWindow(
+            out: LinkedHashSet<Int>,
+            center: Int,
+        ) {
+            for (z in (center - 1)..(center + 2)) {
+                if (z in 0..maxZoom) out.add(z)
+            }
+        }
+        val out = LinkedHashSet<Int>(8)
+        addWindow(out, centerZoom.coerceIn(0, maxZoom))
+        prevIndexedZoom?.let { prev ->
+            if (prev >= 0 && prev != centerZoom) addWindow(out, prev.coerceIn(0, maxZoom))
+        }
+        return out
     }
 
     private fun quantizeMarkerScale(scale: Double): Double {
