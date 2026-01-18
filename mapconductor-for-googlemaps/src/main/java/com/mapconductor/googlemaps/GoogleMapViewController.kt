@@ -95,17 +95,14 @@ class GoogleMapViewController(
         markerController.setRasterLayerCallback(
             MarkerTileRasterLayerCallback { state ->
                 if (state != null) {
-                    rasterLayerController.add(listOf(state))
+                    rasterLayerController.upsert(state)
                 } else {
                     // Remove all marker tile layers
                     val markerTileLayers =
                         rasterLayerController.rasterLayerManager
                             .allEntities()
                             .filter { it.state.id.startsWith("marker-tile-") }
-                    markerTileLayers.forEach { entity ->
-                        rasterLayerController.rasterLayerManager.removeEntity(entity.state.id)
-                        rasterLayerController.renderer.onRemove(listOf(entity))
-                    }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
                 }
             },
         )

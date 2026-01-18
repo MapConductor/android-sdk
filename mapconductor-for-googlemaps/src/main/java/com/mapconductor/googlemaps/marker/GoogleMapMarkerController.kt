@@ -456,6 +456,16 @@ class GoogleMapMarkerController private constructor(
                 val markers = lastTiledMarkersSnapshot
                 if (markers.isEmpty()) return@withPermit
 
+                val autoScaleRefZoom =
+                    if (lastAutoScaleReferenceZoom >= 0) {
+                        lastAutoScaleReferenceZoom
+                    } else if (tilingOptions.fixedMarkerPixelSize) {
+                        tilingOptions.fixedMarkerPixelSizeReferenceZoom
+                    } else {
+                        zoomInt
+                    }
+                if (lastAutoScaleReferenceZoom < 0) lastAutoScaleReferenceZoom = autoScaleRefZoom
+
                 val desiredZooms = computeDesiredZoomWindow(zoomInt, lastIndexedZoom)
                 val out = lastTileIndexByZoom.filterKeys { it in desiredZooms }.toMutableMap()
                 for (z in desiredZooms) {
@@ -467,7 +477,7 @@ class GoogleMapMarkerController private constructor(
                             tileSize = tilingOptions.tileSize,
                             bitmapPxToWorldPx = markerScale,
                             markerScaleZoomInt = zoomInt,
-                            autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
+                            autoScaleReferenceZoom = autoScaleRefZoom,
                             fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
                             fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
                         )
@@ -478,12 +488,11 @@ class GoogleMapMarkerController private constructor(
                 lastIndexedZoom = zoomInt
                 lastMarkerScaleZoomInt = zoomInt
                 lastAppliedMarkerScale = markerScale
-                // Keep auto-scale reference zoom stable (snapshot-time zoom).
-                if (lastAutoScaleReferenceZoom < 0) lastAutoScaleReferenceZoom = zoomInt
                 tileRenderer.setTileIndexesAndMarkerScale(
                     indexes = out,
                     indexedZoom = zoomInt,
                     bitmapPxToWorldPx = markerScale,
+                    autoScaleReferenceZoom = autoScaleRefZoom,
                 )
                 // Update RasterLayer source to invalidate cache
                 updateRasterLayerSource()
@@ -607,7 +616,13 @@ class GoogleMapMarkerController private constructor(
                 }
             }
         lastTiledMarkersSnapshot = markers
-        lastAutoScaleReferenceZoom = zoom
+        val autoScaleReferenceZoom =
+            if (tilingOptions.fixedMarkerPixelSize) {
+                tilingOptions.fixedMarkerPixelSizeReferenceZoom
+            } else {
+                zoom
+            }
+        lastAutoScaleReferenceZoom = autoScaleReferenceZoom
         val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
         val tileIndexes =
             withContext(Dispatchers.Default) {
@@ -623,7 +638,7 @@ class GoogleMapMarkerController private constructor(
                             tileSize = tilingOptions.tileSize,
                             bitmapPxToWorldPx = markerScale,
                             markerScaleZoomInt = zoom,
-                            autoScaleReferenceZoom = zoom,
+                            autoScaleReferenceZoom = autoScaleReferenceZoom,
                             fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
                             fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
                         )
@@ -641,6 +656,7 @@ class GoogleMapMarkerController private constructor(
             indexes = tileIndexes,
             indexedZoom = zoom,
             bitmapPxToWorldPx = markerScale,
+            autoScaleReferenceZoom = autoScaleReferenceZoom,
         )
         val zoomTileCount = tileIndexes[zoom]?.size ?: 0
         GoogleMapMarkerTilingPerfLog.logSlow(
@@ -737,7 +753,7 @@ class GoogleMapMarkerController private constructor(
                 }
             }
         lastTileIndexByZoom = indexes
-        tileRenderer.setTileIndexes(indexes, indexedZoom = zoom)
+        tileRenderer.setTileIndexes(indexes, indexedZoom = zoom, autoScaleReferenceZoom = lastAutoScaleReferenceZoom)
         lastIndexedZoom = zoom
 
         // Update RasterLayer source to invalidate cache

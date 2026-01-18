@@ -204,14 +204,14 @@ class GoogleMapRasterLayerOverlayRenderer(
         zoom: Int,
         scheme: TileScheme,
     ): ByteArray {
-        val bmp =
+        val decoded =
             BitmapFactory.decodeByteArray(input, 0, input.size)
                 ?: return input
         val bitmap =
-            if (bmp.config == Bitmap.Config.ARGB_8888) {
-                bmp
-            } else {
-                bmp.copy(Bitmap.Config.ARGB_8888, true).also { bmp.recycle() }
+            when {
+                decoded.config != Bitmap.Config.ARGB_8888 -> decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+                !decoded.isMutable -> decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+                else -> decoded
             }
 
         val canvas = Canvas(bitmap)
