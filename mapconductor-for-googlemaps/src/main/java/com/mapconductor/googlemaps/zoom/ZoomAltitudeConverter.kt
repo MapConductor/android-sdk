@@ -1,4 +1,4 @@
-package com.mapconductor.googlemaps
+package com.mapconductor.googlemaps.zoom
 
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.abs

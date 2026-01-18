@@ -10,14 +10,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.here.sdk.core.GeoOrientation
-import com.here.sdk.mapview.MapCameraUpdateFactory
-import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
@@ -28,7 +24,6 @@ import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.tileserver.TileServerRegistry
-import com.mapconductor.here.HereMapViewController.Companion.ZOOM_ADJUST_VALUE
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.circle.HereCircleOverlayRenderer
 import com.mapconductor.here.groundimage.HereGroundImageController
@@ -111,7 +106,6 @@ fun HereMapView(
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
-    val zoomConverter = remember { ZoomAltitudeConverter() }
     // Capture the desired initial camera before any early camera callbacks can overwrite state.
     val initialCameraPosition = remember(state.id) { state.cameraPosition }
 
@@ -140,21 +134,11 @@ fun HereMapView(
             }
         },
         holderProvider = { mapView ->
-            val camera = state.cameraPosition
-
-            val lookAt =
-                MapCameraUpdateFactory.lookAt(
-                    GeoPoint.from(camera.position).toGeoCoordinates().toUpdate(),
-                    GeoOrientation(camera.bearing, camera.tilt).toUpdate(),
-                    MapMeasure(
-                        MapMeasure.Kind.ZOOM_LEVEL,
-                        zoomConverter.tileZoomToCameraZoom(camera.zoom) + ZOOM_ADJUST_VALUE,
-                    ),
-                )
+            val lookAt = state.cameraPosition.toMapCameraUpdate()
             mapView.camera.applyUpdate(lookAt)
-
             HereViewHolder(mapView, mapView.mapScene)
         },
+
         controllerProvider = { holder ->
             val markerController =
                 getMarkerController(

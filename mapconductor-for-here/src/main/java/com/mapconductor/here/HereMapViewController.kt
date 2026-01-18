@@ -21,10 +21,13 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
@@ -74,14 +77,6 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
-    companion object {
-        /**
-         * Adjustment value to make HERE zoom levels match Google Maps visible regions.
-         * HERE Maps shows more zoomed-in view at the same zoom level compared to Google Maps,
-         * so we subtract this value from the requested zoom level.
-         */
-        internal const val ZOOM_ADJUST_VALUE = 0.3
-    }
 
     private val zoomConverter = ZoomAltitudeConverter()
 
@@ -227,13 +222,7 @@ class HereMapViewController(
         lastRequestedCameraPosition = position
         val request = cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
-        val hereCameraZoom = position.zoom + ZOOM_ADJUST_VALUE
-        val adjustCameraUpdate =
-            MapCameraUpdateFactory.lookAt(
-                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
-                GeoOrientation(position.bearing, position.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, hereCameraZoom),
-            )
+        val adjustCameraUpdate = position.toMapCameraUpdate()
 
         camera.applyUpdate(adjustCameraUpdate)
 
@@ -254,7 +243,9 @@ class HereMapViewController(
         lastRequestedCameraPosition = position
         cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
-        val hereCameraZoom = position.zoom + ZOOM_ADJUST_VALUE
+        val update = position.toMapCameraUpdate()
+
+        val hereCameraZoom = position.zoom
 
 //      bowFactor > 0: 最初にズームアウト → 到達時にズームイン
 //      bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
@@ -294,7 +285,6 @@ class HereMapViewController(
             }
         }
     }
-
     private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {
         return holder.mapView.camera.boundingBox?.let { boundingBox ->
             val mapWidth = holder.mapView.width.toFloat()
@@ -313,21 +303,16 @@ class HereMapViewController(
                     farRight = holder.fromScreenOffsetSync(rightTop),
                 )
 
-            val distanceToTargetInMeters =
-                GeoOrientation(
-                    cameraState.orientationAtTarget.bearing,
-                    cameraState.orientationAtTarget.tilt,
-                )
-            val zoomLevel = 0.0
-            val correctCameraState =
-                MapCamera.State(
-                    cameraState.targetCoordinates,
-                    distanceToTargetInMeters,
-                    zoomLevel,
-                    cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
-                )
-            val adjustedMapCameraPosition = correctCameraState.toMapCameraPosition()
-            return@let adjustedMapCameraPosition.copy(visibleRegion = visibleRegion)
+
+            val cameraPosition = MapCameraPosition.from(object : MapCameraPositionInterface {
+                override val position: GeoPointInterface = cameraState.targetCoordinates.toGeoPoint()
+                override val zoom: Double = cameraState.toMapCameraPosition().zoom
+                override val bearing: Double = cameraState.orientationAtTarget.bearing
+                override val tilt: Double = cameraState.orientationAtTarget.tilt
+                override val paddings: MapPaddingsInterface? = null
+                override val visibleRegion: VisibleRegion? = visibleRegion
+            })
+            return@let cameraPosition
         }
     }
 

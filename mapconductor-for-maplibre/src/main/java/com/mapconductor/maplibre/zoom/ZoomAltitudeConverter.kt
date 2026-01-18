@@ -1,4 +1,4 @@
-package com.mapconductor.mapbox.zoom
+package com.mapconductor.maplibre.zoom
 
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.abs
@@ -13,15 +13,15 @@ class ZoomAltitudeConverter(
     companion object {
         /**
          * Empirical offset:
-         * GoogleZoom ≈ MapboxSDK.zoom + 1.0
+         * GoogleZoom ≈ MapLibreSDK.zoom + 1.0
          */
-        const val MAPBOX_TO_GOOGLE_ZOOM_OFFSET = 1.0
+        const val MAPLIBRE_TO_GOOGLE_ZOOM_OFFSET = 1.0
 
-        fun mapboxZoomToGoogleZoom(mapboxZoom: Double): Double =
-            (mapboxZoom + MAPBOX_TO_GOOGLE_ZOOM_OFFSET).coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
+        fun maplibreZoomToGoogleZoom(maplibreZoom: Double): Double =
+            (maplibreZoom + MAPLIBRE_TO_GOOGLE_ZOOM_OFFSET).coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
 
-        fun googleZoomToMapboxZoom(googleZoom: Double): Double =
-            (googleZoom - MAPBOX_TO_GOOGLE_ZOOM_OFFSET).coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
+        fun googleZoomToMaplibreZoom(googleZoom: Double): Double =
+            (googleZoom - MAPLIBRE_TO_GOOGLE_ZOOM_OFFSET).coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
     }
 
     private fun cosLatitudeFactor(latitudeDeg: Double): Double {
@@ -41,11 +41,7 @@ class ZoomAltitudeConverter(
         latitude: Double,
         tilt: Double,
     ): Double {
-        // MapConductor(Mapbox).zoom is offset from Google-like zoom by ~+1.0.
-        // Convert to Google-like zoom first, then apply WebMercator scale math.
-        // distance = zoom0Altitude * cos(latitude) / (2^zoom)
-        // altitude = distance * cos(tilt)
-        val googleZoom = mapboxZoomToGoogleZoom(zoomLevel)
+        val googleZoom = maplibreZoomToGoogleZoom(zoomLevel)
         val cosLat = cosLatitudeFactor(latitude)
         val cosTilt = cosTiltFactor(tilt)
         val distance = (zoom0Altitude * cosLat) / ZOOM_FACTOR.pow(googleZoom)
@@ -58,13 +54,11 @@ class ZoomAltitudeConverter(
         latitude: Double,
         tilt: Double,
     ): Double {
-        // googleZoom = log2(zoom0Altitude * cos(latitude) / (altitude / cos(tilt)))
-        // mapboxZoom = googleZoom + 1.0 (approx)
         val clampedAltitude = altitude.coerceIn(MIN_ALTITUDE, MAX_ALTITUDE)
         val cosLat = cosLatitudeFactor(latitude)
         val cosTilt = cosTiltFactor(tilt)
         val distance = clampedAltitude / cosTilt
         val googleZoom = log2((zoom0Altitude * cosLat) / distance)
-        return googleZoomToMapboxZoom(googleZoom)
+        return googleZoomToMaplibreZoom(googleZoom)
     }
 }

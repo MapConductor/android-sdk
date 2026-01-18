@@ -48,7 +48,6 @@ class HereMarkerController private constructor(
         markerManager = markerManager,
         renderer = renderer,
     ) {
-    private val zoomConverter = ZoomAltitudeConverter()
     private var internalSelectedMarker: MarkerEntityInterface<HereActualMarker>? = null
 
     private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
@@ -499,8 +498,7 @@ class HereMarkerController private constructor(
         rasterLayerCallback?.onRasterLayerUpdate(newState)
     }
 
-    private fun currentTileZoom(): Int =
-        floor(zoomConverter.cameraZoomToTileZoom(lastKnownZoom)).toInt().coerceAtLeast(0)
+    private fun currentTileZoom(): Int = floor(lastKnownZoom).toInt().coerceAtLeast(0)
 
     private suspend fun syncTiledOverlay(zoom: Int) {
         if (tiledMarkerIds.isEmpty()) {
