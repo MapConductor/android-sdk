@@ -11,6 +11,7 @@ import PolylinePreview from '~/assets/index/polyline.png';
 import PolygonPreview from '~/assets/index/polygon.png';
 import HeatmapPreview from '~/assets/index/heatmap.png';
 import GroundImagePreview from '~/assets/index/groundimage.png';
+import RasterLayerPreview from '~/assets/index/raster-layer.gif';
 
 interface Props {
   titleForUnifiedAPI?: string;
@@ -39,6 +40,9 @@ interface Props {
 
   titleForHeatmap?: string;
   descriptionForHeatmap?: string;
+
+  titleForRasterLayer?: string;
+  descriptionForRasterLayer?: string;
 }
 
 const {
@@ -63,11 +67,14 @@ const {
   titleForPolygon = "Polygon for Filling Complex Areas",
   descriptionForPolygon = "Accurate polygons that account for the Earth\'s curvature can be rendered by simply setting properties.",
 
-  titleForGroundImage = "特定の領域に画像を貼り付けられるGroundImage",
-  descriptionForGroundImage = "地図の移動や縮尺の変更に自動で合わせてくれる便利機能です.",
-
   titleForHeatmap = "Heatmap for Visualizing Density",
   descriptionForHeatmap = "Heatmaps for displaying statistical values such as density or intensity can be drawn with just a few lines.",
+
+  titleForGroundImage = "GroundImage for Placing Images on Specific Areas",
+  descriptionForGroundImage = "A convenient feature that automatically adjusts to map movement and zoom changes.",
+
+  titleForRasterLayer = "RasterLayer for Displaying External Tile Images",
+  descriptionForRasterLayer = "Designed so that opacity can be adjusted across all supported map SDKs.",
 } = Astro.props;
 
 
@@ -111,5 +118,9 @@ const {
   <Card title={titleForHeatmap}>
     {descriptionForHeatmap}
     <Image src={HeatmapPreview} alt="Heatmap" width="200" class="preview" />
+  </Card>
+  <Card title={titleForRasterLayer}>
+    {descriptionForRasterLayer}
+    <Image src={RasterLayerPreview} alt="RasterLayer" width="200" class="preview" />
   </Card>
 </CardGrid>

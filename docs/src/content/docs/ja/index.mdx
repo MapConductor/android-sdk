@@ -16,23 +16,23 @@ import QuickExampleTabs from "~/components/index/QuickExampleTabs.astro";
 import Features from "~/components/index/Features.astro";
 import MapConductorIntroduction from "~/components/index/MapConductorIntroduction.astro";
 import MitouAdvanced from "~/components/index/MitouAdvanced.astro";
+import TopCards from "~/components/index/TopCards.astro";
 
 <Image src={topBanner} alt="MapConductor(マップコンダクター) ♪ 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK" />
 
-<CardGrid>
-  <Card title="統一されたAPI" icon="puzzle">
-    一度コードを書けば、地図プロバイダをいつでも切り替えられます。Google Maps から Mapbox などに乗り換えても、大量のコードを書き直す必要はありません。
-  </Card>
-  <Card title="Android / Jetpack Compose に最適化" icon="rocket">
-    最新のAndroid開発のために設計されており、Jetpack Compose を前提にしたAPIになっています。
-  </Card>
-  <Card title="iOS / SwiftUIもサポート" icon="setting">
-    iOSエンジニアのためにもSwiftUIをサポートしています。
-  </Card>
-  <Card title="オープンソース" icon="github">
-    Apache License 2.0 で公開されたオープンソースプロジェクトです。コミュニティ主導で開発が進んでいます。
-  </Card>
-</CardGrid>
+<TopCards
+  titleForUnifiedAPI="統一されたAPI"
+  descriptionForUnifiedAPI="一度コードを書けば、地図プロバイダをいつでも切り替えられます。Google Maps から Mapbox などに乗り換えても、大量のコードを書き直す必要はありません。"
+
+  titleForJetpackCompose="Android / Jetpack Compose に最適化"
+  descriptionForJetpackCompose="最新のAndroid開発のために設計されており、Jetpack Compose を前提にしたAPIになっています。"
+
+  titleForMultiProviders="iOS / SwiftUIもサポート"
+  descriptionForMultiProviders="iOSエンジニアのためにもSwiftUIをサポートしています。"
+  
+  titleForMultititleForOpenSourceProviders="オープンソース"
+  descriptionForOpenSource="Apache License 2.0 で公開されたオープンソースプロジェクトです。コミュニティ主導で開発が進んでいます。"
+/>
 
 # MapConductorについて
 <MapConductorIntroduction 
@@ -49,7 +49,7 @@ import MitouAdvanced from "~/components/index/MitouAdvanced.astro";
   titleForUnifiedAPI="統一的なAPIのMapView"
   descriptionForUnifiedAPI="Google Maps / Mapbox / HERE Maps / ArcGIS / MapLibre を、挙動を揃えた形でサポートしています。"
   titleForMarker="自由にカスタマイズできるMarker"
-  descriptionForMarker="色・枠線の太さ・ラベルなどを変更したり、画像などを簡単に設定できるようになっています。"
+  descriptionForMarker="色・枠線の太さ・ラベルなどを変更したり、画像などを簡単に配置できるようになっています。"
   titleForInfoBubble="Jetpack Composeで書けるInfoBubble"
   descriptionForInfoBubble="通常のコンポーネントと同じ様に作れます。ボタンなどを配置できます。"
   titleForMarkerCluster="マーカーをグループ化できるMarkerCluster"
@@ -64,4 +64,6 @@ import MitouAdvanced from "~/components/index/MitouAdvanced.astro";
   descriptionForGroundImage = "地図の移動や縮尺の変更に自動で合わせてくれる便利機能です."
   titleForHeatmap="密度を表すのに便利なHeatMap"
   descriptionForHeatmap="密度や濃度などの統計的な数値を地図と合わせて表示できるHeatmapも数行で描けます。"
+  titleForRasterLayer="他のタイル画像を表示できるRasterLayer"
+  descriptionForRasterLayer="透明度の変更も、どの地図SDKでも出来るように設計されています"
 />
