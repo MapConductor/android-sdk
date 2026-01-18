@@ -20,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 
 class HereRasterLayerOverlayRenderer(
     private val holder: HereViewHolder,
-    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : RasterLayerOverlayRendererInterface<HereRasterLayerHandle> {
     override suspend fun onAdd(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,

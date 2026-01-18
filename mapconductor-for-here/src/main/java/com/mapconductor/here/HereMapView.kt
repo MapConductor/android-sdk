@@ -40,6 +40,7 @@ import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import com.mapconductor.here.raster.HereRasterLayerController
 import com.mapconductor.here.raster.HereRasterLayerOverlayRenderer
+import com.mapconductor.here.zoom.ZoomAltitudeConverter
 import java.util.concurrent.atomic.AtomicBoolean
 import android.view.ViewGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -110,6 +111,7 @@ fun HereMapView(
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
+    val zoomConverter = remember { ZoomAltitudeConverter() }
     // Capture the desired initial camera before any early camera callbacks can overwrite state.
     val initialCameraPosition = remember(state.id) { state.cameraPosition }
 
@@ -144,7 +146,10 @@ fun HereMapView(
                 MapCameraUpdateFactory.lookAt(
                     GeoPoint.from(camera.position).toGeoCoordinates().toUpdate(),
                     GeoOrientation(camera.bearing, camera.tilt).toUpdate(),
-                    MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, camera.zoom + ZOOM_ADJUST_VALUE),
+                    MapMeasure(
+                        MapMeasure.Kind.ZOOM_LEVEL,
+                        zoomConverter.tileZoomToCameraZoom(camera.zoom) + ZOOM_ADJUST_VALUE,
+                    ),
                 )
             mapView.camera.applyUpdate(lookAt)
 

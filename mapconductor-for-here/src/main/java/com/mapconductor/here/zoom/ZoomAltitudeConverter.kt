@@ -13,7 +13,19 @@ class ZoomAltitudeConverter(
     companion object {
         // HERE-specific optimized zoom0 altitude to match Google Maps visible regions
         const val HERE_OPTIMIZED_ZOOM0_ALTITUDE = 162159201.449375
+
+        /**
+         * HERE's raster tile callbacks (LOD) are offset from the camera zoom reported by the map.
+         * We normalize this here so call sites don't need to embed a magic number.
+         */
+        const val TILE_ZOOM_LEVEL_OFFSET: Double = 0.51
     }
+
+    fun cameraZoomToTileZoom(cameraZoom: Double): Double =
+        (cameraZoom - TILE_ZOOM_LEVEL_OFFSET).coerceAtLeast(0.0)
+
+    fun tileZoomToCameraZoom(tileZoom: Double): Double =
+        (tileZoom + TILE_ZOOM_LEVEL_OFFSET).coerceAtLeast(0.0)
 
     private fun cosLatitudeFactor(latitudeDeg: Double): Double {
         val clampedLat = latitudeDeg.coerceIn(-85.0, 85.0)

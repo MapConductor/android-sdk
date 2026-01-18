@@ -30,6 +30,7 @@ import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -39,6 +40,7 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
+import com.mapconductor.here.zoom.ZoomAltitudeConverter
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.groundimage.HereGroundImageController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
@@ -73,8 +75,15 @@ class HereMapViewController(
     TapListener,
     LongPressListener {
     companion object {
-        internal const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
+        /**
+         * Adjustment value to make HERE zoom levels match Google Maps visible regions.
+         * HERE Maps shows more zoomed-in view at the same zoom level compared to Google Maps,
+         * so we subtract this value from the requested zoom level.
+         */
+        internal const val ZOOM_ADJUST_VALUE = 0.3
     }
+
+    private val zoomConverter = ZoomAltitudeConverter()
 
     private val markerEventControllers = mutableListOf<HereMarkerEventControllerInterface>()
     private var activeDragController: HereMarkerEventControllerInterface? = null
@@ -191,6 +200,20 @@ class HereMapViewController(
         registerController(circleController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultHereMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
     }
 
     fun setupListeners() {
@@ -204,11 +227,12 @@ class HereMapViewController(
         lastRequestedCameraPosition = position
         val request = cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
+        val hereCameraZoom = position.zoom + ZOOM_ADJUST_VALUE
         val adjustCameraUpdate =
             MapCameraUpdateFactory.lookAt(
                 GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, hereCameraZoom),
             )
 
         camera.applyUpdate(adjustCameraUpdate)
@@ -230,6 +254,7 @@ class HereMapViewController(
         lastRequestedCameraPosition = position
         cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
+        val hereCameraZoom = position.zoom + ZOOM_ADJUST_VALUE
 
 //      bowFactor > 0: 最初にズームアウト → 到達時にズームイン
 //      bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
@@ -239,7 +264,7 @@ class HereMapViewController(
             MapCameraAnimationFactory.flyTo(
                 GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, hereCameraZoom),
                 bowFactor,
                 Duration.ofMillis(duration),
             )
