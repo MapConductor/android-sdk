@@ -1,0 +1,115 @@
+---
+import { Image } from 'astro:assets';
+import { CardGrid, Card } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+import MapviewPreview from '~/assets/index/mapview.png';
+import MarkerPreview from '~/assets/index/marker.png';
+import InfoBubblePreview from '~/assets/index/info-bubble.png';
+import MarkerClusterPreview from '~/assets/index/marker-cluster.png';
+import CirclePreview from '~/assets/index/circle.png';
+import PolylinePreview from '~/assets/index/polyline.png';
+import PolygonPreview from '~/assets/index/polygon.png';
+import HeatmapPreview from '~/assets/index/heatmap.png';
+import GroundImagePreview from '~/assets/index/groundimage.png';
+
+interface Props {
+  titleForUnifiedAPI?: string;
+  descriptionForUnifiedAPI?: string;
+
+  titleForMarker?: string;
+  descriptionForMarker?: string;
+
+  titleForInfoBubble?: string;
+  descriptionForInfoBubble?: string;
+
+  titleForMarkerCluster?: string;
+  descriptionForMarkerCluster?: string;
+
+  titleForCircle?: string;
+  descriptionForCircle?: string;
+
+  titleForPolyline?: string;
+  descriptionForPolyline?: string;
+
+  titleForPolygon?: string;
+  descriptionForPolygon?: string;
+
+  titleForGroundImage?: string;
+  descriptionForGroundImage?: string;
+
+  titleForHeatmap?: string;
+  descriptionForHeatmap?: string;
+}
+
+const {
+  titleForUnifiedAPI = "Unified MapView API",
+  descriptionForUnifiedAPI = "Supports Google Maps, Mapbox, HERE Maps, ArcGIS, and MapLibre with unified behavior.",
+
+  titleForMarker = "Fully Customizable Markers",
+  descriptionForMarker = "You can easily customize colors, border thickness, labels, and even set images.",
+
+  titleForInfoBubble = "InfoBubble Written in Jetpack Compose",
+  descriptionForInfoBubble = "Can be created just like regular components and can include buttons and more.",
+
+  titleForMarkerCluster = "MarkerCluster for Grouping Markers",
+  descriptionForMarkerCluster = "Useful for grouping a large number of markers. Supports animated display.",
+
+  titleForCircle = "Circle with Radius Specified in Meters",
+  descriptionForCircle = "The radius can be specified in meters on any map SDK (even if not supported natively).",
+
+  titleForPolyline = "Polyline for Straight and Curved Lines",
+  descriptionForPolyline = "You can customize color and thickness, and also detect clicked positions.",
+
+  titleForPolygon = "Polygon for Filling Complex Areas",
+  descriptionForPolygon = "Accurate polygons that account for the Earth\'s curvature can be rendered by simply setting properties.",
+
+  titleForGroundImage = "特定の領域に画像を貼り付けられるGroundImage",
+  descriptionForGroundImage = "地図の移動や縮尺の変更に自動で合わせてくれる便利機能です.",
+
+  titleForHeatmap = "Heatmap for Visualizing Density",
+  descriptionForHeatmap = "Heatmaps for displaying statistical values such as density or intensity can be drawn with just a few lines.",
+} = Astro.props;
+
+
+
+---
+
+
+<CardGrid>
+  <Card title={titleForUnifiedAPI}>
+    {descriptionForUnifiedAPI}
+    <Image src={MapviewPreview} alt="Marker" width="200" class="preview" />
+  </Card>
+  <Card title={titleForMarker}>
+    {descriptionForMarker}
+    <Image src={MarkerPreview} alt="Marker" width="200" class="preview" />
+  </Card>
+  <Card title={titleForInfoBubble}>
+    {descriptionForInfoBubble}
+    <Image src={InfoBubblePreview} alt="InfoBubble" width="200" class="preview" />
+  </Card>
+  <Card title={titleForMarkerCluster} >
+    {descriptionForMarkerCluster}
+    <Image src={MarkerClusterPreview} alt="MarkerCluster" width="200" class="preview" />
+  </Card>
+  <Card title={titleForCircle}>
+    {descriptionForCircle}
+    <Image src={CirclePreview} alt="Circle" width="200" class="preview" />
+  </Card>
+  <Card title={titleForPolyline}>
+    {descriptionForPolyline}
+    <Image src={PolylinePreview} alt="Polyline" width="200" class="preview" />
+  </Card>
+  <Card title={titleForPolygon}>
+    {descriptionForPolygon}
+    <Image src={PolygonPreview} alt="Polygon" width="200" class="preview" />
+  </Card>
+  <Card title={titleForGroundImage}>
+    {descriptionForGroundImage}
+    <Image src={GroundImagePreview} alt="GroundImage" width="200" class="preview" />
+  </Card>
+  <Card title={titleForHeatmap}>
+    {descriptionForHeatmap}
+    <Image src={HeatmapPreview} alt="Heatmap" width="200" class="preview" />
+  </Card>
+</CardGrid>

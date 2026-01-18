@@ -1,0 +1,33 @@
+---
+import { Image } from 'astro:assets';
+import MapConductorPreview from '~/assets/index/map-conductor.png';
+
+interface Props {
+  text1?: string;
+  text2?: string;
+  text3?: string;
+  text4?: string;
+  text5?: string;
+}
+
+const {
+  text1 = "When building a map app on Android, haven’t you ever thought,\“Why is only the map part so complicated? I wish I could write it using the Jetpack Compose I’m already comfortable with…\”",
+  text2 = "MapConductor makes that wish come true. With the APIs provided by MapConductor, you can express “this is how I want the map to behave” easily using declarative UI.",
+  text3 = "What’s more, it supports multiple map SDKs: Google Maps, Mapbox, MapLibre, HERE, and ArcGIS — all controlled in exactly the same way.",
+  text4 = "Even better, when a feature exists in one map SDK but not in another, MapConductor fills the gap with its own implementation. In other words, it doesn’t just unify existing APIs — it builds what’s missing.",
+  text5 = "Advanced features such as marker clustering and heatmaps can also be added with just a few lines of code. No more frustration where everything is nicely written in Jetpack Compose except the map part — say goodbye to that problem!",
+} = Astro.props;
+
+
+---
+
+<div class="introduction">
+  <Image src={MapConductorPreview} alt="地図の指揮者のように地図を扱いたい" width="300" />
+  <div>
+    <p>{text1}</p>
+    <p>{text2}</p>
+    <p>{text3}</p>
+    <p>{text4}</p>
+    <p>{text5}</p>
+  </div>
+</div>

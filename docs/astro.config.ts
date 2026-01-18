@@ -49,7 +49,6 @@ export default defineConfig({
 						{ slug: 'introduction' },
 						{ slug: 'get-started' },
 						{ slug: 'modules' },
-						{ slug: 'provider-compatibility' },
 					],
 				},
 				{
