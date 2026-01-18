@@ -34,6 +34,7 @@ import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -57,10 +58,14 @@ import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.raster.MapboxRasterLayerController
 import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 typealias MapboxMapDesignTypeChangeHandler = (MapboxDesignType) -> Unit
 
@@ -84,6 +89,15 @@ internal class MapboxMapViewController(
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
     private val markerEventControllers = mutableListOf<MapboxMarkerEventControllerInterface>()
     private var activeDragController: MapboxMarkerEventControllerInterface? = null
+
+    // Debouncing for camera change events to prevent excessive updates during zoom gestures
+    private var cameraDebounceJob: Job? = null
+    private val cameraUpdateToken = AtomicInteger(0)
+
+    private companion object {
+        private const val CAMERA_DEBOUNCE_MS = 16L // ~60fps, immediate feel but limits updates
+    }
+
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -100,6 +114,20 @@ internal class MapboxMapViewController(
         registerController(circleController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultMapboxMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
     }
 
     private fun attachMarkerLayers(
@@ -150,14 +178,18 @@ internal class MapboxMapViewController(
 
     fun setupListeners() {
         holder.map.subscribeCameraChanged {
-            coroutine.launch {
-                getMapCameraPosition()?.let { mapCameraPosition ->
-                    backCoroutine.launch {
-                        notifyMapCameraPosition(mapCameraPosition)
-                        cameraMoveCallback?.invoke(mapCameraPosition)
-                    }
+            // Use debouncing to prevent excessive updates during rapid zoom/pan gestures
+            val token = cameraUpdateToken.incrementAndGet()
+            cameraDebounceJob?.cancel()
+            cameraDebounceJob =
+                backCoroutine.launch {
+                    delay(CAMERA_DEBOUNCE_MS)
+                    if (token != cameraUpdateToken.get()) return@launch
+                    // Calculate camera position on background thread
+                    val mapCameraPosition = getMapCameraPositionAsync() ?: return@launch
+                    notifyMapCameraPosition(mapCameraPosition)
+                    cameraMoveCallback?.invoke(mapCameraPosition)
                 }
-            }
         }
         holder.map.subscribeStyleLoaded {
             mapLoadedCallback?.invoke()
@@ -314,6 +346,15 @@ internal class MapboxMapViewController(
             )
         return mapCameraPosition
     }
+
+    /**
+     * Async version of getMapCameraPosition that can be called from background threads.
+     * Uses withContext to ensure Mapbox SDK calls run on the main thread.
+     */
+    private suspend fun getMapCameraPositionAsync(): MapCameraPosition? =
+        withContext(Dispatchers.Main) {
+            getMapCameraPosition()
+        }
 
     override fun moveCamera(position: MapCameraPosition) {
         val cameraOptions = position.toCameraOptions()

@@ -14,11 +14,11 @@ import com.mapconductor.core.groundimage.GroundImageTileProvider
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.mapbox.MapboxActualGroundImage
 import com.mapconductor.mapbox.MapboxMapViewHolder
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.util.Log
 
 class MapboxGroundImageOverlayRenderer(
     override val holder: MapboxMapViewHolder,
@@ -61,7 +61,8 @@ class MapboxGroundImageOverlayRenderer(
             val prevFinger = prev.fingerPrint
 
             val tileSizeChanged = finger.tileSize != prevFinger.tileSize
-            val tileContentChanged = finger.bounds != prevFinger.bounds || finger.image != prevFinger.image || tileSizeChanged
+            val tileContentChanged =
+                finger.bounds != prevFinger.bounds || finger.image != prevFinger.image || tileSizeChanged
             val opacityChanged = finger.opacity != prevFinger.opacity
 
             if (!tileContentChanged && !opacityChanged) {

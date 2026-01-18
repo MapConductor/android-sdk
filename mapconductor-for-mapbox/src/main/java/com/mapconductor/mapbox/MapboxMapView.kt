@@ -26,11 +26,11 @@ import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineManager
 import com.mapconductor.core.tileserver.TileServerRegistry
-import com.mapconductor.mapbox.groundimage.MapboxGroundImageController
-import com.mapconductor.mapbox.groundimage.MapboxGroundImageOverlayRenderer
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageController
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
 import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
 import com.mapconductor.mapbox.marker.MarkerDragLayer
@@ -339,19 +339,12 @@ internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerContr
             sourceId = "marker-drag-source",
             layerId = "marker-drag-layer",
         )
-    val renderer =
-        MapboxMarkerOverlayRenderer(
-            holder = holder,
-            markerLayer = markerLayer,
-            dragLayer = dragLayer,
-            markerManager = manager,
-        )
-
-    val controller =
-        MapboxMarkerController(
-            renderer = renderer,
-        )
-    return controller
+    return MapboxMarkerController.create(
+        holder = holder,
+        markerManager = manager,
+        markerLayer = markerLayer,
+        dragLayer = dragLayer,
+    )
 }
 
 internal fun getRasterLayerController(holder: MapboxMapViewHolder): MapboxRasterLayerController {
