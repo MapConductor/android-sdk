@@ -40,6 +40,7 @@ import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -51,8 +52,8 @@ import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import com.mapconductor.settings.Settings
-import android.view.MotionEvent
 import java.util.concurrent.atomic.AtomicLong
+import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,6 +80,7 @@ class ArcGISMapViewController(
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
     private var lastRequestedCameraPosition: MapCameraPosition? = null
     private val cameraRequestGeneration = AtomicLong(0L)
+
     @Volatile private var pendingCameraRestoreRequest: Long = 0L
 
     init {
@@ -95,6 +97,20 @@ class ArcGISMapViewController(
         registerController(groundImageController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultArcGISMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
     }
 
     fun setupListeners() {

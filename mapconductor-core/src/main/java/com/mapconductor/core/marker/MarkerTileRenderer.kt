@@ -89,6 +89,9 @@ class MarkerTileRenderer(
     private var cameraZoomQuantized: Double? = null
 
     @Volatile
+    private var cameraZoomExact: Double? = null
+
+    @Volatile
     private var cameraZoomKey: Int? = null
 
     private val tileCache: LruCache<Long, ByteArray> =
@@ -165,6 +168,7 @@ class MarkerTileRenderer(
         if (prevKey == nextKey && cameraZoomQuantized != null) return
         cameraZoomKey = nextKey
         cameraZoomQuantized = nextKey.toDouble() / CAMERA_ZOOM_KEY_SCALE
+        cameraZoomExact = zoom
     }
 
     /**
@@ -305,6 +309,7 @@ class MarkerTileRenderer(
             val tileToMarkerIds0 = tileToMarkerIds
             val markersById0 = markersById
             val cameraZoomQuantized0 = cameraZoomQuantized
+            val cameraZoomExact0 = cameraZoomExact
 
             val worldTileCount = 1 shl zoom
             if (y !in 0 until worldTileCount) return null
@@ -380,8 +385,8 @@ class MarkerTileRenderer(
                     else -> fixedMarkerPixelSizeReferenceZoom
                 }
             val zoomForScale =
-                if (useCameraZoomForScale && cameraZoomQuantized0 != null) {
-                    cameraZoomQuantized0 + scaleZoomOffset
+                if (useCameraZoomForScale) {
+                    (cameraZoomExact0 ?: cameraZoomQuantized0 ?: zoom.toDouble()) + scaleZoomOffset
                 } else {
                     zoom.toDouble() + scaleZoomOffset
                 }

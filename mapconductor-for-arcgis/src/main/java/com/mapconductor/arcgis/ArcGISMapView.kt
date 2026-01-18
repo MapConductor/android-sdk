@@ -16,11 +16,11 @@ import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
-import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
-import com.mapconductor.arcgis.groundimage.ArcGISGroundImageOverlayRenderer
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
 import com.mapconductor.arcgis.from
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageOverlayRenderer
 import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
@@ -30,7 +30,6 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
@@ -40,6 +39,8 @@ import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
+import com.mapconductor.core.tileserver.TileServerRegistry
+import java.util.concurrent.atomic.AtomicLong
 import android.util.Log
 import android.widget.FrameLayout
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +48,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.concurrent.atomic.AtomicLong
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
@@ -334,6 +334,7 @@ private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOver
 private fun getMarkerController(holder: ArcGISMapViewHolder) =
     ArcGISMarkerController.create(
         holder = holder,
+        markerScaleMultiplier = 2.5,
     )
 
 private fun getRasterLayerController(holder: ArcGISMapViewHolder): ArcGISRasterLayerController {

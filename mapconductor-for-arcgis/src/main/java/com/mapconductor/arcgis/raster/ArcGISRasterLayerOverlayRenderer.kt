@@ -12,8 +12,8 @@ import com.arcgismaps.mapping.layers.WebTiledLayer
 import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
-import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterLayerSource
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
 import kotlin.math.PI
 import kotlin.math.pow

@@ -13,13 +13,13 @@ import com.mapconductor.core.groundimage.GroundImageEntityInterface
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.GroundImageTileProvider
 import com.mapconductor.core.tileserver.LocalTileServer
+import kotlin.math.PI
+import kotlin.math.pow
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.PI
-import kotlin.math.pow
-import android.util.Log
 
 class ArcGISGroundImageOverlayRenderer(
     override val holder: ArcGISMapViewHolder,
@@ -36,8 +36,9 @@ class ArcGISGroundImageOverlayRenderer(
             provider.update(state, opacity = 1.0f)
             tileServer.register(routeId, provider)
 
-            val handle = createHandle(routeId = routeId, generation = 0L, cacheKey = tileCacheKey(state), provider = provider)
-                ?: return@withContext null
+            val handle =
+                createHandle(routeId = routeId, generation = 0L, cacheKey = tileCacheKey(state), provider = provider)
+                    ?: return@withContext null
             val loadResult = handle.layer.load()
             if (loadResult.isFailure) {
                 val error = loadResult.exceptionOrNull()
@@ -96,7 +97,8 @@ class ArcGISGroundImageOverlayRenderer(
             val loadResult = nextHandle.layer.load()
             if (loadResult.isFailure) {
                 val error = loadResult.exceptionOrNull()
-                Log.e("ArcGIS", "Failed to load updated ground image layer id=${current.state.id}: ${error?.message}", error)
+                Log
+                    .e("ArcGIS", "Failed to load updated ground image layer id=${current.state.id}: ${error?.message}", error)
                 return@withContext null
             }
 

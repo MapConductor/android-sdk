@@ -9,4 +9,3 @@ class ArcGISGroundImageController(
         groundImageManager = GroundImageManager(),
         renderer = renderer,
     )
-
