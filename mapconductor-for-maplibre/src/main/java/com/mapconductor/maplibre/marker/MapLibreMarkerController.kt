@@ -50,8 +50,7 @@ class MapLibreMarkerController(
     private var screenPxPerWorldPx: Double = 1.0
     private var pendingScaleSync: Boolean = false
 
-    @Volatile
-    private var lastKnownZoom: Double = 0.0
+    private lateinit var lastCameraPosition: MapCameraPosition
     private var lastAppliedMarkerScale: Double = 1.0
     private var lastIndexedZoom: Int = -1
     private var lastMarkerScaleZoomInt: Int = -1
@@ -393,8 +392,8 @@ class MapLibreMarkerController(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
-        lastKnownZoom = mapCameraPosition.zoom
-        val zoomInt = floor(lastKnownZoom).toInt().coerceAtLeast(0)
+        lastCameraPosition = mapCameraPosition
+        val zoomInt = floor(lastCameraPosition.zoom).toInt().coerceAtLeast(0)
 
         markerTileRenderer?.updateCameraZoom(mapCameraPosition.zoom)
 
@@ -492,7 +491,7 @@ class MapLibreMarkerController(
         rasterLayerCallback?.onRasterLayerUpdate(newState)
     }
 
-    private fun currentTileZoom(): Int = floor(lastKnownZoom).toInt().coerceAtLeast(0)
+    private fun currentTileZoom(): Int = floor(lastCameraPosition.zoom).toInt().coerceAtLeast(0)
 
     private suspend fun syncTiledOverlay(zoom: Int) {
         if (tiledMarkerIds.isEmpty()) {
@@ -617,6 +616,8 @@ class MapLibreMarkerController(
                 declutterCellPx = tilingOptions.declutterCellPx,
                 fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
                 fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
+                useCameraZoomForScale = true,
+                useCameraZoomCompensation = true,
             )
         markerTileRenderer = tileRenderer
 

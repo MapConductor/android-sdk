@@ -16,19 +16,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.polyline.Polyline
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
@@ -72,27 +73,39 @@ fun BasicGroundImageExample(
     modifier: Modifier = Modifier,
 ) {
     val mapViewState =
-        rememberGoogleMapViewState(
+        rememberMapLibreMapViewState(
             cameraPosition =
                 MapCameraPosition(
-                    position = GeoPoint(51.511649,-0.100761),
+                    position = GeoPoint(0.0,0.0),
                     zoom = 12.0,
                 ),
         )
 
-    val bounds = GeoRectBounds(
-        southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
-        northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
-    )
-    GoogleMapView(
+    MapLibreMapView(
         modifier = modifier,
         state = mapViewState,
     ) {
-        GroundImage(
-            id = "groundimage",
-            bounds = bounds,
-            image = drawable,
-            opacity = 0.6f
+        val points = listOf(
+            GeoPoint.fromLatLong(35.548852, 139.784086), // HND_AIR_PORT
+            GeoPoint.fromLatLong(37.615223, -122.389979), // SFO_AIR_PORT
+        )
+
+        val polylineState = PolylineState(
+            id = "example_polyline",
+            points = points,
+            strokeColor = Color.Red,
+            strokeWidth = 4.dp,
+            geodesic = true,
+        )
+
+        // Polyline
+        Polyline(polylineState)
+        Polyline(
+            polylineState.copy(
+                id = "${polylineState.id}-straight",
+                geodesic = false,
+                strokeColor = Color.Blue,
+            ),
         )
     }
 }

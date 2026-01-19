@@ -11,7 +11,6 @@ import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.marker.clustering.MarkerClusterGroup
@@ -48,9 +47,10 @@ fun <ActualMarker> MarkerClusterMapComponent(
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
     ) {
-        MarkerClusterGroup(state = resolvedClusterGroupState) {
-            markers.forEach { markerState -> Marker(markerState) }
-        }
+        MarkerClusterGroup(
+            state = resolvedClusterGroupState,
+            markers = markers,
+        )
 
         val selectedPostOffice = selectedMarker?.extra as? PostOffice
         if (selectedMarker != null && selectedPostOffice != null) {

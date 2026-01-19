@@ -84,6 +84,7 @@ fun <
     viewProvider: () -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
+    serviceRegistry: MapServiceRegistry = EmptyMapServiceRegistry,
     sdkInitialize: suspend () -> Boolean = { true },
     holderProvider: suspend (mapView: ActualMapView) -> SpecificHolder,
     controllerProvider: suspend (holder: SpecificHolder) -> SpecificController,
@@ -223,6 +224,7 @@ fun <
                     // **ここで初めて CompositionLocalProvider を差し込む**
                     CompositionLocalProvider(
                         LocalMapOverlayRegistry provides registry,
+                        LocalMapServiceRegistry provides serviceRegistry,
                         LocalMapViewController provides localController,
                         LocalMarkerCollector provides scope.markerCollector,
                         LocalInfoBubbleCollector provides scope.bubbleFlow,

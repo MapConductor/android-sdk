@@ -54,7 +54,6 @@ import com.mapconductor.here.marker.StrategyHereMarkerEventController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.raster.HereRasterLayerController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +72,6 @@ class HereMapViewController(
 ) : BaseMapViewController(),
     CircleCapableInterface,
     HereMapViewControllerInterface,
-    MarkerRenderingSupport<HereActualMarker>,
     MapCameraListener,
     TapListener,
     LongPressListener {
@@ -471,16 +469,16 @@ class HereMapViewController(
         controller.setAnimateEndListener(markerAnimateEndListener)
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<HereActualMarker>,
     ): MarkerOverlayRendererInterface<HereActualMarker> = HereMarkerRenderer(holder = holder)
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<HereActualMarker>,
         renderer: MarkerOverlayRendererInterface<HereActualMarker>,
     ): MarkerEventControllerInterface<HereActualMarker> = StrategyHereMarkerEventController(controller)
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<HereActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<HereActualMarker>) {
         val typed = controller as? HereMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

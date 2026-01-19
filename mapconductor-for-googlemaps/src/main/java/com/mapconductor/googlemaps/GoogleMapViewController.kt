@@ -44,7 +44,6 @@ import com.mapconductor.googlemaps.marker.StrategyGoogleMapMarkerEventController
 import com.mapconductor.googlemaps.polygon.GoogleMapPolygonController
 import com.mapconductor.googlemaps.polyline.GoogleMapPolylineController
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,7 +62,6 @@ class GoogleMapViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     GoogleMapViewControllerInterface,
-    MarkerRenderingSupport<GoogleMapActualMarker>,
     OnCameraMoveStartedListener,
     OnCameraMoveCanceledListener,
     OnCameraMoveListener,
@@ -74,7 +72,7 @@ class GoogleMapViewController(
     GoogleMap.OnMapLoadedCallback {
     private val markerEventControllers = mutableListOf<GoogleMapMarkerEventControllerInterface>()
     private val _mapLoadedState = MutableStateFlow(false)
-    override val mapLoadedState: StateFlow<Boolean> = _mapLoadedState
+    val mapLoadedState: StateFlow<Boolean> = _mapLoadedState
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
     private var markerDragListener: OnMarkerEventHandler? = null
@@ -401,21 +399,21 @@ class GoogleMapViewController(
         backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<GoogleMapActualMarker>,
     ): MarkerOverlayRendererInterface<GoogleMapActualMarker> = GoogleMapMarkerRenderer(holder = holder)
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<GoogleMapActualMarker>,
         renderer: MarkerOverlayRendererInterface<GoogleMapActualMarker>,
     ): MarkerEventControllerInterface<GoogleMapActualMarker> = StrategyGoogleMapMarkerEventController(controller)
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<GoogleMapActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<GoogleMapActualMarker>) {
         val typed = controller as? GoogleMapMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }
 
-    override fun onMarkerRenderingReady() {
+    fun onMarkerRenderingReady() {
         sendInitialCameraUpdate()
     }
 

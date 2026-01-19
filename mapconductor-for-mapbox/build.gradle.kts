@@ -83,7 +83,6 @@ dependencies {
     // Mapbox SDK
     compileOnly(libs.mapbox.android)
     compileOnly(project(":mapconductor-core"))
-    implementation(project(":mapconductor-marker-clustering"))
     implementation(project(":mapconductor-heatmap"))
 
     testImplementation(libs.junit)

@@ -56,7 +56,6 @@ import com.mapconductor.mapbox.marker.StrategyMapboxMarkerEventController
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.raster.MapboxRasterLayerController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import android.animation.Animator
@@ -81,7 +80,6 @@ internal class MapboxMapViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapboxMapViewControllerInterface,
-    MarkerRenderingSupport<MapboxActualMarker>,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
@@ -215,6 +213,13 @@ internal class MapboxMapViewController(
                     this@MapboxMapViewController.mapDesignType = mapDesign
                     mapDesignTypeChangeListener?.invoke(mapDesign)
                 }
+            }
+        }
+
+        holder.map.subscribeStyleImageMissing { evt ->
+            val missingId = evt.imageId
+            markerEventControllers.forEach { controller ->
+                controller.renderer.onStyleImageMissing(missingId)
             }
         }
         holder.map.subscribeMapIdle {
@@ -706,7 +711,7 @@ internal class MapboxMapViewController(
         }
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<MapboxActualMarker>,
     ): MarkerOverlayRendererInterface<MapboxActualMarker> {
         val groupId = UUID.randomUUID().toString()
@@ -728,7 +733,7 @@ internal class MapboxMapViewController(
         )
     }
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<MapboxActualMarker>,
         renderer: MarkerOverlayRendererInterface<MapboxActualMarker>,
     ): MarkerEventControllerInterface<MapboxActualMarker> =
@@ -737,7 +742,7 @@ internal class MapboxMapViewController(
             renderer = renderer as MapboxMarkerOverlayRenderer,
         )
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapboxActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapboxActualMarker>) {
         val typed = controller as? MapboxMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

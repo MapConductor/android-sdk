@@ -38,7 +38,6 @@ import com.mapconductor.maplibre.marker.StrategyMapLibreMarkerEventController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -74,7 +73,6 @@ class MapLibreViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapLibreViewControllerInterface,
-    MarkerRenderingSupport<MapLibreActualMarker>,
     MapLibreMap.OnMapClickListener,
     MapLibreMap.OnMapLongClickListener,
     MapLibreMap.OnMoveListener,
@@ -811,7 +809,7 @@ class MapLibreViewController(
         }
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
     ): MarkerOverlayRendererInterface<MapLibreActualMarker> {
         val groupId = UUID.randomUUID().toString()
@@ -833,7 +831,7 @@ class MapLibreViewController(
         )
     }
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<MapLibreActualMarker>,
         renderer: MarkerOverlayRendererInterface<MapLibreActualMarker>,
     ): MarkerEventControllerInterface<MapLibreActualMarker> =
@@ -842,7 +840,7 @@ class MapLibreViewController(
             renderer = renderer as MapLibreMarkerOverlayRenderer,
         )
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapLibreActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapLibreActualMarker>) {
         val typed = controller as? MapLibreMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

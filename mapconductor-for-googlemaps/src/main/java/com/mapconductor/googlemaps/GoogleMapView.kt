@@ -15,12 +15,19 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
+import com.mapconductor.core.marker.MarkerRenderingSupport
+import com.mapconductor.core.marker.MarkerRenderingSupportKey
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.googlemaps.circle.GoogleMapCircleController
@@ -106,6 +113,7 @@ fun GoogleMapView(
     val scope = remember { GoogleMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
+    val serviceRegistry = remember { MutableMapServiceRegistry() }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
@@ -134,6 +142,7 @@ fun GoogleMapView(
                 onCreate(null)
             }
         },
+        serviceRegistry = serviceRegistry,
         holderProvider = { mapView ->
 
             suspendCancellableCoroutine<GoogleMapViewHolder> { cont ->
@@ -165,40 +174,69 @@ fun GoogleMapView(
                 circleController = circleController,
                 rasterLayerController = rasterLayerController,
                 holder = holder,
-            ).also { controller ->
-                state.setController(controller)
-                controller.setCameraMoveStartListener {
+            ).also { mapController ->
+                serviceRegistry.clear()
+                serviceRegistry.put(
+                    MarkerRenderingSupportKey,
+                    object : MarkerRenderingSupport<GoogleMapActualMarker> {
+                        override val mapLoadedState = mapController.mapLoadedState
+
+                        override fun createMarkerRenderer(
+                            strategy: MarkerRenderingStrategyInterface<GoogleMapActualMarker>,
+                        ): MarkerOverlayRendererInterface<GoogleMapActualMarker> =
+                            mapController.createMarkerRenderer(strategy)
+
+                        override fun createMarkerEventController(
+                            controller: StrategyMarkerController<GoogleMapActualMarker>,
+                            renderer: MarkerOverlayRendererInterface<GoogleMapActualMarker>,
+                        ): MarkerEventControllerInterface<GoogleMapActualMarker> =
+                            mapController.createMarkerEventController(controller, renderer)
+
+                        override fun registerMarkerEventController(
+                            controller: MarkerEventControllerInterface<GoogleMapActualMarker>,
+                        ) {
+                            mapController.registerMarkerEventController(controller)
+                        }
+
+                        override fun onMarkerRenderingReady() {
+                            mapController.onMarkerRenderingReady()
+                        }
+                    },
+                )
+
+                state.setController(mapController)
+                mapController.setCameraMoveStartListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
-                controller.setCameraMoveListener {
+                mapController.setCameraMoveListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
-                controller.setCameraMoveEndListener {
+                mapController.setCameraMoveEndListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }
-                controller.setMapClickListener(onMapClick)
+                mapController.setMapClickListener(onMapClick)
                 @Suppress("DEPRECATION")
                 run {
-                    controller.setOnMarkerClickListener(onMarkerClick)
-                    controller.setOnMarkerDragStart(onMarkerDragStart)
-                    controller.setOnMarkerDrag(onMarkerDrag)
-                    controller.setOnMarkerDragEnd(onMarkerDragEnd)
-                    controller.setOnCircleClickListener(onCircleClick)
-                    controller.setOnPolylineClickListener(onPolylineClick)
-                    controller.setOnPolygonClickListener(onPolygonClick)
-                    controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
-                    controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-                    controller.setOnGroundImageClickListener(onGroundImageClick)
+                    mapController.setOnMarkerClickListener(onMarkerClick)
+                    mapController.setOnMarkerDragStart(onMarkerDragStart)
+                    mapController.setOnMarkerDrag(onMarkerDrag)
+                    mapController.setOnMarkerDragEnd(onMarkerDragEnd)
+                    mapController.setOnCircleClickListener(onCircleClick)
+                    mapController.setOnPolylineClickListener(onPolylineClick)
+                    mapController.setOnPolygonClickListener(onPolygonClick)
+                    mapController.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                    mapController.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                    mapController.setOnGroundImageClickListener(onGroundImageClick)
                 }
-                controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                mapController.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 // Post an initial camera update once the MapView is laid out
-                holder.mapView.post { controller.sendInitialCameraUpdate() }
+                holder.mapView.post { mapController.sendInitialCameraUpdate() }
             }
         },
         scope = scope,

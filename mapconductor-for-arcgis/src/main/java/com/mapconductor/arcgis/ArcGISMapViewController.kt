@@ -50,7 +50,6 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import com.mapconductor.settings.Settings
 import java.util.concurrent.atomic.AtomicLong
 import android.view.MotionEvent
@@ -68,8 +67,7 @@ class ArcGISMapViewController(
     private val rasterLayerController: ArcGISRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    ArcGISMapViewControllerInterface,
-    MarkerRenderingSupport<ArcGISActualMarker> {
+    ArcGISMapViewControllerInterface {
     private val markerEventControllers = mutableListOf<ArcGISMarkerEventControllerInterface>()
     private var activeDragController: ArcGISMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
@@ -617,7 +615,7 @@ class ArcGISMapViewController(
         controller.setAnimateEndListener(markerAnimateEndListener)
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
     ): MarkerOverlayRendererInterface<ArcGISActualMarker> {
         val markerLayer =
@@ -630,12 +628,12 @@ class ArcGISMapViewController(
         )
     }
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<ArcGISActualMarker>,
         renderer: MarkerOverlayRendererInterface<ArcGISActualMarker>,
     ): MarkerEventControllerInterface<ArcGISActualMarker> = StrategyArcGISMarkerEventController(controller)
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<ArcGISActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<ArcGISActualMarker>) {
         val typed = controller as? ArcGISMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

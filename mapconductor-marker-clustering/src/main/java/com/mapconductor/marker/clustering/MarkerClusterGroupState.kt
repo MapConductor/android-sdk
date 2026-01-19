@@ -15,10 +15,6 @@ class MarkerClusterGroupState<ActualMarker>(
     clusterIconProvider: (Int) -> MarkerIconInterface = MarkerClusterStrategy.DEFAULT_ICON_PROVIDER,
     onClusterClick: ((MarkerCluster) -> Unit)? = null,
     debugClusterTurnLabel: Boolean = false,
-    showClusterRadiusCircle: Boolean = false,
-    clusterRadiusStrokeColor: Color = Color.Red,
-    clusterRadiusStrokeWidth: Dp = 1.dp,
-    clusterRadiusFillColor: Color = Color.Transparent,
     enableZoomAnimation: Boolean = false,
     enablePanAnimation: Boolean = false,
     zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
@@ -32,10 +28,6 @@ class MarkerClusterGroupState<ActualMarker>(
     var clusterIconProvider by mutableStateOf(clusterIconProvider)
     var onClusterClick by mutableStateOf(onClusterClick)
     var debugClusterTurnLabel by mutableStateOf(debugClusterTurnLabel)
-    var showClusterRadiusCircle by mutableStateOf(showClusterRadiusCircle)
-    var clusterRadiusStrokeColor by mutableStateOf(clusterRadiusStrokeColor)
-    var clusterRadiusStrokeWidth by mutableStateOf(clusterRadiusStrokeWidth)
-    var clusterRadiusFillColor by mutableStateOf(clusterRadiusFillColor)
     var enableZoomAnimation by mutableStateOf(enableZoomAnimation)
     var enablePanAnimation by mutableStateOf(enablePanAnimation)
     var zoomAnimationDurationMillis by mutableStateOf(zoomAnimationDurationMillis)

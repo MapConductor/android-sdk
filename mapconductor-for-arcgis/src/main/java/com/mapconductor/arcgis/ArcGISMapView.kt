@@ -16,12 +16,12 @@ import com.arcgismaps.mapping.ArcGISTiledElevationSource
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SceneView
 import com.arcgismaps.mapping.view.SurfacePlacement
+import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayRenderer
 import com.mapconductor.arcgis.from
 import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
 import com.mapconductor.arcgis.groundimage.ArcGISGroundImageOverlayRenderer
-import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayController
 import com.mapconductor.arcgis.polygon.ArcGISPolygonOverlayRenderer
@@ -32,11 +32,18 @@ import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
+import com.mapconductor.core.marker.MarkerRenderingSupport
+import com.mapconductor.core.marker.MarkerRenderingSupportKey
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.tileserver.TileServerRegistry
@@ -110,6 +117,7 @@ fun ArcGISMapView(
     val scope = remember { ArcGISMapViewScope() } // Use specific scope
     val context = LocalContext.current // Context will be available from MapViewBase too if needed
     val registry = remember { scope.buildRegistry() }
+    val serviceRegistry = remember { MutableMapServiceRegistry() }
     val owner = LocalLifecycleOwner.current
     owner.lifecycle
     val basemapStyle = remember { ArcGISDesign.toBasemapStyle(state.mapDesignType) }
@@ -136,6 +144,7 @@ fun ArcGISMapView(
         },
         scope = scope,
         registry = registry,
+        serviceRegistry = serviceRegistry,
         holderProvider = { wrapView ->
             val options =
                 ArcGISMapViewInitOptions(
@@ -200,20 +209,47 @@ fun ArcGISMapView(
                 circleController = circleController,
                 rasterLayerController = rasterLayerController,
                 groundImageController = groundImageController,
-            ).also { controller ->
-                controllerRef.value = controller
-                controller.setMapClickListener(onMapClick)
-                controller.setOnCircleClickListener(onCircleClick)
-                controller.setOnPolylineClickListener(onPolylineClick)
-                controller.setOnPolygonClickListener(onPolygonClick)
-                controller.setOnMarkerClickListener(onMarkerClick)
-                controller.setOnMarkerDragStart(onMarkerDragStart)
-                controller.setOnMarkerDrag(onMarkerDrag)
-                controller.setOnMarkerDragEnd(onMarkerDragEnd)
-                controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
-                controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-                controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
-                state.setController(controller)
+            ).also { mapController ->
+                serviceRegistry.clear()
+                serviceRegistry.put(
+                    MarkerRenderingSupportKey,
+                    object : MarkerRenderingSupport<ArcGISActualMarker> {
+                        override fun createMarkerRenderer(
+                            strategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
+                        ): MarkerOverlayRendererInterface<ArcGISActualMarker> =
+                            mapController.createMarkerRenderer(strategy)
+
+                        override fun createMarkerEventController(
+                            controller: StrategyMarkerController<ArcGISActualMarker>,
+                            renderer: MarkerOverlayRendererInterface<ArcGISActualMarker>,
+                        ): MarkerEventControllerInterface<ArcGISActualMarker> =
+                            mapController.createMarkerEventController(controller, renderer)
+
+                        override fun registerMarkerEventController(
+                            controller: MarkerEventControllerInterface<ArcGISActualMarker>,
+                        ) {
+                            mapController.registerMarkerEventController(controller)
+                        }
+
+                        override fun onMarkerRenderingReady() {
+                            mapController.sendInitialCameraUpdate()
+                        }
+                    },
+                )
+
+                controllerRef.value = mapController
+                mapController.setMapClickListener(onMapClick)
+                mapController.setOnCircleClickListener(onCircleClick)
+                mapController.setOnPolylineClickListener(onPolylineClick)
+                mapController.setOnPolygonClickListener(onPolygonClick)
+                mapController.setOnMarkerClickListener(onMarkerClick)
+                mapController.setOnMarkerDragStart(onMarkerDragStart)
+                mapController.setOnMarkerDrag(onMarkerDrag)
+                mapController.setOnMarkerDragEnd(onMarkerDragEnd)
+                mapController.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                mapController.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                mapController.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                state.setController(mapController)
 
                 // Avoid early ArcGIS viewpoint updates overwriting the desired initial camera.
                 // Apply the initial camera after layout, then start syncing camera changes.
@@ -221,20 +257,20 @@ fun ArcGISMapView(
                 val generation = controllerGeneration.incrementAndGet()
                 holder.mapView.post {
                     if (controllerGeneration.get() != generation) return@post
-                    controller.moveCamera(MapCameraPosition.from(initialCameraPosition))
-                    controller.sendInitialCameraUpdate()
+                    mapController.moveCamera(MapCameraPosition.from(initialCameraPosition))
+                    mapController.sendInitialCameraUpdate()
 
-                    controller.setCameraMoveStartListener {
+                    mapController.setCameraMoveStartListener {
                         cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMoveStart?.invoke(it)
                     }
-                    controller.setCameraMoveListener {
+                    mapController.setCameraMoveListener {
                         cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMove?.invoke(it)
                     }
-                    controller.setCameraMoveEndListener {
+                    mapController.setCameraMoveEndListener {
                         cameraState.value = it
                         state.updateCameraPosition(it)
                         onCameraMoveEnd?.invoke(it)

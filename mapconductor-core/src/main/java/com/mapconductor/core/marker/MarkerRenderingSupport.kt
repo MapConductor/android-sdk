@@ -1,11 +1,13 @@
-package com.mapconductor.marker.clustering
+package com.mapconductor.core.marker
 
-import com.mapconductor.core.marker.MarkerEventControllerInterface
-import com.mapconductor.core.marker.MarkerOverlayRendererInterface
-import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
-import com.mapconductor.core.marker.StrategyMarkerController
+import com.mapconductor.core.map.MapServiceKey
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Map-scoped capability used by marker-clustering (and other marker-rendering plugins)
+ * to create per-group renderers/controllers without requiring the map controller itself
+ * to implement plugin interfaces.
+ */
 interface MarkerRenderingSupport<ActualMarker> {
     fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<ActualMarker>,
@@ -23,3 +25,9 @@ interface MarkerRenderingSupport<ActualMarker> {
 
     fun onMarkerRenderingReady() {}
 }
+
+/**
+ * Registry key used to look up [MarkerRenderingSupport] from [com.mapconductor.core.map.LocalMapServiceRegistry].
+ */
+object MarkerRenderingSupportKey : MapServiceKey<MarkerRenderingSupport<*>>
+

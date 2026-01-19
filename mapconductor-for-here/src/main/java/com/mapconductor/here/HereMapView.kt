@@ -14,13 +14,20 @@ import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewBase
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
+import com.mapconductor.core.marker.MarkerRenderingSupport
+import com.mapconductor.core.marker.MarkerRenderingSupportKey
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.tileserver.TileServerRegistry
@@ -105,6 +112,7 @@ fun HereMapView(
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val registry = remember { scope.buildRegistry() }
+    val serviceRegistry = remember { MutableMapServiceRegistry() }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
     // Capture the desired initial camera before any early camera callbacks can overwrite state.
     val initialCameraPosition = remember(state.id) { state.cameraPosition }
@@ -178,6 +186,30 @@ fun HereMapView(
             holderRef.value = controller.holder
             controllerRef.value = controller
 
+            serviceRegistry.clear()
+            val mapController = controller
+            serviceRegistry.put(
+                MarkerRenderingSupportKey,
+                object : MarkerRenderingSupport<HereActualMarker> {
+                    override fun createMarkerRenderer(
+                        strategy: MarkerRenderingStrategyInterface<HereActualMarker>,
+                    ): MarkerOverlayRendererInterface<HereActualMarker> =
+                        controller.createMarkerRenderer(strategy)
+
+                    override fun createMarkerEventController(
+                        controller: StrategyMarkerController<HereActualMarker>,
+                        renderer: MarkerOverlayRendererInterface<HereActualMarker>,
+                    ): MarkerEventControllerInterface<HereActualMarker> =
+                        mapController.createMarkerEventController(controller, renderer)
+
+                    override fun registerMarkerEventController(
+                        controller: MarkerEventControllerInterface<HereActualMarker>,
+                    ) {
+                        mapController.registerMarkerEventController(controller)
+                    }
+                },
+            )
+
             return@MapViewBase suspendCancellableCoroutine<HereMapViewController> { cont ->
                 val resumed = AtomicBoolean(false)
 
@@ -216,6 +248,7 @@ fun HereMapView(
         },
         scope = scope,
         registry = registry,
+        serviceRegistry = serviceRegistry,
         onMapLoaded = onMapLoaded,
         customDisposableEffect = { initState, holderRef ->
 
