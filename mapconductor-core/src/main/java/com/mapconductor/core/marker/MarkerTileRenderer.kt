@@ -350,9 +350,10 @@ class MarkerTileRenderer<ActualMarker>(
         }
 
         val left = min(leftTop.longitude, rightBottom.longitude)
-        val top = min(leftTop.latitude, rightBottom.latitude)
         val right = max(leftTop.longitude, rightBottom.longitude)
-        val bottom = max(leftTop.latitude, rightBottom.latitude)
+        // WGS84 latitude: north is larger, south is smaller.
+        val top = max(leftTop.latitude, rightBottom.latitude)
+        val bottom = min(leftTop.latitude, rightBottom.latitude)
 
         val homographyMatrix = CalcHomographyMatrixOptions(
             farLeftPx = PointD(
@@ -395,7 +396,7 @@ class MarkerTileRenderer<ActualMarker>(
                     )
 //
                     val bmpLeft = ((positionPx.x * scaledTileSize.toDouble() - (scaledSize.width / 2f)) + scaledTileSize).toFloat()
-                    val bmpTop = (((1.0-positionPx.y) * scaledTileSize.toDouble() - (scaledSize.height / 2f)) + scaledTileSize).toFloat()
+                    val bmpTop = ((positionPx.y * scaledTileSize.toDouble() - (scaledSize.height / 2f)) + scaledTileSize).toFloat()
 //                    println("    position=${(entity.state.position as GeoPoint).toUrlValue()}, (${centerPx.x}, ${centerPx.y})")
 
                     it.drawBitmap(bitmapIcon.bitmap, bmpLeft, bmpTop, bmpPaint)
@@ -418,7 +419,7 @@ class MarkerTileRenderer<ActualMarker>(
 
     private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
         val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.WEBP, 99, outputStream)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
         return outputStream.toByteArray()
     }
 
