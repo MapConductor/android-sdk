@@ -1,18 +1,33 @@
 package com.mapconductor.core.marker
 
+import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.homography.CalcHomographyMatrixOptions
+import com.mapconductor.core.homography.PointD
+import com.mapconductor.core.homography.applyMatrix
+import com.mapconductor.core.homography.calcHomographyMatrix
+import com.mapconductor.core.homography.calcInverseMatrix
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.atan
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sinh
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.util.DisplayMetrics
 import android.util.Log
@@ -35,7 +50,8 @@ import android.util.LruCache
  * - [renderTile] may be called from multiple threads concurrently
  * - [setMarkers] and [updateCameraZoom] should be called from a single thread (typically Main)
  */
-class MarkerTileRenderer(
+class MarkerTileRenderer<ActualMarker>(
+    val markerManager: MarkerManager<ActualMarker>,
     val tileSize: Int = DEFAULT_TILE_SIZE,
     private val worldTileSize: Int = tileSize,
     private val scaleZoomOffset: Double = 0.0,
@@ -51,6 +67,7 @@ class MarkerTileRenderer(
     private val declutterCellPx: Int = 8,
     private val fixedMarkerPixelSize: Boolean = true,
     private val fixedMarkerPixelSizeReferenceZoom: Int = 10,
+    private val drawRawBitmapInTilePixels: Boolean = false,
     cacheSizeBytes: Int = DEFAULT_TILE_CACHE_BYTES,
 ) : TileProviderInterface {
     private val worldToOutputScale: Double =
@@ -228,7 +245,7 @@ class MarkerTileRenderer(
         markerScaleZoomInt: Int,
     ) {
         val next = bitmapPxToWorldPx.coerceAtLeast(1e-6)
-        if (kotlin.math.abs(this.bitmapPxToWorldPx - next) < 1e-4) return
+        if (abs(this.bitmapPxToWorldPx - next) < 1e-4) return
         this.bitmapPxToWorldPx = next
         this.markerScaleZoomInt = markerScaleZoomInt.coerceAtLeast(0)
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
@@ -265,7 +282,7 @@ class MarkerTileRenderer(
             keysToCompare.any { z ->
                 val prevEff = effectivePxToWorldForZoom(z, prevBmp, prevMsZ, prevIndexedZoom)
                 val nextEff = effectivePxToWorldForZoom(z, nextBmp, indexedZoom, indexedZoom)
-                kotlin.math.abs(prevEff - nextEff) > 1e-6
+                abs(prevEff - nextEff) > 1e-6
             }
         val shouldInvalidateIndex =
             prevIndexedZoom != indexedZoom || prevIndexes !== indexes || prevTileToIds !== tileToMarkerIds
@@ -292,7 +309,141 @@ class MarkerTileRenderer(
         bumpStateEpoch("clear")
     }
 
+    private val scaledTileSize = ResourceProvider.dpToPx(tileSize.dp)
+    private val debugPaint = Paint().apply {
+        setTextSize(ResourceProvider.dpToPxForBitmap(10f).toFloat())
+        setColor(Color.RED)
+        setStrokeWidth(ResourceProvider.dpToPxForBitmap(1f).toFloat())
+        setFlags(Paint.ANTI_ALIAS_FLAG)
+    }
+
+    private val bmpPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isFilterBitmap = true
+            isDither = true
+        }
+
     override fun renderTile(request: TileRequest): ByteArray? {
+        val x = request.x.toDouble()
+        val y = request.y.toDouble()
+        val zoom = request.z.toDouble()
+
+        val leftTop = tileToGeoPoint(x, y, zoom)
+        val rightBottom = tileToGeoPoint(x + 1, y + 1, zoom)
+        val bounds = GeoRectBounds()
+        bounds.extend(leftTop)
+        bounds.extend(rightBottom)
+        val extended = bounds.expandedByDegrees(0.1, 0.1)
+
+        val entities = markerManager.findMarkersInBounds(extended)
+        if (entities.isEmpty()) {
+            val copied = createBitmap(scaledTileSize.toInt(), scaledTileSize.toInt())
+            Canvas(copied).also {
+                val vertex = ResourceProvider.dpToPxForBitmap(tileSize.dp).toFloat()
+                it.drawLine(0f, 0f, vertex, 0f, debugPaint)
+                it.drawLine(0f, 0f, 0f, vertex, debugPaint)
+                it.drawText("x/y/z=${x}/${y}/${zoom}, entries=${entities.size}", 20f, 20f, debugPaint)
+            }
+            val output = bitmapToByteArray(copied)
+            if (!copied.isRecycled) copied.recycle()
+            return output
+        }
+
+        val left = min(leftTop.longitude, rightBottom.longitude)
+        val top = min(leftTop.latitude, rightBottom.latitude)
+        val right = max(leftTop.longitude, rightBottom.longitude)
+        val bottom = max(leftTop.latitude, rightBottom.latitude)
+
+        val homographyMatrix = CalcHomographyMatrixOptions(
+            farLeftPx = PointD(
+                x = left,
+                y = top
+            ),
+            farRightPx = PointD(
+                x = right,
+                y = top
+            ),
+            nearRightPx = PointD(
+                x = right,
+                y = bottom
+            ),
+            nearLeftPx = PointD(
+                x = left,
+                y = bottom
+            ),
+        )
+        val matrix = calcHomographyMatrix(homographyMatrix)
+        val invertMatrix = calcInverseMatrix(matrix)
+
+
+        val extendTileSize = (scaledTileSize * 3).toInt()
+        val renderBitmap = createBitmap(extendTileSize, extendTileSize)
+        Canvas(renderBitmap).also {
+            it.drawLine(scaledTileSize.toFloat(), scaledTileSize.toFloat(), (scaledTileSize * 2).toFloat(), scaledTileSize.toFloat(), debugPaint)
+            it.drawLine(scaledTileSize.toFloat(), scaledTileSize.toFloat(), scaledTileSize.toFloat(), (scaledTileSize * 2).toFloat(), debugPaint)
+            it.drawText("x/y/z=${x}/${y}/${zoom}, entries=${entities.size}", scaledTileSize.toFloat() + 20f, scaledTileSize.toFloat() + 20f, debugPaint)
+
+            entities.forEach { entity ->
+                entity.state.icon?.toBitmapIcon()?.let { bitmapIcon ->
+                    val scaledSize = bitmapIcon.size
+                    val positionPx = applyMatrix(
+                        pos = PointD(
+                            x = entity.state.position.longitude,
+                            y = entity.state.position.latitude,
+                        ),
+                        invertMatrix,
+                    )
+//
+                    val bmpLeft = ((positionPx.x * scaledTileSize.toDouble() - (scaledSize.width / 2f)) + scaledTileSize).toFloat()
+                    val bmpTop = (((1.0-positionPx.y) * scaledTileSize.toDouble() - (scaledSize.height / 2f)) + scaledTileSize).toFloat()
+//                    println("    position=${(entity.state.position as GeoPoint).toUrlValue()}, (${centerPx.x}, ${centerPx.y})")
+
+                    it.drawBitmap(bitmapIcon.bitmap, bmpLeft, bmpTop, bmpPaint)
+                }
+            }
+        }
+        val finalBitmap = createBitmap(scaledTileSize.toInt(), scaledTileSize.toInt())
+        Canvas(finalBitmap).also {
+            val src = Rect(scaledTileSize.toInt(), scaledTileSize.toInt(), (scaledTileSize * 2).toInt(), (scaledTileSize * 2).toInt())
+            val dst = Rect(0, 0, scaledTileSize.toInt(), scaledTileSize.toInt())
+            it.drawBitmap(renderBitmap, src, dst, bmpPaint)
+        }
+
+
+        val output = bitmapToByteArray(finalBitmap)
+        if (!renderBitmap.isRecycled) renderBitmap.recycle()
+        if (!finalBitmap.isRecycled) finalBitmap.recycle()
+        return output
+    }
+
+    private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.WEBP, 99, outputStream)
+        return outputStream.toByteArray()
+    }
+
+    private fun tileToGeoPoint(x: Double, y: Double, z: Double): GeoPoint {
+        // Slippy map tile (XYZ) -> WGS84 (lat/lng).
+        //
+        // This returns the NW (top-left) corner of the tile.
+        // If you need the center, use (x + 0.5, y + 0.5) instead.
+        val n = 2.0.pow(z.toDouble())
+        val lonDeg = (x.toDouble() / n) * 360.0 - 180.0
+        val latRad = atan(sinh(PI * (1.0 - 2.0 * (y.toDouble() / n))))
+        val latDeg = latRad * 180.0 / PI
+        return GeoPoint.fromLatLong(latitude = latDeg, longitude = lonDeg)
+    }
+
+    /*
+     * Reference (lat/lng -> tile XYZ):
+     *
+     * n = 2.0 ** zoom
+     * x = int(n * ((lng + 180.0) / 360.0))
+     * lat_rad = radians(lat)
+     * y = int(n * (1.0 - (log(tan(lat_rad) + 1 / cos(lat_rad)) / PI)) / 2.0)
+     */
+
+    fun renderTile2(request: TileRequest): ByteArray? {
         val x = request.x
         val y = request.y
         val zoom = request.z
@@ -320,7 +471,7 @@ class MarkerTileRenderer(
                 if (epochNow == epoch0) return false
                 val nowEff = effectivePxToWorldForZoom(zoom, bitmapPxToWorldPx, markerScaleZoomInt, indexedZoom)
                 val snapshotEff = effectivePxToWorldForZoom(zoom, bitmapPxToWorldPx0, markerScaleZoomInt0, indexedZoom0)
-                val scaleChanged = kotlin.math.abs(nowEff - snapshotEff) > 1e-6
+                val scaleChanged = abs(nowEff - snapshotEff) > 1e-6
                 if (!scaleChanged) return false
                 if (attempt >= 1) return false
                 attempt++
@@ -369,8 +520,8 @@ class MarkerTileRenderer(
 
             var candidateCount = 0
             var drawnCount = 0
-            val renderBitmap = Bitmap.createBitmap(renderTileSize, renderTileSize, Bitmap.Config.ARGB_8888)
-            renderBitmap.density = DisplayMetrics.DENSITY_DEFAULT
+            val tileSize = ResourceProvider.dpToPxForBitmap(renderTileSize.dp).toInt()
+            val renderBitmap = createBitmap(tileSize, tileSize)
             val canvas = Canvas(renderBitmap)
             val paint =
                 Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -391,7 +542,7 @@ class MarkerTileRenderer(
                     zoom.toDouble() + scaleZoomOffset
                 }
             val lodToCameraScale =
-                if (!useCameraZoomForScale && useCameraZoomCompensation && cameraZoomQuantized0 != null) {
+                if (useCameraZoomCompensation && cameraZoomQuantized0 != null) {
                     2.0.pow(zoom.toDouble() - cameraZoomQuantized0)
                 } else {
                     1.0
@@ -484,23 +635,30 @@ class MarkerTileRenderer(
                 val localX = deltaX * coordScaleDouble
                 val localY = (pixelY - tileOriginY) * coordScaleDouble
 
-                val pxToWorldBase =
-                    if (fixedMarkerPixelSize) {
-                        min(bitmapPxToWorldPx0 * zoomToMarkerScale, bitmapPxToWorldPx0)
-                    } else {
+                val pxToWorld =
+                    if (drawRawBitmapInTilePixels) {
                         1.0
+                    } else {
+                        val pxToWorldBase =
+                            if (fixedMarkerPixelSize) {
+                                min(bitmapPxToWorldPx0 * zoomToMarkerScale, bitmapPxToWorldPx0)
+                            } else {
+                                1.0
+                            }
+                        val pxToWorldRaw =
+                            pxToWorldBase *
+                                if (marker.autoScalable) {
+                                    zoomScale * lodToCameraScale
+                                } else {
+                                    pxToWorldScalable * lodToCameraScale
+                                }
+                        // Cap at maxPxToWorld to prevent markers from exceeding their intended size
+                        // Adjust for compositor scaling so final screen size is capped at maxPxToWorld
+                        val effectiveMaxPxToWorld = marker.maxPxToWorld.toDouble() * lodToCameraScale
+                        minOf(pxToWorldRaw, effectiveMaxPxToWorld)
                     }
-                val pxToWorldRaw =
-                    pxToWorldBase *
-                        if (marker.autoScalable) {
-                            zoomScale
-                        } else {
-                            pxToWorldScalable * lodToCameraScale
-                        }
-                // Cap at maxPxToWorld to prevent markers from exceeding their intended size
-                val pxToWorld = minOf(pxToWorldRaw, marker.maxPxToWorld.toDouble())
-                val drawWidth = (marker.bitmap.width.toDouble() * pxToWorld).coerceAtLeast(1.0)
-                val drawHeight = (marker.bitmap.height.toDouble() * pxToWorld).coerceAtLeast(1.0)
+                val drawWidth = ResourceProvider.dpToPxForBitmap(marker.bitmap.width.toDouble() * pxToWorld).coerceAtLeast(1.0)
+                val drawHeight = ResourceProvider.dpToPxForBitmap(marker.bitmap.height.toDouble() * pxToWorld).coerceAtLeast(1.0)
                 val drawWidthPx = (drawWidth * coordScaleDouble).roundToInt().coerceAtLeast(1)
                 val drawHeightPx = (drawHeight * coordScaleDouble).roundToInt().coerceAtLeast(1)
 
@@ -607,6 +765,7 @@ class MarkerTileRenderer(
             fixedMarkerPixelSizeReferenceZoom: Int,
             scaleZoomOffset: Double = 0.0,
             scaleZoomOverride: Double? = null,
+            drawRawBitmapInTilePixels: Boolean = false,
         ): Map<Long, List<String>> {
             if (markers.isEmpty()) return emptyMap()
             val worldTileCount = 1 shl zoom
@@ -637,15 +796,20 @@ class MarkerTileRenderer(
                     } else {
                         1.0
                     }
-                val pxToWorldBase =
-                    if (fixedMarkerPixelSize) {
-                        min(bitmapPxToWorldPx * zoomToMarkerScale, bitmapPxToWorldPx)
-                    } else {
+                val pxToWorld =
+                    if (drawRawBitmapInTilePixels) {
                         1.0
+                    } else {
+                        val pxToWorldBase =
+                            if (fixedMarkerPixelSize) {
+                                min(bitmapPxToWorldPx * zoomToMarkerScale, bitmapPxToWorldPx)
+                            } else {
+                                1.0
+                            }
+                        val pxToWorldRaw = pxToWorldBase * if (marker.autoScalable) zoomScale else 1.0
+                        // Cap at maxPxToWorld to prevent markers from exceeding their intended size
+                        minOf(pxToWorldRaw, marker.maxPxToWorld.toDouble())
                     }
-                val pxToWorldRaw = pxToWorldBase * if (marker.autoScalable) zoomScale else 1.0
-                // Cap at maxPxToWorld to prevent markers from exceeding their intended size
-                val pxToWorld = minOf(pxToWorldRaw, marker.maxPxToWorld.toDouble())
 
                 val drawW = (marker.bitmap.width.toDouble() * pxToWorld).coerceAtLeast(1.0)
                 val drawH = (marker.bitmap.height.toDouble() * pxToWorld).coerceAtLeast(1.0)

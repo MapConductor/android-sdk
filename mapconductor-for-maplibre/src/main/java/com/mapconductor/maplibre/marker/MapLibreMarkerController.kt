@@ -63,7 +63,7 @@ class MapLibreMarkerController(
     private var lastTileIndexByZoom: Map<Int, Map<Long, List<String>>> = emptyMap()
 
     private val tileServer = TileServerRegistry.get()
-    private var markerTileRenderer: MarkerTileRenderer? = null
+    private var markerTileRenderer: MarkerTileRenderer<MapLibreActualMarker> ? = null
     private var markerTileGroupId: String? = null
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
@@ -597,14 +597,15 @@ class MapLibreMarkerController(
         updateRasterLayerSource()
     }
 
-    private fun getOrCreateTileRenderer(): MarkerTileRenderer {
+    private fun getOrCreateTileRenderer(): MarkerTileRenderer<MapLibreActualMarker> {
         markerTileRenderer?.let { return it }
 
         val groupId = UUID.randomUUID().toString()
         markerTileGroupId = groupId
 
         val tileRenderer =
-            MarkerTileRenderer(
+            MarkerTileRenderer<MapLibreActualMarker> (
+                markerManager = markerManager,
                 tileSize = tilingOptions.tileSize,
                 finalTileDownscaleFilter = tilingOptions.finalTileDownscaleFilter,
                 debugTileOverlay = tilingOptions.debugTileOverlay,

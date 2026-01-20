@@ -18,8 +18,8 @@ import com.mapconductor.core.map.MapCameraPosition
  * mapViewController.registerOverlayController(cameraController)
  * ```
  */
-class MarkerTileCameraController(
-    private val renderer: MarkerTileRenderer,
+class MarkerTileCameraController<ActualMarker>(
+    private val renderer: MarkerTileRenderer<ActualMarker>,
 ) : OverlayControllerInterface<Unit, Unit, Unit> {
     override val zIndex: Int = 0
     override var clickListener: ((Unit) -> Unit)? = null

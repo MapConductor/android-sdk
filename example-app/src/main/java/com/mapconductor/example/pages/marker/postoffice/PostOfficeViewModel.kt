@@ -3,6 +3,7 @@ package com.mapconductor.example.pages.marker.postoffice
 import androidx.lifecycle.ViewModel
 import android.os.SystemClock
 import android.util.Log
+import androidx.lifecycle.viewModelScope
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
@@ -10,7 +11,6 @@ import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +42,6 @@ interface PostOfficeViewModelInterface {
 class PostOfficeViewModel(
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
-    private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
     PostOfficeViewModelInterface {
     private val tag: String = "PostOfficeVM"
@@ -78,34 +77,39 @@ class PostOfficeViewModel(
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
-        coroutine.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val start = SystemClock.elapsedRealtime()
             _isDataLoading.value = true
             Log.i(tag, "loadPostOfficeData:start")
-            val postOffices = dataLoader.loadAllPostOffices()
-            Log.i(tag, "loadAllPostOffices took ${SystemClock.elapsedRealtime() - start}ms | count=${postOffices.size}")
+            try {
+                val postOffices = dataLoader.loadAllPostOffices()
+                Log.i(tag, "loadAllPostOffices took ${SystemClock.elapsedRealtime() - start}ms | count=${postOffices.size}")
 
-            val mapStart = SystemClock.elapsedRealtime()
-            val markerStates = ArrayList<MarkerState>(postOffices.size)
-            postOffices.forEachIndexed { index, postOffice ->
-                markerStates.add(
-                    MarkerState(
-                        position = postOffice.position,
-                        id = index.toString(),
-                        icon = postOfficeIcon,
-                        extra = postOffice,
-                        onClick = this@PostOfficeViewModel::onMarkerClick,
-                        autoScalable = true,
-                    ),
-                )
+                val mapStart = SystemClock.elapsedRealtime()
+                val markerStates = ArrayList<MarkerState>(postOffices.size)
+                postOffices.forEachIndexed { index, postOffice ->
+                    markerStates.add(
+                        MarkerState(
+                            position = postOffice.position,
+                            id = index.toString(),
+                            icon = postOfficeIcon,
+                            extra = postOffice,
+                            onClick = this@PostOfficeViewModel::onMarkerClick,
+                            autoScalable = true,
+                        ),
+                    )
+                }
+                Log.i(tag, "build MarkerState took ${SystemClock.elapsedRealtime() - mapStart}ms | count=${markerStates.size}")
+                _markerList.value = markerStates
+                Log.i(tag, "_markerList updated")
+            } catch (t: Throwable) {
+                Log.e(tag, "loadPostOfficeData:error", t)
+                _markerList.value = emptyList()
+            } finally {
+                // Ensure the dialog is hidden even if loading fails.
+                _isDataLoading.value = false
+                Log.i(tag, "loadPostOfficeData:done total ${SystemClock.elapsedRealtime() - start}ms")
             }
-            Log.i(tag, "build MarkerState took ${SystemClock.elapsedRealtime() - mapStart}ms | count=${markerStates.size}")
-            _markerList.value = markerStates
-            Log.i(tag, "_markerList updated")
-            // Keep this non-blocking so it doesn't starve other background work.
-            delay(6000)
-            _isDataLoading.value = false
-            Log.i(tag, "loadPostOfficeData:done total ${SystemClock.elapsedRealtime() - start}ms")
         }
     }
 
@@ -125,7 +129,7 @@ class PostOfficeViewModel(
     }
 
     override fun onMapLoaded(mapViewState: MapViewStateInterface<*>) {
-        coroutine.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             _isMapLoaded.value = true
             _mapViewState.value?.moveCameraTo(
                 cameraPosition = cameraPosition,

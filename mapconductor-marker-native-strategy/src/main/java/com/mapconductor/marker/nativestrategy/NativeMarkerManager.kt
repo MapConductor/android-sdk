@@ -142,15 +142,15 @@ class NativeMarkerManager<ActualMarker>(
         super.clear() // Clear Java storage
     }
 
-    override fun findMarkersInBounds(bounds: GeoRectBounds): List<MarkerEntityInterface<ActualMarker>> {
-        checkNotDestroyed()
-        if (bounds.isEmpty) return emptyList()
-
-        // Use native spatial query for performance
-        val markerIds = nativeIndex.findMarkersInBounds(bounds)
-        // Get entities from parent storage
-        return markerIds.mapNotNull { id -> super.getEntity(id) }
-    }
+//    override fun findMarkersInBounds(bounds: GeoRectBounds): List<MarkerEntityInterface<ActualMarker>> {
+//        checkNotDestroyed()
+//        if (bounds.isEmpty) return emptyList()
+//
+//        // Use native spatial query for performance
+//        val markerIds = nativeIndex.findMarkersInBounds(bounds)
+//        // Get entities from parent storage
+//        return markerIds.mapNotNull { id -> super.getEntity(id) }
+//    }
 
     /**
      * Enhanced destroy method for native resource cleanup

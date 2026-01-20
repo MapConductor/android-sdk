@@ -24,6 +24,7 @@ import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
+import com.mapconductor.mapbox.toMapCameraPosition
 import com.mapconductor.settings.Settings
 import java.util.UUID
 import kotlin.math.floor
@@ -53,8 +54,8 @@ class MapboxMarkerController private constructor(
     private var screenPxPerWorldPx: Double = 1.0
     private var pendingScaleSync: Boolean = false
 
-    @Volatile
-    private var lastKnownZoom: Double = 0.0
+//    @Volatile
+    private lateinit var lastCameraPosition: MapCameraPosition
     private var lastAppliedMarkerScale: Double = 1.0
     private var lastIndexedZoom: Int = -1
     private var lastMarkerScaleZoomInt: Int = -1
@@ -68,7 +69,7 @@ class MapboxMarkerController private constructor(
 
     // Tile rendering via RasterLayer
     private val tileServer = TileServerRegistry.get()
-    private var markerTileRenderer: MarkerTileRenderer? = null
+    private var markerTileRenderer: MarkerTileRenderer<MapboxActualMarker>? = null
     private var markerTileGroupId: String? = null
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
@@ -158,7 +159,8 @@ class MapboxMarkerController private constructor(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
+            // val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
+            val tilingEnabled = true
             val currentZoom = currentTileZoom()
 
             val previousIds =
@@ -320,8 +322,8 @@ class MapboxMarkerController private constructor(
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
-        lastKnownZoom = mapCameraPosition.zoom
-        val zoomInt = floor(lastKnownZoom).toInt().coerceAtLeast(0)
+        lastCameraPosition = mapCameraPosition
+        val zoomInt = floor(lastCameraPosition.zoom).toInt().coerceAtLeast(0)
 
         // Also update the MarkerTileRenderer's camera zoom for fractional zoom support
         markerTileRenderer?.updateCameraZoom(mapCameraPosition.zoom)
@@ -421,7 +423,7 @@ class MapboxMarkerController private constructor(
         rasterLayerCallback?.onRasterLayerUpdate(newState)
     }
 
-    private fun currentTileZoom(): Int = floor(lastKnownZoom).toInt().coerceAtLeast(0)
+    private fun currentTileZoom(): Int = floor(lastCameraPosition.zoom).toInt().coerceAtLeast(0)
 
     private suspend fun syncTiledOverlay(zoom: Int) {
         if (tiledMarkerIds.isEmpty()) {
@@ -526,7 +528,7 @@ class MapboxMarkerController private constructor(
         updateRasterLayerSource()
     }
 
-    private fun getOrCreateTileRenderer(): MarkerTileRenderer {
+    private fun getOrCreateTileRenderer(): MarkerTileRenderer<MapboxActualMarker> {
         markerTileRenderer?.let { return it }
 
         val groupId = UUID.randomUUID().toString()
@@ -534,6 +536,7 @@ class MapboxMarkerController private constructor(
 
         val tileRenderer =
             MarkerTileRenderer(
+                markerManager = markerManager,
                 tileSize = tilingOptions.tileSize,
                 finalTileDownscaleFilter = tilingOptions.finalTileDownscaleFilter,
                 debugTileOverlay = tilingOptions.debugTileOverlay,
@@ -545,6 +548,9 @@ class MapboxMarkerController private constructor(
                 declutterCellPx = tilingOptions.declutterCellPx,
                 fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
                 fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
+                drawRawBitmapInTilePixels = true,
+                useCameraZoomForScale = true,
+                useCameraZoomCompensation = true,
             )
         markerTileRenderer = tileRenderer
 
@@ -709,7 +715,7 @@ class MapboxMarkerController private constructor(
                     markerManager = markerManager,
                     tilingOptions = tilingOptions,
                 )
-            controller.lastKnownZoom = holder.map.cameraState.zoom
+            controller.lastCameraPosition = holder.map.cameraState.toMapCameraPosition()
             return controller
         }
     }

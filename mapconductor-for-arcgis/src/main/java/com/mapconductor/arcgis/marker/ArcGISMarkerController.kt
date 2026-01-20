@@ -77,7 +77,7 @@ class ArcGISMarkerController private constructor(
     private var lastTileIndexByZoom: Map<Int, Map<Long, List<String>>> = emptyMap()
 
     private val tileServer = TileServerRegistry.get(forceNoStoreCache = true)
-    private var markerTileRenderer: MarkerTileRenderer? = null
+    private var markerTileRenderer: MarkerTileRenderer<ArcGISActualMarker>? = null
     private var markerTileGroupId: String? = null
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
@@ -613,7 +613,7 @@ class ArcGISMarkerController private constructor(
         updateRasterLayerSource()
     }
 
-    private fun getOrCreateTileRenderer(): MarkerTileRenderer {
+    private fun getOrCreateTileRenderer(): MarkerTileRenderer<ArcGISActualMarker> {
         markerTileRenderer?.let { return it }
 
         val groupId = UUID.randomUUID().toString()
@@ -621,7 +621,8 @@ class ArcGISMarkerController private constructor(
 
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         val tileRenderer =
-            MarkerTileRenderer(
+            MarkerTileRenderer<ArcGISActualMarker>(
+                markerManager = markerManager,
                 tileSize = tilingOptions.tileSize,
                 useCameraZoomForScale = true,
                 finalTileDownscaleFilter = tilingOptions.finalTileDownscaleFilter,

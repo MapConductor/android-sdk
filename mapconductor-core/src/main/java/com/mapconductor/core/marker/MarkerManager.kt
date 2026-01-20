@@ -6,6 +6,7 @@ import com.mapconductor.core.geocell.HexCellRegistry
 import com.mapconductor.core.geocell.HexGeocell
 import com.mapconductor.core.geocell.HexGeocellInterface
 import com.mapconductor.core.projection.Earth
+import com.mapconductor.core.spherical.Spherical
 
 /**
  * Memory usage statistics for MarkerManager optimization
@@ -156,7 +157,7 @@ open class MarkerManager<ActualMarker>(
         cellRegistry?.clear()
     }
 
-    open fun findMarkersInBounds(
+    fun findMarkersInBounds(
         bounds: com.mapconductor.core.features.GeoRectBounds,
     ): List<MarkerEntityInterface<ActualMarker>> {
         checkNotDestroyed()
@@ -165,6 +166,18 @@ open class MarkerManager<ActualMarker>(
         // For spatial queries, ensure the cell registry is initialized
         if (entities.size > 100) { // Only use spatial index for larger datasets
             val registry = ensureCellRegistry()
+            val distance = Spherical.computeDistanceBetween(bounds.center!!, bounds.northEast!!)
+            val hexCells = registry.findWithinRadiusWithDistance(bounds.center!!, distance)
+            val entryIDs: List<String> = hexCells
+                .map { registry.getEntryIDsByHexCell(it.cell) }
+                .mapNotNull{ it }
+                .flatMap { it.toList() }
+            val markers = entryIDs
+                .map { getEntity(it) }
+                .filter { bounds.contains(it!!.state.position) }
+                .mapNotNull { it }
+            return markers
+
             // Use spatial index for better performance on larger datasets
             // TODO: Implement bounds-based cell query in HexCellRegistry
             // For now, fall back to brute force but with spatial index initialized

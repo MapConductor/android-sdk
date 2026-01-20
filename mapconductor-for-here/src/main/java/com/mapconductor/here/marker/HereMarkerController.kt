@@ -71,7 +71,7 @@ class HereMarkerController private constructor(
     private var lastTileIndexByZoom: Map<Int, Map<Long, List<String>>> = emptyMap()
 
     private val tileServer = TileServerRegistry.get(forceNoStoreCache = true)
-    private var markerTileRenderer: MarkerTileRenderer? = null
+    private var markerTileRenderer: MarkerTileRenderer<HereActualMarker>? = null
     private var markerTileGroupId: String? = null
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
@@ -609,7 +609,7 @@ class HereMarkerController private constructor(
         updateRasterLayerSource()
     }
 
-    private fun getOrCreateTileRenderer(): MarkerTileRenderer {
+    private fun getOrCreateTileRenderer(): MarkerTileRenderer<HereActualMarker> {
         markerTileRenderer?.let { return it }
 
         val groupId = UUID.randomUUID().toString()
@@ -620,6 +620,7 @@ class HereMarkerController private constructor(
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         val tileRenderer =
             MarkerTileRenderer(
+                markerManager = markerManager,
                 // HERE benefits from higher-res output tiles on high-DPI devices (to avoid GPU upscaling blur),
                 // but our world-pixel math should stay on the standard 256px tile grid.
                 tileSize = outputTileSize,

@@ -27,6 +27,7 @@ import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.Markers
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
@@ -36,6 +37,8 @@ import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.mapbox.MapboxMapView
+import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
@@ -49,7 +52,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val image = ContextCompat.getDrawable(this, R.drawable.overlayimg)!!
+        val image = ContextCompat.getDrawable(this, R.drawable.postoffice)!!
 
         setContent {
             MapConductorSDKTheme {
@@ -73,40 +76,28 @@ fun BasicGroundImageExample(
     modifier: Modifier = Modifier,
 ) {
     val mapViewState =
-        rememberMapLibreMapViewState(
+        rememberMapboxMapViewState(
             cameraPosition =
                 MapCameraPosition(
-                    position = GeoPoint(0.0,0.0),
-                    zoom = 12.0,
+                    position = GeoPoint(35.691153, 139.756878),
+                    zoom = 10.0,
                 ),
         )
+    val markers = remember {
+        TokyoPostOffices.map { MarkerState(
+            position = it.position,
+            icon = ImageIcon(
+                image = drawable,
+                scale = 0.3f,
+            )
+        ) }
+    }
 
-    MapLibreMapView(
+    MapboxMapView(
         modifier = modifier,
         state = mapViewState,
     ) {
-        val points = listOf(
-            GeoPoint.fromLatLong(35.548852, 139.784086), // HND_AIR_PORT
-            GeoPoint.fromLatLong(37.615223, -122.389979), // SFO_AIR_PORT
-        )
-
-        val polylineState = PolylineState(
-            id = "example_polyline",
-            points = points,
-            strokeColor = Color.Red,
-            strokeWidth = 4.dp,
-            geodesic = true,
-        )
-
-        // Polyline
-        Polyline(polylineState)
-        Polyline(
-            polylineState.copy(
-                id = "${polylineState.id}-straight",
-                geodesic = false,
-                strokeColor = Color.Blue,
-            ),
-        )
+        Markers(markers)
     }
 }
 

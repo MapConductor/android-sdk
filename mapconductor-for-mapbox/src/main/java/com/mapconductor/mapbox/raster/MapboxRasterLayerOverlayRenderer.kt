@@ -1,5 +1,7 @@
 package com.mapconductor.mapbox.raster
 
+import com.mapbox.maps.TileCacheBudget
+import com.mapbox.maps.TileCacheBudgetInMegabytes
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.rasterLayer
 import com.mapbox.maps.extension.style.sources.addSource
@@ -123,6 +125,7 @@ class MapboxRasterLayerOverlayRenderer(
             rasterSource(sourceId) {
                 tiles(listOf(source.template))
                 tileSize(source.tileSize.toLong())
+                tileCacheBudget(TileCacheBudget(TileCacheBudgetInMegabytes(0L)))
                 source.minZoom?.let { minzoom(it.toLong()) }
                 source.maxZoom?.let { maxzoom(it.toLong()) }
                 source.attribution?.let { attribution(it) }

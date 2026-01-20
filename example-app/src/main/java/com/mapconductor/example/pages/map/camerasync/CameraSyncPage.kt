@@ -74,8 +74,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     val leftMenuItems = DefaultMapViewItems(initCameraPosition)
     val rightMenuItems = DefaultMapViewItems(initCameraPosition)
 
-    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(0) } // Google
-    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(4) } // MapLibre
+    // Default to Mapbox vs ArcGIS for zoom calibration (Google Maps may be unavailable in some dev setups).
+    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(0) } // Mapbox
+    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(1) } // Here
 
     @Suppress("UNCHECKED_CAST")
     val leftState = leftMenuItems[leftSelectedIndex].value as MapViewStateInterface<*>

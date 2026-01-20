@@ -16,11 +16,13 @@ import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
+import android.graphics.Bitmap
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 class MapboxMarkerOverlayRenderer(
     holder: MapboxMapViewHolder,
@@ -36,6 +38,8 @@ class MapboxMarkerOverlayRenderer(
         coroutine = coroutine,
     ) {
     private val iconRefCounter: MutableMap<String, Int> = mutableMapOf()
+    private val pendingStyleImageRemovals: MutableMap<String, Long> = mutableMapOf()
+    private val iconBitmapCache: MutableMap<String, Bitmap> = mutableMapOf()
     private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
 
     object Prop {
@@ -48,6 +52,70 @@ class MapboxMarkerOverlayRenderer(
     init {
         holder.map.getStyle { style ->
             style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
+        }
+    }
+
+    private suspend fun getStyle(): com.mapbox.maps.Style =
+        suspendCoroutine { continuation ->
+            holder.map.getStyle { style ->
+                continuation.resumeWith(Result.success(style))
+            }
+        }
+
+    private fun decrementIconRef(iconKey: String) {
+        if (iconKey == Prop.DEFAULT_MARKER_ID) return
+        val next = (iconRefCounter[iconKey] ?: 0) - 1
+        if (next <= 0) {
+            iconRefCounter.remove(iconKey)
+            // Mapbox style rendering can lag behind GeoJSON updates; keep images around briefly
+            // after last use to avoid "Required image ... is missing" warnings during fast zoom.
+            pendingStyleImageRemovals[iconKey] = System.currentTimeMillis() + STYLE_IMAGE_REMOVAL_GRACE_MS
+        } else {
+            iconRefCounter[iconKey] = next
+        }
+    }
+
+    private fun incrementIconRef(iconKey: String) {
+        if (iconKey == Prop.DEFAULT_MARKER_ID) return
+        pendingStyleImageRemovals.remove(iconKey)
+        iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
+    }
+
+    fun onStyleImageMissing(imageId: String) {
+        coroutine.launch(Dispatchers.Main) {
+            val style = holder.map.style ?: return@launch
+            if (imageId == Prop.DEFAULT_MARKER_ID) {
+                try {
+                    style.addImage(Prop.DEFAULT_MARKER_ID, defaultMarkerIcon.bitmap)
+                } catch (_: Exception) {
+                }
+                return@launch
+            }
+
+            pendingStyleImageRemovals.remove(imageId)
+
+            val cached = iconBitmapCache[imageId]
+            if (cached != null) {
+                try {
+                    style.addImage(imageId, cached)
+                } catch (_: Exception) {
+                }
+                return@launch
+            }
+
+            // Fallback: regenerate from the marker state if we can find it.
+            val icon =
+                markerManager
+                    .allEntities()
+                    .firstOrNull { it.state.icon?.hashCode()?.toString() == imageId }
+                    ?.state
+                    ?.icon
+            if (icon != null) {
+                try {
+                    style.addImage(imageId, icon.toBitmapIcon().bitmap)
+                } catch (_: Exception) {
+                }
+            }
         }
     }
 
@@ -121,12 +189,7 @@ class MapboxMarkerOverlayRenderer(
 
     override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<Feature> =
         withContext(Dispatchers.Main) {
-            val style =
-                suspendCoroutine { continuation ->
-                    holder.map.getStyle { style ->
-                        continuation.resumeWith(Result.success(style))
-                    }
-                }
+            val style = getStyle()
 
             data.forEach {
                 it.state.icon?.let { icon ->
@@ -134,10 +197,13 @@ class MapboxMarkerOverlayRenderer(
                         icon
                             .hashCode()
                             .toString()
-                    if (!iconRefCounter.contains(iconKey)) {
+                    // Ensure the image exists in this style; the ref counter only tracks usage.
+                    try {
                         style.addImage(iconKey, it.bitmapIcon.bitmap)
-                        iconRefCounter[iconKey] = 0
+                    } catch (_: Exception) {
                     }
+                    iconBitmapCache[iconKey] = it.bitmapIcon.bitmap
+                    if (!iconRefCounter.contains(iconKey)) iconRefCounter[iconKey] = 0
                 }
             }
 
@@ -149,7 +215,7 @@ class MapboxMarkerOverlayRenderer(
                         if (it.state.icon != null) {
                             it.state.icon?.let { icon ->
                                 val iconKey = icon.hashCode().toString()
-                                iconRefCounter[iconKey] = iconRefCounter.getOrDefault(iconKey, 0) + 1
+                                incrementIconRef(iconKey)
                                 addProperty(Prop.ICON_ID, iconKey)
                                 // icon offset property
                                 add(Prop.ICON_ANCHOR, createIconOffset(icon))
@@ -167,30 +233,59 @@ class MapboxMarkerOverlayRenderer(
     override suspend fun onRemove(data: List<MarkerEntityInterface<MapboxActualMarker>>) {
         withContext(Dispatchers.Main) {
             data.forEach { entity ->
-                entity.state.icon?.let { icon ->
-                    val iconKey = icon.hashCode().toString()
-                    val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
-                    if (cnt == 0) {
-                        iconRefCounter.remove(iconKey)
-                        holder.map.style?.removeStyleImage(iconKey)
-                    } else {
-                        iconRefCounter[iconKey] = cnt
-                    }
+                val iconKey =
+                    entity.marker
+                        ?.properties()
+                        ?.get(Prop.ICON_ID)
+                        ?.asString
+                        ?: entity.state.icon?.hashCode()?.toString()
+                if (iconKey != null) {
+                    // Defer style image removal until after the GeoJSON source is updated.
+                    decrementIconRef(iconKey)
                 }
             }
         }
     }
 
     override suspend fun onPostProcess() {
-        // For Mapbox, we need to update the layer after add/remove operations
-        // but only redraw when there were actual changes
-        redraw()
+        withContext(Dispatchers.Main) {
+            // Update the source first, then remove unused images.
+            // Removing images too early can produce "[maps-core/style]: Required image ... is missing".
+            markerLayer.draw(markerManager.allEntities())
+            yield()
+
+            val style = holder.map.style ?: return@withContext
+            val now = System.currentTimeMillis()
+            val expired =
+                pendingStyleImageRemovals
+                    .asSequence()
+                    .filter { (_, deadline) -> deadline <= now }
+                    .map { (key, _) -> key }
+                    .toList()
+
+            expired.forEach { iconKey ->
+                if (iconRefCounter.containsKey(iconKey)) {
+                    pendingStyleImageRemovals.remove(iconKey)
+                    return@forEach
+                }
+                try {
+                    style.removeStyleImage(iconKey)
+                } catch (_: Exception) {
+                } finally {
+                    pendingStyleImageRemovals.remove(iconKey)
+                    iconBitmapCache.remove(iconKey)
+                }
+            }
+        }
     }
 
     override suspend fun onChange(
         data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<MapboxActualMarker>>,
     ): List<MapboxActualMarker?> =
-        data.map { params ->
+        withContext(Dispatchers.Main) {
+            val style = getStyle()
+
+            data.map { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint
             val prevProperties = params.prev.marker?.properties()
@@ -213,28 +308,27 @@ class MapboxMarkerOverlayRenderer(
                             prevProperties?.get(Prop.ICON_ANCHOR) ?: getDefaultIconOffsetProperty(),
                         )
                     } else {
-                        val iconKey = prevFinger.icon.toString()
-                        val cnt = iconRefCounter.getOrDefault(iconKey, 1) - 1
-                        if (cnt == 0) {
-                            iconRefCounter.remove(iconKey)
-                            holder.map.style?.removeStyleImage(iconKey)
-                        } else {
-                            iconRefCounter[iconKey] = cnt
-                        }
+                        val prevIconKey =
+                            prevProperties?.get(Prop.ICON_ID)?.asString
+                                ?: params.prev.state.icon?.hashCode()?.toString()
+                                ?: Prop.DEFAULT_MARKER_ID
+                        decrementIconRef(prevIconKey)
 
-                        if (currFinger.icon == null) {
+                        if (params.current.state.icon == null) {
                             addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
                             add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
                         } else {
                             params.current.state.icon?.let { icon ->
                                 // icon id
                                 val iconKey = icon.hashCode().toString()
-                                if (iconRefCounter.contains(iconKey)) {
-                                    iconRefCounter[iconKey] = (iconRefCounter[iconKey] ?: 0) + 1
-                                } else {
-                                    holder.map.style?.addImage(iconKey, params.bitmapIcon.bitmap)
-                                    iconRefCounter[iconKey] = 1
+                                // Ensure the image exists in this style (it may have been reloaded).
+                                try {
+                                    style.addImage(iconKey, params.bitmapIcon.bitmap)
+                                } catch (_: Exception) {
                                 }
+                                iconBitmapCache[iconKey] = params.bitmapIcon.bitmap
+                                if (!iconRefCounter.contains(iconKey)) iconRefCounter[iconKey] = 0
+                                incrementIconRef(iconKey)
                                 addProperty(Prop.ICON_ID, iconKey)
                                 add(Prop.ICON_ANCHOR, createIconOffset(icon))
                             }
@@ -246,6 +340,7 @@ class MapboxMarkerOverlayRenderer(
                 GeoPoint.from(params.current.state.position).toPoint()
             val featureId = "marker-${params.current.state.id}"
             Feature.fromGeometry(position, properties, featureId)
+            }
         }
 
     private fun getDefaultIconOffsetProperty(): JsonArray = createIconOffset(defaultMarkerIcon)
@@ -258,3 +353,5 @@ class MapboxMarkerOverlayRenderer(
 
     private fun createIconOffset(icon: MarkerIconInterface): JsonArray = createIconOffset(icon.toBitmapIcon())
 }
+
+private const val STYLE_IMAGE_REMOVAL_GRACE_MS: Long = 1500L

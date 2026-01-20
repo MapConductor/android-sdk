@@ -92,7 +92,7 @@ class GoogleMapMarkerController private constructor(
 
     // Tile rendering via RasterLayer
     private val tileServer = TileServerRegistry.get()
-    private var markerTileRenderer: MarkerTileRenderer? = null
+    private var markerTileRenderer: MarkerTileRenderer<GoogleMapActualMarker>? = null
     private var markerTileGroupId: String? = null
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
@@ -672,7 +672,7 @@ class GoogleMapMarkerController private constructor(
         updateRasterLayerSource()
     }
 
-    private fun getOrCreateTileRenderer(): MarkerTileRenderer {
+    private fun getOrCreateTileRenderer(): MarkerTileRenderer<GoogleMapActualMarker> {
         markerTileRenderer?.let { return it }
 
         val groupId = UUID.randomUUID().toString()
@@ -680,6 +680,7 @@ class GoogleMapMarkerController private constructor(
 
         val tileRenderer =
             MarkerTileRenderer(
+                markerManager = markerManager,
                 tileSize = tilingOptions.tileSize,
                 finalTileDownscaleFilter = tilingOptions.finalTileDownscaleFilter,
                 debugTileOverlay = tilingOptions.debugTileOverlay,
