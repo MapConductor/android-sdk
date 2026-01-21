@@ -12,7 +12,6 @@ import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRenderer
-import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -24,17 +23,10 @@ import com.mapconductor.googlemaps.toGeoPoint
 import com.mapconductor.settings.Settings
 import java.util.UUID
 import kotlin.math.floor
-import kotlin.math.ln
-import kotlin.math.pow
-import kotlin.math.sin
-import android.graphics.Bitmap
-import android.graphics.Point
 import android.os.SystemClock
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 
 /**
  * Callback interface for managing RasterLayer from MarkerController.
@@ -72,23 +64,9 @@ class GoogleMapMarkerController private constructor(
 
     private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
     private val tiledMarkerIds = LinkedHashSet<String>()
-    private val tiledMarkerIconsById = mutableMapOf<String, BitmapIcon>()
-    private val tiledBitmapCache = mutableMapOf<Int, Bitmap>()
-    private var screenPxPerWorldPx: Double = 1.0
-    private var pendingScaleSync: Boolean = false
 
     @Volatile
     private var lastKnownZoom: Double = 0.0
-    private var lastAppliedMarkerScale: Double = 1.0
-    private var lastIndexedZoom: Int = -1
-    private var lastMarkerScaleZoomInt: Int = -1
-    private var lastAutoScaleReferenceZoom: Int = -1
-
-    @Volatile
-    private var lastTiledMarkersSnapshot: Map<String, MarkerTileRenderer.RenderMarker> = emptyMap()
-
-    @Volatile
-    private var lastTileIndexByZoom: Map<Int, Map<Long, List<String>>> = emptyMap()
 
     // Tile rendering via RasterLayer
     private val tileServer = TileServerRegistry.get()
@@ -174,7 +152,6 @@ class GoogleMapMarkerController private constructor(
                             prevEntity.marker?.let { removedActualMarkers.add(prevEntity) }
                             tiledMarkerIds.add(state.id)
                         }
-                        tiledMarkerIconsById[state.id] = markerIcon
                         markerManager.updateEntity(
                             MarkerEntity(
                                 marker = null,
@@ -187,7 +164,6 @@ class GoogleMapMarkerController private constructor(
                     } else {
                         if (wasTiled) {
                             tiledMarkerIds.remove(state.id)
-                            tiledMarkerIconsById.remove(state.id)
                             tiledDataChanged = true
                         }
                         updated.add(
@@ -208,7 +184,6 @@ class GoogleMapMarkerController private constructor(
                 } else {
                     if (wantsTiled) {
                         tiledMarkerIds.add(state.id)
-                        tiledMarkerIconsById[state.id] = markerIcon
                         markerManager.registerEntity(
                             MarkerEntity(
                                 marker = null,
@@ -240,7 +215,6 @@ class GoogleMapMarkerController private constructor(
             previousIds.forEach { remainId ->
                 markerManager.removeEntity(remainId)?.let { removedEntity ->
                     if (tiledMarkerIds.remove(remainId)) {
-                        tiledMarkerIconsById.remove(remainId)
                         tiledDataChanged = true
                     } else {
                         removedActualMarkers.add(removedEntity)
@@ -326,8 +300,11 @@ class GoogleMapMarkerController private constructor(
                     syncTiledOverlay(currentZoom)
                 }
             } else if (tiledMarkerIds.isNotEmpty()) {
-                // Keep zoom index aligned when markers are static but zoom changed between add() calls.
-                syncTiledZoom(currentZoom)
+                // Keep existing tile overlay if present.
+                // (No per-zoom indexing needed; renderTile queries MarkerManager directly.)
+                if (markerTileRenderer == null || markerTileRasterLayerState == null) {
+                    syncTiledOverlay(currentZoom)
+                }
             } else {
                 removeTileOverlay()
             }
@@ -361,7 +338,6 @@ class GoogleMapMarkerController private constructor(
                     prevEntity.marker?.let { renderer.onRemove(listOf(prevEntity)) }
                     tiledMarkerIds.add(state.id)
                 }
-                tiledMarkerIconsById[state.id] = markerIcon
                 markerManager.updateEntity(
                     MarkerEntity(
                         marker = null,
@@ -376,7 +352,6 @@ class GoogleMapMarkerController private constructor(
 
             if (wasTiled) {
                 tiledMarkerIds.remove(state.id)
-                tiledMarkerIconsById.remove(state.id)
             }
 
             val renderEntity =
@@ -429,75 +404,14 @@ class GoogleMapMarkerController private constructor(
             }
             markerManager.clear()
             tiledMarkerIds.clear()
-            tiledMarkerIconsById.clear()
-            tiledBitmapCache.values.forEach { it.recycle() }
-            tiledBitmapCache.clear()
             removeTileOverlay()
         }
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         lastKnownZoom = mapCameraPosition.zoom
-        val zoomInt = floor(lastKnownZoom).toInt().coerceAtLeast(0)
 
         // Also update the MarkerTileRenderer's camera zoom for fractional zoom support
-        markerTileRenderer?.updateCameraZoom(mapCameraPosition.zoom)
-
-        if (!tilingOptions.enabled || tiledMarkerIds.isEmpty()) return
-        // Keep heavy work off the main thread
-        withContext(Dispatchers.Default) {
-            semaphore.withPermit {
-                updateScreenPxPerWorldPxAndCheckChange(zoomInt)
-                val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
-                val zoomChanged = zoomInt != lastIndexedZoom
-                val scaleChanged = kotlin.math.abs(markerScale - lastAppliedMarkerScale) > 1e-6
-                if (!zoomChanged && !scaleChanged) return@withPermit
-
-                val markers = lastTiledMarkersSnapshot
-                if (markers.isEmpty()) return@withPermit
-
-                val autoScaleRefZoom =
-                    if (lastAutoScaleReferenceZoom >= 0) {
-                        lastAutoScaleReferenceZoom
-                    } else if (tilingOptions.fixedMarkerPixelSize) {
-                        tilingOptions.fixedMarkerPixelSizeReferenceZoom
-                    } else {
-                        zoomInt
-                    }
-                if (lastAutoScaleReferenceZoom < 0) lastAutoScaleReferenceZoom = autoScaleRefZoom
-
-                val desiredZooms = computeDesiredZoomWindow(zoomInt, lastIndexedZoom)
-                val out = lastTileIndexByZoom.filterKeys { it in desiredZooms }.toMutableMap()
-                for (z in desiredZooms) {
-                    if (out.containsKey(z)) continue
-                    out[z] =
-                        MarkerTileRenderer.buildTileIndex(
-                            markers = markers,
-                            zoom = z,
-                            tileSize = tilingOptions.tileSize,
-                            bitmapPxToWorldPx = markerScale,
-                            markerScaleZoomInt = zoomInt,
-                            autoScaleReferenceZoom = autoScaleRefZoom,
-                            fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                            fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                        )
-                }
-
-                val tileRenderer = markerTileRenderer ?: return@withPermit
-                lastTileIndexByZoom = out
-                lastIndexedZoom = zoomInt
-                lastMarkerScaleZoomInt = zoomInt
-                lastAppliedMarkerScale = markerScale
-                tileRenderer.setTileIndexesAndMarkerScale(
-                    indexes = out,
-                    indexedZoom = zoomInt,
-                    bitmapPxToWorldPx = markerScale,
-                    autoScaleReferenceZoom = autoScaleRefZoom,
-                )
-                // Update RasterLayer source to invalidate cache
-                updateRasterLayerSource()
-            }
-        }
     }
 
     override fun destroy() {
@@ -514,9 +428,6 @@ class GoogleMapMarkerController private constructor(
             rasterLayerCallback?.onRasterLayerUpdate(null)
         }
         markerTileRasterLayerState = null
-
-        tiledBitmapCache.values.forEach { it.recycle() }
-        tiledBitmapCache.clear()
         super.destroy()
     }
 
@@ -556,117 +467,10 @@ class GoogleMapMarkerController private constructor(
         if (!tilingOptions.enabled) {
             removeTileOverlay()
             tiledMarkerIds.clear()
-            tiledMarkerIconsById.clear()
             return
         }
-
-        // Best-effort update even before the first camera idle (initial render).
-        updateScreenPxPerWorldPxAndCheckChange(zoom)
-        val shouldDefer =
-            withContext(renderer.coroutine.coroutineContext) {
-                val mapView = renderer.holder.mapView
-                if (!pendingScaleSync && (mapView.width <= 0 || mapView.height <= 0)) {
-                    pendingScaleSync = true
-                    mapView.post {
-                        pendingScaleSync = false
-                        renderer.coroutine.launch(Dispatchers.Default) {
-                            semaphore.withPermit { syncTiledOverlay(zoom) }
-                        }
-                    }
-                    true
-                } else {
-                    false
-                }
-            }
-        if (shouldDefer) return
-
-        val markers =
-            withContext(Dispatchers.Default) {
-                GoogleMapMarkerTilingPerfLog.measure(
-                    name = "MarkerController.syncTiledOverlay:buildMarkerSnapshot",
-                    meta = { "tiledCount=${tiledMarkerIds.size}" },
-                ) {
-                    HashMap<String, MarkerTileRenderer.RenderMarker>(tiledMarkerIds.size).also { out ->
-                        tiledMarkerIds.forEach { id ->
-                            val entity = markerManager.getEntity(id) ?: return@forEach
-                            val icon = tiledMarkerIconsById[id] ?: return@forEach
-                            val bitmap = normalizeBitmapForTile(icon.bitmap)
-                            val latitude = entity.state.position.latitude
-                            val longitude = entity.state.position.longitude
-                            val clampedLatitude = latitude.coerceIn(-85.05112878, 85.05112878)
-                            val sinLatitude = sin(Math.toRadians(clampedLatitude)).coerceIn(-0.9999, 0.9999)
-                            val mercatorXRaw = (longitude + 180.0) / 360.0
-                            val mercatorY =
-                                0.5 - ln((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Math.PI)
-                            val mercatorX =
-                                ((mercatorXRaw % 1.0) + 1.0) % 1.0
-                            out[id] =
-                                MarkerTileRenderer.RenderMarker(
-                                    id = id,
-                                    mercatorX = mercatorX,
-                                    mercatorY = mercatorY,
-                                    visible = entity.visible,
-                                    bitmap = bitmap,
-                                    anchorX = icon.anchor.x,
-                                    anchorY = icon.anchor.y,
-                                    autoScalable = entity.state.autoScalable,
-                                )
-                        }
-                    }
-                }
-            }
-        lastTiledMarkersSnapshot = markers
-        val autoScaleReferenceZoom =
-            if (tilingOptions.fixedMarkerPixelSize) {
-                tilingOptions.fixedMarkerPixelSizeReferenceZoom
-            } else {
-                zoom
-            }
-        lastAutoScaleReferenceZoom = autoScaleReferenceZoom
-        val markerScale = quantizeMarkerScale((1.0 / screenPxPerWorldPx).coerceAtLeast(1e-6))
-        val tileIndexes =
-            withContext(Dispatchers.Default) {
-                GoogleMapMarkerTilingPerfLog.measure(
-                    name = "MarkerController.syncTiledOverlay:buildTileIndex",
-                    meta = { "markers=${markers.size} zoom=$zoom" },
-                ) {
-                    val desiredZooms = computeDesiredZoomWindow(zoom, prevIndexedZoom = null)
-                    desiredZooms.associateWith { z ->
-                        MarkerTileRenderer.buildTileIndex(
-                            markers = markers,
-                            zoom = z,
-                            tileSize = tilingOptions.tileSize,
-                            bitmapPxToWorldPx = markerScale,
-                            markerScaleZoomInt = zoom,
-                            autoScaleReferenceZoom = autoScaleReferenceZoom,
-                            fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                            fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                        )
-                    }
-                }
-            }
-
-        // Get or create the tile renderer
         val tileRenderer = getOrCreateTileRenderer()
-
-        val setStart = SystemClock.elapsedRealtime()
-        lastTileIndexByZoom = tileIndexes
-        tileRenderer.setMarkers(
-            markers = markers,
-            indexes = tileIndexes,
-            indexedZoom = zoom,
-            bitmapPxToWorldPx = markerScale,
-            autoScaleReferenceZoom = autoScaleReferenceZoom,
-        )
-        val zoomTileCount = tileIndexes[zoom]?.size ?: 0
-        GoogleMapMarkerTilingPerfLog.logSlow(
-            name = "MarkerController.syncTiledOverlay:setMarkers",
-            elapsedMs = SystemClock.elapsedRealtime() - setStart,
-            meta = "markers=${markers.size} tiles=$zoomTileCount zoom=$zoom",
-        )
-        lastIndexedZoom = zoom
-        lastMarkerScaleZoomInt = zoom
-        lastAppliedMarkerScale = markerScale
+        tileRenderer.invalidate("markerDataChanged")
 
         // Update RasterLayer
         updateRasterLayerSource()
@@ -682,16 +486,7 @@ class GoogleMapMarkerController private constructor(
             MarkerTileRenderer(
                 markerManager = markerManager,
                 tileSize = tilingOptions.tileSize,
-                finalTileDownscaleFilter = tilingOptions.finalTileDownscaleFilter,
                 debugTileOverlay = tilingOptions.debugTileOverlay,
-                renderScaleOverride = tilingOptions.renderScaleOverride,
-                declutterEnabled = tilingOptions.declutterEnabled,
-                declutterMaxZoomInt = tilingOptions.declutterMaxZoomInt,
-                declutterMaxMarkersPerTile = tilingOptions.declutterMaxMarkersPerTile,
-                declutterIconPx = tilingOptions.declutterIconPx,
-                declutterCellPx = tilingOptions.declutterCellPx,
-                fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
             )
         markerTileRenderer = tileRenderer
 
@@ -727,117 +522,6 @@ class GoogleMapMarkerController private constructor(
         // Remove RasterLayer
         rasterLayerCallback?.onRasterLayerUpdate(null)
         markerTileRasterLayerState = null
-    }
-
-    private suspend fun syncTiledZoom(zoom: Int) {
-        if (!tilingOptions.enabled || tiledMarkerIds.isEmpty()) return
-        if (zoom == lastIndexedZoom) return
-        val markers = lastTiledMarkersSnapshot
-        if (markers.isEmpty()) return
-        val tileRenderer = markerTileRenderer ?: return
-
-        val markerScaleZoomInt = if (lastMarkerScaleZoomInt >= 0) lastMarkerScaleZoomInt else lastIndexedZoom
-        val desiredZooms = computeDesiredZoomWindow(zoom, prevIndexedZoom = lastIndexedZoom)
-        val indexes =
-            withContext(Dispatchers.Default) {
-                desiredZooms.associateWith { z ->
-                    MarkerTileRenderer.buildTileIndex(
-                        markers = markers,
-                        zoom = z,
-                        tileSize = tilingOptions.tileSize,
-                        bitmapPxToWorldPx = lastAppliedMarkerScale,
-                        markerScaleZoomInt = markerScaleZoomInt,
-                        autoScaleReferenceZoom = lastAutoScaleReferenceZoom,
-                        fixedMarkerPixelSize = tilingOptions.fixedMarkerPixelSize,
-                        fixedMarkerPixelSizeReferenceZoom = tilingOptions.fixedMarkerPixelSizeReferenceZoom,
-                    )
-                }
-            }
-        lastTileIndexByZoom = indexes
-        tileRenderer.setTileIndexes(indexes, indexedZoom = zoom, autoScaleReferenceZoom = lastAutoScaleReferenceZoom)
-        lastIndexedZoom = zoom
-
-        // Update RasterLayer source to invalidate cache
-        updateRasterLayerSource()
-    }
-
-    private fun computeDesiredZoomWindow(
-        centerZoom: Int,
-        prevIndexedZoom: Int?,
-        maxZoom: Int = 22,
-    ): LinkedHashSet<Int> {
-        fun addWindow(
-            out: LinkedHashSet<Int>,
-            center: Int,
-        ) {
-            for (z in (center - 1)..(center + 2)) {
-                if (z in 0..maxZoom) out.add(z)
-            }
-        }
-        val out = LinkedHashSet<Int>(8)
-        addWindow(out, centerZoom.coerceIn(0, maxZoom))
-        prevIndexedZoom?.let { prev ->
-            if (prev >= 0 && prev != centerZoom) addWindow(out, prev.coerceIn(0, maxZoom))
-        }
-        return out
-    }
-
-    private fun quantizeMarkerScale(scale: Double): Double {
-        val step = tilingOptions.markerScaleQuantizationStep
-        if (step <= 0.0) return scale
-        val safeStep = step.coerceAtLeast(1e-6)
-        val q = kotlin.math.round(scale / safeStep) * safeStep
-        return q.coerceAtLeast(1e-6)
-    }
-
-    private fun normalizeBitmapForTile(bitmap: Bitmap): Bitmap {
-        // Render into tiles using density-independent bitmaps to avoid any implicit density scaling.
-        // Keep a small cache since most apps reuse a few marker icons.
-        val key = System.identityHashCode(bitmap)
-        tiledBitmapCache[key]?.let { cached ->
-            if (!cached.isRecycled) return cached
-            tiledBitmapCache.remove(key)
-        }
-        val copy = bitmap.copy(bitmap.config ?: Bitmap.Config.ARGB_8888, false)
-        copy.density = Bitmap.DENSITY_NONE
-        tiledBitmapCache[key] = copy
-        return copy
-    }
-
-    private suspend fun updateScreenPxPerWorldPxAndCheckChange(zoomInt: Int): Boolean {
-        val next = computeScreenPxPerWorldPx(zoomInt) ?: return false
-        val changed = kotlin.math.abs(next - screenPxPerWorldPx) > 1e-3
-        screenPxPerWorldPx = next
-        return changed
-    }
-
-    private suspend fun computeScreenPxPerWorldPx(zoomInt: Int): Double? =
-        withContext(renderer.coroutine.coroutineContext) {
-            val mapView = renderer.holder.mapView
-            val w = mapView.width
-            val h = mapView.height
-            if (w <= 0 || h <= 0) return@withContext null
-
-            val projection = renderer.holder.map.projection
-            val center = Point(w / 2, h / 2)
-            val right = Point(w / 2 + 100, h / 2)
-            val centerGeo = projection.fromScreenLocation(center)?.toGeoPoint() ?: return@withContext null
-            val rightGeo = projection.fromScreenLocation(right)?.toGeoPoint() ?: return@withContext null
-            val meters = computeDistanceBetween(centerGeo, rightGeo)
-            if (meters <= 0.0) return@withContext null
-
-            val metersPerScreenPx = meters / 100.0
-            val metersPerWorldPx = metersPerWorldPixel(centerGeo.latitude, zoomInt, tilingOptions.tileSize)
-            return@withContext (metersPerWorldPx / metersPerScreenPx).coerceAtLeast(1e-6)
-        }
-
-    private fun metersPerWorldPixel(
-        latitude: Double,
-        zoomInt: Int,
-        tileSize: Int,
-    ): Double {
-        val pixelsAtZoom = tileSize.toDouble() * 2.0.pow(zoomInt.toDouble())
-        return Earth.CIRCUMFERENCE_METERS / pixelsAtZoom * kotlin.math.cos(Math.toRadians(latitude))
     }
 
     companion object {

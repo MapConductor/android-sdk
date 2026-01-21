@@ -2,6 +2,7 @@ package com.mapconductor.core.marker
 
 import com.mapconductor.core.controller.OverlayControllerInterface
 import com.mapconductor.core.map.MapCameraPosition
+import android.util.Log
 import kotlinx.coroutines.yield
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -16,7 +17,6 @@ abstract class AbstractMarkerController<ActualMarker>(
         MarkerState,
     > {
     open val renderer: MarkerOverlayRendererInterface<ActualMarker> = renderer
-    private val rendererRef: MarkerOverlayRendererInterface<ActualMarker> = renderer
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
     private val defaultMarkerIcon = DefaultMarkerIcon().toBitmapIcon()
@@ -28,8 +28,8 @@ abstract class AbstractMarkerController<ActualMarker>(
     var animateEndListener: OnMarkerEventHandler? = null
 
     init {
-        rendererRef.animateStartListener = { state -> dispatchAnimateStart(state) }
-        rendererRef.animateEndListener = { state -> dispatchAnimateEnd(state) }
+        renderer.animateStartListener = { state -> dispatchAnimateStart(state) }
+        renderer.animateEndListener = { state -> dispatchAnimateEnd(state) }
     }
 
     fun dispatchClick(state: MarkerState) {
@@ -72,6 +72,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
+            Log.d("DEBUG", "-------->add start")
             val modifiedEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
             val added = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()

@@ -19,6 +19,9 @@ class MapLibreRasterLayerOverlayRenderer(
     private val holder: MapLibreMapViewHolderInterface,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<MapLibreRasterLayerHandle> {
+    private fun isMarkerTileRaster(state: RasterLayerState): Boolean =
+        state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
+
     override suspend fun onAdd(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
     ): List<MapLibreRasterLayerHandle?> =
@@ -69,11 +72,37 @@ class MapLibreRasterLayerOverlayRenderer(
             Log.w("MapLibre", "Failed to add raster source: ${e.message}")
         }
         try {
-            style.addLayer(layer)
+            if (isMarkerTileRaster(state)) {
+                addLayerForMarkerTile(style, layer)
+            } else {
+                style.addLayer(layer)
+            }
         } catch (e: Exception) {
             Log.w("MapLibre", "Failed to add raster layer: ${e.message}")
         }
         return handle
+    }
+
+    private fun addLayerForMarkerTile(
+        style: org.maplibre.android.maps.Style,
+        layer: RasterLayer,
+    ) {
+        // Insert the raster tiles below the marker symbol layer so they don't cover markers,
+        // but remain above vector overlays that are anchored below markers (polyline/circle/etc).
+        try {
+            style.addLayerBelow(layer, MARKERS_LAYER_ID)
+            return
+        } catch (_: Exception) {
+        }
+
+        // Best-effort fallback: place above polylines if marker layer isn't present yet.
+        try {
+            style.addLayerAbove(layer, POLYLINE_LAYER_ID)
+            return
+        } catch (_: Exception) {
+        }
+
+        style.addLayer(layer)
     }
 
     private fun updateLayer(
@@ -129,6 +158,12 @@ class MapLibreRasterLayerOverlayRenderer(
                 MapLibreRasterSource(sourceId, tileSet, RasterLayerSource.DEFAULT_TILE_SIZE)
             }
         }
+
+    private companion object {
+        private const val MARKER_TILE_RASTER_ID_PREFIX = "marker-tile-"
+        private const val MARKERS_LAYER_ID = "markers-layer"
+        private const val POLYLINE_LAYER_ID = "polyline-layer"
+    }
 }
 
 data class MapLibreRasterLayerHandle(

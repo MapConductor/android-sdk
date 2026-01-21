@@ -310,6 +310,7 @@ fun <
             holderRef.value = holder
             controllerRef.value = controllerProvider(holder)
             initState = InitState.MapCreated
+            Log.d("DEBUG", "------------->onMapLoaded")
             onMapLoaded?.invoke(state)
         }
     }

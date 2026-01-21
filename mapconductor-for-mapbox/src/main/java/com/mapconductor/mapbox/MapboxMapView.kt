@@ -26,6 +26,7 @@ import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerRenderingSupport
 import com.mapconductor.core.marker.MarkerRenderingSupportKey
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -380,6 +381,9 @@ internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerContr
         markerManager = manager,
         markerLayer = markerLayer,
         dragLayer = dragLayer,
+        tilingOptions = MarkerTilingOptions.Default.copy(
+            debugTileOverlay = true,
+        )
     )
 }
 

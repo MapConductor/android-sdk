@@ -19,6 +19,7 @@ import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerRenderingSupport
 import com.mapconductor.core.marker.MarkerRenderingSupportKey
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -276,6 +277,10 @@ internal fun getMarkerController(holder: MapLibreMapViewHolderInterface): MapLib
     val controller =
         MapLibreMarkerController(
             renderer = renderer,
+            tilingOptions = MarkerTilingOptions.Default.copy(
+                debugTileOverlay = true,
+                minMarkerCount = 0,
+            )
         )
     return controller
 }

@@ -370,7 +370,6 @@ private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOver
 private fun getMarkerController(holder: ArcGISMapViewHolder) =
     ArcGISMarkerController.create(
         holder = holder,
-        markerScaleMultiplier = 2.5,
     )
 
 private fun getRasterLayerController(holder: ArcGISMapViewHolder): ArcGISRasterLayerController {
