@@ -22,6 +22,15 @@ class MapLibrePolygonConductor(
     override val zIndex: Int = 2
 
     override suspend fun add(data: List<PolygonState>) {
+        val nextIds = data.asSequence().map { it.id }.toSet()
+        val prevIds = polygonOverlay.polygonManager.allEntities().asSequence().map { it.state.id }.toSet()
+        val removeIds = prevIds - nextIds
+
+        removeIds.forEach { id ->
+            polygonOverlay.polygonManager.removeEntity(id)
+            polylineOverlay.polylineManager.removeEntity("outline-$id")
+        }
+
         data.forEach { polygonState ->
 
             polygonOverlay.createPolygon(polygonState)?.let { polygon ->
@@ -81,7 +90,12 @@ class MapLibrePolygonConductor(
     override fun find(position: GeoPointInterface): PolygonEntityInterface<PolygonState>? =
         polygonOverlay.polygonManager.find(position) as? PolygonEntityInterface<PolygonState>
 
-    override suspend fun clear() {}
+    override suspend fun clear() {
+        polygonOverlay.polygonManager.clear()
+        polylineOverlay.polylineManager.clear()
+        polygonOverlay.onPostProcess()
+        polylineOverlay.onPostProcess()
+    }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 

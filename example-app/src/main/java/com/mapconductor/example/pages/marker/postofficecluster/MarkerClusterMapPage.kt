@@ -50,6 +50,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<GoogleMapActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val mapboxClusterState =
@@ -57,6 +58,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<MapboxActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val hereClusterState =
@@ -64,6 +66,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<HereActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val arcgisClusterState =
@@ -71,6 +74,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<ArcGISActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val maplibreClusterState =
@@ -78,6 +82,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<MapLibreActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
 

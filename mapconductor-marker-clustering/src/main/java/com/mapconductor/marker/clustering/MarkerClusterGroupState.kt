@@ -19,6 +19,10 @@ class MarkerClusterGroupState<ActualMarker>(
     enablePanAnimation: Boolean = false,
     zoomAnimationDurationMillis: Long = MarkerClusterStrategy.DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
     debugIncludeRenderCount: Boolean = false,
+    debugHullPolygons: Boolean = false,
+    debugHullStrokeWidth: Dp = 2.dp,
+    debugHullStrokeAlpha: Float = 0.8f,
+    debugHullFillAlpha: Float = 0.18f,
     cameraIdleDebounceMillis: Long = MarkerClusterStrategy.DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     tileSize: Double = MarkerClusterStrategy.DEFAULT_TILE_SIZE,
 ) {
@@ -32,6 +36,10 @@ class MarkerClusterGroupState<ActualMarker>(
     var enablePanAnimation by mutableStateOf(enablePanAnimation)
     var zoomAnimationDurationMillis by mutableStateOf(zoomAnimationDurationMillis)
     var debugIncludeRenderCount by mutableStateOf(debugIncludeRenderCount)
+    var debugHullPolygons by mutableStateOf(debugHullPolygons)
+    var debugHullStrokeWidth by mutableStateOf(debugHullStrokeWidth)
+    var debugHullStrokeAlpha by mutableStateOf(debugHullStrokeAlpha)
+    var debugHullFillAlpha by mutableStateOf(debugHullFillAlpha)
     var cameraIdleDebounceMillis by mutableStateOf(cameraIdleDebounceMillis)
     var tileSize by mutableStateOf(tileSize)
 }

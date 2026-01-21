@@ -13,4 +13,7 @@ data class MarkerClusterDebugInfo(
     val center: GeoPointInterface,
     val radiusMeters: Double,
     val count: Int,
-) : Serializable
+    val cellX: Int,
+    val cellY: Int,
+    val hullPoints: List<GeoPointInterface> = emptyList(),
+)

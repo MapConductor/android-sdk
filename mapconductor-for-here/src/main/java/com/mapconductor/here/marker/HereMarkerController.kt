@@ -15,6 +15,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.MarkerTileRenderer
 import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -121,146 +122,20 @@ class HereMarkerController private constructor(
         semaphore.withPermit {
             val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
+            val result =
+                MarkerIngestionEngine.ingest(
+                    data = data,
+                    markerManager = markerManager,
+                    renderer = renderer,
+                    defaultMarkerIcon = defaultMarkerIcon,
+                    tilingEnabled = tilingEnabled,
+                    tiledMarkerIds = tiledMarkerIds,
+                    shouldTile = { state -> !state.draggable && state.getAnimation() == null },
+                )
 
-            val previousIds = markerManager.allEntities().asSequence().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
-            val updated = mutableListOf<MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker>>()
-            val removedActualMarkers = mutableListOf<MarkerEntityInterface<HereActualMarker>>()
-
-            var tiledDataChanged = false
-
-            data.forEach { state ->
-                val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
-                val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
-
-                if (previousIds.contains(state.id)) {
-                    val prevEntity = markerManager.getEntity(state.id)!!
-                    val wasTiled = tiledMarkerIds.contains(state.id)
-
-                    if (wantsTiled) {
-                        if (!wasTiled) {
-                            prevEntity.marker?.let { removedActualMarkers.add(prevEntity) }
-                            tiledMarkerIds.add(state.id)
-                        }
-                        markerManager.updateEntity(
-                            MarkerEntity(
-                                marker = null,
-                                state = state,
-                                visible = prevEntity.visible,
-                                isRendered = true,
-                            ),
-                        )
-                        tiledDataChanged = true
-                    } else {
-                        if (wasTiled) {
-                            tiledMarkerIds.remove(state.id)
-                            tiledDataChanged = true
-                        }
-                        updated.add(
-                            object : MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker> {
-                                override val current: MarkerEntityInterface<HereActualMarker> =
-                                    MarkerEntity(
-                                        state = state,
-                                        marker = prevEntity.marker,
-                                        visible = prevEntity.visible,
-                                        isRendered = true,
-                                    )
-                                override val bitmapIcon: BitmapIcon = markerIcon
-                                override val prev: MarkerEntityInterface<HereActualMarker> = prevEntity
-                            },
-                        )
-                    }
-                    previousIds.remove(state.id)
-                } else {
-                    if (wantsTiled) {
-                        tiledMarkerIds.add(state.id)
-                        markerManager.registerEntity(
-                            MarkerEntity(
-                                marker = null,
-                                state = state,
-                                visible = true,
-                                isRendered = true,
-                            ),
-                        )
-                        tiledDataChanged = true
-                    } else {
-                        added.add(
-                            object : MarkerOverlayRendererInterface.AddParamsInterface {
-                                override val state: MarkerState = state
-                                override val bitmapIcon: BitmapIcon = markerIcon
-                            },
-                        )
-                    }
-                }
-            }
-
-            previousIds.forEach { remainId ->
-                markerManager.removeEntity(remainId)?.let { removedEntity ->
-                    if (tiledMarkerIds.remove(remainId)) {
-                        tiledDataChanged = true
-                    }
-                    removedEntity.marker?.let { removedActualMarkers.add(removedEntity) }
-                }
-            }
-
-            if (removedActualMarkers.isNotEmpty()) {
-                renderer.onRemove(removedActualMarkers)
-            }
-
-            if (added.isNotEmpty()) {
-                val actualMarkers = renderer.onAdd(added)
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    val state = added[index].state
-                    val entity =
-                        MarkerEntity(
-                            marker = actualMarker,
-                            state = state,
-                            visible = true,
-                            isRendered = true,
-                        )
-                    markerManager.registerEntity(entity)
-                    state.getAnimation()?.let { renderer.onAnimate(entity) }
-                }
-            }
-
-            if (updated.isNotEmpty()) {
-                val actualMarkers = renderer.onChange(updated)
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    val params = updated[index]
-                    actualMarker?.let {
-                        markerManager.updateEntity(
-                            MarkerEntity(
-                                marker = actualMarker,
-                                state = params.current.state,
-                                visible = params.current.visible,
-                                isRendered = true,
-                            ),
-                        )
-                    } ?: run {
-                        markerManager.updateEntity(
-                            MarkerEntity(
-                                marker = params.prev.marker,
-                                state = params.current.state,
-                                visible = params.current.visible,
-                                isRendered = true,
-                            ),
-                        )
-                    }
-                    val prevFinger = params.prev.fingerPrint
-                    val currentFinger = params.current.fingerPrint
-                    if (prevFinger.animation != currentFinger.animation) {
-                        params.current.state.getAnimation()?.let {
-                            renderer.onAnimate(markerManager.getEntity(params.current.state.id)!!)
-                        }
-                    }
-                }
-            }
-
-            renderer.onPostProcess()
-
-            if (tiledDataChanged) {
+            if (result.tiledDataChanged) {
                 syncTiledOverlay(currentZoom)
-            } else if (tiledMarkerIds.isNotEmpty()) {
+            } else if (result.hasTiledMarkers) {
                 if (markerTileRenderer == null || markerTileRasterLayerState == null) {
                     syncTiledOverlay(currentZoom)
                 }
