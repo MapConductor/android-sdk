@@ -12,7 +12,7 @@ class ZoomAltitudeConverter(
 ) : AbstractZoomAltitudeConverter(zoom0Altitude) {
     companion object {
         // ArcGIS-specific optimized zoom0 altitude to match Google Maps visible regions
-        const val ARCGIS_OPTIMIZED_ZOOM0_ALTITUDE = 161920111.449375
+        const val ARCGIS_OPTIMIZED_ZOOM0_ALTITUDE = 87320111.449375
 
         fun verticalFovFromHorizontal(
             horizontalFovDeg: Double,
@@ -67,7 +67,7 @@ class ZoomAltitudeConverter(
         val cosTilt = cosTiltFactor(tilt)
         val distance = clampedAltitude / cosTilt
         val zoomLevel = log2((zoom0Altitude * cosLat) / distance)
-        return zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL) - 1.0
+        return zoomLevel.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
     }
 
     // Legacy methods for backward compatibility

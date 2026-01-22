@@ -7,6 +7,7 @@ import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import com.mapconductor.googlemaps.zoom.ZoomAltitudeConverter
 
 private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 

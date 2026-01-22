@@ -7,19 +7,14 @@ import com.mapbox.maps.EdgeInsets
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
-import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import com.mapconductor.mapbox.zoom.ZoomAltitudeConverter
-
-private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
-
-internal const val MAPBOX_CAMERA_ZOOM_ADJUST_VALUE = 1.0
 
 fun CameraChanged.toMapCameraPosition() =
     CameraOptions
         .Builder()
         .padding(cameraState.padding)
         .center(cameraState.center)
-        .zoom(cameraState.zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
+        .zoom(ZoomAltitudeConverter.mapboxZoomToGoogleZoom(cameraState.zoom))
         .bearing(cameraState.bearing)
         .pitch(cameraState.pitch)
         .build()
@@ -28,7 +23,7 @@ fun MapCameraPosition.toCameraOptions(): CameraOptions =
     CameraOptions
         .Builder()
         .center(GeoPoint.from(position).toPoint())
-        .zoom(zoom - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE)
+        .zoom(ZoomAltitudeConverter.googleZoomToMapboxZoom(zoom))
         .pitch(tilt)
         .bearing(bearing)
         // TODO:
@@ -39,7 +34,7 @@ fun MapCameraPosition.toCameraState(): CameraState =
     CameraState(
         GeoPoint.from(position).toPoint(),
         EdgeInsets(0.0, 0.0, 0.0, 0.0),
-        zoom - MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
+        ZoomAltitudeConverter.googleZoomToMapboxZoom(zoom),
         bearing,
         tilt,
     )
@@ -61,7 +56,7 @@ fun MapCameraPosition.Companion.from(cameraPosition: MapCameraPositionInterface)
 fun CameraOptions.toMapCameraPosition() =
     MapCameraPosition(
         position = center?.toGeoPoint() ?: GeoPoint.fromLongLat(0.0, 0.0),
-        zoom = (zoom ?: 2.0) + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
+        zoom = ZoomAltitudeConverter.mapboxZoomToGoogleZoom(zoom ?: 2.0),
         bearing = bearing ?: 0.0,
         tilt = pitch ?: 0.0,
         paddings = padding?.toPaddings(),
@@ -71,7 +66,7 @@ fun CameraOptions.toMapCameraPosition() =
 fun CameraState.toMapCameraPosition() =
     MapCameraPosition(
         position = center.toGeoPoint(),
-        zoom = zoom + MAPBOX_CAMERA_ZOOM_ADJUST_VALUE,
+        zoom = ZoomAltitudeConverter.mapboxZoomToGoogleZoom(zoom),
         bearing = bearing,
         tilt = pitch,
         visibleRegion = null,

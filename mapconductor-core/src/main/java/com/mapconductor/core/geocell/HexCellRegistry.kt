@@ -9,6 +9,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.math.pow
 import kotlin.math.sqrt
+import android.util.Log
 
 /**
  * HexCellRegistry - Thread-safe hexagonal cell management with KDTree spatial indexing
@@ -25,9 +26,11 @@ class HexCellRegistry<ActualMarker>(
     private val allCells = ConcurrentHashMap<String, HexCell>()
     private val entryIDsByCell = ConcurrentHashMap<String, MutableSet<String>>()
     private val allEntries = ConcurrentHashMap<String, String>() // entityId -> cellId
+    @Volatile
     private var needsRebuild = false
 
     // Thread safety for complex operations
+
     private val lock = ReentrantReadWriteLock()
 
     /**
@@ -109,7 +112,6 @@ class HexCellRegistry<ActualMarker>(
             allCells.remove(cellId)
             entryIDsByCell.remove(cellId)
         }
-
         return removed
     }
 
@@ -136,7 +138,13 @@ class HexCellRegistry<ActualMarker>(
      * Rebuild the spatial index if needed
      */
     private fun rebuildIfNeeded() {
-        if (needsRebuild) {
+        // まず read で「必要か」を見る（短時間）
+        val dirty = lock.read { needsRebuild }
+        if (!dirty) return
+
+        // read を解放してから write で再確認＆再構築
+        lock.write {
+            if (!needsRebuild) return  // ここに来るまでに別スレッドが rebuild 済みの場合
             kdTree =
                 if (allCells.isNotEmpty()) {
                     KDTree(allCells.values.toList())
@@ -150,20 +158,22 @@ class HexCellRegistry<ActualMarker>(
     /**
      * Find the nearest hex cell to a point
      */
-    fun findNearest(point: GeoPointInterface): HexCell? =
-        lock.read {
-            rebuildIfNeeded()
-            return kdTree?.nearest(geocell.projection.project(point))
+    fun findNearest(point: GeoPointInterface): HexCell? {
+        rebuildIfNeeded()
+        return lock.read {
+            kdTree?.nearest(geocell.projection.project(point))
         }
+    }
 
     /**
      * Find the nearest hex cell with distance
      */
-    fun findNearestWithDistance(point: GeoPointInterface): HexCellWithDistance? =
-        lock.read {
-            rebuildIfNeeded()
-            return kdTree?.nearestWithDistance(geocell.projection.project(point))
+    fun findNearestWithDistance(point: GeoPointInterface): HexCellWithDistance? {
+        rebuildIfNeeded()
+        return lock.read {
+            kdTree?.nearestWithDistance(geocell.projection.project(point))
         }
+    }
 
     /**
      * Find k nearest hex cells with distances
@@ -171,11 +181,12 @@ class HexCellRegistry<ActualMarker>(
     fun findNearestKWithDistance(
         point: GeoPointInterface,
         k: Int,
-    ): List<HexCellWithDistance> =
-        lock.read {
-            rebuildIfNeeded()
-            return kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
+    ): List<HexCellWithDistance> {
+        rebuildIfNeeded()
+        return lock.read {
+            kdTree?.nearestKWithDistance(geocell.projection.project(point), k).orEmpty()
         }
+    }
 
     /**
      * Find all hex cells within a radius with distances
@@ -183,11 +194,13 @@ class HexCellRegistry<ActualMarker>(
     fun findWithinRadiusWithDistance(
         point: GeoPointInterface,
         radius: Double,
-    ): List<HexCellWithDistance> =
-        lock.read {
-            rebuildIfNeeded()
-            return kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
+    ): List<HexCellWithDistance> {
+        rebuildIfNeeded()
+        return lock.read {
+            Log.d("DEBUG", "    allEntries.size = ${allEntries.size}")
+            kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
         }
+    }
 
     /**
      * Get all hex cells

@@ -35,7 +35,8 @@ class HereGroundImageOverlayRenderer(
             val handle =
                 createHandle(
                     routeId = routeId,
-                    version = 0L,
+                    generation = 0L,
+                    cacheKey = tileCacheKey(state),
                     provider = provider,
                 ) ?: return@withContext null
 
@@ -74,13 +75,14 @@ class HereGroundImageOverlayRenderer(
                     groundImage.tileProvider
                 }
             provider.update(current.state, opacity = current.state.opacity)
-            val nextVersion = groundImage.version + 1L
+            val nextGeneration = groundImage.generation + 1L
 
             removeHandle(groundImage)
             val nextHandle =
                 createHandle(
                     routeId = groundImage.routeId,
-                    version = nextVersion,
+                    generation = nextGeneration,
+                    cacheKey = tileCacheKey(current.state),
                     provider = provider,
                 ) ?: return@withContext null
 
@@ -101,10 +103,11 @@ class HereGroundImageOverlayRenderer(
 
     private fun createHandle(
         routeId: String,
-        version: Long,
+        generation: Long,
+        cacheKey: String,
         provider: GroundImageTileProvider,
     ): HereGroundImageHandle? {
-        val urlTemplate = tileServer.urlTemplate(routeId, version, provider.tileSize)
+        val urlTemplate = tileServer.urlTemplate(routeId, provider.tileSize, cacheKey)
         val urlProvider =
             TileUrlProviderFactory.fromXyzUrlTemplate(urlTemplate)
                 ?: return null
@@ -137,7 +140,8 @@ class HereGroundImageOverlayRenderer(
                     .build()
             HereGroundImageHandle(
                 routeId = routeId,
-                version = version,
+                generation = generation,
+                cacheKey = cacheKey,
                 sourceName = sourceName,
                 layerName = layerName,
                 dataSource = dataSource,
@@ -172,6 +176,8 @@ class HereGroundImageOverlayRenderer(
                 }
             }
         }
+
+    private fun tileCacheKey(state: GroundImageState): String = state.fingerPrint().hashCode().toString()
 
     companion object {
         private val STORAGE_LEVELS: List<Int> = (0..22).toList()

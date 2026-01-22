@@ -21,15 +21,19 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -39,6 +43,7 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
+import com.mapconductor.here.zoom.ZoomAltitudeConverter
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.groundimage.HereGroundImageController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
@@ -49,7 +54,7 @@ import com.mapconductor.here.marker.StrategyHereMarkerEventController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.raster.HereRasterLayerController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -67,13 +72,11 @@ class HereMapViewController(
 ) : BaseMapViewController(),
     CircleCapableInterface,
     HereMapViewControllerInterface,
-    MarkerRenderingSupport<HereActualMarker>,
     MapCameraListener,
     TapListener,
     LongPressListener {
-    companion object {
-        internal const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
-    }
+
+    private val zoomConverter = ZoomAltitudeConverter()
 
     private val markerEventControllers = mutableListOf<HereMarkerEventControllerInterface>()
     private var activeDragController: HereMarkerEventControllerInterface? = null
@@ -83,6 +86,8 @@ class HereMapViewController(
     private var markerDragEndListener: OnMarkerEventHandler? = null
     private var markerAnimateStartListener: OnMarkerEventHandler? = null
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
+    private var lastRequestedCameraPosition: MapCameraPosition? = null
+    private val cameraRequestGeneration = AtomicLong(0L)
 
     override suspend fun clearOverlays() {
         markerController.clear()
@@ -188,6 +193,20 @@ class HereMapViewController(
         registerController(circleController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultHereMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
     }
 
     fun setupListeners() {
@@ -198,22 +217,33 @@ class HereMapViewController(
     }
 
     override fun moveCamera(position: MapCameraPosition) {
+        lastRequestedCameraPosition = position
+        val request = cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
-        val adjustCameraUpdate =
-            MapCameraUpdateFactory.lookAt(
-                GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
-                GeoOrientation(position.bearing, position.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
-            )
+        val adjustCameraUpdate = position.toMapCameraUpdate()
 
         camera.applyUpdate(adjustCameraUpdate)
+
+        // If this runs before first layout, HERE may ignore it; retry once after layout.
+        if (holder.mapView.width == 0 || holder.mapView.height == 0) {
+            holder.mapView.post {
+                if (cameraRequestGeneration.get() == request) {
+                    camera.applyUpdate(adjustCameraUpdate)
+                }
+            }
+        }
     }
 
     override fun animateCamera(
         position: MapCameraPosition,
         duration: Long,
     ) {
+        lastRequestedCameraPosition = position
+        cameraRequestGeneration.incrementAndGet()
         val camera = this.holder.mapView.camera
+        val update = position.toMapCameraUpdate()
+
+        val hereCameraZoom = position.zoom
 
 //      bowFactor > 0: 最初にズームアウト → 到達時にズームイン
 //      bowFactor < 0: 最初にズームイン → 到達時にズームアウト（ややレア）
@@ -223,7 +253,7 @@ class HereMapViewController(
             MapCameraAnimationFactory.flyTo(
                 GeoPoint.from(position.position).toGeoCoordinates().toUpdate(),
                 GeoOrientation(position.bearing, position.tilt).toUpdate(),
-                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, position.zoom + ZOOM_ADJUST_VALUE),
+                MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, hereCameraZoom),
                 bowFactor,
                 Duration.ofMillis(duration),
             )
@@ -253,7 +283,6 @@ class HereMapViewController(
             }
         }
     }
-
     private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {
         return holder.mapView.camera.boundingBox?.let { boundingBox ->
             val mapWidth = holder.mapView.width.toFloat()
@@ -272,21 +301,16 @@ class HereMapViewController(
                     farRight = holder.fromScreenOffsetSync(rightTop),
                 )
 
-            val distanceToTargetInMeters =
-                GeoOrientation(
-                    cameraState.orientationAtTarget.bearing,
-                    cameraState.orientationAtTarget.tilt,
-                )
-            val zoomLevel = 0.0
-            val correctCameraState =
-                MapCamera.State(
-                    cameraState.targetCoordinates,
-                    distanceToTargetInMeters,
-                    zoomLevel,
-                    cameraState.zoomLevel - ZOOM_ADJUST_VALUE,
-                )
-            val adjustedMapCameraPosition = correctCameraState.toMapCameraPosition()
-            return@let adjustedMapCameraPosition.copy(visibleRegion = visibleRegion)
+
+            val cameraPosition = MapCameraPosition.from(object : MapCameraPositionInterface {
+                override val position: GeoPointInterface = cameraState.targetCoordinates.toGeoPoint()
+                override val zoom: Double = cameraState.toMapCameraPosition().zoom
+                override val bearing: Double = cameraState.orientationAtTarget.bearing
+                override val tilt: Double = cameraState.orientationAtTarget.tilt
+                override val paddings: MapPaddingsInterface? = null
+                override val visibleRegion: VisibleRegion? = visibleRegion
+            })
+            return@let cameraPosition
         }
     }
 
@@ -416,6 +440,11 @@ class HereMapViewController(
             holder.mapView.mapScene.loadScene(scene) {
                 mapDesignType = value
 
+                // loadScene can reset camera; restore the last requested camera to prevent jumping.
+                lastRequestedCameraPosition?.let { cameraPosition ->
+                    holder.mapView.post { moveCamera(cameraPosition) }
+                }
+
                 mapLoadedCallback?.invoke()
                 mapLoadedCallback = null
 
@@ -440,16 +469,16 @@ class HereMapViewController(
         controller.setAnimateEndListener(markerAnimateEndListener)
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<HereActualMarker>,
     ): MarkerOverlayRendererInterface<HereActualMarker> = HereMarkerRenderer(holder = holder)
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<HereActualMarker>,
         renderer: MarkerOverlayRendererInterface<HereActualMarker>,
     ): MarkerEventControllerInterface<HereActualMarker> = StrategyHereMarkerEventController(controller)
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<HereActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<HereActualMarker>) {
         val typed = controller as? HereMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

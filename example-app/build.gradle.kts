@@ -211,8 +211,8 @@ dependencies {
     debugImplementation(project(":mapconductor-for-mapbox"))
     debugImplementation(project(":mapconductor-for-arcgis"))
     debugImplementation(project(":mapconductor-for-maplibre"))
-    debugImplementation(project(":mapconductor-marker-strategy"))
-    debugImplementation(project(":mapconductor-marker-native-strategy"))
+//    debugImplementation(project(":mapconductor-marker-strategy"))
+//    debugImplementation(project(":mapconductor-marker-native-strategy"))
     debugImplementation(project(":mapconductor-marker-clustering"))
     debugImplementation(project(":mapconductor-heatmap"))
 

@@ -38,6 +38,11 @@ import CustomMarkerStrategyExample from '~/components/experimental/marker-strate
   commentForChooseProvider="地図SDKを選択"
 />
 
+## 地図SDKモジュールとの連携
+
+`mapconductor-marker-strategy` は、地図SDKごとの実装（renderer/controller）を provider 側が登録した capability 経由で利用します。
+組み込みの地図SDKモジュールは `MapServiceRegistry` に自動登録するため、そのまま動作します（[Map Service Registry](/ja/core/service-registry/)）。
+
 ## コア戦略
 
 ### DefaultMarkerStrategy

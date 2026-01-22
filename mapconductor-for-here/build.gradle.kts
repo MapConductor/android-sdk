@@ -93,7 +93,6 @@ dependencies {
         ),
     )
     compileOnly(project(":mapconductor-core"))
-    implementation(project(":mapconductor-marker-clustering"))
     implementation(project(":mapconductor-heatmap"))
 
     testImplementation(libs.junit)

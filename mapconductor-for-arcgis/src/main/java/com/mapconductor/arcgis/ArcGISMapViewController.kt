@@ -12,6 +12,7 @@ import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.calculateCameraForOrbitParameters
 import com.mapconductor.arcgis.circle.ArcGISCircleOverlayController
 import com.mapconductor.arcgis.fromLongLat
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
 import com.mapconductor.arcgis.marker.ArcGISMarkerController
 import com.mapconductor.arcgis.marker.ArcGISMarkerEventControllerInterface
 import com.mapconductor.arcgis.marker.ArcGISMarkerRenderer
@@ -39,6 +40,7 @@ import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -48,9 +50,8 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import com.mapconductor.settings.Settings
+import java.util.concurrent.atomic.AtomicLong
 import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,8 +67,7 @@ class ArcGISMapViewController(
     private val rasterLayerController: ArcGISRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    ArcGISMapViewControllerInterface,
-    MarkerRenderingSupport<ArcGISActualMarker> {
+    ArcGISMapViewControllerInterface {
     private val markerEventControllers = mutableListOf<ArcGISMarkerEventControllerInterface>()
     private var activeDragController: ArcGISMarkerEventControllerInterface? = null
     private var markerClickListener: OnMarkerEventHandler? = null
@@ -76,6 +76,10 @@ class ArcGISMapViewController(
     private var markerDragEndListener: OnMarkerEventHandler? = null
     private var markerAnimateStartListener: OnMarkerEventHandler? = null
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
+    private var lastRequestedCameraPosition: MapCameraPosition? = null
+    private val cameraRequestGeneration = AtomicLong(0L)
+
+    @Volatile private var pendingCameraRestoreRequest: Long = 0L
 
     init {
         holder.map.graphicsOverlays.clear()
@@ -91,6 +95,20 @@ class ArcGISMapViewController(
         registerController(groundImageController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultArcGISMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
     }
 
     fun setupListeners() {
@@ -128,7 +146,8 @@ class ArcGISMapViewController(
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
     override fun hasGroundImage(state: GroundImageState): Boolean =
-        this.groundImageController.groundImageManager.hasEntity(state.id)
+        this.groundImageController.groundImageManager
+            .hasEntity(state.id)
 
     override fun hasRasterLayer(state: RasterLayerState): Boolean =
         this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
@@ -162,6 +181,24 @@ class ArcGISMapViewController(
         mapLoadedCallback = null
 
         getMapCameraPosition()?.let { mapCameraPosition ->
+            val pending = pendingCameraRestoreRequest
+            val expected = lastRequestedCameraPosition
+            if (pending != 0L &&
+                pending == cameraRequestGeneration.get() &&
+                expected != null &&
+                !expected.equals(mapCameraPosition)
+            ) {
+                pendingCameraRestoreRequest = 0L
+                val dstCameraPosition = toCameraWithView(expected)
+                holder.mapView.post {
+                    if (!holder.mapView.isAttachedToWindow) return@post
+                    if (cameraRequestGeneration.get() != pending) return@post
+                    holder.map.setViewpointCamera(camera = dstCameraPosition)
+                }
+            } else if (pending != 0L && pending == cameraRequestGeneration.get()) {
+                // Consider the request settled once we observe any viewpoint update for it.
+                pendingCameraRestoreRequest = 0L
+            }
             notifyMapCameraPosition(mapCameraPosition)
         }
     }
@@ -341,10 +378,10 @@ class ArcGISMapViewController(
             return
         }
 
-        groundImageController.find(touchPosition)?.let { groundEntity ->
+        groundImageController.find(touchPosition)?.let { entity ->
             val event =
                 GroundImageEvent(
-                    state = groundEntity.state,
+                    state = entity.state,
                     clicked = touchPosition,
                 )
             groundImageController.dispatchClick(event)
@@ -378,9 +415,10 @@ class ArcGISMapViewController(
 
     override suspend fun clearOverlays() {
         markerController.clear()
+        groundImageController.clear()
         polylineController.clear()
         polygonController.clear()
-        groundImageController.clear()
+        circleController.clear()
         rasterLayerController.clear()
     }
 
@@ -419,11 +457,24 @@ class ArcGISMapViewController(
     }
 
     override fun moveCamera(position: MapCameraPosition) {
+        lastRequestedCameraPosition = position
+        val request = cameraRequestGeneration.incrementAndGet()
+        pendingCameraRestoreRequest = request
         val dstCameraPosition = toCameraWithView(position)
 
         holder.map.setViewpointCamera(
             camera = dstCameraPosition,
         )
+
+        // If this runs before first layout, ArcGIS may ignore it; retry once after layout.
+        if (holder.map.width == 0 || holder.map.height == 0) {
+            holder.mapView.post {
+                if (!holder.mapView.isAttachedToWindow) return@post
+                if (cameraRequestGeneration.get() == request) {
+                    holder.map.setViewpointCamera(camera = dstCameraPosition)
+                }
+            }
+        }
         coroutine.launch {
             invokeCameraMoveEndCallback()
         }
@@ -433,6 +484,9 @@ class ArcGISMapViewController(
         position: MapCameraPosition,
         duration: Long,
     ) {
+        lastRequestedCameraPosition = position
+        val request = cameraRequestGeneration.incrementAndGet()
+        pendingCameraRestoreRequest = request
         val dstCameraPosition = toCameraWithView(position)
 
         coroutine.launch {
@@ -526,6 +580,9 @@ class ArcGISMapViewController(
             val baseMap = Basemap(baseMapStyle)
             coroutine.launch {
                 scene.setBasemap(baseMap)
+                // Basemap changes can reset the viewpoint; mark the current request as pending so that
+                // the next viewpointChanged can restore the last requested camera if needed.
+                pendingCameraRestoreRequest = cameraRequestGeneration.get()
             }
         }
     }
@@ -558,7 +615,7 @@ class ArcGISMapViewController(
         controller.setAnimateEndListener(markerAnimateEndListener)
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
     ): MarkerOverlayRendererInterface<ArcGISActualMarker> {
         val markerLayer =
@@ -571,12 +628,12 @@ class ArcGISMapViewController(
         )
     }
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<ArcGISActualMarker>,
         renderer: MarkerOverlayRendererInterface<ArcGISActualMarker>,
     ): MarkerEventControllerInterface<ArcGISActualMarker> = StrategyArcGISMarkerEventController(controller)
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<ArcGISActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<ArcGISActualMarker>) {
         val typed = controller as? ArcGISMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

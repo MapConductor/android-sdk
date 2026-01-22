@@ -92,7 +92,6 @@ dependencies {
     compileOnly(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     compileOnly(project(":mapconductor-core"))
-    implementation(project(":mapconductor-marker-clustering"))
     implementation(project(":mapconductor-heatmap"))
 
     testImplementation(libs.junit)

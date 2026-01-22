@@ -34,7 +34,6 @@ import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.marker.clustering.MarkerClusterGroupState
-import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
 
@@ -50,6 +49,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<GoogleMapActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val mapboxClusterState =
@@ -57,6 +57,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<MapboxActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val hereClusterState =
@@ -64,6 +65,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<HereActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val arcgisClusterState =
@@ -71,6 +73,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<ArcGISActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
     val maplibreClusterState =
@@ -78,6 +81,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<MapLibreActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
+                debugHullPolygons = true,
             )
         }
 

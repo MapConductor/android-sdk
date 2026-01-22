@@ -1,24 +1,11 @@
 package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
-import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewStateInterface
-import com.mapconductor.here.HereActualMarker
-import com.mapconductor.here.HereViewStateInterface
-import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.mapbox.MapboxViewStateInterface
-import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreViewStateInterface
-import com.mapconductor.marker.strategy.SimpleMarkerStrategy
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
@@ -37,8 +24,6 @@ interface PostOfficeViewModelInterface {
     val isMapLoaded: StateFlow<Boolean>
     val isDataLoading: StateFlow<Boolean>
 
-    val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?>
-
     fun onMapViewChanged(mapViewState: MapViewStateInterface<*>)
 
     fun onMarkerClick(clicked: MarkerState)
@@ -52,16 +37,7 @@ interface PostOfficeViewModelInterface {
     fun loadPostOfficeData()
 }
 
-data class Strategies(
-    val google: MarkerRenderingStrategyInterface<GoogleMapActualMarker>,
-    val mapbox: MarkerRenderingStrategyInterface<MapboxActualMarker>,
-    val here: MarkerRenderingStrategyInterface<HereActualMarker>,
-    val arcgis: MarkerRenderingStrategyInterface<ArcGISActualMarker>,
-    val maplibre: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
-)
-
 class PostOfficeViewModel(
-    private val strategies: Strategies,
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
     private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
@@ -96,17 +72,13 @@ class PostOfficeViewModel(
 
     private var cameraPosition: MapCameraPosition = initCameraPosition
 
-    private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategyInterface<Any>?> =
-        MutableStateFlow(null)
-    override val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?> = _renderingStrategy.asStateFlow()
-
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
         coroutine.launch {
             _isDataLoading.value = true
-            sleep(3000)
             val postOffices = dataLoader.loadAllPostOffices()
+            sleep(1000)
 
             val markerStates =
                 postOffices.map { it ->
@@ -119,7 +91,7 @@ class PostOfficeViewModel(
                     )
                 }
             _markerList.value = markerStates
-            sleep(3000)
+            sleep(6000)
             _isDataLoading.value = false
         }
     }
@@ -163,25 +135,12 @@ class PostOfficeViewModel(
     override fun onMapViewChanged(mapViewState: MapViewStateInterface<*>) {
         cameraPosition = mapViewState.cameraPosition
 
-        renderingStrategy.value?.clear()
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
-        @Suppress("UNCHECKED_CAST")
-        _renderingStrategy.value =
-            when (mapViewState) {
-                is GoogleMapViewStateInterface -> strategies.google
-                is MapboxViewStateInterface -> strategies.mapbox
-                is HereViewStateInterface -> strategies.here
-                is ArcGISMapViewStateInterface -> strategies.arcgis
-                is MapLibreViewStateInterface -> strategies.maplibre
-                else -> SimpleMarkerStrategy<Any>()
-            } as MarkerRenderingStrategyInterface<Any>?
     }
 
     override fun onCleared() {
         super.onCleared()
-        // Clean up remote strategy if it's being used
-        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }

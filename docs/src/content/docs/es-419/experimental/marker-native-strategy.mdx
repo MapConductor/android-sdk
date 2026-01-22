@@ -43,6 +43,11 @@ Añade el módulo de estrategia nativa a tu `build.gradle`:
   commentForChooseProvider="Elige tu proveedor de mapas"
 />
 
+## Integración con el proveedor
+
+Las estrategias nativas siguen necesitando un renderer/controller específico del proveedor para mostrar resultados en el mapa.
+Los módulos incluidos lo proporcionan mediante el sistema de capabilities de `MapServiceRegistry` (ver [Map Service Registry](/es-419/core/service-registry/)).
+
 ### Configuración de librerías nativas
 
 El módulo requiere librerías nativas C++. Asegúrate de que tu app soporta los ABIs necesarios:

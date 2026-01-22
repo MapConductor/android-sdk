@@ -14,36 +14,53 @@ import com.mapconductor.googlemaps.GoogleMapViewHolder
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class GoogleMapRasterLayerOverlayRenderer(
     private val holder: GoogleMapViewHolder,
     private val okHttpClient: OkHttpClient,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<TileOverlay> {
     override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<TileOverlay?> =
-        data.map { params ->
-            addLayer(params.state)
+        withContext(coroutine.coroutineContext) {
+            data.map { params ->
+                addLayer(params.state)
+            }
         }
 
     override suspend fun onChange(
         data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<TileOverlay>>,
     ): List<TileOverlay?> =
-        data.map { params ->
-            val prev = params.prev
-            val next = params.current.state
-            if (prev.state.source != next.source) {
-                prev.layer.remove()
-                addLayer(next)
-            } else {
-                updateLayer(prev.layer, next)
-                prev.layer
+        withContext(coroutine.coroutineContext) {
+            data.map { params ->
+                val prev = params.prev
+                val next = params.current.state
+                if (prev.state.source != next.source || prev.state.debug != next.debug) {
+                    prev.layer.remove()
+                    addLayer(next)
+                } else {
+                    updateLayer(prev.layer, next)
+                    prev.layer
+                }
             }
         }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<TileOverlay>>) {
-        data.forEach { entity ->
-            entity.layer.remove()
+        withContext(coroutine.coroutineContext) {
+            data.forEach { entity ->
+                entity.layer.remove()
+            }
         }
     }
 
@@ -51,13 +68,14 @@ class GoogleMapRasterLayerOverlayRenderer(
 
     private fun addLayer(state: RasterLayerState): TileOverlay? {
         val tileSpec = resolveTileSpec(state) ?: return null
-        val headerBuilder = Headers.Builder().also { builder ->
-            state.extraHeaders?.let {
-                it.forEach { (name, value) ->
-                    builder.add(name, value)
+        val headerBuilder =
+            Headers.Builder().also { builder ->
+                state.extraHeaders?.let {
+                    it.forEach { (name, value) ->
+                        builder.add(name, value)
+                    }
                 }
             }
-        }
 
         if (state.userAgent?.trim()?.isNotEmpty() == true) {
             headerBuilder.set("User-Agent", state.userAgent!!)
@@ -88,9 +106,13 @@ class GoogleMapRasterLayerOverlayRenderer(
                             .replace("{y}", schemeY.toString())
                             .replace("{z}", zoom.toString())
 
-                    val request: Request = Request.Builder().url(url).also { builder ->
-                        builder.headers(requestHeaders)
-                    }.build()
+                    val request: Request =
+                        Request
+                            .Builder()
+                            .url(url)
+                            .also { builder ->
+                                builder.headers(requestHeaders)
+                            }.build()
 
                     try {
                         okHttpClient.newCall(request).execute().use { response ->
@@ -100,9 +122,22 @@ class GoogleMapRasterLayerOverlayRenderer(
                             }
                             // Get the image data as a byte array
                             val imageBytes: ByteArray = response.body.bytes()
+                            val renderedBytes =
+                                if (state.debug) {
+                                    addDebugOverlay(
+                                        input = imageBytes,
+                                        tileSize = tileSpec.tileSize,
+                                        x = x,
+                                        y = schemeY,
+                                        zoom = zoom,
+                                        scheme = tileSpec.scheme,
+                                    )
+                                } else {
+                                    imageBytes
+                                }
 
                             // Return a new Tile with the image data
-                            return Tile(tileSpec.tileSize, tileSpec.tileSize, imageBytes)
+                            return Tile(tileSpec.tileSize, tileSpec.tileSize, renderedBytes)
                         }
                     } catch (e: IOException) {
                         e.printStackTrace()
@@ -160,4 +195,64 @@ class GoogleMapRasterLayerOverlayRenderer(
         val tileSize: Int,
         val scheme: TileScheme,
     )
+
+    private fun addDebugOverlay(
+        input: ByteArray,
+        tileSize: Int,
+        x: Int,
+        y: Int,
+        zoom: Int,
+        scheme: TileScheme,
+    ): ByteArray {
+        val decoded =
+            BitmapFactory.decodeByteArray(input, 0, input.size)
+                ?: return input
+        val bitmap =
+            when {
+                decoded.config != Bitmap.Config.ARGB_8888 -> decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+                !decoded.isMutable -> decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+                else -> decoded
+            }
+
+        val canvas = Canvas(bitmap)
+        val strokePaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.STROKE
+                color = Color.MAGENTA
+                strokeWidth = 2f
+            }
+        // Draw top and left edges prominently, plus full border.
+        canvas.drawRect(0f, 0f, (tileSize - 1).toFloat(), (tileSize - 1).toFloat(), strokePaint)
+        canvas.drawLine(0f, 0f, (tileSize - 1).toFloat(), 0f, strokePaint)
+        canvas.drawLine(0f, 0f, 0f, (tileSize - 1).toFloat(), strokePaint)
+
+        val textPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.MAGENTA
+                textSize = 22f
+                typeface = Typeface.MONOSPACE
+                style = Paint.Style.FILL
+            }
+        val bgPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.argb(140, 0, 0, 0)
+                style = Paint.Style.FILL
+            }
+
+        val line1 = "z=$zoom x=$x y=$y ${scheme.name}"
+        val line2 = "size=$tileSize bytes=${input.size}"
+        val padding = 6f
+        val lineHeight = textPaint.fontMetrics.run { (descent - ascent) }
+        val boxW = maxOf(textPaint.measureText(line1), textPaint.measureText(line2)) + padding * 2
+        val boxH = lineHeight * 2 + padding * 3
+        canvas.drawRect(0f, 0f, boxW, boxH, bgPaint)
+        val baseY = padding - textPaint.fontMetrics.ascent
+        canvas.drawText(line1, padding, baseY, textPaint)
+        canvas.drawText(line2, padding, baseY + lineHeight + padding, textPaint)
+
+        val out = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        bitmap.recycle()
+        return out.toByteArray()
+    }
 }

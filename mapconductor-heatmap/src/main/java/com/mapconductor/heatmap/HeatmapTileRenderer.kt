@@ -952,7 +952,7 @@ class HeatmapTileRenderer(
     companion object {
         // 256 is the de-facto standard tile size across map SDKs; some (e.g. ArcGIS WebTiledLayer)
         // behave inconsistently when given 512 here, which can lead to mismatched (z,x,y) requests.
-        const val DEFAULT_TILE_SIZE = 256
+        const val DEFAULT_TILE_SIZE = 512
         private const val DEFAULT_CACHE_SIZE_KB = 8 * 1024
         private const val DEFAULT_RADIUS_PX = 20
         private const val DEFAULT_INTENSITY = 1.0

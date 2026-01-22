@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
@@ -24,21 +25,26 @@ import com.here.sdk.core.Size2D
 import com.mapconductor.arcgis.map.ArcGISMapView
 import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.groundimage.GroundImage
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.core.marker.Markers
+import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.Polyline
+import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.mapbox.MapboxMapView
+import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
@@ -52,7 +58,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val image = ContextCompat.getDrawable(this, R.drawable.overlayimg)!!
+        val image = ContextCompat.getDrawable(this, R.drawable.postoffice)!!
 
         setContent {
             MapConductorSDKTheme {
@@ -76,49 +82,32 @@ fun BasicGroundImageExample(
     modifier: Modifier = Modifier,
 ) {
     val mapViewState =
-        rememberArcGISMapViewState(
+        rememberMapLibreMapViewState(
             cameraPosition =
                 MapCameraPosition(
-                    position = GeoPoint(51.511649,-0.100761),
-                    zoom = 12.0,
-                ),
+                    position = GeoPoint(35.691153, 139.756878),
+                    zoom = 10.0,
+                )
         )
-
-    val bounds = remember {
-        GeoRectBounds(
-            southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
-            northEast = GeoPoint.fromLatLong(51.546550, -0.033792),
-        )
+    val markers = remember {
+        TokyoPostOffices.map { MarkerState(
+            position = it.position,
+            icon = ImageIcon(
+                image = drawable,
+                scale = 0.3f,
+            )
+        ) }
     }
-    ArcGISMapView(
+
+    MapLibreMapView(
         modifier = modifier,
         state = mapViewState,
+        tilingOptions = MarkerTilingOptions.Default.copy(
+            minMarkerCount = 0,
+            debugTileOverlay = true,
+        ),
     ) {
-        key(bounds.hashCode()) {
-            Polyline(
-                points = listOf(
-                    bounds.southWest!!,
-                    GeoPoint.fromLatLong(
-                        latitude = bounds.northEast!!.latitude,
-                        longitude = bounds.southWest!!.longitude
-                    ),
-                    bounds.northEast!!,
-                    GeoPoint.fromLatLong(
-                        latitude = bounds.southWest!!.latitude,
-                        longitude = bounds.northEast!!.longitude
-                    ),
-                    bounds.southWest!!,
-                ),
-                strokeColor = Color.Red,
-            )
-
-            GroundImage(
-                id = "groundimage",
-                bounds = bounds,
-                image = drawable,
-                opacity = 0.6f
-            )
-        }
+        Markers(markers)
     }
 }
 

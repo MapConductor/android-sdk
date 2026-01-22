@@ -22,8 +22,16 @@ class MapboxPolygonConductor(
     override val zIndex: Int = 2
 
     override suspend fun add(data: List<PolygonState>) {
-        data.forEach { polygonState ->
+        val nextIds = data.asSequence().map { it.id }.toSet()
+        val prevIds = polygonOverlay.polygonManager.allEntities().asSequence().map { it.state.id }.toSet()
+        val removeIds = prevIds - nextIds
 
+        removeIds.forEach { id ->
+            polygonOverlay.polygonManager.removeEntity(id)
+            polylineOverlay.polylineManager.removeEntity("outline-$id")
+        }
+
+        data.forEach { polygonState ->
             polygonOverlay.createPolygon(polygonState)?.let { polygon ->
                 val polygonEntity =
                     PolygonEntity(
@@ -82,6 +90,10 @@ class MapboxPolygonConductor(
         polygonOverlay.polygonManager.find(position) as? PolygonEntityInterface<PolygonState>
 
     override suspend fun clear() {
+        polygonOverlay.polygonManager.clear()
+        polylineOverlay.polylineManager.clear()
+        polygonOverlay.onPostProcess()
+        polylineOverlay.onPostProcess()
     }
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}

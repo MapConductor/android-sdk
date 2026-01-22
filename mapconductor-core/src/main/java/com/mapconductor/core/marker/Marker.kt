@@ -29,7 +29,7 @@ class MarkerState(
     onDragEnd: OnMarkerEventHandler? = null,
     onAnimateStart: OnMarkerEventHandler? = null,
     onAnimateEnd: OnMarkerEventHandler? = null,
-): ComponentState {
+) : ComponentState {
     override val id =
         (
             id ?: markerId(
@@ -65,7 +65,7 @@ class MarkerState(
         internalAnimation = animation
     }
 
-    internal fun getAnimation(): MarkerAnimation? = internalAnimation
+    fun getAnimation(): MarkerAnimation? = internalAnimation
 
     private val currentPosition = mutableStateOf(position)
     var position: GeoPointInterface

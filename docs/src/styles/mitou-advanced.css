@@ -1,0 +1,8 @@
+.mitou-advanced  {
+    display: flex;
+    align-content: flex-start;
+    align-items: flex-start;
+}
+.mitou-advanced img {
+    margin-left: 1em;
+}

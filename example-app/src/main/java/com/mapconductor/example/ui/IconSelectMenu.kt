@@ -58,9 +58,9 @@ fun IconSelectMenu(
             readOnly = true,
             value = selected.label,
             onValueChange = {},
-            label = { Text("使用している地図SDK") },
+            label = { Text("Currently used") },
             trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "ドロップダウン")
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
             },
             leadingIcon = {
                 with(selected) {

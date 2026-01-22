@@ -18,6 +18,8 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.expandBounds
+import androidx.compose.ui.geometry.Offset
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.abs
 import kotlin.math.cos
@@ -51,14 +53,14 @@ class MarkerClusterStrategy<ActualMarker>(
     private val enableZoomAnimation: Boolean = false,
     private val enablePanAnimation: Boolean = false,
     private val zoomAnimationDurationMillis: Long = DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
-    private val debugIncludeRenderCount: Boolean = false,
+    private val debugHullPolygons: Boolean = false,
     private val cameraIdleDebounceMillis: Long = DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     private val tileSize: Double = DEFAULT_TILE_SIZE,
     semaphore: Semaphore = Semaphore(3),
-    geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
+    private val geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
-    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
-    private val sourceStates = mutableMapOf<String, MarkerState>()
+    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell, 0)
+    private val sourceStates = ConcurrentHashMap<String, MarkerState>()
     private val sourceStateVersion = AtomicLong(0)
     private var lastCameraPosition: MapCameraPosition? = null
     private var clusteringTurn = 0
@@ -106,7 +108,11 @@ class MarkerClusterStrategy<ActualMarker>(
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
-        updateSourceStates(data)
+        // `renderClusters()` iterates `sourceStates` on a background worker.
+        // Guard mutations with the same semaphore to avoid ConcurrentModificationException.
+        semaphore.withPermit {
+            updateSourceStates(data)
+        }
         val cameraPosition = lastCameraPosition ?: return true
         enqueueRender(cameraPosition, viewport, renderer, cameraUpdateToken.get())
         return true
@@ -117,10 +123,13 @@ class MarkerClusterStrategy<ActualMarker>(
         viewport: GeoRectBounds,
         renderer: MarkerOverlayRendererInterface<ActualMarker>,
     ): Boolean {
-        val prev = sourceStates[state.id]
-        if (prev != state) {
-            sourceStates[state.id] = state
-            sourceStateVersion.incrementAndGet()
+        // Guard mutations with the same semaphore to avoid ConcurrentModificationException.
+        semaphore.withPermit {
+            val prev = sourceStates[state.id]
+            if (prev != state) {
+                sourceStates[state.id] = state
+                sourceStateVersion.incrementAndGet()
+            }
         }
         val cameraPosition = lastCameraPosition ?: return true
         enqueueRender(cameraPosition, viewport, renderer, cameraUpdateToken.get())
@@ -221,6 +230,7 @@ class MarkerClusterStrategy<ActualMarker>(
             renderCount++
             val expandedBounds = expandBounds(viewport, expandMargin)
             val zoom = cameraPosition.zoom
+            val effectiveRadiusPx = effectiveClusterRadiusPx(zoom)
             val zoomChange = updateClusteringTurn(zoom)
             val turn = zoomChange.turn
             val zoomChanged = zoomChange.zoomChanged
@@ -262,16 +272,54 @@ class MarkerClusterStrategy<ActualMarker>(
 
             val cachedMarkers = mutableListOf<MarkerState>()
             val newMarkers = mutableListOf<MarkerState>()
+
+            fun containsInViewport(
+                bounds: GeoRectBounds?,
+                point: GeoPointInterface,
+            ): Boolean {
+                if (bounds == null || bounds.isEmpty) return false
+                val sw = bounds.southWest ?: return false
+                val ne = bounds.northEast ?: return false
+
+                val wrappedPoint = GeoPoint.from(point).wrap()
+                val wrappedSw = sw.wrap()
+                val wrappedNe = ne.wrap()
+
+                if (wrappedPoint.latitude !in wrappedSw.latitude..wrappedNe.latitude) return false
+
+                val west = wrappedSw.longitude
+                val east = wrappedNe.longitude
+
+                // Normal case (no antimeridian crossing).
+                if (west <= east) {
+                    return wrappedPoint.longitude in west..east
+                }
+
+                // Antimeridian-crossing representation: `west > east`.
+                //
+                // GeoRectBounds prefers the minimal longitudinal arc, which is good for small viewports near the dateline.
+                // But when zoomed far out (globe-like view), the *actual* visible region can exceed 180° and the minimal arc
+                // becomes the complement, incorrectly excluding large portions of the screen (e.g. western Japan disappearing).
+                //
+                // Heuristic: at low zoom, treat dateline-crossing bounds as a "large span" and accept the complement range.
+                val lowZoom = zoom <= 4.0
+                return if (lowZoom) {
+                    wrappedPoint.longitude in east..west
+                } else {
+                    wrappedPoint.longitude >= west || wrappedPoint.longitude <= east
+                }
+            }
+
             sourceStates.values.forEach { state ->
                 currentCoroutineContext().ensureActive()
-                if (!expandedBounds.contains(state.position)) return@forEach
+                if (!containsInViewport(expandedBounds, state.position)) return@forEach
 
                 val fp = MarkerFingerPrint.from(state.position)
                 currentFingerprints[state.id] = fp
                 val movedSinceLastRender = lastSourceFingerprintsSnapshot[state.id]?.let { it != fp } ?: true
 
                 if (!zoomChanged &&
-                    lastClusterCoverageBounds?.contains(state.position) == true &&
+                    containsInViewport(lastClusterCoverageBounds, state.position) &&
                     lastClusterAssignments.containsKey(state.id) &&
                     !movedSinceLastRender
                 ) {
@@ -299,8 +347,8 @@ class MarkerClusterStrategy<ActualMarker>(
                 val (x, y) = projectToPixel(state.position, zoom, tileSize)
                 val cell =
                     ClusterCell(
-                        x = floor(x / clusterRadiusPx).toInt(),
-                        y = floor(y / clusterRadiusPx).toInt(),
+                        x = floor(x / effectiveRadiusPx).toInt(),
+                        y = floor(y / effectiveRadiusPx).toInt(),
                     )
                 clustered.getOrPut(cell) { mutableListOf() }.add(state)
             }
@@ -315,11 +363,12 @@ class MarkerClusterStrategy<ActualMarker>(
                         val members = entry.value
                         val center = members.firstOrNull()?.position ?: return@mapNotNull null
                         ClusterCandidate(
+                            cell = entry.key,
                             center = GeoPoint.from(center),
                             members = members.toMutableList(),
                         )
                     }
-            val mergedClusters = mergeClusters(candidates, zoom)
+            val mergedClusters = mergeClusters(candidates, zoom, effectiveRadiusPx)
 
             val finalMergedClusters = mutableListOf<MergedCluster>()
             val usedCachedClusters = mutableSetOf<String>()
@@ -333,7 +382,7 @@ class MarkerClusterStrategy<ActualMarker>(
                     if (mergedWithCached || cachedClusterId in usedCachedClusters) return@forEach
                     val cachedPosition = lastClusterPositions[cachedClusterId] ?: return@forEach
                     val metersPerPixelVal = metersPerPixel(newCenter, zoom, tileSize)
-                    val thresholdMeters = clusterRadiusPx * metersPerPixelVal
+                    val thresholdMeters = effectiveRadiusPx * metersPerPixelVal
                     val distance = Spherical.computeDistanceBetween(newCenter, cachedPosition)
                     if (distance <= thresholdMeters) {
                         val combinedMembers = cachedMembers + merged.members
@@ -380,14 +429,20 @@ class MarkerClusterStrategy<ActualMarker>(
             finalMergedClusters.forEach { merged ->
                 currentCoroutineContext().ensureActive()
                 if (merged.members.size >= minClusterSize) {
-                    val initialCenter = merged.center
+                    val hull = convexHullProjected(merged.members)
+                    val centroidProjected = polygonCentroidProjected(hull)
+                    val centroid =
+                        centroidProjected?.let { p ->
+                            geocell.projection.unproject(Offset(p.x.toFloat(), p.y.toFloat())).wrap()
+                        }
+                    val initialCenter = GeoPoint.from(centroid ?: merged.center)
                     val center =
                         if (!zoomChanged && stableSource) {
                             val (cx, cy) = projectToPixel(initialCenter, zoom, tileSize)
                             val cell =
                                 ClusterCell(
-                                    x = floor(cx / clusterRadiusPx).toInt(),
-                                    y = floor(cy / clusterRadiusPx).toInt(),
+                                    x = floor(cx / effectiveRadiusPx).toInt(),
+                                    y = floor(cy / effectiveRadiusPx).toInt(),
                                 )
                             val clusterId = buildClusterId(cell, zoom)
                             lastClusterPositions[clusterId] ?: initialCenter
@@ -397,8 +452,8 @@ class MarkerClusterStrategy<ActualMarker>(
                     val (cx, cy) = projectToPixel(center, zoom, tileSize)
                     val cell =
                         ClusterCell(
-                            x = floor(cx / clusterRadiusPx).toInt(),
-                            y = floor(cy / clusterRadiusPx).toInt(),
+                            x = floor(cx / effectiveRadiusPx).toInt(),
+                            y = floor(cy / effectiveRadiusPx).toInt(),
                         )
                     val clusterId = buildClusterId(cell, zoom)
                     val radiusMeters = calculateClusterRadiusMeters(center, merged.members)
@@ -413,6 +468,16 @@ class MarkerClusterStrategy<ActualMarker>(
                             center = center,
                             radiusMeters = radiusMeters,
                             count = merged.members.size,
+                            cellX = cell.x,
+                            cellY = cell.y,
+                            hullPoints =
+                                if (debugHullPolygons && hull.size >= 3) {
+                                    hull.map { p ->
+                                        geocell.projection.unproject(Offset(p.x.toFloat(), p.y.toFloat())).wrap()
+                                    }
+                                } else {
+                                    emptyList()
+                                },
                         ),
                     )
                     merged.members.forEach { member ->
@@ -422,18 +487,8 @@ class MarkerClusterStrategy<ActualMarker>(
                     clusterPositions[clusterId] = center
                     extendCoverageBounds(coverageBounds, center, radiusMeters)
                     val clusterIcon =
-                        if (debugIncludeRenderCount) {
-                            val baseLabel =
-                                if (clusterIconProviderWithTurn != null) {
-                                    "T$turn"
-                                } else {
-                                    merged.members.size.toString()
-                                }
-                            ColorDefaultIcon(label = "$baseLabel\nR$renderCount")
-                        } else {
                             clusterIconProviderWithTurn?.invoke(merged.members.size, turn)
                                 ?: clusterIconProvider(merged.members.size)
-                        }
                     val clusterState =
                         MarkerState(
                             id = clusterId,
@@ -1019,61 +1074,59 @@ class MarkerClusterStrategy<ActualMarker>(
     private fun mergeClusters(
         candidates: List<ClusterCandidate>,
         zoom: Double,
+        clusterRadiusPx: Double,
     ): List<MergedCluster> {
         if (candidates.isEmpty()) return emptyList()
-        val parent = IntArray(candidates.size) { it }
-
-        fun find(index: Int): Int {
-            var i = index
-            while (parent[i] != i) {
-                parent[i] = parent[parent[i]]
-                i = parent[i]
-            }
-            return i
-        }
-
-        fun union(
-            a: Int,
-            b: Int,
-        ) {
-            val rootA = find(a)
-            val rootB = find(b)
-            if (rootA != rootB) {
-                parent[rootB] = rootA
-            }
-        }
-
-        for (i in 0 until candidates.size) {
-            val centerA = candidates[i].center
-            val metersPerPixelA = metersPerPixel(centerA, zoom, tileSize)
-            for (j in i + 1 until candidates.size) {
-                val centerB = candidates[j].center
-                val metersPerPixelB = metersPerPixel(centerB, zoom, tileSize)
-                val thresholdMeters = clusterRadiusPx * max(metersPerPixelA, metersPerPixelB)
-                val distanceMeters = Spherical.computeDistanceBetween(centerA, centerB)
-                if (distanceMeters <= thresholdMeters) {
-                    union(i, j)
+        val indexByCell =
+            HashMap<ClusterCell, Int>(candidates.size * 2).apply {
+                candidates.forEachIndexed { index, candidate ->
+                    put(candidate.cell, index)
                 }
             }
-        }
+        val visited = BooleanArray(candidates.size)
+        val merged = mutableListOf<MergedCluster>()
 
-        val mergedMap = linkedMapOf<Int, MutableList<ClusterCandidate>>()
-        candidates.forEachIndexed { index, candidate ->
-            val root = find(index)
-            mergedMap.getOrPut(root) { mutableListOf() }.add(candidate)
-        }
+        // Greedy (seed-based) merge to avoid "chaining" merges:
+        // only merge neighbors that are within the radius of the *seed* candidate.
+        for (i in candidates.indices) {
+            if (visited[i]) continue
+            visited[i] = true
 
-        return mergedMap.values.map { group ->
+            val seed = candidates[i]
+            val seedCenter = seed.center
+            val seedMetersPerPixel = metersPerPixel(seedCenter, zoom, tileSize)
+
             val members = mutableListOf<MarkerState>()
-            group.forEach { candidate ->
-                members.addAll(candidate.members)
+            members.addAll(seed.members)
+
+            // Because candidates are bucketed into ClusterCell grids of size `clusterRadiusPx`,
+            // any candidate within the merge distance must be in the same cell or one of the 8 neighbors.
+            for (dx in -1..1) {
+                for (dy in -1..1) {
+                    val neighborIndex =
+                        indexByCell[ClusterCell(x = seed.cell.x + dx, y = seed.cell.y + dy)] ?: continue
+                    if (visited[neighborIndex]) continue
+
+                    val neighborCenter = candidates[neighborIndex].center
+                    val neighborMetersPerPixel = metersPerPixel(neighborCenter, zoom, tileSize)
+                    val thresholdMeters = clusterRadiusPx * max(seedMetersPerPixel, neighborMetersPerPixel)
+                    val distanceMeters = Spherical.computeDistanceBetween(seedCenter, neighborCenter)
+                    if (distanceMeters <= thresholdMeters) {
+                        visited[neighborIndex] = true
+                        members.addAll(candidates[neighborIndex].members)
+                    }
+                }
             }
-            val center = selectDenseCenter(members, zoom)
-            MergedCluster(center = center, members = members)
+
+            val center = selectDenseCenter(members, zoom, clusterRadiusPx)
+            merged.add(MergedCluster(center = center, members = members))
         }
+
+        return merged
     }
 
     private data class ClusterCandidate(
+        val cell: ClusterCell,
         val center: GeoPoint,
         val members: MutableList<MarkerState>,
     )
@@ -1125,6 +1178,7 @@ class MarkerClusterStrategy<ActualMarker>(
     private fun selectDenseCenter(
         members: List<MarkerState>,
         zoom: Double,
+        clusterRadiusPx: Double,
     ): GeoPoint {
         if (members.isEmpty()) {
             return GeoPoint.fromLatLong(0.0, 0.0)
@@ -1194,6 +1248,17 @@ class MarkerClusterStrategy<ActualMarker>(
         return GeoPoint.from(bestPoint.member.position)
     }
 
+    private fun effectiveClusterRadiusPx(zoom: Double): Double {
+        // At low zoom levels, a fixed screen-space radius can represent hundreds of kilometers.
+        // Reduce the effective radius so clusters don't look "too aggressive" when zoomed out.
+        val referenceZoom = 10.0
+        val minScale = 0.35
+        val minRadiusPx = 18.0
+
+        val scale = (zoom / referenceZoom).coerceIn(minScale, 1.0)
+        return max(minRadiusPx, clusterRadiusPx * scale)
+    }
+
     private fun calculateClusterRadiusMeters(
         center: GeoPoint,
         members: List<MarkerState>,
@@ -1206,6 +1271,82 @@ class MarkerClusterStrategy<ActualMarker>(
             }
         }
         return maxDistance
+    }
+
+    private data class HullPoint(
+        val x: Double,
+        val y: Double,
+    )
+
+    private fun convexHullProjected(members: List<MarkerState>): List<HullPoint> {
+        if (members.size < 3) return emptyList()
+
+        val points =
+            members
+                .map { state ->
+                    val projected = geocell.projection.project(state.position)
+                    HullPoint(projected.x.toDouble(), projected.y.toDouble())
+                }
+                .distinctBy { p ->
+                    // Avoid degenerate duplicates due to float precision.
+                    val rx = (p.x * 1e3).toLong()
+                    val ry = (p.y * 1e3).toLong()
+                    (rx shl 32) xor ry
+                }
+                .sortedWith(compareBy<HullPoint> { it.x }.thenBy { it.y })
+
+        if (points.size < 3) return emptyList()
+
+        fun cross(o: HullPoint, a: HullPoint, b: HullPoint): Double =
+            (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
+
+        val lower = mutableListOf<HullPoint>()
+        for (p in points) {
+            while (lower.size >= 2 && cross(lower[lower.size - 2], lower[lower.size - 1], p) <= 0.0) {
+                lower.removeAt(lower.lastIndex)
+            }
+            lower.add(p)
+        }
+
+        val upper = mutableListOf<HullPoint>()
+        for (p in points.asReversed()) {
+            while (upper.size >= 2 && cross(upper[upper.size - 2], upper[upper.size - 1], p) <= 0.0) {
+                upper.removeAt(upper.lastIndex)
+            }
+            upper.add(p)
+        }
+
+        // Remove the last point of each list (it's the starting point of the other list).
+        val hull = (lower.dropLast(1) + upper.dropLast(1))
+        return if (hull.size >= 3) hull else emptyList()
+    }
+
+    private fun polygonCentroidProjected(hull: List<HullPoint>): HullPoint? {
+        if (hull.size < 3) return null
+
+        // Shoelace formula centroid for a (non-self-intersecting) polygon.
+        var twiceArea = 0.0
+        var cx = 0.0
+        var cy = 0.0
+        for (i in hull.indices) {
+            val a = hull[i]
+            val b = hull[(i + 1) % hull.size]
+            val cross = a.x * b.y - b.x * a.y
+            twiceArea += cross
+            cx += (a.x + b.x) * cross
+            cy += (a.y + b.y) * cross
+        }
+
+        if (kotlin.math.abs(twiceArea) < 1e-6) {
+            // Degenerate polygon: fallback to average.
+            val ax = hull.sumOf { it.x } / hull.size
+            val ay = hull.sumOf { it.y } / hull.size
+            return HullPoint(ax, ay)
+        }
+
+        cx /= (3.0 * twiceArea)
+        cy /= (3.0 * twiceArea)
+        return HullPoint(cx, cy)
     }
 
     private data class ClusterCell(
@@ -1238,11 +1379,11 @@ class MarkerClusterStrategy<ActualMarker>(
     }
 
     companion object {
-        const val DEFAULT_CLUSTER_RADIUS_PX: Double = 60.0
-        const val DEFAULT_MIN_CLUSTER_SIZE: Int = 2
+        const val DEFAULT_CLUSTER_RADIUS_PX: Double = 90.0
+        const val DEFAULT_MIN_CLUSTER_SIZE: Int = 5
         const val DEFAULT_EXPAND_MARGIN: Double = 0.2
         const val DEFAULT_TILE_SIZE: Double = 256.0
-        const val DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS: Long = 200L
+        const val DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS: Long = 300L
         const val DEFAULT_CAMERA_DEBOUNCE_MILLIS: Long = 100L
         private const val MAX_DENSE_CELLS: Int = 4
         private const val MAX_DENSE_CANDIDATES: Int = 50

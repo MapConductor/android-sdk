@@ -14,6 +14,7 @@ import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.MarkerTilingOptions
 import java.util.UUID
 import android.app.Activity
 import android.content.Context
@@ -52,7 +53,10 @@ class ArcGISMapViewState(
     internal fun setController(controller: ArcGISMapViewControllerInterface) {
         this.controller = controller
         controller.setMapDesignType(_mapDesignType)
-        controller.moveCamera(cameraPosition)
+    }
+
+    internal fun clearController() {
+        this.controller = null
     }
 
     internal fun onMapDesignTypeChange(value: ArcGISDesignTypeInterface) {

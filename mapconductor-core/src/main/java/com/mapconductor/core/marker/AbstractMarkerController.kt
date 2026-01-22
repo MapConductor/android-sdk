@@ -2,6 +2,8 @@ package com.mapconductor.core.marker
 
 import com.mapconductor.core.controller.OverlayControllerInterface
 import com.mapconductor.core.map.MapCameraPosition
+import android.util.Log
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -15,7 +17,6 @@ abstract class AbstractMarkerController<ActualMarker>(
         MarkerState,
     > {
     open val renderer: MarkerOverlayRendererInterface<ActualMarker> = renderer
-    private val rendererRef: MarkerOverlayRendererInterface<ActualMarker> = renderer
     override val zIndex: Int = 10
     val semaphore = Semaphore(1)
     private val defaultMarkerIcon = DefaultMarkerIcon().toBitmapIcon()
@@ -27,8 +28,8 @@ abstract class AbstractMarkerController<ActualMarker>(
     var animateEndListener: OnMarkerEventHandler? = null
 
     init {
-        rendererRef.animateStartListener = { state -> dispatchAnimateStart(state) }
-        rendererRef.animateEndListener = { state -> dispatchAnimateEnd(state) }
+        renderer.animateStartListener = { state -> dispatchAnimateStart(state) }
+        renderer.animateEndListener = { state -> dispatchAnimateEnd(state) }
     }
 
     fun dispatchClick(state: MarkerState) {
@@ -71,6 +72,7 @@ abstract class AbstractMarkerController<ActualMarker>(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
+            Log.d("DEBUG", "-------->add start")
             val modifiedEntities = mutableListOf<MarkerEntityInterface<ActualMarker>>()
             val previous = markerManager.allEntities().map { it.state.id }.toMutableSet()
             val added = mutableListOf<MarkerOverlayRendererInterface.AddParamsInterface>()
@@ -108,6 +110,8 @@ abstract class AbstractMarkerController<ActualMarker>(
                 }
             }
 
+            markerManager.lock()
+
             previous.forEach { remainId ->
                 markerManager.removeEntity(remainId)?.let { removedEntity ->
                     removed.add(removedEntity)
@@ -117,42 +121,54 @@ abstract class AbstractMarkerController<ActualMarker>(
             // Remove markers
             if (removed.isNotEmpty()) {
                 renderer.onRemove(removed)
+                // Give the UI thread a chance to breathe when removing many markers.
+                if (removed.size >= MARKER_RENDER_BATCH_SIZE) {
+                    yield()
+                }
             }
 
             // Add new markers
             if (added.isNotEmpty()) {
-                val actualMarkers: List<ActualMarker?> = renderer.onAdd(added)
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    actualMarker?.let {
-                        val entity =
-                            MarkerEntity<ActualMarker>(
-                                marker = actualMarker,
-                                state = added[index].state,
-                                isRendered = true,
-                            )
-                        markerManager.registerEntity(entity)
-                        modifiedEntities.add(entity)
+                added.chunked(MARKER_RENDER_BATCH_SIZE).forEach { batch ->
+                    val actualMarkers: List<ActualMarker?> = renderer.onAdd(batch)
+                    actualMarkers.forEachIndexed { index, actualMarker ->
+                        actualMarker?.let {
+                            val entity =
+                                MarkerEntity<ActualMarker>(
+                                    marker = actualMarker,
+                                    state = batch[index].state,
+                                    isRendered = true,
+                                )
+                            markerManager.registerEntity(entity)
+                            modifiedEntities.add(entity)
+                        }
                     }
+                    yield()
                 }
             }
 
             // Update changed markers
             if (updated.isNotEmpty()) {
-                val actualMarkers: List<ActualMarker?> = renderer.onChange(updated)
-
-                actualMarkers.forEachIndexed { index, actualMarker ->
-                    actualMarker?.let {
-                        val params = updated[index]
-                        val entity =
-                            MarkerEntity<ActualMarker>(
-                                state = params.current.state,
-                                marker = actualMarker,
-                                isRendered = true,
-                            )
-                        markerManager.registerEntity(entity)
+                updated.chunked(MARKER_RENDER_BATCH_SIZE).forEach { batch ->
+                    val actualMarkers: List<ActualMarker?> = renderer.onChange(batch)
+                    actualMarkers.forEachIndexed { index, actualMarker ->
+                        actualMarker?.let {
+                            val params = batch[index]
+                            val entity =
+                                MarkerEntity<ActualMarker>(
+                                    state = params.current.state,
+                                    marker = actualMarker,
+                                    isRendered = true,
+                                )
+                            markerManager.registerEntity(entity)
+                        }
                     }
+                    yield()
                 }
             }
+
+            markerManager.unlock()
+
             modifiedEntities.forEach { entity ->
                 entity.state.getAnimation()?.let {
                     renderer.onAnimate(entity)
@@ -181,6 +197,8 @@ abstract class AbstractMarkerController<ActualMarker>(
                 state = state,
                 isRendered = prevEntity.isRendered,
             )
+
+        markerManager.lock()
         markerManager.updateEntity(entity)
 
         // Simple fallback: update marker immediately if it's already rendered
@@ -223,6 +241,7 @@ abstract class AbstractMarkerController<ActualMarker>(
             }
             renderer.onPostProcess()
         }
+        markerManager.unlock()
     }
 
     override suspend fun clear() {
@@ -245,3 +264,5 @@ abstract class AbstractMarkerController<ActualMarker>(
         markerManager.destroy()
     }
 }
+
+private const val MARKER_RENDER_BATCH_SIZE = 500

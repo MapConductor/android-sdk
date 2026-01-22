@@ -25,6 +25,7 @@ class GoogleMapViewState(
     cameraPosition: MapCameraPosition = MapCameraPosition.Default,
 ) : MapViewState<GoogleMapDesignType>(),
     GoogleMapViewStateInterface {
+
     private var _cameraPosition: MapCameraPosition = cameraPosition
     override val cameraPosition: MapCameraPosition
         get() = _cameraPosition

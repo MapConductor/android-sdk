@@ -81,9 +81,13 @@ fun MapViewScope.HeatmapOverlay(
     }
     val mapController = LocalMapViewController.current
     val cameraController = remember(renderer) { HeatmapCameraController(renderer) }
-    var version by remember { mutableStateOf(0L) }
     var isTileServerRegistered by remember { mutableStateOf(false) }
     var hasRenderedOnce by remember { mutableStateOf(false) }
+
+    fun tileTemplate(cacheBuster: Long): String {
+        val base = tileServer.urlTemplate(groupId, renderer.tileSize)
+        return "$base?cb=$cacheBuster"
+    }
 
     val rasterLayerState =
         remember(groupId, tileServer, renderer) {
@@ -91,7 +95,7 @@ fun MapViewScope.HeatmapOverlay(
                 id = "heatmap-$groupId",
                 source =
                     RasterLayerSource.UrlTemplate(
-                        template = tileServer.urlTemplate(groupId, version, renderer.tileSize),
+                        template = tileTemplate(0),
                         tileSize = renderer.tileSize,
                         maxZoom = HeatmapDefaults.DEFAULT_MAX_ZOOM,
                         scheme = TileScheme.XYZ,
@@ -167,10 +171,9 @@ fun MapViewScope.HeatmapOverlay(
             )
         }
         hasRenderedOnce = true
-        version += 1
         rasterLayerState.source =
             RasterLayerSource.UrlTemplate(
-                template = tileServer.urlTemplate(groupId, version, renderer.tileSize),
+                template = tileTemplate(updateToken),
                 tileSize = renderer.tileSize,
                 maxZoom = HeatmapDefaults.DEFAULT_MAX_ZOOM,
                 scheme = TileScheme.XYZ,

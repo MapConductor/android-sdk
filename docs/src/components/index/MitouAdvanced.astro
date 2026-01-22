@@ -1,0 +1,22 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  text1?: string;
+  text2?: string;
+}
+
+const {
+  text1 = "When building a map app on Android, haven’t you ever thought,\“Why is only the map part so complicated? I wish I could write it using the Jetpack Compose I’m already comfortable with…\”",
+  text2 = "MapConductor makes that wish come true. With the APIs provided by MapConductor, you can express “this is how I want the map to behave” easily using declarative UI.",
+} = Astro.props;
+
+
+---
+
+<div class="mitou-advanced">
+  <div>
+    <p>{text1}</p>
+    <p>{text2}</p>
+  </div>
+</div>

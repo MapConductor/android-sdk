@@ -34,10 +34,12 @@ class MapLibreGroundImageOverlayRenderer(
 
             val sourceId = "groundimage-source-$routeId"
             val layerId = "groundimage-layer-$routeId"
+            val cacheKey = tileCacheKey(state)
             val handle =
                 MapLibreGroundImageHandle(
                     routeId = routeId,
-                    version = 0L,
+                    generation = 0L,
+                    cacheKey = cacheKey,
                     sourceId = sourceId,
                     layerId = layerId,
                     tileProvider = provider,
@@ -81,7 +83,8 @@ class MapLibreGroundImageOverlayRenderer(
 
             val nextHandle =
                 groundImage.copy(
-                    version = groundImage.version + 1L,
+                    generation = groundImage.generation + 1L,
+                    cacheKey = tileCacheKey(current.state),
                     tileProvider = provider,
                 )
             removeSourceAndLayerIfExists(nextHandle)
@@ -104,7 +107,7 @@ class MapLibreGroundImageOverlayRenderer(
     ) {
         val style = holder.map.style ?: return
         val tileSet =
-            TileSet("2.2.0", tileServer.urlTemplate(handle.routeId, handle.version, handle.tileProvider.tileSize)).apply {
+            TileSet("2.2.0", tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize, handle.cacheKey)).apply {
                 scheme = "xyz"
                 setMinZoom(0f)
                 setMaxZoom(22f)
@@ -164,6 +167,17 @@ class MapLibreGroundImageOverlayRenderer(
                     else -> append('_')
                 }
             }
+        }
+
+    private fun tileCacheKey(state: GroundImageState): String =
+        buildString(64) {
+            append(state.bounds.hashCode())
+            append('-')
+            append(state.image.hashCode())
+            append('-')
+            append(state.tileSize.hashCode())
+            append('-')
+            append(state.extra?.hashCode() ?: 0)
         }
 
     companion object {

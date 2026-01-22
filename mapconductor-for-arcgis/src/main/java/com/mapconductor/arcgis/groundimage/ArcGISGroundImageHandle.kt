@@ -1,12 +1,12 @@
 package com.mapconductor.arcgis.groundimage
 
-import com.arcgismaps.mapping.layers.Layer
+import com.arcgismaps.mapping.layers.WebTiledLayer
 import com.mapconductor.core.groundimage.GroundImageTileProvider
 
 data class ArcGISGroundImageHandle(
     val routeId: String,
-    val version: Long,
-    val layer: Layer,
+    val generation: Long,
+    val cacheKey: String,
     val tileProvider: GroundImageTileProvider,
+    val layer: WebTiledLayer,
 )
-

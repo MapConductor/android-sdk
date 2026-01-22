@@ -25,6 +25,7 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 - ジオメトリ型: `GeoPointInterface`, `GeoRectBounds`
 - カメラ型: `MapCameraPositionInterface`, `VisibleRegion`
 - マップ抽象化: `MapViewStateInterface`, `MapViewControllerInterface`, `MapViewBase`
+- プラグイン / capability レジストリ: `MapServiceRegistry`（`LocalMapServiceRegistry`）
 - オーバーレイプリミティブ: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
 他のすべてのモジュールは `mapconductor-core` の上に構築されています。
@@ -83,7 +84,7 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 - 空間 / クラスタリングのような戦略
 - リモート駆動型マーカーセットの抽象化
 
-共有マーカーインターフェースを介して任意の地図SDKモジュールと連携するように設計されています。
+共有マーカーインターフェースに加えて、provider 側で登録された capability を利用して任意の地図SDKモジュールと連携するように設計されています（[Map Service Registry](/ja/core/service-registry/)）。
 
 ### `mapconductor-marker-native-strategy`
 

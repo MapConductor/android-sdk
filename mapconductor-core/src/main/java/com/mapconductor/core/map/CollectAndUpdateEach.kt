@@ -27,4 +27,3 @@ internal fun <T : ComponentState, FingerPrint> CollectAndUpdateEach(
         }
     }
 }
-

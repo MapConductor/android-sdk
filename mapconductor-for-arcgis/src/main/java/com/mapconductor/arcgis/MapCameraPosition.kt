@@ -3,17 +3,17 @@ package com.mapconductor.arcgis
 import com.arcgismaps.mapping.view.Camera
 import com.mapconductor.arcgis.zoom.ZoomAltitudeConverter
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapPaddings
-import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.PI
 import kotlin.math.asin
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+
+const val ZOOM0_ALTITUDE = 5_000_000.0
 
 private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
 
@@ -29,6 +29,8 @@ fun MapCameraPosition.toCamera(): Camera {
     )
 }
 
+internal const val EARTH_MEAN_RADIUS_METERS = 6371000.0
+internal const val DEFAULT_MAX_GMAPS_TILT = 60.0
 internal const val ARCGIS_MAX_PITCH = 90.0
 internal const val MIN_ANGLE = 0.0
 
@@ -44,11 +46,11 @@ fun calculateDestinationPoint(
     lon: Double,
     bearing: Double,
     distance: Double,
-): GeoPointInterface {
+): GeoPoint {
     val latRad = lat.toRadians()
     val lonRad = lon.toRadians()
     val bearingRad = bearing.toRadians()
-    val angularDistance = distance / Earth.RADIUS_METERS
+    val angularDistance = distance / EARTH_MEAN_RADIUS_METERS
 
     val destLatRad = asin(sin(latRad) * cos(angularDistance) + cos(latRad) * sin(angularDistance) * cos(bearingRad))
 
@@ -62,13 +64,10 @@ fun calculateDestinationPoint(
     // 経度を -180 ～ +180 の範囲に正規化
     destLonRad = (destLonRad + 3 * PI) % (2 * PI) - PI
 
-    return object : GeoPointInterface {
-        override val latitude: Double get() = destLatRad.toDegrees()
-        override val longitude: Double get() = destLonRad.toDegrees()
-        override val altitude: Double? get() = null
-
-        override fun wrap(): GeoPointInterface = GeoPoint(latitude, longitude, altitude ?: 0.0).wrap()
-    }
+    return GeoPoint.fromLatLong(
+        latitude = destLatRad.toDegrees(),
+        longitude = destLonRad.toDegrees()
+    )
 }
 
 /**

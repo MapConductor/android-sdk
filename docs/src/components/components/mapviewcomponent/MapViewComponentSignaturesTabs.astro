@@ -4,7 +4,6 @@ import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
 const googleMapsCode = `GoogleMapView(
     state: GoogleMapViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategyInterface<GoogleMapActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -17,7 +16,6 @@ const googleMapsCode = `GoogleMapView(
 const mapboxCode = `MapboxMapView(
     state: MapboxViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategyInterface<MapboxActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -30,7 +28,6 @@ const mapboxCode = `MapboxMapView(
 const hereMapCode = `HereMapView(
     state: HereViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategyInterface<HereActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -42,7 +39,6 @@ const hereMapCode = `HereMapView(
 const mapLibreCode = `MapLibreMapView(
     state: MapLibreViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -54,7 +50,6 @@ const mapLibreCode = `MapLibreMapView(
 const arcGISMapCode = `ArcGISMapView(
     state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategyInterface<ArcGISActualMarker>? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,

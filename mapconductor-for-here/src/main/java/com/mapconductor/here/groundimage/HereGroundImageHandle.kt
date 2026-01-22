@@ -6,11 +6,11 @@ import com.mapconductor.core.groundimage.GroundImageTileProvider
 
 data class HereGroundImageHandle(
     val routeId: String,
-    val version: Long,
+    val generation: Long,
+    val cacheKey: String,
     val sourceName: String,
     val layerName: String,
     val dataSource: RasterDataSource,
     val layer: MapLayer,
     val tileProvider: GroundImageTileProvider,
 )
-

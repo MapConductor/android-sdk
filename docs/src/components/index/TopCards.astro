@@ -1,0 +1,49 @@
+---
+import { Image } from 'astro:assets';
+import { CardGrid, Card } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  titleForUnifiedAPI?: string;
+  descriptionForUnifiedAPI?: string;
+
+  titleForJetpackCompose?: string;
+  descriptionForJetpackCompose?: string;
+
+  titleForMultiProviders?: string;
+  descriptionForMultiProviders?: string;
+
+  titleForOpenSource?: string;
+  descriptionForOpenSource?: string;
+}
+
+const {
+  titleForUnifiedAPI = "Unified MapView API",
+  descriptionForUnifiedAPI = "Write your map code once and switch map providers whenever you like. Even if you migrate from Google Maps to Mapbox, you don’t need to rewrite large parts of your codebase.",
+
+  titleForJetpackCompose = "Optimized for Jetpack Compose",
+  descriptionForJetpackCompose = "Designed for modern Android development, with an API built specifically around Jetpack Compose.",
+
+  titleForMultiProviders = "Multiple Providers Supported",
+  descriptionForMultiProviders = "Provides consistent behavior across Google Maps, Mapbox, HERE Maps, ArcGIS, and MapLibre.",
+
+  titleForOpenSource = "Open Source",
+  descriptionForOpenSource = "Open-source under the Apache License 2.0 and developed by the community.",
+} = Astro.props;
+
+---
+
+<CardGrid>
+  <Card title={titleForUnifiedAPI} icon="puzzle">
+    {descriptionForUnifiedAPI}
+  </Card>
+  <Card title={titleForJetpackCompose} icon="rocket">
+    {descriptionForJetpackCompose}
+  </Card>
+  <Card title={titleForMultiProviders} icon="setting">
+    {descriptionForMultiProviders}
+  </Card>
+  <Card title={titleForOpenSource} icon="github">
+    {descriptionForOpenSource}
+  </Card>
+</CardGrid>

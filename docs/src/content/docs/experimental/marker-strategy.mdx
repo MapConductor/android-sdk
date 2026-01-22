@@ -34,6 +34,11 @@ Add the marker strategy module to your `build.gradle`:
 
 <MarkerStrategyGradleDependencies />
 
+## Provider Integration
+
+`mapconductor-marker-strategy` renders markers through a provider-specific implementation registered by the provider module.
+Built-in provider modules register this capability automatically via `MapServiceRegistry` (see [Map Service Registry](/core/service-registry/)).
+
 ## Core Strategies
 
 ### DefaultMarkerStrategy

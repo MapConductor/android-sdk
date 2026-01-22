@@ -29,6 +29,11 @@ Añade el módulo de estrategia de marcadores a tu `build.gradle`:
   commentForChooseProvider="Elige tu proveedor de mapas"
 />
 
+## Integración con el proveedor
+
+`mapconductor-marker-strategy` renderiza marcadores a través de una implementación específica del proveedor registrada por el módulo del proveedor.
+Los módulos incluidos la registran automáticamente mediante `MapServiceRegistry` (ver [Map Service Registry](/es-419/core/service-registry/)).
+
 ## Estrategias principales
 
 ### DefaultMarkerStrategy

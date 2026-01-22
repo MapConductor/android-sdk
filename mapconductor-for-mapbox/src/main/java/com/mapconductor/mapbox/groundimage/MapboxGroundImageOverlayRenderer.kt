@@ -15,11 +15,11 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.mapbox.MapboxActualGroundImage
 import com.mapconductor.mapbox.MapboxMapViewHolder
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.util.Log
 
 class MapboxGroundImageOverlayRenderer(
     override val holder: MapboxMapViewHolder,
@@ -38,7 +38,8 @@ class MapboxGroundImageOverlayRenderer(
             val handle =
                 MapboxGroundImageHandle(
                     routeId = routeId,
-                    version = 0L,
+                    generation = 0L,
+                    cacheKey = tileCacheKey(state),
                     sourceId = sourceId,
                     layerId = layerId,
                     tileProvider = provider,
@@ -61,7 +62,8 @@ class MapboxGroundImageOverlayRenderer(
             val prevFinger = prev.fingerPrint
 
             val tileSizeChanged = finger.tileSize != prevFinger.tileSize
-            val tileContentChanged = finger.bounds != prevFinger.bounds || finger.image != prevFinger.image || tileSizeChanged
+            val tileContentChanged =
+                finger.bounds != prevFinger.bounds || finger.image != prevFinger.image || tileSizeChanged
             val opacityChanged = finger.opacity != prevFinger.opacity
 
             if (!tileContentChanged && !opacityChanged) {
@@ -79,7 +81,11 @@ class MapboxGroundImageOverlayRenderer(
                             groundImage.tileProvider
                         }
                     provider.update(current.state, opacity = 1.0f)
-                    groundImage.copy(version = groundImage.version + 1L, tileProvider = provider)
+                    groundImage.copy(
+                        generation = groundImage.generation + 1L,
+                        cacheKey = tileCacheKey(current.state),
+                        tileProvider = provider,
+                    )
                 } else {
                     groundImage
                 }
@@ -119,7 +125,7 @@ class MapboxGroundImageOverlayRenderer(
     ) {
         val source =
             rasterSource(handle.sourceId) {
-                tiles(listOf(tileServer.urlTemplate(handle.routeId, handle.version, handle.tileProvider.tileSize)))
+                tiles(listOf(tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize, handle.cacheKey)))
                 tileSize(handle.tileProvider.tileSize.toLong())
                 minzoom(0L)
                 maxzoom(22L)
@@ -205,6 +211,17 @@ class MapboxGroundImageOverlayRenderer(
                     else -> append('_')
                 }
             }
+        }
+
+    private fun tileCacheKey(state: GroundImageState): String =
+        buildString(64) {
+            append(state.bounds.hashCode())
+            append('-')
+            append(state.image.hashCode())
+            append('-')
+            append(state.tileSize.hashCode())
+            append('-')
+            append(state.extra?.hashCode() ?: 0)
         }
 
     companion object {

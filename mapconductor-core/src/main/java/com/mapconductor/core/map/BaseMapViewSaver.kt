@@ -2,6 +2,7 @@ package com.mapconductor.core.map
 
 import androidx.compose.runtime.saveable.Saver
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.marker.MarkerTilingOptions
 import android.os.Bundle
 
 /**

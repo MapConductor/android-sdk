@@ -51,6 +51,7 @@ class RasterLayerPageViewModel :
                     tileSize = RasterLayerSource.DEFAULT_TILE_SIZE,
                 ),
                 opacity = opacity,
+                debug = true,
             )
 
     private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)

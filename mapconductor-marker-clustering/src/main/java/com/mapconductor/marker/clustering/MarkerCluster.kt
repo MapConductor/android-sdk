@@ -1,5 +1,6 @@
 package com.mapconductor.marker.clustering
 
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 
 data class MarkerCluster(
@@ -9,7 +10,10 @@ data class MarkerCluster(
 
 data class MarkerClusterDebugInfo(
     val id: String,
-    val center: com.mapconductor.core.features.GeoPointInterface,
+    val center: GeoPointInterface,
     val radiusMeters: Double,
     val count: Int,
-) : Serializable
+    val cellX: Int,
+    val cellY: Int,
+    val hullPoints: List<GeoPointInterface> = emptyList(),
+)

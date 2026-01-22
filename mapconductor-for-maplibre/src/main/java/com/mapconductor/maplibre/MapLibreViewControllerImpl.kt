@@ -16,6 +16,7 @@ import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -37,7 +38,6 @@ import com.mapconductor.maplibre.marker.StrategyMapLibreMarkerEventController
 import com.mapconductor.maplibre.polygon.MapLibrePolygonConductor
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
-import com.mapconductor.marker.clustering.MarkerRenderingSupport
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.gestures.MoveGestureDetector
@@ -73,7 +73,6 @@ class MapLibreViewController(
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     MapLibreViewControllerInterface,
-    MarkerRenderingSupport<MapLibreActualMarker>,
     MapLibreMap.OnMapClickListener,
     MapLibreMap.OnMapLongClickListener,
     MapLibreMap.OnMoveListener,
@@ -244,6 +243,20 @@ class MapLibreViewController(
         registerController(circleController)
         registerController(rasterLayerController)
         registerMarkerEventController(DefaultMapLibreMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
     }
 
     fun setupListeners() {
@@ -796,7 +809,7 @@ class MapLibreViewController(
         }
     }
 
-    override fun createMarkerRenderer(
+    fun createMarkerRenderer(
         strategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
     ): MarkerOverlayRendererInterface<MapLibreActualMarker> {
         val groupId = UUID.randomUUID().toString()
@@ -818,7 +831,7 @@ class MapLibreViewController(
         )
     }
 
-    override fun createMarkerEventController(
+    fun createMarkerEventController(
         controller: StrategyMarkerController<MapLibreActualMarker>,
         renderer: MarkerOverlayRendererInterface<MapLibreActualMarker>,
     ): MarkerEventControllerInterface<MapLibreActualMarker> =
@@ -827,7 +840,7 @@ class MapLibreViewController(
             renderer = renderer as MapLibreMarkerOverlayRenderer,
         )
 
-    override fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapLibreActualMarker>) {
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapLibreActualMarker>) {
         val typed = controller as? MapLibreMarkerEventControllerInterface ?: return
         registerMarkerEventController(typed)
     }

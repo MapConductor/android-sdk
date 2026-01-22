@@ -9,68 +9,61 @@ editUrl: false
 lastUpdated: false
 ---
 
-import { CardGrid, Card } from '@astrojs/starlight/components';
-import { Image } from 'astro:assets';
-import topBanner from '~/assets/top-banner.png';
-import QuickExampleTabs from '~/components/index/QuickExampleTabs.astro';
+import { CardGrid, Card } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import topBanner from "~/assets/top-banner.png";
+import QuickExampleTabs from "~/components/index/QuickExampleTabs.astro";
+import Features from "~/components/index/Features.astro";
+import MapConductorIntroduction from "~/components/index/MapConductorIntroduction.astro";
+import MitouAdvanced from "~/components/index/MitouAdvanced.astro";
+import TopCards from "~/components/index/TopCards.astro";
 
 <Image src={topBanner} alt="MapConductor(マップコンダクター) ♪ 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK" />
 
-## MapConductor(マップコンダクター) とは何か
+<TopCards
+  titleForUnifiedAPI="統一されたAPI"
+  descriptionForUnifiedAPI="一度コードを書けば、地図プロバイダをいつでも切り替えられます。Google Maps から Mapbox などに乗り換えても、大量のコードを書き直す必要はありません。"
 
-<CardGrid>
-  <Card title="統一されたAPI" icon="puzzle">
-    一度コードを書けば、地図プロバイダをいつでも切り替えられます。Google Maps から Mapbox などに乗り換えても、大量のコードを書き直す必要はありません。
-  </Card>
-  <Card title="Jetpack Compose に最適化" icon="rocket">
-    最新のAndroid開発のために設計されており、Jetpack Compose を前提にしたAPIになっています。
-  </Card>
-  <Card title="複数プロバイダをサポート" icon="setting">
-    Google Maps / Mapbox / HERE Maps / ArcGIS / MapLibre を、挙動を揃えた形でサポートしています。
-  </Card>
-  <Card title="オープンソース" icon="github">
-    Apache License 2.0 で公開されたオープンソースプロジェクトです。コミュニティ主導で開発が進んでいます。
-  </Card>
-</CardGrid>
+  titleForJetpackCompose="Android / Jetpack Compose に最適化"
+  descriptionForJetpackCompose="最新のAndroid開発のために設計されており、Jetpack Compose を前提にしたAPIになっています。"
 
-## クイックサンプル
-
-MapConductorの使い方は簡単です。`rememberXxxxViewState`と`XxxxView`を組み合わせて使います。
-`Xxxx`の部分が`GoogleMap`や`Mapbox`などに切り替わります。
-Mapbox に切り替えたい場合は、`rememberGoogleMapViewState()` を `rememberMapboxMapViewState()` に、
-`GoogleMapView` を `MapboxMapView` に変更するだけです。
-それ以外のコードはそのままです。
-
-| 地図SDK | mapViewState | mapView |
-|--------|---------------|--------|
-| GoogleMaps | rememberGoogleMapViewState | GoogleMapView |
-| Mapbox | rememberMapboxViewState | MapboxMapView |
-| MapLibre | rememberMapLibreViewState | MapLibreView |
-| HERE | rememberHereMapViewState | HereMapView |
-| ArcGIS | rememberArcGISMapViewState | ArcGISMapView |
- 
-
-
-<QuickExampleTabs
-  commentForInit="地図の初期表示位置"
-  commentForMapViewState="このmapViewStateを通じて、地図の表示状態を操作します"
-  googleMapsAlt="Google Maps の実行例"
-  mapboxAlt="Mapbox の実行例"
-  hereAlt="HERE の実行例"
+  titleForMultiProviders="iOS / SwiftUIもサポート"
+  descriptionForMultiProviders="iOSエンジニアのためにもSwiftUIをサポートしています。"
+  
+  titleForMultititleForOpenSourceProviders="オープンソース"
+  descriptionForOpenSource="Apache License 2.0 で公開されたオープンソースプロジェクトです。コミュニティ主導で開発が進んでいます。"
 />
 
+# MapConductorについて
+<MapConductorIntroduction 
+  text1="Androidで地図アプリを作るとき、「なんか地図の部分だけ複雑だなー。使い慣れたJetpack Composeで書けたら良いのに・・・」って思いませんか？MapConductor（マップコンダクター）は、そんな開発者の願いを叶えます。MapConductorが提供するAPIを使えば「地図をこうしたい！」を簡単に宣言的UIで表すことができます。"
+  text2="複数の地図SDKをサポートしています。GoogleMaps、Mapbox、MapLibre、Here、ArcGIS！全部同じ様に操作できます。"
+  text3="しかも、こっちの地図SDKには機能があるけど、そっちの地図SDKにはない機能も、独自実装しています。つまり単純に各地図SDKのAPIをまとめているだけではなくて、足りないところは作っているんです。"
+  text4="さらにマーカークラスタリングやヒートマップなど、高度な機能も数行で導入可能。"
+  text5="せっかくJetpack Composeでアプリを作っているのに地図の部分だけ複雑になってしまった・・・なんてお悩みとはおさらばです！"
+/>
 
 ## サポートされている機能
 
-| 機能 | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
-|---------|-------------|--------|------|--------|----------|
-| 地図 | ✓ | ✓ | ✓ | ✓ | ✓ |
-| マーカー | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 円 | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ポリライン | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ポリゴン | ✓ | ✓ | ✓ | ✓ | ✓ |
-| GroundImage | ✓ | N/A | N/A | N/A | N/A |
-
-## 次のステップ
-
-Android アプリに MapConductor を導入する準備ができたら、[イントロダクション](/ja/introduction/) と [チュートリアル](/ja/get-started/) を参照してください。
+<Features
+  titleForUnifiedAPI="統一的なAPIのMapView"
+  descriptionForUnifiedAPI="Google Maps / Mapbox / HERE Maps / ArcGIS / MapLibre を、挙動を揃えた形でサポートしています。"
+  titleForMarker="自由にカスタマイズできるMarker"
+  descriptionForMarker="色・枠線の太さ・ラベルなどを変更したり、画像などを簡単に配置できるようになっています。"
+  titleForInfoBubble="Jetpack Composeで書けるInfoBubble"
+  descriptionForInfoBubble="通常のコンポーネントと同じ様に作れます。ボタンなどを配置できます。"
+  titleForMarkerCluster="マーカーをグループ化できるMarkerCluster"
+  descriptionForMarkerCluster="数多くのMarkerをグループ化するときに便利なMarkerCluster。アニメーション表示できます。"
+  titleForCircle="メートル単位で半径を指定できるCircle"
+  descriptionForCircle="どの地図SDKでも半径をメートル単位で指定できます（一部地図SDKの標準機能ではサポートしていない）。"
+  titleForPolyline="直線も曲線も描けるPolyline"
+  descriptionForPolyline="色や太さをカスタマイズしたり、クリックされた位置を取得することもできます。"
+  titleForPolygon= "複雑な領域を塗りつぶし出来るPolygon"
+  descriptionForPolygon="地球の丸みを考慮した正確なPolygonもプロパティを設定するだけで描画できます。"
+  titleForGroundImage = "特定の領域に画像を貼り付けられるGroundImage"
+  descriptionForGroundImage = "地図の移動や縮尺の変更に自動で合わせてくれる便利機能です."
+  titleForHeatmap="密度を表すのに便利なHeatMap"
+  descriptionForHeatmap="密度や濃度などの統計的な数値を地図と合わせて表示できるHeatmapも数行で描けます。"
+  titleForRasterLayer="他のタイル画像を表示できるRasterLayer"
+  descriptionForRasterLayer="透明度の変更も、どの地図SDKでも出来るように設計されています"
+/>

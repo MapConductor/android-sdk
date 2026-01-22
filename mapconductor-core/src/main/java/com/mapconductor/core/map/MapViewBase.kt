@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -84,6 +84,7 @@ fun <
     viewProvider: () -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
+    serviceRegistry: MapServiceRegistry = EmptyMapServiceRegistry,
     sdkInitialize: suspend () -> Boolean = { true },
     holderProvider: suspend (mapView: ActualMapView) -> SpecificHolder,
     controllerProvider: suspend (holder: SpecificHolder) -> SpecificController,
@@ -223,6 +224,7 @@ fun <
                     // **ここで初めて CompositionLocalProvider を差し込む**
                     CompositionLocalProvider(
                         LocalMapOverlayRegistry provides registry,
+                        LocalMapServiceRegistry provides serviceRegistry,
                         LocalMapViewController provides localController,
                         LocalMarkerCollector provides scope.markerCollector,
                         LocalInfoBubbleCollector provides scope.bubbleFlow,
@@ -308,6 +310,7 @@ fun <
             holderRef.value = holder
             controllerRef.value = controllerProvider(holder)
             initState = InitState.MapCreated
+            Log.d("DEBUG", "------------->onMapLoaded")
             onMapLoaded?.invoke(state)
         }
     }

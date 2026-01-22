@@ -54,6 +54,11 @@ marker native strategy は、Java ベースの空間インデックスを最適�
   commentForChooseProvider="地図SDKを選択"
 />
 
+## 地図SDKモジュールとの連携
+
+native strategy でも、地図上に描画するためには地図SDKごとの renderer/controller が必要です。
+組み込みの地図SDKモジュールは `MapServiceRegistry` の capability として提供します（[Map Service Registry](/ja/core/service-registry/)）。
+
 ### ネイティブライブラリのセットアップ
 
 モジュールにはネイティブC++ライブラリが必要です。アプリが必要なABIをサポートしていることを確認してください:
@@ -167,4 +172,3 @@ marker native strategy は、Java ベースの空間インデックスを最適�
 <NativeMemoryLeakPreventionExample />
 
 marker native strategy モジュールは、マーカーを多用するアプリケーションに大幅なパフォーマンス向上をもたらしますが、実験的な性質のため、慎重なリソース管理と徹底的なテストが必要です。
-

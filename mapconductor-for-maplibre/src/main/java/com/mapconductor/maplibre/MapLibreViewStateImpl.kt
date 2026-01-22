@@ -10,6 +10,7 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.MarkerTilingOptions
 import java.util.UUID
 import android.os.Bundle
 

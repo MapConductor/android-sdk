@@ -1,20 +1,30 @@
 package com.mapconductor.mapbox.raster
 
+import com.mapbox.maps.TileCacheBudget
+import com.mapbox.maps.TileCacheBudgetInMegabytes
 import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.addLayerAbove
+import com.mapbox.maps.extension.style.layers.addLayerBelow
 import com.mapbox.maps.extension.style.layers.generated.rasterLayer
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.rasterSource
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
-import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterLayerSource
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class MapboxRasterLayerOverlayRenderer(
     private val holder: MapboxMapViewHolder,
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<MapboxRasterLayerHandle> {
+    private fun isMarkerTileRaster(state: RasterLayerState): Boolean =
+        state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
+
     override suspend fun onAdd(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
     ): List<MapboxRasterLayerHandle?> =
@@ -67,7 +77,11 @@ class MapboxRasterLayerOverlayRenderer(
             Log.w("Mapbox", "Failed to add raster source: ${e.message}")
         }
         try {
-            style.addLayer(layer)
+            if (isMarkerTileRaster(state)) {
+                addLayerForMarkerTile(style, layer)
+            } else {
+                style.addLayer(layer)
+            }
         } catch (e: Exception) {
             Log.w("Mapbox", "Failed to add raster layer: ${e.message}")
         }
@@ -94,7 +108,11 @@ class MapboxRasterLayerOverlayRenderer(
                 rasterOpacity(opacity)
             }
         try {
-            style.addLayer(layer)
+            if (isMarkerTileRaster(state)) {
+                addLayerForMarkerTile(style, layer)
+            } else {
+                style.addLayer(layer)
+            }
         } catch (_: Exception) {
         }
     }
@@ -120,6 +138,7 @@ class MapboxRasterLayerOverlayRenderer(
             rasterSource(sourceId) {
                 tiles(listOf(source.template))
                 tileSize(source.tileSize.toLong())
+                // tileCacheBudget(TileCacheBudget(TileCacheBudgetInMegabytes(0L)))
                 source.minZoom?.let { minzoom(it.toLong()) }
                 source.maxZoom?.let { maxzoom(it.toLong()) }
                 source.attribution?.let { attribution(it) }
@@ -139,6 +158,34 @@ class MapboxRasterLayerOverlayRenderer(
                 tileSize(RasterLayerSource.DEFAULT_TILE_SIZE.toLong())
             }
         }
+    }
+
+    private fun addLayerForMarkerTile(
+        style: com.mapbox.maps.Style,
+        layer: com.mapbox.maps.extension.style.layers.Layer,
+    ) {
+        // Insert the raster tiles below the marker symbol layer so they don't cover markers,
+        // but remain above vector overlays that are anchored below markers (polyline/circle/etc).
+        try {
+            style.addLayerBelow(layer, MARKERS_LAYER_ID)
+            return
+        } catch (_: Exception) {
+        }
+
+        // Best-effort fallback: place above polylines if marker layer isn't present yet.
+        try {
+            style.addLayerAbove(layer, POLYLINE_LAYER_ID)
+            return
+        } catch (_: Exception) {
+        }
+
+        style.addLayer(layer)
+    }
+
+    private companion object {
+        private const val MARKER_TILE_RASTER_ID_PREFIX = "marker-tile-"
+        private const val MARKERS_LAYER_ID = "markers-layer"
+        private const val POLYLINE_LAYER_ID = "polyline-layer"
     }
 }
 

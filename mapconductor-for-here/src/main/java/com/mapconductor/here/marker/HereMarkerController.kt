@@ -1,37 +1,75 @@
 package com.mapconductor.here.marker
 
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerController
+import com.mapconductor.core.marker.BitmapIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerManager
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
+import com.mapconductor.core.marker.MarkerTileRenderer
+import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.core.marker.MarkerIngestionEngine
+import com.mapconductor.core.raster.RasterLayerSource
+import com.mapconductor.core.raster.RasterLayerState
+import com.mapconductor.core.raster.TileScheme
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.settings.Settings
+import java.util.UUID
+import kotlin.math.floor
+import android.os.SystemClock
+import android.util.Log
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withPermit
 
 class HereMarkerController private constructor(
     markerManager: MarkerManager<HereActualMarker>,
     override val renderer: HereMarkerRenderer,
+    private val tilingOptions: MarkerTilingOptions,
 ) : AbstractMarkerController<HereActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
     ) {
     private var internalSelectedMarker: MarkerEntityInterface<HereActualMarker>? = null
 
+    private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
+    private val tiledMarkerIds = LinkedHashSet<String>()
+
+    @Volatile
+    private var lastKnownZoom: Double = 0.0
+
+    private val tileServer = TileServerRegistry.get(forceNoStoreCache = true)
+    private var markerTileRenderer: MarkerTileRenderer<HereActualMarker>? = null
+    private var markerTileGroupId: String? = null
+    private var markerTileRasterLayerState: RasterLayerState? = null
+    private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
+    private var cacheVersion: Int = 0
+
     internal var selectedMarker: MarkerEntityInterface<HereActualMarker>?
         set(value) {
             if (value == null) {
                 internalSelectedMarker?.let {
-                    // Restore the recomposition for the position property
                     setDraggingState(it.state, false)
                 }
+                internalSelectedMarker = null
                 return
             }
             internalSelectedMarker = value
-            // Suppress the recomposition for the position property
             setDraggingState(value.state, true)
         }
         get() = internalSelectedMarker
+
+    fun setRasterLayerCallback(callback: MarkerTileRasterLayerCallback?) {
+        rasterLayerCallback = callback
+    }
 
     override fun find(position: GeoPointInterface): MarkerEntityInterface<HereActualMarker>? {
         val nearest = markerManager.findNearest(position) ?: return null
@@ -79,21 +117,248 @@ class HereMarkerController private constructor(
         }
     }
 
-    companion object {
-        private const val ZOOM_ADJUST_VALUE = 0.1 // バイナリテストで確定
+    override suspend fun add(data: List<MarkerState>) {
+        semaphore.withPermit {
+            val currentZoom = currentTileZoom()
+            val result =
+                MarkerIngestionEngine.ingest(
+                    data = data,
+                    markerManager = markerManager,
+                    renderer = renderer,
+                    defaultMarkerIcon = defaultMarkerIcon,
+                    tilingEnabled = tilingOptions.enabled,
+                    tiledMarkerIds = tiledMarkerIds,
+                    shouldTile = { state -> !state.draggable && state.getAnimation() == null },
+                )
 
-        fun create(holder: HereViewHolder): HereMarkerController {
+            if (result.tiledDataChanged) {
+                syncTiledOverlay(currentZoom)
+            } else if (result.hasTiledMarkers) {
+                if (markerTileRenderer == null || markerTileRasterLayerState == null) {
+                    syncTiledOverlay(currentZoom)
+                }
+            } else {
+                removeTileOverlay()
+            }
+        }
+    }
+
+    override suspend fun update(state: MarkerState) {
+        if (!markerManager.hasEntity(state.id)) return
+
+        val prevEntity = markerManager.getEntity(state.id) ?: return
+        val currentFinger = state.fingerPrint()
+        val prevFinger = prevEntity.fingerPrint
+        if (currentFinger == prevFinger) return
+
+        semaphore.withPermit {
+            val tilingEnabled =
+                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
+            val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
+            val wasTiled = tiledMarkerIds.contains(state.id)
+            val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
+            val currentZoom = currentTileZoom()
+
+            if (wantsTiled) {
+                if (!wasTiled) {
+                    prevEntity.marker?.let { renderer.onRemove(listOf(prevEntity)) }
+                    tiledMarkerIds.add(state.id)
+                }
+                markerManager.updateEntity(
+                    MarkerEntity(
+                        marker = null,
+                        state = state,
+                        visible = prevEntity.visible,
+                        isRendered = true,
+                    ),
+                )
+                renderer.onPostProcess()
+                syncTiledOverlay(currentZoom)
+                return@withPermit
+            }
+
+            if (wasTiled) {
+                tiledMarkerIds.remove(state.id)
+            }
+
+            val params =
+                object : MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker> {
+                    override val current: MarkerEntityInterface<HereActualMarker> =
+                        MarkerEntity(
+                            marker = prevEntity.marker,
+                            state = state,
+                            visible = prevEntity.visible,
+                            isRendered = true,
+                        )
+                    override val bitmapIcon: BitmapIcon = markerIcon
+                    override val prev: MarkerEntityInterface<HereActualMarker> = prevEntity
+                }
+            val markers = renderer.onChange(listOf(params))
+            markers.firstOrNull()?.let { actual ->
+                markerManager.updateEntity(
+                    MarkerEntity(
+                        marker = actual,
+                        state = state,
+                        visible = prevEntity.visible,
+                        isRendered = true,
+                    ),
+                )
+                if (prevFinger.animation != currentFinger.animation) {
+                    state.getAnimation()?.let { renderer.onAnimate(markerManager.getEntity(state.id)!!) }
+                }
+            }
+            renderer.onPostProcess()
+
+            if (tiledMarkerIds.isNotEmpty()) {
+                syncTiledOverlay(currentZoom)
+            } else {
+                removeTileOverlay()
+            }
+        }
+    }
+
+    override suspend fun clear() {
+        semaphore.withPermit {
+            val entities = markerManager.allEntities()
+            val toRemove = entities.filter { it.marker != null }
+            if (toRemove.isNotEmpty()) {
+                renderer.onRemove(toRemove)
+            }
+            markerManager.clear()
+            tiledMarkerIds.clear()
+            removeTileOverlay()
+        }
+    }
+
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
+        lastKnownZoom = mapCameraPosition.zoom
+    }
+
+    override fun destroy() {
+        markerTileGroupId?.let { groupId ->
+            tileServer.unregister(groupId)
+        }
+        markerTileGroupId = null
+        markerTileRenderer?.clear()
+        markerTileRenderer = null
+
+        renderer.coroutine.launch {
+            rasterLayerCallback?.onRasterLayerUpdate(null)
+        }
+        markerTileRasterLayerState = null
+        super.destroy()
+    }
+
+    private suspend fun updateRasterLayerSource() {
+        val groupId = markerTileGroupId ?: return
+        val tileRenderer = markerTileRenderer ?: return
+        val oldState = markerTileRasterLayerState ?: return
+        cacheVersion = (cacheVersion + 1) and 0x7fffffff
+        val cacheBuster = "${cacheVersion}_${SystemClock.elapsedRealtime()}"
+
+        val newState =
+            oldState.copy(
+                source =
+                    RasterLayerSource.UrlTemplate(
+                        template = "${tileServer.urlTemplate(groupId, tileRenderer.tileSize)}?cb=$cacheBuster",
+                        tileSize = tileRenderer.tileSize,
+                        maxZoom = 22,
+                        scheme = TileScheme.XYZ,
+                    ),
+                id = oldState.id,
+            )
+        markerTileRasterLayerState = newState
+        rasterLayerCallback?.onRasterLayerUpdate(newState)
+    }
+
+    private fun currentTileZoom(): Int = floor(lastKnownZoom).toInt().coerceAtLeast(0)
+
+    private suspend fun syncTiledOverlay(zoom: Int) {
+        if (tiledMarkerIds.isEmpty()) {
+            removeTileOverlay()
+            return
+        }
+        if (!tilingOptions.enabled) {
+            removeTileOverlay()
+            tiledMarkerIds.clear()
+            return
+        }
+        val tileRenderer = getOrCreateTileRenderer()
+        tileRenderer.invalidate()
+
+        updateRasterLayerSource()
+    }
+
+    private fun getOrCreateTileRenderer(): MarkerTileRenderer<HereActualMarker> {
+        markerTileRenderer?.let { return it }
+
+        val groupId = UUID.randomUUID().toString()
+        markerTileGroupId = groupId
+
+        val outputTileSize = ResourceProvider.getOptimalTileSize().coerceAtLeast(tilingOptions.tileSize)
+
+        cacheVersion = (cacheVersion + 1) and 0x7fffffff
+        val tileRenderer =
+            MarkerTileRenderer(
+                markerManager = markerManager,
+                // HERE benefits from higher-res output tiles on high-DPI devices (to avoid GPU upscaling blur),
+                // but our world-pixel math should stay on the standard 256px tile grid.
+                tileSize = outputTileSize,
+                debugTileOverlay = tilingOptions.debugTileOverlay,
+            )
+        markerTileRenderer = tileRenderer
+
+        tileServer.register(groupId, tileRenderer)
+
+        markerTileRasterLayerState =
+            RasterLayerState(
+                id = "marker-tile-$groupId",
+                source =
+                    RasterLayerSource.UrlTemplate(
+                        template = "${tileServer.urlTemplate(groupId, tileRenderer.tileSize)}?cb=$cacheVersion",
+                        tileSize = tileRenderer.tileSize,
+                        maxZoom = 22,
+                        scheme = TileScheme.XYZ,
+                    ),
+                opacity = 1.0f,
+                visible = true,
+            )
+
+        return tileRenderer
+    }
+
+    private suspend fun removeTileOverlay() {
+        markerTileGroupId?.let { groupId ->
+            tileServer.unregister(groupId)
+        }
+        markerTileGroupId = null
+        markerTileRenderer?.clear()
+        markerTileRenderer = null
+
+        rasterLayerCallback?.onRasterLayerUpdate(null)
+        markerTileRasterLayerState = null
+    }
+
+    companion object {
+        fun create(
+            holder: HereViewHolder,
+            tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
+        ): HereMarkerController {
             val renderer =
                 HereMarkerRenderer(
                     holder = holder,
                 )
-            val markerManager = MarkerManager.defaultManager<HereActualMarker>()
-
+            val markerManager = MarkerManager.defaultManager<HereActualMarker>(
+                minMarkerCount = tilingOptions.minMarkerCount,
+            )
             val controller =
                 HereMarkerController(
                     markerManager = markerManager,
                     renderer = renderer,
+                    tilingOptions = tilingOptions,
                 )
+            // HERE camera zoom is updated via onCameraChanged; initialize a best-effort value.
+            controller.lastKnownZoom = holder.mapView.camera.state.zoomLevel
             return controller
         }
     }

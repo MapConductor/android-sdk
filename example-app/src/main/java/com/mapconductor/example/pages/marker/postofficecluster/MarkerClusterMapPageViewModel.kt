@@ -1,29 +1,18 @@
 ﻿package com.mapconductor.example.pages.marker.postofficecluster
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
+import androidx.lifecycle.viewModelScope
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewStateInterface
-import com.mapconductor.here.HereActualMarker
-import com.mapconductor.here.HereViewStateInterface
-import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.mapbox.MapboxViewStateInterface
-import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreViewStateInterface
-import com.mapconductor.marker.strategy.SimpleMarkerStrategy
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+//import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
-import java.lang.Thread.sleep
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,7 +45,6 @@ interface MarkerClusterMapPageViewModelInterface {
 class MarkerClusterMapPageViewModel(
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
-    private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
     MarkerClusterMapPageViewModelInterface {
     override val initCameraPosition =
@@ -95,24 +83,29 @@ class MarkerClusterMapPageViewModel(
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
-        coroutine.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             _isDataLoading.value = true
-            sleep(3000)
-            val postOffices = dataLoader.loadAllPostOffices()
+            try {
+                delay(3000)
+                val postOffices = dataLoader.loadAllPostOffices()
 
-            val markerStates =
-                postOffices.map { it ->
-                    MarkerState(
-                        position = it.position,
-                        id = it.hashCode().toString(),
-                        icon = postOfficeIcon,
-                        extra = it,
-                        onClick = this@MarkerClusterMapPageViewModel::onMarkerClick,
-                    )
-                }
-            _markerList.value = markerStates
-            sleep(3000)
-            _isDataLoading.value = false
+                val markerStates =
+                    postOffices.map { it ->
+                        MarkerState(
+                            position = it.position,
+                            id = it.hashCode().toString(),
+                            icon = postOfficeIcon,
+                            extra = it,
+                            onClick = this@MarkerClusterMapPageViewModel::onMarkerClick,
+                        )
+                    }
+                _markerList.value = markerStates
+                delay(3000)
+            } catch (t: Throwable) {
+                _markerList.value = emptyList()
+            } finally {
+                _isDataLoading.value = false
+            }
         }
     }
 
@@ -132,7 +125,7 @@ class MarkerClusterMapPageViewModel(
     }
 
     override fun onMapLoaded(mapViewState: MapViewStateInterface<*>) {
-        coroutine.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             _isMapLoaded.value = true
             _mapViewState.value?.moveCameraTo(
                 cameraPosition = cameraPosition,
@@ -164,6 +157,6 @@ class MarkerClusterMapPageViewModel(
     override fun onCleared() {
         super.onCleared()
         // Clean up remote strategy if it's being used
-        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
+//        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }

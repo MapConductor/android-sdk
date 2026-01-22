@@ -1,8 +1,11 @@
 package com.mapconductor.core.raster
 
 import com.mapconductor.core.map.MapCameraPosition
+import kotlinx.coroutines.CoroutineScope
 
 interface RasterLayerOverlayRendererInterface<ActualLayer> {
+    abstract val coroutine: CoroutineScope
+
     interface AddParamsInterface {
         val state: RasterLayerState
     }
