@@ -1,6 +1,7 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.geometry.Offset
 import androidx.core.graphics.createBitmap
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
@@ -210,6 +211,7 @@ class MarkerTileRenderer<ActualMarker>(
             val centerNorm: PointD,
             val drawW: Float,
             val drawH: Float,
+            val anchor: Offset,
         )
 
         fun prepareMarkers(
@@ -218,22 +220,37 @@ class MarkerTileRenderer<ActualMarker>(
             var maxHalfExtentPx = 0.0
             val prepared = ArrayList<PreparedMarker>(entities.size)
             for (entity in entities) {
-                val icon = entity.state.icon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
+                val stateIcon = entity.state.icon
+                val icon = stateIcon?.toBitmapIcon() ?: defaultIcon.toBitmapIcon()
                 val pos = entity.state.position
                 val centerNorm =
                     applyMatrix(
                         pos = PointD(x = pos.longitude, y = pos.latitude),
                         matrix = invertMatrix,
                     )
-                val drawW = (icon.size.width.toDouble()).coerceAtLeast(1.0)
-                val drawH = (icon.size.height.toDouble()).coerceAtLeast(1.0)
-                maxHalfExtentPx = max(maxHalfExtentPx, max(drawW, drawH) / 2.0)
+                val scale = (stateIcon?.scale?.toDouble() ?: 1.0).coerceAtLeast(0.0)
+                val drawW = (icon.size.width.toDouble() * scale).coerceAtLeast(1.0)
+                val drawH = (icon.size.height.toDouble() * scale).coerceAtLeast(1.0)
+                val anchorX = icon.anchor.x.toDouble()
+                val anchorY = icon.anchor.y.toDouble()
+                val halfExtentX =
+                    max(
+                        kotlin.math.abs(drawW * anchorX),
+                        kotlin.math.abs(drawW * (1.0 - anchorX)),
+                    )
+                val halfExtentY =
+                    max(
+                        kotlin.math.abs(drawH * anchorY),
+                        kotlin.math.abs(drawH * (1.0 - anchorY)),
+                    )
+                maxHalfExtentPx = max(maxHalfExtentPx, max(halfExtentX, halfExtentY))
                 prepared.add(
                     PreparedMarker(
                         bitmap = icon.bitmap,
                         centerNorm = centerNorm,
                         drawW = drawW.toFloat(),
                         drawH = drawH.toFloat(),
+                        anchor = icon.anchor,
                     ),
                 )
             }
@@ -300,12 +317,14 @@ class MarkerTileRenderer<ActualMarker>(
             for (m in prepared) {
                 val centerX = (m.centerNorm.x * tilePx) + paddingPx.toDouble()
                 val centerY = (m.centerNorm.y * tilePx) + paddingPx.toDouble()
+                val anchorX = m.anchor.x.toDouble()
+                val anchorY = m.anchor.y.toDouble()
                 val dst =
                     RectF(
-                        (centerX - m.drawW / 2.0).toFloat(),
-                        (centerY - m.drawH / 2.0).toFloat(),
-                        (centerX + m.drawW / 2.0).toFloat(),
-                        (centerY + m.drawH / 2.0).toFloat(),
+                        (centerX - m.drawW * anchorX).toFloat(),
+                        (centerY - m.drawH * anchorY).toFloat(),
+                        (centerX + m.drawW * (1.0 - anchorX)).toFloat(),
+                        (centerY + m.drawH * (1.0 - anchorY)).toFloat(),
                     )
                 canvas.drawBitmap(m.bitmap, null, dst, bmpPaint)
             }
