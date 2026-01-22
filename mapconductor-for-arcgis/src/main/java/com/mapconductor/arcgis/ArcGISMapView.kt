@@ -29,6 +29,8 @@ import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayController
 import com.mapconductor.arcgis.polyline.ArcGISPolylineOverlayRenderer
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageController
+import com.mapconductor.arcgis.groundimage.ArcGISGroundImageOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
@@ -196,6 +198,7 @@ fun ArcGISMapView(
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
             val circleController = getCircleController(holder)
+            val groundImageController = getGroundImageController(holder)
             val rasterLayerController = getRasterLayerController(holder)
             val groundImageController = getGroundImageController(holder)
 
@@ -207,6 +210,7 @@ fun ArcGISMapView(
                 polylineController = polylineController,
                 polygonController = polygonController,
                 circleController = circleController,
+                groundImageController = groundImageController,
                 rasterLayerController = rasterLayerController,
                 groundImageController = groundImageController,
             ).also { mapController ->
