@@ -34,7 +34,6 @@ class HereMarkerController private constructor(
     markerManager: MarkerManager<HereActualMarker>,
     override val renderer: HereMarkerRenderer,
     private val tilingOptions: MarkerTilingOptions,
-    private val markerScaleMultiplier: Double,
 ) : AbstractMarkerController<HereActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
@@ -120,7 +119,6 @@ class HereMarkerController private constructor(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
             val result =
                 MarkerIngestionEngine.ingest(
@@ -128,7 +126,7 @@ class HereMarkerController private constructor(
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingEnabled,
+                    tilingEnabled = tilingOptions.enabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -155,7 +153,7 @@ class HereMarkerController private constructor(
 
         semaphore.withPermit {
             val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= tilingOptions.minMarkerCount
+                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -234,15 +232,6 @@ class HereMarkerController private constructor(
 
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         lastKnownZoom = mapCameraPosition.zoom
-
-        if (tilingOptions.debugLogging) {
-            val mapZoomInt = floor(lastKnownZoom).toInt().coerceAtLeast(0)
-            val tileZoomInt = currentTileZoom()
-            Log.d(
-                "HereMarkerController",
-                "camera zoom=${"%.3f".format(lastKnownZoom)} mapZoomInt=$mapZoomInt tileZoomInt=$tileZoomInt",
-            )
-        }
     }
 
     override fun destroy() {
@@ -295,7 +284,7 @@ class HereMarkerController private constructor(
             return
         }
         val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate("markerDataChanged")
+        tileRenderer.invalidate()
 
         updateRasterLayerSource()
     }
@@ -318,14 +307,6 @@ class HereMarkerController private constructor(
                 debugTileOverlay = tilingOptions.debugTileOverlay,
             )
         markerTileRenderer = tileRenderer
-
-        if (tilingOptions.debugLogging) {
-            Log.d(
-                "HereMarkerController",
-                "tileRenderer outputTileSize=$outputTileSize worldTileSize=${tilingOptions.tileSize} " +
-                    "debugTileOverlay=${tilingOptions.debugTileOverlay}",
-            )
-        }
 
         tileServer.register(groupId, tileRenderer)
 
@@ -362,19 +343,19 @@ class HereMarkerController private constructor(
         fun create(
             holder: HereViewHolder,
             tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
-            markerScaleMultiplier: Double = 1.0,
         ): HereMarkerController {
             val renderer =
                 HereMarkerRenderer(
                     holder = holder,
                 )
-            val markerManager = MarkerManager.defaultManager<HereActualMarker>()
+            val markerManager = MarkerManager.defaultManager<HereActualMarker>(
+                minMarkerCount = tilingOptions.minMarkerCount,
+            )
             val controller =
                 HereMarkerController(
                     markerManager = markerManager,
                     renderer = renderer,
                     tilingOptions = tilingOptions,
-                    markerScaleMultiplier = markerScaleMultiplier,
                 )
             // HERE camera zoom is updated via onCameraChanged; initialize a best-effort value.
             controller.lastKnownZoom = holder.mapView.camera.state.zoomLevel

@@ -25,6 +25,7 @@ Runtime central y abstracciones compartidas:
 - Tipos de geometría: `GeoPointInterface`, `GeoRectBounds`
 - Tipos de cámara: `MapCameraPositionInterface`, `VisibleRegion`
 - Abstracciones de mapa: `MapViewStateInterface`, `MapViewControllerInterface`, `MapViewBase`
+- Registro de plugins/capabilities: `MapServiceRegistry` (vía `LocalMapServiceRegistry`)
 - Primitivas de overlay: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
 Todos los demás módulos se construyen sobre `mapconductor-core`.
@@ -83,7 +84,7 @@ Estrategias de renderizado de marcadores de alto nivel:
 - Estrategias espaciales / similares a clustering
 - Abstracciones para conjuntos de marcadores controlados de forma remota
 
-Diseñado para funcionar con cualquier módulo de proveedor a través de interfaces compartidas.
+Diseñado para funcionar con cualquier módulo de proveedor a través de interfaces compartidas y capabilities registradas por el proveedor (ver [Map Service Registry](/es-419/core/service-registry/)).
 
 ### `mapconductor-marker-native-strategy`
 

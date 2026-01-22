@@ -26,6 +26,7 @@ import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerRenderingSupport
 import com.mapconductor.core.marker.MarkerRenderingSupportKey
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -52,6 +53,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @Composable
 fun HereMapView(
     state: HereViewState,
+    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -64,6 +66,7 @@ fun HereMapView(
     @Suppress("DEPRECATION")
     HereMapView(
         state = state,
+        tilingOptions = tilingOptions,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
         onMapLoaded = onMapLoaded,
@@ -84,10 +87,12 @@ fun HereMapView(
     )
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
 fun HereMapView(
     state: HereViewState,
+    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -151,6 +156,7 @@ fun HereMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
+                    tilingOptions = tilingOptions,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -308,9 +314,13 @@ private fun getPolylineController(holder: HereViewHolder): HerePolylineControlle
     return controller
 }
 
-private fun getMarkerController(holder: HereViewHolder) =
+private fun getMarkerController(
+    holder: HereViewHolder,
+    tilingOptions: MarkerTilingOptions,
+) =
     HereMarkerController.create(
         holder = holder,
+        tilingOptions = tilingOptions,
     )
 
 private fun getHereCircleController(holder: HereViewHolder): HereCircleController {

@@ -26,8 +26,11 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.Markers
+import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
@@ -81,7 +84,7 @@ fun BasicGroundImageExample(
                 MapCameraPosition(
                     position = GeoPoint(35.691153, 139.756878),
                     zoom = 10.0,
-                ),
+                )
         )
     val markers = remember {
         TokyoPostOffices.map { MarkerState(
@@ -96,6 +99,10 @@ fun BasicGroundImageExample(
     MapLibreMapView(
         modifier = modifier,
         state = mapViewState,
+        tilingOptions = MarkerTilingOptions.Default.copy(
+            minMarkerCount = 0,
+            debugTileOverlay = true,
+        ),
     ) {
         Markers(markers)
     }

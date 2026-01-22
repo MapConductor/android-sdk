@@ -1,6 +1,5 @@
 package com.mapconductor.maplibre.marker
 
-import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
@@ -124,7 +123,6 @@ class MapLibreMarkerController(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
             val result =
                 MarkerIngestionEngine.ingest(
@@ -132,7 +130,7 @@ class MapLibreMarkerController(
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingEnabled,
+                    tilingEnabled = tilingOptions.enabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -159,7 +157,7 @@ class MapLibreMarkerController(
 
         semaphore.withPermit {
             val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= tilingOptions.minMarkerCount
+                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -289,42 +287,44 @@ class MapLibreMarkerController(
             return
         }
         val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate("markerDataChanged")
+        tileRenderer.invalidate()
 
         updateRasterLayerSource()
     }
 
     private fun getOrCreateTileRenderer(): MarkerTileRenderer<MapLibreActualMarker> {
-        markerTileRenderer?.let { return it }
+        synchronized(this) {
+            markerTileRenderer?.let { return it }
 
-        val groupId = UUID.randomUUID().toString()
-        markerTileGroupId = groupId
+            val groupId = UUID.randomUUID().toString()
+            markerTileGroupId = groupId
 
-        val tileRenderer =
-            MarkerTileRenderer<MapLibreActualMarker> (
-                markerManager = markerManager,
-                tileSize = tilingOptions.tileSize,
-                debugTileOverlay = tilingOptions.debugTileOverlay,
-            )
-        markerTileRenderer = tileRenderer
+            val tileRenderer =
+                MarkerTileRenderer<MapLibreActualMarker>(
+                    markerManager = markerManager,
+                    tileSize = tilingOptions.tileSize,
+                    debugTileOverlay = tilingOptions.debugTileOverlay,
+                )
+            markerTileRenderer = tileRenderer
 
-        tileServer.register(groupId, tileRenderer)
+            tileServer.register(groupId, tileRenderer)
 
-        markerTileRasterLayerState =
-            RasterLayerState(
-                id = "marker-tile-$groupId",
-                source =
-                    RasterLayerSource.UrlTemplate(
-                        template = tileServer.urlTemplate(groupId, tileRenderer.tileSize),
-                        tileSize = tileRenderer.tileSize,
-                        maxZoom = 22,
-                        scheme = TileScheme.XYZ,
-                    ),
-                opacity = 1.0f,
-                visible = true,
-            )
+            markerTileRasterLayerState =
+                RasterLayerState(
+                    id = "marker-tile-$groupId",
+                    source =
+                        RasterLayerSource.UrlTemplate(
+                            template = tileServer.urlTemplate(groupId, tileRenderer.tileSize),
+                            tileSize = tileRenderer.tileSize,
+                            maxZoom = 22,
+                            scheme = TileScheme.XYZ,
+                        ),
+                    opacity = 1.0f,
+                    visible = true,
+                )
 
-        return tileRenderer
+            return tileRenderer
+        }
     }
 
     private suspend fun removeTileOverlay() {

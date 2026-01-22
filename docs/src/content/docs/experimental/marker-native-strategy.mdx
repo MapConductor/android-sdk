@@ -50,6 +50,11 @@ Add the native strategy module to your `build.gradle`:
 
 <NativeMarkerGradleDependencies />
 
+## Provider Integration
+
+Native strategies still need a provider-specific marker renderer/controller to show results on the map.
+Built-in provider modules provide this via the `MapServiceRegistry` capability system (see [Map Service Registry](/core/service-registry/)).
+
 ### Native Library Setup
 
 The module requires native C++ libraries. Ensure your app supports the required ABIs:

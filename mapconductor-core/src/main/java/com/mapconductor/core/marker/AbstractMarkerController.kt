@@ -110,6 +110,8 @@ abstract class AbstractMarkerController<ActualMarker>(
                 }
             }
 
+            markerManager.lock()
+
             previous.forEach { remainId ->
                 markerManager.removeEntity(remainId)?.let { removedEntity ->
                     removed.add(removedEntity)
@@ -164,6 +166,9 @@ abstract class AbstractMarkerController<ActualMarker>(
                     yield()
                 }
             }
+
+            markerManager.unlock()
+
             modifiedEntities.forEach { entity ->
                 entity.state.getAnimation()?.let {
                     renderer.onAnimate(entity)
@@ -192,6 +197,8 @@ abstract class AbstractMarkerController<ActualMarker>(
                 state = state,
                 isRendered = prevEntity.isRendered,
             )
+
+        markerManager.lock()
         markerManager.updateEntity(entity)
 
         // Simple fallback: update marker immediately if it's already rendered
@@ -234,6 +241,7 @@ abstract class AbstractMarkerController<ActualMarker>(
             }
             renderer.onPostProcess()
         }
+        markerManager.unlock()
     }
 
     override suspend fun clear() {

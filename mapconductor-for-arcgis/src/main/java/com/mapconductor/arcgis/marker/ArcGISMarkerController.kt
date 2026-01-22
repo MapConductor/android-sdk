@@ -126,7 +126,6 @@ class ArcGISMarkerController private constructor(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
             val result =
                 MarkerIngestionEngine.ingest(
@@ -134,7 +133,7 @@ class ArcGISMarkerController private constructor(
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingEnabled,
+                    tilingEnabled = tilingOptions.enabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -161,7 +160,7 @@ class ArcGISMarkerController private constructor(
 
         semaphore.withPermit {
             val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= tilingOptions.minMarkerCount
+                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -292,7 +291,7 @@ class ArcGISMarkerController private constructor(
             return
         }
         val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate("markerDataChanged")
+        tileRenderer.invalidate()
 
         updateRasterLayerSource()
     }
@@ -359,7 +358,9 @@ class ArcGISMarkerController private constructor(
                     holder = holder,
                 )
 
-            val markerManager = MarkerManager.defaultManager<ArcGISActualMarker>()
+            val markerManager = MarkerManager.defaultManager<ArcGISActualMarker>(
+                minMarkerCount = tilingOptions.minMarkerCount,
+            )
 
             val controller =
                 ArcGISMarkerController(

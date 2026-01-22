@@ -96,6 +96,7 @@ fun MapboxMapView(
 @Composable
 fun MapboxMapView(
     state: MapboxViewState,
+    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -152,6 +153,7 @@ fun MapboxMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
+                    tilingOptions = tilingOptions,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -364,8 +366,13 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
     return controller
 }
 
-internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerController {
-    val manager = MarkerManager.defaultManager<MapboxActualMarker>()
+internal fun getMarkerController(
+    holder: MapboxMapViewHolder,
+    tilingOptions: MarkerTilingOptions,
+): MapboxMarkerController {
+    val manager = MarkerManager.defaultManager<MapboxActualMarker>(
+        minMarkerCount = tilingOptions.minMarkerCount,
+    )
     val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -381,9 +388,7 @@ internal fun getMarkerController(holder: MapboxMapViewHolder): MapboxMarkerContr
         markerManager = manager,
         markerLayer = markerLayer,
         dragLayer = dragLayer,
-        tilingOptions = MarkerTilingOptions.Default.copy(
-            debugTileOverlay = true,
-        )
+        tilingOptions = tilingOptions,
     )
 }
 

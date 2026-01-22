@@ -2,6 +2,7 @@ package com.mapconductor.core.map
 
 import com.mapconductor.core.controller.MapViewControllerInterface
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.marker.MarkerTilingOptions
 import kotlinx.coroutines.flow.StateFlow
 
 enum class InitState {

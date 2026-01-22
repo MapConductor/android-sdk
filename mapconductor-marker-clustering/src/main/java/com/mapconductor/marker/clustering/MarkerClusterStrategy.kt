@@ -53,14 +53,13 @@ class MarkerClusterStrategy<ActualMarker>(
     private val enableZoomAnimation: Boolean = false,
     private val enablePanAnimation: Boolean = false,
     private val zoomAnimationDurationMillis: Long = DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS,
-    private val debugIncludeRenderCount: Boolean = false,
     private val debugHullPolygons: Boolean = false,
     private val cameraIdleDebounceMillis: Long = DEFAULT_CAMERA_DEBOUNCE_MILLIS,
     private val tileSize: Double = DEFAULT_TILE_SIZE,
     semaphore: Semaphore = Semaphore(3),
     private val geocell: HexGeocellInterface = HexGeocell.defaultGeocell(),
 ) : AbstractMarkerRenderingStrategy<ActualMarker>(semaphore) {
-    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
+    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell, 0)
     private val sourceStates = ConcurrentHashMap<String, MarkerState>()
     private val sourceStateVersion = AtomicLong(0)
     private var lastCameraPosition: MapCameraPosition? = null
@@ -488,18 +487,8 @@ class MarkerClusterStrategy<ActualMarker>(
                     clusterPositions[clusterId] = center
                     extendCoverageBounds(coverageBounds, center, radiusMeters)
                     val clusterIcon =
-                        if (debugIncludeRenderCount) {
-                            val baseLabel =
-                                if (clusterIconProviderWithTurn != null) {
-                                    "T$turn"
-                                } else {
-                                    merged.members.size.toString()
-                                }
-                            ColorDefaultIcon(label = "$baseLabel\nR$renderCount")
-                        } else {
                             clusterIconProviderWithTurn?.invoke(merged.members.size, turn)
                                 ?: clusterIconProvider(merged.members.size)
-                        }
                     val clusterState =
                         MarkerState(
                             id = clusterId,
@@ -1391,10 +1380,10 @@ class MarkerClusterStrategy<ActualMarker>(
 
     companion object {
         const val DEFAULT_CLUSTER_RADIUS_PX: Double = 90.0
-        const val DEFAULT_MIN_CLUSTER_SIZE: Int = 2
+        const val DEFAULT_MIN_CLUSTER_SIZE: Int = 5
         const val DEFAULT_EXPAND_MARGIN: Double = 0.2
         const val DEFAULT_TILE_SIZE: Double = 256.0
-        const val DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS: Long = 500L
+        const val DEFAULT_ZOOM_ANIMATION_DURATION_MILLIS: Long = 300L
         const val DEFAULT_CAMERA_DEBOUNCE_MILLIS: Long = 100L
         private const val MAX_DENSE_CELLS: Int = 4
         private const val MAX_DENSE_CANDIDATES: Int = 50

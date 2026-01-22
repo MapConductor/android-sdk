@@ -17,7 +17,7 @@ abstract class AbstractViewportStrategy<ActualMarker>(
     /**
      * Default MarkerManager instance provided by dependency injection.
      */
-    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell)
+    override val markerManager: MarkerManager<ActualMarker> = MarkerManager(geocell, 0)
 
     /**
      * Handle adding markers with viewport optimization.

@@ -138,7 +138,7 @@ class MapboxRasterLayerOverlayRenderer(
             rasterSource(sourceId) {
                 tiles(listOf(source.template))
                 tileSize(source.tileSize.toLong())
-                tileCacheBudget(TileCacheBudget(TileCacheBudgetInMegabytes(0L)))
+                // tileCacheBudget(TileCacheBudget(TileCacheBudgetInMegabytes(0L)))
                 source.minZoom?.let { minzoom(it.toLong()) }
                 source.maxZoom?.let { maxzoom(it.toLong()) }
                 source.attribution?.let { attribution(it) }

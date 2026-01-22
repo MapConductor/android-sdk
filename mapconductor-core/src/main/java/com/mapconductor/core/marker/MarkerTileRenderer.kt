@@ -70,13 +70,8 @@ class MarkerTileRenderer<ActualMarker>(
     private val tilesCacheHits = AtomicLong(0L)
     private val stateEpoch = AtomicLong(0L)
 
-    private fun bumpStateEpoch(reason: String) {
-        val epoch = stateEpoch.incrementAndGet()
-        if (!debugLoggingEnabled) return
-        Log.d(
-            TAG,
-            "stateUpdate | e=$epoch reason=$reason cacheV=$cacheVersion",
-        )
+    private fun bumpStateEpoch() {
+        stateEpoch.incrementAndGet()
     }
 
     private fun tileCacheKey(
@@ -120,11 +115,11 @@ class MarkerTileRenderer<ActualMarker>(
     /**
      * Invalidates the internal tile cache.
      */
-    fun invalidate(reason: String = "invalidate") {
+    fun invalidate() {
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         synchronized(tileCacheLock) { tileCache.evictAll() }
         emptyTileBytes = makeEmptyTilePng(tileSize)
-        bumpStateEpoch(reason)
+        bumpStateEpoch()
     }
 
     /**
@@ -133,7 +128,7 @@ class MarkerTileRenderer<ActualMarker>(
     fun clear() {
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
         synchronized(tileCacheLock) { tileCache.evictAll() }
-        bumpStateEpoch("clear")
+        bumpStateEpoch()
     }
 
     private val scaledTileSize = ResourceProvider.dpToPx(tileSize.dp)
@@ -250,7 +245,8 @@ class MarkerTileRenderer<ActualMarker>(
             val padNorm = (halfExtentPx / tilePx).coerceAtLeast(0.0)
             val latPad = span.latitude * padNorm
             val lonPad = span.longitude * padNorm
-            return markerManager.findMarkersInBounds(bounds.expandedByDegrees(latPad, lonPad))
+            val extended = bounds.expandedByDegrees(latPad, lonPad)
+            return markerManager.findMarkersInBounds(extended)
         }
 
         // First query uses a conservative padding (in dp) so we capture markers slightly outside
@@ -258,7 +254,6 @@ class MarkerTileRenderer<ActualMarker>(
         val assumedHalfExtentPx = ResourceProvider.dpToPxForBitmap(32.0) // assume up to 64dp icons
         var entities = queryByHalfExtentPx(assumedHalfExtentPx)
 
-        Log.d("DEBUG", "------------->x/y/z=${tileX}/${tileY}/${zoom} = ${entities.size}")
         if (entities.isEmpty()) {
             if (!debugTileOverlay) return emptyTileBytes
             val debugBitmap = createBitmap(tilePxInt, tilePxInt)
@@ -268,9 +263,9 @@ class MarkerTileRenderer<ActualMarker>(
                 c.drawText("x/y/z=${tileX}/${tileY}/${zoom}, entries=0", 20f, 20f, debugPaint)
             }
             val bytes = bitmapToByteArray(debugBitmap).also { if (!debugBitmap.isRecycled) debugBitmap.recycle() }
-//            if (cacheVersionSnapshot == cacheVersion) {
-//                synchronized(tileCacheLock) { tileCache.put(cacheKey, bytes) }
-//            }
+            if (cacheVersionSnapshot == cacheVersion) {
+                synchronized(tileCacheLock) { tileCache.put(cacheKey, bytes) }
+            }
             tilesRendered.incrementAndGet()
             return bytes
         }
@@ -279,7 +274,6 @@ class MarkerTileRenderer<ActualMarker>(
         // If our assumed padding was too small, re-query once with the measured maximum extent.
         if (maxHalfExtentPx > assumedHalfExtentPx + 1.0) {
             entities = queryByHalfExtentPx(maxHalfExtentPx)
-            Log.d("DEBUG", "-----------==>x/y/z=${tileX}/${tileY}/${zoom} = ${entities.size}")
             val prepared2 = prepareMarkers(entities)
             prepared = prepared2.first
             maxHalfExtentPx = prepared2.second
@@ -358,9 +352,6 @@ class MarkerTileRenderer<ActualMarker>(
         const val DEFAULT_TILE_SIZE = 256
         const val DEFAULT_TILE_CACHE_BYTES: Int = 8 * 1024 * 1024
         private const val TAG = "MarkerTileRenderer"
-
-        @Volatile
-        var debugLoggingEnabled: Boolean = false
     }
 
     private fun normalizeTileX(

@@ -8,7 +8,7 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+//import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import kotlinx.coroutines.Dispatchers
@@ -157,6 +157,6 @@ class MarkerClusterMapPageViewModel(
     override fun onCleared() {
         super.onCleared()
         // Clean up remote strategy if it's being used
-        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
+//        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }

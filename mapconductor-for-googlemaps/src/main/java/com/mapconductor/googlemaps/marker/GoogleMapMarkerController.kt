@@ -13,6 +13,7 @@ import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRenderer
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -44,24 +45,11 @@ fun interface MarkerTileRasterLayerCallback {
 class GoogleMapMarkerController private constructor(
     override val renderer: GoogleMapMarkerRenderer,
     markerManager: MarkerManager<GoogleMapActualMarker>,
-    private val tilingOptions: GoogleMapMarkerTilingOptions,
+    private val tilingOptions: MarkerTilingOptions,
 ) : AbstractMarkerController<GoogleMapActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
     ) {
-    init {
-        GoogleMapMarkerTilingPerfLog.enabled = tilingOptions.debugLogging
-        GoogleMapMarkerTilingPerfLog.slowOpThresholdMs = tilingOptions.slowOpThresholdMs
-        GoogleMapMarkerTilingPerfLog.logSampleRate = tilingOptions.logSampleRate
-        GoogleMapMarkerTilingPerfLog.tileSummaryEvery = tilingOptions.tileSummaryEvery
-        MarkerTileRenderer.debugLoggingEnabled = tilingOptions.debugLogging
-        if (tilingOptions.debugLogging) {
-            Log.i(
-                "MapConductorTiling",
-                "enabled=true slowOpThresholdMs=${tilingOptions.slowOpThresholdMs} logSampleRate=${tilingOptions.logSampleRate} tileSummaryEvery=${tilingOptions.tileSummaryEvery}",
-            )
-        }
-    }
 
     private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
     private val tiledMarkerIds = LinkedHashSet<String>()
@@ -109,33 +97,21 @@ class GoogleMapMarkerController private constructor(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val addStart = SystemClock.elapsedRealtime()
-            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
 
             val result =
-                GoogleMapMarkerTilingPerfLog.measure(
-                    name = "MarkerController.add:ingest",
-                    meta = { "data=${data.size} tilingEnabled=$tilingEnabled" },
-                ) {
-                    MarkerIngestionEngine.ingest(
-                        data = data,
-                        markerManager = markerManager,
-                        renderer = renderer,
-                        defaultMarkerIcon = defaultMarkerIcon,
-                        tilingEnabled = tilingEnabled,
-                        tiledMarkerIds = tiledMarkerIds,
-                        shouldTile = { state -> !state.draggable && state.getAnimation() == null },
-                    )
-                }
+                MarkerIngestionEngine.ingest(
+                    data = data,
+                    markerManager = markerManager,
+                    renderer = renderer,
+                    defaultMarkerIcon = defaultMarkerIcon,
+                    tilingEnabled = tilingOptions.enabled ,
+                    tiledMarkerIds = tiledMarkerIds,
+                    shouldTile = { state -> !state.draggable && state.getAnimation() == null },
+                )
 
             if (result.tiledDataChanged) {
-                GoogleMapMarkerTilingPerfLog.measure(
-                    name = "MarkerController.add:syncTiledOverlay",
-                    meta = { "zoom=$currentZoom tiledCount=${tiledMarkerIds.size}" },
-                ) {
-                    syncTiledOverlay(currentZoom)
-                }
+                syncTiledOverlay(currentZoom)
             } else if (result.hasTiledMarkers) {
                 // Keep existing tile overlay if present.
                 // (No per-zoom indexing needed; renderTile queries MarkerManager directly.)
@@ -145,11 +121,6 @@ class GoogleMapMarkerController private constructor(
             } else {
                 removeTileOverlay()
             }
-            GoogleMapMarkerTilingPerfLog.logSlow(
-                name = "MarkerController.add:total",
-                elapsedMs = SystemClock.elapsedRealtime() - addStart,
-                meta = "data=${data.size} tilingEnabled=$tilingEnabled tiledCount=${tiledMarkerIds.size}",
-            )
         }
     }
 
@@ -162,9 +133,7 @@ class GoogleMapMarkerController private constructor(
         if (currentFinger == prevFinger) return
 
         semaphore.withPermit {
-            val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= tilingOptions.minMarkerCount
-            val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
+            val wantsTiled = tilingOptions.enabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
             val currentZoom = currentTileZoom()
@@ -306,7 +275,7 @@ class GoogleMapMarkerController private constructor(
             return
         }
         val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate("markerDataChanged")
+        tileRenderer.invalidate()
 
         // Update RasterLayer
         updateRasterLayerSource()
@@ -363,9 +332,11 @@ class GoogleMapMarkerController private constructor(
     companion object {
         fun create(
             holder: GoogleMapViewHolder,
-            tilingOptions: GoogleMapMarkerTilingOptions = GoogleMapMarkerTilingOptions(),
+            tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
         ): GoogleMapMarkerController {
-            val markerManager = MarkerManager.defaultManager<GoogleMapActualMarker>()
+            val markerManager = MarkerManager.defaultManager<GoogleMapActualMarker>(
+                minMarkerCount = tilingOptions.minMarkerCount,
+            )
             val renderer =
                 GoogleMapMarkerRenderer(
                     holder = holder,

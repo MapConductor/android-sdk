@@ -1,6 +1,5 @@
 package com.mapconductor.mapbox.marker
 
-import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
@@ -49,10 +48,6 @@ class MapboxMarkerController private constructor(
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null
     private var cacheVersion: Int = 0
-
-    init {
-        MarkerTileRenderer.debugLoggingEnabled = tilingOptions.debugLogging
-    }
 
     internal var selectedMarker: MarkerEntityInterface<MapboxActualMarker>?
         set(value) {
@@ -134,7 +129,6 @@ class MapboxMarkerController private constructor(
 
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
-            val tilingEnabled = tilingOptions.enabled && data.size >= tilingOptions.minMarkerCount
             val currentZoom = currentTileZoom()
             val result =
                 MarkerIngestionEngine.ingest(
@@ -142,7 +136,7 @@ class MapboxMarkerController private constructor(
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingEnabled,
+                    tilingEnabled = tilingOptions.enabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -225,7 +219,7 @@ class MapboxMarkerController private constructor(
             return
         }
         val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate("markerDataChanged")
+        tileRenderer.invalidate()
 
         updateRasterLayerSource()
     }

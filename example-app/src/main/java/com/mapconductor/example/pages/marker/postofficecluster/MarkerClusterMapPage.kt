@@ -34,7 +34,6 @@ import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreActualMarker
 import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.marker.clustering.MarkerClusterGroupState
-import com.mapconductor.marker.nativestrategy.spatial.NativeRemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
 
