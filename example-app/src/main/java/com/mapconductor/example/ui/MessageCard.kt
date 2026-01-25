@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MessageCard(
-    isCardOpen: Boolean = false,
     modifier: Modifier = Modifier,
+    isCardOpen: Boolean = false,
     title: String? = null,
     maxHeight: Dp = 100.dp,
     content: @Composable () -> Unit,

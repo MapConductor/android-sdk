@@ -57,8 +57,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @Composable
 fun MapLibreMapView(
     state: MapLibreViewState,
-    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -70,7 +70,7 @@ fun MapLibreMapView(
     @Suppress("DEPRECATION")
     MapLibreMapView(
         state = state,
-        tilingOptions = tilingOptions,
+        markerTiling = markerTiling,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
         onMapLoaded = onMapLoaded,
@@ -95,8 +95,8 @@ fun MapLibreMapView(
 @Composable
 fun MapLibreMapView(
     state: MapLibreViewState,
-    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -158,7 +158,7 @@ fun MapLibreMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController =
                 getPolylineController(
@@ -260,7 +260,7 @@ fun MapLibreMapView(
 
 internal fun getMarkerController(
     holder: MapLibreMapViewHolderInterface,
-    tilingOptions: MarkerTilingOptions,
+    markerTiling: MarkerTilingOptions,
 ): MapLibreMarkerController {
     val manager = MarkerManager.defaultManager<MapLibreActualMarker>()
     val markerLayer: MarkerLayer =
@@ -284,7 +284,7 @@ internal fun getMarkerController(
     val controller =
         MapLibreMarkerController(
             renderer = renderer,
-            tilingOptions = tilingOptions,
+            markerTiling = markerTiling,
         )
     return controller
 }

@@ -28,7 +28,7 @@ import kotlinx.coroutines.sync.withPermit
 
 class MapLibreMarkerController(
     override val renderer: MapLibreMarkerOverlayRenderer,
-    private val tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
+    private val markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default,
 ) : AbstractMarkerController<MapLibreActualMarker>(
         markerManager = renderer.markerManager,
         renderer = renderer,
@@ -124,13 +124,15 @@ class MapLibreMarkerController(
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
             val currentZoom = currentTileZoom()
+            val tilingEnabled =
+                markerTiling.enabled && data.size >= markerManager.minMarkerCount
             val result =
                 MarkerIngestionEngine.ingest(
                     data = data,
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingOptions.enabled,
+                    tilingEnabled = tilingEnabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -157,7 +159,7 @@ class MapLibreMarkerController(
 
         semaphore.withPermit {
             val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
+                markerTiling.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -243,7 +245,6 @@ class MapLibreMarkerController(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         renderer.coroutine.launch {
@@ -281,14 +282,13 @@ class MapLibreMarkerController(
             removeTileOverlay()
             return
         }
-        if (!tilingOptions.enabled) {
+        if (!markerTiling.enabled) {
             removeTileOverlay()
             tiledMarkerIds.clear()
             return
         }
-        val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate()
 
+        getOrCreateTileRenderer()
         updateRasterLayerSource()
     }
 
@@ -302,8 +302,10 @@ class MapLibreMarkerController(
             val tileRenderer =
                 MarkerTileRenderer<MapLibreActualMarker>(
                     markerManager = markerManager,
-                    tileSize = tilingOptions.tileSize,
-                    debugTileOverlay = tilingOptions.debugTileOverlay,
+                    tileSize = 256,
+                    cacheSizeBytes = markerTiling.cacheSize,
+                    debugTileOverlay = markerTiling.debugTileOverlay,
+                    iconScaleCallback = markerTiling.iconScaleCallback,
                 )
             markerTileRenderer = tileRenderer
 
@@ -332,7 +334,6 @@ class MapLibreMarkerController(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         rasterLayerCallback?.onRasterLayerUpdate(null)

@@ -53,8 +53,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @Composable
 fun HereMapView(
     state: HereViewState,
-    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -66,7 +66,7 @@ fun HereMapView(
     @Suppress("DEPRECATION")
     HereMapView(
         state = state,
-        tilingOptions = tilingOptions,
+        markerTiling = markerTiling,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
         onMapLoaded = onMapLoaded,
@@ -92,8 +92,8 @@ fun HereMapView(
 @Composable
 fun HereMapView(
     state: HereViewState,
-    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -156,7 +156,7 @@ fun HereMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -316,11 +316,11 @@ private fun getPolylineController(holder: HereViewHolder): HerePolylineControlle
 
 private fun getMarkerController(
     holder: HereViewHolder,
-    tilingOptions: MarkerTilingOptions,
+    markerTiling: MarkerTilingOptions,
 ) =
     HereMarkerController.create(
         holder = holder,
-        tilingOptions = tilingOptions,
+        markerTiling = markerTiling,
     )
 
 private fun getHereCircleController(holder: HereViewHolder): HereCircleController {

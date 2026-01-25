@@ -45,7 +45,7 @@ fun interface MarkerTileRasterLayerCallback {
 class GoogleMapMarkerController private constructor(
     override val renderer: GoogleMapMarkerRenderer,
     markerManager: MarkerManager<GoogleMapActualMarker>,
-    private val tilingOptions: MarkerTilingOptions,
+    private val markerTiling: MarkerTilingOptions,
 ) : AbstractMarkerController<GoogleMapActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
@@ -98,6 +98,8 @@ class GoogleMapMarkerController private constructor(
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
             val currentZoom = currentTileZoom()
+            val tilingEnabled =
+                markerTiling.enabled && data.size >= markerManager.minMarkerCount
 
             val result =
                 MarkerIngestionEngine.ingest(
@@ -105,7 +107,7 @@ class GoogleMapMarkerController private constructor(
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingOptions.enabled ,
+                    tilingEnabled = tilingEnabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -133,7 +135,9 @@ class GoogleMapMarkerController private constructor(
         if (currentFinger == prevFinger) return
 
         semaphore.withPermit {
-            val wantsTiled = tilingOptions.enabled && !state.draggable && state.getAnimation() == null
+            val tilingEnabled =
+                markerTiling.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
+            val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
             val currentZoom = currentTileZoom()
@@ -225,7 +229,6 @@ class GoogleMapMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         // Remove RasterLayer via callback
@@ -269,15 +272,14 @@ class GoogleMapMarkerController private constructor(
             removeTileOverlay()
             return
         }
-        if (!tilingOptions.enabled) {
+        if (!markerTiling.enabled) {
             removeTileOverlay()
             tiledMarkerIds.clear()
             return
         }
-        val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate()
 
-        // Update RasterLayer
+        // Ensure tile renderer + RasterLayer are created before updating the source.
+        getOrCreateTileRenderer()
         updateRasterLayerSource()
     }
 
@@ -290,8 +292,10 @@ class GoogleMapMarkerController private constructor(
         val tileRenderer =
             MarkerTileRenderer(
                 markerManager = markerManager,
-                tileSize = tilingOptions.tileSize,
-                debugTileOverlay = tilingOptions.debugTileOverlay,
+                tileSize = 256,
+                cacheSizeBytes = markerTiling.cacheSize,
+                debugTileOverlay = markerTiling.debugTileOverlay,
+                iconScaleCallback = markerTiling.iconScaleCallback,
             )
         markerTileRenderer = tileRenderer
 
@@ -321,7 +325,6 @@ class GoogleMapMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         // Remove RasterLayer
@@ -332,10 +335,10 @@ class GoogleMapMarkerController private constructor(
     companion object {
         fun create(
             holder: GoogleMapViewHolder,
-            tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
+            markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default,
         ): GoogleMapMarkerController {
             val markerManager = MarkerManager.defaultManager<GoogleMapActualMarker>(
-                minMarkerCount = tilingOptions.minMarkerCount,
+                minMarkerCount = markerTiling.minMarkerCount,
             )
             val renderer =
                 GoogleMapMarkerRenderer(
@@ -345,7 +348,7 @@ class GoogleMapMarkerController private constructor(
                 GoogleMapMarkerController(
                     renderer = renderer,
                     markerManager = markerManager,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling,
                 )
             controller.lastKnownZoom =
                 holder.map.cameraPosition.zoom

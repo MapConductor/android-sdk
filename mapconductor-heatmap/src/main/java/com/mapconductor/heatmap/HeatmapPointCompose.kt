@@ -45,3 +45,21 @@ fun MapViewScope.HeatmapPoint(
     HeatmapPoint(state)
 }
 
+
+@Composable
+fun MapViewScope.HeatmapPoints(states: List<HeatmapPointState>) {
+    val collector = LocalHeatmapPointCollector.current
+
+    LaunchedEffect(states, states.size) {
+        // For very large marker sets, avoid per-marker SharedFlow emits which can backpressure and
+        // block rendering; instead publish the whole map in one StateFlow update.
+        collector.replaceAll(states)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            // Clear all markers on dispose in one shot.
+            collector.replaceAll(emptyList())
+        }
+    }
+}

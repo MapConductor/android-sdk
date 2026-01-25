@@ -23,31 +23,6 @@ class HeatmapGradient(
 
     fun colors(): IntArray = stops.map { it.color }.toIntArray()
 
-    fun startPoints(): FloatArray = stops.map { it.position.toFloat() }.toFloatArray()
-
-    fun colorAt(position: Double): Int {
-        val clamped = position.coerceIn(0.0, 1.0)
-        if (stops.size == 1) return stops.first().color
-        val lower = stops.lastOrNull { it.position <= clamped } ?: stops.first()
-        val upper = stops.firstOrNull { it.position >= clamped } ?: stops.last()
-        if (lower.position == upper.position) return lower.color
-        val ratio = (clamped - lower.position) / (upper.position - lower.position)
-        return lerpColor(lower.color, upper.color, ratio)
-    }
-
-    private fun lerpColor(
-        start: Int,
-        end: Int,
-        ratio: Double,
-    ): Int {
-        val clamped = ratio.coerceIn(0.0, 1.0)
-        val a = (Color.alpha(start) + (Color.alpha(end) - Color.alpha(start)) * clamped).roundToInt()
-        val r = (Color.red(start) + (Color.red(end) - Color.red(start)) * clamped).roundToInt()
-        val g = (Color.green(start) + (Color.green(end) - Color.green(start)) * clamped).roundToInt()
-        val b = (Color.blue(start) + (Color.blue(end) - Color.blue(start)) * clamped).roundToInt()
-        return Color.argb(a, r, g, b)
-    }
-
     companion object {
         val DEFAULT =
             HeatmapGradient(

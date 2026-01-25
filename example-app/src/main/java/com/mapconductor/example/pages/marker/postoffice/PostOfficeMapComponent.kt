@@ -13,6 +13,7 @@ import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.Markers
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.postoffice.PostOffice
@@ -22,6 +23,7 @@ import com.mapconductor.postoffice.PostOfficeInfoView
 fun PostOfficeMapComponent(
     modifier: Modifier = Modifier,
     mapViewState: MapViewStateInterface<*>,
+    markerTiling: MarkerTilingOptions? = null,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -36,6 +38,7 @@ fun PostOfficeMapComponent(
     MapViewContainer(
         modifier = modifier,
         state = mapViewState,
+        markerTiling = markerTiling,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
     ) {

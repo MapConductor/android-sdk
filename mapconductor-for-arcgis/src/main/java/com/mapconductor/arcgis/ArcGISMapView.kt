@@ -42,6 +42,7 @@ import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerRenderingSupport
 import com.mapconductor.core.marker.MarkerRenderingSupportKey
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
@@ -61,6 +62,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun ArcGISMapView(
     state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -72,6 +74,7 @@ fun ArcGISMapView(
     @Suppress("DEPRECATION")
     ArcGISMapView(
         state = state,
+        markerTiling = markerTiling,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
         onMapLoaded = onMapLoaded,
@@ -97,6 +100,7 @@ fun ArcGISMapView(
 fun ArcGISMapView(
     state: ArcGISMapViewState,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -119,7 +123,6 @@ fun ArcGISMapView(
     val registry = remember { scope.buildRegistry() }
     val serviceRegistry = remember { MutableMapServiceRegistry() }
     val owner = LocalLifecycleOwner.current
-    owner.lifecycle
     val basemapStyle = remember { ArcGISDesign.toBasemapStyle(state.mapDesignType) }
     val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
     val controllerRef = remember { Ref<ArcGISMapViewController>() }
@@ -192,6 +195,7 @@ fun ArcGISMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -367,9 +371,13 @@ private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOver
     return controller
 }
 
-private fun getMarkerController(holder: ArcGISMapViewHolder) =
+private fun getMarkerController(
+    holder: ArcGISMapViewHolder,
+    markerTiling: MarkerTilingOptions,
+) =
     ArcGISMarkerController.create(
         holder = holder,
+        markerTiling = markerTiling,
     )
 
 private fun getRasterLayerController(holder: ArcGISMapViewHolder): ArcGISRasterLayerController {

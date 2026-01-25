@@ -40,7 +40,7 @@ internal data class SelectedMarker(
 class ArcGISMarkerController private constructor(
     markerManager: MarkerManager<ArcGISActualMarker>,
     override val renderer: ArcGISMarkerRenderer,
-    private val tilingOptions: MarkerTilingOptions,
+    private val markerTiling: MarkerTilingOptions,
 ) : AbstractMarkerController<ArcGISActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
@@ -127,13 +127,15 @@ class ArcGISMarkerController private constructor(
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
             val currentZoom = currentTileZoom()
+            val tilingEnabled =
+                markerTiling.enabled && data.size >= markerManager.minMarkerCount
             val result =
                 MarkerIngestionEngine.ingest(
                     data = data,
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingOptions.enabled,
+                    tilingEnabled = tilingEnabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -160,7 +162,7 @@ class ArcGISMarkerController private constructor(
 
         semaphore.withPermit {
             val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
+                markerTiling.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -246,7 +248,6 @@ class ArcGISMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         renderer.coroutine.launch {
@@ -285,14 +286,13 @@ class ArcGISMarkerController private constructor(
             removeTileOverlay()
             return
         }
-        if (!tilingOptions.enabled) {
+        if (!markerTiling.enabled) {
             removeTileOverlay()
             tiledMarkerIds.clear()
             return
         }
-        val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate()
 
+        getOrCreateTileRenderer()
         updateRasterLayerSource()
     }
 
@@ -303,12 +303,14 @@ class ArcGISMarkerController private constructor(
         markerTileGroupId = groupId
 
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
-        val tileRenderer =
-            MarkerTileRenderer<ArcGISActualMarker>(
-                markerManager = markerManager,
-                tileSize = tilingOptions.tileSize,
-                debugTileOverlay = tilingOptions.debugTileOverlay,
-            )
+	        val tileRenderer =
+	            MarkerTileRenderer<ArcGISActualMarker>(
+	                markerManager = markerManager,
+	                tileSize = 256,
+	                cacheSizeBytes = markerTiling.cacheSize,
+	                debugTileOverlay = markerTiling.debugTileOverlay,
+	                iconScaleCallback = markerTiling.iconScaleCallback,
+	            )
         markerTileRenderer = tileRenderer
 
         tileServer.register(groupId, tileRenderer)
@@ -335,7 +337,6 @@ class ArcGISMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         rasterLayerCallback?.onRasterLayerUpdate(null)
@@ -345,7 +346,7 @@ class ArcGISMarkerController private constructor(
     companion object {
         fun create(
             holder: ArcGISMapViewHolder,
-            tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
+            markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default,
         ): ArcGISMarkerController {
             val markerLayer: GraphicsOverlay =
                 GraphicsOverlay().apply {
@@ -359,14 +360,14 @@ class ArcGISMarkerController private constructor(
                 )
 
             val markerManager = MarkerManager.defaultManager<ArcGISActualMarker>(
-                minMarkerCount = tilingOptions.minMarkerCount,
+                minMarkerCount = markerTiling.minMarkerCount,
             )
 
             val controller =
                 ArcGISMarkerController(
                     markerManager = markerManager,
                     renderer = renderer,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling,
                 )
             return controller
         }

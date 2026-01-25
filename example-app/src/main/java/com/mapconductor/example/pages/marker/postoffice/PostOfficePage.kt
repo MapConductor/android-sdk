@@ -65,6 +65,7 @@ fun PostOfficePage(
         ) {
             mapViewState?.let { mapViewState ->
                 PostOfficeMapComponent(
+                    markerTiling = viewModel.markerTiling,
                     mapViewState = mapViewState,
                     selectedMarker = selectedMarker,
                     markers = markers,

@@ -7,9 +7,11 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.AbstractMarkerController
 import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
+import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerIngestionEngine
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.MarkerTileRenderer
@@ -30,7 +32,7 @@ import kotlinx.coroutines.sync.withPermit
 class MapboxMarkerController private constructor(
     override val renderer: MapboxMarkerOverlayRenderer,
     markerManager: MarkerManager<MapboxActualMarker>,
-    private val tilingOptions: MarkerTilingOptions,
+    private val markerTiling: MarkerTilingOptions,
 ) : AbstractMarkerController<MapboxActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
@@ -130,13 +132,15 @@ class MapboxMarkerController private constructor(
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
             val currentZoom = currentTileZoom()
+            val tilingEnabled =
+                markerTiling.enabled && data.size >= markerManager.minMarkerCount
             val result =
                 MarkerIngestionEngine.ingest(
                     data = data,
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingOptions.enabled,
+                    tilingEnabled = tilingEnabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -166,6 +170,80 @@ class MapboxMarkerController private constructor(
         }
     }
 
+    override suspend fun update(state: MarkerState) {
+        if (!markerManager.hasEntity(state.id)) return
+
+        val prevEntity = markerManager.getEntity(state.id) ?: return
+        val currentFinger = state.fingerPrint()
+        val prevFinger = prevEntity.fingerPrint
+        if (currentFinger == prevFinger) return
+
+        semaphore.withPermit {
+            val tilingEnabled =
+                markerTiling.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
+            val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
+            val wasTiled = tiledMarkerIds.contains(state.id)
+            val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
+            val currentZoom = currentTileZoom()
+
+            if (wantsTiled) {
+                if (!wasTiled) {
+                    prevEntity.marker?.let { renderer.onRemove(listOf(prevEntity)) }
+                    tiledMarkerIds.add(state.id)
+                }
+                markerManager.updateEntity(
+                    MarkerEntity(
+                        marker = null,
+                        state = state,
+                        visible = prevEntity.visible,
+                        isRendered = true,
+                    ),
+                )
+                renderer.onPostProcess()
+                syncTiledOverlay(currentZoom)
+                return@withPermit
+            }
+
+            if (wasTiled) {
+                tiledMarkerIds.remove(state.id)
+            }
+
+            val params =
+                object : MarkerOverlayRendererInterface.ChangeParamsInterface<MapboxActualMarker> {
+                    override val current: MarkerEntityInterface<MapboxActualMarker> =
+                        MarkerEntity(
+                            marker = prevEntity.marker,
+                            state = state,
+                            visible = prevEntity.visible,
+                            isRendered = true,
+                        )
+                    override val bitmapIcon: BitmapIcon = markerIcon
+                    override val prev: MarkerEntityInterface<MapboxActualMarker> = prevEntity
+                }
+            val markers = renderer.onChange(listOf(params))
+            markers.firstOrNull()?.let { actual ->
+                markerManager.updateEntity(
+                    MarkerEntity(
+                        marker = actual,
+                        state = state,
+                        visible = prevEntity.visible,
+                        isRendered = true,
+                    ),
+                )
+                if (prevFinger.animation != currentFinger.animation) {
+                    state.getAnimation()?.let { renderer.onAnimate(markerManager.getEntity(state.id)!!) }
+                }
+            }
+            renderer.onPostProcess()
+
+            if (tiledMarkerIds.isNotEmpty()) {
+                syncTiledOverlay(currentZoom)
+            } else {
+                removeTileOverlay()
+            }
+        }
+    }
+
     override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         lastCameraPosition = mapCameraPosition
     }
@@ -175,7 +253,6 @@ class MapboxMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         renderer.coroutine.launch {
@@ -213,14 +290,13 @@ class MapboxMarkerController private constructor(
             removeTileOverlay()
             return
         }
-        if (!tilingOptions.enabled) {
+        if (!markerTiling.enabled) {
             removeTileOverlay()
             tiledMarkerIds.clear()
             return
         }
-        val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate()
 
+        getOrCreateTileRenderer()
         updateRasterLayerSource()
     }
 
@@ -233,8 +309,10 @@ class MapboxMarkerController private constructor(
         val tileRenderer =
             MarkerTileRenderer(
                 markerManager = markerManager,
-                tileSize = tilingOptions.tileSize,
-                debugTileOverlay = tilingOptions.debugTileOverlay,
+                tileSize = 256,
+                cacheSizeBytes = markerTiling.cacheSize,
+                debugTileOverlay = markerTiling.debugTileOverlay,
+                iconScaleCallback = markerTiling.iconScaleCallback,
             )
         markerTileRenderer = tileRenderer
 
@@ -262,7 +340,6 @@ class MapboxMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         rasterLayerCallback?.onRasterLayerUpdate(null)
@@ -275,7 +352,7 @@ class MapboxMarkerController private constructor(
             markerManager: MarkerManager<MapboxActualMarker>,
             markerLayer: MarkerLayer,
             dragLayer: MarkerDragLayer,
-            tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
+            markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default,
         ): MapboxMarkerController {
             val renderer =
                 MapboxMarkerOverlayRenderer(
@@ -288,7 +365,7 @@ class MapboxMarkerController private constructor(
                 MapboxMarkerController(
                     renderer = renderer,
                     markerManager = markerManager,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling,
                 )
             controller.lastCameraPosition = holder.map.cameraState.toMapCameraPosition()
             return controller

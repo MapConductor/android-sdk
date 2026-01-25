@@ -5,5 +5,5 @@ import java.io.Serializable
 
 data class HeatmapPoint(
     val position: GeoPointInterface,
-    val weight: Double,
+    val weight: Double = 1.0,
 ) : Serializable

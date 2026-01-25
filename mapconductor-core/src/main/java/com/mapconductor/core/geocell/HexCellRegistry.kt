@@ -197,7 +197,6 @@ class HexCellRegistry<ActualMarker>(
     ): List<HexCellWithDistance> {
         rebuildIfNeeded()
         return lock.read {
-            Log.d("DEBUG", "    allEntries.size = ${allEntries.size}")
             kdTree?.withinRadiusWithDistance(geocell.projection.project(point), radius).orEmpty()
         }
     }

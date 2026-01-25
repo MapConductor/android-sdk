@@ -9,17 +9,22 @@ package com.mapconductor.core.marker
 data class MarkerTilingOptions(
     val enabled: Boolean = true,
     /**
-     * Tile size (in pixels) used for the marker TileOverlay.
-     * 256 is the standard; 512 can reduce perceived blur on high-DPI devices at the cost of CPU/memory/bandwidth.
-     */
-    val tileSize: Int = 256,
-    /**
      * When enabled, draws debug overlay onto marker tiles: top/left border lines and a label
      * containing z/x/y and basic render stats. Useful to debug caching/scaling artifacts.
      */
     val debugTileOverlay: Boolean = false,
 
-    val minMarkerCount: Int = 2000
+    val minMarkerCount: Int = 2000,
+
+    val cacheSize: Int = 8 * 1024 * 1024,
+
+    /**
+     * Extra scale multiplier applied per marker per zoom during marker tiling.
+     *
+     * The renderer computes:
+     * `effectiveScale = (markerState.icon?.scale ?: 1.0) * (iconScaleCallback?.invoke(markerState, zoom) ?: 1.0)`
+     */
+    val iconScaleCallback: ((MarkerState, Int) -> Double)? = null,
 ) {
     companion object {
         val Disabled: MarkerTilingOptions = MarkerTilingOptions(enabled = false)

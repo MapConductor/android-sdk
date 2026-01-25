@@ -45,9 +45,7 @@ fun MapViewScope.HeatmapOverlay(
     maxIntensity: Double? = null,
     weightProvider: (HeatmapPointState) -> Double = { state -> state.weight },
     tileSize: Int = HeatmapTileRenderer.DEFAULT_TILE_SIZE,
-    pngCompressionLevel: Int = HeatmapTileRenderer.DEFAULT_PNG_COMPRESSION_LEVEL,
-    adaptivePngCompression: Boolean = true,
-    debugLogger: ((String) -> Unit)? = null,
+    trackPointUpdates: Boolean = false,
     disableTileServerCache: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -64,21 +62,11 @@ fun MapViewScope.HeatmapOverlay(
             TileServerRegistry.get(forceNoStoreCache = disableTileServerCache)
         }
     val renderer =
-        remember(tileSize, pngCompressionLevel, adaptivePngCompression) {
+        remember(tileSize) {
             HeatmapTileRenderer(
                 tileSize = tileSize,
-                pngCompressionLevel = pngCompressionLevel,
-                adaptivePngCompression = adaptivePngCompression,
             )
         }
-    DisposableEffect(renderer, debugLogger) {
-        renderer.debugLogSink = debugLogger
-        onDispose {
-            if (renderer.debugLogSink === debugLogger) {
-                renderer.debugLogSink = null
-            }
-        }
-    }
     val mapController = LocalMapViewController.current
     val cameraController = remember(renderer) { HeatmapCameraController(renderer) }
     var isTileServerRegistered by remember { mutableStateOf(false) }
@@ -129,8 +117,12 @@ fun MapViewScope.HeatmapOverlay(
     var updateToken by remember { mutableStateOf(0L) }
 
     DisposableEffect(pointCollector) {
-        pointCollector.setUpdateHandler {
-            updateToken += 1
+        if (trackPointUpdates) {
+            pointCollector.setUpdateHandler {
+                updateToken += 1
+            }
+        } else {
+            pointCollector.setUpdateHandler(null)
         }
         onDispose {
             pointCollector.setUpdateHandler(null)

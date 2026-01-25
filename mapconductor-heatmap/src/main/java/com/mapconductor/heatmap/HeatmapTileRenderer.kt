@@ -25,15 +25,7 @@ class HeatmapTileRenderer(
     cacheSizeKb: Int = DEFAULT_CACHE_SIZE_KB,
     maxConcurrentRenders: Int = DEFAULT_MAX_CONCURRENT_RENDERS,
     private val pngCompressionLevel: Int = DEFAULT_PNG_COMPRESSION_LEVEL,
-    private val adaptivePngCompression: Boolean = true,
 ) : TileProviderInterface {
-    @Volatile
-    var debugLogSink: ((String) -> Unit)? = null
-
-    private fun debugLog(message: String) {
-        debugLogSink?.invoke(message)
-    }
-
     @Volatile
     private var didWarmUp: Boolean = false
 
@@ -126,6 +118,18 @@ class HeatmapTileRenderer(
                 colorMap = colorMap,
                 maxIntensities = maxIntensities,
             )
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            val b = bounds
+            val idx = index
+            Log.d(
+                TAG,
+                "update pointsIn=${points.size} weighted=${weightedPoints.size} radiusPx=$safeRadius " +
+                    "bounds=" +
+                    (if (b == null) "null" else "(${b.minX},${b.minY})-(${b.maxX},${b.maxY})") +
+                    " index=" +
+                    (if (idx == null) "null" else "grid=${idx.gridSize} nonEmpty=${idx.nonEmptyBuckets} maxBucket=${idx.maxBucketSize}"),
+            )
+        }
         synchronized(cacheLock) {
             cacheEpoch += 1
             cache.evictAll()
@@ -187,7 +191,6 @@ class HeatmapTileRenderer(
         val key = "$epoch:$zoomKey:${request.z}/${request.x}/${request.y}"
         synchronized(cacheLock) {
             cache.get(key)?.let { cached ->
-                debugLog("cacheHit z=${request.z} x=${request.x} y=${request.y} zoomKey=$zoomKey")
                 return if (cached === emptyTileMarker) transparentTileBytes else cached
             }
         }
@@ -195,7 +198,6 @@ class HeatmapTileRenderer(
         val future = CompletableFuture<ByteArray?>()
         val existing = inFlight.putIfAbsent(key, future)
         if (existing != null) {
-            debugLog("joinInFlight z=${request.z} x=${request.x} y=${request.y} zoomKey=$zoomKey")
             return existing.join()
         }
         val tileStateSnapshot = state
@@ -233,13 +235,9 @@ class HeatmapTileRenderer(
             try {
                 val workStartNs = System.nanoTime()
                 val queueWaitMs = (workStartNs - job.enqueuedAtNs) / 1_000_000.0
-                val timings = if (debugLogSink != null) phaseTimings().also { it.reset() } else null
+                val timings = phaseTimings().also { it.reset() }
                 synchronized(cacheLock) {
                     cache.get(job.key)?.let { cached ->
-                        debugLog(
-                            "cacheHitWorker z=${job.request.z} x=${job.request.x} y=${job.request.y} " +
-                                "queueWaitMs=${(queueWaitMs * 10.0).roundToInt() / 10.0}",
-                        )
                         job.future.complete(if (cached === emptyTileMarker) transparentTileBytes else cached)
                         continue
                     }
@@ -261,19 +259,18 @@ class HeatmapTileRenderer(
                 val rm = (renderMs * 10.0).roundToInt() / 10.0
                 val tm = (totalMs * 10.0).roundToInt() / 10.0
                 val isSlow = totalMs >= SLOW_TILE_LOG_THRESHOLD_MS
-                val phaseMsg =
-                    timings?.let {
-                        " effZoom=${it.effectiveZoom} radius=${it.radius} gridDim=${it.gridDim}" +
-                            " setup=${it.setupMs}ms bin=${it.binMs}ms conv=${it.convolveMs}ms " +
-                            "mapPng=${it.pngMs}ms pngLevel=${it.pngLevel}"
-                    } ?: ""
-                val msg =
-                    (if (isSlow) "Slow tile breakdown " else "Tile breakdown ") +
-                        "z=${job.request.z} x=${job.request.x} y=${job.request.y} " +
-                        "queueWait=${qw}ms render=${rm}ms total=${tm}ms points=${job.state.points.size} tileSize=$tileSize " +
-                        "isEmptyTile=${bytes == null}$phaseMsg"
-                debugLog(msg)
                 if (isSlow) {
+                    val phaseMsg =
+                        " effZoom=${timings.effectiveZoom} radius=${timings.radius} gridDim=${timings.gridDim}" +
+                            " index=${timings.usedIndex} idxGrid=${timings.indexGridSize} idxNonEmpty=${timings.indexNonEmptyBuckets} idxMaxBucket=${timings.indexMaxBucketSize}" +
+                            " xRanges=${timings.xRanges} cells=${timings.cellsVisited} cand=${timings.candidatesVisited} binned=${timings.pointsBinned}" +
+                            " setup=${timings.setupMs}ms bin=${timings.binMs}ms conv=${timings.convolveMs}ms " +
+                            "mapPng=${timings.pngMs}ms pngLevel=${timings.pngLevel}"
+                    val msg =
+                        "Slow tile breakdown " +
+                            "z=${job.request.z} x=${job.request.x} y=${job.request.y} " +
+                            "queueWait=${qw}ms render=${rm}ms total=${tm}ms points=${job.state.points.size} tileSize=$tileSize " +
+                            "isEmptyTile=${bytes == null}$phaseMsg"
                     Log.w(TAG, msg)
                 }
                 job.future.complete(responseBytes)
@@ -342,6 +339,10 @@ class HeatmapTileRenderer(
         }
 
         val binStartNs = if (timings == null) 0L else System.nanoTime()
+        val trackSelectionStats = timings != null
+        var candidatesVisited = 0
+        var cellsVisited = 0
+        var pointsBinned = 0
         fun addPoint(
             adjustedWorldX: Double,
             worldY: Double,
@@ -357,11 +358,24 @@ class HeatmapTileRenderer(
             }
             buffers.intensity[idx] = prev + weight.toFloat()
             hasPoints = true
+            if (trackSelectionStats) {
+                pointsBinned += 1
+            }
         }
 
         val pointIndex = tileState.index
         if (pointIndex == null) {
+            timings?.let {
+                it.usedIndex = false
+                it.indexGridSize = 0
+                it.indexNonEmptyBuckets = 0
+                it.indexMaxBucketSize = 0
+                it.xRanges = 0
+            }
             tileState.points.forEach { point ->
+                if (trackSelectionStats) {
+                    candidatesVisited += 1
+                }
                 if (point.y < minY || point.y > maxY) return@forEach
                 if (point.x >= minX && point.x <= maxX) {
                     addPoint(point.x, point.y, point.intensity)
@@ -375,6 +389,12 @@ class HeatmapTileRenderer(
             val gridSize = pointIndex.gridSize
             val heads = pointIndex.heads
             val next = pointIndex.next
+            timings?.let {
+                it.usedIndex = true
+                it.indexGridSize = gridSize
+                it.indexNonEmptyBuckets = pointIndex.nonEmptyBuckets
+                it.indexMaxBucketSize = pointIndex.maxBucketSize
+            }
             val yMin = minY.coerceAtLeast(0.0)
             val yMax = maxY.coerceAtMost(WORLD_WIDTH)
             if (yMin <= yMax) {
@@ -382,6 +402,7 @@ class HeatmapTileRenderer(
                 val cyEnd = ((yMax * gridSize).toInt()).coerceIn(0, gridSize - 1)
 
                 val xRanges = buildTileXRanges(minX, maxX)
+                timings?.let { it.xRanges = xRanges.size }
                 xRanges.forEach { range ->
                     val min = range.min.coerceAtLeast(0.0)
                     val max = range.max.coerceAtMost(WORLD_WIDTH)
@@ -391,8 +412,14 @@ class HeatmapTileRenderer(
                     for (cy in cyStart..cyEnd) {
                         val row = cy * gridSize
                         for (cx in cxStart..cxEnd) {
+                            if (trackSelectionStats) {
+                                cellsVisited += 1
+                            }
                             var i = heads[row + cx]
                             while (i != -1) {
+                                if (trackSelectionStats) {
+                                    candidatesVisited += 1
+                                }
                                 val point = tileState.points[i]
                                 if (point.y >= minY && point.y <= maxY) {
                                     val xAdj = point.x + range.offset
@@ -411,6 +438,9 @@ class HeatmapTileRenderer(
         if (!hasPoints) return null
         if (timings != null) {
             timings.binMs = msSince(binStartNs)
+            timings.cellsVisited = cellsVisited
+            timings.candidatesVisited = candidatesVisited
+            timings.pointsBinned = pointsBinned
         }
 
         val convolveStartNs = if (timings == null) 0L else System.nanoTime()
@@ -435,12 +465,9 @@ class HeatmapTileRenderer(
         if (maxIntensity <= 0.0) return null
 
         val pngStartNs = if (timings == null) 0L else System.nanoTime()
+        // Deflate can become CPU-heavy when the tile contains lots of non-zero signal
+        // (many different colors => poor compression); fall back to level 0 for latency.
         val effectivePngCompressionLevel =
-            if (!adaptivePngCompression || pngCompressionLevel != DEFAULT_PNG_COMPRESSION_LEVEL) {
-                pngCompressionLevel
-            } else {
-                // Deflate can become CPU-heavy when the tile contains lots of non-zero signal
-                // (many different colors => poor compression); fall back to level 0 for latency.
                 if (radius >= PNG_COMPLEX_TILE_RADIUS_THRESHOLD_PX ||
                     buffers.nonZeroIntensityCount >= PNG_COMPLEX_TILE_POINT_THRESHOLD
                 ) {
@@ -448,7 +475,6 @@ class HeatmapTileRenderer(
                 } else {
                     pngCompressionLevel
                 }
-            }
         if (timings != null) {
             timings.pngLevel = effectivePngCompressionLevel
         }
@@ -947,6 +973,8 @@ class HeatmapTileRenderer(
         val gridSize: Int,
         val heads: IntArray,
         val next: IntArray,
+        val nonEmptyBuckets: Int,
+        val maxBucketSize: Int,
     )
 
     companion object {
@@ -1033,6 +1061,9 @@ class HeatmapTileRenderer(
         val gridSize = DEFAULT_INDEX_GRID_SIZE
         val heads = IntArray(gridSize * gridSize) { -1 }
         val next = IntArray(points.size) { -1 }
+        val counts = IntArray(gridSize * gridSize)
+        var nonEmptyBuckets = 0
+        var maxBucketSize = 0
         for (i in points.indices) {
             val p = points[i]
             val cx = (p.x * gridSize).toInt().coerceIn(0, gridSize - 1)
@@ -1040,8 +1071,18 @@ class HeatmapTileRenderer(
             val idx = cy * gridSize + cx
             next[i] = heads[idx]
             heads[idx] = i
+            val c = counts[idx] + 1
+            if (c == 1) nonEmptyBuckets += 1
+            counts[idx] = c
+            if (c > maxBucketSize) maxBucketSize = c
         }
-        return PointIndex(gridSize = gridSize, heads = heads, next = next)
+        return PointIndex(
+            gridSize = gridSize,
+            heads = heads,
+            next = next,
+            nonEmptyBuckets = nonEmptyBuckets,
+            maxBucketSize = maxBucketSize,
+        )
     }
 
     private class RenderBuffers {
@@ -1286,6 +1327,14 @@ class HeatmapTileRenderer(
         var effectiveZoom: Double = 0.0
         var radius: Int = 0
         var gridDim: Int = 0
+        var usedIndex: Boolean = false
+        var indexGridSize: Int = 0
+        var indexNonEmptyBuckets: Int = 0
+        var indexMaxBucketSize: Int = 0
+        var xRanges: Int = 0
+        var cellsVisited: Int = 0
+        var candidatesVisited: Int = 0
+        var pointsBinned: Int = 0
         var setupMs: Double = 0.0
         var binMs: Double = 0.0
         var convolveMs: Double = 0.0
@@ -1297,6 +1346,14 @@ class HeatmapTileRenderer(
             effectiveZoom = 0.0
             radius = 0
             gridDim = 0
+            usedIndex = false
+            indexGridSize = 0
+            indexNonEmptyBuckets = 0
+            indexMaxBucketSize = 0
+            xRanges = 0
+            cellsVisited = 0
+            candidatesVisited = 0
+            pointsBinned = 0
             setupMs = 0.0
             binMs = 0.0
             convolveMs = 0.0

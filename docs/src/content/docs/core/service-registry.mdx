@@ -1,0 +1,53 @@
+---
+title: "Map Service Registry"
+---
+
+MapConductor provides a lightweight “plugin” mechanism called `MapServiceRegistry`.
+It lets feature modules (like marker clustering/strategies) integrate with any provider module without requiring the provider’s `MapViewController` to implement feature-specific interfaces.
+
+## How It Works (Android)
+
+- Each `MapView` can provide a map-scoped registry.
+- `MapViewBase` exposes it via the CompositionLocal `LocalMapServiceRegistry`.
+- Feature modules resolve capabilities from the registry at runtime.
+
+This keeps modules decoupled: provider modules “register” capabilities, and feature modules “use” them.
+
+## Marker Rendering Support
+
+Marker clustering and strategy-based rendering need a provider-specific renderer/controller.
+Providers expose that via:
+
+- `MarkerRenderingSupport<ActualMarker>`
+- `MarkerRenderingSupportKey` (registry key)
+
+Built-in provider modules register `MarkerRenderingSupportKey` automatically, so `mapconductor-marker-clustering` works without any inheritance between controllers and feature interfaces.
+
+## Custom Provider Integration (Android)
+
+If you are implementing your own provider module, register `MarkerRenderingSupport` into a `MutableMapServiceRegistry` and pass it to `MapViewBase`.
+
+```kotlin
+val serviceRegistry =
+  remember {
+    MutableMapServiceRegistry().apply {
+      put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
+    }
+  }
+
+MapViewBase(
+  state = state,
+  /* ... */
+  serviceRegistry = serviceRegistry,
+)
+```
+
+## iOS / SwiftUI Note
+
+The iOS SDK mirrors the same idea using SwiftUI `Environment`:
+
+- `EnvironmentValues.mapServiceRegistry`
+- `MarkerRenderingSupportKey<ActualMarker>`
+
+Provider views register capabilities into the registry so feature modules can remain provider-agnostic.
+

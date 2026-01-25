@@ -60,6 +60,7 @@ import android.view.ViewGroup
 fun MapboxMapView(
     state: MapboxViewState,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -73,6 +74,7 @@ fun MapboxMapView(
         state = state,
         modifier = modifier,
         sdkInitialize = sdkInitialize,
+        markerTiling = markerTiling,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
         onCameraMoveStart = onCameraMoveStart,
@@ -96,8 +98,8 @@ fun MapboxMapView(
 @Composable
 fun MapboxMapView(
     state: MapboxViewState,
-    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -153,7 +155,7 @@ fun MapboxMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
             val polygonController = getPolygonController(holder)
@@ -368,10 +370,10 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
 
 internal fun getMarkerController(
     holder: MapboxMapViewHolder,
-    tilingOptions: MarkerTilingOptions,
+    markerTiling: MarkerTilingOptions,
 ): MapboxMarkerController {
     val manager = MarkerManager.defaultManager<MapboxActualMarker>(
-        minMarkerCount = tilingOptions.minMarkerCount,
+        minMarkerCount = markerTiling.minMarkerCount,
     )
     val markerLayer: MarkerLayer =
         MarkerLayer(
@@ -388,7 +390,7 @@ internal fun getMarkerController(
         markerManager = manager,
         markerLayer = markerLayer,
         dragLayer = dragLayer,
-        tilingOptions = tilingOptions,
+        markerTiling = markerTiling,
     )
 }
 

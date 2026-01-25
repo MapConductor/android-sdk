@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.heatmap.HeatmapPointState
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
@@ -17,7 +18,7 @@ import kotlinx.coroutines.launch
 interface HeatmapLayerViewModelInterface {
     val initCameraPosition: MapCameraPosition
 
-    val points: StateFlow<List<PostOffice>>
+    val points: StateFlow<List<HeatmapPointState>>
     val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val isMapLoaded: StateFlow<Boolean>
     val isDataLoading: StateFlow<Boolean>
@@ -46,8 +47,8 @@ class HeatmapLayerPageViewModel(
             tilt = 0.0,
             paddings = null,
         )
-    private val _points: MutableStateFlow<List<PostOffice>> = MutableStateFlow(emptyList())
-    override val points: StateFlow<List<PostOffice>> = _points.asStateFlow()
+    private val _points: MutableStateFlow<List<HeatmapPointState>> = MutableStateFlow(emptyList())
+    override val points: StateFlow<List<HeatmapPointState>> = _points.asStateFlow()
 
     private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()
@@ -65,9 +66,7 @@ class HeatmapLayerPageViewModel(
 
         coroutine.launch {
             _isDataLoading.value = true
-            sleep(3000)
-            _points.value = dataLoader.loadAllPostOffices()
-            sleep(1000)
+            _points.value = dataLoader.loadAllPostOffices().map { HeatmapPointState(it.position) }
             _isDataLoading.value = false
         }
     }

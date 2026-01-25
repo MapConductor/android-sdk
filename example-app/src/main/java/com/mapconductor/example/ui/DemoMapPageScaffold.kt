@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
@@ -169,6 +171,7 @@ fun DemoMapPageScaffold(
                 modifier =
                     Modifier
                         .align(Alignment.TopEnd)
+                        .widthIn(max = 400.dp)
                         .padding(
                             top = paddingValues.calculateTopPadding(),
                             start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
@@ -191,7 +194,7 @@ fun DemoMapPageScaffold(
                     )
 
                     IconSelectMenu(
-                        modifier = Modifier.weight(0.7f),
+                        modifier = Modifier.wrapContentSize(),
                         itemList = menuItems,
                         selectedIndex = selectedIndex,
                         onSelect = { index, _ ->

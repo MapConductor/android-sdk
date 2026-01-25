@@ -52,6 +52,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 fun GoogleMapView(
     state: GoogleMapViewState,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -65,6 +66,7 @@ fun GoogleMapView(
     GoogleMapView(
         state = state,
         modifier = modifier,
+        markerTiling = markerTiling,
         sdkInitialize = sdkInitialize,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
@@ -89,8 +91,8 @@ fun GoogleMapView(
 @Composable
 fun GoogleMapView(
     state: GoogleMapViewState,
-    tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
     modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
     sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
@@ -155,7 +157,7 @@ fun GoogleMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val groundImageController = getGroundImageController(holder)
             val polylineController = getPolylineController(holder)
@@ -338,10 +340,10 @@ private fun getPolylineController(holder: GoogleMapViewHolder): GoogleMapPolylin
 
 private fun getMarkerController(
     holder: GoogleMapViewHolder,
-    tilingOptions: MarkerTilingOptions,
+    markerTiling: MarkerTilingOptions,
 ) = GoogleMapMarkerController.create(
     holder = holder,
-    tilingOptions = tilingOptions,
+    markerTiling = markerTiling,
 )
 
 private fun getRasterLayerController(holder: GoogleMapViewHolder): GoogleMapRasterLayerController {

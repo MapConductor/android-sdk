@@ -24,6 +24,8 @@ interface ChildCollector<T : ComponentState> {
     fun remove(id: String)
 
     fun setUpdateHandler(handler: (suspend (T) -> Unit)?)
+
+    fun replaceAll(states: List<T>)
 }
 
 class ChildCollectorImpl<T : ComponentState, FingerPrint>(
@@ -75,6 +77,32 @@ class ChildCollectorImpl<T : ComponentState, FingerPrint>(
 
     override fun setUpdateHandler(handler: (suspend (T) -> Unit)?) {
         updateHandler = handler
+        if (handler == null) {
+            updateJobs.values.forEach { it.cancel() }
+            updateJobs.clear()
+            return
+        }
+        val snapshot = flow.value.values.toList()
+        snapshot.forEach { state ->
+            updateJobs.remove(state.id)?.cancel()
+            startUpdateJob(state)
+        }
+    }
+
+    override fun replaceAll(states: List<T>) {
+        val nextMap = states.associateBy { it.id }.toMutableMap()
+        val nextIds = nextMap.keys
+        val removedIds = updateJobs.keys - nextIds
+        removedIds.forEach { id ->
+            updateJobs.remove(id)?.cancel()
+        }
+        if (updateHandler != null) {
+            states.forEach { state ->
+                updateJobs.remove(state.id)?.cancel()
+                startUpdateJob(state)
+            }
+        }
+        flow.value = nextMap
     }
 
     private fun startUpdateJob(state: T) {

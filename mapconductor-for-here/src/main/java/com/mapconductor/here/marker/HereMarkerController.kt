@@ -33,7 +33,7 @@ import kotlinx.coroutines.sync.withPermit
 class HereMarkerController private constructor(
     markerManager: MarkerManager<HereActualMarker>,
     override val renderer: HereMarkerRenderer,
-    private val tilingOptions: MarkerTilingOptions,
+    private val markerTiling: MarkerTilingOptions,
 ) : AbstractMarkerController<HereActualMarker>(
         markerManager = markerManager,
         renderer = renderer,
@@ -120,13 +120,15 @@ class HereMarkerController private constructor(
     override suspend fun add(data: List<MarkerState>) {
         semaphore.withPermit {
             val currentZoom = currentTileZoom()
+            val tilingEnabled =
+                markerTiling.enabled && data.size >= markerManager.minMarkerCount
             val result =
                 MarkerIngestionEngine.ingest(
                     data = data,
                     markerManager = markerManager,
                     renderer = renderer,
                     defaultMarkerIcon = defaultMarkerIcon,
-                    tilingEnabled = tilingOptions.enabled,
+                    tilingEnabled = tilingEnabled,
                     tiledMarkerIds = tiledMarkerIds,
                     shouldTile = { state -> !state.draggable && state.getAnimation() == null },
                 )
@@ -153,7 +155,7 @@ class HereMarkerController private constructor(
 
         semaphore.withPermit {
             val tilingEnabled =
-                tilingOptions.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
+                markerTiling.enabled && markerManager.allEntities().size >= markerManager.minMarkerCount
             val wantsTiled = tilingEnabled && !state.draggable && state.getAnimation() == null
             val wasTiled = tiledMarkerIds.contains(state.id)
             val markerIcon = state.icon?.toBitmapIcon() ?: defaultMarkerIcon
@@ -239,7 +241,6 @@ class HereMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         renderer.coroutine.launch {
@@ -278,14 +279,13 @@ class HereMarkerController private constructor(
             removeTileOverlay()
             return
         }
-        if (!tilingOptions.enabled) {
+        if (!markerTiling.enabled) {
             removeTileOverlay()
             tiledMarkerIds.clear()
             return
         }
-        val tileRenderer = getOrCreateTileRenderer()
-        tileRenderer.invalidate()
 
+        getOrCreateTileRenderer()
         updateRasterLayerSource()
     }
 
@@ -295,17 +295,17 @@ class HereMarkerController private constructor(
         val groupId = UUID.randomUUID().toString()
         markerTileGroupId = groupId
 
-        val outputTileSize = ResourceProvider.getOptimalTileSize().coerceAtLeast(tilingOptions.tileSize)
+        val outputTileSize = ResourceProvider.getOptimalTileSize().coerceAtLeast(256)
 
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
-        val tileRenderer =
-            MarkerTileRenderer(
-                markerManager = markerManager,
-                // HERE benefits from higher-res output tiles on high-DPI devices (to avoid GPU upscaling blur),
-                // but our world-pixel math should stay on the standard 256px tile grid.
-                tileSize = outputTileSize,
-                debugTileOverlay = tilingOptions.debugTileOverlay,
-            )
+	        val tileRenderer =
+	            MarkerTileRenderer(
+	                markerManager = markerManager,
+	                tileSize = outputTileSize,
+	                cacheSizeBytes = markerTiling.cacheSize,
+	                debugTileOverlay = markerTiling.debugTileOverlay,
+	                iconScaleCallback = markerTiling.iconScaleCallback,
+	            )
         markerTileRenderer = tileRenderer
 
         tileServer.register(groupId, tileRenderer)
@@ -332,7 +332,6 @@ class HereMarkerController private constructor(
             tileServer.unregister(groupId)
         }
         markerTileGroupId = null
-        markerTileRenderer?.clear()
         markerTileRenderer = null
 
         rasterLayerCallback?.onRasterLayerUpdate(null)
@@ -342,20 +341,20 @@ class HereMarkerController private constructor(
     companion object {
         fun create(
             holder: HereViewHolder,
-            tilingOptions: MarkerTilingOptions = MarkerTilingOptions.Default,
+            markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default,
         ): HereMarkerController {
             val renderer =
                 HereMarkerRenderer(
                     holder = holder,
                 )
             val markerManager = MarkerManager.defaultManager<HereActualMarker>(
-                minMarkerCount = tilingOptions.minMarkerCount,
+                minMarkerCount = markerTiling.minMarkerCount,
             )
             val controller =
                 HereMarkerController(
                     markerManager = markerManager,
                     renderer = renderer,
-                    tilingOptions = tilingOptions,
+                    markerTiling = markerTiling,
                 )
             // HERE camera zoom is updated via onCameraChanged; initialize a best-effort value.
             controller.lastKnownZoom = holder.mapView.camera.state.zoomLevel

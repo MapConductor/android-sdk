@@ -1,0 +1,46 @@
+---
+title: "Map Service Registry"
+---
+
+MapConductor には、軽量な「プラグイン」機構として `MapServiceRegistry` があります。
+地図SDKモジュール（Google Maps / Mapbox / MapLibre など）と、機能モジュール（クラスタリング / マーカー戦略など）を **継承に頼らずに** 連携させるための仕組みです。
+
+## 仕組み（Android）
+
+- 各 `MapView` が map-scoped なレジストリを提供します
+- `MapViewBase` が CompositionLocal の `LocalMapServiceRegistry` で公開します
+- 機能モジュール側はレジストリから capability を解決して利用します
+
+つまり、地図SDKモジュールが capability を「登録」し、機能モジュールがそれを「利用」することで分離を保ちます。
+
+## MarkerRenderingSupport
+
+クラスタリングや strategy ベースのレンダリングは、地図SDKごとの renderer/controller が必要です。
+それを `MarkerRenderingSupport<ActualMarker>` と `MarkerRenderingSupportKey` で表現します。
+
+組み込みの地図SDKモジュールは `MarkerRenderingSupportKey` を自動登録するため、`mapconductor-marker-clustering` はコントローラの継承なしで動きます。
+
+## 独自地図SDKモジュールでの連携（Android）
+
+独自の地図SDKモジュールを実装する場合は、`MutableMapServiceRegistry` に `MarkerRenderingSupport` を登録し、それを `MapViewBase` に渡してください。
+
+```kotlin
+val serviceRegistry =
+  remember {
+    MutableMapServiceRegistry().apply {
+      put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
+    }
+  }
+
+MapViewBase(
+  state = state,
+  /* ... */
+  serviceRegistry = serviceRegistry,
+)
+```
+
+## iOS / SwiftUI 補足
+
+iOS でも同じ考え方で、SwiftUI `Environment` にレジストリを流し込みます（`EnvironmentValues.mapServiceRegistry`）。
+provider 側が capability を登録することで、機能側は provider 非依存のまま拡張できます。
+

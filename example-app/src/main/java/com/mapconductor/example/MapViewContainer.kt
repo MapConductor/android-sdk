@@ -9,6 +9,7 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapView
@@ -23,6 +24,7 @@ import com.mapconductor.maplibre.MapLibreViewState
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     state: MapViewStateInterface<*>? = null,
+    markerTiling: MarkerTilingOptions? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
@@ -36,6 +38,7 @@ fun MapViewContainer(
             GoogleMapView(
                 modifier = modifier,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
@@ -48,6 +51,7 @@ fun MapViewContainer(
             HereMapView(
                 modifier = modifier,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
@@ -60,6 +64,7 @@ fun MapViewContainer(
             MapboxMapView(
                 modifier = modifier,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
@@ -72,6 +77,7 @@ fun MapViewContainer(
             ArcGISMapView(
                 modifier = modifier,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
@@ -84,6 +90,7 @@ fun MapViewContainer(
             MapLibreMapView(
                 modifier = modifier,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,

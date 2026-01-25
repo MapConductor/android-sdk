@@ -149,6 +149,7 @@ class GoogleMapRasterLayerOverlayRenderer(
         val options =
             TileOverlayOptions()
                 .tileProvider(provider)
+                .zIndex(999f)
                 .transparency(opacityToTransparency(state.opacity))
                 .visible(state.visible)
         return holder.map.addTileOverlay(options)?.also { overlay ->

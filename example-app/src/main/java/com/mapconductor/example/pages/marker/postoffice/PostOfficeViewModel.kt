@@ -6,6 +6,7 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
@@ -23,6 +24,7 @@ interface PostOfficeViewModelInterface {
     val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val isMapLoaded: StateFlow<Boolean>
     val isDataLoading: StateFlow<Boolean>
+    val markerTiling: MarkerTilingOptions
 
     fun onMapViewChanged(mapViewState: MapViewStateInterface<*>)
 
@@ -57,6 +59,22 @@ class PostOfficeViewModel(
         )
     private val _markerList: MutableStateFlow<List<MarkerState>> = MutableStateFlow(emptyList())
     override val markerList: StateFlow<List<MarkerState>> = _markerList.asStateFlow()
+
+    override val markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default.copy(
+        iconScaleCallback = { _, zoom ->
+            if (zoom > 12.0) {
+                return@copy 1.3
+            } else if (zoom > 10.0) {
+                return@copy 1.0
+            } else if (zoom > 8.0) {
+                return@copy 0.8
+            } else if (zoom > 5.0) {
+                return@copy 0.5
+            } else {
+                return@copy 0.2
+            }
+        }
+    )
 
     private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()

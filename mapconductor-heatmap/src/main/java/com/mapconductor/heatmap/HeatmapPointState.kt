@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 class HeatmapPointState(
     position: GeoPointInterface,
-    weight: Double,
+    weight: Double = 1.0,
     id: String? = null,
     extra: Serializable? = null,
 ) : ComponentState {
