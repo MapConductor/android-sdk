@@ -15,7 +15,9 @@ import kotlin.math.sin
 
 const val ZOOM0_ALTITUDE = 5_000_000.0
 
-private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
+// ArcGIS needs its own calibration constant so that the same "Google-like zoom" yields a similar visible region.
+// (ArcGIS camera FOV differs from Google/Mapbox; using DEFAULT_ZOOM0_ALTITUDE drifts the visible scale.)
+private val converter = ZoomAltitudeConverter()
 
 fun MapCameraPosition.getAltitudeForArcGIS(): Double = converter.zoomLevelToAltitude(zoom, position.latitude, tilt)
 
@@ -24,7 +26,8 @@ fun MapCameraPosition.toCamera(): Camera {
     return calculateCameraForOrbitParameters(
         targetPoint = targetPoint,
         distance = converter.zoomLevelToDistance(zoom, position.latitude),
-        cameraHeadingOffset = 360 - (bearing + 180),
+        // For orbit camera: cameraHeadingOffset = bearing + 180 makes Camera.heading == bearing.
+        cameraHeadingOffset = bearing + 180,
         cameraPitchOffset = tilt,
     )
 }
@@ -157,7 +160,7 @@ fun Camera.toMapCameraPosition() =
         zoom =
             converter
                 .altitudeToZoomLevel(altitude = this.location.z ?: 0.0, latitude = this.location.y, tilt = this.pitch),
-        bearing = (360 - this.heading) % 360,
+        bearing = ((this.heading % 360) + 360) % 360,
         tilt = this.pitch,
         paddings = MapPaddings.Zeros,
         visibleRegion = null,

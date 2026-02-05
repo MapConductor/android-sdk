@@ -16,7 +16,7 @@ class ZoomAltitudeConverter(
          *
          * GoogleZoom ≈ HereZoom + [HERE_ZOOM_TO_GOOGLE_ZOOM_AT_EQUATOR]  (latitude ~= 0)
          */
-        const val HERE_ZOOM_TO_GOOGLE_ZOOM_AT_EQUATOR = 0.1
+        const val HERE_ZOOM_TO_GOOGLE_ZOOM_AT_EQUATOR = 0.00
 
         private fun cosLatitudeFactor(latitudeDeg: Double): Double {
             val latRad = Math.toRadians(latitudeDeg)

@@ -1,19 +1,21 @@
 package com.mapconductor.example.pages.map.camerasync
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -25,6 +27,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.os.SystemClock
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
@@ -47,6 +52,7 @@ import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.IconSelectMenu
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 private data class CameraLocationInfo(
     val name: String,
@@ -54,6 +60,11 @@ private data class CameraLocationInfo(
     val center: GeoPoint,
     val zoom: Double,
 )
+
+private enum class ActiveMapPane {
+    Left,
+    Right,
+}
 
 @Composable
 fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
@@ -83,8 +94,114 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     @Suppress("UNCHECKED_CAST")
     val rightState = rightMenuItems[rightSelectedIndex].value as MapViewStateInterface<*>
 
+    // Use rememberUpdatedState to ensure callbacks always reference the current state,
+    // not the state captured when the callback lambda was created.
+    val currentLeftState by rememberUpdatedState(leftState)
+    val currentRightState by rememberUpdatedState(rightState)
+
     var leftCameraPosition by remember { mutableStateOf(initCameraPosition) }
     var rightCameraPosition by remember { mutableStateOf(initCameraPosition) }
+    val mainScope = rememberCoroutineScope()
+
+    // Guard against feedback loops for programmatic sync:
+    // when we move a map by code, ignore the next camera callbacks that correspond to that same target.
+    var programmaticLeftKey by remember { mutableStateOf<Long?>(null) }
+    var programmaticLeftTarget by remember { mutableStateOf<MapCameraPosition?>(null) }
+    var programmaticLeftUntilMs by remember { mutableStateOf(0L) }
+    var programmaticLeftSinceMs by remember { mutableStateOf(0L) }
+    var programmaticRightKey by remember { mutableStateOf<Long?>(null) }
+    var programmaticRightTarget by remember { mutableStateOf<MapCameraPosition?>(null) }
+    var programmaticRightUntilMs by remember { mutableStateOf(0L) }
+    var programmaticRightSinceMs by remember { mutableStateOf(0L) }
+    val programmaticTtlMs = 1200L
+    val programmaticGraceMs = 250L
+
+    // Move-time sync throttling to keep the UI responsive and avoid overwhelming SDKs.
+    var lastLeftMoveSyncAtMs by remember { mutableStateOf(0L) }
+    var lastRightMoveSyncAtMs by remember { mutableStateOf(0L) }
+    val moveSyncIntervalMs = 33L // ~30fps
+
+    fun cameraKey(camera: MapCameraPosition): Long {
+        val latE5 = (camera.position.latitude * 1e5).toInt()
+        val lonE5 = (camera.position.longitude * 1e5).toInt()
+        val zoom100 = (camera.zoom * 100).toInt()
+        val bearing10 = (camera.bearing * 10).toInt()
+        return (((latE5 * 31 + lonE5) * 31 + zoom100) * 31 + bearing10).toLong()
+    }
+
+    fun markProgrammaticMove(
+        pane: ActiveMapPane,
+        target: MapCameraPosition,
+        nowMs: Long,
+    ) {
+        val key = cameraKey(target)
+        when (pane) {
+            ActiveMapPane.Left -> {
+                programmaticLeftKey = key
+                programmaticLeftTarget = target
+                programmaticLeftSinceMs = nowMs
+                programmaticLeftUntilMs = nowMs + programmaticTtlMs
+            }
+            ActiveMapPane.Right -> {
+                programmaticRightKey = key
+                programmaticRightTarget = target
+                programmaticRightSinceMs = nowMs
+                programmaticRightUntilMs = nowMs + programmaticTtlMs
+            }
+        }
+    }
+
+    fun clearProgrammaticMove(pane: ActiveMapPane) {
+        when (pane) {
+            ActiveMapPane.Left -> {
+                programmaticLeftKey = null
+                programmaticLeftTarget = null
+                programmaticLeftSinceMs = 0L
+                programmaticLeftUntilMs = 0L
+            }
+            ActiveMapPane.Right -> {
+                programmaticRightKey = null
+                programmaticRightTarget = null
+                programmaticRightSinceMs = 0L
+                programmaticRightUntilMs = 0L
+            }
+        }
+    }
+
+    fun bearingDeltaDeg(a: Double, b: Double): Double {
+        val d = ((a - b) % 360.0 + 360.0) % 360.0
+        return if (d > 180.0) 360.0 - d else d
+    }
+
+    fun isCloseToTarget(
+        camera: MapCameraPosition,
+        target: MapCameraPosition,
+    ): Boolean {
+        val dLat = kotlin.math.abs(camera.position.latitude - target.position.latitude)
+        val dLon = kotlin.math.abs(camera.position.longitude - target.position.longitude)
+        val dZoom = kotlin.math.abs(camera.zoom - target.zoom)
+        val dBearing = bearingDeltaDeg(camera.bearing, target.bearing)
+        val dTilt = kotlin.math.abs(camera.tilt - target.tilt)
+
+        // Tolerances are intentionally a bit loose: different SDKs can't represent the exact same camera.
+        return dLat < 0.0012 && dLon < 0.0012 && dZoom < 0.75 && dBearing < 12.0 && dTilt < 6.0
+    }
+
+    fun isProgrammaticMove(
+        pane: ActiveMapPane,
+        camera: MapCameraPosition,
+        nowMs: Long,
+    ): Boolean {
+        val (key, target, until) =
+            when (pane) {
+                ActiveMapPane.Left -> Triple(programmaticLeftKey, programmaticLeftTarget, programmaticLeftUntilMs)
+                ActiveMapPane.Right -> Triple(programmaticRightKey, programmaticRightTarget, programmaticRightUntilMs)
+            }
+        val k = key ?: return false
+        if (nowMs > until) return false
+        if (cameraKey(camera) == k) return true
+        return target?.let { isCloseToTarget(camera, it) } ?: false
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Card(
@@ -107,47 +224,29 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Left (Source)",
-                        style = MaterialTheme.typography.labelSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    IconSelectMenu(
-                        itemList = leftMenuItems,
-                        selectedIndex = leftSelectedIndex,
-                        onSelect = { index, _ -> leftSelectedIndex = index },
-                    )
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Right (Synced)",
-                        style = MaterialTheme.typography.labelSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    IconSelectMenu(
-                        itemList = rightMenuItems,
-                        selectedIndex = rightSelectedIndex,
-                        onSelect = { index, _ -> rightSelectedIndex = index },
-                    )
-                }
+                Text(
+                    text = "Camera Sync",
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
 
-        Row(
+        @OptIn(ExperimentalLayoutApi::class)
+        FlowRow(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            maxLines = 2,
         ) {
             locations.forEach { location ->
                 Button(
                     onClick = {
+                        val now = SystemClock.uptimeMillis()
                         val position =
                             MapCameraPosition(
                                 position = location.center,
@@ -155,10 +254,15 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 bearing = 0.0,
                                 tilt = 0.0,
                             )
-                        leftState.moveCameraTo(position, durationMillis = 1000)
-                        rightState.moveCameraTo(position, durationMillis = 1000)
+                        currentLeftState.moveCameraTo(position, durationMillis = 1000)
+                        currentRightState.moveCameraTo(position, durationMillis = 1000)
                         leftCameraPosition = position
                         rightCameraPosition = position
+                        // Both maps will emit camera callbacks; treat them as programmatic during the animation.
+                        markProgrammaticMove(ActiveMapPane.Left, position, now)
+                        markProgrammaticMove(ActiveMapPane.Right, position, now)
+                        programmaticLeftUntilMs = now + 1000L + programmaticTtlMs
+                        programmaticRightUntilMs = now + 1000L + programmaticTtlMs
                     },
                 ) {
                     Text(text = location.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -168,37 +272,279 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
 
         HorizontalDivider(modifier = Modifier.padding(top = 10.dp))
 
-        Row(modifier = Modifier.fillMaxSize()) {
-            CameraSyncMapPane(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                mapViewState = leftState,
-                label = "Source Camera",
-                cameraPosition = leftCameraPosition,
-                onCameraMoveEnd = { position ->
-                    leftCameraPosition = position
-                    rightState.moveCameraTo(position, durationMillis = 0)
-                },
-                boundsPolylines = boundsPolylines,
-                referenceRectangles = referenceRectangles,
-            )
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val stackVertically = maxHeight > maxWidth
 
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxHeight()
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.outline),
-            )
+            if (stackVertically) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    CameraSyncMapPane(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        menuContent = {
+                            IconSelectMenu(
+                                itemList = leftMenuItems,
+                                selectedIndex = leftSelectedIndex,
+                                onSelect = { index, _ -> leftSelectedIndex = index },
+                            )
+                        },
+                        mapViewState = leftState,
+                        label = "Source Camera",
+                        cameraPosition = leftCameraPosition,
+                        onCameraMove = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                // Ignore feedback from programmatic moves (but stop ignoring if the user deviates).
+                                if (programmaticLeftKey != null) {
+                                    if (now > programmaticLeftUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    } else {
+                                        val age = now - programmaticLeftSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                            leftCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    }
+                                }
 
-            CameraSyncMapPane(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                mapViewState = rightState,
-                label = "Synced Camera",
-                cameraPosition = rightCameraPosition,
-                onCameraMoveEnd = { position -> rightCameraPosition = position },
-                boundsPolylines = boundsPolylines,
-                referenceRectangles = referenceRectangles,
-            )
+                                if (now - lastLeftMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                lastLeftMoveSyncAtMs = now
+
+                                leftCameraPosition = position
+                                rightCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                currentRightState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        onCameraMoveEnd = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticLeftKey != null) {
+                                    if (now > programmaticLeftUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    } else {
+                                        val age = now - programmaticLeftSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                            leftCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    }
+                                }
+                                leftCameraPosition = position
+                                rightCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                currentRightState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        boundsPolylines = boundsPolylines,
+                        referenceRectangles = referenceRectangles,
+                    )
+
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(MaterialTheme.colorScheme.outline),
+                    )
+
+                    CameraSyncMapPane(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        menuContent = {
+                            IconSelectMenu(
+                                itemList = rightMenuItems,
+                                selectedIndex = rightSelectedIndex,
+                                onSelect = { index, _ -> rightSelectedIndex = index },
+                            )
+                        },
+                        mapViewState = rightState,
+                        label = "Synced Camera",
+                        cameraPosition = rightCameraPosition,
+                        onCameraMove = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticRightKey != null) {
+                                    if (now > programmaticRightUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    } else {
+                                        val age = now - programmaticRightSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                            rightCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    }
+                                }
+
+                                if (now - lastRightMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                lastRightMoveSyncAtMs = now
+
+                                rightCameraPosition = position
+                                leftCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                currentLeftState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        onCameraMoveEnd = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticRightKey != null) {
+                                    if (now > programmaticRightUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    } else {
+                                        val age = now - programmaticRightSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                            rightCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    }
+                                }
+                                rightCameraPosition = position
+                                leftCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                currentLeftState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        boundsPolylines = boundsPolylines,
+                        referenceRectangles = referenceRectangles,
+                    )
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    CameraSyncMapPane(
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        menuContent = {
+                            IconSelectMenu(
+                                itemList = leftMenuItems,
+                                selectedIndex = leftSelectedIndex,
+                                onSelect = { index, _ -> leftSelectedIndex = index },
+                            )
+                        },
+                        mapViewState = leftState,
+                        label = "Source Camera",
+                        cameraPosition = leftCameraPosition,
+                        onCameraMove = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticLeftKey != null) {
+                                    if (now > programmaticLeftUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    } else {
+                                        val age = now - programmaticLeftSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                            leftCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    }
+                                }
+
+                                if (now - lastLeftMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                lastLeftMoveSyncAtMs = now
+
+                                leftCameraPosition = position
+                                rightCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                currentRightState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        onCameraMoveEnd = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticLeftKey != null) {
+                                    if (now > programmaticLeftUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    } else {
+                                        val age = now - programmaticLeftSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                            leftCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Left)
+                                    }
+                                }
+                                leftCameraPosition = position
+                                rightCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                currentRightState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        boundsPolylines = boundsPolylines,
+                        referenceRectangles = referenceRectangles,
+                    )
+
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxHeight()
+                                .width(1.dp)
+                                .background(MaterialTheme.colorScheme.outline),
+                    )
+
+                    CameraSyncMapPane(
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        menuContent = {
+                            IconSelectMenu(
+                                itemList = rightMenuItems,
+                                selectedIndex = rightSelectedIndex,
+                                onSelect = { index, _ -> rightSelectedIndex = index },
+                            )
+                        },
+                        mapViewState = rightState,
+                        label = "Synced Camera",
+                        cameraPosition = rightCameraPosition,
+                        onCameraMove = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticRightKey != null) {
+                                    if (now > programmaticRightUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    } else {
+                                        val age = now - programmaticRightSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                            rightCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    }
+                                }
+
+                                if (now - lastRightMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                lastRightMoveSyncAtMs = now
+
+                                rightCameraPosition = position
+                                leftCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                currentLeftState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        onCameraMoveEnd = { position ->
+                            mainScope.launch {
+                                val now = SystemClock.uptimeMillis()
+                                if (programmaticRightKey != null) {
+                                    if (now > programmaticRightUntilMs) {
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    } else {
+                                        val age = now - programmaticRightSinceMs
+                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                            rightCameraPosition = position
+                                            return@launch
+                                        }
+                                        clearProgrammaticMove(ActiveMapPane.Right)
+                                    }
+                                }
+                                rightCameraPosition = position
+                                leftCameraPosition = position
+                                markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                currentLeftState.moveCameraTo(position, durationMillis = 0)
+                            }
+                        },
+                        boundsPolylines = boundsPolylines,
+                        referenceRectangles = referenceRectangles,
+                    )
+                }
+            }
         }
     }
 }
@@ -206,27 +552,48 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
 @Composable
 private fun CameraSyncMapPane(
     modifier: Modifier,
+    menuContent: (@Composable () -> Unit)? = null,
     mapViewState: MapViewStateInterface<*>,
     label: String,
     cameraPosition: MapCameraPosition,
+    onCameraMoveStart: (() -> Unit)? = null,
+    onCameraMove: ((MapCameraPosition) -> Unit)? = null,
     onCameraMoveEnd: (MapCameraPosition) -> Unit,
     boundsPolylines: List<PolylineState>,
     referenceRectangles: List<PolygonState>,
 ) {
-    Column(modifier = modifier) {
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            MapViewContainer(
-                modifier = Modifier.fillMaxSize(),
-                state = mapViewState,
-                onCameraMoveEnd = onCameraMoveEnd,
+    Box(modifier = modifier) {
+        // Base: Map (full available size). Overlays are drawn on top to maximize map area.
+        MapViewContainer(
+            modifier = Modifier.fillMaxSize(),
+            state = mapViewState,
+            onCameraMoveStart = { onCameraMoveStart?.invoke() },
+            onCameraMove = { pos -> onCameraMove?.invoke(pos) },
+            onCameraMoveEnd = onCameraMoveEnd,
+        ) {
+            boundsPolylines.forEach { Polyline(it) }
+            referenceRectangles.forEach { Polygon(it) }
+        }
+
+        // Top overlay: SDK selector (interactive)
+        if (menuContent != null) {
+            Box(
+                modifier =
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .padding(10.dp)
+                        .fillMaxWidth(0.72f),
             ) {
-                boundsPolylines.forEach { Polyline(it) }
-                referenceRectangles.forEach { Polygon(it) }
+                menuContent()
             }
         }
 
+        // Bottom overlay: camera state display (read-only)
         CameraInfoCard(
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(10.dp),
             label = label,
             position = cameraPosition,
         )
@@ -240,7 +607,7 @@ private fun CameraInfoCard(
     position: MapCameraPosition,
 ) {
     val fmt = remember { Locale.US }
-    Card(modifier = modifier.padding(10.dp)) {
+    Card(modifier = modifier) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(text = label, style = MaterialTheme.typography.labelMedium)
             Text(text = "Lat: ${String.format(fmt, "%.5f", position.position.latitude)}", style = MaterialTheme.typography.bodySmall)
@@ -255,6 +622,16 @@ private fun CameraInfoCard(
 
 private fun defaultLocations(): List<CameraLocationInfo> =
     listOf(
+        CameraLocationInfo(
+            name = "Tokyo",
+            bounds =
+                GeoRectBounds(
+                    southWest = GeoPoint(latitude = 35.62, longitude = 139.70, altitude = 0.0),
+                    northEast = GeoPoint(latitude = 35.74, longitude = 139.84, altitude = 0.0),
+                ),
+            center = GeoPoint(latitude = 35.6812, longitude = 139.7671, altitude = 0.0),
+            zoom = 12.0,
+        ),
         CameraLocationInfo(
             name = "French Southern and Antarctic Lands",
             bounds =
