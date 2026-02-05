@@ -244,7 +244,7 @@ class ArcGISMapViewController(
         val lon = arcCamera.location.x
         val alt = arcCamera.location.z ?: 0.0
         val tilt = arcCamera.pitch
-        val bearing = (360 - arcCamera.heading) % 360
+        val bearing = ((arcCamera.heading % 360) + 360) % 360
 
         // Use calibrated constant instead of dynamic calculation
         val conv = ZoomAltitudeConverter()
