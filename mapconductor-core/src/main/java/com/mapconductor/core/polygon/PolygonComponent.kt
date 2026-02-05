@@ -16,6 +16,9 @@ import java.io.Serializable
 fun MapViewScope.Polygon(state: PolygonState) {
     val collector = LocalPolygonCollector.current
     LaunchedEffect(state) {
+        if (state.holes.size > 1) {
+            state.unionHolesInPlace()
+        }
         collector.add(state)
     }
 
@@ -29,22 +32,26 @@ fun MapViewScope.Polygon(state: PolygonState) {
 @Composable
 fun MapViewScope.Polygon(
     points: List<GeoPointInterface>,
+    holes: List<List<GeoPointInterface>> = emptyList(),
     id: String? = null,
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
+    zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolygonEventHandler? = null,
 ) {
     val state =
         PolygonState(
             points = points,
+            holes = holes,
             id = id,
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             fillColor = fillColor,
             geodesic = geodesic,
+            zIndex = zIndex,
             extra = extra,
             onClick = onClick,
         )
@@ -59,6 +66,7 @@ fun MapViewScope.Polygon(
     strokeWidth: Dp = 1.dp,
     fillColor: Color = Color.Transparent,
     geodesic: Boolean = false,
+    zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolygonEventHandler? = null,
 ) {
@@ -79,6 +87,7 @@ fun MapViewScope.Polygon(
                 strokeWidth = strokeWidth,
                 fillColor = fillColor,
                 geodesic = geodesic,
+                zIndex = zIndex,
                 extra = extra,
                 onClick = onClick,
             )

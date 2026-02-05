@@ -66,7 +66,25 @@ class PolygonManager<ActualPolygon> : PolygonManagerInterface<ActualPolygon> {
                 if (ring.first() != ring.last()) ring + ring.first() else ring
 
             if (pointInPolygonWindingNumber(testX, testY, closedRing)) {
-                return entity
+                // Exclude holes: if the point is inside any hole, treat it as outside.
+                val holes = state.holes
+                var inHole = false
+                for (hole in holes) {
+                    if (hole.size < 3) continue
+                    val holeRing =
+                        try {
+                            if (state.geodesic) createInterpolatePoints(hole) else hole
+                        } catch (_: Exception) {
+                            hole
+                        }
+                    val closedHole =
+                        if (holeRing.first() != holeRing.last()) holeRing + holeRing.first() else holeRing
+                    if (pointInPolygonWindingNumber(testX, testY, closedHole)) {
+                        inHole = true
+                        break
+                    }
+                }
+                if (!inHole) return entity
             }
         }
         return null

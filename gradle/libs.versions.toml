@@ -39,6 +39,7 @@ mapLibreAnnotation = "3.0.2"
 runtime = "1.9.3"
 runtimeVersion = "1.9.5"
 materialVersion = "1.10.0"
+jts = "1.20.0"
 
 [libraries]
 # Android ??
@@ -103,6 +104,7 @@ net-sf-geographiclib = { group = "net.sf.geographiclib", name="GeographicLib-Jav
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
+jts-core = { group = "org.locationtech.jts", name = "jts-core", version.ref = "jts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
