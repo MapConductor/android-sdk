@@ -28,6 +28,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -94,6 +95,7 @@ dependencies {
     )
     compileOnly(project(":mapconductor-core"))
     implementation(project(":mapconductor-heatmap"))
+    implementation(libs.jts.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
