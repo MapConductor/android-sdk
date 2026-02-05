@@ -94,18 +94,7 @@ class MapboxMarkerController private constructor(
                 .toDouble() *
                 ResourceProvider.getDensity().toDouble()
 
-        val icon = nearest.state.icon
-
-        if (icon == null) {
-            val dx = (touchScreen.x - markerScreen.x).toDouble()
-            val dy = (touchScreen.y - markerScreen.y).toDouble()
-            val distancePx = kotlin.math.hypot(dx, dy)
-            return if (distancePx <= tolerancePx) {
-                nearest
-            } else {
-                null
-            }
-        }
+        val icon = nearest.state.icon ?: DefaultMarkerIcon()
 
         val baseSizePx = ResourceProvider.dpToPxForBitmap(icon.iconSize).toDouble()
         val iconWidthPx = baseSizePx * icon.scale.toDouble()
