@@ -22,6 +22,9 @@ class MapboxRasterLayerOverlayRenderer(
     private val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<MapboxRasterLayerHandle> {
+    private val stateById: MutableMap<String, RasterLayerState> = mutableMapOf()
+    private val handleById: MutableMap<String, MapboxRasterLayerHandle> = mutableMapOf()
+
     private fun isMarkerTileRaster(state: RasterLayerState): Boolean =
         state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
 
@@ -29,7 +32,14 @@ class MapboxRasterLayerOverlayRenderer(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
     ): List<MapboxRasterLayerHandle?> =
         data.map { params ->
-            addLayer(params.state)
+            addLayer(params.state).also { handle ->
+                if (handle != null) {
+                    stateById[params.state.id] = params.state
+                    handleById[params.state.id] = handle
+                }
+            }
+        }.also {
+            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
         }
 
     override suspend fun onChange(
@@ -38,19 +48,30 @@ class MapboxRasterLayerOverlayRenderer(
         data.map { params ->
             val prev = params.prev
             val next = params.current.state
-            if (prev.state.source != next.source) {
-                removeLayer(prev)
-                addLayer(next)
-            } else {
-                updateLayer(prev.layer, next)
-                prev.layer
+            val handle =
+                if (prev.state.source != next.source) {
+                    removeLayer(prev)
+                    addLayer(next)
+                } else {
+                    updateLayer(prev.layer, next)
+                    prev.layer
+                }
+            if (handle != null) {
+                stateById[next.id] = next
+                handleById[next.id] = handle
             }
+            handle
+        }.also {
+            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
         }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<MapboxRasterLayerHandle>>) {
         data.forEach { entity ->
+            stateById.remove(entity.state.id)
+            handleById.remove(entity.state.id)
             removeLayer(entity)
         }
+        holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
     }
 
     override suspend fun onPostProcess() {}
@@ -180,6 +201,41 @@ class MapboxRasterLayerOverlayRenderer(
         }
 
         style.addLayer(layer)
+    }
+
+    private fun rebuildNonMarkerRasterLayers(style: com.mapbox.maps.Style) {
+        val ordered =
+            stateById.values
+                .asSequence()
+                .filter { !isMarkerTileRaster(it) }
+                .sortedBy { it.zIndex }
+                .mapNotNull { state -> handleById[state.id]?.let { handle -> state to handle } }
+                .toList()
+
+        // Remove and re-add non-marker raster layers in zIndex order to ensure deterministic stacking.
+        ordered.forEach { (_, handle) ->
+            try {
+                style.removeStyleLayer(handle.layerId)
+            } catch (_: Exception) {
+            }
+        }
+
+        ordered.forEach { (state, handle) ->
+            val opacity =
+                if (state.visible) {
+                    state.opacity.coerceIn(0.0f, 1.0f).toDouble()
+                } else {
+                    0.0
+                }
+            val layer =
+                rasterLayer(handle.layerId, handle.sourceId) {
+                    rasterOpacity(opacity)
+                }
+            try {
+                style.addLayer(layer)
+            } catch (_: Exception) {
+            }
+        }
     }
 
     private companion object {

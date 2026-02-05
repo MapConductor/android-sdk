@@ -59,6 +59,7 @@ fun MapViewScope.Markers(states: List<MarkerState>) {
 fun MapViewScope.Marker(
     position: GeoPointInterface,
     id: String? = null,
+    zIndex: Int? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
     icon: MarkerIconInterface? = null,
@@ -77,6 +78,7 @@ fun MapViewScope.Marker(
             position = position,
             extra = extra,
             animation = animation,
+            zIndex = zIndex,
             clickable = clickable,
             draggable = draggable,
             icon = icon,

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleManagerInterface
@@ -49,6 +50,7 @@ class MapboxCircleOverlayRenderer(
                 addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                addProperty(MapboxCircleLayer.Prop.Z_INDEX, state.zIndex ?: calculateZIndex(state.center))
             },
             "circle-${state.id}",
         )
@@ -75,6 +77,7 @@ class MapboxCircleOverlayRenderer(
                 addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                addProperty(MapboxCircleLayer.Prop.Z_INDEX, state.zIndex ?: calculateZIndex(state.center))
             },
             "circle-${state.id}",
         )

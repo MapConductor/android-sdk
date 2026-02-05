@@ -10,9 +10,6 @@ import com.mapconductor.core.spherical.Spherical
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import android.util.Log
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 
 /**
  * Memory usage statistics for MarkerManager optimization
@@ -42,9 +39,10 @@ open class MarkerManager<ActualMarker>(
 
     fun lock() {
         if (writeLock != null) return
-        writeLock = semaphore.writeLock().also {
-            it.tryLock()
-        }
+        writeLock =
+            semaphore.writeLock().also {
+                it.tryLock()
+            }
     }
 
     fun unlock() {
@@ -208,10 +206,11 @@ open class MarkerManager<ActualMarker>(
             semaphore.read {
                 val distance = Spherical.computeDistanceBetween(bounds.center!!, bounds.northEast!!)
                 val hexCells = registry.findWithinRadiusWithDistance(bounds.center!!, distance)
-                val entryIDs: List<String> = hexCells
-                    .map { registry.getEntryIDsByHexCell(it.cell) }
-                    .mapNotNull{ it }
-                    .flatMap { it.toList() }
+                val entryIDs: List<String> =
+                    hexCells
+                        .map { registry.getEntryIDsByHexCell(it.cell) }
+                        .mapNotNull { it }
+                        .flatMap { it.toList() }
                 return entryIDs.map { getEntity(it)!! }
             }
         }

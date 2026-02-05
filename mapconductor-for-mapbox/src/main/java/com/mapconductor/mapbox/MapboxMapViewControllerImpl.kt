@@ -88,13 +88,7 @@ internal class MapboxMapViewController(
     private val markerEventControllers = mutableListOf<MapboxMarkerEventControllerInterface>()
     private var activeDragController: MapboxMarkerEventControllerInterface? = null
 
-    // Debouncing for camera change events to prevent excessive updates during zoom gestures
-    private var cameraDebounceJob: Job? = null
     private val cameraUpdateToken = AtomicInteger(0)
-
-    private companion object {
-        private const val CAMERA_DEBOUNCE_MS = 16L // ~60fps, immediate feel but limits updates
-    }
 
     private var markerClickListener: OnMarkerEventHandler? = null
     private var markerDragStartListener: OnMarkerEventHandler? = null
@@ -176,18 +170,14 @@ internal class MapboxMapViewController(
 
     fun setupListeners() {
         holder.map.subscribeCameraChanged {
-            // Use debouncing to prevent excessive updates during rapid zoom/pan gestures
             val token = cameraUpdateToken.incrementAndGet()
-            cameraDebounceJob?.cancel()
-            cameraDebounceJob =
-                backCoroutine.launch {
-                    delay(CAMERA_DEBOUNCE_MS)
-                    if (token != cameraUpdateToken.get()) return@launch
-                    // Calculate camera position on background thread
-                    val mapCameraPosition = getMapCameraPositionAsync() ?: return@launch
-                    notifyMapCameraPosition(mapCameraPosition)
-                    cameraMoveCallback?.invoke(mapCameraPosition)
-                }
+            backCoroutine.launch {
+                if (token != cameraUpdateToken.get()) return@launch
+                // Calculate camera position on background thread
+                val mapCameraPosition = getMapCameraPositionAsync() ?: return@launch
+                notifyMapCameraPosition(mapCameraPosition)
+                cameraMoveCallback?.invoke(mapCameraPosition)
+            }
         }
         holder.map.subscribeStyleLoaded {
             mapLoadedCallback?.invoke()

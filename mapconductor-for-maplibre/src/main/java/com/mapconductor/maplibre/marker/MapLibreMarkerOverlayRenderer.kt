@@ -3,6 +3,7 @@ package com.mapconductor.maplibre.marker
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.BitmapIcon
@@ -39,6 +40,7 @@ class MapLibreMarkerOverlayRenderer(
         const val DEFAULT_MARKER_ID = "default"
         const val SCALE = "scale"
         const val ICON_ANCHOR = "icon-offset"
+        const val Z_INDEX = "zIndex"
     }
 
     object IconAnchor {
@@ -84,10 +86,15 @@ class MapLibreMarkerOverlayRenderer(
         position: GeoPoint,
     ) {
         val entities = markerManager.allEntities()
+        val props = (markerEntity.marker?.properties() ?: JsonObject()).deepCopy()
+        props.addProperty(
+            Prop.Z_INDEX,
+            markerEntity.state.zIndex ?: calculateZIndex(position),
+        )
         val feature =
             Feature.fromGeometry(
                 position.toPoint(),
-                markerEntity.marker?.properties(),
+                props,
                 "marker-${markerEntity.state.id}",
             )
         markerEntity.marker = feature
@@ -150,6 +157,7 @@ class MapLibreMarkerOverlayRenderer(
                     }
                     // We don't use the MapLibre SDK's scaling system
                     // addProperty(Prop.SCALE, 1.0)
+                    addProperty(Prop.Z_INDEX, it.state.zIndex ?: calculateZIndex(it.state.position))
                 }
             Feature.fromGeometry(position, properties, featureId)
         }
@@ -250,6 +258,10 @@ class MapLibreMarkerOverlayRenderer(
                             }
                         }
                     }
+                    addProperty(
+                        Prop.Z_INDEX,
+                        params.current.state.zIndex ?: calculateZIndex(params.current.state.position),
+                    )
                 }
 
             val position =

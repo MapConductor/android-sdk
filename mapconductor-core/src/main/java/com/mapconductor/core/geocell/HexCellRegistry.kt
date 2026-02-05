@@ -9,7 +9,6 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.math.pow
 import kotlin.math.sqrt
-import android.util.Log
 
 /**
  * HexCellRegistry - Thread-safe hexagonal cell management with KDTree spatial indexing
@@ -25,7 +24,9 @@ class HexCellRegistry<ActualMarker>(
     private var kdTree: KDTree? = null
     private val allCells = ConcurrentHashMap<String, HexCell>()
     private val entryIDsByCell = ConcurrentHashMap<String, MutableSet<String>>()
-    private val allEntries = ConcurrentHashMap<String, String>() // entityId -> cellId
+    private val allEntries = ConcurrentHashMap<String, String>()
+
+        // entityId -> cellId
     @Volatile
     private var needsRebuild = false
 
@@ -144,7 +145,7 @@ class HexCellRegistry<ActualMarker>(
 
         // read を解放してから write で再確認＆再構築
         lock.write {
-            if (!needsRebuild) return  // ここに来るまでに別スレッドが rebuild 済みの場合
+            if (!needsRebuild) return // ここに来るまでに別スレッドが rebuild 済みの場合
             kdTree =
                 if (allCells.isNotEmpty()) {
                     KDTree(allCells.values.toList())

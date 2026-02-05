@@ -40,7 +40,6 @@ import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
 import com.mapconductor.mapbox.groundimage.MapboxGroundImageController
 import com.mapconductor.mapbox.groundimage.MapboxGroundImageOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
-import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
 import com.mapconductor.mapbox.marker.MarkerDragLayer
 import com.mapconductor.mapbox.marker.MarkerLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
@@ -158,10 +157,10 @@ fun MapboxMapView(
                     markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
-            val polygonController = getPolygonController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
+            val polygonController = getPolygonController(holder, rasterLayerController)
             val groundImageController = getGroundImageController(holder)
             val circleController = getCircleController(holder)
-            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until after controller is created and view is laid out
 
@@ -289,7 +288,10 @@ fun MapboxMapView(
     )
 }
 
-internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonConductor {
+internal fun getPolygonController(
+    holder: MapboxMapViewHolder,
+    rasterLayerController: MapboxRasterLayerController,
+): MapboxPolygonConductor {
     val polylineLayer: MapboxPolylineLayer =
         MapboxPolylineLayer(
             sourceId = "polygon-outline-source",
@@ -314,6 +316,7 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
             layer = polygonLayer,
             polygonManager = polygonManager,
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     val conductor =

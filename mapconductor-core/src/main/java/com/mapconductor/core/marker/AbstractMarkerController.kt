@@ -3,9 +3,9 @@ package com.mapconductor.core.marker
 import com.mapconductor.core.controller.OverlayControllerInterface
 import com.mapconductor.core.map.MapCameraPosition
 import android.util.Log
-import kotlinx.coroutines.yield
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.yield
 
 abstract class AbstractMarkerController<ActualMarker>(
     val markerManager: MarkerManager<ActualMarker>,

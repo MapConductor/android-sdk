@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.mapconductor.arcgis.from
-import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.MapCameraPosition
@@ -14,7 +13,6 @@ import com.mapconductor.core.map.MapPaddings
 import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.marker.MarkerTilingOptions
 import java.util.UUID
 import android.app.Activity
 import android.content.Context

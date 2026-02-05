@@ -6,6 +6,7 @@ import com.here.sdk.core.GeoCircle
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntityInterface
@@ -34,7 +35,9 @@ class HereCircleOverlayRenderer(
                 Color.valueOf(state.fillColor.toArgb()),
                 Color.valueOf(state.strokeColor.toArgb()),
                 lineWidth,
-            )
+            ).apply {
+                drawOrder = state.zIndex ?: calculateZIndex(state.center)
+            }
         coroutine.launch {
             holder.map.addMapPolygon(mapCircle)
         }
@@ -91,6 +94,9 @@ class HereCircleOverlayRenderer(
                         current.state.fillColor
                             .toArgb(),
                     )
+            }
+            if (finger.zIndex != prevFinger.zIndex) {
+                current.circle.drawOrder = current.state.zIndex ?: calculateZIndex(current.state.center)
             }
             current.circle.outlineWidth =
                 current.state.strokeWidth.value

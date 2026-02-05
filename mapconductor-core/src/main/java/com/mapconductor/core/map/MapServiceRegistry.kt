@@ -40,4 +40,3 @@ val LocalMapServiceRegistry =
     compositionLocalOf<MapServiceRegistry> {
         EmptyMapServiceRegistry
     }
-

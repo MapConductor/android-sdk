@@ -2,6 +2,7 @@ package com.mapconductor.googlemaps.marker
 
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
 import com.mapconductor.core.marker.MarkerEntityInterface
@@ -21,6 +22,9 @@ class GoogleMapMarkerRenderer(
         holder = holder,
         coroutine = coroutine,
     ) {
+    private fun resolveZIndex(params: MarkerOverlayRendererInterface.AddParamsInterface): Float =
+        (params.state.zIndex ?: calculateZIndex(params.state.position)).toFloat()
+
     override fun setMarkerPosition(
         markerEntity: MarkerEntityInterface<GoogleMapActualMarker>,
         position: GeoPoint,
@@ -44,6 +48,7 @@ class GoogleMapMarkerRenderer(
                             params.bitmapIcon.anchor.y,
                         ).icon(bitmapDescriptor)
                         .draggable(params.state.draggable)
+                        .zIndex(resolveZIndex(params))
                 val marker =
                     holder.map.addMarker(options)?.also {
                         it.tag = params.state.id
@@ -102,6 +107,8 @@ class GoogleMapMarkerRenderer(
                 marker.position =
                     GeoPoint.from(params.current.state.position).toLatLng()
                 marker.isVisible = params.current.visible
+                marker.zIndex =
+                    (params.current.state.zIndex ?: calculateZIndex(params.current.state.position)).toFloat()
 
                 // Google Mapsはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
                 marker

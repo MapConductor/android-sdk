@@ -51,11 +51,15 @@ import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.settings.Settings
-import java.util.concurrent.atomic.AtomicLong
 import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+
 
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
@@ -76,10 +80,11 @@ class ArcGISMapViewController(
     private var markerDragEndListener: OnMarkerEventHandler? = null
     private var markerAnimateStartListener: OnMarkerEventHandler? = null
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
-    private var lastRequestedCameraPosition: MapCameraPosition? = null
-    private val cameraRequestGeneration = AtomicLong(0L)
 
-    @Volatile private var pendingCameraRestoreRequest: Long = 0L
+    // ArcGIS updates the viewpoint asynchronously; firing "move end" immediately after setViewpointCamera()
+    // can read a stale camera and cause feedback loops in camera sync scenarios.
+    private var cameraMoveEndJob: Job? = null
+    private val cameraMoveEndDebounceMs = 180L
 
     init {
         holder.map.graphicsOverlays.clear()
@@ -153,27 +158,38 @@ class ArcGISMapViewController(
         this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
 
     private suspend fun invokeCameraMoveStartCallback() {
-        cameraMoveCallback?.let {
+        cameraMoveStartCallback?.let { cb ->
             getMapCameraPosition()?.let { mapCameraPosition ->
-                cameraMoveStartCallback?.invoke(mapCameraPosition)
+                cb(mapCameraPosition)
             }
         }
     }
 
     private suspend fun invokeCameraMoveCallback() {
-        cameraMoveCallback?.let {
+        cameraMoveCallback?.let { cb ->
             getMapCameraPosition()?.let { mapCameraPosition ->
-                cameraMoveCallback?.invoke(mapCameraPosition)
+                cb(mapCameraPosition)
+            }
+        }
+        scheduleCameraMoveEndCallback()
+    }
+
+    private suspend fun invokeCameraMoveEndCallback() {
+        cameraMoveEndCallback?.let { cb ->
+            getMapCameraPosition()?.let { mapCameraPosition ->
+                cb(mapCameraPosition)
             }
         }
     }
 
-    private suspend fun invokeCameraMoveEndCallback() {
-        cameraMoveEndCallback?.let {
-            getMapCameraPosition()?.let { mapCameraPosition ->
-                cameraMoveEndCallback?.invoke(mapCameraPosition)
+    private fun scheduleCameraMoveEndCallback() {
+        if (cameraMoveEndCallback == null) return
+        cameraMoveEndJob?.cancel()
+        cameraMoveEndJob =
+            coroutine.launch {
+                delay(cameraMoveEndDebounceMs)
+                invokeCameraMoveEndCallback()
             }
-        }
     }
 
     private suspend fun onViewpointChange() {
@@ -181,25 +197,8 @@ class ArcGISMapViewController(
         mapLoadedCallback = null
 
         getMapCameraPosition()?.let { mapCameraPosition ->
-            val pending = pendingCameraRestoreRequest
-            val expected = lastRequestedCameraPosition
-            if (pending != 0L &&
-                pending == cameraRequestGeneration.get() &&
-                expected != null &&
-                !expected.equals(mapCameraPosition)
-            ) {
-                pendingCameraRestoreRequest = 0L
-                val dstCameraPosition = toCameraWithView(expected)
-                holder.mapView.post {
-                    if (!holder.mapView.isAttachedToWindow) return@post
-                    if (cameraRequestGeneration.get() != pending) return@post
-                    holder.map.setViewpointCamera(camera = dstCameraPosition)
-                }
-            } else if (pending != 0L && pending == cameraRequestGeneration.get()) {
-                // Consider the request settled once we observe any viewpoint update for it.
-                pendingCameraRestoreRequest = 0L
-            }
             notifyMapCameraPosition(mapCameraPosition)
+            scheduleCameraMoveEndCallback()
         }
     }
 
@@ -457,26 +456,13 @@ class ArcGISMapViewController(
     }
 
     override fun moveCamera(position: MapCameraPosition) {
-        lastRequestedCameraPosition = position
-        val request = cameraRequestGeneration.incrementAndGet()
-        pendingCameraRestoreRequest = request
         val dstCameraPosition = toCameraWithView(position)
 
-        holder.map.setViewpointCamera(
-            camera = dstCameraPosition,
-        )
-
-        // If this runs before first layout, ArcGIS may ignore it; retry once after layout.
-        if (holder.map.width == 0 || holder.map.height == 0) {
-            holder.mapView.post {
-                if (!holder.mapView.isAttachedToWindow) return@post
-                if (cameraRequestGeneration.get() == request) {
-                    holder.map.setViewpointCamera(camera = dstCameraPosition)
-                }
-            }
-        }
         coroutine.launch {
-            invokeCameraMoveEndCallback()
+            withContext(Dispatchers.Main) {
+                if (!holder.mapView.isAttachedToWindow) return@withContext
+                holder.map.setViewpointCamera(camera = dstCameraPosition)
+            }
         }
     }
 
@@ -484,30 +470,23 @@ class ArcGISMapViewController(
         position: MapCameraPosition,
         duration: Long,
     ) {
-        lastRequestedCameraPosition = position
-        val request = cameraRequestGeneration.incrementAndGet()
-        pendingCameraRestoreRequest = request
         val dstCameraPosition = toCameraWithView(position)
 
         coroutine.launch {
             invokeCameraMoveStartCallback()
-            holder.map.setViewpointCameraAnimated(
-                camera = dstCameraPosition,
-                duration = duration.toFloat() / 1000.0f,
-            )
-            invokeCameraMoveEndCallback()
+            withContext(Dispatchers.Main) {
+                if (!holder.mapView.isAttachedToWindow) return@withContext
+//                if (cameraRequestGeneration.get() == request) {
+                    holder.map.setViewpointCameraAnimated(
+                        camera = dstCameraPosition,
+                        duration = duration.toFloat() / 1000.0f,
+                    )
+//                }
+            }
+            scheduleCameraMoveEndCallback()
         }
     }
 
-    private fun computeZoom0DistanceForCurrentView(): Double {
-        val view = holder.map
-        val w = view.width.coerceAtLeast(1)
-        val h = view.height.coerceAtLeast(1)
-        val aspect = w.toDouble() / h.toDouble()
-        val fovHorizontalDegrees = 55.0 // default assumption
-        val fovVerticalDegrees = ZoomAltitudeConverter.verticalFovFromHorizontal(fovHorizontalDegrees, aspect)
-        return ZoomAltitudeConverter.computeZoom0DistanceForView(h, fovVerticalDegrees)
-    }
 
     private fun toCameraWithView(position: MapCameraPosition): Camera {
         val targetPoint =
@@ -520,7 +499,7 @@ class ArcGISMapViewController(
         return calculateCameraForOrbitParameters(
             targetPoint = targetPoint,
             distance = distance,
-            cameraHeadingOffset = 360 - (position.bearing + 180),
+            cameraHeadingOffset = position.bearing + 180,
             cameraPitchOffset = position.tilt,
         )
     }
@@ -582,7 +561,7 @@ class ArcGISMapViewController(
                 scene.setBasemap(baseMap)
                 // Basemap changes can reset the viewpoint; mark the current request as pending so that
                 // the next viewpointChanged can restore the last requested camera if needed.
-                pendingCameraRestoreRequest = cameraRequestGeneration.get()
+//                pendingCameraRestoreRequest = cameraRequestGeneration.get()
             }
         }
     }

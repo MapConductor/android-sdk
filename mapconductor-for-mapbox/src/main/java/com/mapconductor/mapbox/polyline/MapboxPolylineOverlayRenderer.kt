@@ -18,6 +18,13 @@ class MapboxPolylineOverlayRenderer(
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolylineOverlayRenderer<MapboxActualPolyline>() {
+    private fun resolveZIndex(state: PolylineState): Int =
+        if (state.zIndex != 0) {
+            state.zIndex
+        } else {
+            (state.extra as? Int) ?: 0
+        }
+
     override suspend fun createPolyline(state: PolylineState): MapboxActualPolyline? =
         createMapboxLines(
             id = state.id,
@@ -25,7 +32,7 @@ class MapboxPolylineOverlayRenderer(
             geodesic = state.geodesic,
             strokeColor = state.strokeColor,
             strokeWidth = state.strokeWidth,
-            zIndex = (state.extra as? Int) ?: 0,
+            zIndex = resolveZIndex(state),
         )
 
     override suspend fun updatePolylineProperties(
@@ -40,7 +47,7 @@ class MapboxPolylineOverlayRenderer(
             geodesic = current.state.geodesic,
             strokeColor = current.state.strokeColor,
             strokeWidth = current.state.strokeWidth,
-            zIndex = (current.state.extra as? Int) ?: 0,
+            zIndex = resolveZIndex(current.state),
         )
     }
 

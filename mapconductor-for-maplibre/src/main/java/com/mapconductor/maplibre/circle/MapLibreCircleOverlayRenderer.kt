@@ -1,6 +1,7 @@
 package com.mapconductor.maplibre.circle
 
 import com.google.gson.JsonObject
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleManagerInterface
@@ -34,6 +35,7 @@ class MapLibreCircleOverlayRenderer(
                 addProperty(MapLibreCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapLibreColorString())
                 addProperty(MapLibreCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapLibreColorString())
                 addProperty(MapLibreCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                addProperty(MapLibreCircleLayer.Prop.Z_INDEX, state.zIndex ?: calculateZIndex(state.center))
             },
             "circle-${state.id}",
         )
@@ -55,6 +57,7 @@ class MapLibreCircleOverlayRenderer(
                 addProperty(MapLibreCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapLibreColorString())
                 addProperty(MapLibreCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapLibreColorString())
                 addProperty(MapLibreCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                addProperty(MapLibreCircleLayer.Prop.Z_INDEX, state.zIndex ?: calculateZIndex(state.center))
             },
             "circle-${state.id}",
         )

@@ -19,6 +19,9 @@ class MapLibreRasterLayerOverlayRenderer(
     private val holder: MapLibreMapViewHolderInterface,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<MapLibreRasterLayerHandle> {
+    private val stateById: MutableMap<String, RasterLayerState> = mutableMapOf()
+    private val handleById: MutableMap<String, MapLibreRasterLayerHandle> = mutableMapOf()
+
     private fun isMarkerTileRaster(state: RasterLayerState): Boolean =
         state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
 
@@ -26,7 +29,14 @@ class MapLibreRasterLayerOverlayRenderer(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
     ): List<MapLibreRasterLayerHandle?> =
         data.map { params ->
-            addLayer(params.state)
+            addLayer(params.state).also { handle ->
+                if (handle != null) {
+                    stateById[params.state.id] = params.state
+                    handleById[params.state.id] = handle
+                }
+            }
+        }.also {
+            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
         }
 
     override suspend fun onChange(
@@ -35,19 +45,30 @@ class MapLibreRasterLayerOverlayRenderer(
         data.map { params ->
             val prev = params.prev
             val next = params.current.state
-            if (prev.state.source != next.source) {
-                removeLayer(prev)
-                addLayer(next)
-            } else {
-                updateLayer(prev.layer, next)
-                prev.layer
+            val handle =
+                if (prev.state.source != next.source) {
+                    removeLayer(prev)
+                    addLayer(next)
+                } else {
+                    updateLayer(prev.layer, next)
+                    prev.layer
+                }
+            if (handle != null) {
+                stateById[next.id] = next
+                handleById[next.id] = handle
             }
+            handle
+        }.also {
+            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
         }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<MapLibreRasterLayerHandle>>) {
         data.forEach { entity ->
+            stateById.remove(entity.state.id)
+            handleById.remove(entity.state.id)
             removeLayer(entity)
         }
+        holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
     }
 
     override suspend fun onPostProcess() {}
@@ -130,6 +151,38 @@ class MapLibreRasterLayerOverlayRenderer(
         try {
             style.removeSource(handle.sourceId)
         } catch (_: Exception) {
+        }
+    }
+
+    private fun rebuildNonMarkerRasterLayers(style: org.maplibre.android.maps.Style) {
+        val ordered =
+            stateById.values
+                .asSequence()
+                .filter { !isMarkerTileRaster(it) }
+                .sortedBy { it.zIndex }
+                .mapNotNull { state -> handleById[state.id]?.let { handle -> state to handle } }
+                .toList()
+
+        ordered.forEach { (_, handle) ->
+            try {
+                style.removeLayer(handle.layerId)
+            } catch (_: Exception) {
+            }
+        }
+
+        ordered.forEach { (state, handle) ->
+            val layer = RasterLayer(handle.layerId, handle.sourceId)
+            val opacity = state.opacity.coerceIn(0.0f, 1.0f)
+            layer.setProperties(
+                PropertyFactory.rasterOpacity(opacity),
+                PropertyFactory.visibility(
+                    if (state.visible) Property.VISIBLE else Property.NONE,
+                ),
+            )
+            try {
+                style.addLayer(layer)
+            } catch (_: Exception) {
+            }
         }
     }
 

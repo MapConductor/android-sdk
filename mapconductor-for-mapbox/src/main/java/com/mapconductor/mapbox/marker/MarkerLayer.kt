@@ -21,6 +21,7 @@ open class MarkerLayer(
             iconImage(Expression.get(MapboxMarkerOverlayRenderer.Prop.ICON_ID))
             iconAllowOverlap(true)
             iconIgnorePlacement(true)
+            symbolSortKey(Expression.get(MapboxMarkerOverlayRenderer.Prop.Z_INDEX))
             iconAnchor(IconAnchor.TOP_LEFT)
             iconTranslateAnchor(IconTranslateAnchor.MAP)
             iconOffset(

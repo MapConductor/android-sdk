@@ -30,7 +30,10 @@ class HerePolylineOverlayRenderer(
     override suspend fun createPolyline(state: PolylineState): HereActualPolyline? {
         val geoPolyline = createGeoPolyline(state)
         val representation = createRepresentation(state)
-        val mapPolyline = MapPolyline(geoPolyline, representation)
+        val mapPolyline =
+            MapPolyline(geoPolyline, representation).apply {
+                drawOrder = state.zIndex
+            }
 
         coroutine.launch {
             holder.map.addMapPolylines(listOf(mapPolyline))
@@ -59,6 +62,11 @@ class HerePolylineOverlayRenderer(
             if (finger.strokeColor != prevFinger.strokeColor || finger.strokeWidth != prevFinger.strokeWidth) {
                 val representation = createRepresentation(current.state)
                 polyline.setRepresentation(representation)
+                needsReAdd = true
+            }
+
+            if (finger.zIndex != prevFinger.zIndex) {
+                polyline.drawOrder = current.state.zIndex
                 needsReAdd = true
             }
 

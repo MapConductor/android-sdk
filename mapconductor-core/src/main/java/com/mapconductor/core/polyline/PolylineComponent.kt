@@ -33,6 +33,7 @@ fun MapViewScope.Polyline(
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
+    zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolylineEventHandler? = null,
 ) {
@@ -43,6 +44,7 @@ fun MapViewScope.Polyline(
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             geodesic = geodesic,
+            zIndex = zIndex,
             extra = extra,
             onClick = onClick,
         )
@@ -56,6 +58,7 @@ fun MapViewScope.Polyline(
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
+    zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolylineEventHandler? = null,
 ) {
@@ -75,6 +78,7 @@ fun MapViewScope.Polyline(
                 strokeColor = strokeColor,
                 strokeWidth = strokeWidth,
                 geodesic = geodesic,
+                zIndex = zIndex,
                 extra = extra,
                 onClick = onClick,
             )

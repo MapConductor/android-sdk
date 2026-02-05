@@ -1,7 +1,5 @@
 package com.mapconductor.core.groundimage
 
-import com.mapconductor.core.map.MapCameraPosition
-
 interface GroundImageOverlayRendererInterface<ActualGroundImage> {
     interface AddParamsInterface {
         val state: GroundImageState

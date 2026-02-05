@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.jlleitschuh.ktlint) apply false
-    id("com.gradleup.nmcp") version "1.4.4"
+    id("com.gradleup.nmcp") version "0.0.8"
 }
 
 buildscript {

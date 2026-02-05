@@ -19,6 +19,7 @@ class PolylineState(
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 1.dp,
     geodesic: Boolean = false,
+    zIndex: Int = 0,
     extra: Serializable? = null,
     onClick: OnPolylineEventHandler? = null,
 ) : ComponentState {
@@ -37,6 +38,7 @@ class PolylineState(
     var strokeColor by mutableStateOf(strokeColor)
     var strokeWidth by mutableStateOf(strokeWidth)
     var geodesic by mutableStateOf(geodesic)
+    var zIndex by mutableStateOf(zIndex)
     var points by mutableStateOf<List<GeoPointInterface>>(points)
     var extra by mutableStateOf(extra)
     var onClick by mutableStateOf(onClick)
@@ -56,6 +58,7 @@ class PolylineState(
         result = 31 * result + this@PolylineState.strokeColor.hashCode()
         result = 31 * result + this@PolylineState.strokeWidth.hashCode()
         result = 31 * result + geodesic.hashCode()
+        result = 31 * result + zIndex.hashCode()
         result = 31 * result + listHashCode(points)
         return result
     }
@@ -66,6 +69,7 @@ class PolylineState(
         strokeColor: Color = this.strokeColor,
         strokeWidth: Dp = this.strokeWidth,
         geodesic: Boolean = this.geodesic,
+        zIndex: Int = this.zIndex,
         extra: Serializable? = this.extra,
         onClick: OnPolylineEventHandler? = this.onClick,
     ): PolylineState =
@@ -75,6 +79,7 @@ class PolylineState(
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             geodesic = geodesic,
+            zIndex = zIndex,
             extra = extra,
             onClick = onClick,
         )
@@ -93,6 +98,7 @@ class PolylineState(
             strokeColor = this@PolylineState.strokeColor.hashCode(),
             strokeWidth = this@PolylineState.strokeWidth.hashCode(),
             geodesic = geodesic.toString().hashCode(),
+            zIndex = zIndex.hashCode(),
             points = listHashCode(points),
             extra = extra?.hashCode() ?: 0,
         )
@@ -105,6 +111,7 @@ data class PolylineFingerPrint(
     val strokeColor: Int,
     val strokeWidth: Int,
     val geodesic: Int,
+    val zIndex: Int,
     val points: Int,
     val extra: Int,
 )

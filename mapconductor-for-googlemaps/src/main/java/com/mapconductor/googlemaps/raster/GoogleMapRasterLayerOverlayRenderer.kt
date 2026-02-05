@@ -32,6 +32,16 @@ class GoogleMapRasterLayerOverlayRenderer(
     private val okHttpClient: OkHttpClient,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : RasterLayerOverlayRendererInterface<TileOverlay> {
+    private fun isMarkerTileRaster(state: RasterLayerState): Boolean = state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
+
+    private fun resolveOverlayZIndex(state: RasterLayerState): Float =
+        if (isMarkerTileRaster(state)) {
+            // Backward-compatible behavior: marker tiles stay above most overlays.
+            999f
+        } else {
+            state.zIndex.toFloat()
+        }
+
     override suspend fun onAdd(data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>): List<TileOverlay?> =
         withContext(coroutine.coroutineContext) {
             data.map { params ->
@@ -149,7 +159,7 @@ class GoogleMapRasterLayerOverlayRenderer(
         val options =
             TileOverlayOptions()
                 .tileProvider(provider)
-                .zIndex(999f)
+                .zIndex(resolveOverlayZIndex(state))
                 .transparency(opacityToTransparency(state.opacity))
                 .visible(state.visible)
         return holder.map.addTileOverlay(options)?.also { overlay ->
@@ -164,6 +174,7 @@ class GoogleMapRasterLayerOverlayRenderer(
     ) {
         overlay.isVisible = state.visible
         overlay.transparency = opacityToTransparency(state.opacity)
+        overlay.zIndex = resolveOverlayZIndex(state)
     }
 
     private fun resolveTileSpec(state: RasterLayerState): TileSpec? =
@@ -196,6 +207,10 @@ class GoogleMapRasterLayerOverlayRenderer(
         val tileSize: Int,
         val scheme: TileScheme,
     )
+
+    private companion object {
+        private const val MARKER_TILE_RASTER_ID_PREFIX = "marker-tile-"
+    }
 
     private fun addDebugOverlay(
         input: ByteArray,

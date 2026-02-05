@@ -3,6 +3,7 @@ package com.mapconductor.googlemaps.circle
 import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleState
@@ -39,6 +40,7 @@ class GoogleMapCircleOverlayRenderer(
                     .fillColor(state.fillColor.toArgb())
                     .clickable(false)
                     .geodesic(state.geodesic)
+                    .zIndex((state.zIndex ?: calculateZIndex(state.center)).toFloat())
             holder.map.addPolygon(options).also {
                 it.tag = state.id
             }
@@ -87,6 +89,9 @@ class GoogleMapCircleOverlayRenderer(
             }
             if (finger.fillColor != prevFinger.fillColor) {
                 circle.fillColor = current.state.fillColor.toArgb()
+            }
+            if (finger.zIndex != prevFinger.zIndex) {
+                circle.zIndex = (current.state.zIndex ?: calculateZIndex(current.state.center)).toFloat()
             }
             circle
         }

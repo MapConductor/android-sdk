@@ -53,7 +53,11 @@ class HereRasterLayerOverlayRenderer(
     override suspend fun onPostProcess() {}
 
     private fun addLayer(state: RasterLayerState): HereRasterLayerHandle? {
-        val tileSpec = resolveTileSpec(state) ?: return null
+        val tileSpec = resolveTileSpec(state)
+        if (tileSpec == null) {
+            Log.e("HereRasterLayer", "resolveTileSpec returned null!")
+            return null
+        }
         val urlProvider = tileSpec.provider
         val storageLevels = tileSpec.storageLevels
         val provider =
@@ -91,7 +95,7 @@ class HereRasterLayerOverlayRenderer(
             )
         } catch (e: MapLayerBuilder.InstantiationException) {
             dataSource.destroy()
-            Log.w("HERE", "Failed to create raster layer: ${e.message}")
+            Log.e("HereRasterLayer", "Failed to create raster layer: ${e.message}", e)
             null
         }
     }
@@ -123,8 +127,20 @@ class HereRasterLayerOverlayRenderer(
                                 .replace("{z}", zoom.toString())
                         }
                     } else {
-                        TileUrlProviderFactory.fromXyzUrlTemplate(source.template)
-                            ?: return null
+                        // TileUrlProviderFactory can return null for templates with query params etc.
+                        // Fall back to simple placeholder replacement.
+                        val factoryProvider = TileUrlProviderFactory.fromXyzUrlTemplate(source.template)
+                        if (factoryProvider != null) {
+                            factoryProvider
+                        } else {
+                            TileUrlProviderCallback { x, y, zoom ->
+                                val url = source.template
+                                    .replace("{x}", x.toString())
+                                    .replace("{y}", y.toString())
+                                    .replace("{z}", zoom.toString())
+                                url
+                            }
+                        }
                     }
                 TileSpec(
                     provider = provider,
@@ -134,7 +150,7 @@ class HereRasterLayerOverlayRenderer(
                 )
             }
             is RasterLayerSource.TileJson -> {
-                Log.w("HERE", "HERE SDK does not support TileJson raster sources.")
+                Log.w("HereRasterLayer", "HERE SDK does not support TileJson raster sources.")
                 null
             }
             is RasterLayerSource.ArcGisService -> {

@@ -43,8 +43,8 @@ import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.polyline.HerePolylineOverlayRenderer
 import com.mapconductor.here.raster.HereRasterLayerController
 import com.mapconductor.here.raster.HereRasterLayerOverlayRenderer
-import com.mapconductor.here.zoom.ZoomAltitudeConverter
 import java.util.concurrent.atomic.AtomicBoolean
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -87,6 +87,7 @@ fun HereMapView(
     )
 }
 
+@SuppressLint("RememberReturnType")
 @OptIn(ExperimentalCoroutinesApi::class)
 @Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
 @Composable
@@ -111,6 +112,9 @@ fun HereMapView(
     onPolygonClick: OnPolygonEventHandler? = null,
     content: (@Composable HereViewScope.() -> Unit)? = null,
 ) {
+    // Warmup the tile server early to reduce latency for raster layers
+    remember { TileServerRegistry.warmup() }
+
     val holderRef = remember { Ref<HereViewHolder>() }
     val scope = remember { HereViewScope() }
     val controllerRef = remember { Ref<HereMapViewController>() }
@@ -153,16 +157,16 @@ fun HereMapView(
         },
 
         controllerProvider = { holder ->
+            val rasterLayerController = getRasterLayerController(holder)
             val markerController =
                 getMarkerController(
                     holder = holder,
                     markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
-            val polygonController = getPolygonController(holder)
+            val polygonController = getPolygonController(holder, rasterLayerController)
             val groundImageController = getGroundImageController(holder)
             val circleController = getHereCircleController(holder)
-            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until after controller is created and camera is moved
 
@@ -223,6 +227,10 @@ fun HereMapView(
                     if (mapError != null) {
                         throw Throwable("Loading map failed: mapError: " + mapError.name)
                     }
+
+                    // Pre-warm HERE SDK's network stack by creating a dummy raster data source
+                    // This triggers network reachability checks early
+                    rasterLayerController.warmupNetworkIfNeeded(controller.holder)
 
                     // Start syncing camera only after the scene is ready; otherwise early camera updates
                     // can overwrite the initial camera (and then we'd re-apply the wrong value).
@@ -336,10 +344,14 @@ private fun getHereCircleController(holder: HereViewHolder): HereCircleControlle
     return controller
 }
 
-private fun getPolygonController(holder: HereViewHolder): HerePolygonController {
+private fun getPolygonController(
+    holder: HereViewHolder,
+    rasterLayerController: HereRasterLayerController,
+): HerePolygonController {
     val renderer =
         HerePolygonOverlayRenderer(
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     val controller =

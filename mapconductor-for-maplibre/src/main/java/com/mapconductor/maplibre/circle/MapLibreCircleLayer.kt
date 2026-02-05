@@ -22,6 +22,7 @@ class MapLibreCircleLayer(
         const val FILL_COLOR = "fillColor"
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
+        const val Z_INDEX = "zIndex"
     }
 
     companion object {
@@ -72,6 +73,7 @@ class MapLibreCircleLayer(
                 circleColor(Expression.get(Prop.FILL_COLOR)),
                 circleStrokeColor(Expression.get(Prop.STROKE_COLOR)),
                 circleStrokeWidth(Expression.get(Prop.STROKE_WIDTH)),
+                org.maplibre.android.style.layers.PropertyFactory.circleSortKey(Expression.get(Prop.Z_INDEX)),
             )
         }
 

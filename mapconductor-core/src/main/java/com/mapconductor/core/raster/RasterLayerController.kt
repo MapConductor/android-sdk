@@ -3,9 +3,9 @@ package com.mapconductor.core.raster
 import com.mapconductor.core.controller.OverlayControllerInterface
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 
 abstract class RasterLayerController<ActualLayer : Any>(
     val rasterLayerManager: RasterLayerManagerInterface<ActualLayer>,

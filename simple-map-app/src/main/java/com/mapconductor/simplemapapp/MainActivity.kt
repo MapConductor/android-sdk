@@ -9,58 +9,32 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.here.sdk.core.Point2D
-import com.here.sdk.core.Rectangle2D
-import com.here.sdk.core.Size2D
-import com.mapconductor.arcgis.map.ArcGISMapView
-import com.mapconductor.arcgis.map.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.geojson.GeoJsonLayer
+import com.mapconductor.core.geojson.GeoJsonLayerStyle
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.ImageIcon
-import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.MarkerAnimation
-import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTilingOptions
-import com.mapconductor.core.marker.Markers
 import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.Polyline
-import com.mapconductor.core.polyline.PolylineState
-import com.mapconductor.core.spherical.Spherical
-import com.mapconductor.example.pages.marker.postoffice.TokyoPostOffices
-import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.heatmap.HeatmapOverlay
 import com.mapconductor.heatmap.HeatmapPoints
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
-import com.mapconductor.mapbox.MapboxMapView
-import com.mapconductor.mapbox.rememberMapboxMapViewState
-import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.postoffice.HeatmapLayerPageViewModel
 import com.mapconductor.simplemapapp.postoffice.HeatmapLayerViewModelInterface
 import com.mapconductor.simplemapapp.postoffice.PostOfficeDataLoader
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
-import android.graphics.drawable.Drawable
 import android.os.Bundle
-import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,7 +44,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HeatmapExample(
+                    HolePolygonExample(
                         modifier =
                             Modifier
                                 .padding(innerPadding)
@@ -83,10 +57,68 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BasicGroundImageExample(
-    drawable: Drawable,
+fun HolePolygonExample(
     modifier: Modifier = Modifier,
 ) {
+    val mapViewState =
+        rememberHereMapViewState(
+            cameraPosition =
+                MapCameraPosition(
+                    position = GeoPoint(43.06050568387817, 141.35374551567804),
+                    zoom = 11.0,
+                )
+        )
+
+    val polygonState = remember {
+        PolygonState(
+            points = listOf(
+                GeoPoint(85.0, 90.0),
+                GeoPoint(85.0, 0.1),
+                GeoPoint(85.0, -90.0),
+                GeoPoint(85.0, -179.9),
+                GeoPoint(0.0, -179.9),
+                GeoPoint(-85.0, -179.9),
+                GeoPoint(-85.0, -90.0),
+                GeoPoint(-85.0, 0.1),
+                GeoPoint(-85.0, 90.0),
+                GeoPoint(-85.0, 179.9),
+                GeoPoint(0.0, 179.9),
+                GeoPoint(85.0, 179.9),
+            ),
+            holes = listOf(
+                listOf( // 1
+                    GeoPoint(43.10086924222251, 141.35290903949243),
+                    GeoPoint(43.04444342582366, 141.4118953480885),
+                    GeoPoint(43.05060149394299, 141.30656265416695),
+                ),
+                listOf( // 2
+                    GeoPoint(43.06035050410283, 141.31990479539704),
+                    GeoPoint(43.038284739487004, 141.33324693662706),
+                    GeoPoint(43.049062034871525, 141.28690055130158),
+                )
+            ),
+            fillColor = Color(0xCC787880),
+            strokeColor = Color.Red,
+            strokeWidth = 2.dp,
+        )
+    }
+
+    val polygonState2 = remember { tokyoPolygonState }
+
+    HereMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+//        Polygon(polygonState)
+        Polygon(polygonState2)
+    }
+}
+
+@Composable
+fun BasicGeoJSONExample(
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
     val mapViewState =
         rememberMapLibreMapViewState(
             cameraPosition =
@@ -95,14 +127,63 @@ fun BasicGroundImageExample(
                     zoom = 10.0,
                 )
         )
-    val markers = remember {
-        TokyoPostOffices.map { MarkerState(
-            position = it.position,
-            icon = ImageIcon(
-                image = drawable,
-                scale = 0.3f,
-            )
-        ) }
+//    val geoJson =
+//        remember {
+//            // A small sample with MultiPoint, MultiLineString and MultiPolygon (lon/lat order).
+//            """
+//            {
+//              "type": "FeatureCollection",
+//              "features": [
+//                {
+//                  "type": "Feature",
+//                  "id": "multipoint",
+//                  "properties": { "name": "MultiPoint sample" },
+//                  "geometry": {
+//                    "type": "MultiPoint",
+//                    "coordinates": [
+//                      [139.76669, 35.68049],
+//                      [139.75688, 35.69115],
+//                      [139.78100, 35.67350]
+//                    ]
+//                  }
+//                },
+//                {
+//                  "type": "Feature",
+//                  "id": "multiline",
+//                  "properties": { "name": "MultiLineString sample" },
+//                  "geometry": {
+//                    "type": "MultiLineString",
+//                    "coordinates": [
+//                      [[139.74, 35.69], [139.77, 35.69], [139.80, 35.69]],
+//                      [[139.76, 35.66], [139.76, 35.68], [139.76, 35.70]]
+//                    ]
+//                  }
+//                },
+//                {
+//                  "type": "Feature",
+//                  "id": "multipolygon",
+//                  "properties": { "name": "MultiPolygon sample" },
+//                  "geometry": {
+//                    "type": "MultiPolygon",
+//                    "coordinates": [
+//                      [
+//                        [
+//                          [139.7500, 35.6750],
+//                          [139.7800, 35.6750],
+//                          [139.7800, 35.6950],
+//                          [139.7500, 35.6950],
+//                          [139.7500, 35.6750]
+//                        ]
+//                      ]
+//                    ]
+//                  }
+//                }
+//              ]
+//            }
+//            """.trimIndent()
+//        }
+    val geoJsonInputStream = remember {
+        context.assets.open("prefectures.geojson")
     }
 
     MapLibreMapView(
@@ -113,7 +194,18 @@ fun BasicGroundImageExample(
             debugTileOverlay = true,
         ),
     ) {
-        Markers(markers)
+        GeoJsonLayer(
+            geoJsonInputStream = geoJsonInputStream,
+            geoJsonKey = geoJsonInputStream.hashCode(),
+            style =
+                GeoJsonLayerStyle(
+                    polylineStrokeColor = Color(0xFF1565C0),
+                    polylineStrokeWidth = 3.dp,
+                    polygonStrokeColor = Color(0xFF2E7D32),
+                    polygonStrokeWidth = 2.dp,
+                    polygonFillColor = Color(0x332E7D32),
+                ),
+        )
     }
 }
 

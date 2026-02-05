@@ -30,4 +30,3 @@ interface MarkerRenderingSupport<ActualMarker> {
  * Registry key used to look up [MarkerRenderingSupport] from [com.mapconductor.core.map.LocalMapServiceRegistry].
  */
 object MarkerRenderingSupportKey : MapServiceKey<MarkerRenderingSupport<*>>
-

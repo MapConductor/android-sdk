@@ -48,6 +48,16 @@ class LocalTileServer private constructor(
         cacheKey: String,
     ): String = "$baseUrl/tiles/$routeId/$tileSize/$cacheKey/{z}/{x}/{y}.png"
 
+    /**
+     * URL template with cache key as query parameter instead of path segment.
+     * Some map SDKs (like HERE) may have stricter URL template parsing.
+     */
+    fun urlTemplateWithQueryCacheKey(
+        routeId: String,
+        tileSize: Int,
+        cacheKey: String,
+    ): String = "$baseUrl/tiles/$routeId/$tileSize/{z}/{x}/{y}.png?v=$cacheKey"
+
     fun start() {
         if (running.compareAndSet(false, true)) {
             acceptThread.isDaemon = true

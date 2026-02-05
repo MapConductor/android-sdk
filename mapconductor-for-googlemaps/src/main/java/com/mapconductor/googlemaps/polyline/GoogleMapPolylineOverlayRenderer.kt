@@ -57,6 +57,7 @@ class GoogleMapPolylineOverlayRenderer(
                     .color(state.strokeColor.toArgb())
                     .width(ResourceProvider.dpToPx(state.strokeWidth).toFloat())
                     .geodesic(state.geodesic)
+                    .zIndex(state.zIndex.toFloat())
                     .clickable(false)
 
             holder.map.addPolyline(options).also {
@@ -91,6 +92,10 @@ class GoogleMapPolylineOverlayRenderer(
 
             if (finger.strokeColor != prevFinger.strokeColor) {
                 polyline.color = current.state.strokeColor.toArgb()
+            }
+
+            if (finger.zIndex != prevFinger.zIndex) {
+                polyline.zIndex = current.state.zIndex.toFloat()
             }
 
             polyline

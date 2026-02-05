@@ -21,6 +21,7 @@ class MarkerState(
     var extra: Serializable? = null,
     icon: MarkerIconInterface? = null,
     animation: MarkerAnimation? = null,
+    zIndex: Int? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
     onClick: OnMarkerEventHandler? = null,
@@ -58,6 +59,7 @@ class MarkerState(
     var onDragEnd by mutableStateOf(onDragEnd)
     var onAnimateStart by mutableStateOf(onAnimateStart)
     var onAnimateEnd by mutableStateOf(onAnimateEnd)
+    var zIndex by mutableStateOf<Int?>(zIndex)
 
     private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
 
@@ -81,6 +83,7 @@ class MarkerState(
         position: GeoPointInterface = this.position,
         extra: Serializable? = this.extra,
         icon: MarkerIconInterface? = this.icon,
+        zIndex: Int? = this.zIndex,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
         onClick: OnMarkerEventHandler? = this.onClick,
@@ -95,6 +98,7 @@ class MarkerState(
             position = position,
             extra = extra,
             icon = icon,
+            zIndex = zIndex,
             clickable = clickable ?: this.clickable,
             draggable = draggable ?: this.draggable,
             onClick = onClick,
@@ -118,6 +122,7 @@ class MarkerState(
         result = 31 * result + currentPosition.value.longitude.hashCode()
         result = 31 * result + currentPosition.value.altitude.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
+        result = 31 * result + zIndex.hashCode()
         return result
     }
 
@@ -130,6 +135,7 @@ class MarkerState(
             currentPosition.value.latitude.hashCode(),
             currentPosition.value.longitude.hashCode(),
             internalAnimation?.hashCode() ?: 1,
+            zIndex.hashCode(),
         )
 
     fun asFlow(): Flow<MarkerFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
@@ -143,6 +149,7 @@ data class MarkerFingerPrint(
     val latitude: Int,
     val longitude: Int,
     val animation: Int?,
+    val zIndex: Int,
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 

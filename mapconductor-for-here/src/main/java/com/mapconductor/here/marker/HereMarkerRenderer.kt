@@ -27,6 +27,9 @@ class HereMarkerRenderer(
         holder = holder,
         coroutine = coroutine,
     ) {
+    private fun resolveDrawOrder(state: com.mapconductor.core.marker.MarkerState): Int =
+        (state.zIndex ?: calculateZIndex(state.position)).toInt()
+
     override fun setMarkerPosition(
         markerEntity: MarkerEntityInterface<HereActualMarker>,
         position: GeoPoint,
@@ -45,7 +48,7 @@ class HereMarkerRenderer(
                         params.bitmapIcon.toMapImage(),
                         params.bitmapIcon.toAnchor2D(),
                     ).apply {
-                        drawOrder = calculateZIndex(params.state.position).toInt()
+                        drawOrder = resolveDrawOrder(params.state)
                         metadata =
                             Metadata().apply {
                                 // Always include MapConductor marker id
@@ -91,6 +94,7 @@ class HereMarkerRenderer(
             }
             marker.coordinates =
                 GeoPoint.from(params.current.state.position).toGeoCoordinates()
+            marker.drawOrder = resolveDrawOrder(params.current.state)
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
             marker

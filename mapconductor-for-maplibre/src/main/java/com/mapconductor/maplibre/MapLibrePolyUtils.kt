@@ -57,6 +57,7 @@ fun Color.toMapLibreColorString(): String {
 internal fun createMapLibrePolygons(
     id: String,
     points: List<GeoPointInterface>,
+    holes: List<List<GeoPointInterface>> = emptyList(),
     geodesic: Boolean,
     fillColor: Color,
     zIndex: Int,
@@ -67,15 +68,34 @@ internal fun createMapLibrePolygons(
             false -> createLinearInterpolatePoints(points)
         }.map { it.normalize() }
 
+    val outerRings = splitByMeridian(geoPoints, geodesic)
+    val includeHoles = holes.isNotEmpty() && outerRings.size == 1
+
+    fun holeRings(): List<List<org.maplibre.geojson.Point>> =
+        holes.mapNotNull { hole ->
+            val holeGeoPoints: List<GeoPointInterface> =
+                when (geodesic) {
+                    true -> createInterpolatePoints(hole)
+                    false -> createLinearInterpolatePoints(hole)
+                }.map { it.normalize() }
+
+            val pts = holeGeoPoints.map { GeoPoint.from(it).toPoint() }
+            if (pts.size < 3) return@mapNotNull null
+            val closed = if (pts.first() != pts.last()) pts + pts.first() else pts
+            if (closed.size < 4) return@mapNotNull null
+            closed
+        }
+
     // Split to avoid antimeridian artifacts and produce multiple polygons if needed
-    return splitByMeridian(geoPoints, geodesic).mapIndexed { index, ringPoints ->
+    return outerRings.mapIndexed { index, ringPoints ->
         val pts = ringPoints.map { GeoPoint.from(it).toPoint() }
         // Ensure closed ring
         val closed = if (pts.first() != pts.last()) pts + pts.first() else pts
         val fid = "polygon-$id-$index"
+        val rings = if (includeHoles) listOf(closed) + holeRings() else listOf(closed)
 
         Feature.fromGeometry(
-            GLPolygon.fromLngLats(listOf(closed)),
+            GLPolygon.fromLngLats(rings),
             JsonObject().apply {
                 addProperty(MapLibrePolygonLayer.Prop.FILL_COLOR, fillColor.toMapLibreColorString())
                 addProperty("zIndex", zIndex)

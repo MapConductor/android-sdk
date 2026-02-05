@@ -21,6 +21,7 @@ class MapboxCircleLayer(
         const val FILL_COLOR = "fillColor"
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
+        const val Z_INDEX = "zIndex"
     }
 
     companion object {
@@ -78,6 +79,9 @@ class MapboxCircleLayer(
             )
             circleStrokeWidth(
                 get { literal(Prop.STROKE_WIDTH) },
+            )
+            circleSortKey(
+                get { literal(Prop.Z_INDEX) },
             )
         }
 

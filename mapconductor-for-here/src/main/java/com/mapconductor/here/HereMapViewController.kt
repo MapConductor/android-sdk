@@ -57,6 +57,8 @@ import com.mapconductor.here.raster.HereRasterLayerController
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class HereMapViewController(
@@ -67,7 +69,7 @@ class HereMapViewController(
     private val circleController: HereCircleController,
     private val rasterLayerController: HereRasterLayerController,
     override val holder: HereViewHolder,
-    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
+    override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
     CircleCapableInterface,
@@ -88,6 +90,17 @@ class HereMapViewController(
     private var markerAnimateEndListener: OnMarkerEventHandler? = null
     private var lastRequestedCameraPosition: MapCameraPosition? = null
     private val cameraRequestGeneration = AtomicLong(0L)
+
+    // HERE's MapCameraListener provides only continuous updates. Synthesize a "move end" after an idle window
+    // so app code can treat HERE similarly to other SDKs (e.g., for camera sync).
+    private var cameraMoveEndJob: Job? = null
+    private var cameraMoveInProgress: Boolean = false
+    private var isAnimatingCamera: Boolean = false
+    private var lastCameraPosition: MapCameraPosition? = null
+
+    private companion object {
+        private const val CAMERA_MOVE_END_IDLE_MS = 120L
+    }
 
     override suspend fun clearOverlays() {
         markerController.clear()
@@ -258,29 +271,55 @@ class HereMapViewController(
                 Duration.ofMillis(duration),
             )
         coroutine.launch {
+            isAnimatingCamera = true
             camera.startAnimation(animation) { animState ->
                 when (animState) {
                     // Do nothing here
-                    AnimationState.STARTED ->
-                        cameraMoveStartCallback?.invoke(
-                            getMapCameraPosition(holder.mapView.camera.state)!!,
-                        )
-                    AnimationState.COMPLETED -> cameraMoveEndCallback?.invoke(position)
-                    AnimationState.CANCELLED ->
-                        cameraMoveEndCallback?.invoke(
-                            getMapCameraPosition(holder.mapView.camera.state)!!,
-                        )
+                    AnimationState.STARTED -> {
+                        getMapCameraPosition(holder.mapView.camera.state)?.let {
+                            cameraMoveStartCallback?.invoke(it)
+                        }
+                    }
+                    AnimationState.COMPLETED -> {
+                        isAnimatingCamera = false
+                        cameraMoveEndCallback?.invoke(position)
+                    }
+                    AnimationState.CANCELLED -> {
+                        isAnimatingCamera = false
+                        getMapCameraPosition(holder.mapView.camera.state)?.let {
+                            cameraMoveEndCallback?.invoke(it)
+                        }
+                    }
                 }
             }
         }
     }
 
     override fun onMapCameraUpdated(cameraState: MapCamera.State) {
-        backCoroutine.launch {
-            getMapCameraPosition(cameraState)?.let { mapCameraPosition ->
-                cameraMoveCallback?.invoke(mapCameraPosition)
-                notifyMapCameraPosition(mapCameraPosition)
+        // Must run on main thread: HERE MapView coordinate conversion APIs are not thread-safe.
+        coroutine.launch {
+            val mapCameraPosition = getMapCameraPosition(cameraState) ?: return@launch
+            lastCameraPosition = mapCameraPosition
+
+            // This will call registered overlay controllers and cameraMoveCallback.
+            notifyMapCameraPosition(mapCameraPosition)
+
+            // animateCamera() already provides a reliable end callback.
+            if (isAnimatingCamera) return@launch
+
+            if (!cameraMoveInProgress) {
+                cameraMoveInProgress = true
+                cameraMoveStartCallback?.invoke(mapCameraPosition)
             }
+
+            cameraMoveEndJob?.cancel()
+            cameraMoveEndJob =
+                coroutine.launch {
+                    delay(CAMERA_MOVE_END_IDLE_MS)
+                    val last = lastCameraPosition ?: return@launch
+                    cameraMoveInProgress = false
+                    cameraMoveEndCallback?.invoke(last)
+                }
         }
     }
     private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {

@@ -161,9 +161,9 @@ fun GoogleMapView(
                 )
             val groundImageController = getGroundImageController(holder)
             val polylineController = getPolylineController(holder)
-            val polygonController = getPolygonController(holder)
-            val circleController = getCircleController(holder)
             val rasterLayerController = getRasterLayerController(holder)
+            val polygonController = getPolygonController(holder, rasterLayerController)
+            val circleController = getCircleController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
 
@@ -286,10 +286,14 @@ fun GoogleMapView(
     )
 }
 
-private fun getPolygonController(holder: GoogleMapViewHolder): GoogleMapPolygonController {
+private fun getPolygonController(
+    holder: GoogleMapViewHolder,
+    rasterLayerController: GoogleMapRasterLayerController,
+): GoogleMapPolygonController {
     val renderer =
         GoogleMapPolygonOverlayRenderer(
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     val controller =

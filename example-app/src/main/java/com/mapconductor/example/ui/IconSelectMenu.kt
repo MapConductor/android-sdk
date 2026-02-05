@@ -82,7 +82,6 @@ fun IconSelectMenu(
             modifier =
                 Modifier
                     .menuAnchor(MenuAnchorType.PrimaryEditable)
-                    .fillMaxWidth(),
         )
 
         ExposedDropdownMenu(

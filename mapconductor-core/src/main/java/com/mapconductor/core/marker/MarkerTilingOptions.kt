@@ -13,11 +13,8 @@ data class MarkerTilingOptions(
      * containing z/x/y and basic render stats. Useful to debug caching/scaling artifacts.
      */
     val debugTileOverlay: Boolean = false,
-
     val minMarkerCount: Int = 2000,
-
     val cacheSize: Int = 8 * 1024 * 1024,
-
     /**
      * Extra scale multiplier applied per marker per zoom during marker tiling.
      *

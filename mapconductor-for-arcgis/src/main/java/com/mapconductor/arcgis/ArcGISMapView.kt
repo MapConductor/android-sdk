@@ -198,9 +198,9 @@ fun ArcGISMapView(
                     markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
-            val polygonController = getPolygonController(holder)
-            val circleController = getCircleController(holder)
             val rasterLayerController = getRasterLayerController(holder)
+            val polygonController = getPolygonController(holder, rasterLayerController)
+            val circleController = getCircleController(holder)
             val groundImageController = getGroundImageController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
@@ -255,30 +255,32 @@ fun ArcGISMapView(
                 mapController.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
                 state.setController(mapController)
 
+                // Set camera listeners immediately so they are ready to receive
+                // camera updates from external sources (e.g. camera sync scenarios).
+                mapController.setCameraMoveStartListener {
+                    cameraState.value = it
+                    state.updateCameraPosition(it)
+                    onCameraMoveStart?.invoke(it)
+                }
+                mapController.setCameraMoveListener {
+                    cameraState.value = it
+                    state.updateCameraPosition(it)
+                    onCameraMove?.invoke(it)
+                }
+                mapController.setCameraMoveEndListener {
+                    cameraState.value = it
+                    state.updateCameraPosition(it)
+                    onCameraMoveEnd?.invoke(it)
+                }
+
                 // Avoid early ArcGIS viewpoint updates overwriting the desired initial camera.
-                // Apply the initial camera after layout, then start syncing camera changes.
+                // Apply the initial camera after layout.
                 val initialCameraPosition = state.cameraPosition
                 val generation = controllerGeneration.incrementAndGet()
                 holder.mapView.post {
                     if (controllerGeneration.get() != generation) return@post
                     mapController.moveCamera(MapCameraPosition.from(initialCameraPosition))
                     mapController.sendInitialCameraUpdate()
-
-                    mapController.setCameraMoveStartListener {
-                        cameraState.value = it
-                        state.updateCameraPosition(it)
-                        onCameraMoveStart?.invoke(it)
-                    }
-                    mapController.setCameraMoveListener {
-                        cameraState.value = it
-                        state.updateCameraPosition(it)
-                        onCameraMove?.invoke(it)
-                    }
-                    mapController.setCameraMoveEndListener {
-                        cameraState.value = it
-                        state.updateCameraPosition(it)
-                        onCameraMoveEnd?.invoke(it)
-                    }
                 }
             }
         },
@@ -319,6 +321,7 @@ private fun getCircleController(holder: ArcGISMapViewHolder): ArcGISCircleOverla
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.DrapedFlat
         }
+    holder.map.graphicsOverlays.add(circleLayer)
 
     val renderer =
         ArcGISCircleOverlayRenderer(
@@ -338,6 +341,7 @@ private fun getPolylineController(holder: ArcGISMapViewHolder): ArcGISPolylineOv
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
         }
+    holder.map.graphicsOverlays.add(polylineLayer)
 
     val renderer =
         ArcGISPolylineOverlayRenderer(
@@ -352,16 +356,21 @@ private fun getPolylineController(holder: ArcGISMapViewHolder): ArcGISPolylineOv
     return controller
 }
 
-private fun getPolygonController(holder: ArcGISMapViewHolder): ArcGISPolygonOverlayController {
+private fun getPolygonController(
+    holder: ArcGISMapViewHolder,
+    rasterLayerController: ArcGISRasterLayerController,
+): ArcGISPolygonOverlayController {
     val polygonLayer: GraphicsOverlay =
         GraphicsOverlay().apply {
             sceneProperties.surfacePlacement = SurfacePlacement.DrapedBillboarded
         }
+    holder.map.graphicsOverlays.add(polygonLayer)
 
     val renderer =
         ArcGISPolygonOverlayRenderer(
             polygonLayer = polygonLayer,
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     val controller =

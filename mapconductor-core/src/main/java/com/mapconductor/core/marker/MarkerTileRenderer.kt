@@ -1,12 +1,11 @@
 package com.mapconductor.core.marker
 
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.homography.PointD
 import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
 import java.io.ByteArrayOutputStream
@@ -17,7 +16,6 @@ import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sinh
 import kotlin.math.tan
@@ -27,8 +25,12 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
-import android.util.Log
 import android.util.LruCache
+
+data class PointD(
+    val x: Double,
+    val y: Double
+)
 
 /**
  * A tile renderer for markers that implements [TileProviderInterface].
@@ -52,7 +54,6 @@ class MarkerTileRenderer<ActualMarker>(
     private val debugTileOverlay: Boolean = false,
     private val iconScaleCallback: ((MarkerState, Int) -> Double)? = null,
 ) : TileProviderInterface {
-
     @Volatile
     private var cacheVersion: Int = 0
 
@@ -141,12 +142,13 @@ class MarkerTileRenderer<ActualMarker>(
     private val maxPoolPerSize = 2
 
     private val scaledTileSize = ResourceProvider.dpToPx(tileSize.dp)
-    private val debugPaint = Paint().apply {
-        setTextSize(ResourceProvider.dpToPxForBitmap(10f).toFloat())
-        setColor(Color.RED)
-        setStrokeWidth(ResourceProvider.dpToPxForBitmap(1f).toFloat())
-        setFlags(Paint.ANTI_ALIAS_FLAG)
-    }
+    private val debugPaint =
+        Paint().apply {
+            setTextSize(ResourceProvider.dpToPxForBitmap(10f).toFloat())
+            setColor(Color.RED)
+            setStrokeWidth(ResourceProvider.dpToPxForBitmap(1f).toFloat())
+            setFlags(Paint.ANTI_ALIAS_FLAG)
+        }
 
     private val bmpPaint =
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -203,9 +205,7 @@ class MarkerTileRenderer<ActualMarker>(
             val anchor: Offset,
         )
 
-        fun prepareMarkers(
-            entities: List<MarkerEntityInterface<ActualMarker>>,
-        ): Pair<List<PreparedMarker>, Double> {
+        fun prepareMarkers(entities: List<MarkerEntityInterface<ActualMarker>>): Pair<List<PreparedMarker>, Double> {
             var maxHalfExtentPx = 0.0
             val prepared = ArrayList<PreparedMarker>(entities.size)
             for (entity in entities) {
@@ -270,7 +270,7 @@ class MarkerTileRenderer<ActualMarker>(
             Canvas(debugBitmap).also { c ->
                 c.drawLine(0f, 0f, tilePxInt.toFloat(), 0f, debugPaint)
                 c.drawLine(0f, 0f, 0f, tilePxInt.toFloat(), debugPaint)
-                c.drawText("x/y/z=${tileX}/${tileY}/${zoom}, entries=0", 20f, 20f, debugPaint)
+                c.drawText("x/y/z=$tileX/$tileY/$zoom, entries=0", 20f, 20f, debugPaint)
             }
             val bytes = bitmapToByteArray(debugBitmap).also { if (!debugBitmap.isRecycled) debugBitmap.recycle() }
             tilesRendered.incrementAndGet()
@@ -290,7 +290,11 @@ class MarkerTileRenderer<ActualMarker>(
         }
 
         // Instead of allocating a fixed 3x tile, allocate (tile + padding*2) based on icon size.
-        val paddingPx = kotlin.math.ceil(maxHalfExtentPx + 2.0).toInt().coerceAtLeast(2)
+        val paddingPx =
+            kotlin.math
+                .ceil(maxHalfExtentPx + 2.0)
+                .toInt()
+                .coerceAtLeast(2)
         val offscreenSize = tilePxInt + paddingPx * 2
         val offscreenBitmap = acquireBitmap(offscreenSize)
         offscreenBitmap.eraseColor(Color.TRANSPARENT)
@@ -301,7 +305,7 @@ class MarkerTileRenderer<ActualMarker>(
                 canvas.drawLine(o, o, o + tilePxInt.toFloat(), o, debugPaint)
                 canvas.drawLine(o, o, o, o + tilePxInt.toFloat(), debugPaint)
                 canvas.drawText(
-                    "x/y/z=${tileX}/${tileY}/${zoom}, entries=${prepared.size}",
+                    "x/y/z=$tileX/$tileY/$zoom, entries=${prepared.size}",
                     o + 20f,
                     o + 20f,
                     debugPaint,
@@ -390,7 +394,11 @@ class MarkerTileRenderer<ActualMarker>(
         }
     }
 
-    private fun tileToGeoPoint(x: Double, y: Double, z: Double): GeoPoint {
+    private fun tileToGeoPoint(
+        x: Double,
+        y: Double,
+        z: Double,
+    ): GeoPoint {
         // Slippy map tile (XYZ) -> WGS84 (lat/lng).
         //
         // This returns the NW (top-left) corner of the tile.

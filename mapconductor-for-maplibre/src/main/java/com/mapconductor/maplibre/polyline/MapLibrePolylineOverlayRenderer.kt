@@ -17,6 +17,13 @@ class MapLibrePolylineOverlayRenderer(
     override val holder: MapLibreMapViewHolderInterface,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolylineOverlayRenderer<MapLibreActualPolyline>() {
+    private fun resolveZIndex(state: PolylineState): Int =
+        if (state.zIndex != 0) {
+            state.zIndex
+        } else {
+            (state.extra as? Int) ?: 0
+        }
+
     override suspend fun createPolyline(state: PolylineState): MapLibreActualPolyline? =
         createMapLibreLines(
             id = state.id,
@@ -24,7 +31,7 @@ class MapLibrePolylineOverlayRenderer(
             geodesic = state.geodesic,
             strokeColor = state.strokeColor,
             strokeWidth = state.strokeWidth,
-            zIndex = (state.extra as? Int) ?: 0,
+            zIndex = resolveZIndex(state),
         )
 
     override suspend fun updatePolylineProperties(
@@ -39,7 +46,7 @@ class MapLibrePolylineOverlayRenderer(
             geodesic = current.state.geodesic,
             strokeColor = current.state.strokeColor,
             strokeWidth = current.state.strokeWidth,
-            zIndex = (current.state.extra as? Int) ?: 0,
+            zIndex = resolveZIndex(current.state),
         )
     }
 

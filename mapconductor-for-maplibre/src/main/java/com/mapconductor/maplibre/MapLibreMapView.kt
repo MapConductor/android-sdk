@@ -164,13 +164,14 @@ fun MapLibreMapView(
                 getPolylineController(
                     holder = holder,
                 )
+            val rasterLayerController = getRasterLayerController(holder)
             val polygonController =
                 getPolygonController(
                     holder = holder,
+                    rasterLayerController = rasterLayerController,
                 )
             val groundImageController = getGroundImageController(holder)
             val circleController = getCircleController(holder)
-            val rasterLayerController = getRasterLayerController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
 
@@ -311,7 +312,10 @@ internal fun getPolylineController(holder: MapLibreMapViewHolderInterface): MapL
     return controller
 }
 
-internal fun getPolygonController(holder: MapLibreMapViewHolderInterface): MapLibrePolygonConductor {
+internal fun getPolygonController(
+    holder: MapLibreMapViewHolderInterface,
+    rasterLayerController: MapLibreRasterLayerController,
+): MapLibrePolygonConductor {
     val polylineLayer =
         MapLibrePolylineLayer(
             sourceId = "polygon-outline-source",
@@ -336,6 +340,7 @@ internal fun getPolygonController(holder: MapLibreMapViewHolderInterface): MapLi
             layer = polygonLayer,
             polygonManager = polygonManager,
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     return MapLibrePolygonConductor(

@@ -32,6 +32,7 @@ fun MapViewScope.Circle(
     strokeColor: Color = Color.Red,
     strokeWidth: Dp = 2.dp,
     fillColor: Color = Color.White.copy(alpha = 0.5f),
+    zIndex: Int? = null,
     extra: Serializable? = null,
     onClick: OnCircleEventHandler? = null,
 ) {
@@ -43,6 +44,7 @@ fun MapViewScope.Circle(
             strokeColor = strokeColor,
             strokeWidth = strokeWidth,
             fillColor = fillColor,
+            zIndex = zIndex,
             extra = extra,
             onClick = onClick,
         )
