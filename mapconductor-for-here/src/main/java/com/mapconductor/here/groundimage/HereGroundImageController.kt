@@ -9,4 +9,3 @@ class HereGroundImageController(
     groundImageManager: GroundImageManagerInterface<HereActualGroundImage> = GroundImageManager(),
     renderer: HereGroundImageOverlayRenderer,
 ) : GroundImageController<HereActualGroundImage>(groundImageManager, renderer)
-

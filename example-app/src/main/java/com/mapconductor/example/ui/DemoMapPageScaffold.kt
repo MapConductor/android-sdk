@@ -142,7 +142,6 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
         GetGoogleMapViewItem(initCameraPosition),
     )
 
-
 @Composable
 fun DemoMapPageScaffold(
     menuItems: List<IconItem<out MapViewState<out Any>>>,

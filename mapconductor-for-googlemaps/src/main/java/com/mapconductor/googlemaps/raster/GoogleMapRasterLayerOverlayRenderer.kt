@@ -225,7 +225,11 @@ class GoogleMapRasterLayerOverlayRenderer(
                 ?: return input
         val bitmap =
             when {
-                decoded.config != Bitmap.Config.ARGB_8888 -> decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+                decoded.config != Bitmap.Config.ARGB_8888 ->
+                    decoded.copy(Bitmap.Config.ARGB_8888, true).also {
+                        decoded
+                            .recycle()
+                    }
                 !decoded.isMutable -> decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
                 else -> decoded
             }

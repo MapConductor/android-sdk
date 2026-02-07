@@ -26,7 +26,7 @@ class HexCellRegistry<ActualMarker>(
     private val entryIDsByCell = ConcurrentHashMap<String, MutableSet<String>>()
     private val allEntries = ConcurrentHashMap<String, String>()
 
-        // entityId -> cellId
+    // entityId -> cellId
     @Volatile
     private var needsRebuild = false
 

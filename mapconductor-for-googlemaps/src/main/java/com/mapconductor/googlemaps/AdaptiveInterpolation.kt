@@ -9,9 +9,9 @@ import kotlin.math.roundToLong
 import android.util.LruCache
 
 internal object AdaptiveInterpolation {
-    private const val earthRadiusMeters = 6_378_137.0
-    private const val earthCircumferenceMeters = 2.0 * Math.PI * earthRadiusMeters
-    private const val tileSizePixels = 256.0
+    private const val EARTH_RADIUS_METERS = 6_378_137.0
+    private const val EARTH_CIRCUMFERENCE_METERS = 2.0 * Math.PI * EARTH_RADIUS_METERS
+    private const val TILE_SIZE_PIXELS = 256.0
 
     /**
      * Target segment length on screen (pixels).
@@ -21,20 +21,20 @@ internal object AdaptiveInterpolation {
      *
      * Lower values increase accuracy but cost more; higher values reduce CPU.
      */
-    private const val targetSegmentPixels = 400.0
+    private const val TARGET_SEGMENT_PIXELS = 400.0
 
-    private const val minSegmentLengthMeters = 50.0
-    private const val maxSegmentLengthMeters = 100_000.0
+    private const val MIN_SEGMENT_LENGTH_METERS = 50.0
+    private const val MAX_SEGMENT_LENGTH_METERS = 100_000.0
 
     fun maxSegmentLengthMeters(
         zoom: Float,
         latitude: Double,
     ): Double {
         val metersPerPixel =
-            (earthCircumferenceMeters * cos(Math.toRadians(abs(latitude)))) /
-                (tileSizePixels * 2.0.pow(zoom.toDouble()))
-        return (metersPerPixel * targetSegmentPixels)
-            .coerceIn(minSegmentLengthMeters, maxSegmentLengthMeters)
+            (EARTH_CIRCUMFERENCE_METERS * cos(Math.toRadians(abs(latitude)))) /
+                (TILE_SIZE_PIXELS * 2.0.pow(zoom.toDouble()))
+        return (metersPerPixel * TARGET_SEGMENT_PIXELS)
+            .coerceIn(MIN_SEGMENT_LENGTH_METERS, MAX_SEGMENT_LENGTH_METERS)
     }
 
     fun pointsHash(points: List<GeoPointInterface>): Long {

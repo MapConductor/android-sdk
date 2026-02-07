@@ -1,17 +1,17 @@
 package com.mapconductor.simplemapapp.postoffice
 
-import android.content.Context
-import android.os.SystemClock
-import android.util.Log
-import android.util.JsonReader
-import android.util.JsonToken
 import com.mapconductor.core.features.GeoPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.Reader
 import java.util.zip.ZipInputStream
+import android.content.Context
+import android.os.SystemClock
+import android.util.JsonReader
+import android.util.JsonToken
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Utility class for loading post office data from zip files in assets.
@@ -83,7 +83,8 @@ class PostOfficeDataLoader(
                             try {
                                 geojsonCount++
                                 val parseStart = SystemClock.elapsedRealtime()
-                                val parsedPostOffices = parseGeoJsonToPostOffices(InputStreamReader(zipStream, Charsets.UTF_8))
+                                val parsedPostOffices =
+                                    parseGeoJsonToPostOffices(InputStreamReader(zipStream, Charsets.UTF_8))
                                 val parseMs = SystemClock.elapsedRealtime() - parseStart
                                 postOffices.addAll(parsedPostOffices)
                                 Log.i(
@@ -167,8 +168,22 @@ class PostOfficeDataLoader(
                     json.beginObject()
                     while (json.hasNext()) {
                         when (json.nextName()) {
-                            "name" -> name = if (json.peek() == JsonToken.NULL) { json.nextNull(); "" } else json.nextString()
-                            "address" -> address = if (json.peek() == JsonToken.NULL) { json.nextNull(); "" } else json.nextString()
+                            "name" ->
+                                name =
+                                    if (json.peek() == JsonToken.NULL) {
+                                        json.nextNull()
+                                        ""
+                                    } else {
+                                        json.nextString()
+                                    }
+                            "address" ->
+                                address =
+                                    if (json.peek() == JsonToken.NULL) {
+                                        json.nextNull()
+                                        ""
+                                    } else {
+                                        json.nextString()
+                                    }
                             else -> json.skipValue()
                         }
                     }

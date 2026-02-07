@@ -14,16 +14,16 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
-import com.mapconductor.core.tileserver.LocalTileServer
-import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.core.spherical.createInterpolatePoints
 import com.mapconductor.core.spherical.createLinearInterpolatePoints
+import com.mapconductor.core.tileserver.LocalTileServer
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.googlemaps.AdaptiveInterpolation
 import com.mapconductor.googlemaps.GoogleMapActualPolygon
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.LatLngInterpolationCache
-import com.mapconductor.googlemaps.toLatLng
 import com.mapconductor.googlemaps.raster.GoogleMapRasterLayerController
+import com.mapconductor.googlemaps.toLatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,7 +62,10 @@ class GoogleMapPolygonOverlayRenderer(
         return points
     }
 
-    private fun toLatLngRing(statePoints: List<GeoPointInterface>, geodesic: Boolean): List<LatLng> =
+    private fun toLatLngRing(
+        statePoints: List<GeoPointInterface>,
+        geodesic: Boolean,
+    ): List<LatLng> =
         when (geodesic) {
             true -> geodesicPoints(statePoints)
             false -> createLinearInterpolatePoints(statePoints).map { GeoPoint.from(it).toLatLng() }
@@ -228,11 +231,12 @@ class GoogleMapPolygonOverlayRenderer(
     }
 
     private fun safeId(id: String): String =
-        id.map { ch ->
-            when {
-                ch.isLetterOrDigit() -> ch
-                ch == '-' || ch == '_' || ch == '.' -> ch
-                else -> '_'
-            }
-        }.joinToString("")
+        id
+            .map { ch ->
+                when {
+                    ch.isLetterOrDigit() -> ch
+                    ch == '-' || ch == '_' || ch == '.' -> ch
+                    else -> '_'
+                }
+            }.joinToString("")
 }

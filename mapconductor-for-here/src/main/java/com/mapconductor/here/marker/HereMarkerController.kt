@@ -1,6 +1,5 @@
 package com.mapconductor.here.marker
 
-import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPosition
@@ -9,13 +8,13 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.MarkerTileRenderer
 import com.mapconductor.core.marker.MarkerTilingOptions
-import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -26,7 +25,6 @@ import com.mapconductor.settings.Settings
 import java.util.UUID
 import kotlin.math.floor
 import android.os.SystemClock
-import android.util.Log
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withPermit
 
@@ -287,14 +285,14 @@ class HereMarkerController private constructor(
         val outputTileSize = ResourceProvider.getOptimalTileSize().coerceAtLeast(256)
 
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
-	        val tileRenderer =
-	            MarkerTileRenderer(
-	                markerManager = markerManager,
-	                tileSize = outputTileSize,
-	                cacheSizeBytes = markerTiling.cacheSize,
-	                debugTileOverlay = markerTiling.debugTileOverlay,
-	                iconScaleCallback = markerTiling.iconScaleCallback,
-	            )
+        val tileRenderer =
+            MarkerTileRenderer(
+                markerManager = markerManager,
+                tileSize = outputTileSize,
+                cacheSizeBytes = markerTiling.cacheSize,
+                debugTileOverlay = markerTiling.debugTileOverlay,
+                iconScaleCallback = markerTiling.iconScaleCallback,
+            )
         markerTileRenderer = tileRenderer
 
         tileServer.register(groupId, tileRenderer)
@@ -336,9 +334,10 @@ class HereMarkerController private constructor(
                 HereMarkerRenderer(
                     holder = holder,
                 )
-            val markerManager = MarkerManager.defaultManager<HereActualMarker>(
-                minMarkerCount = markerTiling.minMarkerCount,
-            )
+            val markerManager =
+                MarkerManager.defaultManager<HereActualMarker>(
+                    minMarkerCount = markerTiling.minMarkerCount,
+                )
             val controller =
                 HereMarkerController(
                     markerManager = markerManager,

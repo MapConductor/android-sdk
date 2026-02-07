@@ -5,8 +5,8 @@ import com.mapconductor.core.tileserver.TileProviderInterface
 import com.mapconductor.core.tileserver.TileRequest
 import java.util.Arrays
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.Adler32
 import java.util.zip.CRC32
 import java.util.zip.Deflater
@@ -54,7 +54,8 @@ class HeatmapTileRenderer(
     private val renderQueue =
         ArrayBlockingQueue<RenderJob>(
             MAX_RENDER_QUEUE_SIZE,
-            /* fair = */ false,
+            // fair =
+            false,
         )
     private val workerCount = maxConcurrentRenders.coerceIn(1, MAX_MAX_CONCURRENT_RENDERS)
 
@@ -127,7 +128,15 @@ class HeatmapTileRenderer(
                     "bounds=" +
                     (if (b == null) "null" else "(${b.minX},${b.minY})-(${b.maxX},${b.maxY})") +
                     " index=" +
-                    (if (idx == null) "null" else "grid=${idx.gridSize} nonEmpty=${idx.nonEmptyBuckets} maxBucket=${idx.maxBucketSize}"),
+                    (
+                        if (idx ==
+                            null
+                        ) {
+                            "null"
+                        } else {
+                            "grid=${idx.gridSize} nonEmpty=${idx.nonEmptyBuckets} maxBucket=${idx.maxBucketSize}"
+                        }
+                    ),
             )
         }
         synchronized(cacheLock) {
@@ -261,16 +270,37 @@ class HeatmapTileRenderer(
                 val isSlow = totalMs >= SLOW_TILE_LOG_THRESHOLD_MS
                 if (isSlow) {
                     val phaseMsg =
-                        " effZoom=${timings.effectiveZoom} radius=${timings.radius} gridDim=${timings.gridDim}" +
-                            " index=${timings.usedIndex} idxGrid=${timings.indexGridSize} idxNonEmpty=${timings.indexNonEmptyBuckets} idxMaxBucket=${timings.indexMaxBucketSize}" +
-                            " xRanges=${timings.xRanges} cells=${timings.cellsVisited} cand=${timings.candidatesVisited} binned=${timings.pointsBinned}" +
-                            " setup=${timings.setupMs}ms bin=${timings.binMs}ms conv=${timings.convolveMs}ms " +
-                            "mapPng=${timings.pngMs}ms pngLevel=${timings.pngLevel}"
+                        """
+                        effZoom=${timings.effectiveZoom}
+                        radius=${timings.radius}
+                        gridDim=${timings.gridDim}
+                        index=${timings.usedIndex}
+                        idxGrid=${timings.indexGridSize}
+                        idxNonEmpty=${timings.indexNonEmptyBuckets}
+                        idxMaxBucket=${timings.indexMaxBucketSize}
+                        xRanges=${timings.xRanges}
+                        cells=${timings.cellsVisited}
+                        cand=${timings.candidatesVisited}
+                        binned=${timings.pointsBinned}
+                        setup=${timings.setupMs}ms
+                        bin=${timings.binMs}ms
+                        conv=${timings.convolveMs}ms
+                        mapPng=${timings.pngMs}ms
+                        pngLevel=${timings.pngLevel}
+                        """.trimIndent()
                     val msg =
-                        "Slow tile breakdown " +
-                            "z=${job.request.z} x=${job.request.x} y=${job.request.y} " +
-                            "queueWait=${qw}ms render=${rm}ms total=${tm}ms points=${job.state.points.size} tileSize=$tileSize " +
-                            "isEmptyTile=${bytes == null}$phaseMsg"
+                        """
+                        Slow tile breakdown
+                        z=${job.request.z}
+                        x=${job.request.x}
+                        y=${job.request.y}
+                        queueWait=${qw}ms
+                        render=${rm}ms
+                        total=${tm}ms
+                        points=${job.state.points.size}
+                        tileSize=$tileSize
+                        isEmptyTile=${bytes == null}$phaseMsg
+                        """.trimIndent()
                     Log.w(TAG, msg)
                 }
                 job.future.complete(responseBytes)
@@ -343,6 +373,7 @@ class HeatmapTileRenderer(
         var candidatesVisited = 0
         var cellsVisited = 0
         var pointsBinned = 0
+
         fun addPoint(
             adjustedWorldX: Double,
             worldY: Double,
@@ -468,13 +499,13 @@ class HeatmapTileRenderer(
         // Deflate can become CPU-heavy when the tile contains lots of non-zero signal
         // (many different colors => poor compression); fall back to level 0 for latency.
         val effectivePngCompressionLevel =
-                if (radius >= PNG_COMPLEX_TILE_RADIUS_THRESHOLD_PX ||
-                    buffers.nonZeroIntensityCount >= PNG_COMPLEX_TILE_POINT_THRESHOLD
-                ) {
-                    0
-                } else {
-                    pngCompressionLevel
-                }
+            if (radius >= PNG_COMPLEX_TILE_RADIUS_THRESHOLD_PX ||
+                buffers.nonZeroIntensityCount >= PNG_COMPLEX_TILE_POINT_THRESHOLD
+            ) {
+                0
+            } else {
+                pngCompressionLevel
+            }
         if (timings != null) {
             timings.pngLevel = effectivePngCompressionLevel
         }
@@ -1120,7 +1151,9 @@ class HeatmapTileRenderer(
         }
     }
 
-    private class ByteArrayBuilder(initialCapacity: Int) {
+    private class ByteArrayBuilder(
+        initialCapacity: Int,
+    ) {
         private var buf: ByteArray = ByteArray(initialCapacity.coerceAtLeast(16))
         private var count: Int = 0
 
@@ -1139,7 +1172,10 @@ class HeatmapTileRenderer(
             buf = buf.copyOf(newCap)
         }
 
-        fun setInt32BE(offset: Int, value: Int) {
+        fun setInt32BE(
+            offset: Int,
+            value: Int,
+        ) {
             if (offset < 0 || offset + 4 > count) {
                 throw IndexOutOfBoundsException("offset=$offset count=$count")
             }
@@ -1166,7 +1202,11 @@ class HeatmapTileRenderer(
             writeBytes(bytes, 0, bytes.size)
         }
 
-        fun writeBytes(bytes: ByteArray, offset: Int, len: Int) {
+        fun writeBytes(
+            bytes: ByteArray,
+            offset: Int,
+            len: Int,
+        ) {
             if (len <= 0) return
             ensureCapacity(count + len)
             System.arraycopy(bytes, offset, buf, count, len)
@@ -1194,7 +1234,10 @@ class HeatmapTileRenderer(
             }
         }
 
-        fun ensureOutCapacity(width: Int, height: Int) {
+        fun ensureOutCapacity(
+            width: Int,
+            height: Int,
+        ) {
             // Rough estimate: signature + IHDR/IEND overhead + zlib stream ~ raw bytes (level 0).
             val raw = height * (1 + width * 4)
             val estimated = 8 + 64 + raw + raw / 64
@@ -1314,7 +1357,11 @@ class HeatmapTileRenderer(
         out.writeInt32BE(crc32.value.toInt())
     }
 
-    private fun writeInt32BE(buf: ByteArray, offset: Int, value: Int) {
+    private fun writeInt32BE(
+        buf: ByteArray,
+        offset: Int,
+        value: Int,
+    ) {
         buf[offset] = ((value ushr 24) and 0xff).toByte()
         buf[offset + 1] = ((value ushr 16) and 0xff).toByte()
         buf[offset + 2] = ((value ushr 8) and 0xff).toByte()

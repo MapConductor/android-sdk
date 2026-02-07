@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.rasterlayer
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,13 +19,13 @@ interface RasterLayerPageViewModelInterface {
     var opacity: Float
 
     val rasterLayerState: RasterLayerState
+
     fun onMapViewChanged(state: MapViewStateInterface<*>)
 }
 
 class RasterLayerPageViewModel :
     ViewModel(),
     RasterLayerPageViewModelInterface {
-
     override val initCameraPosition =
         MapCameraPosition(
             position =
@@ -46,10 +45,11 @@ class RasterLayerPageViewModel :
         get() =
             RasterLayerState(
                 id = "rasterLayer",
-                source = RasterLayerSource.UrlTemplate(
-                    template = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    tileSize = RasterLayerSource.DEFAULT_TILE_SIZE,
-                ),
+                source =
+                    RasterLayerSource.UrlTemplate(
+                        template = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        tileSize = RasterLayerSource.DEFAULT_TILE_SIZE,
+                    ),
                 opacity = opacity,
                 debug = true,
             )

@@ -15,9 +15,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.groundimage.OnGroundImageEventHandler
-import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler

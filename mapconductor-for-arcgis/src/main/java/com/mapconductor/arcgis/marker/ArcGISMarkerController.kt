@@ -1,6 +1,5 @@
 package com.mapconductor.arcgis.marker
 
-import androidx.compose.ui.geometry.Offset
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.arcgismaps.mapping.view.SurfacePlacement
@@ -14,13 +13,13 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.MarkerTileRenderer
 import com.mapconductor.core.marker.MarkerTilingOptions
-import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -292,14 +291,14 @@ class ArcGISMarkerController private constructor(
         markerTileGroupId = groupId
 
         cacheVersion = (cacheVersion + 1) and 0x7fffffff
-	        val tileRenderer =
-	            MarkerTileRenderer<ArcGISActualMarker>(
-	                markerManager = markerManager,
-	                tileSize = 256,
-	                cacheSizeBytes = markerTiling.cacheSize,
-	                debugTileOverlay = markerTiling.debugTileOverlay,
-	                iconScaleCallback = markerTiling.iconScaleCallback,
-	            )
+        val tileRenderer =
+            MarkerTileRenderer<ArcGISActualMarker>(
+                markerManager = markerManager,
+                tileSize = 256,
+                cacheSizeBytes = markerTiling.cacheSize,
+                debugTileOverlay = markerTiling.debugTileOverlay,
+                iconScaleCallback = markerTiling.iconScaleCallback,
+            )
         markerTileRenderer = tileRenderer
 
         tileServer.register(groupId, tileRenderer)
@@ -348,9 +347,10 @@ class ArcGISMarkerController private constructor(
                     holder = holder,
                 )
 
-            val markerManager = MarkerManager.defaultManager<ArcGISActualMarker>(
-                minMarkerCount = markerTiling.minMarkerCount,
-            )
+            val markerManager =
+                MarkerManager.defaultManager<ArcGISActualMarker>(
+                    minMarkerCount = markerTiling.minMarkerCount,
+                )
 
             val controller =
                 ArcGISMarkerController(

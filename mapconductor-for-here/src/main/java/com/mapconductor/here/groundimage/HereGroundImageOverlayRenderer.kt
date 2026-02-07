@@ -10,15 +10,14 @@ import com.mapconductor.core.groundimage.AbstractGroundImageOverlayRenderer
 import com.mapconductor.core.groundimage.GroundImageEntityInterface
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.GroundImageTileProvider
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.here.HereActualGroundImage
 import com.mapconductor.here.HereViewHolder
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.util.Log
 
 class HereGroundImageOverlayRenderer(
     override val holder: HereViewHolder,
@@ -113,13 +112,14 @@ class HereGroundImageOverlayRenderer(
                 ?: return null
 
         val providerConfig =
-            RasterDataSourceConfiguration.Provider(
-                urlProvider,
-                TilingScheme.QUAD_TREE_MERCATOR,
-                STORAGE_LEVELS,
-            ).apply {
-                hasAlphaChannel = true
-            }
+            RasterDataSourceConfiguration
+                .Provider(
+                    urlProvider,
+                    TilingScheme.QUAD_TREE_MERCATOR,
+                    STORAGE_LEVELS,
+                ).apply {
+                    hasAlphaChannel = true
+                }
 
         val cache =
             RasterDataSourceConfiguration.Cache(
@@ -165,6 +165,7 @@ class HereGroundImageOverlayRenderer(
         } catch (_: Exception) {
         }
     }
+
     private fun buildSafeRouteId(id: String): String =
         buildString(id.length + 16) {
             append("groundimage-")

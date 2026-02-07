@@ -179,6 +179,8 @@ dependencies {
     // MapLibre SDK
     implementation(libs.maplibre.sdk)
     implementation(libs.maplibre.annotation)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.foundation)
 
     // Map Conductor
 //    implementation("com.mapconductor:core")

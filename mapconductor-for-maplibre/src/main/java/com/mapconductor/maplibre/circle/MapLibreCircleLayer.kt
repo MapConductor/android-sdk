@@ -73,7 +73,8 @@ class MapLibreCircleLayer(
                 circleColor(Expression.get(Prop.FILL_COLOR)),
                 circleStrokeColor(Expression.get(Prop.STROKE_COLOR)),
                 circleStrokeWidth(Expression.get(Prop.STROKE_WIDTH)),
-                org.maplibre.android.style.layers.PropertyFactory.circleSortKey(Expression.get(Prop.Z_INDEX)),
+                org.maplibre.android.style.layers.PropertyFactory
+                    .circleSortKey(Expression.get(Prop.Z_INDEX)),
             )
         }
 

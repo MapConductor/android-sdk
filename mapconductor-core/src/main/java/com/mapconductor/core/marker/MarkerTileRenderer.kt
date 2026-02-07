@@ -29,7 +29,7 @@ import android.util.LruCache
 
 data class PointD(
     val x: Double,
-    val y: Double
+    val y: Double,
 )
 
 /**

@@ -37,4 +37,3 @@ class MapLibreGroundImageController(
         renderer.onPostProcess()
     }
 }
-

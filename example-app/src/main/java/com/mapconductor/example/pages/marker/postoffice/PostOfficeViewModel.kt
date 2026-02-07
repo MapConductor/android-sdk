@@ -60,21 +60,22 @@ class PostOfficeViewModel(
     private val _markerList: MutableStateFlow<List<MarkerState>> = MutableStateFlow(emptyList())
     override val markerList: StateFlow<List<MarkerState>> = _markerList.asStateFlow()
 
-    override val markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default.copy(
-        iconScaleCallback = { _, zoom ->
-            if (zoom > 12.0) {
-                return@copy 1.3
-            } else if (zoom > 10.0) {
-                return@copy 1.0
-            } else if (zoom > 8.0) {
-                return@copy 0.8
-            } else if (zoom > 5.0) {
-                return@copy 0.5
-            } else {
-                return@copy 0.2
-            }
-        }
-    )
+    override val markerTiling: MarkerTilingOptions =
+        MarkerTilingOptions.Default.copy(
+            iconScaleCallback = { _, zoom ->
+                if (zoom > 12.0) {
+                    return@copy 1.3
+                } else if (zoom > 10.0) {
+                    return@copy 1.0
+                } else if (zoom > 8.0) {
+                    return@copy 0.8
+                } else if (zoom > 5.0) {
+                    return@copy 0.5
+                } else {
+                    return@copy 0.2
+                }
+            },
+        )
 
     private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()

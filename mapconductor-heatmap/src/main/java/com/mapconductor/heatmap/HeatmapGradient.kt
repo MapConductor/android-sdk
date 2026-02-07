@@ -1,6 +1,5 @@
 package com.mapconductor.heatmap
 
-import kotlin.math.roundToInt
 import android.graphics.Color
 
 data class HeatmapGradientStop(

@@ -96,14 +96,18 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
                             borderColor = Color.Black,
                         ) {
                             Column(
-                                modifier = Modifier
-                                    .clickable(true,
-                                        onClick = {
-                                            val filtered = selectedMarkers
-                                                .filter { it != markerState.id }
-                                                .toSet()
-                                            selectedMarkers = filtered
-                                        })
+                                modifier =
+                                    Modifier
+                                        .clickable(
+                                            true,
+                                            onClick = {
+                                                val filtered =
+                                                    selectedMarkers
+                                                        .filter { it != markerState.id }
+                                                        .toSet()
+                                                selectedMarkers = filtered
+                                            },
+                                        ),
                             ) {
                                 Text(
                                     text = markerState.extra as String,

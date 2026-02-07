@@ -1,13 +1,13 @@
 package com.mapconductor.example.pages.map.camerasync
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,11 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.os.SystemClock
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
@@ -52,6 +51,7 @@ import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.IconSelectMenu
 import java.util.Locale
+import android.os.SystemClock
 import kotlinx.coroutines.launch
 
 private data class CameraLocationInfo(
@@ -91,6 +91,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
 
     @Suppress("UNCHECKED_CAST")
     val leftState = leftMenuItems[leftSelectedIndex].value as MapViewStateInterface<*>
+
     @Suppress("UNCHECKED_CAST")
     val rightState = rightMenuItems[rightSelectedIndex].value as MapViewStateInterface<*>
 
@@ -168,7 +169,10 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
         }
     }
 
-    fun bearingDeltaDeg(a: Double, b: Double): Double {
+    fun bearingDeltaDeg(
+        a: Double,
+        b: Double,
+    ): Double {
         val d = ((a - b) % 360.0 + 360.0) % 360.0
         return if (d > 180.0) 360.0 - d else d
     }
@@ -298,7 +302,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Left)
                                     } else {
                                         val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                        ) {
                                             leftCameraPosition = position
                                             return@launch
                                         }
@@ -323,7 +329,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Left)
                                     } else {
                                         val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                        ) {
                                             leftCameraPosition = position
                                             return@launch
                                         }
@@ -368,7 +376,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Right)
                                     } else {
                                         val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                        ) {
                                             rightCameraPosition = position
                                             return@launch
                                         }
@@ -393,7 +403,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Right)
                                     } else {
                                         val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                        ) {
                                             rightCameraPosition = position
                                             return@launch
                                         }
@@ -432,7 +444,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Left)
                                     } else {
                                         val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                        ) {
                                             leftCameraPosition = position
                                             return@launch
                                         }
@@ -457,7 +471,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Left)
                                     } else {
                                         val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Left, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                        ) {
                                             leftCameraPosition = position
                                             return@launch
                                         }
@@ -502,7 +518,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Right)
                                     } else {
                                         val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                        ) {
                                             rightCameraPosition = position
                                             return@launch
                                         }
@@ -527,7 +545,9 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                         clearProgrammaticMove(ActiveMapPane.Right)
                                     } else {
                                         val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs || isProgrammaticMove(ActiveMapPane.Right, position, now)) {
+                                        if (age <= programmaticGraceMs ||
+                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                        ) {
                                             rightCameraPosition = position
                                             return@launch
                                         }
@@ -609,13 +629,34 @@ private fun CameraInfoCard(
     val fmt = remember { Locale.US }
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text(text = label, style = MaterialTheme.typography.labelMedium)
-            Text(text = "Lat: ${String.format(fmt, "%.5f", position.position.latitude)}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Lng: ${String.format(fmt, "%.5f", position.position.longitude)}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Zoom: ${String.format(fmt, "%.2f", position.zoom)}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Tilt: ${String.format(fmt, "%.1f°", position.tilt)}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Bearing: ${String.format(fmt, "%.1f°", position.bearing)}", style = MaterialTheme.typography.bodySmall)
-            Text(text = "Alt: ${String.format(fmt, "%.0f m", position.position.altitude ?: 0.0)}", style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Text(
+                text = "Lat: ${String.format(fmt, "%.5f", position.position.latitude)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Lng: ${String.format(fmt, "%.5f", position.position.longitude)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Zoom: ${String.format(fmt, "%.2f", position.zoom)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Tilt: ${String.format(fmt, "%.1f°", position.tilt)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Bearing: ${String.format(fmt, "%.1f°", position.bearing)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Alt: ${String.format(fmt, "%.0f m", position.position.altitude)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }

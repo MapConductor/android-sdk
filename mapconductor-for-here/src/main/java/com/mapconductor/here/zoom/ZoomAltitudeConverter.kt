@@ -6,7 +6,6 @@ import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.pow
 
-
 class ZoomAltitudeConverter(
     zoom0Altitude: Double = DEFAULT_ZOOM0_ALTITUDE,
 ) : AbstractZoomAltitudeConverter(zoom0Altitude) {
@@ -46,7 +45,6 @@ class ZoomAltitudeConverter(
             return hereZoom.coerceIn(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
         }
     }
-
 
     override fun zoomLevelToAltitude(
         zoomLevel: Double,

@@ -97,8 +97,11 @@ class ArcGISGroundImageOverlayRenderer(
             val loadResult = nextHandle.layer.load()
             if (loadResult.isFailure) {
                 val error = loadResult.exceptionOrNull()
-                Log
-                    .e("ArcGIS", "Failed to load updated ground image layer id=${current.state.id}: ${error?.message}", error)
+                Log.e(
+                    "ArcGIS",
+                    "Failed to load updated ground image layer id=${current.state.id}: ${error?.message}",
+                    error,
+                )
                 return@withContext null
             }
 

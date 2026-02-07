@@ -14,10 +14,10 @@ import com.here.sdk.mapview.MapRenderMode
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapViewOptions
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MutableMapServiceRegistry
-import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
@@ -155,7 +155,6 @@ fun HereMapView(
             mapView.camera.applyUpdate(lookAt)
             HereViewHolder(mapView, mapView.mapScene)
         },
-
         controllerProvider = { holder ->
             val rasterLayerController = getRasterLayerController(holder)
             val markerController =
@@ -203,8 +202,7 @@ fun HereMapView(
                 object : MarkerRenderingSupport<HereActualMarker> {
                     override fun createMarkerRenderer(
                         strategy: MarkerRenderingStrategyInterface<HereActualMarker>,
-                    ): MarkerOverlayRendererInterface<HereActualMarker> =
-                        controller.createMarkerRenderer(strategy)
+                    ): MarkerOverlayRendererInterface<HereActualMarker> = controller.createMarkerRenderer(strategy)
 
                     override fun createMarkerEventController(
                         controller: StrategyMarkerController<HereActualMarker>,
@@ -325,11 +323,10 @@ private fun getPolylineController(holder: HereViewHolder): HerePolylineControlle
 private fun getMarkerController(
     holder: HereViewHolder,
     markerTiling: MarkerTilingOptions,
-) =
-    HereMarkerController.create(
-        holder = holder,
-        markerTiling = markerTiling,
-    )
+) = HereMarkerController.create(
+    holder = holder,
+    markerTiling = markerTiling,
+)
 
 private fun getHereCircleController(holder: HereViewHolder): HereCircleController {
     val renderer =

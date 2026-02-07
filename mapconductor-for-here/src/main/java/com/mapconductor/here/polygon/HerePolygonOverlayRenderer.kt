@@ -6,7 +6,6 @@ import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.normalizeLng
@@ -17,17 +16,17 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
+import com.mapconductor.core.spherical.createInterpolatePoints
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.here.HereActualPolygon
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.raster.HereRasterLayerController
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.mapconductor.core.spherical.createInterpolatePoints
-import android.util.Log
 
 private const val TAG = "HerePolygonRaster"
 
@@ -143,7 +142,11 @@ class HerePolygonOverlayRenderer(
                 polygon.forEach {
                     it.fillColor = Color.valueOf(0f, 0f, 0f, 0f)
                     it.outlineColor = Color.valueOf(current.state.strokeColor.toArgb())
-                    it.outlineWidth = ResourceProvider.dpToPx(current.state.strokeWidth.value.toDouble())
+                    it.outlineWidth =
+                        ResourceProvider.dpToPx(
+                            current.state.strokeWidth.value
+                                .toDouble(),
+                        )
                 }
             } else {
                 if (finger.strokeColor != prevFinger.strokeColor) {
@@ -151,7 +154,11 @@ class HerePolygonOverlayRenderer(
                     polygon.forEach { it.outlineColor = stroke }
                 }
                 if (finger.strokeWidth != prevFinger.strokeWidth) {
-                    val width = ResourceProvider.dpToPx(current.state.strokeWidth.value.toDouble())
+                    val width =
+                        ResourceProvider.dpToPx(
+                            current.state.strokeWidth.value
+                                .toDouble(),
+                        )
                     polygon.forEach { it.outlineWidth = width }
                 }
                 if (finger.fillColor != prevFinger.fillColor) {
@@ -183,11 +190,14 @@ class HerePolygonOverlayRenderer(
         points: List<GeoPointInterface>,
         geodesic: Boolean,
     ): List<GeoCoordinates> =
-        (if (geodesic) {
-            com.mapconductor.core.spherical.createInterpolatePoints(points)
-        } else {
-            points
-        }).map { GeoCoordinates(it.latitude, normalizeLng(it.longitude)) }
+        (
+            if (geodesic) {
+                com.mapconductor.core.spherical
+                    .createInterpolatePoints(points)
+            } else {
+                points
+            }
+        ).map { GeoCoordinates(it.latitude, normalizeLng(it.longitude)) }
             .let { pts -> if (pts.size >= 2 && pts.first() == pts.last()) pts.dropLast(1) else pts }
 
     private suspend fun ensureMaskLayer(
@@ -301,12 +311,12 @@ class HerePolygonOverlayRenderer(
     }
 
     private fun safeId(id: String): String =
-        id.map { ch ->
-            when {
-                ch.isLetterOrDigit() -> ch
-                ch == '-' || ch == '_' || ch == '.' -> ch
-                else -> '_'
-            }
-        }.joinToString("")
-
+        id
+            .map { ch ->
+                when {
+                    ch.isLetterOrDigit() -> ch
+                    ch == '-' || ch == '_' || ch == '.' -> ch
+                    else -> '_'
+                }
+            }.joinToString("")
 }

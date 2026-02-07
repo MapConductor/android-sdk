@@ -23,7 +23,12 @@ class MapLibrePolygonConductor(
 
     override suspend fun add(data: List<PolygonState>) {
         val nextIds = data.asSequence().map { it.id }.toSet()
-        val prevIds = polygonOverlay.polygonManager.allEntities().asSequence().map { it.state.id }.toSet()
+        val prevIds =
+            polygonOverlay.polygonManager
+                .allEntities()
+                .asSequence()
+                .map { it.state.id }
+                .toSet()
         val removeIds = prevIds - nextIds
 
         removeIds.forEach { id ->

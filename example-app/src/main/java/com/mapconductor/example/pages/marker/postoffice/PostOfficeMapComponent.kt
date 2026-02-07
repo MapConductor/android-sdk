@@ -11,7 +11,6 @@ import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.Markers

@@ -52,4 +52,3 @@ data class HeatmapPointFingerPrint(
     val weight: Int,
     val extra: Int,
 )
-

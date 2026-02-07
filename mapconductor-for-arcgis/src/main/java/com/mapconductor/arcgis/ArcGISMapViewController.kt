@@ -59,8 +59,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
-
 class ArcGISMapViewController(
     override val holder: ArcGISMapViewHolder,
     private val markerController: ArcGISMarkerController,
@@ -477,16 +475,15 @@ class ArcGISMapViewController(
             withContext(Dispatchers.Main) {
                 if (!holder.mapView.isAttachedToWindow) return@withContext
 //                if (cameraRequestGeneration.get() == request) {
-                    holder.map.setViewpointCameraAnimated(
-                        camera = dstCameraPosition,
-                        duration = duration.toFloat() / 1000.0f,
-                    )
+                holder.map.setViewpointCameraAnimated(
+                    camera = dstCameraPosition,
+                    duration = duration.toFloat() / 1000.0f,
+                )
 //                }
             }
             scheduleCameraMoveEndCallback()
         }
     }
-
 
     private fun toCameraWithView(position: MapCameraPosition): Camera {
         val targetPoint =

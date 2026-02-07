@@ -13,14 +13,14 @@ import com.mapconductor.core.ChildCollectorImpl
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.raster.RasterLayer
-import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterLayerSource
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.settings.Settings
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.UUID
 
 @Composable
 fun MapViewScope.HeatmapOverlay(

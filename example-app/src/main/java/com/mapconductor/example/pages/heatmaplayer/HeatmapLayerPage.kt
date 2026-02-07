@@ -18,9 +18,7 @@ import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
 
 @Composable
-fun HeatmapLayerPage(
-    onToggleSidebar: () -> Unit = {},
-) {
+fun HeatmapLayerPage(onToggleSidebar: () -> Unit = {}) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
 

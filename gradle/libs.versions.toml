@@ -40,6 +40,8 @@ runtime = "1.9.3"
 runtimeVersion = "1.9.5"
 materialVersion = "1.10.0"
 jts = "1.20.0"
+uiGraphics = "1.10.2"
+foundation = "1.10.2"
 
 [libraries]
 # Android ??
@@ -105,6 +107,8 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
 material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 jts-core = { group = "org.locationtech.jts", name = "jts-core", version.ref = "jts" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -53,10 +53,6 @@ class PolygonRasterTileRenderer(
 
     override fun renderTile(request: TileRequest): ByteArray? {
         tileRequestCount++
-        if (tileRequestCount <= 5 || tileRequestCount % 50 == 0) {
-            Log
-                .d(TAG, "renderTile #$tileRequestCount: z=${request.z}, x=${request.x}, y=${request.y}, pointsCount=${points.size}, holesCount=${holes.size}")
-        }
         if (points.isEmpty()) {
             if (tileRequestCount <= 5) Log.d(TAG, "  -> points empty, returning transparent")
             return transparentTileBytes

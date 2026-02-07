@@ -14,18 +14,18 @@ import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
 import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerRenderingSupport
 import com.mapconductor.core.marker.MarkerRenderingSupportKey
-import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.core.marker.StrategyMarkerController
@@ -375,9 +375,10 @@ internal fun getMarkerController(
     holder: MapboxMapViewHolder,
     markerTiling: MarkerTilingOptions,
 ): MapboxMarkerController {
-    val manager = MarkerManager.defaultManager<MapboxActualMarker>(
-        minMarkerCount = markerTiling.minMarkerCount,
-    )
+    val manager =
+        MarkerManager.defaultManager<MapboxActualMarker>(
+            minMarkerCount = markerTiling.minMarkerCount,
+        )
     val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",

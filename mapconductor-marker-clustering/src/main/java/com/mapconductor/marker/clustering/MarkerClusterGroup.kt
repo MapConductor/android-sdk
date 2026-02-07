@@ -18,20 +18,18 @@ import com.mapconductor.core.map.LocalMapViewController
 import com.mapconductor.core.marker.LocalMarkerCollector
 import com.mapconductor.core.marker.MarkerCollector
 import com.mapconductor.core.marker.MarkerIconInterface
-import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.Markers
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerRenderingSupport
 import com.mapconductor.core.marker.MarkerRenderingSupportKey
-import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
+import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.Markers
 import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.LocalPolygonCollector
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.settings.Settings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.withContext
 
 @Composable
 fun <ActualMarker> MapViewScope.MarkerClusterGroup(
@@ -312,6 +310,7 @@ private fun <ActualMarker> MarkerRenderingGroup(
     val mapController = LocalMapViewController.current
 
     val services = LocalMapServiceRegistry.current
+
     @Suppress("UNCHECKED_CAST")
     val renderingSupport =
         services.get(MarkerRenderingSupportKey) as? MarkerRenderingSupport<ActualMarker> ?: return

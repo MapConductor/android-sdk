@@ -8,14 +8,13 @@ import com.mapconductor.core.raster.RasterLayerController
 import com.mapconductor.core.raster.RasterLayerManager
 import com.mapconductor.core.raster.RasterLayerManagerInterface
 import com.mapconductor.here.HereViewHolder
-import android.util.Log
 import java.util.concurrent.atomic.AtomicBoolean
+import android.util.Log
 
 class HereRasterLayerController(
     rasterLayerManager: RasterLayerManagerInterface<HereRasterLayerHandle> = RasterLayerManager(),
     renderer: HereRasterLayerOverlayRenderer,
 ) : RasterLayerController<HereRasterLayerHandle>(rasterLayerManager, renderer) {
-
     companion object {
         private const val TAG = "HereRasterLayer"
         private val networkWarmedUp = AtomicBoolean(false)
@@ -33,19 +32,22 @@ class HereRasterLayerController(
         try {
             Log.d(TAG, "Warming up HERE SDK network stack...")
             val urlProvider = TileUrlProviderCallback { _, _, _ -> "http://127.0.0.1:1/warmup" }
-            val provider = RasterDataSourceConfiguration.Provider(
-                urlProvider,
-                TilingScheme.QUAD_TREE_MERCATOR,
-                listOf(0, 1, 2),
-            )
-            val cache = RasterDataSourceConfiguration.Cache(
-                holder.mapView.context.cacheDir.absolutePath + "/warmup",
-            )
-            val config = RasterDataSourceConfiguration(
-                "warmup-source",
-                provider,
-                cache,
-            )
+            val provider =
+                RasterDataSourceConfiguration.Provider(
+                    urlProvider,
+                    TilingScheme.QUAD_TREE_MERCATOR,
+                    listOf(0, 1, 2),
+                )
+            val cache =
+                RasterDataSourceConfiguration.Cache(
+                    holder.mapView.context.cacheDir.absolutePath + "/warmup",
+                )
+            val config =
+                RasterDataSourceConfiguration(
+                    "warmup-source",
+                    provider,
+                    cache,
+                )
             // Creating the data source triggers HERE SDK's network initialization
             val dataSource = RasterDataSource(holder.mapView.mapContext, config)
             // Immediately destroy it - we just needed to trigger the network init

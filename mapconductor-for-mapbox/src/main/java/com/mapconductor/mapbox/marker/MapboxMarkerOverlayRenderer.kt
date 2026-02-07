@@ -17,8 +17,8 @@ import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.mapbox.MapboxActualMarker
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toPoint
-import android.graphics.Bitmap
 import kotlin.coroutines.suspendCoroutine
+import android.graphics.Bitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -109,8 +109,11 @@ class MapboxMarkerOverlayRenderer(
             val icon =
                 markerManager
                     .allEntities()
-                    .firstOrNull { it.state.icon?.hashCode()?.toString() == imageId }
-                    ?.state
+                    .firstOrNull {
+                        it.state.icon
+                            ?.hashCode()
+                            ?.toString() == imageId
+                    }?.state
                     ?.icon
             if (icon != null) {
                 try {
@@ -246,7 +249,9 @@ class MapboxMarkerOverlayRenderer(
                         ?.properties()
                         ?.get(Prop.ICON_ID)
                         ?.asString
-                        ?: entity.state.icon?.hashCode()?.toString()
+                        ?: entity.state.icon
+                            ?.hashCode()
+                            ?.toString()
                 if (iconKey != null) {
                     // Defer style image removal until after the GeoJSON source is updated.
                     decrementIconRef(iconKey)
@@ -294,64 +299,66 @@ class MapboxMarkerOverlayRenderer(
             val style = getStyle()
 
             data.map { params ->
-            val prevFinger = params.prev.fingerPrint
-            val currFinger = params.current.fingerPrint
-            val prevProperties = params.prev.marker?.properties()
+                val prevFinger = params.prev.fingerPrint
+                val currFinger = params.current.fingerPrint
+                val prevProperties = params.prev.marker?.properties()
 
-            val properties =
-                JsonObject().apply {
-                    addProperty(
-                        Prop.SCALE,
-                        params.current.state.icon
-                            ?.scale ?: 1.0f,
-                    )
-                    addProperty(
-                        Prop.Z_INDEX,
-                        params.current.state.zIndex ?: calculateZIndex(params.current.state.position),
-                    )
-                    if (currFinger.icon == prevFinger.icon) {
+                val properties =
+                    JsonObject().apply {
                         addProperty(
-                            Prop.ICON_ID,
-                            prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID,
+                            Prop.SCALE,
+                            params.current.state.icon
+                                ?.scale ?: 1.0f,
                         )
-
-                        add(
-                            Prop.ICON_ANCHOR,
-                            prevProperties?.get(Prop.ICON_ANCHOR) ?: getDefaultIconOffsetProperty(),
+                        addProperty(
+                            Prop.Z_INDEX,
+                            params.current.state.zIndex ?: calculateZIndex(params.current.state.position),
                         )
-                    } else {
-                        val prevIconKey =
-                            prevProperties?.get(Prop.ICON_ID)?.asString
-                                ?: params.prev.state.icon?.hashCode()?.toString()
-                                ?: Prop.DEFAULT_MARKER_ID
-                        decrementIconRef(prevIconKey)
+                        if (currFinger.icon == prevFinger.icon) {
+                            addProperty(
+                                Prop.ICON_ID,
+                                prevProperties?.get(Prop.ICON_ID)?.asString ?: Prop.DEFAULT_MARKER_ID,
+                            )
 
-                        if (params.current.state.icon == null) {
-                            addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
-                            add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
+                            add(
+                                Prop.ICON_ANCHOR,
+                                prevProperties?.get(Prop.ICON_ANCHOR) ?: getDefaultIconOffsetProperty(),
+                            )
                         } else {
-                            params.current.state.icon?.let { icon ->
-                                // icon id
-                                val iconKey = icon.hashCode().toString()
-                                // Ensure the image exists in this style (it may have been reloaded).
-                                try {
-                                    style.addImage(iconKey, params.bitmapIcon.bitmap)
-                                } catch (_: Exception) {
+                            val prevIconKey =
+                                prevProperties?.get(Prop.ICON_ID)?.asString
+                                    ?: params.prev.state.icon
+                                        ?.hashCode()
+                                        ?.toString()
+                                    ?: Prop.DEFAULT_MARKER_ID
+                            decrementIconRef(prevIconKey)
+
+                            if (params.current.state.icon == null) {
+                                addProperty(Prop.ICON_ID, Prop.DEFAULT_MARKER_ID)
+                                add(Prop.ICON_ANCHOR, getDefaultIconOffsetProperty())
+                            } else {
+                                params.current.state.icon?.let { icon ->
+                                    // icon id
+                                    val iconKey = icon.hashCode().toString()
+                                    // Ensure the image exists in this style (it may have been reloaded).
+                                    try {
+                                        style.addImage(iconKey, params.bitmapIcon.bitmap)
+                                    } catch (_: Exception) {
+                                    }
+                                    iconBitmapCache[iconKey] = params.bitmapIcon.bitmap
+                                    if (!iconRefCounter.contains(iconKey)) iconRefCounter[iconKey] = 0
+                                    incrementIconRef(iconKey)
+                                    addProperty(Prop.ICON_ID, iconKey)
+                                    add(Prop.ICON_ANCHOR, createIconOffset(icon))
                                 }
-                                iconBitmapCache[iconKey] = params.bitmapIcon.bitmap
-                                if (!iconRefCounter.contains(iconKey)) iconRefCounter[iconKey] = 0
-                                incrementIconRef(iconKey)
-                                addProperty(Prop.ICON_ID, iconKey)
-                                add(Prop.ICON_ANCHOR, createIconOffset(icon))
                             }
                         }
                     }
-                }
 
-            val position =
-                GeoPoint.from(params.current.state.position).toPoint()
-            val featureId = "marker-${params.current.state.id}"
-            Feature.fromGeometry(position, properties, featureId)
+                val position =
+                    GeoPoint.from(params.current.state.position).toPoint()
+                val featureId = "marker-${params.current.state.id}"
+                Feature.fromGeometry(position, properties, featureId)
             }
         }
 

@@ -10,8 +10,8 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualPolygon
-import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.map.ArcGISMapViewHolder
+import com.mapconductor.arcgis.raster.ArcGISRasterLayerController
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
@@ -169,7 +169,10 @@ class ArcGISPolygonOverlayRenderer(
         // which may fail to render. Use a larger segment length to keep the geometry size reasonable.
         val geodesicMaxSegmentLengthMeters = 100_000.0
 
-        fun toRing(points: List<GeoPointInterface>, geodesic: Boolean): List<GeoPointInterface> =
+        fun toRing(
+            points: List<GeoPointInterface>,
+            geodesic: Boolean,
+        ): List<GeoPointInterface> =
             when (geodesic) {
                 true -> createInterpolatePoints(points, maxSegmentLength = geodesicMaxSegmentLengthMeters)
                 false -> createLinearInterpolatePoints(points)
@@ -194,6 +197,7 @@ class ArcGISPolygonOverlayRenderer(
             val json =
                 buildString {
                     append("{\"rings\":[")
+
                     fun appendRing(ring: List<GeoPointInterface>) {
                         append("[")
                         ring.forEachIndexed { idx, p ->
@@ -320,14 +324,14 @@ class ArcGISPolygonOverlayRenderer(
     }
 
     private fun safeId(id: String): String =
-        id.map { ch ->
-            when {
-                ch.isLetterOrDigit() -> ch
-                ch == '-' || ch == '_' || ch == '.' -> ch
-                else -> '_'
-            }
-        }.joinToString("")
-
+        id
+            .map { ch ->
+                when {
+                    ch.isLetterOrDigit() -> ch
+                    ch == '-' || ch == '_' || ch == '.' -> ch
+                    else -> '_'
+                }
+            }.joinToString("")
 
     private fun signedAreaLonLat(ring: List<GeoPointInterface>): Double {
         if (ring.size < 3) return 0.0

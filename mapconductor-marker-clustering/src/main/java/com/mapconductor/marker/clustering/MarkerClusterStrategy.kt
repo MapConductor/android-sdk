@@ -1,5 +1,6 @@
 package com.mapconductor.marker.clustering
 
+import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.features.GeoRectBounds
@@ -18,7 +19,6 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.expandBounds
-import androidx.compose.ui.geometry.Offset
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.abs
@@ -487,8 +487,8 @@ class MarkerClusterStrategy<ActualMarker>(
                     clusterPositions[clusterId] = center
                     extendCoverageBounds(coverageBounds, center, radiusMeters)
                     val clusterIcon =
-                            clusterIconProviderWithTurn?.invoke(merged.members.size, turn)
-                                ?: clusterIconProvider(merged.members.size)
+                        clusterIconProviderWithTurn?.invoke(merged.members.size, turn)
+                            ?: clusterIconProvider(merged.members.size)
                     val clusterState =
                         MarkerState(
                             id = clusterId,
@@ -503,7 +503,7 @@ class MarkerClusterStrategy<ActualMarker>(
                                 } else {
                                     null
                                 },
-                    )
+                        )
                     desiredMarkerStates.add(clusterState)
                 } else {
                     merged.members.forEach { member ->
@@ -1286,19 +1286,20 @@ class MarkerClusterStrategy<ActualMarker>(
                 .map { state ->
                     val projected = geocell.projection.project(state.position)
                     HullPoint(projected.x.toDouble(), projected.y.toDouble())
-                }
-                .distinctBy { p ->
+                }.distinctBy { p ->
                     // Avoid degenerate duplicates due to float precision.
                     val rx = (p.x * 1e3).toLong()
                     val ry = (p.y * 1e3).toLong()
                     (rx shl 32) xor ry
-                }
-                .sortedWith(compareBy<HullPoint> { it.x }.thenBy { it.y })
+                }.sortedWith(compareBy<HullPoint> { it.x }.thenBy { it.y })
 
         if (points.size < 3) return emptyList()
 
-        fun cross(o: HullPoint, a: HullPoint, b: HullPoint): Double =
-            (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
+        fun cross(
+            o: HullPoint,
+            a: HullPoint,
+            b: HullPoint,
+        ): Double = (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
 
         val lower = mutableListOf<HullPoint>()
         for (p in points) {

@@ -6,8 +6,8 @@ import com.here.sdk.core.GeoCircle
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.mapview.MapPolygon
-import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
 import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleState

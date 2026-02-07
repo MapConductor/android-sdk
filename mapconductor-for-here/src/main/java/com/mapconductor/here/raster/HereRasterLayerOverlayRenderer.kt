@@ -10,8 +10,8 @@ import com.here.sdk.mapview.datasource.TileUrlProviderFactory
 import com.here.sdk.mapview.datasource.TilingScheme
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
-import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterLayerSource
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.here.HereViewHolder
 import android.util.Log
@@ -134,10 +134,11 @@ class HereRasterLayerOverlayRenderer(
                             factoryProvider
                         } else {
                             TileUrlProviderCallback { x, y, zoom ->
-                                val url = source.template
-                                    .replace("{x}", x.toString())
-                                    .replace("{y}", y.toString())
-                                    .replace("{z}", zoom.toString())
+                                val url =
+                                    source.template
+                                        .replace("{x}", x.toString())
+                                        .replace("{y}", y.toString())
+                                        .replace("{z}", zoom.toString())
                                 url
                             }
                         }

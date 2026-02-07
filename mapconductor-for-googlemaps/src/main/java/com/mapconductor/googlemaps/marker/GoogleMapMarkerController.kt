@@ -8,9 +8,9 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.marker.MarkerManager
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
-import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRenderer
 import com.mapconductor.core.marker.MarkerTilingOptions
@@ -21,12 +21,9 @@ import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.googlemaps.GoogleMapActualMarker
 import com.mapconductor.googlemaps.GoogleMapViewHolder
-import com.mapconductor.googlemaps.toGeoPoint
 import com.mapconductor.settings.Settings
 import java.util.UUID
 import kotlin.math.floor
-import android.os.SystemClock
-import android.util.Log
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withPermit
 
@@ -50,7 +47,6 @@ class GoogleMapMarkerController private constructor(
         markerManager = markerManager,
         renderer = renderer,
     ) {
-
     private val defaultMarkerIcon: BitmapIcon = DefaultMarkerIcon().toBitmapIcon()
     private val tiledMarkerIds = LinkedHashSet<String>()
 
@@ -337,9 +333,10 @@ class GoogleMapMarkerController private constructor(
             holder: GoogleMapViewHolder,
             markerTiling: MarkerTilingOptions = MarkerTilingOptions.Default,
         ): GoogleMapMarkerController {
-            val markerManager = MarkerManager.defaultManager<GoogleMapActualMarker>(
-                minMarkerCount = markerTiling.minMarkerCount,
-            )
+            val markerManager =
+                MarkerManager.defaultManager<GoogleMapActualMarker>(
+                    minMarkerCount = markerTiling.minMarkerCount,
+                )
             val renderer =
                 GoogleMapMarkerRenderer(
                     holder = holder,

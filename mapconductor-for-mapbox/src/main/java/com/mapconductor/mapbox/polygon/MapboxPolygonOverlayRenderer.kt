@@ -1,7 +1,7 @@
 package com.mapconductor.mapbox.polygon
 
-import com.mapconductor.core.features.GeoPointInterface
 import androidx.compose.ui.graphics.Color
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polygon.AbstractPolygonOverlayRenderer
 import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonManagerInterface
@@ -10,9 +10,9 @@ import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
+import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.core.tileserver.TileServerRegistry
-import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.mapbox.MapboxActualPolygon
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.createMapboxPolygons
@@ -37,6 +37,7 @@ class MapboxPolygonOverlayRenderer(
     )
 
     private val masks = HashMap<String, MaskHandle>()
+
     override suspend fun onRemove(data: List<PolygonEntityInterface<MapboxActualPolygon>>) {
 //        val featureIds = data.map { entity ->
 //            entity.polygon.getStringProperty("id")
@@ -175,9 +176,10 @@ class MapboxPolygonOverlayRenderer(
         provider.strokeColor = android.graphics.Color.TRANSPARENT
         provider.strokeWidthPx = 0f
         provider.geodesic = state.geodesic
-        provider.outerBounds = com.mapconductor.core.features.GeoRectBounds().also { b ->
-            state.points.forEach { b.extend(it) }
-        }
+        provider.outerBounds =
+            com.mapconductor.core.features.GeoRectBounds().also { b ->
+                state.points.forEach { b.extend(it) }
+            }
     }
 
     private fun Color.toMapboxColorInt(): Int =
@@ -189,13 +191,14 @@ class MapboxPolygonOverlayRenderer(
         )
 
     private fun safeId(id: String): String =
-        id.map { ch ->
-            when {
-                ch.isLetterOrDigit() -> ch
-                ch == '-' || ch == '_' || ch == '.' -> ch
-                else -> '_'
-            }
-        }.joinToString("")
+        id
+            .map { ch ->
+                when {
+                    ch.isLetterOrDigit() -> ch
+                    ch == '-' || ch == '_' || ch == '.' -> ch
+                    else -> '_'
+                }
+            }.joinToString("")
 
     /**
      * Creates geodesic polygon points by interpolating between each consecutive pair of vertices.

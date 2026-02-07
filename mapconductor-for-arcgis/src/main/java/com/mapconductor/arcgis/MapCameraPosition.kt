@@ -6,7 +6,6 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapPaddings
-import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
 import kotlin.math.PI
 import kotlin.math.asin
 import kotlin.math.atan2
@@ -69,7 +68,7 @@ fun calculateDestinationPoint(
 
     return GeoPoint.fromLatLong(
         latitude = destLatRad.toDegrees(),
-        longitude = destLonRad.toDegrees()
+        longitude = destLonRad.toDegrees(),
     )
 }
 

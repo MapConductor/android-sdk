@@ -45,7 +45,6 @@ fun MapViewScope.HeatmapPoint(
     HeatmapPoint(state)
 }
 
-
 @Composable
 fun MapViewScope.HeatmapPoints(states: List<HeatmapPointState>) {
     val collector = LocalHeatmapPointCollector.current

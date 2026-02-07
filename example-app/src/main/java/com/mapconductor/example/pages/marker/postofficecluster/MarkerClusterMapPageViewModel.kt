@@ -8,7 +8,6 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
-//import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +39,6 @@ interface MarkerClusterMapPageViewModelInterface {
 
     fun loadPostOfficeData()
 }
-
 
 class MarkerClusterMapPageViewModel(
     private val postOfficeIcon: ImageIcon,

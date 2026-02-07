@@ -32,8 +32,8 @@ import com.mapconductor.arcgis.raster.ArcGISRasterLayerOverlayRenderer
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
-import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
@@ -383,11 +383,10 @@ private fun getPolygonController(
 private fun getMarkerController(
     holder: ArcGISMapViewHolder,
     markerTiling: MarkerTilingOptions,
-) =
-    ArcGISMarkerController.create(
-        holder = holder,
-        markerTiling = markerTiling,
-    )
+) = ArcGISMarkerController.create(
+    holder = holder,
+    markerTiling = markerTiling,
+)
 
 private fun getRasterLayerController(holder: ArcGISMapViewHolder): ArcGISRasterLayerController {
     val renderer =

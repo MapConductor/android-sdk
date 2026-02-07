@@ -4,20 +4,19 @@ import com.mapconductor.core.groundimage.AbstractGroundImageOverlayRenderer
 import com.mapconductor.core.groundimage.GroundImageEntityInterface
 import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.groundimage.GroundImageTileProvider
-import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.tileserver.LocalTileServer
 import com.mapconductor.maplibre.MapLibreActualGroundImage
 import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.sources.RasterSource as MapLibreRasterSource
 import org.maplibre.android.style.sources.TileSet
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MapLibreGroundImageOverlayRenderer(
     override val holder: MapLibreMapViewHolderInterface,
@@ -66,7 +65,8 @@ class MapLibreGroundImageOverlayRenderer(
             }
 
             val tileSizeChanged = finger.tileSize != prevFinger.tileSize
-            val tileContentChanged = finger.bounds != prevFinger.bounds || finger.image != prevFinger.image || tileSizeChanged
+            val tileContentChanged =
+                finger.bounds != prevFinger.bounds || finger.image != prevFinger.image || tileSizeChanged
             if (!tileContentChanged) {
                 return@withContext groundImage
             }
@@ -107,11 +107,12 @@ class MapLibreGroundImageOverlayRenderer(
     ) {
         val style = holder.map.style ?: return
         val tileSet =
-            TileSet("2.2.0", tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize, handle.cacheKey)).apply {
-                scheme = "xyz"
-                setMinZoom(0f)
-                setMaxZoom(22f)
-            }
+            TileSet("2.2.0", tileServer.urlTemplate(handle.routeId, handle.tileProvider.tileSize, handle.cacheKey))
+                .apply {
+                    scheme = "xyz"
+                    setMinZoom(0f)
+                    setMaxZoom(22f)
+                }
         val source = MapLibreRasterSource(handle.sourceId, tileSet, handle.tileProvider.tileSize)
         val layer = RasterLayer(handle.layerId, handle.sourceId)
         layer.setProperties(

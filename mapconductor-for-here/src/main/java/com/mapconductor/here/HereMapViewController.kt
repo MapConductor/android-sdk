@@ -12,7 +12,6 @@ import com.here.sdk.gestures.TapListener
 import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraAnimationFactory
 import com.here.sdk.mapview.MapCameraListener
-import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
 import com.here.time.Duration
 import com.mapconductor.core.circle.CircleCapableInterface
@@ -43,7 +42,6 @@ import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.raster.RasterLayerState
-import com.mapconductor.here.zoom.ZoomAltitudeConverter
 import com.mapconductor.here.circle.HereCircleController
 import com.mapconductor.here.groundimage.HereGroundImageController
 import com.mapconductor.here.marker.DefaultHereMarkerEventController
@@ -54,6 +52,7 @@ import com.mapconductor.here.marker.StrategyHereMarkerEventController
 import com.mapconductor.here.polygon.HerePolygonController
 import com.mapconductor.here.polyline.HerePolylineController
 import com.mapconductor.here.raster.HereRasterLayerController
+import com.mapconductor.here.zoom.ZoomAltitudeConverter
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,7 +76,6 @@ class HereMapViewController(
     MapCameraListener,
     TapListener,
     LongPressListener {
-
     private val zoomConverter = ZoomAltitudeConverter()
 
     private val markerEventControllers = mutableListOf<HereMarkerEventControllerInterface>()
@@ -322,6 +320,7 @@ class HereMapViewController(
                 }
         }
     }
+
     private fun getMapCameraPosition(cameraState: MapCamera.State): MapCameraPosition? {
         return holder.mapView.camera.boundingBox?.let { boundingBox ->
             val mapWidth = holder.mapView.width.toFloat()
@@ -340,15 +339,17 @@ class HereMapViewController(
                     farRight = holder.fromScreenOffsetSync(rightTop),
                 )
 
-
-            val cameraPosition = MapCameraPosition.from(object : MapCameraPositionInterface {
-                override val position: GeoPointInterface = cameraState.targetCoordinates.toGeoPoint()
-                override val zoom: Double = cameraState.toMapCameraPosition().zoom
-                override val bearing: Double = cameraState.orientationAtTarget.bearing
-                override val tilt: Double = cameraState.orientationAtTarget.tilt
-                override val paddings: MapPaddingsInterface? = null
-                override val visibleRegion: VisibleRegion? = visibleRegion
-            })
+            val cameraPosition =
+                MapCameraPosition.from(
+                    object : MapCameraPositionInterface {
+                        override val position: GeoPointInterface = cameraState.targetCoordinates.toGeoPoint()
+                        override val zoom: Double = cameraState.toMapCameraPosition().zoom
+                        override val bearing: Double = cameraState.orientationAtTarget.bearing
+                        override val tilt: Double = cameraState.orientationAtTarget.tilt
+                        override val paddings: MapPaddingsInterface? = null
+                        override val visibleRegion: VisibleRegion? = visibleRegion
+                    },
+                )
             return@let cameraPosition
         }
     }

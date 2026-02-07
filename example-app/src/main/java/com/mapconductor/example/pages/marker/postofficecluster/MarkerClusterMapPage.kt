@@ -2,11 +2,6 @@
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -14,9 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,7 +41,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<GoogleMapActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
-                debugHullPolygons = true,
+                debugHullPolygons = false,
             )
         }
     val mapboxClusterState =
@@ -57,7 +49,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<MapboxActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
-                debugHullPolygons = true,
+                debugHullPolygons = false,
             )
         }
     val hereClusterState =
@@ -65,7 +57,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<HereActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
-                debugHullPolygons = true,
+                debugHullPolygons = false,
             )
         }
     val arcgisClusterState =
@@ -73,7 +65,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<ArcGISActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
-                debugHullPolygons = true,
+                debugHullPolygons = false,
             )
         }
     val maplibreClusterState =
@@ -81,7 +73,7 @@ fun MarkerClusterMapPage(
             MarkerClusterGroupState<MapLibreActualMarker>(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
-                debugHullPolygons = true,
+                debugHullPolygons = false,
             )
         }
 
@@ -186,4 +178,3 @@ fun MarkerClusterMapPage(
         }
     }
 }
-

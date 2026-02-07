@@ -9,12 +9,12 @@ import com.mapconductor.core.marker.BitmapIcon
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerEntity
 import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.MarkerTileRenderer
 import com.mapconductor.core.marker.MarkerTilingOptions
-import com.mapconductor.core.marker.MarkerIngestionEngine
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -41,7 +41,7 @@ class MapLibreMarkerController(
     private lateinit var lastCameraPosition: MapCameraPosition
 
     private val tileServer = TileServerRegistry.get()
-    private var markerTileRenderer: MarkerTileRenderer<MapLibreActualMarker> ? = null
+    private var markerTileRenderer: MarkerTileRenderer<MapLibreActualMarker>? = null
     private var markerTileGroupId: String? = null
     private var markerTileRasterLayerState: RasterLayerState? = null
     private var rasterLayerCallback: MarkerTileRasterLayerCallback? = null

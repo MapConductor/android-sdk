@@ -1,7 +1,5 @@
 package com.mapconductor.mapbox.raster
 
-import com.mapbox.maps.TileCacheBudget
-import com.mapbox.maps.TileCacheBudgetInMegabytes
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.addLayerAbove
 import com.mapbox.maps.extension.style.layers.addLayerBelow
@@ -25,45 +23,46 @@ class MapboxRasterLayerOverlayRenderer(
     private val stateById: MutableMap<String, RasterLayerState> = mutableMapOf()
     private val handleById: MutableMap<String, MapboxRasterLayerHandle> = mutableMapOf()
 
-    private fun isMarkerTileRaster(state: RasterLayerState): Boolean =
-        state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
+    private fun isMarkerTileRaster(state: RasterLayerState): Boolean = state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
 
     override suspend fun onAdd(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
     ): List<MapboxRasterLayerHandle?> =
-        data.map { params ->
-            addLayer(params.state).also { handle ->
-                if (handle != null) {
-                    stateById[params.state.id] = params.state
-                    handleById[params.state.id] = handle
+        data
+            .map { params ->
+                addLayer(params.state).also { handle ->
+                    if (handle != null) {
+                        stateById[params.state.id] = params.state
+                        handleById[params.state.id] = handle
+                    }
                 }
+            }.also {
+                holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
             }
-        }.also {
-            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
-        }
 
     override suspend fun onChange(
         data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<MapboxRasterLayerHandle>>,
     ): List<MapboxRasterLayerHandle?> =
-        data.map { params ->
-            val prev = params.prev
-            val next = params.current.state
-            val handle =
-                if (prev.state.source != next.source) {
-                    removeLayer(prev)
-                    addLayer(next)
-                } else {
-                    updateLayer(prev.layer, next)
-                    prev.layer
+        data
+            .map { params ->
+                val prev = params.prev
+                val next = params.current.state
+                val handle =
+                    if (prev.state.source != next.source) {
+                        removeLayer(prev)
+                        addLayer(next)
+                    } else {
+                        updateLayer(prev.layer, next)
+                        prev.layer
+                    }
+                if (handle != null) {
+                    stateById[next.id] = next
+                    handleById[next.id] = handle
                 }
-            if (handle != null) {
-                stateById[next.id] = next
-                handleById[next.id] = handle
+                handle
+            }.also {
+                holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
             }
-            handle
-        }.also {
-            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
-        }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<MapboxRasterLayerHandle>>) {
         data.forEach { entity ->

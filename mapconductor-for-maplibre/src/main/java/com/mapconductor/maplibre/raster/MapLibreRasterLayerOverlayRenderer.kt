@@ -2,8 +2,8 @@ package com.mapconductor.maplibre.raster
 
 import com.mapconductor.core.raster.RasterLayerEntityInterface
 import com.mapconductor.core.raster.RasterLayerOverlayRendererInterface
-import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.RasterLayerSource
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
 import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import org.maplibre.android.style.layers.Property
@@ -22,45 +22,46 @@ class MapLibreRasterLayerOverlayRenderer(
     private val stateById: MutableMap<String, RasterLayerState> = mutableMapOf()
     private val handleById: MutableMap<String, MapLibreRasterLayerHandle> = mutableMapOf()
 
-    private fun isMarkerTileRaster(state: RasterLayerState): Boolean =
-        state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
+    private fun isMarkerTileRaster(state: RasterLayerState): Boolean = state.id.startsWith(MARKER_TILE_RASTER_ID_PREFIX)
 
     override suspend fun onAdd(
         data: List<RasterLayerOverlayRendererInterface.AddParamsInterface>,
     ): List<MapLibreRasterLayerHandle?> =
-        data.map { params ->
-            addLayer(params.state).also { handle ->
-                if (handle != null) {
-                    stateById[params.state.id] = params.state
-                    handleById[params.state.id] = handle
+        data
+            .map { params ->
+                addLayer(params.state).also { handle ->
+                    if (handle != null) {
+                        stateById[params.state.id] = params.state
+                        handleById[params.state.id] = handle
+                    }
                 }
+            }.also {
+                holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
             }
-        }.also {
-            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
-        }
 
     override suspend fun onChange(
         data: List<RasterLayerOverlayRendererInterface.ChangeParamsInterface<MapLibreRasterLayerHandle>>,
     ): List<MapLibreRasterLayerHandle?> =
-        data.map { params ->
-            val prev = params.prev
-            val next = params.current.state
-            val handle =
-                if (prev.state.source != next.source) {
-                    removeLayer(prev)
-                    addLayer(next)
-                } else {
-                    updateLayer(prev.layer, next)
-                    prev.layer
+        data
+            .map { params ->
+                val prev = params.prev
+                val next = params.current.state
+                val handle =
+                    if (prev.state.source != next.source) {
+                        removeLayer(prev)
+                        addLayer(next)
+                    } else {
+                        updateLayer(prev.layer, next)
+                        prev.layer
+                    }
+                if (handle != null) {
+                    stateById[next.id] = next
+                    handleById[next.id] = handle
                 }
-            if (handle != null) {
-                stateById[next.id] = next
-                handleById[next.id] = handle
+                handle
+            }.also {
+                holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
             }
-            handle
-        }.also {
-            holder.map.style?.let { style -> rebuildNonMarkerRasterLayers(style) }
-        }
 
     override suspend fun onRemove(data: List<RasterLayerEntityInterface<MapLibreRasterLayerHandle>>) {
         data.forEach { entity ->

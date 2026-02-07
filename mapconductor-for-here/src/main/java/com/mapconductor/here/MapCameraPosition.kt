@@ -11,7 +11,6 @@ import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.here.zoom.ZoomAltitudeConverter
 
-
 @Keep
 fun MapCameraPosition.toMapCameraUpdate(): MapCameraUpdate {
     val hereZoom = ZoomAltitudeConverter.googleZoomToHereZoom(zoom, position.latitude)
@@ -24,7 +23,6 @@ fun MapCameraPosition.toMapCameraUpdate(): MapCameraUpdate {
         ),
     )
 }
-
 
 fun MapCameraPosition.Companion.from(position: MapCameraPositionInterface): MapCameraPosition =
     when (position) {
