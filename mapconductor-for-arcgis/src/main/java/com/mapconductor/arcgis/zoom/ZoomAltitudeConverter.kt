@@ -12,7 +12,7 @@ class ZoomAltitudeConverter(
 ) : AbstractZoomAltitudeConverter(zoom0Altitude) {
     companion object {
         // ArcGIS-specific optimized zoom0 altitude to match Google Maps visible regions
-        const val ARCGIS_OPTIMIZED_ZOOM0_ALTITUDE = 103320111.449375
+        const val ARCGIS_OPTIMIZED_ZOOM0_ALTITUDE = 108945111.449375  // 103320111
 
         fun verticalFovFromHorizontal(
             horizontalFovDeg: Double,
