@@ -190,6 +190,13 @@ class ArcGISMapViewController(
             }
     }
 
+    private fun currentViewportSizeInDp(): Pair<Int, Int> {
+        val density = holder.mapView.resources.displayMetrics.density.coerceAtLeast(0.1f)
+        val widthDp = (holder.map.width / density).toInt().coerceAtLeast(1)
+        val heightDp = (holder.map.height / density).toInt().coerceAtLeast(1)
+        return Pair(widthDp, heightDp)
+    }
+
     private suspend fun onViewpointChange() {
         mapLoadedCallback?.invoke()
         mapLoadedCallback = null
@@ -243,9 +250,16 @@ class ArcGISMapViewController(
         val tilt = arcCamera.pitch
         val bearing = ((arcCamera.heading % 360) + 360) % 360
 
-        // Use calibrated constant instead of dynamic calculation
         val conv = ZoomAltitudeConverter()
-        val zoom = conv.altitudeToZoomLevel(alt, lat, tilt)
+        val (viewportWidthDp, viewportHeightDp) = currentViewportSizeInDp()
+        val zoom =
+            conv.altitudeToZoomLevel(
+                altitude = alt,
+                latitude = lat,
+                tilt = tilt,
+                viewportWidthPx = viewportWidthDp,
+                viewportHeightPx = viewportHeightDp,
+            )
 
         val camera =
             MapCameraPosition(
@@ -490,9 +504,15 @@ class ArcGISMapViewController(
             GeoPoint
                 .from(position.position)
                 .toPoint()
-        // Use calibrated constant instead of dynamic calculation
         val conv = ZoomAltitudeConverter()
-        val distance = conv.zoomLevelToDistance(position.zoom, position.position.latitude)
+        val (viewportWidthDp, viewportHeightDp) = currentViewportSizeInDp()
+        val distance =
+            conv.zoomLevelToDistance(
+                zoomLevel = position.zoom,
+                latitude = position.position.latitude,
+                viewportWidthPx = viewportWidthDp,
+                viewportHeightPx = viewportHeightDp,
+            )
         return calculateCameraForOrbitParameters(
             targetPoint = targetPoint,
             distance = distance,
