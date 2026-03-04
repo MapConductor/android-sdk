@@ -1,0 +1,70 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  firstLatitude?: number;
+  firstLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+  thirdLatitude?: number;
+  thirdLongitude?: number;
+  polygonClickedLog?: string;
+  commentForVertexMarkers?: string;
+  vertexExtraPrefix?: string;
+}
+
+const {
+  firstLatitude = 37.7749,
+  firstLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094,
+  thirdLatitude = 37.7799,
+  thirdLongitude = -122.3994,
+  polygonClickedLog = "Polygon clicked at: \${event.clicked}",
+  commentForVertexMarkers = "頂点マーカー（閉じる点を除く）",
+  vertexExtraPrefix = "vertex_"
+} = Astro.props;
+
+const code = `@Composable
+fun EditablePolygonExample() {
+    var polygonState by remember {
+        mutableStateOf(
+            PolygonState(
+                points = listOf(
+                    GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude}),
+                    GeoPoint.fromLatLong(${secondLatitude}, ${secondLongitude}),
+                    GeoPoint.fromLatLong(${thirdLatitude}, ${thirdLongitude}),
+                    GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude})
+                ),
+                strokeColor = Color.Red,
+                fillColor = Color.Red.copy(alpha = 0.2f),
+                onClick = { event ->
+                    println("${polygonClickedLog}")
+                }
+            )
+        )
+    }
+
+    MapView(
+        state = mapViewState
+    ) {
+        Polygon(polygonState)
+
+        // ${commentForVertexMarkers}
+        polygonState.points.dropLast(1).forEachIndexed { index, point ->
+            Marker(
+                position = point,
+                icon = DefaultIcon(
+                    fillColor = Color.Red,
+                    label = "\${index + 1}",
+                    scale = 0.8f
+                ),
+                draggable = true,
+                extra = "${vertexExtraPrefix}$index"
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

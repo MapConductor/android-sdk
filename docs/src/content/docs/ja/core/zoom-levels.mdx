@@ -1,0 +1,96 @@
+---
+title: "Zoom Levels（ズームレベル）"
+---
+
+import ZoomLevelExamples from '~/components/core/zoom-levels/ZoomLevelExamples.astro';
+import GlobalScaleExamples from '~/components/core/zoom-levels/GlobalScaleExamples.astro';
+import RegionalScaleExamples from '~/components/core/zoom-levels/RegionalScaleExamples.astro';
+import MetropolitanScaleExamples from '~/components/core/zoom-levels/MetropolitanScaleExamples.astro';
+import NeighborhoodScaleExamples from '~/components/core/zoom-levels/NeighborhoodScaleExamples.astro';
+import StreetScaleExamples from '~/components/core/zoom-levels/StreetScaleExamples.astro';
+import BuildingScaleExamples from '~/components/core/zoom-levels/BuildingScaleExamples.astro';
+import ContentBasedZoomExample from '~/components/core/zoom-levels/ContentBasedZoomExample.astro';
+import ZoomControlsExample from '~/components/core/zoom-levels/ZoomControlsExample.astro';
+import PerformanceAdaptiveZoomExample from '~/components/core/zoom-levels/PerformanceAdaptiveZoomExample.astro';
+import ContextAwareZoomExample from '~/components/core/zoom-levels/ContextAwareZoomExample.astro';
+import AnimateToZoomExample from '~/components/core/zoom-levels/AnimateToZoomExample.astro';
+import ResponsiveZoomExample from '~/components/core/zoom-levels/ResponsiveZoomExample.astro';
+import ZoomLevelTesterExample from '~/components/core/zoom-levels/ZoomLevelTesterExample.astro';
+
+MapConductor はズームレベルを使用して地図表示のスケールと詳細度を制御します。ズームレベルシステムはおおよそ Google Maps の規約に従いますが、基盤となる実装の違いにより地図SDK間で若干異なる場合があります。
+
+## ズームレベルの理解
+
+MapConductor のズームレベルは `Double` 値として表され、通常 0 から 21 の範囲です:
+
+- **高い数値** = よりズームイン（より詳細、より小さいエリア）
+- **低い数値** = よりズームアウト（より少ない詳細、より大きいエリア）
+- **小数値** = 整数レベル間のスムーズな補間
+
+<ZoomLevelExamples />
+
+## ズームレベルリファレンス
+
+### グローバルスケール (0-5)
+
+<GlobalScaleExamples />
+
+**ユースケース:**
+- グローバルデータの可視化
+- 大陸の概要
+- フライトトラッキングアプリケーション
+- 世界の天気図
+
+### 地域スケール (6-9)
+
+<RegionalScaleExamples />
+
+**ユースケース:**
+- 国の統計
+- 州レベルのデータ
+- 地域の天気
+- 交通ネットワーク
+
+### メトロポリタンスケール (10-12)
+
+<MetropolitanScaleExamples />
+
+**ユースケース:**
+- 都市計画
+- 公共交通機関
+- 配達ゾーン
+- 地区の境界
+
+### 近隣スケール (13-15)
+
+<NeighborhoodScaleExamples />
+
+**ユースケース:**
+- 地元のビジネスディレクトリ
+- 学区
+- 近隣サービス
+- 不動産検索
+
+### ストリートスケール (16-18)
+
+<StreetScaleExamples />
+
+**ユースケース:**
+- ナビゲーションアプリケーション
+- 住所検索
+- ストリートレベルサービス
+- 徒歩案内
+
+### 建物スケール (19-21)
+
+<BuildingScaleExamples />
+
+**ユースケース:**
+- 建物検査
+- 資産管理
+- 屋内マッピング
+- 詳細な測量
+
+## 地図SDKのバリエーション
+
+MapConductor は地図SDK間でズームレベルを正規化しますが、微妙な違いがある可能性があります:

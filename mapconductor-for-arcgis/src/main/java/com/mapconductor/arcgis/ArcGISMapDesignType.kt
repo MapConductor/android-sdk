@@ -1,16 +1,16 @@
 package com.mapconductor.arcgis.map
 
 import com.arcgismaps.mapping.BasemapStyle
-import com.mapconductor.core.map.MapDesignType
+import com.mapconductor.core.map.MapDesignTypeInterface
 
-interface ArcGISDesignType : MapDesignType<String> {
+interface ArcGISDesignTypeInterface : MapDesignTypeInterface<String> {
     val elevationSources: List<String>
 }
 
 data class ArcGISDesign(
     override val id: String,
     override val elevationSources: List<String> = emptyList<String>(),
-) : ArcGISDesignType {
+) : ArcGISDesignTypeInterface {
     override fun getValue(): String = id
 
     fun withElevationSources(sources: List<String>): ArcGISDesign =
@@ -148,7 +148,7 @@ data class ArcGISDesign(
                 else -> throw Throwable("unknown design id: \"$id\"")
             }
 
-        fun toBasemapStyle(designType: ArcGISDesignType): BasemapStyle =
+        fun toBasemapStyle(designType: ArcGISDesignTypeInterface): BasemapStyle =
             when (designType.getValue()) {
                 Streets.id -> BasemapStyle.ArcGISStreets
                 Imagery.id -> BasemapStyle.ArcGISImagery

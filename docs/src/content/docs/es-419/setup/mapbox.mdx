@@ -1,0 +1,129 @@
+---
+title: Configuración de Mapbox
+---
+
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import SettingsGradleTabs from '~/components/setup/mapbox/SettingsGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/mapbox/AppGradleTabs.astro';
+import TestMapboxComposable from '~/components/setup/mapbox/TestMapboxComposable.astro';
+
+Esta sección explica el proceso de configuración del SDK de Mapbox Maps junto con MapConductor.
+
+:::tip
+MapConductor proporciona una capa de API unificada sobre los SDKs de mapas existentes. Debes configurar el SDK de Mapbox Maps de forma independiente antes de usar la integración de Mapbox de MapConductor.
+:::
+
+## Requisitos previos
+
+- Entorno de desarrollo Android
+- Cuenta de Mapbox
+- Token de acceso de Mapbox
+
+## Pasos de configuración
+
+### 1. Configuración de la cuenta de Mapbox
+
+1. Crea una cuenta en [Mapbox](https://www.mapbox.com/).
+2. Accede a tu [panel de cuenta de Mapbox](https://account.mapbox.com/).
+3. Navega a **Access tokens**.
+4. Crea un nuevo token de acceso o utiliza el token público por defecto.
+5. Copia el token de acceso para usarlo en tu aplicación.
+
+### 2. Configuración de Gradle
+
+Asegúrate de que el repositorio Maven de Mapbox esté configurado (este repositorio ya lo incluye en `settings.gradle.kts`):
+
+<SettingsGradleTabs />
+
+A continuación, añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradle` de la raíz del proyecto:
+
+<SecretsPluginRootGradleTabs />
+
+Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
+
+<AppGradleTabs
+  otherPluginsComment="... otros plugins"
+  mapboxSdkComment="Mapbox Maps SDK (variante NDK27)"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
+
+El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede inyectar los valores en `AndroidManifest.xml` en tiempo de compilación.
+
+### 3. Configuración de AndroidManifest
+
+Añade el marcador de posición del token de acceso de Mapbox en tu `AndroidManifest.xml`:
+
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "MAPBOX_ACCESS_TOKEN", value: "${MAPBOX_ACCESS_TOKEN}", comment: "Mapbox Access Token"}
+  ]}
+  permissions={[
+    {name: "android.permission.INTERNET", comment: "Añade permisos de internet y ubicación"},
+    {name: "android.permission.ACCESS_COARSE_LOCATION"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
+
+### 4. Configuración del token de acceso
+
+Añade el token de acceso real a tu archivo `secrets.properties`:
+
+<SecretsPropertiesExample
+  entries={[
+    {key: "MAPBOX_ACCESS_TOKEN", value: "tu_token_real_de_acceso_de_mapbox_aquí"}
+  ]}
+/>
+
+**Importante**:
+
+- No subas el archivo `secrets.properties` al control de versiones. Añádelo a `.gitignore`.
+- El Secrets Gradle Plugin reemplaza automáticamente `${MAPBOX_ACCESS_TOKEN}` en tu `AndroidManifest.xml` por el valor real.
+- En entornos de CI/CD puedes utilizar variables de entorno u otros métodos seguros para proporcionar estos valores.
+
+<GitignoreExample entries={["secrets.properties"]} />
+
+### 5. Configuración de estilos
+
+Mapbox permite estilos de mapa personalizados. Puedes utilizar estilos integrados o crear los tuyos, pero esta configuración se realiza en el código de tus composables y no forma parte de la configuración básica descrita aquí.
+
+## Verificación
+
+Para verificar la configuración de Mapbox:
+
+1. Compila y ejecuta la app.
+2. Comprueba que el mapa se muestra con el estilo de Mapbox.
+3. Prueba las interacciones de mapa (zoom, desplazamiento, rotación).
+
+<TestMapboxComposable comment="Si esta pantalla se muestra correctamente, tu configuración es válida" />
+
+![Resultado de TestMapbox](~/assets/setup/basic-setup-mapbox.png)
+
+## Solución de problemas
+
+### Problemas comunes
+
+**El mapa no se muestra (pantalla en blanco)**  
+
+- Verifica que el token de acceso en `secrets.properties` sea correcto.
+- Comprueba que el token no haya expirado.
+- Asegura la conectividad a internet para la carga de teselas.
+
+**Errores de token de acceso**  
+
+- Revisa de nuevo el valor del token (normalmente empieza por `pk.`).
+- Verifica los permisos del token en el panel de Mapbox.
+- Comprueba que los ámbitos del token incluyan los permisos necesarios.
+
+**Errores de compilación**  
+
+- Asegúrate de que las coordenadas del SDK de Mapbox coincidan con la configuración de tu proyecto.
+- Verifica que estás utilizando la variante NDK27 adecuada.
+- Comprueba que el archivo `secrets.properties` exista y contenga el token.
+
+## Próximos pasos
+
+Una vez configurado correctamente el SDK de Mapbox Maps, puedes usar el componente `MapboxMapView` de MapConductor con la API unificada.

@@ -1,0 +1,48 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapView?: string;
+  commentForRemoveMarker?: string;
+  markerLabelPrefix?: string;
+  fillColor?: string;
+}
+
+const {
+  commentForMapView = "GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください",
+  commentForRemoveMarker = "クリックされたマーカーを削除",
+  markerLabelPrefix = "Marker",
+  fillColor = "Color.Blue"
+} = Astro.props;
+
+const code = `@Composable
+fun ClickToAddMarkersExample() {
+    var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
+
+    // ${commentForMapView}
+    MapView(
+        state = mapViewState,
+        onMapClick = { geoPoint ->
+            val newMarker = MarkerState(
+                position = geoPoint,
+                icon = DefaultIcon(
+                    label = "\${markers.size + 1}",
+                    fillColor = ${fillColor}
+                ),
+                extra = "${markerLabelPrefix} \${markers.size + 1}",
+                onClick = { markerState ->
+                    // ${commentForRemoveMarker}
+                    markers = markers.filter { it.id != markerState.id }
+                }
+            )
+            markers = markers + newMarker
+        }
+    ) {
+        markers.forEach { marker ->
+            Marker(marker)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

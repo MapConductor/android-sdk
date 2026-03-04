@@ -25,11 +25,11 @@ A unified mapping library that provides a common API for multiple map providers 
 
 ### Key Components
 
-- **MapViewController**: Abstract controller interface for all map providers
+- **MapViewControllerInterface**: Abstract controller interface for all map providers
 - **MapViewBase**: Generic Compose-based map view component
 - **Overlay Managers**: Separate managers for markers, circles, polylines, and polygons
-- **Projection Utilities**: WebMercator and WGS84 coordinate transformations
-- **HexGeocell**: Spatial indexing system for performance optimization
+- **ProjectionInterface Utilities**: WebMercator and WGS84 coordinate transformations
+- **HexGeocellInterface**: Spatial indexing system for performance optimization
 
 ## Quick Start
 

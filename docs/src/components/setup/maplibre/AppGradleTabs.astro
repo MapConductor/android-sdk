@@ -1,0 +1,54 @@
+---
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+interface Props {
+  maplibreSdkVersion?: string;
+  bomVersion?: string;
+  maplibreSdkComment?: string;
+  bomComment?: string;
+  modulesComment?: string;
+}
+
+const {
+  maplibreSdkVersion = "{MAPLBRE_SDK_VERSION}",
+  bomVersion = "{BOM_MODULE_VERSION}",
+  maplibreSdkComment = "MapLibre Native Android SDK",
+  bomComment = "MapConductor BOM for version management (v{BOM_MODULE_VERSION})",
+  modulesComment = "MapConductor modules (versions managed by BOM)",
+} = Astro.props;
+
+const kotlinCode = `// App/build.gradle.kts
+dependencies {
+    // ${maplibreSdkComment}
+    implementation("org.maplibre.gl:android-sdk:${maplibreSdkVersion}")
+
+    // ${bomComment}
+    implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))
+
+    // ${modulesComment}
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-maplibre")
+}`;
+
+const groovyCode = `// App/build.gradle
+dependencies {
+    // ${maplibreSdkComment}
+    implementation("org.maplibre.gl:android-sdk:${maplibreSdkVersion}")
+
+    // ${bomComment}
+    implementation platform("com.mapconductor:mapconductor-bom:${bomVersion}")
+
+    // ${modulesComment}
+    implementation "com.mapconductor:core"
+    implementation "com.mapconductor:for-maplibre"
+}`;
+---
+
+<Tabs>
+  <TabItem label="Kotlin (build.gradle.kts)">
+    <Code code={kotlinCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Groovy (build.gradle)">
+    <Code code={groovyCode} lang="groovy" />
+  </TabItem>
+</Tabs>

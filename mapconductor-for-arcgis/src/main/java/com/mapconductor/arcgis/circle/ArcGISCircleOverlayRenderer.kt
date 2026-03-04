@@ -11,13 +11,13 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualCircle
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
-import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +33,7 @@ class ArcGISCircleOverlayRenderer(
             val spec =
                 holder.mapView.sceneView.scene
                     ?.spatialReference
-            val centerPoint = GeoPointImpl.from(state.center).toPoint(spec)
+            val centerPoint = GeoPoint.from(state.center).toPoint(spec)
             val circleGeometry =
                 if (state.geodesic) {
                     GeometryEngine.bufferGeodeticOrNull(
@@ -68,7 +68,7 @@ class ArcGISCircleOverlayRenderer(
             circle
         }
 
-    override suspend fun removeCircle(entity: CircleEntity<ArcGISActualCircle>) {
+    override suspend fun removeCircle(entity: CircleEntityInterface<ArcGISActualCircle>) {
         coroutine.launch {
             val circles = listOf(entity.circle)
             circleLayer.graphics.removeAll(circles)
@@ -77,8 +77,8 @@ class ArcGISCircleOverlayRenderer(
 
     override suspend fun updateCircleProperties(
         circle: ArcGISActualCircle,
-        current: CircleEntity<ArcGISActualCircle>,
-        prev: CircleEntity<ArcGISActualCircle>,
+        current: CircleEntityInterface<ArcGISActualCircle>,
+        prev: CircleEntityInterface<ArcGISActualCircle>,
     ): ArcGISActualCircle? =
         withContext(coroutine.coroutineContext) {
             val spec =
@@ -92,7 +92,7 @@ class ArcGISCircleOverlayRenderer(
                 finger.radiusMeters != prevFinger.radiusMeters ||
                 finger.geodesic != prevFinger.geodesic
             ) {
-                val centerPoint = GeoPointImpl.from(current.state.center).toPoint(spec)
+                val centerPoint = GeoPoint.from(current.state.center).toPoint(spec)
                 val newGeometry =
                     if (current.state.geodesic) {
                         GeometryEngine.bufferGeodeticOrNull(

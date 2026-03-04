@@ -1,0 +1,45 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  extraLabel?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  extraLabel = "Base overlay"
+} = Astro.props;
+
+const code = `@Composable
+fun BasicGroundImageExample() {
+    val context = LocalContext.current
+    val drawable = AppCompatResources.getDrawable(context, R.drawable.overlay_image)
+
+    val groundImageState = drawable?.let {
+        GroundImageState(
+            bounds = GeoRectBounds(
+                southwest = GeoPoint.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
+                northeast = GeoPoint.fromLatLong(${northeastLatitude}, ${northeastLongitude})
+            ),
+            image = it,
+            opacity = 0.7f,
+            extra = "${extraLabel}"
+        )
+    }
+
+    MapView(state = mapViewState) {
+        groundImageState?.let { state ->
+            GroundImage(state)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

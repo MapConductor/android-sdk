@@ -90,6 +90,7 @@ fun OverlaySidebar(
                         .verticalScroll(scrollState)
                         .padding(8.dp, bottom = 50.dp),
             ) {
+                Spacer(modifier = Modifier.height(30.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =

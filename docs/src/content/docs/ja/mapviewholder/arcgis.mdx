@@ -1,0 +1,57 @@
+---
+title: "ArcGISMapViewHolder"
+---
+
+import ArcGISMapViewHolder from '~/components/core/mapviewholder/ArcGISMapViewHolder.astro';
+import ArcGISMapViewHolderAccess from '~/components/core/mapviewholder/ArcGISMapViewHolderAccess.astro';
+import ArcGISMapViewHolderExample from '~/components/core/mapviewholder/ArcGISMapViewHolderExample.astro';
+
+
+## 概要
+
+ArcGIS SDK固有の機能にアクセスするためには、`ArcGISMapViewHolder`を使います。
+`ArcGISMapViewHolder`の定義は次のとおりです。
+
+<ArcGISMapViewHolder />
+
+### プロパティ
+
+- **`mapView: WrapSceneView`**: SceneViewを囲うためのWrapSceneView
+- **`map: SceneView`**: MapViewを操作するためのArcGISSceneクラス
+
+### メソッド
+
+- **`toScreenOffset(position: GeoPointInterface): Offset?`**: GeoPointで示す地図上の位置を、MapView左上を(0,0)としたDp値で返します
+- **`fromScreenOffsetSync(offset: Offset): GeoPoint?`**: MapView左上を(0,0)としたDp値で指定した位置の、地図上でのGeoPoint位置を返します
+- **`fromScreenOffset(offset: Offset): GeoPoint?`**: MapView左上を(0,0)としたDp値で指定した位置の、地図上でのGeoPoint位置を返します
+
+
+## ArcGISMapViewHolderの取得
+
+`ArcGISMapViewHolder`は、地図の初期化後に `getMapViewHolder()`を通じて取得できます。
+
+<ArcGISMapViewHolderAccess />
+
+
+### サンプル
+
+<ArcGISMapViewHolderExample
+  commentCameraPosition="地図のカメラ位置"
+  commentAuthenticatorState="AuthenticatorStateを設定"
+  commentViewHolderVariable="ViewHolderの保持"
+  commentTrafficLayer="交通情報のレイヤーを表示"
+  commentAuthenticatorStateParam="ログインダイアログを表示する AuthenticatorState"
+  commentPortalUrl="ArcGISポータルのURL"
+  commentRedirectUrl="OAuth2アプリケーションのリダイレクトURL"
+  commentClientId="OAuth2アプリケーションのクライアントID"
+  commentOptional="(オプション)"
+  commentClientSecret="OAuth2アプリケーションのクライアントシークレット"
+  commentClientSecretOmit="省略した場合はログインダイアログが表示されます"
+  commentGetViewHolder="ViewHolderの取得"
+  commentAuthenticatorUI="認証UI（ユーザーログイン用）。ハイブリッド認証のフォールバックで使用されます。"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-arcgis.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-arcgis.mp4" type="video/mp4" />
+</video>

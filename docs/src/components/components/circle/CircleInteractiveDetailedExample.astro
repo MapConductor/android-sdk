@@ -1,0 +1,76 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun InteractiveCircleExample() {
+    val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
+
+    // calculatePositionAtDistance is a MapConductor utility function
+    // Calculates position 1000m away from circleCenter, rotated 180 degrees clockwise
+    val edgeMarkerPosition = calculatePositionAtDistance(
+        center = circleCenter,
+        distanceMeters = 1000.0,
+        bearingDegrees = 180.0,
+    )
+
+    // Marker placed at the edge of the circle
+    val edgeMarkerState = MarkerState(
+        id = "edge_marker",
+        position = edgeMarkerPosition,
+        icon = DefaultIcon(
+            fillColor = Color.Green,
+            strokeColor = Color.White,
+            label = "Drag me",
+        ),
+        draggable = true,
+        onDragStart = onMarkerMove,
+        onDrag = onMarkerMove,
+        onDragEnd = onMarkerMove,
+    )
+
+    // Create CircleState
+    val circleState = remember {
+        CircleState(
+            id = "circle",
+            center = circleCenter,
+            radiusMeters = 1000.0,
+        )
+    }
+
+    // Update circle radius when marker moves
+    // Without specifying circleState.id, a new circle would be created on recomposition
+    val onMarkerMove: OnMarkerEventHandler = { markerState ->
+        circleState.radiusMeters = computeDistanceBetween(circleCenter, markerState.position)
+    }
+    LaunchedEffect(Unit) {
+        onMarkerMove(edgeMarkerState)
+    }
+
+    // Create map
+    val camera = MapCameraPosition(
+        position = circleCenter,
+        zoom = 13.0,
+    )
+    val mapViewState = rememberMapLibreMapViewState(
+        cameraPosition = camera,
+    )
+
+    MapLibreMapView(
+        modifier = modifier,
+        state = mapViewState
+    ) {
+        // Circle
+        Circle(circleState)
+
+        // Center marker (not draggable)
+        Marker(
+            position = circleCenter,
+        )
+
+        // Edge marker (draggable)
+        Marker(edgeMarkerState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

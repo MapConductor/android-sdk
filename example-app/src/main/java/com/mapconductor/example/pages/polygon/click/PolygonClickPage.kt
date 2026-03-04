@@ -24,7 +24,7 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { PolygonClickPageViewModelImpl() }
+    val viewModel = remember { PolygonClickPageViewModel() }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -38,7 +38,6 @@ fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
         mapViewState.value?.let {
             MapViewContainer(
                 state = it,
-                onPolygonClick = viewModel::onPolygonClicked,
                 onMapClick = viewModel::onMapClicked,
             ) {
                 key(california) {
@@ -49,6 +48,7 @@ fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
                                 strokeColor = Color.Red.copy(alpha = 0.7f),
                                 strokeWidth = 3.dp,
                                 fillColor = Color.Blue.copy(alpha = 0.4f),
+                                onClick = viewModel::onPolygonClicked,
                             )
                         Polygon(state)
                     }

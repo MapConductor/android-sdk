@@ -1,0 +1,43 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  provider?: string;
+  functionName?: string;
+  lat?: number;
+  long?: number;
+  zoom?: number;
+  comment?: string;
+}
+
+const props = Astro.props as Props;
+
+const {
+  provider = "GoogleMaps",
+  functionName = "TestGoogleMaps",
+  lat = 0.0,
+  long = 0.0,
+  zoom = 3.0,
+  comment = "もし地図が表示されれば、セットアップが正しくできています",
+} = props;
+
+const stateFunction = `remember${provider}ViewState`;
+const viewComponent = `${provider}View`;
+
+const code = `@Composable
+fun ${functionName}() {
+    val mapState = ${stateFunction}(
+        cameraPosition =
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(${lat}, ${long}),
+                zoom = ${zoom},
+            ),
+    )
+
+    ${viewComponent}(state = mapState) {
+        // ${comment}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

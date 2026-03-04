@@ -1,0 +1,85 @@
+---
+title: "Polygon"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BasicPolygonExample from '~/components/components/polygon/BasicPolygonExample.astro';
+import InteractivePolygonExample from '~/components/components/polygon/InteractivePolygonExample.astro';
+import MultiplePolygonsExample from '~/components/components/polygon/MultiplePolygonsExample.astro';
+import DynamicPolygonExample from '~/components/components/polygon/DynamicPolygonExample.astro';
+import ComplexPolygonExample from '~/components/components/polygon/ComplexPolygonExample.astro';
+import PolygonEventHandlingExample from '~/components/components/polygon/PolygonEventHandlingExample.astro';
+import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicSignature.astro';
+import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
+import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
+import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+import GeodesicPolygonComparisonExample from '~/components/components/polygon/GeodesicPolygonComparisonExample.astro';
+
+Un polígono es una forma cerrada que define un área con propiedades de trazo y relleno personalizables. Los polígonos son útiles para representar zonas, regiones, límites o características basadas en áreas.
+
+## Funciones Composable
+
+<Tabs>
+<TabItem label="Polígono Básico">
+
+<PolygonBasicSignature />
+</TabItem>
+<TabItem label="Polígono con Estado">
+
+<PolygonStateSignature />
+</TabItem>
+</Tabs>
+
+## Parámetros
+
+- **`points`**: Lista de coordenadas geográficas que definen los vértices del polígono (`List<GeoPointInterface>`)
+- **`id`**: Identificador único opcional para el polígono (`String?`)
+- **`strokeColor`**: Color del límite del polígono (predeterminado: `Color.Black`)
+- **`strokeWidth`**: Ancho de la línea de límite (predeterminado: `1.dp`)
+- **`fillColor`**: Color de relleno del interior del polígono (predeterminado: `Color.Transparent`)
+- **`geodesic`**: Si se deben dibujar bordes geodésicos (predeterminado: `false`)
+- **`extra`**: Datos adicionales adjuntos al polígono (`Serializable?`)
+
+## Ejemplos de Uso
+
+### Polígono Básico
+
+<BasicPolygonExample />
+![](~/assets/polygon/basic-polygon-example.png)
+
+### Polígono Interactivo con Marcadores de Vértices
+
+<InteractivePolygonExample />
+
+<video width="720" height="480" controls>
+ <source src="/polygon/interactive-polygon-example.webm" type="video/webm" />
+ <source src="/polygon/interactive-polygon-example.mp4" type="video/mp4" />
+</video>
+
+### Polígono Geodésico vs Polígono Estándar
+
+<GeodesicPolygonComparisonExample
+  centerLatitude={30.0}
+  centerLongitude={0.0}
+  zoomLevel={2.0}
+  point1Longitude={23.66}
+  point1Latitude={56.42}
+  point2Longitude={13.39}
+  point2Latitude={2.95}
+  point3Longitude={-87.82}
+  point3Latitude={38.58}
+  point4Longitude={23.66}
+  point4Latitude={56.42}
+  mapLoadedMessage="El mapa se cargó y está listo"
+  commentForMapClickClear="Borrar la selección al pulsar el mapa"
+  markerDragStartMessagePrefix="Comenzó a arrastrar el marcador"
+  markerDragMessagePrefix="Arrastrando el marcador a"
+  markerDragEndMessagePrefix="Finalizó el arrastre del marcador"
+  commentForInteractiveMarkers="Contenido interactivo con marcadores"
+  commentForSelectedMarkerInfo="Mostrar información del marcador seleccionado"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/polygon/geodesic-polygon.webm" type="video/webm" />
+ <source src="/polygon/geodesic-polygon.mp4" type="video/mp4" />
+</video>

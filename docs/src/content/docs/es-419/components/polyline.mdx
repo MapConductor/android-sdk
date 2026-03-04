@@ -1,0 +1,127 @@
+---
+title: "Polyline"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BasicPolylineExample from '~/components/components/polyline/BasicPolylineExample.astro';
+import InteractivePolylineExample from '~/components/components/polyline/InteractivePolylineExample.astro';
+import DynamicPolylineExample from '~/components/components/polyline/DynamicPolylineExample.astro';
+import GeodesicPolylineExample from '~/components/components/polyline/GeodesicPolylineExample.astro';
+import PolylineBasicSignature from '~/components/components/polyline/PolylineBasicSignature.astro';
+import PolylineStateSignature from '~/components/components/polyline/PolylineStateSignature.astro';
+import PolylineEventHandlingExample from '~/components/components/polyline/PolylineEventHandlingExample.astro';
+import PolylineWidthStyleExamples from '~/components/components/polyline/PolylineWidthStyleExamples.astro';
+import PolylineColorStyleExamples from '~/components/components/polyline/PolylineColorStyleExamples.astro';
+
+Una polilínea es una secuencia de segmentos de línea que conectan múltiples puntos geográficos. Las polilíneas se usan comúnmente para representar rutas, caminos, límites o características lineales en un mapa.
+
+## Funciones Composable
+
+<Tabs>
+<TabItem label="Polilínea Básica">
+
+Para un pequeño número de polilíneas, puede especificar opciones directamente. Especificar un `id` ayuda a prevenir recomposiciones innecesarias.
+
+<PolylineBasicSignature />
+
+</TabItem>
+<TabItem label="Polilínea con Estado">
+
+Para un gran número de polilíneas o cuando se mueven polilíneas, se recomienda usar estado. Especificar un `id` ayuda a prevenir recomposiciones innecesarias.
+
+<PolylineStateSignature />
+
+</TabItem>
+</Tabs>
+
+## Parámetros
+
+- **`points`**: Lista de coordenadas geográficas que definen el segmento de línea (`List<GeoPointInterface>`)
+- **`id`**: Identificador único opcional para la polilínea (`String?`)
+- **`strokeColor`**: Color de la línea (predeterminado: `Color.Black`)
+- **`strokeWidth`**: Ancho de la línea (predeterminado: `1.dp`)
+- **`geodesic`**: Si se debe dibujar la línea utilizando bordes geodésicos que sigan la curvatura de la Tierra (predeterminado: `false`)
+- **`extra`**: Datos adicionales adjuntos a la polilínea (`Serializable?`)
+
+## Ejemplos de Uso
+
+### Polilínea Básica
+
+<BasicPolylineExample
+  centerLat={53.566853}
+  centerLng={9.988269}
+  zoom={14.0}
+  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
+/>
+
+![](~/assets/polyline/basic-polyline-example.png)
+
+### Polilínea Interactiva con Marcadores de Waypoint
+
+<InteractivePolylineExample />
+
+<video width="720" height="480" controls>
+ <source src="/polyline/interactive-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/interactive-polyline-example.mp4" type="video/mp4" />
+</video>
+
+### Construcción Dinámica de Polilínea
+
+<DynamicPolylineExample />
+
+<video width="720" height="480" controls>
+ <source src="/polyline/dynamic-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/dynamic-polyline-example.mp4" type="video/mp4" />
+</video>
+
+### Líneas Geodésicas vs Líneas Estándar
+
+<GeodesicPolylineExample />
+
+<video width="720" height="450" controls>
+ <source src="/polyline/geodesic-polyline-example.webm" type="video/webm" />
+ <source src="/polyline/geodesic-polyline-example.mp4" type="video/mp4" />
+</video>
+
+## Manejo de Eventos
+
+Las interacciones de polilínea se manejan mediante el componente de su proveedor de mapas:
+
+<PolylineEventHandlingExample
+  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
+  polylineClickedLabel="Polilínea clickeada:"
+  pointsCountLabel="Número de puntos"
+  clickLocationLabel="Ubicación del click"
+  extraDataLabel="Datos adicionales"
+  extraValue="Ruta interactiva"
+/>
+
+## Opciones de Estilo
+
+### Variaciones de Ancho de Línea
+
+<PolylineWidthStyleExamples
+  commentForThinLine="Línea fina"
+  commentForMediumLine="Línea media"
+  commentForThickLine="Línea gruesa"
+/>
+
+### Variaciones de Color
+
+<PolylineColorStyleExamples
+  commentForSolidColors="Colores sólidos"
+  commentForSemiTransparent="Semi-transparente"
+  commentForCustomColor="Color personalizado"
+  commentForMaterialGreen="Verde material"
+/>
+
+## Mejores Prácticas
+
+1. **Densidad de Puntos**: Equilibrar detalle y rendimiento - demasiados puntos pueden ralentizar el renderizado
+2. **Líneas Geodésicas**: Usar geodésicas para rutas de larga distancia para mostrar caminos precisos
+3. **Jerarquía Visual**: Usar diferentes colores y anchos para distinguir diferentes tipos de rutas
+4. **Retroalimentación Interactiva**: Proporcionar retroalimentación visual cuando las polilíneas sean clickeables
+5. **Rendimiento**: Considerar usar geometría simplificada para polilíneas complejas en niveles de zoom específicos
+6. **Contraste de Color**: Asegurar que el color de la polilínea destaque contra el fondo del mapa
+7. **Dirección de Ruta**: Considerar añadir flechas o marcadores a lo largo de la ruta para indicar dirección
+8. **Gestión de Estado**: Almacenar y actualizar datos de polilínea de manera eficiente y reactiva

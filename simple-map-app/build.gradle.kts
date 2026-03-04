@@ -28,25 +28,84 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    buildTypes {
+        debug {
+            isMinifyEnabled = false
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro",
+            )
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+
+            buildConfigField("String", "BUILD_CONFIG_VERSION", "\"release\"")
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/versions/9/previous-compilation-data.bin"
+            excludes += "META-INF/*.kotlin_module"
+            excludes += "META-INF/AL2.0"
+            excludes += "META-INF/LGPL2.1"
+            excludes += "META-INF/androidx.*.version"
+            excludes += "**/*.proto"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE*"
+            excludes += "META-INF/NOTICE*"
+            excludes += "META-INF/*.version"
+            excludes += "**/*.properties"
+            excludes += "kotlin/**"
+            excludes += "DebugProbesKt.bin"
+            excludes += "**/kotlin-tooling-metadata.json"
+            excludes += "**/*.txt"
+            excludes += "**/*.md"
+            excludes += "**/*.html"
+        }
+
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    bundle {
+        language {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget
+                .fromTarget("11"),
+        )
     }
 }
 
@@ -60,6 +119,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -67,30 +127,31 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime)
 
-    debugImplementation(project(":mapconductor-core"))
+    implementation(project(":mapconductor-core"))
 
     // Google Maps SDK
     implementation(libs.play.services.maps)
-    debugImplementation(project(":mapconductor-for-googlemaps"))
+    implementation(project(":mapconductor-for-googlemaps"))
 
     // Mapbox SDK
     implementation(libs.mapbox.android)
-    debugImplementation(project(":mapconductor-for-mapbox"))
+    implementation(project(":mapconductor-for-mapbox"))
+//    implementation("com.mapbox.plugin:maps-locationcomponent:11.17.0")
 
     // MapLibre SDK
     implementation(libs.maplibre.sdk)
     implementation(libs.maplibre.annotation)
-    debugImplementation(project(":mapconductor-for-maplibre"))
+    implementation(project(":mapconductor-for-maplibre"))
 
     // arcgis
-    debugImplementation(project(":mapconductor-for-arcgis"))
+    implementation(project(":mapconductor-for-arcgis"))
     implementation(libs.arcgis.maps.kotlin)
     implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
     implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     // Here Maps SDK
-    debugImplementation(project(":mapconductor-for-here"))
+    implementation(project(":mapconductor-for-here"))
     implementation(
         fileTree(
             mapOf(
@@ -99,4 +160,8 @@ dependencies {
             ),
         ),
     )
+
+//    implementation(project(":mapconductor-marker-strategy"))
+//    implementation(project(":mapconductor-marker-native-strategy"))
+    implementation(project(":mapconductor-heatmap"))
 }

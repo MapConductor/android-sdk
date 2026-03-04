@@ -5,23 +5,33 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.mapconductor.core.circle.CircleManagerImpl
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
+import com.mapconductor.core.marker.MarkerRenderingSupport
+import com.mapconductor.core.marker.MarkerRenderingSupportKey
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonManagerImpl
+import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineManagerImpl
+import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.maplibre.circle.MapLibreCircleController
 import com.mapconductor.maplibre.circle.MapLibreCircleLayer
 import com.mapconductor.maplibre.circle.MapLibreCircleOverlayRenderer
+import com.mapconductor.maplibre.groundimage.MapLibreGroundImageController
+import com.mapconductor.maplibre.groundimage.MapLibreGroundImageOverlayRenderer
 import com.mapconductor.maplibre.marker.MapLibreMarkerController
 import com.mapconductor.maplibre.marker.MapLibreMarkerOverlayRenderer
 import com.mapconductor.maplibre.marker.MarkerDragLayer
@@ -32,6 +42,8 @@ import com.mapconductor.maplibre.polygon.MapLibrePolygonOverlayRenderer
 import com.mapconductor.maplibre.polyline.MapLibrePolylineController
 import com.mapconductor.maplibre.polyline.MapLibrePolylineLayer
 import com.mapconductor.maplibre.polyline.MapLibrePolylineOverlayRenderer
+import com.mapconductor.maplibre.raster.MapLibreRasterLayerController
+import com.mapconductor.maplibre.raster.MapLibreRasterLayerOverlayRenderer
 import org.maplibre.android.MapLibre
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
@@ -44,15 +56,54 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun MapLibreMapView(
-    state: MapLibreViewStateImpl,
+    state: MapLibreViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
+    markerTiling: MarkerTilingOptions? = null,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
+    content: (@Composable MapLibreMapViewScope.() -> Unit)? = null,
+) {
+    @Suppress("DEPRECATION")
+    MapLibreMapView(
+        state = state,
+        markerTiling = markerTiling,
+        modifier = modifier,
+        sdkInitialize = sdkInitialize,
+        onMapLoaded = onMapLoaded,
+        onMapClick = onMapClick,
+        onCameraMoveStart = onCameraMoveStart,
+        onCameraMove = onCameraMove,
+        onCameraMoveEnd = onCameraMoveEnd,
+        onMarkerClick = null,
+        onMarkerDragStart = null,
+        onMarkerDrag = null,
+        onMarkerDragEnd = null,
+        onMarkerAnimateStart = null,
+        onMarkerAnimateEnd = null,
+        onPolylineClick = null,
+        onCircleClick = null,
+        onPolygonClick = null,
+        content = content,
+    )
+}
+
+@Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
+@Composable
+fun MapLibreMapView(
+    state: MapLibreViewState,
+    modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler?,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
@@ -66,7 +117,8 @@ fun MapLibreMapView(
     val context = LocalContext.current
     val scope = remember { MapLibreMapViewScope() }
     val registry = remember { scope.buildRegistry() }
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val serviceRegistry = remember { MutableMapServiceRegistry() }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -86,6 +138,7 @@ fun MapLibreMapView(
         },
         scope = scope,
         registry = registry,
+        serviceRegistry = serviceRegistry,
         onMapLoaded = onMapLoaded,
         holderProvider = { mapView ->
             suspendCancellableCoroutine { continuation ->
@@ -93,7 +146,10 @@ fun MapLibreMapView(
                     // Set style and wait for it to load completely
                     map.setStyle(state.mapDesignType.styleJsonURL) {
                         // Resume only after style is fully loaded
-                        continuation.resume(MapLibreMapViewHolderImpl(mapView, map)) {}
+                        continuation.resume(
+                            MapLibreMapViewHolder(mapView, map),
+                            onCancellation = {},
+                        )
                     }
                 }
             }
@@ -102,63 +158,99 @@ fun MapLibreMapView(
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    renderingStrategy = markerRenderingStrategy,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController =
                 getPolylineController(
                     holder = holder,
                 )
+            val rasterLayerController = getRasterLayerController(holder)
             val polygonController =
                 getPolygonController(
                     holder = holder,
+                    rasterLayerController = rasterLayerController,
                 )
+            val groundImageController = getGroundImageController(holder)
             val circleController = getCircleController(holder)
 
             // Defer initial camera update until controller is created and view is laid out
 
-            MapLibreViewControllerImpl(
+            MapLibreViewController(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,
                 polygonController = polygonController,
+                groundImageController = groundImageController,
                 circleController = circleController,
-            ).also { controller ->
+                rasterLayerController = rasterLayerController,
+            ).also { mapController ->
+                serviceRegistry.clear()
+                serviceRegistry.put(
+                    MarkerRenderingSupportKey,
+                    object : MarkerRenderingSupport<MapLibreActualMarker> {
+                        override fun createMarkerRenderer(
+                            strategy: MarkerRenderingStrategyInterface<MapLibreActualMarker>,
+                        ): MarkerOverlayRendererInterface<MapLibreActualMarker> =
+                            mapController.createMarkerRenderer(strategy)
+
+                        override fun createMarkerEventController(
+                            controller: StrategyMarkerController<MapLibreActualMarker>,
+                            renderer: MarkerOverlayRendererInterface<MapLibreActualMarker>,
+                        ): MarkerEventControllerInterface<MapLibreActualMarker> =
+                            mapController.createMarkerEventController(controller, renderer)
+
+                        override fun registerMarkerEventController(
+                            controller: MarkerEventControllerInterface<MapLibreActualMarker>,
+                        ) {
+                            mapController.registerMarkerEventController(controller)
+                        }
+
+                        override fun onMarkerRenderingReady() {
+                            mapController.sendInitialCameraUpdate()
+                        }
+                    },
+                )
+
                 // Store controller reference in holder
-                holder.setController(controller)
-                controller.setCameraMoveStartListener {
+                holder.setController(mapController)
+                mapController.setCameraMoveStartListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
-                controller.setCameraMoveListener {
+                mapController.setCameraMoveListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
-                controller.setCameraMoveEndListener {
+                mapController.setCameraMoveEndListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }
-                controller.setMapClickListener(onMapClick)
-                controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
-                controller.setOnMarkerDragStart(onMarkerDragStart)
-                controller.setOnMarkerDrag(onMarkerDrag)
-                controller.setOnMarkerDragEnd(onMarkerDragEnd)
-                controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-                controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
-                controller.setOnMarkerClickListener(onMarkerClick)
-                controller.setOnPolylineClickListener(onPolylineClick)
-                controller.setOnCircleClickListener(onCircleClick)
-                controller.setOnPolygonClickListener(onPolygonClick)
-                state.setController(controller)
+                mapController.setMapClickListener(onMapClick)
+                mapController.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                mapController.setOnMarkerDragStart(onMarkerDragStart)
+                mapController.setOnMarkerDrag(onMarkerDrag)
+                mapController.setOnMarkerDragEnd(onMarkerDragEnd)
+                mapController.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                mapController.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                mapController.setOnMarkerClickListener(onMarkerClick)
+                mapController.setOnPolylineClickListener(onPolylineClick)
+                mapController.setOnCircleClickListener(onCircleClick)
+                mapController.setOnPolygonClickListener(onPolygonClick)
+                state.setController(mapController)
                 // Post an initial camera update after layout to compute visibleRegion correctly
-                holder.mapView.post { controller.sendInitialCameraUpdate() }
+                holder.mapView.post { mapController.sendInitialCameraUpdate() }
             }
         },
         sdkInitialize = {
-            MapLibre.getInstance(context)
-            true
+            if (sdkInitialize != null) {
+                sdkInitialize(context)
+            } else {
+                MapLibre.getInstance(context)
+                true
+            }
         },
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
         // or handle it here if it's specific to MapLibreMapView structure before calling MapViewBase.
@@ -168,10 +260,10 @@ fun MapLibreMapView(
 }
 
 internal fun getMarkerController(
-    holder: MapLibreMapViewHolder,
-    renderingStrategy: MarkerRenderingStrategy<MapLibreActualMarker>? = null,
+    holder: MapLibreMapViewHolderInterface,
+    markerTiling: MarkerTilingOptions,
 ): MapLibreMarkerController {
-    val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+    val manager = MarkerManager.defaultManager<MapLibreActualMarker>()
     val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -193,18 +285,18 @@ internal fun getMarkerController(
     val controller =
         MapLibreMarkerController(
             renderer = renderer,
-            renderingStrategy = renderingStrategy,
+            markerTiling = markerTiling,
         )
     return controller
 }
 
-internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolylineController {
+internal fun getPolylineController(holder: MapLibreMapViewHolderInterface): MapLibrePolylineController {
     val polylineLayer: MapLibrePolylineLayer =
         MapLibrePolylineLayer(
             sourceId = "polyline-source",
             layerId = "polyline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapLibreActualPolyline>()
+    val polylineManager = PolylineManager<MapLibreActualPolyline>()
 
     val renderer =
         MapLibrePolylineOverlayRenderer(
@@ -220,13 +312,16 @@ internal fun getPolylineController(holder: MapLibreMapViewHolder): MapLibrePolyl
     return controller
 }
 
-internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygonConductor {
+internal fun getPolygonController(
+    holder: MapLibreMapViewHolderInterface,
+    rasterLayerController: MapLibreRasterLayerController,
+): MapLibrePolygonConductor {
     val polylineLayer =
         MapLibrePolylineLayer(
             sourceId = "polygon-outline-source",
             layerId = "polygon-outline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapLibreActualPolyline>()
+    val polylineManager = PolylineManager<MapLibreActualPolyline>()
     val polylineOverlayRenderer =
         MapLibrePolylineOverlayRenderer(
             layer = polylineLayer,
@@ -234,7 +329,7 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
             holder = holder,
         )
 
-    val polygonManager = PolygonManagerImpl<MapLibreActualPolygon>()
+    val polygonManager = PolygonManager<MapLibreActualPolygon>()
     val polygonLayer =
         MapLibrePolygonLayer(
             sourceId = "polygon-fill-source",
@@ -245,6 +340,7 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
             layer = polygonLayer,
             polygonManager = polygonManager,
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     return MapLibrePolygonConductor(
@@ -253,13 +349,13 @@ internal fun getPolygonController(holder: MapLibreMapViewHolder): MapLibrePolygo
     )
 }
 
-internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleController {
+internal fun getCircleController(holder: MapLibreMapViewHolderInterface): MapLibreCircleController {
     val circleLayer =
         MapLibreCircleLayer(
             sourceId = "circle-source",
             layerId = "circle-layer",
         )
-    val circleManager = CircleManagerImpl<MapLibreActualCircle>()
+    val circleManager = CircleManager<MapLibreActualCircle>()
     val renderer =
         MapLibreCircleOverlayRenderer(
             layer = circleLayer,
@@ -270,6 +366,26 @@ internal fun getCircleController(holder: MapLibreMapViewHolder): MapLibreCircleC
         renderer = renderer,
         circleManager = circleManager,
     )
+}
+
+internal fun getRasterLayerController(holder: MapLibreMapViewHolderInterface): MapLibreRasterLayerController {
+    val renderer =
+        MapLibreRasterLayerOverlayRenderer(
+            holder = holder,
+        )
+    return MapLibreRasterLayerController(
+        renderer = renderer,
+    )
+}
+
+internal fun getGroundImageController(holder: MapLibreMapViewHolderInterface): MapLibreGroundImageController {
+    val tileServer = TileServerRegistry.get()
+    val renderer =
+        MapLibreGroundImageOverlayRenderer(
+            holder = holder,
+            tileServer = tileServer,
+        )
+    return MapLibreGroundImageController(renderer = renderer)
 }
 
 internal fun Context.findActivity(): Activity? =

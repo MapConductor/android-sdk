@@ -1,0 +1,16 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Any provider state exposes getMapViewHolder()
+val state = rememberGoogleMapViewState()
+
+// May be null until the map is initialized
+val holder = state.getMapViewHolder()
+
+// Use the concrete holder type when you need provider-specific APIs
+// (e.g. GoogleMapViewHolder / MapboxMapViewHolder / MapLibreMapViewHolder / ...)
+// holder?.googleMap?.uiSettings?.isZoomControlsEnabled = false`
+---
+
+<Code code={code} lang="kotlin" />
+

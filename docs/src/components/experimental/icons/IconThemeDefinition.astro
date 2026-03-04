@@ -1,0 +1,29 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `object IconTheme {
+    data class Theme(
+        val primaryColor: Color,
+        val secondaryColor: Color,
+        val strokeColor: Color,
+        val strokeWidth: Dp
+    ) : java.io.Serializable
+
+    val light = Theme(
+        primaryColor = Color(0xFF2196F3),
+        secondaryColor = Color(0xFFFFFFFF),
+        strokeColor = Color(0xFF000000),
+        strokeWidth = 1.dp
+    )
+
+    val dark = Theme(
+        primaryColor = Color(0xFF1976D2),
+        secondaryColor = Color(0xFF424242),
+        strokeColor = Color(0xFFFFFFFF),
+        strokeWidth = 1.dp
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

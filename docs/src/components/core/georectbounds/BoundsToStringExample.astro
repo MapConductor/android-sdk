@@ -1,0 +1,29 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  southWestLatitude?: number;
+  southWestLongitude?: number;
+  northEastLatitude?: number;
+  northEastLongitude?: number;
+}
+
+const {
+  southWestLatitude = 37.7649,
+  southWestLongitude = -122.4294,
+  northEastLatitude = 37.7849,
+  northEastLongitude = -122.4094
+} = Astro.props;
+
+const code = `// For debugging
+val bounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
+    northEast = GeoPoint.fromLatLong(${northEastLatitude}, ${northEastLongitude})
+)
+
+println(bounds.toString())
+// Output: ((${southWestLatitude}, ${southWestLongitude}), (${northEastLatitude}, ${northEastLongitude}))`;
+---
+
+<Code code={code} lang="kotlin" />
+

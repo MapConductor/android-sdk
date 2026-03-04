@@ -1,0 +1,59 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  geofenceRadiusMeters?: number;
+  commentForMapViewUsage?: string;
+  labelInside?: string;
+  labelOutside?: string;
+}
+
+const {
+  geofenceRadiusMeters = 1000.0,
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  labelInside = "Inside",
+  labelOutside = "Outside"
+} = Astro.props;
+
+const code = `@Composable
+fun GeofenceExample() {
+    val geofenceCenter = GeoPoint.fromLatLong(37.7749, -122.4194)
+    val geofenceRadius = ${geofenceRadiusMeters}  // 1km
+
+    var userLocation by remember { mutableStateOf<GeoPointInterface?>(null) }
+    var insideGeofence by remember { mutableStateOf(false) }
+
+    // Check geofence status
+    LaunchedEffect(userLocation) {
+        userLocation?.let { location ->
+            val distance = Spherical.computeDistanceBetween(location, geofenceCenter)
+            insideGeofence = distance <= geofenceRadius
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Geofence boundary
+        Circle(
+            center = geofenceCenter,
+            radiusMeters = geofenceRadius,
+            strokeColor = if (insideGeofence) Color.Green else Color.Red,
+            strokeWidth = 3.dp,
+            fillColor = Color.Blue.copy(alpha = 0.1f)
+        )
+
+        userLocation?.let { location ->
+            Marker(
+                position = location,
+                icon = DefaultIcon(
+                    fillColor = if (insideGeofence) Color.Green else Color.Red,
+                    label = if (insideGeofence) "${labelInside}" else "${labelOutside}"
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

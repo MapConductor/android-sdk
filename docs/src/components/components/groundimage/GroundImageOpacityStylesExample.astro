@@ -1,0 +1,34 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun GroundImageOpacityStylesExample() {
+    val bounds = GeoRectBounds(
+        northWest = GeoPoint.fromLatLong(37.8, -122.5),
+        southEast = GeoPoint.fromLatLong(37.7, -122.4)
+    )
+
+    // Completely transparent
+    GroundImage(
+        bounds = bounds,
+        image = drawable,
+        opacity = 0.0f
+    )
+
+    // Semi-transparent
+    GroundImage(
+        bounds = bounds,
+        image = drawable,
+        opacity = 0.5f
+    )
+
+    // Opaque
+    GroundImage(
+        bounds = bounds,
+        image = drawable,
+        opacity = 1.0f
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,87 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  vertexPrefix?: string;
+  polygonClickedLog?: string;
+}
+
+const {
+  vertexPrefix = "Vertex ",
+  polygonClickedLog = "Polygon clicked at: ${polygonEvent.clicked}",
+} = Astro.props;
+
+const code = `@Composable
+fun InteractivePolygonExample() {
+    val mapViewState =
+        rememberMapLibreMapViewState(
+            cameraPosition =
+                MapCameraPosition(
+                    position = GeoPoint.fromLatLong(37.7809, -122.4094),
+                    zoom = 13.5,
+                ),
+        )
+
+    var vertices by remember {
+        mutableStateOf(
+            listOf(
+                GeoPoint.fromLatLong(37.7749, -122.4194),
+                GeoPoint.fromLatLong(37.7849, -122.4094),
+                GeoPoint.fromLatLong(37.7799, -122.3994),
+                GeoPoint.fromLatLong(37.7649, -122.4094)
+            )
+        )
+    }
+
+    val closedVertices = vertices + vertices.first()
+
+    val polygonState = PolygonState(
+        id = "polygon",  // important
+        points = closedVertices,
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        fillColor = Color.Red.copy(alpha = 0.2f),
+        onClick = { polygonEvent ->
+            println("${polygonClickedLog} at: \${polygonEvent.clicked}")
+        }
+    )
+
+    val onVertexDrag: (MarkerState) -> Unit = { markerState ->
+        val vertexIndex = markerState.extra as Int
+        vertices = vertices.toMutableList().apply {
+            if (vertexIndex < size) {
+                set(vertexIndex, GeoPoint.from(markerState.position))
+            }
+        }
+    }
+
+    val vertexMarkers = vertices.mapIndexed { index, point ->
+        MarkerState(
+            id = "marker-\${index + 1}",  // important
+            position = point,
+            icon = DefaultIcon(
+                fillColor = Color.Red,
+                strokeColor = Color.White,
+                label = "\${index + 1}",
+                scale = 0.8f
+            ),
+            draggable = true,
+            extra = index,
+            onDrag = onVertexDrag,
+        )
+    }
+
+    MapLibreMapView(
+        modifier = modifier,
+        state = mapViewState
+    ) {
+        Polygon(polygonState)
+        vertexMarkers.forEach { marker ->
+            Marker(marker)
+        }
+    }
+}
+`;
+---
+
+<Code code={code} lang="kotlin" />

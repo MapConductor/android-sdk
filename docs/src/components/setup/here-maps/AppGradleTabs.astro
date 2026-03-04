@@ -1,0 +1,68 @@
+---
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+interface Props {
+  aarVersion?: string;
+  bomVersion?: string;
+  otherPluginsComment?: string;
+  hereSdkComment?: string;
+  bomComment?: string;
+  modulesComment?: string;
+}
+
+const {
+  aarVersion = "{HERE_EXPLORER_SDK_VERSION}",
+  bomVersion = "{BOM_MODULE_VERSION}",
+  otherPluginsComment = "... other plugins",
+  hereSdkComment = "HERE SDK (local AAR)",
+  bomComment = "MapConductor BOM for version management (v{BOM_MODULE_VERSION})",
+  modulesComment = "MapConductor modules (versions managed by BOM)",
+} = Astro.props;
+
+const kotlinCode = `// App build.gradle.kts
+plugins {
+    // ${otherPluginsComment}
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+dependencies {
+    // ${hereSdkComment}
+    implementation(
+        files("\${rootProject.projectDir}/libs/heresdk-explore-android-${aarVersion}.aar")
+    )
+
+    // ${bomComment}
+    implementation(platform("com.mapconductor:mapconductor-bom:${bomVersion}"))
+
+    // ${modulesComment}
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-here")
+}`;
+
+const groovyCode = `// App build.gradle
+plugins {
+    // ${otherPluginsComment}
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+}
+
+dependencies {
+    // ${hereSdkComment}
+    implementation files("\${rootProject.projectDir}/libs/heresdk-explore-android-${aarVersion}.aar")
+
+    // ${bomComment}
+    implementation platform("com.mapconductor:mapconductor-bom:${bomVersion}")
+
+    // ${modulesComment}
+    implementation "com.mapconductor:core"
+    implementation "com.mapconductor:for-here"
+}`;
+---
+
+<Tabs>
+  <TabItem label="Kotlin (build.gradle.kts)">
+    <Code code={kotlinCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Groovy (build.gradle)">
+    <Code code={groovyCode} lang="groovy" />
+  </TabItem>
+</Tabs>

@@ -2,44 +2,44 @@ package com.mapconductor.example.pages.map.design
 
 import androidx.lifecycle.ViewModel
 import com.mapconductor.arcgis.map.ArcGISDesign
-import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapDesignType
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapDesignTypeInterface
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.googlemaps.GoogleMapDesign
-import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 import com.mapconductor.here.HereMapDesign
-import com.mapconductor.here.HereViewState
+import com.mapconductor.here.HereViewStateInterface
 import com.mapconductor.mapbox.MapboxMapDesign
-import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.maplibre.MapLibreDesignType
-import com.mapconductor.maplibre.MapLibreViewState
+import com.mapconductor.mapbox.MapboxViewStateInterface
+import com.mapconductor.maplibre.MapLibreDesign
+import com.mapconductor.maplibre.MapLibreViewStateInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class MapDesignOption(
     val label: String,
-    val design: MapDesignType<*>,
+    val design: MapDesignTypeInterface<*>,
 )
 
-interface MapDesignPageViewModel {
-    val initCameraPosition: MapCameraPositionImpl
-    val mapViewState: StateFlow<MapViewState<*>?>
+interface MapDesignPageViewModelInterface {
+    val initCameraPosition: MapCameraPosition
+    val mapViewState: StateFlow<MapViewStateInterface<*>?>
 
     val mapDesignOptions: StateFlow<List<MapDesignOption>>
 
-    fun onMapViewChanged(state: MapViewState<*>)
+    fun onMapViewChanged(state: MapViewStateInterface<*>)
 }
 
-class MapDesignPageViewModelImpl :
+class MapDesignPageViewModel :
     ViewModel(),
-    MapDesignPageViewModel {
+    MapDesignPageViewModelInterface {
     override val initCameraPosition =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position =
-                GeoPointImpl.fromLatLong(
+                GeoPoint.fromLatLong(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
@@ -49,28 +49,28 @@ class MapDesignPageViewModelImpl :
             paddings = null,
         )
 
-    private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
+    override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
     private val _mapDesignOptions: MutableStateFlow<List<MapDesignOption>> = MutableStateFlow(emptyList())
     override val mapDesignOptions: StateFlow<List<MapDesignOption>> = _mapDesignOptions.asStateFlow()
 
-    override fun onMapViewChanged(state: MapViewState<*>) {
+    override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         this._mapViewState.value = state
         when (state) {
-            is GoogleMapViewState -> {
+            is GoogleMapViewStateInterface -> {
                 _mapDesignOptions.value = googleMapDesigns
             }
-            is HereViewState -> {
+            is HereViewStateInterface -> {
                 _mapDesignOptions.value = hereMapDesigns
             }
-            is MapboxViewState -> {
+            is MapboxViewStateInterface -> {
                 _mapDesignOptions.value = mapboxMapDesigns
             }
-            is ArcGISMapViewState -> {
+            is ArcGISMapViewStateInterface -> {
                 _mapDesignOptions.value = arcGISMapDesigns
             }
-            is MapLibreViewState -> {
+            is MapLibreViewStateInterface -> {
                 _mapDesignOptions.value = mapLibreDesigns
             }
         }
@@ -191,7 +191,15 @@ class MapDesignPageViewModelImpl :
 
     private val mapLibreDesigns =
         listOf(
-            MapDesignOption(label = "Normal", design = MapLibreDesignType.DemoTiles),
+            MapDesignOption(label = "DemoTiles", design = MapLibreDesign.DemoTiles),
+            MapDesignOption(label = "MapTilerBasicEn", design = MapLibreDesign.MapTilerBasicEn),
+            MapDesignOption(label = "MapTilerBasicJa", design = MapLibreDesign.MapTilerBasicJa),
+            MapDesignOption(label = "MapTilerTonerEn", design = MapLibreDesign.MapTilerTonerEn),
+            MapDesignOption(label = "MapTilerTonerJa", design = MapLibreDesign.MapTilerTonerJa),
+            MapDesignOption(label = "OsmBright", design = MapLibreDesign.OsmBright),
+            MapDesignOption(label = "OsmBrightEn", design = MapLibreDesign.OsmBrightEn),
+            MapDesignOption(label = "OsmBrightJa", design = MapLibreDesign.OsmBrightJa),
+            MapDesignOption(label = "OpenMapTiles", design = MapLibreDesign.OpenMapTiles),
             // TODO: check the reason to inspect crashing
 //            MapDesignOption(label = "OSM", design = MapLibreDesignType(
 //                "OSM",

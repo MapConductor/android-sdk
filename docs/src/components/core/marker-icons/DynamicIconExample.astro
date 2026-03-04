@@ -1,0 +1,45 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicIconExample() {
+    val iconType by remember { mutableStateOf("default") }
+    val context = LocalContext.current
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        val icon = when (iconType) {
+            "default" -> DefaultIcon(
+                fillColor = Color.Blue,
+                label = "D"
+            )
+            "drawable" -> AppCompatResources.getDrawable(context, R.drawable.custom_pin)?.let {
+                DrawableDefaultIcon(backgroundDrawable = it)
+            }
+            "image" -> AppCompatResources.getDrawable(context, R.drawable.location_icon)?.let {
+                ImageDefaultIcon(
+                    drawable = it,
+                    anchor = Offset(0.5f, 1.0f)
+                )
+            }
+            else -> DefaultIcon()
+        }
+
+        Marker(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
+            icon = icon
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,20 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `enum class MarkerStatus { ACTIVE, INACTIVE, WARNING, ERROR }
+
+fun createStatusIcon(status: MarkerStatus): MarkerIconInterface = DefaultMarkerIcon(
+    fillColor = when (status) {
+        MarkerStatus.ACTIVE -> Color.Green
+        MarkerStatus.INACTIVE -> Color.Gray
+        MarkerStatus.WARNING -> Color.Yellow
+        MarkerStatus.ERROR -> Color.Red
+    },
+    strokeColor = Color.White,
+    strokeWidth = 2.dp,
+    scale = 1.0f
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,84 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  marker1Label?: string;
+  marker1Lat?: number;
+  marker1Long?: number;
+  marker2Label?: string;
+  marker2Lat?: number;
+  marker2Long?: number;
+  initialLat?: number;
+  initialLong?: number;
+  zoom?: number;
+  commentCoords?: string;
+  commentInitialPosition?: string;
+  commentMarkerClicked?: string;
+  commentAddMarkers?: string;
+}
+
+const {
+  marker1Label = "Tokyo Tower",
+  marker1Lat = 35.6586,
+  marker1Long = 139.7454,
+  marker2Label = "Sky Tree",
+  marker2Lat = 35.7101,
+  marker2Long = 139.8107,
+  initialLat = 35.6586,
+  initialLong = 139.7454,
+  zoom = 11.0,
+  commentCoords = "東京タワーとスカイツリーの座標",
+  commentInitialPosition = "カメラの初期位置",
+  commentMarkerClicked = "マーカーがクリックされました: ",
+  commentAddMarkers = "マーカーを追加"
+} = Astro.props;
+
+const code = `import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.mapconductor.core.*
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+
+@Composable
+fun MapWithMarkers(modifier: Modifier = Modifier) {
+    // ${commentCoords}
+    val marker1 = GeoPoint.fromLatLong(${marker1Lat}, ${marker1Long})
+    val marker2 = GeoPoint.fromLatLong(${marker2Lat}, ${marker2Long})
+
+    // ${commentInitialPosition}
+    val initialCamera = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${initialLat}, ${initialLong}),
+        zoom = ${zoom}
+    )
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initialCamera
+    )
+    val onMarkerClick: (MarkerState) -> Unit = { markerState ->
+        println("${commentMarkerClicked}\${markerState.extra}")
+    }
+
+    GoogleMapView(
+        modifier = modifier.fillMaxSize(),
+        state = mapViewState
+    ) {
+        // ${commentAddMarkers}
+        Marker(
+            position = marker1,
+            icon = DefaultIcon(label = "${marker1Label}"),
+            extra = "marker1",
+            onClick = onMarkerClick
+        )
+
+        Marker(
+            position = marker2,
+            icon = DefaultIcon(label = "${marker2Label}"),
+            extra = "marker2",
+            onClick = onMarkerClick
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

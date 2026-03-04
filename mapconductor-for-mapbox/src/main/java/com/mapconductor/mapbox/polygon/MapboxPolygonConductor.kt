@@ -1,32 +1,45 @@
 package com.mapconductor.mapbox.polygon
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.polygon.PolygonEntity
-import com.mapconductor.core.polygon.PolygonEntityImpl
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.PolylineEntityImpl
+import com.mapconductor.core.polyline.PolylineEntity
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
 
 class MapboxPolygonConductor(
     val polygonOverlay: MapboxPolygonOverlayRenderer,
     val polylineOverlay: MapboxPolylineOverlayRenderer,
-) : OverlayController<
+) : OverlayControllerInterface<
         PolygonState,
-        PolygonEntity<PolygonState>,
+        PolygonEntityInterface<PolygonState>,
         PolygonEvent,
     > {
     override val zIndex: Int = 2
 
     override suspend fun add(data: List<PolygonState>) {
-        data.forEach { polygonState ->
+        val nextIds = data.asSequence().map { it.id }.toSet()
+        val prevIds =
+            polygonOverlay.polygonManager
+                .allEntities()
+                .asSequence()
+                .map { it.state.id }
+                .toSet()
+        val removeIds = prevIds - nextIds
 
+        removeIds.forEach { id ->
+            polygonOverlay.polygonManager.removeEntity(id)
+            polylineOverlay.polylineManager.removeEntity("outline-$id")
+        }
+
+        data.forEach { polygonState ->
             polygonOverlay.createPolygon(polygonState)?.let { polygon ->
                 val polygonEntity =
-                    PolygonEntityImpl(
+                    PolygonEntity(
                         polygon = polygon,
                         state = polygonState,
                     )
@@ -36,7 +49,7 @@ class MapboxPolygonConductor(
             val polylineState = polygonState.toPolylineState()
             polylineOverlay.createPolyline(polylineState)?.let { polyline ->
                 val polylineEntity =
-                    PolylineEntityImpl(
+                    PolylineEntity(
                         polyline = polyline,
                         state = polylineState,
                     )
@@ -50,7 +63,7 @@ class MapboxPolygonConductor(
     override suspend fun update(state: PolygonState) {
         polygonOverlay.createPolygon(state)?.let { polygon ->
             val polygonEntity =
-                PolygonEntityImpl(
+                PolygonEntity(
                     polygon = polygon,
                     state = state,
                 )
@@ -60,7 +73,7 @@ class MapboxPolygonConductor(
         val polylineState = state.toPolylineState()
         polylineOverlay.createPolyline(polylineState)?.let { polyline ->
             val polylineEntity =
-                PolylineEntityImpl(
+                PolylineEntity(
                     polyline = polyline,
                     state = polylineState,
                 )
@@ -70,15 +83,25 @@ class MapboxPolygonConductor(
         polylineOverlay.onPostProcess()
     }
 
-    override var clickListener: ((PolygonEvent) -> Unit)? = null
-
-    override fun find(position: GeoPoint): PolygonEntity<PolygonState>? =
-        polygonOverlay.polygonManager.find(position) as? PolygonEntity<PolygonState>
-
-    override suspend fun clear() {
+    fun dispatchClick(event: PolygonEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
     }
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    override var clickListener: ((PolygonEvent) -> Unit)? = null
+
+    @Suppress("UNCHECKED_CAST")
+    override fun find(position: GeoPointInterface): PolygonEntityInterface<PolygonState>? =
+        polygonOverlay.polygonManager.find(position) as? PolygonEntityInterface<PolygonState>
+
+    override suspend fun clear() {
+        polygonOverlay.polygonManager.clear()
+        polylineOverlay.polylineManager.clear()
+        polygonOverlay.onPostProcess()
+        polylineOverlay.onPostProcess()
+    }
+
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 
     override fun destroy() {
         // No native resources to clean up for polygons
@@ -98,6 +121,7 @@ private fun PolygonState.toPolylineState(): PolylineState {
         strokeColor = this.strokeColor,
         strokeWidth = this.strokeWidth,
         geodesic = this.geodesic,
-        extra = this.zIndex,
+        zIndex = this.zIndex,
+        extra = this.extra,
     )
 }

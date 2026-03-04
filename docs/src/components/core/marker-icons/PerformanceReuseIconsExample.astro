@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Good: Reuse icon instances
+val blueIcon = DefaultMarkerIcon(fillColor = Color.Blue)
+val redIcon = DefaultMarkerIcon(fillColor = Color.Red)
+
+markers.forEach { markerData ->
+    val icon = if (markerData.isSelected) blueIcon else redIcon
+    Marker(position = markerData.position, icon = icon)
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

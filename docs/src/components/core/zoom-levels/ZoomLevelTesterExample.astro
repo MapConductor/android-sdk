@@ -1,0 +1,50 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  labelTestingZoom?: string;
+  labelNextZoom?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  labelTestingZoom = "Testing Zoom Level",
+  labelNextZoom = "Next Zoom Level"
+} = Astro.props;
+
+const code = `@Composable
+fun ZoomLevelTester() {
+    val testZoomLevels = listOf(0.0, 5.0, 10.0, 15.0, 20.0)
+    var currentTestIndex by remember { mutableStateOf(0) }
+
+    Column {
+        Text("${labelTestingZoom}: ${'$'}{testZoomLevels[currentTestIndex]}")
+
+        Button(
+            onClick = {
+                currentTestIndex = (currentTestIndex + 1) % testZoomLevels.size
+            }
+        ) {
+            Text("${labelNextZoom}")
+        }
+
+        // ${commentForMapViewUsage}
+        MapView(
+            state = mapViewState,
+            cameraPosition = MapCameraPosition(
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
+                zoom = testZoomLevels[currentTestIndex]
+            )
+        ) {
+            Marker(
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
+                icon = DefaultMarkerIcon(fillColor = Color.Red)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

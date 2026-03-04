@@ -25,11 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
@@ -47,35 +47,37 @@ data class LocationInfo(
 @Composable
 fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
     val initCameraPosition =
-        MapCameraPositionImpl(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
+        MapCameraPosition(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
             zoom = 10.0,
         )
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-    var mapViewState by remember { mutableStateOf<MapViewState<Any>?>(null) }
+    var mapViewState by remember { mutableStateOf<MapViewStateInterface<Any>?>(null) }
     val isDarkTheme = isSystemInDarkTheme()
+    val markerState =
+        remember {
+            val locationInfo =
+                LocationInfo(
+                    name = "Golden Gate Park",
+                    description = "A large urban park with gardens, museums, and recreational areas.",
+                    rating = 4.5f,
+                )
+            MarkerState(
+                position = GeoPoint.fromLatLong(37.7694, -122.4862),
+                icon = DefaultMarkerIcon(fillColor = Color.Green, label = "🌳"),
+                extra = locationInfo,
+                onClick = { markerState -> selectedMarker = markerState },
+            )
+        }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(initCameraPosition),
         onToggleSidebar = onToggleSidebar,
         onMapViewStateChanged = { state ->
-            mapViewState = state as MapViewState<Any>
+            @Suppress("UNCHECKED_CAST")
+            mapViewState = state as MapViewStateInterface<Any>
         },
-    ) { paddingValues ->
-        val locationInfo =
-            LocationInfo(
-                name = "Golden Gate Park",
-                description = "A large urban park with gardens, museums, and recreational areas.",
-                rating = 4.5f,
-            )
-
-        val markerState =
-            MarkerState(
-                position = GeoPointImpl.fromLatLong(37.7694, -122.4862),
-                icon = DefaultIcon(fillColor = Color.Green, label = "🌳"),
-                extra = locationInfo,
-            )
-
+    ) {
         LaunchedEffect(Unit) {
             selectedMarker = markerState
         }
@@ -85,7 +87,6 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapClick = { selectedMarker = null },
-                onMarkerClick = { markerState -> selectedMarker = markerState },
             ) {
                 Marker(markerState)
 

@@ -1,0 +1,143 @@
+---
+title: "GeoRectBounds"
+---
+
+import GeoRectBoundsConstructor from '~/components/core/georectbounds/GeoRectBoundsConstructor.astro';
+import GeoRectBoundsCreationExample from '~/components/core/georectbounds/GeoRectBoundsCreationExample.astro';
+import GroundImageExample from '~/components/core/georectbounds/GroundImageExample.astro';
+import ExtendBoundsExample from '~/components/core/georectbounds/ExtendBoundsExample.astro';
+import UnionBoundsExample from '~/components/core/georectbounds/UnionBoundsExample.astro';
+import ContainsPointExample from '~/components/core/georectbounds/ContainsPointExample.astro';
+import IntersectsBoundsExample from '~/components/core/georectbounds/IntersectsBoundsExample.astro';
+import ViewportBoundsExample from '~/components/core/georectbounds/ViewportBoundsExample.astro';
+import BoundsBasedLoadingExample from '~/components/core/georectbounds/BoundsBasedLoadingExample.astro';
+import BoundsEditorExample from '~/components/core/georectbounds/BoundsEditorExample.astro';
+import DateLineCrossingExample from '~/components/core/georectbounds/DateLineCrossingExample.astro';
+import EmptyBoundsHandlingExample from '~/components/core/georectbounds/EmptyBoundsHandlingExample.astro';
+import BoundsToStringExample from '~/components/core/georectbounds/BoundsToStringExample.astro';
+import ToUrlValueExample from '~/components/core/georectbounds/ToUrlValueExample.astro';
+import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.astro';
+
+`GeoRectBounds` represents a rectangular geographic area defined by southwest and northeast corner points. It is used for defining map regions, ground image bounds, and viewport calculations.
+
+## Constructor
+
+<GeoRectBoundsConstructor />
+
+## Properties
+
+### Corner Points
+
+- **`southWest: GeoPoint?`**: Southwest corner (bottom-left) of the rectangle
+- **`northEast: GeoPoint?`**: Northeast corner (top-right) of the rectangle
+- **`isEmpty: Boolean`**: Returns `true` if the bounds are not defined
+
+### Computed Properties
+
+- **`center: GeoPoint?`**: Center point of the bounds
+- **`toSpan(): GeoPoint?`**: Returns the span (width/height) as a GeoPointInterface
+
+## Basic Usage
+
+### Creating Bounds
+
+<GeoRectBoundsCreationExample
+  commentForDefineArea="Define a rectangular area"
+  commentForEmptyBounds="Empty bounds (to be extended later)"
+  southWestLatitude={37.7649}
+  southWestLongitude={-122.4294}
+  northEastLatitude={37.7849}
+  northEastLongitude={-122.4094}
+/>
+
+## Dynamic Bounds Construction
+
+### Extending Bounds
+
+The bounds can be dynamically extended to include new points:
+
+<ExtendBoundsExample
+  commentForUsage="Usage"
+  commentForStartEmpty="Start empty"
+  commentForBoundsGrow="Bounds grow to include each point"
+  commentForFinalBounds="Final bounds"
+  firstPointLatitude={37.7749}
+  firstPointLongitude={-122.4194}
+  secondPointLatitude={37.7849}
+  secondPointLongitude={-122.4094}
+  thirdPointLatitude={37.7649}
+  thirdPointLongitude={-122.4294}
+/>
+
+### Union of Bounds
+
+<UnionBoundsExample
+  firstSouthWestLatitude={37.7649}
+  firstSouthWestLongitude={-122.4294}
+  firstNorthEastLatitude={37.7749}
+  firstNorthEastLongitude={-122.4194}
+  secondSouthWestLatitude={37.7749}
+  secondSouthWestLongitude={-122.4194}
+  secondNorthEastLatitude={37.7849}
+  secondNorthEastLongitude={-122.4094}
+  commentForCombinedBounds="Contains both areas"
+/>
+
+## Point and Bounds Testing
+
+### Contains Point
+
+<ContainsPointExample
+  boundsSouthWestLatitude={37.7649}
+  boundsSouthWestLongitude={-122.4294}
+  boundsNorthEastLatitude={37.7849}
+  boundsNorthEastLongitude={-122.4094}
+  testPointLatitude={37.7749}
+  testPointLongitude={-122.4194}
+  commentForUsage="Point is inside bounds"
+/>
+
+### Bounds Intersection
+
+<IntersectsBoundsExample commentForUsage="Bounds intersect" />
+
+## Special Handling
+
+### International Date Line
+
+`GeoRectBounds` handles rectangles that cross the International Date Line (longitude ±180°):
+
+<DateLineCrossingExample
+  southWestLatitude={20.0}
+  southWestLongitude={170.0}
+  northEastLatitude={40.0}
+  northEastLongitude={-170.0}
+  pointLatitude={30.0}
+  pointLongitude={175.0}
+/>
+
+### Empty Bounds Handling
+
+<EmptyBoundsHandlingExample
+  extendLatitude={37.7749}
+  extendLongitude={-122.4194}
+/>
+
+## Utility Methods
+
+### String Representation
+
+<BoundsToStringExample
+  southWestLatitude={37.7649}
+  southWestLongitude={-122.4294}
+  northEastLatitude={37.7849}
+  northEastLongitude={-122.4094}
+/>
+
+### URL Value
+
+<ToUrlValueExample defaultPrecision={6} highPrecision={8} />
+
+### Equality Comparison
+
+<EqualsToExample commentForUsage="Usage" />

@@ -1,0 +1,10 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Google Maps
+val googleMapState = rememberGoogleMapViewState()
+val googleHolder: GoogleMapViewHolder? = googleMapState.getMapViewHolder()`
+---
+
+<Code code={code} lang="kotlin" />
+

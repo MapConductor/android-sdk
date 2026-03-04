@@ -1,0 +1,67 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun InteractivePolylineExample() {
+    val center = GeoPoint.fromLatLong(53.566853, 9.988269)
+
+    val camera = MapCameraPosition(position = center, zoom = 14.0)
+    val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
+
+    var waypoints by remember {
+        mutableStateOf(
+            listOf(
+                GeoPoint.fromLatLong(53.561011, 9.989448),
+                GeoPoint.fromLatLong(53.563203, 9.985800),
+                GeoPoint.fromLatLong(53.564579, 9.983525),
+                GeoPoint.fromLatLong(53.566873, 9.980822),
+                GeoPoint.fromLatLong(53.567943, 9.982152),
+                GeoPoint.fromLatLong(53.570186, 9.984813),
+                GeoPoint.fromLatLong(53.572683, 9.986143),
+                GeoPoint.fromLatLong(53.572658, 9.988675),
+                GeoPoint.fromLatLong(53.572709, 9.990392)
+            )
+        )
+    }
+
+    val polylineState = PolylineState(
+        points = waypoints,
+        strokeColor = Color.Blue,
+        strokeWidth = 4.dp,
+        geodesic = true
+    )
+
+    val onWaypointDrag: (MarkerState) -> Unit = { markerState ->
+        val markerIndex = markerState.extra as Int
+        markerIndex.let { index ->
+            waypoints = waypoints.toMutableList().apply {
+                if (index < size) {
+                    set(index, markerState.position as GeoPoint)
+                }
+            }
+        }
+    }
+
+    val waypointMarkers = waypoints.mapIndexed { index, point ->
+        MarkerState(
+            id = "marker-\${index}",
+            position = point,
+            icon = DefaultIcon(label = "\${index + 1}", scale = 0.7f),
+            draggable = true,
+            extra = index,
+            onDrag = onWaypointDrag
+        )
+    }
+
+    MapboxMapView(
+        state = mapViewState
+    ) {
+        Polyline(polylineState)
+        waypointMarkers.forEach { marker ->
+            Marker(marker)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

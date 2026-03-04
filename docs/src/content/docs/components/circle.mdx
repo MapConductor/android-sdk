@@ -1,0 +1,125 @@
+---
+title: "Circle"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CircleBasicSignature from '~/components/components/circle/CircleBasicSignature.astro';
+import CircleStateSignature from '~/components/components/circle/CircleStateSignature.astro';
+import BasicCircleExample from '~/components/components/circle/BasicCircleExample.astro';
+import InteractiveCircleExample from '~/components/components/circle/InteractiveCircleExample.astro';
+import DynamicCircleExample from '~/components/components/circle/DynamicCircleExample.astro';
+import OverlappingCirclesExample from '~/components/components/circle/OverlappingCirclesExample.astro';
+import CircleEventHandlingExample from '~/components/components/circle/CircleEventHandlingExample.astro';
+import CircleStrokeStylesExample from '~/components/components/circle/CircleStrokeStylesExample.astro';
+import CircleFillStylesExample from '~/components/components/circle/CircleFillStylesExample.astro';
+import CircleInteractiveDetailedExample from '~/components/components/circle/CircleInteractiveDetailedExample.astro';
+import CircleClickEventDetailedExample from '~/components/components/circle/CircleClickEventDetailedExample.astro';
+import CircleIdDetailedExample from '~/components/components/circle/CircleIdDetailedExample.astro';
+
+Circles are circular overlays that can be drawn on the map with customizable radius, stroke, and fill properties. They are useful for representing areas, ranges, or zones.
+
+## Composable Functions
+
+<Tabs>
+<TabItem label="Basic Circle">
+
+For a small number of circles, you can specify options directly. Specifying an `id` helps prevent unnecessary recomposition.
+
+<CircleBasicSignature />
+
+</TabItem>
+<TabItem label="Circle with State">
+
+For a large number of circles or when moving circles, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
+
+<CircleStateSignature />
+
+</TabItem>
+</Tabs>
+
+## Parameters
+
+- **`center`**: Geographic center point of the circle (`GeoPointInterface`)
+- **`radiusMeters`**: Radius in meters (`Double`)
+- **`geodesic`**: Whether to draw the circle using geodesic edges that follow the Earth’s curvature (default: `false`)
+- **`strokeColor`**: Color of the circle's border (default: `Color.Red`)
+- **`strokeWidth`**: Width of the border line (default: `2.dp`)
+- **`fillColor`**: Fill color of the circle interior (default: semi-transparent white)
+- **`extra`**: Additional data attached to the circle (`Serializable?`)
+- **`id`**: Unique identifier for the circle (`String?`)
+
+## Usage Examples
+
+### Basic Circle
+
+<BasicCircleExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Interactive Circle with Markers
+
+Based on the example app, here's how to create an interactive circle with draggable markers:
+
+<InteractiveCircleExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+  commentForLatOffsetNote="This is simplified - actual calculation would consider Earth's curvature"
+/>
+<video width="720" height="480" controls>
+ <source src="/circle/interactive-circle-example.webm" type="video/webm" />
+ <source src="/circle/interactive-circle-example.mp4" type="video/mp4" />
+</video>
+
+### Dynamic Circle Updates
+
+<DynamicCircleExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+<video width="720" height="480" controls>
+ <source src="/circle/dynamic-circle-example.webm" type="video/webm" />
+ <source src="/circle/dynamic-circle-example.mp4" type="video/mp4" />
+</video>
+
+
+## Event Handling
+
+Circle interactions are handled with your map provider component:
+
+<CircleEventHandlingExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+## Styling Options
+
+### Stroke Styles
+
+<CircleStrokeStylesExample />
+
+### Fill Styles
+
+<CircleFillStylesExample />
+
+## Circle Identification
+
+### Using the ID Property
+
+The `id` property provides a unique identifier for circles, enabling efficient tracking and management:
+
+<CircleIdDetailedExample />
+
+### Benefits of Using IDs
+
+- **Unique Identification**: Distinguish between circles even when they have similar properties
+- **Event Handling**: Simplifies click event handling and area-specific logic
+- **State Management**: Enables efficient updates and selection management
+- **Performance**: Facilitates optimized rendering and updates
+
+## Best Practices
+
+1. **Use Appropriate Radius**: Consider the map zoom level when setting circle radius
+2. **Provide Unique IDs**: Always set unique `id` values when working with multiple circles
+3. **Color Contrast**: Ensure stroke and fill colors provide good visibility on the map
+4. **Performance**: Avoid creating too many large circles as they may impact rendering performance
+5. **Interactive Feedback**: Provide visual feedback when circles are clickable
+6. **Consistent Styling**: Maintain consistent circle styling across your application
+7. **Extra Data**: Use the `extra` parameter to store metadata for event handling
+8. **Z-Index Management**: Consider drawing order when circles overlap

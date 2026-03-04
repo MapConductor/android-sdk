@@ -6,7 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.ComponentState
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import android.graphics.Bitmap
@@ -15,15 +16,22 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ------- Core Types ----------
 class MarkerState(
-    position: GeoPoint,
+    position: GeoPointInterface,
     id: String? = null,
     var extra: Serializable? = null,
-    icon: MarkerIcon? = null,
+    icon: MarkerIconInterface? = null,
     animation: MarkerAnimation? = null,
+    zIndex: Int? = null,
     clickable: Boolean = true,
     draggable: Boolean = false,
-) {
-    val id =
+    onClick: OnMarkerEventHandler? = null,
+    onDragStart: OnMarkerEventHandler? = null,
+    onDrag: OnMarkerEventHandler? = null,
+    onDragEnd: OnMarkerEventHandler? = null,
+    onAnimateStart: OnMarkerEventHandler? = null,
+    onAnimateEnd: OnMarkerEventHandler? = null,
+) : ComponentState {
+    override val id =
         (
             id ?: markerId(
                 listOf(
@@ -42,9 +50,16 @@ class MarkerState(
             31 * result + hashCode
         }
 
-    var icon by mutableStateOf<MarkerIcon?>(icon)
+    var icon by mutableStateOf<MarkerIconInterface?>(icon)
     var clickable by mutableStateOf(clickable)
     var draggable by mutableStateOf(draggable)
+    var onClick by mutableStateOf(onClick)
+    var onDragStart by mutableStateOf(onDragStart)
+    var onDrag by mutableStateOf(onDrag)
+    var onDragEnd by mutableStateOf(onDragEnd)
+    var onAnimateStart by mutableStateOf(onAnimateStart)
+    var onAnimateEnd by mutableStateOf(onAnimateEnd)
+    var zIndex by mutableStateOf<Int?>(zIndex)
 
     private var internalAnimation by mutableStateOf<MarkerAnimation?>(animation)
 
@@ -52,10 +67,10 @@ class MarkerState(
         internalAnimation = animation
     }
 
-    internal fun getAnimation(): MarkerAnimation? = internalAnimation
+    fun getAnimation(): MarkerAnimation? = internalAnimation
 
     private val currentPosition = mutableStateOf(position)
-    var position: GeoPoint
+    var position: GeoPointInterface
         get() {
             return currentPosition.value
         }
@@ -65,19 +80,33 @@ class MarkerState(
 
     fun copy(
         id: String? = this.id,
-        position: GeoPoint = this.position,
+        position: GeoPointInterface = this.position,
         extra: Serializable? = this.extra,
-        icon: MarkerIcon? = this.icon,
+        icon: MarkerIconInterface? = this.icon,
+        zIndex: Int? = this.zIndex,
         clickable: Boolean? = this.clickable,
         draggable: Boolean? = this.draggable,
+        onClick: OnMarkerEventHandler? = this.onClick,
+        onDragStart: OnMarkerEventHandler? = this.onDragStart,
+        onDrag: OnMarkerEventHandler? = this.onDrag,
+        onDragEnd: OnMarkerEventHandler? = this.onDragEnd,
+        onAnimateStart: OnMarkerEventHandler? = this.onAnimateStart,
+        onAnimateEnd: OnMarkerEventHandler? = this.onAnimateEnd,
     ): MarkerState =
         MarkerState(
             id = id, // Keep marker id
             position = position,
             extra = extra,
             icon = icon,
+            zIndex = zIndex,
             clickable = clickable ?: this.clickable,
             draggable = draggable ?: this.draggable,
+            onClick = onClick,
+            onDragStart = onDragStart,
+            onDrag = onDrag,
+            onDragEnd = onDragEnd,
+            onAnimateStart = onAnimateStart,
+            onAnimateEnd = onAnimateEnd,
         )
 
     override fun equals(other: Any?): Boolean {
@@ -93,6 +122,7 @@ class MarkerState(
         result = 31 * result + currentPosition.value.longitude.hashCode()
         result = 31 * result + currentPosition.value.altitude.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
+        result = 31 * result + zIndex.hashCode()
         return result
     }
 
@@ -105,6 +135,7 @@ class MarkerState(
             currentPosition.value.latitude.hashCode(),
             currentPosition.value.longitude.hashCode(),
             internalAnimation?.hashCode() ?: 1,
+            zIndex.hashCode(),
         )
 
     fun asFlow(): Flow<MarkerFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
@@ -118,6 +149,7 @@ data class MarkerFingerPrint(
     val latitude: Int,
     val longitude: Int,
     val animation: Int?,
+    val zIndex: Int,
 )
 typealias OnMarkerEventHandler = (MarkerState) -> Unit
 

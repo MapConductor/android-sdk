@@ -1,0 +1,42 @@
+---
+title: SDK Setup Overview
+---
+
+import MapConductorInitExample from '~/components/setup/MapConductorInitExample.astro';
+
+This page provides a high-level overview of the steps required to use MapConductor with each map provider. See the provider-specific pages for detailed instructions.
+
+## Common Prerequisites
+
+Before using MapConductor, make sure the following prerequisites are met:
+
+- An Android project is created and configured with Gradle.
+- Kotlin and Jetpack Compose are enabled in the project.
+- You have obtained the required API keys / credentials for each map SDK you plan to use.
+
+You can find an example Gradle setup in the [Get Started](/get-started/) section.
+
+## Provider-Specific Setup
+
+The setup steps for each map provider are described on the following pages:
+
+- [Google Maps Setup](/setup/google-maps)
+- [Mapbox Setup](/setup/mapbox)
+- [HERE Maps Setup](/setup/here-maps)
+- [ArcGIS Maps Setup](/setup/arcgis)
+- [MapLibre Setup](/setup/maplibre)
+
+You only need to configure the providers you actually use in your application.
+
+## Initializing MapConductor
+
+Once each map SDK is initialized, MapConductor only needs the corresponding `MapViewStateInterface` and map view component.
+
+<MapConductorInitExample
+  provider="Google"
+  comment="Add Marker / Circle / Polyline as needed"
+/>
+
+![MyMap example output](~/assets/examples/basic-example.jpg)
+
+To switch to another provider, replace `rememberGoogleMapViewState` and `GoogleMapView` with the corresponding versions such as `rememberMapboxMapViewState` and `MapboxMapView`.

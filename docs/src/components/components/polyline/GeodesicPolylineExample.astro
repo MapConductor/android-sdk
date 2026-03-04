@@ -1,0 +1,56 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
+    val center = GeoPoint.fromLatLong(36.0, -160.0)
+    val camera = MapCameraPosition(position = center, zoom = 4.0)
+    val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
+
+    var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
+    val onPolylineClick: OnPolylineEventHandler = { polylineEvent ->
+        markers = markers + MarkerState(
+            icon = DefaultIcon(fillColor = polylineEvent.state.strokeColor),
+            position = polylineEvent.clicked
+        )
+    }
+
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier
+    ) {
+        val longDistancePoints = listOf(
+            GeoPoint.fromLatLong(35.548852, 139.784086), // 羽田空港
+            GeoPoint.fromLatLong(37.615223, -122.389979)   // サンフランシスコ空港
+        )
+
+        // 標準線
+        Polyline(
+            id = "straight-line",
+            points = longDistancePoints,
+            strokeColor = Color.Red,
+            strokeWidth = 3.dp,
+            geodesic = false,
+            extra = "Straight line",
+            onClick = onPolylineClick
+        )
+
+        // 測地線
+        Polyline(
+            id = "geodesic-line",
+            points = longDistancePoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 3.dp,
+            geodesic = true,
+            extra = "Geodesic line",
+            onClick = onPolylineClick
+        )
+
+        markers.forEach { markerState ->
+            Marker(markerState)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

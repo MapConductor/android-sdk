@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(state = mapViewState) {
+    val centerPoint = GeoPoint.fromLatLong(37.7749, -122.4194)
+
+    // Background circle (larger, lower z-index)
+    Circle(
+        center = centerPoint,
+        radiusMeters = 1000.0,
+        strokeColor = Color.Red,
+        fillColor = Color.Red.copy(alpha = 0.2f),
+        extra = CircleData(zIndex = 1, name = "Outer circle")
+    )
+
+    // Foreground circle (smaller, higher z-index)
+    Circle(
+        center = centerPoint,
+        radiusMeters = 500.0,
+        strokeColor = Color.Blue,
+        fillColor = Color.Blue.copy(alpha = 0.4f),
+        extra = CircleData(zIndex = 2, name = "Inner circle")
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -20,7 +20,9 @@
       "Bash(cat:*)",
       "Read(//Users/masashi/.gradle/caches/**)",
       "Bash(xargs jar tf:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "WebFetch(domain:medium.com)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

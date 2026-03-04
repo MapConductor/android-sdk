@@ -8,13 +8,13 @@ import com.here.sdk.mapview.MapMeasureDependentRenderSize
 import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.RenderSize
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.createLinearInterpolatePoints
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
-import com.mapconductor.core.polyline.PolylineEntity
+import com.mapconductor.core.polyline.PolylineEntityInterface
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.createInterpolatePoints
+import com.mapconductor.core.spherical.createLinearInterpolatePoints
 import com.mapconductor.here.HereActualPolyline
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toGeoCoordinates
@@ -30,7 +30,10 @@ class HerePolylineOverlayRenderer(
     override suspend fun createPolyline(state: PolylineState): HereActualPolyline? {
         val geoPolyline = createGeoPolyline(state)
         val representation = createRepresentation(state)
-        val mapPolyline = MapPolyline(geoPolyline, representation)
+        val mapPolyline =
+            MapPolyline(geoPolyline, representation).apply {
+                drawOrder = state.zIndex
+            }
 
         coroutine.launch {
             holder.map.addMapPolylines(listOf(mapPolyline))
@@ -41,8 +44,8 @@ class HerePolylineOverlayRenderer(
 
     override suspend fun updatePolylineProperties(
         polyline: HereActualPolyline,
-        current: PolylineEntity<HereActualPolyline>,
-        prev: PolylineEntity<HereActualPolyline>,
+        current: PolylineEntityInterface<HereActualPolyline>,
+        prev: PolylineEntityInterface<HereActualPolyline>,
     ): HereActualPolyline? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -62,6 +65,11 @@ class HerePolylineOverlayRenderer(
                 needsReAdd = true
             }
 
+            if (finger.zIndex != prevFinger.zIndex) {
+                polyline.drawOrder = current.state.zIndex
+                needsReAdd = true
+            }
+
             if (needsReAdd) {
                 coroutine.launch {
                     holder.map.removeMapPolylines(listOf(polyline))
@@ -72,19 +80,19 @@ class HerePolylineOverlayRenderer(
             polyline
         }
 
-    override suspend fun removePolyline(entity: PolylineEntity<HereActualPolyline>) {
+    override suspend fun removePolyline(entity: PolylineEntityInterface<HereActualPolyline>) {
         coroutine.launch {
             holder.map.removeMapPolylines(listOf(entity.polyline))
         }
     }
 
     private fun createGeoPolyline(state: PolylineState): GeoPolyline {
-        val geoPoints: List<GeoPoint> =
+        val geoPoints: List<GeoPointInterface> =
             when (state.geodesic) {
                 true -> createInterpolatePoints(state.points)
                 false -> createLinearInterpolatePoints(state.points)
             }
-        val points = geoPoints.map { GeoPointImpl.from(it).toGeoCoordinates() }
+        val points = geoPoints.map { GeoPoint.from(it).toGeoCoordinates() }
         return GeoPolyline(points)
     }
 

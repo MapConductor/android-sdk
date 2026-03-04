@@ -1,0 +1,43 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `class CustomIcon(
+    private val fillColor: Color = Color.Blue,
+    override val scale: Float = 1.0f,
+    override val iconSize: Dp = 32.dp,
+    override val debug: Boolean = false
+) : AbstractMarkerIcon() {
+
+    override val anchor: Offset = Offset(0.5f, 0.5f)
+    override val infoAnchor: Offset = Offset(0.5f, 0.0f)
+
+    override fun toBitmapIcon(): BitmapIcon {
+        val id = "custom_icon_${'$'}{hashCode()}".hashCode()
+        BitmapIconCache.get(id)?.let { return it }
+
+        val canvasSize = ResourceProvider.dpToPx(iconSize.value * scale)
+        val bitmap = createBitmap(canvasSize.toInt(), canvasSize.toInt())
+        val canvas = Canvas(bitmap)
+
+        // Custom drawing code here
+        val paint = Paint().apply {
+            color = fillColor.toArgb()
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+
+        canvas.drawRect(0f, 0f, canvasSize.toFloat(), canvasSize.toFloat(), paint)
+
+        val result = BitmapIcon(
+            bitmap = bitmap,
+            anchor = anchor,
+            size = Size(canvasSize.toFloat(), canvasSize.toFloat())
+        )
+        BitmapIconCache.put(id, result)
+        return result
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

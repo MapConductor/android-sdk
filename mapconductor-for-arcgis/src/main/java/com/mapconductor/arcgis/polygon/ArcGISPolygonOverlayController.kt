@@ -3,9 +3,9 @@ package com.mapconductor.arcgis.polygon
 import com.mapconductor.arcgis.ArcGISActualPolygon
 import com.mapconductor.core.polygon.PolygonController
 import com.mapconductor.core.polygon.PolygonManager
-import com.mapconductor.core.polygon.PolygonManagerImpl
+import com.mapconductor.core.polygon.PolygonManagerInterface
 
 class ArcGISPolygonOverlayController(
-    polygonManager: PolygonManager<ArcGISActualPolygon> = PolygonManagerImpl(),
+    polygonManager: PolygonManagerInterface<ArcGISActualPolygon> = PolygonManager(),
     override val renderer: ArcGISPolygonOverlayRenderer,
 ) : PolygonController<ArcGISActualPolygon>(polygonManager, renderer)

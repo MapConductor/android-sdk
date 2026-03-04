@@ -1,0 +1,136 @@
+---
+title: "MapViewComponent"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import GoogleMapsExample from '~/components/components/mapviewcomponent/GoogleMapsExample.astro';
+import MapboxExample from '~/components/components/mapviewcomponent/MapboxExample.astro';
+import AdvancedMapEventHandlingExample from '~/components/components/mapviewcomponent/AdvancedMapEventHandlingExample.astro';
+import MapViewComponentSignaturesTabs from '~/components/components/mapviewcomponent/MapViewComponentSignaturesTabs.astro';
+import ProviderIndependentMapContentExample from '~/components/components/mapviewcomponent/ProviderIndependentMapContentExample.astro';
+
+MapConductor provides map provider-specific map view components that serve as the foundation for displaying maps in your application. Each map SDK has its own implementation, but a consistent API interface is maintained across all providers.
+
+## MapViewContainer Architecture
+
+MapConductor provides a MapViewContainer component that wraps the MapView provided by the map SDK.
+MapViewComponent is a conceptual layer; when actually used, it employs the `XxxMapView` provided by each map SDK (e.g., `GoogleMapView`, `MapBoxView`, etc.).
+MapViewComponent contains controls for managing the MapView. These controls can be manipulated through the `MapViewStateInterface`.
+
+![MapViewContainer Architecture](~/assets/mapviewcomponent/architecture.png)
+
+## Map Provider-Specific Components
+
+MapConductor supports multiple map SDKs, each with a dedicated component.
+Multiple objects (markers, polylines, etc.) are typically placed on a map, so rather than setting event callbacks on individual objects,
+map and camera callbacks are set on the map provider-specific component, while overlay callbacks are set on each State.
+
+Provider-specific special event callbacks are not yet supported in v{BOM_MODULE_VERSION}.
+
+<MapViewComponentSignaturesTabs />
+
+
+## Common Parameters
+
+All map view components share the following parameters:
+
+### Core Parameters
+
+- **`modifier`**: Compose modifier for styling and layout
+- **`state`**: Map provider-specific map view state implementation
+- **`content`**: Composable content containing map overlays (markers, circles, etc.)
+
+### Event Handlers
+
+- **`onMapLoaded`**: Called when the map has finished loading
+- **`onMapClick`**: Called when the user taps on the map
+- **`onCameraMoveStart`**: Called when `moveCameraTo(dst, durationMs)` begins. Not called when the user moves the map interactively.
+- **`onCameraMove`**: Called when the camera displaying the map moves.
+- **`onCameraMoveEnd`**: Called when the movement of the camera displaying the map completes.
+
+### Advanced Parameters
+
+- **`sdkInitialize`**: SDK-specific initialization process
+
+## Usage Examples
+
+<Tabs>
+  <TabItem label="GoogleMaps">
+    <GoogleMapsExample/>
+    ![](~/assets/introduction/basic-googlemaps-example.png)
+  </TabItem>
+  <TabItem label="Mapbox">
+    <MapboxExample />
+    ![](~/assets/introduction/basic-mapbox-example.png)
+  </TabItem>
+</Tabs>
+
+
+### Map Provider-Independent Pattern
+
+While specific map components are required for each SDK, you can create provider-independent content:
+
+<ProviderIndependentMapContentExample
+  markerLatitude={37.7749}
+  markerLongitude={-122.4194}
+  markerLabel="Point"
+  markerExtra="Common marker"
+  radiusMeters={500.0}
+  strokeColorExpr="Color.Green"
+  fillColorExpr="Color.Green.copy(alpha = 0.2f)"
+  commentForReusableContent="Reusable content"
+  commentForSameContentDifferentSdk="Same content, different map SDK"
+/>
+
+### Advanced Event Handling
+
+<AdvancedMapEventHandlingExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  mapLoadedMessage="Map loaded successfully"
+  mapClickedPrefix="Map clicked at"
+  cameraMoveStartMessage="Camera move started"
+  cameraMovePrefix="Camera position"
+  cameraMoveEndMessage="Camera move ended"
+  markerClickedPrefix="Marker clicked"
+  centerMarkerLabel="Center"
+  centerMarkerExtra="Center marker"
+  clickedMarkerLabel="Clicked"
+  clickedMarkerExtra="Clicked point"
+  commentForCenterMarkerAndCircle="Show marker and circle"
+  commentForClickedMarker="Show marker at clicked position"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewcomponent/advanced-map-example.webm" type="video/webm" />
+ <source src="/mapviewcomponent/advanced-map-example.mp4" type="video/mp4" />
+</video>
+
+## Map SDK Differences
+
+While the API is consistent across all map SDKs, there are differences in the following areas:
+
+### Supported Features
+- **GroundImage**: Currently supported on Google Maps and ArcGIS
+- **Marker Animation**: Available on Google Maps and Mapbox
+- **Custom Styling**: Each map SDK has different map style options
+
+### Performance Characteristics
+- **Google Maps**: Excellent for general use with great marker performance
+- **Mapbox**: Optimal for custom styling and large datasets
+- **HERE Maps**: Optimized for location services integration
+- **ArcGIS**: Optimal for GIS and enterprise applications
+
+### Platform Integration
+Each map SDK may have different requirements regarding API keys, permissions, and platform setup. Refer to the provider-specific setup documentation for details.
+
+## Best Practices
+
+1. **Choose the Right SDK**: Select based on your app's specific needs (styling, performance, features)
+2. **Consistent State Management**: Use the same state patterns regardless of the map SDK
+3. **Reusable Content**: Create provider-independent Composable content when possible
+4. **Event Handling**: Implement comprehensive event handling for better user experience
+5. **Error Handling**: Always handle initialization failures and provide fallback UI
+6. **Performance**: Consider custom rendering strategies for large marker sets
+7. **Testing**: Test your application with multiple map SDKs to ensure compatibility

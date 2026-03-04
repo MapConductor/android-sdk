@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// City and metropolitan area level
+val metropolitanLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(37.7749, -122.4194), // San Francisco
+    zoom = 10.0  // Shows metropolitan area
+)
+
+val cityLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(37.7749, -122.4194),
+    zoom = 12.0  // Shows city center and suburbs
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

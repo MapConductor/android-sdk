@@ -2,6 +2,22 @@
 title: "InfoBubble"
 ---
 
+import SimpleInfoBubbleExample from '~/components/components/infobubble/SimpleInfoBubbleExample.astro';
+import RichContentInfoBubbleExample from '~/components/components/infobubble/RichContentInfoBubbleExample.astro';
+import InteractiveBubbleExample from '~/components/components/infobubble/InteractiveBubbleExample.astro';
+import InfoBubbleSignature from '~/components/components/infobubble/InfoBubbleSignature.astro';
+import MultipleBubblesExample from '~/components/components/infobubble/MultipleBubblesExample.astro';
+import CustomPositioningExample from '~/components/components/infobubble/CustomPositioningExample.astro';
+import LifecycleManagementExample from '~/components/components/infobubble/LifecycleManagementExample.astro';
+import ManualLifecycleExample from '~/components/components/infobubble/ManualLifecycleExample.astro';
+import DarkModeInfoBubbleExample from '~/components/components/infobubble/DarkModeInfoBubbleExample.astro';
+import CustomThemeExample from '~/components/components/infobubble/CustomThemeExample.astro';
+import EfficientUpdatesExample from '~/components/components/infobubble/EfficientUpdatesExample.astro';
+import MemoryManagementExample from '~/components/components/infobubble/MemoryManagementExample.astro';
+import ImplementationTipsExample from '~/components/components/infobubble/ImplementationTipsExample.astro';
+import DebugModeExample from '~/components/components/infobubble/DebugModeExample.astro';
+import RightInfoBubbleMapExample from '~/components/components/infobubble/RightInfoBubbleMapExample.astro';
+
 InfoBubble は、地図上のマーカーに吹き出し形式でカスタムコンテンツを表示するコンポーネントです。マーカーに関する詳細情報を表示する方法を提供します。
 
 ## 概要
@@ -10,18 +26,7 @@ InfoBubble は、特定のマーカーの上に表示されます。InfoBubble�
 
 ## Composable 関数
 
-```kotlin
-@Composable
-fun MapViewScope.InfoBubble(
-    marker: MarkerState,
-    bubbleColor: Color = Color.White,
-    borderColor: Color = Color.Black,
-    contentPadding: Dp = 8.dp,
-    cornerRadius: Dp = 4.dp,
-    tailSize: Dp = 8.dp,
-    content: @Composable () -> Unit
-)
-```
+<InfoBubbleSignature />
 
 ## パラメータ
 
@@ -37,273 +42,40 @@ fun MapViewScope.InfoBubble(
 
 ### シンプルなテキストバブル
 
-```kotlin
-@Composable
-fun SimpleInfoBubbleExample() {
-    val center = GeoPointImpl.fromLatLong(52.5163, 13.3777)
-
-    // 地図の作成
-    val camera =
-        MapCameraPositionImpl(
-            position = center,
-            zoom = 13.0,
-        )
-    val mapViewState =
-        rememberHereMapViewState(
-            cameraPosition = camera,
-        )
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    HereMapView(
-        modifier = modifier,
-        state = mapViewState,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
-    ) {
-        val markerState = MarkerState(
-            position = center,
-            icon = DefaultIcon(fillColor = Color.Green, label = "POI"),
-            extra = "Brandenburg Gate",
-            id = "poi-marker"
-        )
-
-        Marker(markerState)
-
-        selectedMarker?.let { marker ->
-            InfoBubble(
-                marker = marker,
-                contentPadding = 12.dp,
-                cornerRadius = 8.dp,
-                tailSize = 10.dp
-            ) {
-                Text(
-                    text = marker.extra as? String ?: "",
-                    color = Color.Black,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-    }
-}
-```
-![実行結果](~/assets/info-bubble/simple-info-bubble-example.png)
+<SimpleInfoBubbleExample />
+![](~/assets/info-bubble/simple-info-bubble-example.png)
 
 ### カスタムスタイルのバブル
 
-```kotlin
-data class LocationInfo(
-    val name: String,
-    val description: String,
-    val rating: Float,
-    val imageUrl: String? = null
-) : java.io.Serializable
-
-@Composable
-fun RichContentBubbleExample() {
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-
-    val center = GeoPointImpl.fromLatLong(37.7694, -122.4862)
-
-    // 地図の作成
-    val camera =
-        MapCameraPositionImpl(
-            position = center,
-            zoom = 13.0,
-        )
-    val mapViewState =
-        rememberHereMapViewState(
-            cameraPosition = camera,
-        )
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    HereMapView(
-        modifier = modifier,
-        state = mapViewState,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
-    ) {
-        val locationInfo = LocationInfo(
-            name = "Golden Gate Park",
-            description = "A large urban park with gardens, museums, and recreational areas.",
-            rating = 4.5f
-        )
-
-        val markerState = MarkerState(
-            position = GeoPointImpl.fromLatLong(37.7694, -122.4862),
-            icon = DefaultIcon(fillColor = Color.Green, label = "🌳"),
-            extra = locationInfo,
-            id = "park-marker"
-        )
-
-        Marker(markerState)
-
-        selectedMarker?.let { marker ->
-            val info = marker.extra as? LocationInfo
-            info?.let {
-                InfoBubble(
-                    marker = marker,
-                    bubbleColor = MaterialTheme.colorScheme.background,
-                    borderColor = Color.Gray,
-                    contentPadding = 16.dp,
-                    cornerRadius = 12.dp
-                ) {
-                    Column(
-                        modifier = Modifier.width(200.dp)
-                    ) {
-                        Text(
-                            text = info.name,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = info.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            repeat(5) { index ->
-                                Icon(
-                                    Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = if (index < info.rating.toInt()) Color.Yellow else Color.Gray,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                            Text(
-                                text = " ${info.rating}/5",
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 4.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-```
-![実行結果](~/assets/info-bubble/rich-content-info-bubble-example.png)
+<RichContentInfoBubbleExample
+  locationName="Golden Gate Park"
+  locationDescription="A large urban park with gardens, museums, and recreational areas."
+  locationRating={4.5}
+  latitude={37.7694}
+  longitude={-122.4862}
+  markerLabel="🌳"
+  markerId="park-marker"
+  zoomLevel={13.0}
+  markerFillColorExpr="Color.Green"
+/>
+![](~/assets/info-bubble/rich-content-info-bubble-example.png)
 
 ### アクション付きのインタラクティブバブル
 
-```kotlin
-data class StoreInfo(
-    val name: String,
-    val address: String,
-    val phone: String,
-    val type: String
-) : java.io.Serializable
-
-@Composable
-fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(35.70662, 139.76378)
-    val camera = MapCameraPositionImpl(
-        position = center,
-        zoom = 16.0,
-    )
-    val mapViewState = rememberArcGISMapViewState(
-        cameraPosition = camera,
-    )
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-    val context = LocalContext.current
-
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    ArcGISMapView(
-        state = mapViewState,
-        modifier = modifier,
-        onMapClick = { selectedMarker = null },
-        onMarkerClick = { markerState -> selectedMarker = markerState }
-    ) {
-        val storeInfo = StoreInfo(
-            name = "Coffee Shop",
-            address = "1-4, Hongo 4-Chome, Bunkyo-Ku",
-            phone = "+81 (555) 123-4567",
-            type = "coffee"
-        )
-
-        val markerState = MarkerState(
-            position = GeoPointImpl.fromLatLong(35.708106, 139.760823),
-            icon = DefaultIcon(fillColor = Color(0xFF8B4513), label = "☕"),
-            extra = storeInfo,
-            id = "coffee-shop-marker"
-        )
-
-        Marker(markerState)
-
-        selectedMarker?.let { marker ->
-            val store = marker.extra as? StoreInfo
-            store?.let {
-                InfoBubble(
-                    marker = marker,
-                    bubbleColor = Color.White,
-                    borderColor = Color.Black,
-                    contentPadding = 12.dp,
-                    cornerRadius = 8.dp
-                ) {
-                    Column(
-                        modifier = Modifier.width(250.dp)
-                    ) {
-                        Text(
-                            text = store.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = store.address,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Button(
-                                onClick = {
-                                    // 通話アクションを処理
-                                    val intent = Intent(Intent.ACTION_DIAL).apply {
-                                        data = Uri.parse("tel:${store.phone}")
-                                    }
-                                    context.startActivity(intent)
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Blue)
-                            ) {
-                                Icon(Icons.Default.Phone, contentDescription = "Call")
-                                Text("Call", modifier = Modifier.padding(start = 4.dp))
-                            }
-
-                            Button(
-                                onClick = {
-                                    // ルート案内アクションを処理
-                                    val position = marker.position
-                                    val gmmIntentUri = Uri.parse("google.navigation:q=${position.latitude},${position.longitude}")
-                                    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                                    mapIntent.setPackage("com.google.android.apps.maps")
-                                    context.startActivity(mapIntent)
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
-                            ) {
-                                Icon(Icons.Default.LocationOn, contentDescription = "Directions")
-                                Text("Go", modifier = Modifier.padding(start = 4.dp))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-```
+<InteractiveBubbleExample
+  storeName="Coffee Shop"
+  storeAddress="1-4, Hongo 4-Chome, Bunkyo-Ku"
+  storePhone="+81 (555) 123-4567"
+  storeType="coffee"
+  cameraLatitude={35.70662}
+  cameraLongitude={139.76378}
+  markerLatitude={35.708106}
+  markerLongitude={139.760823}
+  markerColor="0xFF8B4513"
+  markerLabel="☕"
+  markerId="coffee-shop-marker"
+  zoomLevel={16.0}
+/>
 
 <video width="720" height="480" controls>
  <source src="/info-bubble/interactive-bubble-example.webm" type="video/webm" />
@@ -312,73 +84,22 @@ fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
 
 ### 複数のバブル管理
 
-```kotlin
-@Composable
-fun MultipleBubblesExample() {
-    val mapViewState = rememberGoogleMapViewState()
-    var selectedMarkers by remember { mutableStateOf(setOf<String>()) }
-
-    val markerData = remember {
-        listOf(
-            Triple(GeoPointImpl.fromLatLong(37.7749, -122.4194), "Restaurant A", Color.Red),
-            Triple(GeoPointImpl.fromLatLong(37.7849, -122.4094), "Hotel B", Color.Blue),
-            Triple(GeoPointImpl.fromLatLong(37.7649, -122.4294), "Shop C", Color.Green)
-        )
-    }
-
-    val markerStates = remember {
-        markerData.mapIndexed { index, (position, name, color) ->
-            MarkerState(
-                id = "marker_$index",
-                position = position,
-                icon = DefaultIcon(fillColor = color, label = "${index + 1}"),
-                extra = name
-            )
-        }
-    }
-
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(
-        state = mapViewState,
-        onMapClick = {
-            selectedMarkers = emptySet() // すべての選択をクリア
-        },
-        onMarkerClick = { markerState ->
-            selectedMarkers = if (selectedMarkers.contains(markerState.id)) {
-                selectedMarkers - markerState.id // 選択解除
-            } else {
-                selectedMarkers + markerState.id // 選択
-            }
-        }
-    ) {
-        markerStates.forEach { markerState ->
-            Marker(markerState)
-
-            // マーカーが選択されている場合、バブルを表示
-            if (selectedMarkers.contains(markerState.id)) {
-                InfoBubble(
-                    marker = markerState,
-                    bubbleColor = Color.White,
-                    borderColor = Color.Black
-                ) {
-                    Column {
-                        Text(
-                            text = markerState.extra as String,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Tap to close",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-```
+<MultipleBubblesExample
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください"
+  commentForTapToClose="タップして閉じる"
+  marker1Latitude={37.7749}
+  marker1Longitude={-122.4194}
+  marker1Name="Restaurant A"
+  marker1ColorExpr="Color.Red"
+  marker2Latitude={37.7849}
+  marker2Longitude={-122.4094}
+  marker2Name="Hotel B"
+  marker2ColorExpr="Color.Blue"
+  marker3Latitude={37.7649}
+  marker3Longitude={-122.4294}
+  marker3Name="Shop C"
+  marker3ColorExpr="Color.Green"
+/>
 
 <video width="720" height="480" controls>
  <source src="/info-bubble/multiple-bubbles-example.webm" type="video/webm" />
@@ -388,197 +109,25 @@ fun MultipleBubblesExample() {
 
 ### カスタムデザイン
 
-```kotlin
+カスタムデザインを実装するには、独自の InfoBubble 派生コンポーネントを作成できます。以下は、右側に尾を持つカスタム吹き出しの詳細な実装例です。
 
-@Composable
-fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val mapViewState =
-        rememberMapLibreMapViewState(
-            cameraPosition =
-                MapCameraPositionImpl(
-                    position = center,
-                    zoom = 13.0,
-                ),
-        )
-    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
-
-    val markerState1 by remember {
-        mutableStateOf(
-            MarkerState(
-                id = "marker1",
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Blue,
-                        infoAnchor = Offset(0.5f, 0.25f),
-                        label = "1",
-                    ),
-                draggable = true,
-            ),
-        )
-    }
-    val markerState2 by remember {
-        mutableStateOf(
-            MarkerState(
-                id = "marker2",
-                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Red,
-                        infoAnchor = Offset(0.5f, 0.25f),
-                        label = "2",
-                    ),
-            ),
-        )
-    }
-
-    MapLibreMapView(
-        state = mapViewState,
-        onMapLoaded = {
-            println("Map loaded and ready")
-        },
-        onMapClick = { geoPoint ->
-            selectedMarker = null // 地図クリックで選択解除
-        },
-        onMarkerClick = { markerState ->
-            selectedMarker = markerState
-        },
-        onMarkerDragStart = { markerState ->
-            println("Started dragging marker: ${markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("Dragging marker to: ${markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("Finished dragging marker: ${markerState.id}")
-        },
-    ) {
-        // インタラクティブなマーカーを持つ地図コンテンツ
-        Marker(markerState1)
-        Marker(markerState2)
-
-        // 選択されたマーカーの情報を表示
-        selectedMarker?.let { marker ->
-            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
-            // Example: custom bubble with right-side tail
-            InfoBubbleCustom(
-                marker = marker,
-                tailOffset = Offset(0f, 0.5f), // attach at center-left of the bubble
-            ) {
-                RightTailInfoBubble(
-                    bubbleColor = Color.White,
-                    borderColor = Color.Black,
-                ) {
-                    Text(
-                        text = text,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RightTailInfoBubble(
-    bubbleColor: Color,
-    borderColor: Color,
-    contentPadding: androidx.compose.ui.unit.Dp = 8.dp,
-    cornerRadius: androidx.compose.ui.unit.Dp = 4.dp,
-    tailSize: androidx.compose.ui.unit.Dp = 8.dp,
-    content: @Composable () -> Unit,
-) {
-    Box(modifier = Modifier.wrapContentSize()) {
-        Canvas(modifier = Modifier.matchParentSize()) {
-            val width = size.width
-            val height = size.height
-            val tail = tailSize.toPx()
-            val corner = cornerRadius.toPx()
-
-            val path =
-                Path().apply {
-                    // start at top-left (after tail area)
-                    moveTo(tail + 2 * corner, 0f)
-                    lineTo(width - 2 * corner, 0f)
-                    // top-right corner
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(width - 2 * corner, 0f),
-                                bottomRight = Offset(width, 2 * corner),
-                            ),
-                        startAngleDegrees = -90f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    // right edge
-                    lineTo(width, height - 2 * corner)
-                    // bottom-right corner
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(width - 2 * corner, height - 2 * corner),
-                                bottomRight = Offset(width, height),
-                            ),
-                        startAngleDegrees = 0f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    // bottom edge towards left (before tail)
-                    lineTo(tail + 2 * corner, height)
-                    // bottom-left corner (before tail)
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(tail, height - 2 * corner),
-                                bottomRight = Offset(tail + 2 * corner, height),
-                            ),
-                        startAngleDegrees = 90f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    // left edge up to tail bottom
-                    lineTo(tail, height / 2 + tail / 2)
-                    // Tail on left side
-                    lineTo(0f, height / 2)
-                    lineTo(tail, height / 2 - tail / 2)
-                    // left edge up to top-left corner
-                    lineTo(tail, 2 * corner)
-                    // top-left corner
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(tail, 0f),
-                                bottomRight = Offset(tail + 2 * corner, 2 * corner),
-                            ),
-                        startAngleDegrees = 180f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    close()
-                }
-
-            drawPath(path, color = bubbleColor, style = Fill)
-            drawPath(path, color = borderColor, style = Stroke(width = 2f))
-        }
-
-        Box(
-            modifier =
-                Modifier
-                    .padding(
-                        start = contentPadding + tailSize,
-                        top = contentPadding,
-                        bottom = contentPadding,
-                        end = contentPadding,
-                    ).wrapContentSize()
-                    .clip(RoundedCornerShape(cornerRadius)),
-        ) {
-            content()
-        }
-    }
-}
-```
+<RightInfoBubbleMapExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  marker1Latitude={37.7749}
+  marker1Longitude={-122.4194}
+  marker2Latitude={37.7849}
+  marker2Longitude={-122.4094}
+  mapLoadedMessage="地図の読み込みが完了しました"
+  markerDragStartMessagePrefix="マーカーのドラッグを開始"
+  markerDragMessagePrefix="マーカーをドラッグ中"
+  markerDragEndMessagePrefix="マーカーのドラッグが終了"
+  commentForMapClickClear="地図クリックで選択解除"
+  commentForInteractiveMarkers="インタラクティブなマーカーを持つ地図コンテンツ"
+  commentForSelectedMarkerInfo="選択されたマーカーの情報を表示"
+  commentForRightSideTailExample="右側に尾を持つカスタム吹き出しの例"
+/>
 
 <video width="720" height="480" controls>
  <source src="/info-bubble/right-info-bubble-map-example.webm" type="video/webm" />
@@ -600,175 +149,37 @@ InfoBubble は関連するマーカーの上に自動的に配置されます:
 
 InfoBubble は自動的に配置を処理しますが、マーカーアイコンのアンカーを通じて影響を与えることができます:
 
-```kotlin
-// 下中央アンカーを持つマーカー - バブルは上に表示されます
-val markerWithBottomAnchor = MarkerState(
-    position = position,
-    icon = ImageDefaultIcon(
-        drawable = customIcon,
-        anchor = Offset(0.5f, 1.0f) // 下中央
-    )
-)
-
-// 中央アンカーを持つマーカー - バブルは中央の上に表示されます
-val markerWithCenterAnchor = MarkerState(
-    position = position,
-    icon = ImageDefaultIcon(
-        drawable = customIcon,
-        anchor = Offset(0.5f, 0.5f) // 中央
-    )
-)
-```
+<CustomPositioningExample />
 
 ## ライフサイクル管理
 
 InfoBubble は自動的にライフサイクルを管理します:
 
-```kotlin
-// コンポーネントが構成されるとバブルが表示されます
-selectedMarker?.let { marker ->
-    InfoBubble(marker = marker) {
-        // コンテンツ
-    }
-}
-
-// コンポーネントがコンポジションから削除されるとバブルが消えます
-// これは selectedMarker が null になると自動的に発生します
-```
+<LifecycleManagementExample />
 
 ### 手動ライフサイクル制御
 
-```kotlin
-@Composable
-fun ManualLifecycleExample() {
-    var showBubble by remember { mutableStateOf(false) }
-    val markerState = remember { /* マーカーの状態 */ }
-
-    LaunchedEffect(showBubble) {
-        if (showBubble) {
-            delay(3000) // 3秒間表示
-            showBubble = false
-        }
-    }
-
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    MapView(state = mapViewState) {
-        Marker(markerState)
-
-        if (showBubble) {
-            InfoBubble(marker = markerState) {
-                Text("Auto-hiding bubble")
-            }
-        }
-    }
-}
-```
+<ManualLifecycleExample />
 
 ## スタイルとテーマ
 
 ### ダークモードサポート
 
-```kotlin
-@Composable
-fun DarkModeInfoBubble(marker: MarkerState) {
-    val isDarkTheme = isSystemInDarkTheme()
-
-    InfoBubble(
-        marker = marker,
-        bubbleColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White,
-        borderColor = if (isDarkTheme) Color(0xFF555555) else Color.Black,
-        contentPadding = 12.dp,
-        cornerRadius = 8.dp
-    ) {
-        Text(
-            text = marker.extra as? String ?: "",
-            color = if (isDarkTheme) Color.White else Color.Black,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-}
-```
+<DarkModeInfoBubbleExample />
 
 ### カスタムテーマ
 
-```kotlin
-data class BubbleTheme(
-    val backgroundColor: Color,
-    val borderColor: Color,
-    val textColor: Color,
-    val contentPadding: Dp,
-    val cornerRadius: Dp,
-    val tailSize: Dp
-) : java.io.Serializable
-
-val DefaultBubbleTheme = BubbleTheme(
-    backgroundColor = Color.White,
-    borderColor = Color.Black,
-    textColor = Color.Black,
-    contentPadding = 8.dp,
-    cornerRadius = 4.dp,
-    tailSize = 8.dp
-)
-
-val DarkBubbleTheme = BubbleTheme(
-    backgroundColor = Color(0xFF2D2D2D),
-    borderColor = Color(0xFF555555),
-    textColor = Color.White,
-    contentPadding = 12.dp,
-    cornerRadius = 8.dp,
-    tailSize = 10.dp
-)
-
-@Composable
-fun ThemedInfoBubble(
-    marker: MarkerState,
-    theme: BubbleTheme = DefaultBubbleTheme,
-    content: @Composable () -> Unit
-) {
-    InfoBubble(
-        marker = marker,
-        bubbleColor = theme.backgroundColor,
-        borderColor = theme.borderColor,
-        contentPadding = theme.contentPadding,
-        cornerRadius = theme.cornerRadius,
-        tailSize = theme.tailSize,
-        content = content
-    )
-}
-```
+<CustomThemeExample />
 
 ## パフォーマンスの考慮事項
 
 ### 効率的な更新
 
-```kotlin
-// 良い例: マーカーに安定したキーを使用
-val markerStates = remember(markersData) {
-    markersData.map { data ->
-        MarkerState(
-            id = "marker_${data.id}", // 安定した ID
-            position = data.position,
-            extra = data
-        )
-    }
-}
-
-// 避けるべき: リコンポジションごとに新しいマーカー状態を作成
-val markerStates = markersData.map { data ->
-    MarkerState(position = data.position, extra = data) // 毎回新しいインスタンス
-}
-```
+<EfficientUpdatesExample />
 
 ### メモリ管理
 
-```kotlin
-// 画面を離れるときに選択されたマーカーをクリア
-DisposableEffect(Unit) {
-    onDispose {
-        selectedMarker = null // InfoBubble をクリア
-    }
-}
-```
+<MemoryManagementExample />
 
 ## ベストプラクティス
 
@@ -788,28 +199,7 @@ DisposableEffect(Unit) {
 
 ### 実装のヒント
 
-```kotlin
-// 良い例: 安定したマーカー参照
-val markerState = remember(markerId) {
-    MarkerState(id = markerId, position = position)
-}
-
-// 良い例: 効率的なコンテンツ更新
-LaunchedEffect(selectedMarkerId) {
-    if (selectedMarkerId != null) {
-        // 必要に応じて追加データを読み込む
-    }
-}
-
-// 避けるべき: バブルコンテンツ内での重い計算
-InfoBubble(marker = marker) {
-    // ここで高コストの操作を避ける
-    val processedData = remember(marker.extra) {
-        processData(marker.extra) // remember に移動
-    }
-    DisplayContent(processedData)
-}
-```
+<ImplementationTipsExample />
 
 ## トラブルシューティング
 
@@ -819,20 +209,3 @@ InfoBubble(marker = marker) {
 2. **バブルが閉じない**: 条件付きレンダリングが状態の変化に適切に反応しているか確認してください
 3. **パフォーマンスの低下**: 同時に表示するバブルの数を制限し、コンテンツのコンポジションを最適化してください
 4. **レイアウトの問題**: 適切なサイズ制約を使用し、さまざまな画面サイズでテストしてください
-
-### デバッグモード
-
-```kotlin
-// InfoBubble の配置のデバッグログを有効にする
-InfoBubble(
-    marker = marker,
-    bubbleColor = Color.Yellow.copy(alpha = 0.8f), // デバッグ用にハイライト
-    borderColor = Color.Red
-) {
-    Column {
-        Text("Marker ID: ${marker.id}")
-        Text("Position: ${marker.position}")
-        // 実際のコンテンツ
-    }
-}
-```

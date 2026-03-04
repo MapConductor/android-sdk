@@ -1,8 +1,9 @@
 package com.mapconductor.maplibre.marker
 
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 import com.mapconductor.maplibre.MapLibreActualMarker
 import org.maplibre.android.style.expressions.Expression.get
+import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.PropertyFactory.iconAllowOverlap
 import org.maplibre.android.style.layers.PropertyFactory.iconAnchor
 import org.maplibre.android.style.layers.PropertyFactory.iconIgnorePlacement
@@ -25,6 +26,7 @@ open class MarkerLayer(
                 // iconSize(get(MapLibreMarkerOverlayRenderer.Prop.SCALE)),
                 iconAllowOverlap(true),
                 iconIgnorePlacement(true),
+                PropertyFactory.symbolSortKey(get(MapLibreMarkerOverlayRenderer.Prop.Z_INDEX)),
                 iconAnchor(MapLibreMarkerOverlayRenderer.IconAnchor.TOP_LEFT),
                 iconTranslateAnchor(MapLibreMarkerOverlayRenderer.IconTranslateAnchor.MAP),
                 // Each feature always carries icon-offset in properties; use it directly
@@ -39,7 +41,7 @@ open class MarkerLayer(
         )
 
     fun draw(
-        entities: List<MarkerEntity<Feature>>,
+        entities: List<MarkerEntityInterface<Feature>>,
         style: org.maplibre.android.maps.Style,
     ) {
         val visibleEntities = entities.filter { it.visible && it.marker != null }

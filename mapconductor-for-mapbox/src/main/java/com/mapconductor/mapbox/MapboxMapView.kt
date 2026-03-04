@@ -12,25 +12,34 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapView
-import com.mapconductor.core.circle.CircleManagerImpl
+import com.mapconductor.core.circle.CircleManager
 import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewBase
+import com.mapconductor.core.map.MutableMapServiceRegistry
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.marker.MarkerEventControllerInterface
 import com.mapconductor.core.marker.MarkerManager
-import com.mapconductor.core.marker.MarkerRenderingStrategy
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
+import com.mapconductor.core.marker.MarkerRenderingSupport
+import com.mapconductor.core.marker.MarkerRenderingSupportKey
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polygon.PolygonManagerImpl
+import com.mapconductor.core.polygon.PolygonManager
 import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.core.polyline.PolylineManagerImpl
+import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.tileserver.TileServerRegistry
 import com.mapconductor.mapbox.circle.MapboxCircleController
 import com.mapconductor.mapbox.circle.MapboxCircleLayer
 import com.mapconductor.mapbox.circle.MapboxCircleOverlayRenderer
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageController
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageOverlayRenderer
 import com.mapconductor.mapbox.marker.MapboxMarkerController
-import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
 import com.mapconductor.mapbox.marker.MarkerDragLayer
 import com.mapconductor.mapbox.marker.MarkerLayer
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
@@ -39,6 +48,8 @@ import com.mapconductor.mapbox.polygon.MapboxPolygonOverlayRenderer
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
 import com.mapconductor.mapbox.polyline.MapboxPolylineLayer
 import com.mapconductor.mapbox.polyline.MapboxPolylineOverlayRenderer
+import com.mapconductor.mapbox.raster.MapboxRasterLayerController
+import com.mapconductor.mapbox.raster.MapboxRasterLayerOverlayRenderer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -46,15 +57,55 @@ import android.view.ViewGroup
 
 @Composable
 fun MapboxMapView(
-    state: MapboxViewStateImpl,
+    state: MapboxViewState,
     modifier: Modifier = Modifier,
-    markerRenderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    markerTiling: MarkerTilingOptions? = null,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
+    content: (@Composable MapboxMapViewScope.() -> Unit)? = null,
+) {
+    @Suppress("DEPRECATION")
+    MapboxMapView(
+        state = state,
+        modifier = modifier,
+        sdkInitialize = sdkInitialize,
+        markerTiling = markerTiling,
+        onMapLoaded = onMapLoaded,
+        onMapClick = onMapClick,
+        onCameraMoveStart = onCameraMoveStart,
+        onCameraMove = onCameraMove,
+        onCameraMoveEnd = onCameraMoveEnd,
+        onMarkerClick = null,
+        onMarkerDragStart = null,
+        onMarkerDrag = null,
+        onMarkerDragEnd = null,
+        onMarkerAnimateStart = null,
+        onMarkerAnimateEnd = null,
+        onCircleClick = null,
+        onPolylineClick = null,
+        onPolygonClick = null,
+        content = content,
+    )
+}
+
+@Suppress("DEPRECATION")
+@Deprecated("Use CircleState/PolylineState/PolygonState onClick instead.")
+@Composable
+fun MapboxMapView(
+    state: MapboxViewState,
+    modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMarkerClick: OnMarkerEventHandler?,
     onMarkerDragStart: OnMarkerEventHandler? = null,
     onMarkerDrag: OnMarkerEventHandler? = null,
     onMarkerDragEnd: OnMarkerEventHandler? = null,
@@ -67,11 +118,12 @@ fun MapboxMapView(
 ) {
     val holderRef = remember { Ref<MapboxMapViewHolder>() }
     val context = LocalContext.current
-    val controllerRef = remember { Ref<MapboxMapViewControllerImpl>() }
+    val controllerRef = remember { Ref<MapboxMapViewController>() }
     val scope = remember { MapboxMapViewScope() }
     val registry = remember { scope.buildRegistry() }
+    val serviceRegistry = remember { MutableMapServiceRegistry() }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val cameraState = remember { mutableStateOf<MapCameraPosition?>(state.cameraPosition) }
+    val cameraState = remember { mutableStateOf<MapCameraPositionInterface?>(state.cameraPosition) }
 
     MapViewBase(
         state = state,
@@ -95,67 +147,103 @@ fun MapboxMapView(
                 it.onStart()
             }
         },
-        holderProvider = { mapView -> MapboxMapViewHolderImpl(mapView, mapView.mapboxMap) },
+        serviceRegistry = serviceRegistry,
+        holderProvider = { mapView -> MapboxMapViewHolder(mapView, mapView.mapboxMap) },
         controllerProvider = { holder ->
 
             val markerController =
                 getMarkerController(
                     holder = holder,
-                    renderingStrategy = markerRenderingStrategy,
+                    markerTiling = markerTiling ?: MarkerTilingOptions.Default,
                 )
             val polylineController = getPolylineController(holder)
-            val polygonController = getPolygonController(holder)
+            val rasterLayerController = getRasterLayerController(holder)
+            val polygonController = getPolygonController(holder, rasterLayerController)
+            val groundImageController = getGroundImageController(holder)
             val circleController = getCircleController(holder)
 
             // Defer initial camera update until after controller is created and view is laid out
 
-            MapboxMapViewControllerImpl(
+            MapboxMapViewController(
                 holder = holder,
                 markerController = markerController,
                 polylineController = polylineController,
                 polygonController = polygonController,
+                groundImageController = groundImageController,
                 circleController = circleController,
-            ).also { controller ->
-                controller.setCameraMoveStartListener {
+                rasterLayerController = rasterLayerController,
+            ).also { mapController ->
+                serviceRegistry.clear()
+                serviceRegistry.put(
+                    MarkerRenderingSupportKey,
+                    object : MarkerRenderingSupport<MapboxActualMarker> {
+                        override fun createMarkerRenderer(
+                            strategy: MarkerRenderingStrategyInterface<MapboxActualMarker>,
+                        ): MarkerOverlayRendererInterface<MapboxActualMarker> =
+                            mapController.createMarkerRenderer(strategy)
+
+                        override fun createMarkerEventController(
+                            controller: StrategyMarkerController<MapboxActualMarker>,
+                            renderer: MarkerOverlayRendererInterface<MapboxActualMarker>,
+                        ): MarkerEventControllerInterface<MapboxActualMarker> =
+                            mapController.createMarkerEventController(controller = controller, renderer = renderer)
+
+                        override fun registerMarkerEventController(
+                            controller: MarkerEventControllerInterface<MapboxActualMarker>,
+                        ) {
+                            mapController.registerMarkerEventController(controller)
+                        }
+
+                        override fun onMarkerRenderingReady() {
+                            mapController.sendInitialCameraUpdate()
+                        }
+                    },
+                )
+
+                mapController.setCameraMoveStartListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveStart?.invoke(it)
                 }
-                controller.setCameraMoveListener {
+                mapController.setCameraMoveListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMove?.invoke(it)
                 }
-                controller.setCameraMoveEndListener {
+                mapController.setCameraMoveEndListener {
                     cameraState.value = it
                     state.updateCameraPosition(it)
                     onCameraMoveEnd?.invoke(it)
                 }
-                controller.setMapClickListener(onMapClick)
-                controller.setOnCircleClickListener(onCircleClick)
-                controller.setOnPolylineClickListener(onPolylineClick)
-                controller.setOnPolygonClickListener(onPolygonClick)
-                controller.setOnMarkerClickListener(onMarkerClick)
-                controller.setOnMarkerDragStart(onMarkerDragStart)
-                controller.setOnMarkerDrag(onMarkerDrag)
-                controller.setOnMarkerDragEnd(onMarkerDragEnd)
-                controller.setOnMarkerAnimateStart(onMarkerAnimateStart)
-                controller.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
-                controller.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
-                state.setController(controller)
+                mapController.setMapClickListener(onMapClick)
+                mapController.setOnCircleClickListener(onCircleClick)
+                mapController.setOnPolylineClickListener(onPolylineClick)
+                mapController.setOnPolygonClickListener(onPolygonClick)
+                mapController.setOnMarkerClickListener(onMarkerClick)
+                mapController.setOnMarkerDragStart(onMarkerDragStart)
+                mapController.setOnMarkerDrag(onMarkerDrag)
+                mapController.setOnMarkerDragEnd(onMarkerDragEnd)
+                mapController.setOnMarkerAnimateStart(onMarkerAnimateStart)
+                mapController.setOnMarkerAnimateEnd(onMarkerAnimateEnd)
+                mapController.setMapDesignTypeChangeListener(state::onMapDesignTypeChange)
+                state.setController(mapController)
 
                 holderRef.value = holder
-                controllerRef.value = controller
+                controllerRef.value = mapController
 
                 // Post an initial camera update once the MapView is laid out and style is ready
-                holder.mapView.post { controller.sendInitialCameraUpdate() }
+                holder.mapView.post { mapController.sendInitialCameraUpdate() }
             }
         },
         scope = scope,
         registry = registry,
         sdkInitialize = {
-            MapboxInitSDK(context)
-            true
+            if (sdkInitialize != null) {
+                sdkInitialize(context)
+            } else {
+                MapboxInitSDK(context)
+                true
+            }
         },
         onMapLoaded = onMapLoaded,
         // Pass content if it needs to be rendered within the overlay providers in MapViewBase,
@@ -200,13 +288,16 @@ fun MapboxMapView(
     )
 }
 
-internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonConductor {
+internal fun getPolygonController(
+    holder: MapboxMapViewHolder,
+    rasterLayerController: MapboxRasterLayerController,
+): MapboxPolygonConductor {
     val polylineLayer: MapboxPolylineLayer =
         MapboxPolylineLayer(
             sourceId = "polygon-outline-source",
             layerId = "polygon-outline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapboxActualPolyline>()
+    val polylineManager = PolylineManager<MapboxActualPolyline>()
     val polylineOverlayRenderer =
         MapboxPolylineOverlayRenderer(
             layer = polylineLayer,
@@ -214,7 +305,7 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
             holder = holder,
         )
 
-    val polygonManager = PolygonManagerImpl<MapboxActualPolygon>()
+    val polygonManager = PolygonManager<MapboxActualPolygon>()
     val polygonLayer: MapboxPolygonLayer =
         MapboxPolygonLayer(
             sourceId = "polygon-fill-source",
@@ -225,6 +316,7 @@ internal fun getPolygonController(holder: MapboxMapViewHolder): MapboxPolygonCon
             layer = polygonLayer,
             polygonManager = polygonManager,
             holder = holder,
+            rasterLayerController = rasterLayerController,
         )
 
     val conductor =
@@ -241,7 +333,7 @@ internal fun getCircleController(holder: MapboxMapViewHolder): MapboxCircleContr
             sourceId = "circle-source",
             layerId = "circle-layer",
         )
-    val circleManager = CircleManagerImpl<MapboxActualCircle>()
+    val circleManager = CircleManager<MapboxActualCircle>()
 
     val renderer =
         MapboxCircleOverlayRenderer(
@@ -263,7 +355,7 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
             sourceId = "polyline-source",
             layerId = "polyline-layer",
         )
-    val polylineManager = PolylineManagerImpl<MapboxActualPolyline>()
+    val polylineManager = PolylineManager<MapboxActualPolyline>()
 
     val renderer =
         MapboxPolylineOverlayRenderer(
@@ -281,9 +373,12 @@ internal fun getPolylineController(holder: MapboxMapViewHolder): MapboxPolylineC
 
 internal fun getMarkerController(
     holder: MapboxMapViewHolder,
-    renderingStrategy: MarkerRenderingStrategy<MapboxActualMarker>? = null,
+    markerTiling: MarkerTilingOptions,
 ): MapboxMarkerController {
-    val manager = renderingStrategy?.markerManager ?: MarkerManager.defaultManager()
+    val manager =
+        MarkerManager.defaultManager<MapboxActualMarker>(
+            minMarkerCount = markerTiling.minMarkerCount,
+        )
     val markerLayer: MarkerLayer =
         MarkerLayer(
             sourceId = "markers-source",
@@ -294,20 +389,33 @@ internal fun getMarkerController(
             sourceId = "marker-drag-source",
             layerId = "marker-drag-layer",
         )
-    val renderer =
-        MapboxMarkerOverlayRenderer(
-            holder = holder,
-            markerLayer = markerLayer,
-            dragLayer = dragLayer,
-            markerManager = manager,
-        )
+    return MapboxMarkerController.create(
+        holder = holder,
+        markerManager = manager,
+        markerLayer = markerLayer,
+        dragLayer = dragLayer,
+        markerTiling = markerTiling,
+    )
+}
 
-    val controller =
-        MapboxMarkerController(
-            renderer = renderer,
-            renderingStrategy = renderingStrategy,
+internal fun getRasterLayerController(holder: MapboxMapViewHolder): MapboxRasterLayerController {
+    val renderer =
+        MapboxRasterLayerOverlayRenderer(
+            holder = holder,
         )
-    return controller
+    return MapboxRasterLayerController(
+        renderer = renderer,
+    )
+}
+
+internal fun getGroundImageController(holder: MapboxMapViewHolder): MapboxGroundImageController {
+    val tileServer = TileServerRegistry.get()
+    val renderer =
+        MapboxGroundImageOverlayRenderer(
+            holder = holder,
+            tileServer = tileServer,
+        )
+    return MapboxGroundImageController(renderer = renderer)
 }
 
 internal fun Context.findActivity(): Activity? =

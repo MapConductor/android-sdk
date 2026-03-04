@@ -1,0 +1,60 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  userLabel?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  userLabel = "You"
+} = Astro.props;
+
+const code = `@Composable
+fun ContextAwareZoom() {
+    val userLocation = GeoPoint.fromLatLong(37.7749, -122.4194)
+    val searchResults = remember { /* your search results */ }
+
+    // Select zoom based on context
+    val contextualZoom = when {
+        searchResults.isEmpty() -> 15.0  // User location focus
+        searchResults.size == 1 -> 16.0  // Single result
+        searchResults.size < 5 -> 14.0   // Few results
+        else -> {
+            // Calculate appropriate zoom for all results
+            val bounds = GeoRectBounds()
+            searchResults.forEach { bounds.extend(it.location) }
+            calculateZoomForBounds(bounds)
+        }
+    }
+
+    val cameraPosition = MapCameraPosition(
+        position = if (searchResults.isEmpty()) userLocation else bounds.center!!,
+        zoom = contextualZoom
+    )
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState,
+        cameraPosition = cameraPosition
+    ) {
+        // User location
+        Marker(
+            position = userLocation,
+            icon = DefaultMarkerIcon(fillColor = Color.Blue, label = "${userLabel}")
+        )
+
+        // Search results
+        searchResults.forEach { result ->
+            Marker(
+                position = result.location,
+                icon = DefaultIcon(fillColor = Color.Red)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,114 @@
+---
+title: "Marker"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import MarkerBasicSignature from '~/components/components/marker/MarkerBasicSignature.astro';
+import MarkerStateSignature from '~/components/components/marker/MarkerStateSignature.astro';
+import BasicMarkerExample from '~/components/components/marker/BasicMarkerExample.astro';
+import CustomIconMarkerExample from '~/components/components/marker/CustomIconMarkerExample.astro';
+import DraggableMarkerExample from '~/components/components/marker/DraggableMarkerExample.astro';
+import MultipleMarkersExample from '~/components/components/marker/MultipleMarkersExample.astro';
+import DefaultIconSignature from '~/components/components/marker/DefaultIconSignature.astro';
+import DrawableDefaultIconSignature from '~/components/components/marker/DrawableDefaultIconSignature.astro';
+import ImageIconSignature from '~/components/components/marker/ImageIconSignature.astro';
+import MarkerAnimation from '~/components/components/marker/MarkerAnimation.astro';
+
+Markers are point annotations that can be placed on the map at specific geographic locations. They support custom icons, interactions, and animations.
+
+## Composable Functions
+
+<Tabs>
+<TabItem label="Basic Marker">
+
+For a small number of markers, you can specify options directly. Specifying an `id` helps prevent unnecessary recomposition.
+
+<MarkerBasicSignature />
+
+## Parameters
+
+- **`position`**: Geographic coordinates (`GeoPointInterface`)
+- **`clickable`**: Whether the marker responds to clicks (default: `true`)
+- **`draggable`**: Whether the marker can be dragged (default: `false`)
+- **`icon`**: Custom icon for the marker (`MarkerIconInterface?`)
+- **`extra`**: Additional data attached to the marker (`Serializable?`)
+- **`id`**: Unique identifier for the marker (`String?`)- **`onClick`**: Called when the marker is clicked
+- **`onDragStart`**: Called when the marker begins dragging
+- **`onDrag`**: Called while the marker is being dragged
+- **`onDragEnd`**: Called when the marker's drag ends
+- **`onAnimateStart`**: Called when `animate()` begins
+- **`onAnimateEnd`**: Called when `animate()` finishes
+
+</TabItem>
+<TabItem label="Marker with State">
+
+For a large number of markers or when moving markers, using state is recommended. Specifying an `id` helps prevent unnecessary recomposition.
+
+<MarkerStateSignature />
+
+## Parameter
+- **`state`**: Manages the marker's state [MarkerState](../../states/marker-state/)
+
+</TabItem>
+</Tabs>
+
+## Icon Types
+
+### DefaultMarkerIcon
+
+Standard marker with customizable appearance:
+
+<DefaultIconSignature />
+
+### DrawableDefaultMarkerIcon
+
+Marker using a drawable resource as background:
+
+<DrawableDefaultIconSignature />
+
+### ImageIcon
+
+Marker using a custom drawable image:
+
+<ImageIconSignature />
+
+## Usage Examples
+
+### Basic Marker
+
+<BasicMarkerExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Custom Icon Marker
+
+<CustomIconMarkerExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Draggable Marker
+
+<DraggableMarkerExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/marker/draggable-marker-example.webm" type="video/webm" />
+ <source src="/marker/draggable-marker-example.mp4" type="video/mp4" />
+</video>
+
+
+### Multiple Markers with Different Icons
+
+<MultipleMarkersExample
+  commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+/>
+
+### Animation
+
+<MarkerAnimation
+  dropText="Animation where the marker moves from the top of the screen to the position"
+  bounceText="Marker moves from the top of the screen to the position, then bounces"
+/>
+
+<img src="/marker/marker-animation.gif" width="300" alt="marker bounce and drop animation preview" />

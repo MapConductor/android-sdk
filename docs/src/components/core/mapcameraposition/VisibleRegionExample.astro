@@ -1,0 +1,65 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForDisplayRegion?: string;
+  commentForShowBounds?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForDisplayRegion = "Display visible region info",
+  commentForShowBounds = "Show bounds as a polygon"
+} = Astro.props;
+
+const code = `@Composable
+fun VisibleRegionExample() {
+
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
+            zoom = 15.0
+        ),
+    )
+    var visibleRegionInfo by remember { mutableStateOf<VisibleRegion?>(null) }
+
+    // ${commentForMapViewUsage}
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier,
+        onCameraMoveEnd = { cameraPosition ->
+            cameraPosition.visibleRegion?.let { visibleRegion ->
+                visibleRegionInfo = visibleRegion
+            }
+        },
+    ) {
+        // ${commentForDisplayRegion}
+        visibleRegionInfo?.let { region ->
+            // ${commentForShowBounds}
+            region.bounds.let { bounds ->
+                if (!bounds.isEmpty) {
+                    val sw = bounds.southWest!!
+                    val ne = bounds.northEast!!
+
+                    Polygon(
+                        points = listOf(
+                            sw,
+                            GeoPoint.fromLatLong(sw.latitude, ne.longitude),
+                            ne,
+                            GeoPoint.fromLatLong(ne.latitude, sw.longitude),
+                            sw
+                        ),
+                        strokeColor = Color.Blue,
+                        strokeWidth = 2.dp,
+                        fillColor = Color.Blue.copy(alpha = 0.1f)
+                    )
+                }
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -32,7 +32,7 @@ fun FlyToMapPage(
     icons: FlyToMapIcons,
     onToggleSidebar: () -> Unit = {},
 ) {
-    val viewModel: FlyToPageViewModel = remember { FlyToPageViewModelImpl(icons) }
+    val viewModel: FlyToPageViewModelInterface = remember { FlyToPageViewModel(icons) }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),

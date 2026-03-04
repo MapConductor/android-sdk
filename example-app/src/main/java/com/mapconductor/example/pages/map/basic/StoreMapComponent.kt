@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.Marker
@@ -22,12 +22,11 @@ import com.mapconductor.example.R
 @Composable
 fun StoreMapComponent(
     modifier: Modifier = Modifier,
-    mapViewState: MapViewState<*>?,
+    mapViewState: MapViewStateInterface<*>?,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onDirectionButtonClick: OnMarkerEventHandler = {},
     onMapClick: OnMapEventHandler = {},
-    onMarkerClick: OnMarkerEventHandler = {},
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor by remember {
@@ -71,7 +70,6 @@ fun StoreMapComponent(
             modifier = modifier,
             state = currentMapViewState,
             onMapClick = onMapClick,
-            onMarkerClick = onMarkerClick,
         ) {
             markerList.forEach { markerState -> Marker(markerState) }
 

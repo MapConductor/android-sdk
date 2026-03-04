@@ -1,0 +1,36 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun CameraControlExample() {
+    val london = GeoPoint.fromLatLong(51.4985, 0.0)
+    val camera = MapCameraPosition(position = london, zoom = 8.0)
+    val mapViewState = rememberHereMapViewState(cameraPosition = camera)
+
+    Column(modifier = modifier) {
+        Button(
+            onClick = {
+                val sanFrancisco = GeoPoint.fromLatLong(37.7749, -122.4194)
+                mapViewState.moveCameraTo(
+                    position = sanFrancisco,
+                    durationMillis = 3000
+                )
+            }
+        ) {
+            Text("Move to San Francisco")
+        }
+
+        HereMapView(
+            modifier = Modifier.fillMaxSize(),
+            state = mapViewState,
+            onCameraMoveEnd = {
+                println("Camera movement completed")
+            }
+        ) {
+            // Marker, Polygon, etc
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

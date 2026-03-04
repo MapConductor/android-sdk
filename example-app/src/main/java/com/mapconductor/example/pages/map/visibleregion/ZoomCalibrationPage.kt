@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapconductor.arcgis.map.ArcGISMapView
 import com.mapconductor.arcgis.map.rememberArcGISMapViewState
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.rememberGoogleMapViewState
@@ -44,7 +44,7 @@ import android.annotation.SuppressLint
 @SuppressLint("DefaultLocale")
 @Composable
 fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
-    val testLocation = GeoPointImpl.fromLongLat(139.6917, 35.6895) // Tokyo Station
+    val testLocation = GeoPoint.fromLongLat(139.6917, 35.6895) // Tokyo Station
     val testZoomLevels =
         listOf(
             0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0,
@@ -59,7 +59,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
     var measurementMessage by remember { mutableStateOf("") }
     // Map view states with initial camera position
     val initialCameraPosition =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position = testLocation,
             zoom = currentZoomLevel,
             bearing = 0.0,
@@ -78,7 +78,7 @@ fun ZoomCalibrationPage(onToggleSidebar: () -> Unit = {}) {
     // Update camera positions when zoom level changes
     LaunchedEffect(currentZoomLevel) {
         val newCameraPosition =
-            MapCameraPositionImpl(
+            MapCameraPosition(
                 position = testLocation,
                 zoom = currentZoomLevel,
                 bearing = 0.0,
@@ -582,12 +582,12 @@ private fun createVisibleRegionInfo(visibleRegion: com.mapconductor.core.map.Vis
     val widthKm =
         computeDistanceBetween(
             bounds.southWest!!,
-            GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
+            GeoPoint(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
         )
     val heightKm =
         computeDistanceBetween(
             bounds.southWest!!,
-            GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
+            GeoPoint(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
         )
 
     return VisibleRegionInfo(

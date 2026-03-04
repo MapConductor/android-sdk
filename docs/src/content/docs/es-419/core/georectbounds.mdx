@@ -1,0 +1,140 @@
+---
+title: "GeoRectBounds"
+---
+
+import GeoRectBoundsConstructor from '~/components/core/georectbounds/GeoRectBoundsConstructor.astro';
+import GeoRectBoundsCreationExample from '~/components/core/georectbounds/GeoRectBoundsCreationExample.astro';
+import GroundImageExample from '~/components/core/georectbounds/GroundImageExample.astro';
+import ExtendBoundsExample from '~/components/core/georectbounds/ExtendBoundsExample.astro';
+import UnionBoundsExample from '~/components/core/georectbounds/UnionBoundsExample.astro';
+import ContainsPointExample from '~/components/core/georectbounds/ContainsPointExample.astro';
+import IntersectsBoundsExample from '~/components/core/georectbounds/IntersectsBoundsExample.astro';
+import ViewportBoundsExample from '~/components/core/georectbounds/ViewportBoundsExample.astro';
+import BoundsBasedLoadingExample from '~/components/core/georectbounds/BoundsBasedLoadingExample.astro';
+import BoundsEditorExample from '~/components/core/georectbounds/BoundsEditorExample.astro';
+import DateLineCrossingExample from '~/components/core/georectbounds/DateLineCrossingExample.astro';
+import EmptyBoundsHandlingExample from '~/components/core/georectbounds/EmptyBoundsHandlingExample.astro';
+import BoundsToStringExample from '~/components/core/georectbounds/BoundsToStringExample.astro';
+import ToUrlValueExample from '~/components/core/georectbounds/ToUrlValueExample.astro';
+import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.astro';
+
+`GeoRectBounds` representa un área geográfica rectangular definida por dos esquinas: suroeste y noreste. Se utiliza para definir regiones de mapa, límites de imágenes de tipo ground image y para cálculos de viewport.
+
+## Constructor
+
+<GeoRectBoundsConstructor />
+
+## Propiedades
+
+### Esquinas
+
+- **`southWest: GeoPoint?`**: esquina suroeste (inferior izquierda) del rectángulo.
+- **`northEast: GeoPoint?`**: esquina noreste (superior derecha) del rectángulo.
+- **`isEmpty: Boolean`**: devuelve `true` si los límites no están definidos.
+
+### Propiedades calculadas
+
+- **`center: GeoPoint?`**: punto central de los límites.
+- **`toSpan(): GeoPoint?`**: devuelve el “span” (ancho/alto) como un `GeoPointInterface`.
+
+## Pruebas con puntos y límites
+
+### Contiene un punto
+
+<ContainsPointExample
+  boundsSouthWestLatitude={37.7649}
+  boundsSouthWestLongitude={-122.4294}
+  boundsNorthEastLatitude={37.7849}
+  boundsNorthEastLongitude={-122.4094}
+  testPointLatitude={37.7749}
+  testPointLongitude={-122.4194}
+  commentForUsage="El punto está dentro de los límites"
+/>
+
+### Intersección de límites
+
+<IntersectsBoundsExample commentForUsage="Los límites se intersectan" />
+
+## Ejemplos prácticos
+
+### Cálculo de límites de viewport
+
+<ViewportBoundsExample
+  commentForMarkerSimulation="Calcular el viewport a partir de los marcadores visibles"
+  firstMarkerLatitude={37.7749}
+  firstMarkerLongitude={-122.4194}
+  secondMarkerLatitude={37.7849}
+  secondMarkerLongitude={-122.4094}
+  thirdMarkerLatitude={37.7649}
+  thirdMarkerLongitude={-122.4294}
+  fourthMarkerLatitude={37.7949}
+  fourthMarkerLongitude={-122.3994}
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+### Carga basada en límites
+
+<BoundsBasedLoadingExample
+  commentForAllMarkersSimulation="Simular todos los marcadores disponibles"
+  baseLatitude={37.7}
+  baseLongitude={-122.5}
+  latitudeStep={0.01}
+  longitudeStep={0.01}
+  viewportSouthWestLatitude={37.7}
+  viewportSouthWestLongitude={-122.5}
+  viewportNorthEastLatitude={37.75}
+  viewportNorthEastLongitude={-122.45}
+  commentForViewportSimulation="Simular el establecimiento de los límites del viewport"
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+### Editor interactivo de límites
+
+<BoundsEditorExample
+  initialSouthWestLatitude={37.7649}
+  initialSouthWestLongitude={-122.4294}
+  initialNorthEastLatitude={37.7849}
+  initialNorthEastLongitude={-122.4094}
+  commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
+/>
+
+## Manejo especial
+
+### Línea internacional de cambio de fecha
+
+`GeoRectBounds` maneja rectángulos que cruzan la línea internacional de cambio de fecha (longitud ±180°):
+
+<DateLineCrossingExample
+  southWestLatitude={20.0}
+  southWestLongitude={170.0}
+  northEastLatitude={40.0}
+  northEastLongitude={-170.0}
+  pointLatitude={30.0}
+  pointLongitude={175.0}
+/>
+
+### Manejo de límites vacíos
+
+<EmptyBoundsHandlingExample
+  extendLatitude={37.7749}
+  extendLongitude={-122.4194}
+/>
+
+## Métodos utilitarios
+
+### Representación de cadena
+
+<BoundsToStringExample
+  southWestLatitude={37.7649}
+  southWestLongitude={-122.4294}
+  northEastLatitude={37.7849}
+  northEastLongitude={-122.4094}
+/>
+
+### Valor de URL
+
+<ToUrlValueExample defaultPrecision={6} highPrecision={8} />
+
+### Comparación de igualdad
+
+<EqualsToExample commentForUsage="Uso" />

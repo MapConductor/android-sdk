@@ -1,0 +1,92 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun CameraControlExample(modifier: Modifier = Modifier) {
+    val mapViewState = rememberMapLibreMapViewState(
+        mapDesign = MapLibreDesignType(
+            id = "debug-tiles",
+            styleJsonURL = "https://demotiles.maplibre.org/debug-tiles/style.json",
+        ),
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(37.7749, -122.4194),
+            zoom = 15.0
+        ),
+    )
+
+    Column(
+        modifier = modifier,
+    ) {
+        // Camera controls
+        Row {
+            Button(
+                onClick = {
+                    val newZoom = mapViewState.cameraPosition.copy(
+                        zoom = (mapViewState.cameraPosition.zoom + 1)
+                            .coerceAtMost(21.0),
+                    )
+                    mapViewState.moveCameraTo(newZoom, 500)
+                }
+            ) {
+                Text("Zoom In")
+            }
+
+            Button(
+                onClick = {
+                    val newZoom = mapViewState.cameraPosition.copy(
+                        zoom = (mapViewState.cameraPosition.zoom - 1)
+                            .coerceAtMost(21.0),
+                    )
+                    mapViewState.moveCameraTo(newZoom, 500)
+                }
+            ) {
+                Text("Zoom Out")
+            }
+
+            Button(
+                onClick = {
+                    val newZoom = mapViewState.cameraPosition.copy(
+                        bearing = (mapViewState.cameraPosition.bearing + 45) % 360,
+                    )
+                    mapViewState.moveCameraTo(newZoom, 500)
+                }
+            ) {
+                Text("Rotate")
+            }
+        }
+
+        // Tilt slider
+        Slider(
+            value = mapViewState.cameraPosition.tilt.toFloat(),
+            onValueChange = { tilt ->
+                val newZoom = mapViewState.cameraPosition.copy(
+                    tilt = tilt.toDouble(),
+                )
+                mapViewState.moveCameraTo(newZoom)
+            },
+            valueRange = 0f..80f
+        )
+
+        // ${commentForMapViewUsage}
+        MapLibreMapView(
+            state = mapViewState,
+        ) {
+            Marker(
+                position = mapViewState.cameraPosition.position,
+                icon = DefaultIcon(fillColor = Color.Red)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

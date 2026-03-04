@@ -2,6 +2,8 @@ package com.mapconductor.settings
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed class Settings(
     val tapTolerance: Dp,
@@ -9,7 +11,7 @@ sealed class Settings(
     val markerBounceAnimateDuration: Long,
     val iconSize: Dp,
     val iconStroke: Dp,
-    val composeEventDebounce: Long,
+    val composeEventDebounce: Duration,
 ) {
     object Default : Settings(
         tapTolerance = 14.dp,
@@ -17,7 +19,7 @@ sealed class Settings(
         markerBounceAnimateDuration = 2000,
         iconSize = MarkerIconSize.Regular,
         iconStroke = 1.dp,
-        composeEventDebounce = 5,
+        composeEventDebounce = 5.milliseconds,
     )
 }
 

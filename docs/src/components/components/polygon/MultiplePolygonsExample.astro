@@ -1,0 +1,64 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewReplacement?: string;
+  blueZoneExtra?: string;
+  redBoundaryExtra?: string;
+  greenAreaExtra?: string;
+}
+
+const {
+  commentForMapViewReplacement = 'Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView',
+  blueZoneExtra = 'Blue zone',
+  redBoundaryExtra = 'Red boundary',
+  greenAreaExtra = 'Green area',
+} = Astro.props;
+
+const code = `// ${commentForMapViewReplacement}
+MapView(state = mapViewState) {
+    Polygon(
+        points = listOf(
+            GeoPoint.fromLatLong(37.7749, -122.4194),
+            GeoPoint.fromLatLong(37.7849, -122.4194),
+            GeoPoint.fromLatLong(37.7849, -122.4094),
+            GeoPoint.fromLatLong(37.7749, -122.4094),
+            GeoPoint.fromLatLong(37.7749, -122.4194)
+        ),
+        strokeColor = Color.Blue,
+        strokeWidth = 2.dp,
+        fillColor = Color.Blue.copy(alpha = 0.4f),
+        extra = "${blueZoneExtra}"
+    )
+
+    Polygon(
+        points = listOf(
+            GeoPoint.fromLatLong(37.7649, -122.4194),
+            GeoPoint.fromLatLong(37.7749, -122.4194),
+            GeoPoint.fromLatLong(37.7749, -122.4094),
+            GeoPoint.fromLatLong(37.7649, -122.4094),
+            GeoPoint.fromLatLong(37.7649, -122.4194)
+        ),
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        fillColor = Color.Transparent,
+        extra = "${redBoundaryExtra}"
+    )
+
+    Polygon(
+        points = listOf(
+            GeoPoint.fromLatLong(37.7549, -122.4194),
+            GeoPoint.fromLatLong(37.7649, -122.4194),
+            GeoPoint.fromLatLong(37.7649, -122.4094),
+            GeoPoint.fromLatLong(37.7549, -122.4094),
+            GeoPoint.fromLatLong(37.7549, -122.4194)
+        ),
+        strokeColor = Color.Green,
+        strokeWidth = 1.dp,
+        fillColor = Color.Green.copy(alpha = 0.2f),
+        extra = "${greenAreaExtra}"
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

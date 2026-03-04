@@ -30,10 +30,10 @@ abstract class MapViewHolderStoreBaseAsync<
     TMap,
     TOptions,
 > :
-    StaticHolder<MapViewHolder<TMapView, TMap>>() {
+    StaticHolder<MapViewHolderInterface<TMapView, TMap>>() {
     abstract suspend fun getOrCreate(
         context: Context,
         id: String,
         options: TOptions,
-    ): MapViewHolder<TMapView, TMap>
+    ): MapViewHolderInterface<TMapView, TMap>
 }

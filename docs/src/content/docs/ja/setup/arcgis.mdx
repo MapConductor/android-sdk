@@ -2,7 +2,14 @@
 title: ArcGIS Maps セットアップ
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import SettingsGradleTabs from '~/components/setup/arcgis/SettingsGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/arcgis/AppGradleTabs.astro';
+import TestArcGISComposable from '~/components/setup/arcgis/TestArcGISComposable.astro';
+import LicenseSetupExample from '~/components/setup/arcgis/LicenseSetupExample.astro';
 
 このセクションでは、ArcGIS Maps SDK と MapConductor を統合するためのセットアップ手順について説明します。
 
@@ -30,128 +37,20 @@ MapConductor は既存の地図 SDK 上に統一された API レイヤーを提
 
 Esri リポジトリが設定されていることを確認します（このリポジトリの `settings.gradle.kts` には既に含まれています）:
 
-<Tabs>
-<TabItem label="Kotlin (settings.gradle.kts)">
-
-```kotlin
-// settings.gradle.kts
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-
-        // Esri public repository for ArcGIS Maps SDK
-        maven {
-            url = uri("https://esri.jfrog.io/artifactory/arcgis")
-        }
-    }
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (settings.gradle)">
-
-```groovy
-// settings.gradle
-dependencyResolutionManagement {
-    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
-    repositories {
-        google()
-        mavenCentral()
-
-        // Esri public repository for ArcGIS Maps SDK
-        maven {
-            url "https://esri.jfrog.io/artifactory/arcgis"
-        }
-    }
-}
-```
-
-</TabItem>
-</Tabs>
+<SettingsGradleTabs />
 
 プロジェクトのルート `build.gradle.kts` または `build.gradle` に Secrets Gradle Plugin を追加します:
 
-<Tabs>
-<TabItem label="Kotlin (build.gradle.kts)">
-
-```kotlin
-// (root)/build.gradle.kts
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (build.gradle)">
-
-```groovy
-// (root)/build.gradle
-plugins {
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
-}
-```
-
-</TabItem>
-</Tabs>
+<SecretsPluginRootGradleTabs />
 
 次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
 
-<Tabs>
-<TabItem label="Kotlin (build.gradle.kts)">
-
-```kotlin
-// App/build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // ArcGIS Maps SDK (version managed via libs.versions.toml)
-    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-    implementation(libs.arcgis.maps.kotlin)
-    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-arcgis")
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (build.gradle)">
-
-```groovy
-// App/build.gradle
-plugins {
-    // ... other plugins
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
-}
-
-dependencies {
-    // ArcGIS Maps SDK (version managed via libs.versions.toml)
-    implementation platform(libs.arcgis.maps.kotlin.toolkit.bom)
-    implementation libs.arcgis.maps.kotlin
-    implementation libs.arcgis.maps.kotlin.toolkit.geoview.compose
-    implementation libs.arcgis.maps.kotlin.toolkit.authentication
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
-
-    // MapConductor modules (versions managed by BOM)
-    implementation "com.mapconductor:core"
-    implementation "com.mapconductor:for-arcgis"
-}
-```
-
-</TabItem>
-</Tabs>
+<AppGradleTabs
+  otherPluginsComment="ほかのプラグイン"
+  arcgisSdkComment="ArcGIS Maps SDK"
+  bomComment="MapConductor BOM によるバージョン管理 (v{BOM_MODULE_VERSION})"
+  modulesComment="MapConductor モジュール（BOM でバージョン管理）"
+/>
 
 Secrets Gradle Plugin は `secrets.properties` ファイルを読み取り、ビルド時に値を `AndroidManifest.xml` に注入できます。
 
@@ -159,38 +58,32 @@ Secrets Gradle Plugin は `secrets.properties` ファイルを読み取り、ビ
 
 `AndroidManifest.xml` に ArcGIS API キーのプレースホルダーを追加します:
 
-```xml
-<!-- AndroidManifest.xml -->
-<application>
-    <!-- ArcGIS API Key -->
-    <meta-data
-        android:name="ARCGIS_API_KEY"
-        android:value="${ARCGIS_API_KEY}" />
-
-    <!-- Add internet and location permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-</application>
-```
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "ARCGIS_API_KEY", value: "${ARCGIS_API_KEY}", comment: "ArcGIS API Key"}
+  ]}
+  permissions={[
+    {name: "android.permission.INTERNET", comment: "Add internet and location permissions"},
+    {name: "android.permission.ACCESS_COARSE_LOCATION"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
 
 ### 4. API キーの設定
 
 `secrets.properties` ファイルに実際の API キーを追加します。
 Secrets Gradle Plugin は、このファイルの実際の値で `AndroidManifest.xml` の `${ARCGIS_API_KEY}` を自動的に置き換えます。
 
-```properties
-# secrets.properties
-ARCGIS_API_KEY=your_actual_arcgis_api_key_here
-```
+<SecretsPropertiesExample
+  entries={[
+    {key: "ARCGIS_API_KEY", value: "your_actual_arcgis_api_key_here"}
+  ]}
+/>
 
 :::caution
 `secrets.properties` ファイルをバージョン管理にコミットしないでください。
 `.gitignore` に追加すると、不注意でコミットすることを避けることができます。
-```
-# .gitignore
-secrets.properties
-```
+<GitignoreExample entries={["secrets.properties"]} />
 :::
 
 
@@ -198,10 +91,7 @@ secrets.properties
 
 ArcGIS SDK は適切なライセンス設定が必要です。アプリケーションでライセンスを設定します:
 
-```kotlin
-// In your Application class or MainActivity
-// ArcGISEnvironment.setLicense("your_license_key_here") // Optional for basic use
-```
+<LicenseSetupExample />
 
 
 ## 検証
@@ -213,25 +103,8 @@ ArcGIS のセットアップを確認するには:
 3. GIS 固有の機能をテストします（使用している場合）
 4. 認証が機能していることを確認します
 
-```kotlin
-@Composable
-fun TestArcGIS() {
-    val state = rememberArcGISMapViewState(
-        cameraPosition =
-            MapCameraPositionImpl(
-                position = GeoPointImpl.fromLatLong(0.0, 0.0),
-                zoom = 5.0,
-            ),
-    )
+<TestArcGISComposable comment="もし地図が表示されれば、セットアップが正しくできています" />
 
-    ArcGISMapView(
-        modifier = modifier,
-        state = state,
-    ) {
-        // もし地図が表示されれば、セットアップが正しくできています
-    }
-}
-```
 ![TestArcGISの実行結果](~/assets/setup/basic-setup-arcgis.png)
 
 ## トラブルシューティング

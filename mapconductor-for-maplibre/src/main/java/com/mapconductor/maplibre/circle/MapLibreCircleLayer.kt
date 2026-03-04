@@ -1,6 +1,6 @@
 package com.mapconductor.maplibre.circle
 
-import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.maplibre.MapLibreActualCircle
 import org.maplibre.android.style.expressions.Expression
@@ -22,6 +22,7 @@ class MapLibreCircleLayer(
         const val FILL_COLOR = "fillColor"
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
+        const val Z_INDEX = "zIndex"
     }
 
     companion object {
@@ -72,11 +73,13 @@ class MapLibreCircleLayer(
                 circleColor(Expression.get(Prop.FILL_COLOR)),
                 circleStrokeColor(Expression.get(Prop.STROKE_COLOR)),
                 circleStrokeWidth(Expression.get(Prop.STROKE_WIDTH)),
+                org.maplibre.android.style.layers.PropertyFactory
+                    .circleSortKey(Expression.get(Prop.Z_INDEX)),
             )
         }
 
     fun draw(
-        entities: List<CircleEntity<MapLibreActualCircle>>,
+        entities: List<CircleEntityInterface<MapLibreActualCircle>>,
         style: org.maplibre.android.maps.Style,
     ) {
         val features = entities.map { it.circle }

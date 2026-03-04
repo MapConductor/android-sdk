@@ -9,7 +9,7 @@ import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.IconTranslateAnchor
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
-import com.mapconductor.core.marker.MarkerEntity
+import com.mapconductor.core.marker.MarkerEntityInterface
 
 open class MarkerLayer(
     open val sourceId: String,
@@ -21,6 +21,7 @@ open class MarkerLayer(
             iconImage(Expression.get(MapboxMarkerOverlayRenderer.Prop.ICON_ID))
             iconAllowOverlap(true)
             iconIgnorePlacement(true)
+            symbolSortKey(Expression.get(MapboxMarkerOverlayRenderer.Prop.Z_INDEX))
             iconAnchor(IconAnchor.TOP_LEFT)
             iconTranslateAnchor(IconTranslateAnchor.MAP)
             iconOffset(
@@ -34,7 +35,7 @@ open class MarkerLayer(
 
     val source: GeoJsonSource = geoJsonSource(sourceId)
 
-    fun draw(entities: List<MarkerEntity<Feature>>) {
+    fun draw(entities: List<MarkerEntityInterface<Feature>>) {
         val visibleEntities = entities.filter { it.visible && it.marker != null }
         val features = visibleEntities.mapNotNull { it.marker }
         source.featureCollection(

@@ -1,14 +1,14 @@
 package com.mapconductor.core.groundimage
 
-interface GroundImageEntity<ActualGroundImage> {
+interface GroundImageEntityInterface<ActualGroundImage> {
     val groundImage: ActualGroundImage
     val state: GroundImageState
     val fingerPrint: GroundImageFingerPrint
 }
 
-data class GroundImageEntityImpl<ActualGroundImage>(
+data class GroundImageEntity<ActualGroundImage>(
     override val groundImage: ActualGroundImage,
     override val state: GroundImageState,
-) : GroundImageEntity<ActualGroundImage> {
+) : GroundImageEntityInterface<ActualGroundImage> {
     override val fingerPrint: GroundImageFingerPrint = state.fingerPrint()
 }

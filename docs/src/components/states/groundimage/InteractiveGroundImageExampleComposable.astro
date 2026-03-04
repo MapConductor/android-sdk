@@ -1,0 +1,69 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  extraLabel?: string;
+  opacityLabelTemplate?: string;
+  groundImageClickLog?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  extraLabel = "Interactive overlay",
+  opacityLabelTemplate = "Opacity: ${(opacity * 100).toInt()}%",
+  groundImageClickLog = "Ground image clicked at: ${event.clicked}"
+} = Astro.props;
+
+const code = `@Composable
+fun InteractiveGroundImageExample() {
+    var groundImageState by remember { mutableStateOf<GroundImageState?>(null) }
+    var opacity by remember { mutableStateOf(0.7f) }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(opacity) {
+        val drawable = AppCompatResources.getDrawable(context, R.drawable.map_overlay)
+        drawable?.let {
+            groundImageState = GroundImageState(
+                bounds = GeoRectBounds(
+                    southwest = GeoPoint.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
+                    northeast = GeoPoint.fromLatLong(${northeastLatitude}, ${northeastLongitude})
+                ),
+                image = it,
+                opacity = opacity,
+                extra = "${extraLabel}",
+                onClick = { event ->
+                    println("${groundImageClickLog}")
+                }
+            )
+        }
+    }
+
+    Column {
+        Slider(
+            value = opacity,
+            onValueChange = { opacity = it },
+            valueRange = 0f..1f,
+            modifier = Modifier.padding(16.dp)
+        )
+        Text("${opacityLabelTemplate}")
+
+        MapView(
+            state = mapViewState
+        ) {
+            groundImageState?.let { state ->
+                GroundImage(state)
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

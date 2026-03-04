@@ -1,0 +1,49 @@
+---
+title: "MapboxMapViewHolder"
+---
+
+import MapboxMapViewHolder from '~/components/core/mapviewholder/MapboxMapViewHolder.astro';
+import MapboxMapViewHolderAccess from '~/components/core/mapviewholder/MapboxMapViewHolderAccess.astro';
+import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
+
+
+## Descripción General
+
+Para acceder a las funciones específicas del SDK de Mapbox, use el `MapboxMapViewHolder`.
+La definición de `MapboxMapViewHolder` es la siguiente:
+
+<MapboxMapViewHolder />
+
+### Propiedades
+
+- **`mapView: MapView`**: MapView generado dentro del componente MapboxView
+- **`map: Mapbox`**: Clase Mapbox para manipular el MapView
+
+### Métodos
+
+- **`toScreenOffset(position: GeoPointInterface): Offset?`**: Devuelve la posición en el mapa indicada por GeoPointInterface como un valor Dp con la parte superior izquierda del MapView como (0,0)
+- **`fromScreenOffsetSync(offset: Offset): GeoPoint?`**: Devuelve la posición GeoPointInterface en el mapa para la posición especificada por el valor Dp con la parte superior izquierda del MapView como (0,0)
+- **`fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint?`**: Devuelve la posición GeoPointInterface en el mapa para la posición especificada por el valor ScreenCoordinate con la parte superior izquierda del MapView como (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPoint?`**: Devuelve la posición GeoPointInterface en el mapa para la posición especificada por el valor Dp con la parte superior izquierda del MapView como (0,0)
+
+
+## Obtener MapboxMapViewHolder
+
+El `MapboxMapViewHolder` se puede obtener a través de `getMapViewHolder()` después de que se inicializa el mapa.
+
+<MapboxMapViewHolderAccess />
+
+
+### Ejemplo
+
+<MapboxMapViewHolderExample
+  commentPermissionLogic="Proceso después del permiso de acceso a la ubicación (ej: habilitar LocationComponent del SDK de Maps para mostrar la ubicación del dispositivo)"
+  commentExplanationNeeded="Mostrar explicación para obtener permiso de acceso a la ubicación"
+  commentPermissionDenied="El usuario denegó el permiso"
+  commentGetViewHolder="Obtener ViewHolder"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-mapbox-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-mapbox-example.mp4" type="video/mp4" />
+</video>

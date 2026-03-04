@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForPrint?: string;
+}
+
+const {
+  commentForPrint = "A polyline clicked at:"
+} = Astro.props;
+
+const code = `Polyline(
+    ...,
+    onClick = { event ->
+        println("${commentForPrint} \${event.clicked.latitude}, \${event.clicked.longitude}")
+
+        event.state.strokeColor = Color.Red
+    },
+)`;
+---
+
+<Code code={code} lang="kotlin" />

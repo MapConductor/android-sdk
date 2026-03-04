@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  expandMargin?: number;
+}
+
+const {
+  expandMargin = 0.2
+} = Astro.props;
+
+const code = `import com.mapconductor.marker.strategy.DefaultMarkerStrategy
+
+val defaultStrategy = DefaultMarkerStrategy<GoogleMapActualMarker>(
+    expandMargin = ${expandMargin},  // 20% viewport expansion
+    semaphore = Semaphore(1),
+    geocell = HexGeocell.defaultGeocell()
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

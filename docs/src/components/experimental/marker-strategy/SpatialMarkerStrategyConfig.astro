@@ -1,0 +1,25 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  clusterRadius?: number;
+  maxMarkersPerCluster?: number;
+}
+
+const {
+  clusterRadius = 100.0,
+  maxMarkersPerCluster = 10
+} = Astro.props;
+
+const code = `import com.mapconductor.marker.strategy.SpatialMarkerStrategy
+
+val spatialStrategy = SpatialMarkerStrategy<HereActualMarker>(
+    clusteringEnabled = true,
+    clusterRadius = ${clusterRadius},      // Clustering radius (meters)
+    maxMarkersPerCluster = ${maxMarkersPerCluster},  // Maximum markers in a cluster
+    geocell = HexGeocell.defaultGeocell()
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

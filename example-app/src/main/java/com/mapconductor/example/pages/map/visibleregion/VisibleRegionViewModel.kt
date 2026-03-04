@@ -3,23 +3,23 @@ package com.mapconductor.example.pages.map.visibleregion
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPositionInterface
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.VisibleRegion
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 
-interface VisibleRegionViewModel {
-    val mapViewState: State<MapViewState<*>?>
-    val currentCameraPosition: State<MapCameraPosition?>
+interface VisibleRegionViewModelInterface {
+    val mapViewState: State<MapViewStateInterface<*>?>
+    val currentCameraPosition: State<MapCameraPositionInterface?>
     val currentVisibleRegion: State<VisibleRegion?>
     val visibleRegionInfo: State<VisibleRegionInfo?>
 
-    fun onMapViewStateChanged(mapViewState: MapViewState<*>)
+    fun onMapViewStateChanged(mapViewState: MapViewStateInterface<*>)
 
-    fun onMapLoaded(mapViewState: MapViewState<*>)
+    fun onMapLoaded(mapViewState: MapViewStateInterface<*>)
 
-    fun onCameraChanged(cameraPosition: MapCameraPosition)
+    fun onCameraChanged(cameraPosition: MapCameraPositionInterface)
 }
 
 data class VisibleRegionInfo(
@@ -30,14 +30,14 @@ data class VisibleRegionInfo(
     val heightKm: Double,
 )
 
-class VisibleRegionViewModelImpl :
+class VisibleRegionViewModel :
     ViewModel(),
-    VisibleRegionViewModel {
-    private val _mapViewState = mutableStateOf<MapViewState<*>?>(null)
-    override val mapViewState: State<MapViewState<*>?> = _mapViewState
+    VisibleRegionViewModelInterface {
+    private val _mapViewState = mutableStateOf<MapViewStateInterface<*>?>(null)
+    override val mapViewState: State<MapViewStateInterface<*>?> = _mapViewState
 
-    private val _currentCameraPosition = mutableStateOf<MapCameraPosition?>(null)
-    override val currentCameraPosition: State<MapCameraPosition?> = _currentCameraPosition
+    private val _currentCameraPosition = mutableStateOf<MapCameraPositionInterface?>(null)
+    override val currentCameraPosition: State<MapCameraPositionInterface?> = _currentCameraPosition
 
     private val _currentVisibleRegion = mutableStateOf<VisibleRegion?>(null)
     override val currentVisibleRegion: State<VisibleRegion?> = _currentVisibleRegion
@@ -45,15 +45,15 @@ class VisibleRegionViewModelImpl :
     private val _visibleRegionInfo = mutableStateOf<VisibleRegionInfo?>(null)
     override val visibleRegionInfo: State<VisibleRegionInfo?> = _visibleRegionInfo
 
-    override fun onMapViewStateChanged(mapViewState: MapViewState<*>) {
+    override fun onMapViewStateChanged(mapViewState: MapViewStateInterface<*>) {
         _mapViewState.value = mapViewState
     }
 
-    override fun onMapLoaded(mapViewState: MapViewState<*>) {
+    override fun onMapLoaded(mapViewState: MapViewStateInterface<*>) {
         // Map is loaded
     }
 
-    override fun onCameraChanged(cameraPosition: MapCameraPosition) {
+    override fun onCameraChanged(cameraPosition: MapCameraPositionInterface) {
         _currentCameraPosition.value = cameraPosition
         _currentVisibleRegion.value = cameraPosition.visibleRegion
 
@@ -114,12 +114,12 @@ class VisibleRegionViewModelImpl :
         val widthKm =
             computeDistanceBetween(
                 bounds.southWest!!,
-                GeoPointImpl(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
+                GeoPoint(bounds.southWest!!.latitude, bounds.northEast!!.longitude),
             )
         val heightKm =
             computeDistanceBetween(
                 bounds.southWest!!,
-                GeoPointImpl(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
+                GeoPoint(bounds.northEast!!.latitude, bounds.southWest!!.longitude),
             )
 
         return VisibleRegionInfo(

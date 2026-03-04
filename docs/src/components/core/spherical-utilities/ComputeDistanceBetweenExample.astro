@@ -1,0 +1,31 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForFormulaUsage?: string;
+  fromLatitude?: number;
+  fromLongitude?: number;
+  toLatitude?: number;
+  toLongitude?: number;
+}
+
+const {
+  commentForFormulaUsage = "Calculate the shortest distance between two points using the haversine formula",
+  fromLatitude = 37.7749,
+  fromLongitude = -122.4194,
+  toLatitude = 40.7128,
+  toLongitude = -74.006,
+} = Astro.props;
+
+const code = `val sanFrancisco = GeoPoint.fromLatLong(${fromLatitude}, ${fromLongitude})
+val newYork = GeoPoint.fromLatLong(${toLatitude}, ${toLongitude})
+
+val distanceMeters = Spherical.computeDistanceBetween(sanFrancisco, newYork)
+val distanceKm = distanceMeters / 1000.0
+val distanceMiles = distanceMeters / 1609.344
+
+println("Distance: ${'$'}{distanceKm.toInt()} km (${'$'}{distanceMiles.toInt()} miles)") // ${commentForFormulaUsage}`;
+---
+
+<Code code={code} lang="kotlin" />
+

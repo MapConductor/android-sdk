@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class PolygonEvent(
+    val state: PolygonState,
+    val clicked: GeoPointInterface?
+)
+
+typealias OnPolygonEventHandler = (PolygonEvent) -> Unit`;
+---
+
+<Code code={code} lang="kotlin" />
+

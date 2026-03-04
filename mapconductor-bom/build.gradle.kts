@@ -23,6 +23,9 @@ val moduleInfo = mapOf(
     "for-mapbox" to getModuleVersion(":mapconductor-for-mapbox"),
     "for-maplibre" to getModuleVersion(":mapconductor-for-maplibre"),
     "icons" to getModuleVersion(":mapconductor-icons"),
+    "heatmap" to getModuleVersion(":mapconductor-heatmap"),
+    "tile-server" to getModuleVersion(":mapconductor-tile-server"),
+    "marker-clustering" to getModuleVersion(":mapconductor-marker-clustering"),
     "marker-native-strategy" to getModuleVersion(":mapconductor-marker-native-strategy"),
     "marker-strategy" to getModuleVersion(":mapconductor-marker-strategy")
 )

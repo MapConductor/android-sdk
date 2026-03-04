@@ -1,0 +1,32 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForBom?: string;
+  commentForCore?: string;
+  commentForChooseProvider?: string;
+  bomVersionPlaceholder?: string;
+}
+
+const {
+  commentForBom = "Required: Bom module",
+  commentForCore = "Required: Core module",
+  commentForChooseProvider = "Choose your map provider",
+  bomVersionPlaceholder = "$version"
+} = Astro.props;
+
+const code = `dependencies {
+    implementation "com.mapconductor:mapconductor-icons"
+
+    // ${commentForBom}
+    implementation "com.mapconductor:mapconductor-bom:${bomVersionPlaceholder}"
+    // ${commentForCore}
+    implementation "com.mapconductor:core"
+
+    // ${commentForChooseProvider}
+    implementation "com.mapconductor:for-googlemaps"
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

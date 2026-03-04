@@ -1,7 +1,7 @@
 package com.mapconductor.core.map
 
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.features.GeoPoint
 import kotlinx.coroutines.flow.StateFlow
 
 enum class InitState {
@@ -13,44 +13,44 @@ enum class InitState {
     Failed,
 }
 
-interface MapViewState<ActualMapDesignType> {
+interface MapViewStateInterface<ActualMapDesignType> {
     val id: String
-    val cameraPosition: MapCameraPositionImpl
+    val cameraPosition: MapCameraPosition
     var mapDesignType: ActualMapDesignType
 
     fun moveCameraTo(
-        cameraPosition: MapCameraPositionImpl,
-        durationMills: Long? = 0,
+        cameraPosition: MapCameraPosition,
+        durationMillis: Long? = 0,
     )
 
     fun moveCameraTo(
-        position: GeoPointImpl,
-        durationMills: Long? = 0,
+        position: GeoPoint,
+        durationMillis: Long? = 0,
     )
 
-    fun getMapViewHolder(): MapViewHolder<*, *>?
+    fun getMapViewHolder(): MapViewHolderInterface<*, *>?
 }
 
-abstract class MapViewStateImpl<ActualMapDesignType> : MapViewState<ActualMapDesignType> {
+abstract class MapViewState<ActualMapDesignType> : MapViewStateInterface<ActualMapDesignType> {
     private val tag = this.javaClass.name
 }
 
-interface MapOverlay<DataType> {
+interface MapOverlayInterface<DataType> {
     val flow: StateFlow<MutableMap<String, DataType>>
 
     suspend fun render(
         data: MutableMap<String, DataType>,
-        controller: MapViewController,
+        controller: MapViewControllerInterface,
     )
 }
 
 class MapOverlayRegistry {
-    private val overlays = mutableListOf<MapOverlay<*>>()
+    private val overlays = mutableListOf<MapOverlayInterface<*>>()
 
-    fun register(overlay: MapOverlay<*>) {
+    fun register(overlay: MapOverlayInterface<*>) {
         if (overlays.toSet().contains(overlay)) return
         overlays.add(overlay)
     }
 
-    fun getAll(): List<MapOverlay<*>> = overlays.toList()
+    fun getAll(): List<MapOverlayInterface<*>> = overlays.toList()
 }

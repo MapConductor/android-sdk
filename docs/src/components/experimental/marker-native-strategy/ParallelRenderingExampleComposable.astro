@@ -1,0 +1,41 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun ParallelRenderingExample() {
+    val parallelStrategy = remember {
+        SimpleNativeParallelStrategy<GoogleMapActualMarker>(
+            expandMargin = 0.3,        // Larger viewport expansion
+            maxConcurrency = 6,        // More parallel threads
+            geocell = HexGeocell(
+                baseHexSideLength = 1000.0,  // Optimized cell size
+                zoom = 15.0
+            )
+        )
+    }
+
+    // Configure marker controller with parallel strategy
+    LaunchedEffect(mapViewState) {
+        mapViewState.getMapViewHolder()?.let { holder ->
+            // Setup parallel strategy with map controller
+            // Implementation depends on map provider
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Parallel-rendered markers
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

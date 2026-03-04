@@ -1,0 +1,49 @@
+---
+title: "MapboxMapViewHolder"
+---
+
+import MapboxMapViewHolder from '~/components/core/mapviewholder/MapboxMapViewHolder.astro';
+import MapboxMapViewHolderAccess from '~/components/core/mapviewholder/MapboxMapViewHolderAccess.astro';
+import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
+
+
+## Overview
+
+To access Mapbox SDK-specific features, use the `MapboxMapViewHolder`.
+The definition of `MapboxMapViewHolder` is as follows:
+
+<MapboxMapViewHolder />
+
+### Properties
+
+- **`mapView: MapView`**: MapView generated inside the MapboxView component
+- **`map: Mapbox`**: Mapbox class for manipulating the MapView
+
+### Methods
+
+- **`toScreenOffset(position: GeoPointInterface): Offset?`**: Returns the position on the map indicated by GeoPointInterface as a Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffsetSync(offset: Offset): GeoPoint?`**: Returns the GeoPointInterface position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint?`**: Returns the GeoPointInterface position on the map for the position specified by ScreenCoordinate value with the top-left of the MapView as (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPoint?`**: Returns the GeoPointInterface position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
+
+
+## Getting MapboxMapViewHolder
+
+`MapboxMapViewHolder` can be obtained through `getMapViewHolder()` after the map is initialized.
+
+<MapboxMapViewHolderAccess />
+
+
+### Sample
+
+<MapboxMapViewHolderExample
+  commentPermissionLogic="Process after location access permission (e.g., enable Maps SDK LocationComponent to display device location)"
+  commentExplanationNeeded="Display explanation for obtaining location access permission"
+  commentPermissionDenied="User denied permission"
+  commentGetViewHolder="Get ViewHolder"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-mapbox-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-mapbox-example.mp4" type="video/mp4" />
+</video>

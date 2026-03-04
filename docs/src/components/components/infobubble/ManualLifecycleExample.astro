@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun ManualLifecycleExample() {
+    var showBubble by remember { mutableStateOf(false) }
+    val markerState = remember { /* marker state */ }
+
+    LaunchedEffect(showBubble) {
+        if (showBubble) {
+            delay(3000) // Show for 3 seconds
+            showBubble = false
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        Marker(markerState)
+
+        if (showBubble) {
+            InfoBubble(marker = markerState) {
+                Text("Auto-hiding bubble")
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

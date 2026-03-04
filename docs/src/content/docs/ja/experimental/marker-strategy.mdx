@@ -1,0 +1,201 @@
+---
+title: "マーカー戦略（実験的）"
+---
+
+import MarkerStrategyGradleDependencies from '~/components/experimental/marker-strategy/MarkerStrategyGradleDependencies.astro';
+import DefaultMarkerStrategyConfig from '~/components/experimental/marker-strategy/DefaultMarkerStrategyConfig.astro';
+import SimpleMarkerStrategyConfig from '~/components/experimental/marker-strategy/SimpleMarkerStrategyConfig.astro';
+import SpatialMarkerStrategyConfig from '~/components/experimental/marker-strategy/SpatialMarkerStrategyConfig.astro';
+import DefaultStrategyExampleComposable from '~/components/experimental/marker-strategy/DefaultStrategyExampleComposable.astro';
+import StrategyMarkerManagementComposable from '~/components/experimental/marker-strategy/StrategyMarkerManagementComposable.astro';
+import DynamicLoadingExampleComposable from '~/components/experimental/marker-strategy/DynamicLoadingExampleComposable.astro';
+import ClusteringStrategyExampleComposable from '~/components/experimental/marker-strategy/ClusteringStrategyExampleComposable.astro';
+import PerformanceStrategyConfigExample from '~/components/experimental/marker-strategy/PerformanceStrategyConfigExample.astro';
+import StrategyPerformanceMonitoringComposable from '~/components/experimental/marker-strategy/StrategyPerformanceMonitoringComposable.astro';
+import MigrationBasicToStrategyComposable from '~/components/experimental/marker-strategy/MigrationBasicToStrategyComposable.astro';
+import CustomMarkerStrategyExample from '~/components/experimental/marker-strategy/CustomMarkerStrategyExample.astro';
+
+`mapconductor-marker-strategy` モジュールは、大規模なデータセットでのパフォーマンスとユーザーエクスペリエンスを最適化するための高度なマーカーレンダリング戦略を提供します。この実験的モジュールは、異なるユースケースとパフォーマンス要件に合わせた複数のレンダリングアプローチを提供します。
+
+> **⚠️ 実験的モジュール**: このモジュールは実験的であり、API が変更される可能性があります。本番環境での使用には注意してください。
+
+## 概要
+
+マーカー戦略モジュールは、基本的なマーカー表示を超えた洗練されたレンダリング戦略を提供します:
+- **ビューポートベースのレンダリング**: 現在のビューポートに表示されているマーカーのみをレンダリング
+- **動的追加/削除**: ビューポートの変更に応じて効率的にマーカーを管理
+- **空間最適化**: 大規模なデータセットのための高度な空間インデックス
+- **リモートデータ統合**: サーバーサイドのマーカーデータのサポート
+- **クラスタリングサポート**: パフォーマンス向上のために近くのマーカーをグループ化
+
+## インストール
+
+`build.gradle` にマーカー戦略モジュールを追加します:
+
+<MarkerStrategyGradleDependencies
+  commentForBom="必須: Core モジュール"
+  commentForCore="必須: Core モジュール"
+  commentForChooseProvider="地図SDKを選択"
+/>
+
+## 地図SDKモジュールとの連携
+
+`mapconductor-marker-strategy` は、地図SDKごとの実装（renderer/controller）を provider 側が登録した capability 経由で利用します。
+組み込みの地図SDKモジュールは `MapServiceRegistry` に自動登録するため、そのまま動作します（[Map Service Registry](/ja/core/service-registry/)）。
+
+## コア戦略
+
+### DefaultMarkerStrategy
+
+追加/削除操作を効率的に処理する Google Maps と ArcGIS 地図SDKに最適:
+
+<DefaultMarkerStrategyConfig />
+
+#### 主な機能
+- **動的追加/削除**: ビューポートに入るマーカーを追加し、離れるマーカーを削除
+- **ビューポート拡張**: 表示領域の少し外側のマーカーを事前読み込み
+- **メモリ効率**: 表示されているマーカーのみをメモリに保持
+- **スムーズなスクロール**: マップ移動中のポップイン/ポップアウトを削減
+
+### SimpleMarkerStrategy
+
+小規模なデータセットまたは異なるパフォーマンス特性を持つ地図SDK向けの軽量戦略:
+
+<SimpleMarkerStrategyConfig />
+
+#### 主な機能
+- **簡略化されたロジック**: より複雑でないビューポート管理
+- **低オーバーヘッド**: 最小限の計算オーバーヘッド
+- **Mapbox に適している**: よりシンプルなマーカー管理を好む地図SDK向けに最適化
+
+### SpatialMarkerStrategy
+
+空間クラスタリングと最適化を備えた高度な戦略:
+
+<SpatialMarkerStrategyConfig />
+
+#### 主な機能
+- **空間クラスタリング**: 近くのマーカーをクラスターにグループ化
+- **密度管理**: 密集したエリアでの視覚的な混雑を軽減
+- **パフォーマンススケーリング**: 非常に大きなデータセットを効率的に処理
+- **カスタマイズ可能なクラスタリング**: 設定可能なクラスタリングパラメータ
+
+## 基本的な使用方法
+
+### デフォルト戦略の設定
+
+<DefaultStrategyExampleComposable
+  commentForMapViewUsage="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
+
+### 戦略へのマーカーの追加
+
+<StrategyMarkerManagementComposable
+  commentForMapViewUsage="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
+
+## 高度な使用方法
+
+### 動的マーカー読み込み
+
+<DynamicLoadingExampleComposable
+  commentForMapViewUsage="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
+
+### クラスタリング戦略
+
+<ClusteringStrategyExampleComposable
+  commentForMapViewUsage="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
+
+### Remote Spatial Strategy
+
+// JA 版では説明のみ維持（実装詳細は英語版を参照）
+
+## 戦略の比較
+
+### パフォーマンス特性
+
+| Strategy | Best For | Memory Usage | Network | Complexity |
+|----------|----------|--------------|---------|------------|
+| DefaultMarkerStrategy | Google Maps, ArcGIS | Medium | None | Medium |
+| SimpleMarkerStrategy | Mapbox, HERE | Low | None | Low |
+| SpatialMarkerStrategy | Large datasets | High | None | High |
+| RemoteSpatialMarkerStrategy | Server-side data | Low | High | High |
+
+### ユースケースガイドライン
+
+#### DefaultMarkerStrategy を選ぶべき場合:
+- Google Maps または ArcGIS を使用している
+- 1,000〜50,000 の中規模マーカー数を扱う
+- ビューポートベースのスムーズなレンダリングが必要
+- マーカーがローカルでロードされる
+
+#### SimpleMarkerStrategy を選ぶべき場合:
+- Mapbox または HERE Maps を使用している
+- 10,000 未満の小規模マーカー数を扱う
+- 最小限のオーバーヘッドを求める
+- シンプルなレンダリング要件である
+
+#### SpatialMarkerStrategy を選ぶべき場合:
+- 50,000 以上の非常に大きなマーカーデータセットを扱う
+- クラスタリング機能が必要
+- 高度な空間最適化が必要
+- より高いメモリ使用量を許容できる
+
+#### RemoteSpatialMarkerStrategy を選ぶべき場合:
+- マーカーがサーバー側に保存されている
+- オンデマンドロードを行いたい
+- ネットワーク接続が前提
+- アプリ側のメモリ使用量を最小限に抑えたい
+
+## カスタム戦略の開発
+
+### AbstractViewportStrategy の拡張
+
+<CustomMarkerStrategyExample
+  commentForCustomRenderingLogic="カスタムレンダリングロジック"
+  commentForManagementLogic="独自のマーカー管理ロジック"
+  commentForUseRenderer="renderer を使用して表示を更新"
+  commentForVisibleLogic="どのマーカーを表示すべきかを決定するカスタムロジック"
+  commentForHiddenLogic="どのマーカーを非表示にすべきかを決定するカスタムロジック"
+/>
+
+## パフォーマンス最適化
+
+### 戦略設定
+
+<PerformanceStrategyConfigExample />
+
+### パフォーマンスの監視
+
+<StrategyPerformanceMonitoringComposable
+  commentForMapViewUsage="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
+
+## ベストプラクティス
+
+1. **戦略の選択**: 特定のユースケースと地図SDKに基づいて戦略を選択する
+2. **ビューポートマージン**: 事前読み込み（より大きなマージン）とパフォーマンス（より小さなマージン）のバランスを取る
+3. **空間設定**: データ密度に合わせてジオセルパラメータを調整する
+4. **メモリ監視**: 特に大規模なデータセットでは、本番環境でメモリ使用量を監視する
+5. **テスト**: 現実的なデータ量と使用パターンでテストする
+6. **フォールバック**: パフォーマンス問題のためのより単純な戦略をフォールバックとして用意する
+
+## よくある落とし穴
+
+1. **過剰設計**: シンプルなマーカーシナリオに複雑な戦略を使用しない
+2. **メモリリーク**: 戦略リソースの適切なクリーンアップを確保する
+3. **地図SDKの不一致**: 地図SDKに間違った戦略を使用すると、パフォーマンスが低下する可能性がある
+4. **過剰な事前読み込み**: 大きな拡張マージンはメモリ圧迫を引き起こす可能性がある
+5. **スレッドセーフティ**: 戦略は並行性を処理しますが、外部の変更には注意が必要
+
+## 移行ガイド
+
+### 基本的なマーカー管理から
+
+<MigrationBasicToStrategyComposable
+  commentForMapViewUsage="GoogleMapView、MapboxMapView など、選択した地図SDKに置き換えてください"
+/>
+
+マーカー戦略モジュールは、大規模なデータセットや複雑なレンダリング要件を必要とするアプリケーションのための洗練されたマーカー管理機能を提供します。

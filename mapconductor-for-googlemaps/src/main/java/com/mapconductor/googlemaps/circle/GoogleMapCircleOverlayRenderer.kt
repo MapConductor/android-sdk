@@ -3,16 +3,18 @@ package com.mapconductor.googlemaps.circle
 import androidx.compose.ui.graphics.toArgb
 import com.google.android.gms.maps.model.PolygonOptions
 import com.mapconductor.core.ResourceProvider
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
-import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.spherical.Spherical.computeDistanceBetween
 import com.mapconductor.googlemaps.GoogleMapActualCircle
 import com.mapconductor.googlemaps.GoogleMapViewHolder
 import com.mapconductor.googlemaps.toLatLng
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class GoogleMapCircleOverlayRenderer(
@@ -21,11 +23,12 @@ class GoogleMapCircleOverlayRenderer(
 ) : AbstractCircleOverlayRenderer<GoogleMapActualCircle>() {
     override suspend fun createCircle(state: CircleState): GoogleMapActualCircle? =
         withContext(coroutine.coroutineContext) {
-            val center = GeoPointImpl.from(state.center).toLatLng()
+            val center = GeoPoint.from(state.center).toLatLng()
+            val adjustedRadiusMeters = adjustedRadiusMeters(state, center)
             val circlePoints =
                 CirclePolygonHelper.generateCirclePoints(
                     center = center,
-                    radiusMeters = state.radiusMeters,
+                    radiusMeters = adjustedRadiusMeters,
                     geodesic = state.geodesic,
                 )
 
@@ -37,21 +40,22 @@ class GoogleMapCircleOverlayRenderer(
                     .fillColor(state.fillColor.toArgb())
                     .clickable(false)
                     .geodesic(state.geodesic)
+                    .zIndex((state.zIndex ?: calculateZIndex(state.center)).toFloat())
             holder.map.addPolygon(options).also {
                 it.tag = state.id
             }
         }
 
-    override suspend fun removeCircle(entity: CircleEntity<GoogleMapActualCircle>) {
-        coroutine.launch {
+    override suspend fun removeCircle(entity: CircleEntityInterface<GoogleMapActualCircle>) {
+        withContext(coroutine.coroutineContext) {
             entity.circle.remove()
         }
     }
 
     override suspend fun updateCircleProperties(
         circle: GoogleMapActualCircle,
-        current: CircleEntity<GoogleMapActualCircle>,
-        prev: CircleEntity<GoogleMapActualCircle>,
+        current: CircleEntityInterface<GoogleMapActualCircle>,
+        prev: CircleEntityInterface<GoogleMapActualCircle>,
     ): GoogleMapActualCircle? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -61,14 +65,16 @@ class GoogleMapCircleOverlayRenderer(
             val needsRegeneration =
                 finger.center != prevFinger.center ||
                     finger.radiusMeters != prevFinger.radiusMeters ||
-                    finger.geodesic != prevFinger.geodesic
+                    finger.geodesic != prevFinger.geodesic ||
+                    finger.strokeWidth != prevFinger.strokeWidth
 
             if (needsRegeneration) {
-                val center = GeoPointImpl.from(current.state.center).toLatLng()
+                val center = GeoPoint.from(current.state.center).toLatLng()
+                val adjustedRadiusMeters = adjustedRadiusMeters(current.state, center)
                 val circlePoints =
                     CirclePolygonHelper.generateCirclePoints(
                         center = center,
-                        radiusMeters = current.state.radiusMeters,
+                        radiusMeters = adjustedRadiusMeters,
                         geodesic = current.state.geodesic,
                     )
                 circle.points = circlePoints
@@ -84,6 +90,33 @@ class GoogleMapCircleOverlayRenderer(
             if (finger.fillColor != prevFinger.fillColor) {
                 circle.fillColor = current.state.fillColor.toArgb()
             }
+            if (finger.zIndex != prevFinger.zIndex) {
+                circle.zIndex = (current.state.zIndex ?: calculateZIndex(current.state.center)).toFloat()
+            }
             circle
         }
+
+    private fun adjustedRadiusMeters(
+        state: CircleState,
+        center: com.google.android.gms.maps.model.LatLng,
+    ): Double {
+        val strokeWidthPx = ResourceProvider.dpToPx(state.strokeWidth).toDouble()
+        if (strokeWidthPx <= 0.0) return state.radiusMeters
+
+        val projection = holder.map.projection
+        val centerPoint = projection.toScreenLocation(center)
+        val offsetPoint =
+            android.graphics.Point(
+                centerPoint.x,
+                (centerPoint.y - (strokeWidthPx / 2.0)).roundToInt(),
+            )
+        val offsetCoord = projection.fromScreenLocation(offsetPoint)
+
+        val strokeMeters =
+            computeDistanceBetween(
+                GeoPoint.fromLatLong(center.latitude, center.longitude),
+                GeoPoint.fromLatLong(offsetCoord.latitude, offsetCoord.longitude),
+            )
+        return state.radiusMeters + strokeMeters
+    }
 }

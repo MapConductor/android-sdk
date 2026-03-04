@@ -1,0 +1,39 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForThinBorder?: string;
+  commentForThickBorder?: string;
+  commentForNoBorder?: string;
+}
+
+const {
+  commentForThinBorder = 'Thin border',
+  commentForThickBorder = 'Thick border',
+  commentForNoBorder = 'No border',
+} = Astro.props;
+
+const code = `// ${commentForThinBorder}
+Polygon(
+    points = points,
+    strokeColor = Color.Black,
+    strokeWidth = 1.dp
+)
+
+// ${commentForThickBorder}
+Polygon(
+    points = points,
+    strokeColor = Color.Black,
+    strokeWidth = 5.dp
+)
+
+// ${commentForNoBorder}
+Polygon(
+    points = points,
+    strokeColor = Color.Transparent,
+    strokeWidth = 0.dp
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -34,57 +35,56 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.mapconductor.core.CollectAndRenderOverlays
 import com.mapconductor.core.MapViewScope
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.circle.CircleCapable
+import com.mapconductor.core.circle.CircleCapableInterface
 import com.mapconductor.core.circle.LocalCircleCollector
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.groundimage.GroundImageCapable
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.groundimage.GroundImageCapableInterface
 import com.mapconductor.core.groundimage.LocalGroundImageCollector
 import com.mapconductor.core.info.InfoBubbleOverlay
 import com.mapconductor.core.info.LocalInfoBubbleCollector
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.LocalMarkerCollector
-import com.mapconductor.core.marker.MarkerCapable
+import com.mapconductor.core.marker.MarkerCapableInterface
 import com.mapconductor.core.polygon.LocalPolygonCollector
-import com.mapconductor.core.polygon.PolygonCapable
+import com.mapconductor.core.polygon.PolygonCapableInterface
 import com.mapconductor.core.polyline.LocalPolylineCollector
-import com.mapconductor.core.polyline.PolylineCapable
-import com.mapconductor.settings.Settings
+import com.mapconductor.core.polyline.PolylineCapableInterface
+import com.mapconductor.core.raster.LocalRasterLayerCollector
+import com.mapconductor.core.raster.RasterLayerCapableInterface
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-typealias OnMapLoadedHandler = (MapViewState<*>) -> Unit
+typealias OnMapLoadedHandler = (MapViewStateInterface<*>) -> Unit
 internal typealias InternalOnMapLoadedHandler = () -> Unit
-typealias OnMapEventHandler = (GeoPointImpl) -> Unit
-typealias OnCameraMoveHandler = (MapCameraPositionImpl) -> Unit
+typealias OnMapEventHandler = (GeoPoint) -> Unit
+typealias OnCameraMoveHandler = (MapCameraPosition) -> Unit
 
-@OptIn(FlowPreview::class)
 @Composable
 fun <
-    SpecificState : MapViewState<*>,
-    // Replace Any with a base MapViewController if you have one
+    SpecificState : MapViewStateInterface<*>,
+    // Replace Any with a base MapViewControllerInterface if you have one
     // Generic type for the actual Android Map View (e.g., com.google.android.gms.maps.MapView)
-    SpecificController : MapViewController,
+    SpecificController : MapViewControllerInterface,
     ActualMapView : View,
     // Generic type for the actual Map SDK object (e.g., GoogleMap, HereMapSDK.MapController)
     ActualMap : Any,
-    // SpecificViewHolder is now constrained by your MapViewHolder interface
+    // SpecificViewHolder is now constrained by your MapViewHolderInterface interface
     // and uses the ActualMapView and ActualMap generic types.
     SpecificScope : MapViewScope,
-    SpecificHolder : MapViewHolder<ActualMapView, ActualMap>,
+    SpecificHolder : MapViewHolderInterface<ActualMapView, ActualMap>,
 > MapViewBase(
     state: SpecificState,
-    cameraState: MutableState<MapCameraPosition?>,
+    cameraState: MutableState<MapCameraPositionInterface?>,
     modifier: Modifier = Modifier,
     viewProvider: () -> ActualMapView, // Function to get the Android View from ViewHolder
     scope: SpecificScope,
     registry: MapOverlayRegistry, // Replace with your actual registry type from scope.buildRegistry()
+    serviceRegistry: MapServiceRegistry = EmptyMapServiceRegistry,
     sdkInitialize: suspend () -> Boolean = { true },
     holderProvider: suspend (mapView: ActualMapView) -> SpecificHolder,
     controllerProvider: suspend (holder: SpecificHolder) -> SpecificController,
@@ -103,73 +103,64 @@ fun <
 
     if (initState == InitState.MapCreated && controller != null) {
         // 5. 収集した子コンポーネントを描画する
+        DisposableEffect(controller) {
+            scope.groundImageCollector.setUpdateHandler { groundImageState ->
+                (controller as? GroundImageCapableInterface)?.let { groundImageCapable ->
+                    if (groundImageCapable.hasGroundImage(groundImageState)) {
+                        groundImageCapable.updateGroundImage(groundImageState)
+                    }
+                }
+            }
+            scope.rasterLayerCollector.setUpdateHandler { rasterLayerState ->
+                (controller as? RasterLayerCapableInterface)?.let { rasterLayerCapable ->
+                    if (rasterLayerCapable.hasRasterLayer(rasterLayerState)) {
+                        rasterLayerCapable.updateRasterLayer(rasterLayerState)
+                    }
+                }
+            }
+            scope.polygonCollector.setUpdateHandler { polygonState ->
+                (controller as? PolygonCapableInterface)?.let { polygonCapable ->
+                    if (polygonCapable.hasPolygon(polygonState)) {
+                        polygonCapable.updatePolygon(polygonState)
+                    }
+                }
+            }
+            scope.polylineCollector.setUpdateHandler { polylineState ->
+                (controller as? PolylineCapableInterface)?.let { polylineCapable ->
+                    if (polylineCapable.hasPolyline(polylineState)) {
+                        polylineCapable.updatePolyline(polylineState)
+                    }
+                }
+            }
+            scope.circleCollector.setUpdateHandler { circleState ->
+                (controller as? CircleCapableInterface)?.let { circleCapable ->
+                    if (circleCapable.hasCircle(circleState)) {
+                        circleCapable.updateCircle(circleState)
+                    }
+                }
+            }
+            scope.markerCollector.setUpdateHandler { markerState ->
+                (controller as? MarkerCapableInterface)?.let { markerCapable ->
+                    if (markerCapable.hasMarker(markerState)) {
+                        markerCapable.updateMarker(markerState)
+                    }
+                }
+            }
+
+            onDispose {
+                scope.groundImageCollector.setUpdateHandler(null)
+                scope.rasterLayerCollector.setUpdateHandler(null)
+                scope.polygonCollector.setUpdateHandler(null)
+                scope.polylineCollector.setUpdateHandler(null)
+                scope.circleCollector.setUpdateHandler(null)
+                scope.markerCollector.setUpdateHandler(null)
+            }
+        }
+
         CollectAndRenderOverlays(
             registry = registry, // This should come from the specific scope or be passed
             controller = controller,
         )
-
-        val groundImage = scope.groundImageFlow.collectAsState()
-        (controller as? GroundImageCapable)?.let { groundImageCapable ->
-            groundImage.value.values.forEach { groundImageState ->
-                LaunchedEffect(groundImageState.id) {
-                    groundImageState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        if (groundImageCapable.hasGroundImage(groundImageState)) {
-                            groundImageCapable.updateGroundImage(groundImageState)
-                        }
-                    }
-                }
-            }
-        }
-        val polygons = scope.polygonFlow.collectAsState()
-        polygons.value.values.forEach { polygonState ->
-            LaunchedEffect(polygonState.id) {
-                polygonState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolygonCapable)?.let { polygonCapable ->
-                        if (polygonCapable.hasPolygon(polygonState)) {
-                            polygonCapable.updatePolygon(polygonState)
-                        }
-                    }
-                }
-            }
-        }
-        val polylines = scope.polylineFlow.collectAsState()
-        polylines.value.values.forEach { polylineState ->
-            LaunchedEffect(polylineState.id) {
-                polylineState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? PolylineCapable)?.let { polylineCapable ->
-                        if (polylineCapable.hasPolyline(polylineState)) {
-                            polylineCapable.updatePolyline(polylineState)
-                        }
-                    }
-                }
-            }
-        }
-        val circles = scope.circleFlow.collectAsState()
-        circles.value.values.forEach { circleState ->
-            LaunchedEffect(circleState.id) {
-                circleState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                    (controller as? CircleCapable)?.let { circleCapable ->
-                        if (circleCapable.hasCircle(circleState)) {
-                            circleCapable.updateCircle(circleState)
-                        }
-                    }
-                }
-            }
-        }
-        val markers = scope.markerFlow.collectAsState()
-        if (markers.value.isNotEmpty()) {
-            markers.value.values.forEach { markerState ->
-                LaunchedEffect(markerState.id) {
-                    markerState.asFlow().debounce(Settings.Default.composeEventDebounce).collectLatest {
-                        (controller as? MarkerCapable)?.let { markerCapable ->
-                            if (markerCapable.hasMarker(markerState)) {
-                                markerCapable.updateMarker(markerState)
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     LaunchedEffect(Unit) {
@@ -227,16 +218,21 @@ fun <
                 subcompose("slotid") {
                     @Suppress("UNUSED_VARIABLE") // KtLint: backing property rule workaround
                     val tick = cameraTick.intValue
+                    val localController = controllerRef.value ?: return@subcompose
 
                     // 子コンポーネントを収集する
                     // **ここで初めて CompositionLocalProvider を差し込む**
                     CompositionLocalProvider(
-                        LocalMarkerCollector provides scope.markerFlow,
+                        LocalMapOverlayRegistry provides registry,
+                        LocalMapServiceRegistry provides serviceRegistry,
+                        LocalMapViewController provides localController,
+                        LocalMarkerCollector provides scope.markerCollector,
                         LocalInfoBubbleCollector provides scope.bubbleFlow,
-                        LocalCircleCollector provides scope.circleFlow,
-                        LocalPolylineCollector provides scope.polylineFlow,
-                        LocalPolygonCollector provides scope.polygonFlow,
-                        LocalGroundImageCollector provides scope.groundImageFlow,
+                        LocalCircleCollector provides scope.circleCollector,
+                        LocalPolylineCollector provides scope.polylineCollector,
+                        LocalPolygonCollector provides scope.polygonCollector,
+                        LocalGroundImageCollector provides scope.groundImageCollector,
+                        LocalRasterLayerCollector provides scope.rasterLayerCollector,
                     ) {
                         // 子（Marker など）の収集＆描画
                         with(scope) { content?.invoke(this) }
@@ -259,7 +255,7 @@ fun <
                                 if (posOffset != null) {
                                     // Keep a stable key per marker id; avoid using Flow as a key.
                                     key(marker.id) {
-                                        val icon = marker.icon ?: DefaultIcon()
+                                        val icon = marker.icon ?: DefaultMarkerIcon()
                                         val iconScale = icon.scale
                                         val iconSize = ResourceProvider.dpToPx(icon.iconSize.value) * iconScale
                                         InfoBubbleOverlay(
@@ -290,12 +286,16 @@ fun <
     }
 
     // 1. Start initialization
-    LaunchedEffect(initState) {
+    // Use a stable key so changing initState inside doesn't cancel this effect
+    LaunchedEffect(Unit) {
         if (initState != InitState.NotStarted) return@LaunchedEffect
         initState = InitState.Initializing
         try {
             val success = sdkInitialize()
             initState = if (success) InitState.SdkInitialized else InitState.Failed
+        } catch (ce: CancellationException) {
+            // Composition left; don't mark as failure or log error
+            return@LaunchedEffect
         } catch (e: Exception) {
             initState = InitState.Failed
             Log.e("MapConductor", "Failed to initialize the Map view", e)
@@ -310,6 +310,7 @@ fun <
             holderRef.value = holder
             controllerRef.value = controllerProvider(holder)
             initState = InitState.MapCreated
+            Log.d("DEBUG", "------------->onMapLoaded")
             onMapLoaded?.invoke(state)
         }
     }
@@ -334,7 +335,7 @@ private fun BasicMessage(text: String) {
     }
 }
 
-private fun cameraInvalidationKey(camera: MapCameraPositionImpl?): Long {
+private fun cameraInvalidationKey(camera: MapCameraPosition?): Long {
     if (camera == null) return 0L
     val latE5 = (camera.position.latitude * 1e5).toInt()
     val lonE5 = (camera.position.longitude * 1e5).toInt()

@@ -1,0 +1,47 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun NativePerformanceExample() {
+    val nativeManager = remember {
+        NativeMarkerManager<GoogleMapActualMarker>(
+            hexGeocell = HexGeocell.defaultGeocell()
+        )
+    }
+
+    var stats by remember { mutableStateOf<NativeMarkerManagerStats?>(null) }
+
+    // Monitor performance
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(5000) // Update every 5 seconds
+            stats = nativeManager.getNativeMemoryStats()
+        }
+    }
+
+    Column {
+        stats?.let { s ->
+            Text("Markers: ${'$'}{s.entityCount}")
+            Text("Native Index: ${'$'}{s.nativeIndexCount}")
+            Text("Memory: ${'$'}{s.estimatedMemoryKB} KB")
+            Text("Pure Native: ${'$'}{s.usesPureNativeIndex}")
+        }
+
+        // ${commentForMapViewUsage}
+        MapView(state = mapViewState) {
+            // Native-managed markers
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

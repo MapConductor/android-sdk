@@ -7,14 +7,16 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mapconductor.core.ComponentState
 import com.mapconductor.core.StateFlowDelegate
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class PolygonState(
-    points: List<GeoPoint>,
+    points: List<GeoPointInterface>,
+    holes: List<List<GeoPointInterface>> = emptyList(),
     id: String? = null,
     strokeColor: Color = Color.Black,
     strokeWidth: Dp = 2.dp,
@@ -22,12 +24,14 @@ class PolygonState(
     geodesic: Boolean = false,
     zIndex: Int = 0,
     extra: Serializable? = null,
-) {
-    val id =
+    onClick: OnPolygonEventHandler? = null,
+) : ComponentState {
+    override val id =
         (
             id ?: polygonId(
                 listOf(
                     listHashCode(points),
+                    nestedListHashCode(holes),
                     strokeColor.hashCode(),
                     strokeWidth.hashCode(),
                     fillColor.hashCode(),
@@ -41,8 +45,10 @@ class PolygonState(
     var fillColor by mutableStateOf(fillColor)
     var geodesic by mutableStateOf(geodesic)
     var zIndex by mutableStateOf(zIndex)
-    var points by StateFlowDelegate<List<GeoPoint>>(points)
+    var points by StateFlowDelegate<List<GeoPointInterface>>(points)
+    var holes by StateFlowDelegate<List<List<GeoPointInterface>>>(holes)
     var extra by mutableStateOf(extra)
+    var onClick by mutableStateOf(onClick)
 
     private fun polygonId(hashCodes: List<Int>): Int =
         hashCodes.reduce { result, hashCode ->
@@ -62,6 +68,7 @@ class PolygonState(
         result = 31 * result + geodesic.hashCode()
         result = 31 * result + zIndex.hashCode()
         result = 31 * result + points.hashCode()
+        result = 31 * result + holes.hashCode()
         return result
     }
 
@@ -69,6 +76,14 @@ class PolygonState(
         var result = 0
         list.forEach {
             result = 31 * result + it.hashCode()
+        }
+        return result
+    }
+
+    private fun <T> nestedListHashCode(list: List<List<T>>): Int {
+        var result = 0
+        list.forEach { inner ->
+            result = 31 * result + listHashCode(inner)
         }
         return result
     }
@@ -82,7 +97,33 @@ class PolygonState(
             geodesic = geodesic.toString().hashCode(),
             zIndex = zIndex,
             points = listHashCode(points),
+            holes = nestedListHashCode(holes),
             extra = extra?.hashCode() ?: 0,
+        )
+
+    fun copy(
+        points: List<GeoPointInterface> = this.points,
+        holes: List<List<GeoPointInterface>> = this.holes,
+        id: String? = this.id,
+        strokeColor: Color = this.strokeColor,
+        strokeWidth: Dp = this.strokeWidth,
+        fillColor: Color = this.fillColor,
+        geodesic: Boolean = this.geodesic,
+        zIndex: Int = this.zIndex,
+        extra: Serializable? = this.extra,
+        onClick: OnPolygonEventHandler? = this.onClick,
+    ): PolygonState =
+        PolygonState(
+            points = points,
+            holes = holes,
+            id = id,
+            strokeColor = strokeColor,
+            strokeWidth = strokeWidth,
+            fillColor = fillColor,
+            geodesic = geodesic,
+            zIndex = zIndex,
+            extra = extra,
+            onClick = onClick,
         )
 
     fun asFlow(): Flow<PolygonFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
@@ -96,12 +137,13 @@ data class PolygonFingerPrint(
     val geodesic: Int,
     val zIndex: Int,
     val points: Int,
+    val holes: Int,
     val extra: Int,
 )
 
 data class PolygonEvent(
     val state: PolygonState,
-    val clicked: GeoPoint,
+    val clicked: GeoPointInterface,
 )
 
 typealias OnPolygonEventHandler = (PolygonEvent) -> Unit

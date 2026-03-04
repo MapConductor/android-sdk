@@ -1,0 +1,52 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  worldLatitude?: number;
+  worldLongitude?: number;
+  worldZoom?: number;
+  worldComment?: string;
+  cityLatitude?: number;
+  cityLongitude?: number;
+  cityZoom?: number;
+  cityComment?: string;
+  streetLatitude?: number;
+  streetLongitude?: number;
+  streetZoom?: number;
+  streetComment?: string;
+}
+
+const {
+  worldLatitude = 0.0,
+  worldLongitude = 0.0,
+  worldZoom = 2.0,
+  worldComment = "Show continents",
+  cityLatitude = 37.7749,
+  cityLongitude = -122.4194,
+  cityZoom = 12.0,
+  cityComment = "Show entire city",
+  streetLatitude = 37.7749,
+  streetLongitude = -122.4194,
+  streetZoom = 17.0,
+  streetComment = "Show individual streets"
+} = Astro.props;
+
+const code = `// Different zoom levels for different use cases
+val worldView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${worldLatitude}, ${worldLongitude}),
+    zoom = ${worldZoom}  // ${worldComment}
+)
+
+val cityView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${cityLatitude}, ${cityLongitude}),
+    zoom = ${cityZoom}  // ${cityComment}
+)
+
+val streetView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${streetLatitude}, ${streetLongitude}),
+    zoom = ${streetZoom}  // ${streetComment}
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

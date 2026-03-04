@@ -6,37 +6,30 @@ import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapCameraUpdate
 import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.zoom.AbstractZoomAltitudeConverter
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.here.zoom.ZoomAltitudeConverter
 
-private val converter = ZoomAltitudeConverter(AbstractZoomAltitudeConverter.DEFAULT_ZOOM0_ALTITUDE)
-
 @Keep
-fun MapCameraPositionImpl.toMapCameraUpdate(): MapCameraUpdate =
-    MapCameraUpdateFactory.lookAt(
-        GeoPointImpl.from(position).toGeoCoordinates().toUpdate(),
+fun MapCameraPosition.toMapCameraUpdate(): MapCameraUpdate {
+    val hereZoom = ZoomAltitudeConverter.googleZoomToHereZoom(zoom, position.latitude)
+    return MapCameraUpdateFactory.lookAt(
+        GeoPoint.from(position).toGeoCoordinates().toUpdate(),
         GeoOrientation(bearing, tilt).toUpdate(),
-        MapMeasure(MapMeasure.Kind.ZOOM_LEVEL, zoom),
+        MapMeasure(
+            MapMeasure.Kind.ZOOM_LEVEL,
+            hereZoom,
+        ),
     )
+}
 
-@Keep
-fun MapCameraPositionImpl.toCameraState(): MapCamera.State =
-    MapCamera.State(
-        GeoPointImpl.from(position).toGeoCoordinates(),
-        GeoOrientation(bearing, tilt),
-        0.0,
-        zoom,
-    )
-
-fun MapCameraPositionImpl.Companion.from(position: MapCameraPosition): MapCameraPositionImpl =
+fun MapCameraPosition.Companion.from(position: MapCameraPositionInterface): MapCameraPosition =
     when (position) {
-        is MapCameraPositionImpl -> position
+        is MapCameraPosition -> position
         else ->
-            MapCameraPositionImpl(
-                position = GeoPointImpl.from(position.position),
+            MapCameraPosition(
+                position = GeoPoint.from(position.position),
                 zoom = position.zoom,
                 bearing = position.bearing,
                 tilt = position.tilt,
@@ -45,17 +38,12 @@ fun MapCameraPositionImpl.Companion.from(position: MapCameraPosition): MapCamera
             )
     }
 
-fun MapCamera.State.toMapCameraPosition(): MapCameraPositionImpl {
-    val altitude =
-        converter.zoomLevelToAltitude(
-            zoomLevel = zoomLevel,
-            latitude = targetCoordinates.latitude,
-            tilt = orientationAtTarget.tilt,
-        )
-    val position = targetCoordinates.toGeoPoint().copy(altitude = altitude)
-    return MapCameraPositionImpl(
+fun MapCamera.State.toMapCameraPosition(): MapCameraPosition {
+    val position = targetCoordinates.toGeoPoint()
+    val ourZoom = ZoomAltitudeConverter.hereZoomToGoogleZoom(zoomLevel, position.latitude)
+    return MapCameraPosition(
         position = position,
-        zoom = zoomLevel,
+        zoom = ourZoom,
         bearing = this.orientationAtTarget.bearing,
         tilt = this.orientationAtTarget.tilt,
         visibleRegion = null,

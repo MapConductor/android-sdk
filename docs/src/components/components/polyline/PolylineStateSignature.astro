@@ -1,0 +1,18 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `PolylineState(
+    points: List<GeoPointInterface>,
+    id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    geodesic: Boolean = false,
+    extra: Serializable? = null
+)
+
+@Composable
+fun Polyline(state: PolylineState)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,50 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  visibleCountLabel?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  visibleCountLabel = "Visible Markers"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicNativeLoadingExample() {
+    val nativeManager = remember {
+        NativeMarkerManager<GoogleMapActualMarker>(
+            hexGeocell = HexGeocell.defaultGeocell()
+        )
+    }
+
+    var currentBounds by remember { mutableStateOf<GeoRectBounds?>(null) }
+    var visibleMarkers by remember { mutableStateOf<List<MarkerEntityInterface<GoogleMapActualMarker>>>(emptyList()) }
+
+    // Load markers dynamically based on viewport
+    LaunchedEffect(currentBounds) {
+        currentBounds?.let { bounds ->
+            // Native spatial query is extremely fast
+            visibleMarkers = nativeManager.findMarkersInBounds(bounds)
+        }
+    }
+
+    Column {
+        Text("${visibleCountLabel}: ${'$'}{visibleMarkers.size}")
+
+        // ${commentForMapViewUsage}
+        MapView(
+            state = mapViewState,
+            onCameraMove = { cameraPosition ->
+                currentBounds = cameraPosition.visibleRegion?.bounds
+            }
+        ) {
+            // Only visible markers are processed
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

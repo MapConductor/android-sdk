@@ -1,0 +1,25 @@
+---
+title: "Ejemplos de uso básico"
+---
+
+import SimpleMapExampleTabs from '~/components/examples/basic-usage/SimpleMapExampleTabs.astro';
+import ClickToAddMarkersExample from '~/components/examples/basic-usage/ClickToAddMarkersExample.astro';
+
+En esta sección se muestran ejemplos prácticos de cómo utilizar los componentes de MapConductor en escenarios habituales.
+
+## Introducción
+
+### Mapa sencillo con marcador
+
+<SimpleMapExampleTabs />
+
+## Ejemplos interactivos
+
+### Hacer clic y añadir marcadores
+
+<ClickToAddMarkersExample
+  commentForMapView="Sustituye MapView por el proveedor que prefieras, como GoogleMapView o MapboxMapView"
+  commentForRemoveMarker="Eliminar el marcador clicado"
+  markerLabelPrefix="Marcador"
+/>
+

@@ -3,41 +3,44 @@ package com.mapconductor.simplemapapp
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.circle.Circle
-import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.info.InfoBubbleCustom
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.marker.DefaultIcon
-import com.mapconductor.core.marker.Marker
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.info.InfoBubble
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.googlemaps.rememberGoogleMapViewState
-import com.mapconductor.maplibre.MapLibreMapView
-import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.core.marker.Markers
+import com.mapconductor.core.polygon.Polygon
+import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.heatmap.HeatmapOverlay
+import com.mapconductor.heatmap.HeatmapPoints
+import com.mapconductor.here.HereMapView
+import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.mapbox.MapboxMapView
+import com.mapconductor.mapbox.rememberMapboxMapViewState
+import com.mapconductor.simplemapapp.postoffice.HeatmapLayerPageViewModel
+import com.mapconductor.simplemapapp.postoffice.HeatmapLayerViewModelInterface
+import com.mapconductor.simplemapapp.postoffice.PostOfficeDataLoader
+import com.mapconductor.simplemapapp.postoffice.StarbucksHI_list
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import android.os.Bundle
 
@@ -45,10 +48,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    BasicMapExample(
+                    MarkerExample(
                         modifier =
                             Modifier
                                 .padding(innerPadding)
@@ -61,140 +65,66 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BasicMapExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-
-    // 地図の作成
-    val camera =
-        MapCameraPositionImpl(
-            position = center,
-            zoom = 2.0,
-        )
-    val mapViewState =
-        rememberGoogleMapViewState(
-            cameraPosition = camera,
-        )
-
-    var circleState =
-        remember {
-            CircleState(
-                id = "circle",
-                center = center,
-                radiusMeters = 5_000_000.0,
-                strokeColor = Color.Red.copy(alpha = 0.3f),
-                fillColor = Color.Red.copy(alpha = 0.5f),
-                geodesic = true,
-            )
-        }
-
-    var markerState =
-        remember {
-            MarkerState(
-                id = "marker",
-                position = center,
-                draggable = true,
-            )
-        }
-
-    // 動的な円を持つマップ
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-    GoogleMapView(
-        modifier = modifier,
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            circleState.center = markerState.position
-            println("position = ${(markerState.position as GeoPointImpl).toUrlValue(6)}")
-        },
-    ) {
-        Circle(circleState)
-
-        // 中心マーカー
-        Marker(markerState)
-    }
-}
-
-@Composable
-fun LeftInfoBubbleMapExample(modifier: Modifier = Modifier) {
-    val center = GeoPointImpl.fromLatLong(37.7749, -122.4194)
-    val mapViewState =
-        rememberGoogleMapViewState(
-            cameraPosition =
-                MapCameraPositionImpl(
-                    position = center,
-                    zoom = 13.0,
-                ),
-        )
+fun MarkerExample(modifier: Modifier = Modifier) {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
-    val markerState1 by remember {
-        mutableStateOf(
-            MarkerState(
-                id = "marker1",
-                position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Blue,
-                        label = "1",
-                    ),
-                draggable = true,
-            ),
+    val mapViewState =
+        rememberMapboxMapViewState(
+            cameraPosition =
+                MapCameraPosition(
+                    position =
+                        GeoPoint(
+                            latitude = 21.282048,
+                            longitude = -157.713041,
+                        ),
+                    zoom = 11.0,
+                ),
         )
-    }
-    val markerState2 by remember {
-        mutableStateOf(
-            MarkerState(
-                id = "marker2",
-                position = GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                icon =
-                    DefaultIcon(
-                        fillColor = Color.Red,
-                        label = "2",
-                    ),
-            ),
-        )
-    }
+    val markers =
+        remember {
+            StarbucksHI_list.map { store ->
+                store.copy(
+                    draggable = true,
+                    onClick = {
+                        selectedMarker = it
+                    },
+                )
+            }
+        }
 
-    GoogleMapView(
+    MapboxMapView(
         state = mapViewState,
-        onMapLoaded = {
-            println("Map loaded and ready")
-        },
-        onMapClick = { geoPoint ->
-            selectedMarker = null // 地図クリックで選択解除
-        },
-        onMarkerClick = { markerState ->
-            selectedMarker = markerState
-        },
-        onMarkerDragStart = { markerState ->
-            println("Started dragging marker: ${markerState.id}")
-        },
-        onMarkerDrag = { markerState ->
-            println("Dragging marker to: ${markerState.position}")
-        },
-        onMarkerDragEnd = { markerState ->
-            println("Finished dragging marker: ${markerState.id}")
-        },
+        modifier = modifier,
     ) {
-        // インタラクティブなマーカーを持つ地図コンテンツ
-        Marker(markerState1)
-        Marker(markerState2)
+        Markers(markers)
 
-        // 選択されたマーカーの情報を表示
-        selectedMarker?.let { marker ->
-            val text = GeoPointImpl.from(marker.position).toUrlValue(6)
-            // Example: custom bubble with right-side tail
-            InfoBubbleCustom(
-                marker = marker,
-                tailOffset = Offset(1f, 0.5f), // attach at center-right of the bubble
+        selectedMarker?.let {
+            InfoBubble(
+                marker = it,
+                bubbleColor = Color.Black,
             ) {
-                RightTailInfoBubble(
-                    bubbleColor = Color.White,
-                    borderColor = Color.Black,
-                ) {
+                Column {
                     Text(
-                        text = text,
-                        color = MaterialTheme.colorScheme.primary,
+                        text = GeoPoint.from(it.position).toUrlValue(),
+                        color = Color.White,
                     )
+                    Button(
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                    Color(
+                                        red = 214,
+                                        green = 180,
+                                        blue = 255,
+                                    ),
+                                contentColor = Color.Black,
+                            ),
+                        onClick = {},
+                    ) {
+                        Text(
+                            text = "Change Icon Color",
+                        )
+                    }
                 }
             }
         }
@@ -202,143 +132,208 @@ fun LeftInfoBubbleMapExample(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MapView(modifier: Modifier = Modifier) {
-    val state =
-        rememberMapLibreMapViewState(
+fun HolePolygonExample(modifier: Modifier = Modifier) {
+    val mapViewState =
+        rememberHereMapViewState(
             cameraPosition =
-                MapCameraPositionImpl(
-                    position = GeoPointImpl.fromLatLong(21.324513, -157.925074),
-                    zoom = 5.0,
+                MapCameraPosition(
+                    position = GeoPoint(43.06050568387817, 141.35374551567804),
+                    zoom = 11.0,
                 ),
         )
 
-    val markerState =
+    val polygonState =
         remember {
-            MarkerState(
-                position = GeoPointImpl.fromLatLong(21.324513, -157.925074),
-                draggable = true,
-            )
-        }
-
-    val circleState =
-        remember {
-            CircleState(
-                id = "demo-circle",
-                center = markerState.position,
-                radiusMeters = 5000.0,
-                strokeColor = Color.Magenta,
+            PolygonState(
+                points =
+                    listOf(
+                        GeoPoint(85.0, 90.0),
+                        GeoPoint(85.0, 0.1),
+                        GeoPoint(85.0, -90.0),
+                        GeoPoint(85.0, -179.9),
+                        GeoPoint(0.0, -179.9),
+                        GeoPoint(-85.0, -179.9),
+                        GeoPoint(-85.0, -90.0),
+                        GeoPoint(-85.0, 0.1),
+                        GeoPoint(-85.0, 90.0),
+                        GeoPoint(-85.0, 179.9),
+                        GeoPoint(0.0, 179.9),
+                        GeoPoint(85.0, 179.9),
+                    ),
+                holes =
+                    listOf(
+                        listOf( // 1
+                            GeoPoint(43.10086924222251, 141.35290903949243),
+                            GeoPoint(43.04444342582366, 141.4118953480885),
+                            GeoPoint(43.05060149394299, 141.30656265416695),
+                        ),
+                        listOf( // 2
+                            GeoPoint(43.06035050410283, 141.31990479539704),
+                            GeoPoint(43.038284739487004, 141.33324693662706),
+                            GeoPoint(43.049062034871525, 141.28690055130158),
+                        ),
+                    ),
+                fillColor = Color(0xCC787880),
+                strokeColor = Color.Red,
                 strokeWidth = 2.dp,
-                fillColor = Color.Cyan.copy(alpha = 0.3f),
-                geodesic = true,
             )
         }
 
-    MapLibreMapView(
+//    val polygonState2 = remember { tokyoPolygonState }
+
+    HereMapView(
+        state = mapViewState,
         modifier = modifier,
-        state = state,
-        onMarkerDrag = { draggedState ->
-            circleState.center = draggedState.position
-        },
     ) {
-        Marker(markerState)
-        Circle(circleState)
+        Polygon(polygonState)
+//        Polygon(polygonState2)
     }
 }
 
+// @Composable
+// fun BasicGeoJSONExample(
+//    modifier: Modifier = Modifier,
+// ) {
+//    val context = LocalContext.current
+//    val mapViewState =
+//        rememberMapLibreMapViewState(
+//            cameraPosition =
+//                MapCameraPosition(
+//                    position = GeoPoint(35.691153, 139.756878),
+//                    zoom = 10.0,
+//                )
+//        )
+// //    val geoJson =
+// //        remember {
+// //            // A small sample with MultiPoint, MultiLineString and MultiPolygon (lon/lat order).
+// //            """
+// //            {
+// //              "type": "FeatureCollection",
+// //              "features": [
+// //                {
+// //                  "type": "Feature",
+// //                  "id": "multipoint",
+// //                  "properties": { "name": "MultiPoint sample" },
+// //                  "geometry": {
+// //                    "type": "MultiPoint",
+// //                    "coordinates": [
+// //                      [139.76669, 35.68049],
+// //                      [139.75688, 35.69115],
+// //                      [139.78100, 35.67350]
+// //                    ]
+// //                  }
+// //                },
+// //                {
+// //                  "type": "Feature",
+// //                  "id": "multiline",
+// //                  "properties": { "name": "MultiLineString sample" },
+// //                  "geometry": {
+// //                    "type": "MultiLineString",
+// //                    "coordinates": [
+// //                      [[139.74, 35.69], [139.77, 35.69], [139.80, 35.69]],
+// //                      [[139.76, 35.66], [139.76, 35.68], [139.76, 35.70]]
+// //                    ]
+// //                  }
+// //                },
+// //                {
+// //                  "type": "Feature",
+// //                  "id": "multipolygon",
+// //                  "properties": { "name": "MultiPolygon sample" },
+// //                  "geometry": {
+// //                    "type": "MultiPolygon",
+// //                    "coordinates": [
+// //                      [
+// //                        [
+// //                          [139.7500, 35.6750],
+// //                          [139.7800, 35.6750],
+// //                          [139.7800, 35.6950],
+// //                          [139.7500, 35.6950],
+// //                          [139.7500, 35.6750]
+// //                        ]
+// //                      ]
+// //                    ]
+// //                  }
+// //                }
+// //              ]
+// //            }
+// //            """.trimIndent()
+// //        }
+//    val geoJsonInputStream = remember {
+//        context.assets.open("prefectures.geojson")
+//    }
+//
+//    MapLibreMapView(
+//        modifier = modifier,
+//        state = mapViewState,
+//        markerTiling = MarkerTilingOptions.Default.copy(
+//            minMarkerCount = 0,
+//            debugTileOverlay = true,
+//        ),
+//    ) {
+//        GeoJsonLayer(
+//            geoJsonInputStream = geoJsonInputStream,
+//            geoJsonKey = geoJsonInputStream.hashCode(),
+//            style =
+//                GeoJsonLayerStyle(
+//                    polylineStrokeColor = Color(0xFF1565C0),
+//                    polylineStrokeWidth = 3.dp,
+//                    polygonStrokeColor = Color(0xFF2E7D32),
+//                    polygonStrokeWidth = 2.dp,
+//                    polygonFillColor = Color(0x332E7D32),
+//                ),
+//        )
+//    }
+// }
+
 @Composable
-private fun RightTailInfoBubble(
-    bubbleColor: Color,
-    borderColor: Color,
-    contentPadding: androidx.compose.ui.unit.Dp = 8.dp,
-    cornerRadius: androidx.compose.ui.unit.Dp = 4.dp,
-    tailSize: androidx.compose.ui.unit.Dp = 8.dp,
-    content: @Composable () -> Unit,
-) {
-    Box(modifier = Modifier.wrapContentSize()) {
-        Canvas(modifier = Modifier.matchParentSize()) {
-            val width = size.width
-            val height = size.height
-            val tail = tailSize.toPx()
-            val corner = cornerRadius.toPx()
+fun HeatmapExample(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val dataLoader = remember { PostOfficeDataLoader(context) }
 
-            val path =
-                Path().apply {
-                    moveTo(2 * corner, 0f)
-                    lineTo(width - tail - 2 * corner, 0f)
-                    // top-right corner (before tail)
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(width - tail - 2 * corner, 0f),
-                                bottomRight = Offset(width - tail, 2 * corner),
-                            ),
-                        startAngleDegrees = -90f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    // Right edge to tail top
-                    lineTo(width - tail, height / 2 - tail / 2)
-                    // Tail
-                    lineTo(width, height / 2)
-                    lineTo(width - tail, height / 2 + tail / 2)
-                    // Down to bottom-right corner before tail
-                    lineTo(width - tail, height - 2 * corner)
-                    // bottom-right corner
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(width - tail - 2 * corner, height - 2 * corner),
-                                bottomRight = Offset(width - tail, height),
-                            ),
-                        startAngleDegrees = 0f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    // bottom edge
-                    lineTo(2 * corner, height)
-                    // bottom-left corner
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(0f, height - 2 * corner),
-                                bottomRight = Offset(2 * corner, height),
-                            ),
-                        startAngleDegrees = 90f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    // left edge
-                    lineTo(0f, 2 * corner)
-                    // top-left corner
-                    arcTo(
-                        rect =
-                            Rect(
-                                topLeft = Offset(0f, 0f),
-                                bottomRight = Offset(2 * corner, 2 * corner),
-                            ),
-                        startAngleDegrees = 180f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false,
-                    )
-                    close()
-                }
+    val viewModel: HeatmapLayerViewModelInterface =
+        viewModel<HeatmapLayerPageViewModel>(
+            factory =
+                object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        if (modelClass.isAssignableFrom(HeatmapLayerPageViewModel::class.java)) {
+                            @Suppress("UNCHECKED_CAST")
+                            return HeatmapLayerPageViewModel(
+                                dataLoader = dataLoader,
+                            ) as T
+                        }
+                        throw IllegalArgumentException("Unknown ViewModel class")
+                    }
+                },
+        )
+    LaunchedEffect(Unit) {
+        viewModel.loadPostOfficeData()
+    }
+    val points = viewModel.heatmapPoints.collectAsState().value
 
-            drawPath(path, color = bubbleColor, style = Fill)
-            drawPath(path, color = borderColor, style = Stroke(width = 2f))
+    val camera =
+        remember {
+            MapCameraPosition(
+                position =
+                    GeoPoint.fromLatLong(
+                        latitude = 35.68049,
+                        longitude = 139.76669,
+                    ),
+                zoom = 10.0,
+                bearing = 0.0,
+                tilt = 0.0,
+                paddings = null,
+            )
         }
+    val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
-        Box(
-            modifier =
-                Modifier
-                    .padding(
-                        start = contentPadding,
-                        top = contentPadding,
-                        bottom = contentPadding,
-                        end = contentPadding + tailSize,
-                    ).wrapContentSize()
-                    .clip(RoundedCornerShape(cornerRadius)),
+    HereMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        HeatmapOverlay(
+            trackPointUpdates = false,
         ) {
-            content()
+            HeatmapPoints(points)
         }
     }
 }

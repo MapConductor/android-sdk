@@ -1,0 +1,168 @@
+---
+title: "GeoPointInterface"
+---
+
+import GeoPointInterface from '~/components/core/geopoint/GeoPointInterface.astro';
+import GeoPointImpl from '~/components/core/geopoint/GeoPointImpl.astro';
+import GeoPointFactoryMethods from '~/components/core/geopoint/GeoPointFactoryMethods.astro';
+import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.astro';
+import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
+import ValidationExample from '~/components/core/geopoint/ValidationExample.astro';
+import NormalizationExample from '~/components/core/geopoint/NormalizationExample.astro';
+import WrapExample from '~/components/core/geopoint/WrapExample.astro';
+import EqualsExample from '~/components/core/geopoint/EqualsExample.astro';
+import ToUrlValueExample from '~/components/core/geopoint/ToUrlValueExample.astro';
+
+`GeoPointInterface` representa una coordenada geográfica con latitud, longitud y altitud opcional.
+
+## Interfaz e implementación
+
+### Interfaz GeoPointInterface
+
+La interfaz GeoPointInterface tiene las siguientes propiedades. Se utiliza para pruebas unitarias y otros propósitos.
+
+<GeoPointInterface />
+
+### GeoPoint
+
+La clase GeoPoint es una implementación de la interfaz GeoPointInterface.
+
+<GeoPointImpl />
+
+## Métodos de creación
+
+### Métodos de fábrica
+
+La clase GeoPoint proporciona los siguientes métodos de fábrica.
+Los desarrolladores pueden elegir el método que les resulte más conveniente.
+
+<GeoPointFactoryMethods
+  commentForFromLatLong="Especificar valores en orden latitud, longitud"
+  commentForFromLongLat="Especificar valores en orden longitud, latitud"
+  commentForFrom="Crear desde un objeto con interfaz GeoPointInterface"
+  commentForConstructor="Crear pasando valores directamente al constructor"
+  latitude={37.7749}
+  longitude={-122.4194}
+  altitude={100.0}
+/>
+
+### Ejemplos de uso
+
+<BasicMarkerExample
+  commentForPosition="Colocación básica de marcador"
+  commentForMapView="Reemplace MapViewContainer con GoogleMapView, MapboxMapView u otro SDK de mapa de su elección"
+  latitude={37.7749}
+  longitude={-122.4194}
+  label="SF"
+/>
+
+
+## Sistema de coordenadas
+
+### Latitud
+- **Rango**: -90.0 a 90.0 grados
+- **-90.0**: Polo Sur
+- **0.0**: Ecuador
+- **90.0**: Polo Norte
+
+### Longitud
+- **Rango**: -180.0 a 180.0 grados
+- **-180.0**: Línea Internacional de Cambio de Fecha (lado oeste)
+- **0.0**: Meridiano de Greenwich
+- **180.0**: Línea Internacional de Cambio de Fecha (lado este)
+
+
+## Validación y normalización
+
+### Validación
+
+La función de extensión `isValid()` verifica si las coordenadas de un GeoPointInterface están dentro de rangos válidos.
+
+- **Latitud**: Dentro del rango -90.0 a 90.0
+- **Longitud**: Dentro del rango -180.0 a 180.0
+
+Devuelve `true` cuando se cumplen ambas condiciones.
+
+<ValidationExample
+  commentForUsage="Ejemplo de uso"
+  commentForUse="Usar el punto"
+  latitude={37.7749}
+  longitude={-122.4194}
+/>
+
+### Normalización
+
+Hay dos métodos disponibles para mantener las coordenadas dentro de rangos válidos.
+
+#### normalize()
+
+La función de extensión `normalize()` ajusta las coordenadas a rangos válidos.
+
+- **Latitud**: Limitada a -90.0 a 90.0
+- **Longitud**: Normalizada a -180.0 a 180.0 (operación módulo)
+- **Altitud**: Convertida a 0.0 si es null
+
+<NormalizationExample
+  commentForUsage="Ejemplo de uso"
+  commentForInvalid="Coordenadas inválidas"
+  commentForValid="Ajustadas al rango válido"
+  invalidLatitude={100.0}
+  invalidLongitude={200.0}
+/>
+
+#### wrap()
+
+El método `wrap()` envuelve apropiadamente las coordenadas que cruzan los polos.
+
+- **Cuando la latitud excede 90 grados**: Se envuelve desde -90 grados, invierte la longitud 180 grados
+- **Cuando la latitud cae por debajo de -90 grados**: Se envuelve desde 90 grados, invierte la longitud 180 grados
+- **Longitud**: Normalizada a -180.0 a 180.0
+
+<WrapExample
+  commentForExample="Ejemplo: Coordenadas más allá de los polos"
+  commentForOverflow="La latitud excede 90 grados"
+  latitude={95.0}
+  longitude={10.0}
+/>
+
+La diferencia entre `normalize()` y `wrap()` está en cómo manejan el cruce de polos. `normalize()` simplemente limita los valores, mientras que `wrap()` calcula las coordenadas reales como si se cruzaran los polos en un globo.
+
+## Comparación
+
+### equals()
+
+El método `equals()` de `GeoPoint` realiza comparaciones considerando errores de punto flotante.
+
+- **Tolerancia**: 1e-7 (aproximadamente 0.00000001 grados, alrededor de 1.1cm)
+- **Objetivos de comparación**: Latitud, longitud y altitud
+
+<EqualsExample
+  commentForTolerance="dentro de la tolerancia"
+  latitude1={37.7749}
+  longitude1={-122.4194}
+  altitude1={100.0}
+  latitude2={37.77490001}
+  longitude2={-122.41940001}
+  altitude2={100.00000001}
+/>
+
+Esta tolerancia permite que las comparaciones ignoren pequeñas diferencias de la aritmética de punto flotante.
+
+## Métodos de utilidad
+
+### toUrlValue()
+
+El método `toUrlValue()` convierte latitud y longitud en una cadena URL.
+
+- **Formato**: `"latitud,longitud"`
+- **Precisión**: Por defecto 6 dígitos (aproximadamente 11cm), personalizable
+
+<ToUrlValueExample
+  commentForDefault="Precisión predeterminada (6 dígitos)"
+  commentForCustom="Precisión personalizada (3 dígitos)"
+  latitude={37.7749}
+  longitude={-122.4194}
+  precision={3}
+/>
+
+Puede usarse para parámetros de URL en servicios de mapas como Google Maps o Mapbox.

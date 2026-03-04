@@ -1,0 +1,77 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForLocations?: string;
+  commentForAnimationInterval?: string;
+  animationIntervalMillis?: number;
+  moveDurationMillis?: number;
+}
+
+const {
+  commentForLocations = "Animate between multiple locations",
+  commentForAnimationInterval = "Animate to next location every 5 seconds",
+  animationIntervalMillis = 5000,
+  moveDurationMillis = 1000
+} = Astro.props;
+
+const code = `@Composable
+fun AnimatedCameraExample() {
+    val locations = listOf(
+        GeoPoint.fromLatLong(37.7749, -122.4194), // San Francisco
+        GeoPoint.fromLatLong(40.7128, -74.0060),  // New York
+        GeoPoint.fromLatLong(51.5074, -0.1278)    // London
+    )
+
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = MapCameraPosition(
+            position = locations[0],
+            zoom = 6.0
+        ),
+    )
+
+    var currentIndex by remember { mutableStateOf(0) }
+
+    // ${commentForAnimationInterval}
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(${animationIntervalMillis})
+            currentIndex = (currentIndex + 1) % locations.size
+
+            val targetPosition = MapCameraPosition(
+                position = locations[currentIndex],
+                zoom = 6.0,
+                bearing = 0.0,
+                tilt = 0.0
+            )
+            mapViewState.moveCameraTo(targetPosition, ${moveDurationMillis})
+        }
+    }
+
+
+    // Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView
+    HereMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        // Add markers for each location
+        locations.forEachIndexed { index, location ->
+            Marker(
+                position = location,
+                icon = DefaultIcon(
+                    fillColor = if (index == currentIndex) Color.Red else Color.Gray,
+                    label = when (index) {
+                        0 -> "SF"
+                        1 -> "NYC"
+                        2 -> "LON"
+                        else -> "${'$'}index"
+                    }
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,10 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// MapLibre
+val maplibreState = rememberMapLibreMapViewState()
+val maplibreHolder: MapLibreMapViewHolderInterface? = maplibreState.getMapViewHolder()`;
+---
+
+<Code code={code} lang="kotlin" />
+

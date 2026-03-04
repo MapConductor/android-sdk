@@ -1,0 +1,56 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  baseOverlayDescription?: string;
+  weatherOverlayDescription?: string;
+  trafficOverlayDescription?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  baseOverlayDescription = "Base satellite",
+  weatherOverlayDescription = "Weather data",
+  trafficOverlayDescription = "Traffic info"
+} = Astro.props;
+
+const code = `@Composable
+fun MultiLayerGroundImageExample() {
+    val context = LocalContext.current
+
+    val overlayStates = remember {
+        listOf(
+            Triple(R.drawable.base_layer, 0.3f, "${baseOverlayDescription}"),
+            Triple(R.drawable.weather_layer, 0.6f, "${weatherOverlayDescription}"),
+            Triple(R.drawable.traffic_layer, 0.8f, "${trafficOverlayDescription}")
+        ).mapNotNull { (resId, opacity, description) ->
+            AppCompatResources.getDrawable(context, resId)?.let { drawable ->
+                GroundImageState(
+                    bounds = GeoRectBounds(
+                        southwest = GeoPoint.fromLatLong(${southwestLatitude}, ${southwestLongitude}),
+                        northeast = GeoPoint.fromLatLong(${northeastLatitude}, ${northeastLongitude})
+                    ),
+                    image = drawable,
+                    opacity = opacity,
+                    extra = description
+                )
+            }
+        }
+    }
+
+    MapView(state = mapViewState) {
+        overlayStates.forEach { state ->
+            GroundImage(state)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

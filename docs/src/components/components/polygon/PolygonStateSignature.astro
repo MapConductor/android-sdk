@@ -1,0 +1,19 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `PolygonState(
+    points: List<GeoPointInterface>,
+    id: String? = null,
+    strokeColor: Color = Color.Black,
+    strokeWidth: Dp = 1.dp,
+    fillColor: Color = Color.Transparent,
+    geodesic: Boolean = false,
+    extra: Serializable? = null
+)
+
+@Composable
+fun Polygon(state: PolygonState)`;
+---
+
+<Code code={code} lang="kotlin" />
+

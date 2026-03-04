@@ -1,0 +1,51 @@
+---
+title: "Zoom Levels"
+---
+
+import ZoomLevelExamples from '~/components/core/zoom-levels/ZoomLevelExamples.astro';
+import GlobalScaleExamples from '~/components/core/zoom-levels/GlobalScaleExamples.astro';
+import RegionalScaleExamples from '~/components/core/zoom-levels/RegionalScaleExamples.astro';
+import MetropolitanScaleExamples from '~/components/core/zoom-levels/MetropolitanScaleExamples.astro';
+import NeighborhoodScaleExamples from '~/components/core/zoom-levels/NeighborhoodScaleExamples.astro';
+import StreetScaleExamples from '~/components/core/zoom-levels/StreetScaleExamples.astro';
+import BuildingScaleExamples from '~/components/core/zoom-levels/BuildingScaleExamples.astro';
+
+MapConductor utiliza niveles de zoom para controlar la escala y el nivel de detalle del mapa. El sistema de zoom sigue aproximadamente las convenciones de Google Maps, aunque puede variar ligeramente entre proveedores debido a diferencias en sus implementaciones internas.
+
+## Entender los niveles de zoom
+
+Los niveles de zoom en MapConductor se representan como valores `Double`, normalmente en el rango de 0 a 21, donde:
+
+- **Valores más altos** = Más zoom (más detalle, área más pequeña).
+- **Valores más bajos** = Menos zoom (menos detalle, área más grande).
+- **Valores fraccionarios** = Interpolación suave entre niveles enteros.
+
+<ZoomLevelExamples />
+
+## Referencia de niveles de zoom
+
+### Escala global (0–5)
+
+<GlobalScaleExamples />
+
+### Escala de país / región (6–9)
+
+<RegionalScaleExamples />
+
+### Escala de ciudad / barrio (10–15)
+
+<MetropolitanScaleExamples />
+<NeighborhoodScaleExamples />
+
+### Escala de edificio / detalle (16+)
+
+<StreetScaleExamples />
+<BuildingScaleExamples />
+
+## Notas por proveedor
+
+- Los valores de zoom exactos y el rango máximo pueden variar según el SDK de mapas (Google Maps, Mapbox, etc.).
+- MapConductor normaliza en la medida de lo posible, pero siempre conviene probar en los proveedores que uses para ajustar los niveles a tus necesidades.
+
+En general, usa el parámetro `zoom` de `MapCameraPositionInterface` como una guía relativa de escala, y ajusta los valores para que coincidan con la experiencia de usuario deseada en cada proveedor.
+

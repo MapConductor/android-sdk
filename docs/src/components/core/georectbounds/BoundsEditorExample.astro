@@ -1,0 +1,98 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  initialSouthWestLatitude?: number;
+  initialSouthWestLongitude?: number;
+  initialNorthEastLatitude?: number;
+  initialNorthEastLongitude?: number;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  initialSouthWestLatitude = 37.7649,
+  initialSouthWestLongitude = -122.4294,
+  initialNorthEastLatitude = 37.7849,
+  initialNorthEastLongitude = -122.4094,
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun BoundsEditorExample() {
+    var bounds by remember {
+        mutableStateOf(
+            GeoRectBounds(
+                southWest = GeoPoint.fromLatLong(${initialSouthWestLatitude}, ${initialSouthWestLongitude}),
+                northEast = GeoPoint.fromLatLong(${initialNorthEastLatitude}, ${initialNorthEastLongitude})
+            )
+        )
+    }
+
+    val onCornerDrag: (MarkerState) -> Unit = { markerState ->
+        val newPosition = markerState.position
+        when (markerState.extra) {
+            "SW" -> {
+                bounds = GeoRectBounds(
+                    southWest = newPosition as GeoPoint,
+                    northEast = bounds.northEast
+                )
+            }
+            "NE" -> {
+                bounds = GeoRectBounds(
+                    southWest = bounds.southWest,
+                    northEast = newPosition as GeoPoint
+                )
+            }
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState
+    ) {
+        // Bounds visualization
+        if (!bounds.isEmpty) {
+            val sw = bounds.southWest!!
+            val ne = bounds.northEast!!
+
+            // Bounds rectangle
+            Polygon(
+                points = listOf(
+                    sw,
+                    GeoPoint.fromLatLong(sw.latitude, ne.longitude),
+                    ne,
+                    GeoPoint.fromLatLong(ne.latitude, sw.longitude),
+                    sw
+                ),
+                strokeColor = Color.Red,
+                fillColor = Color.Red.copy(alpha = 0.2f)
+            )
+
+            // Corner markers
+            Marker(
+                position = sw,
+                icon = DefaultIcon(
+                    fillColor = Color.Green,
+                    label = "SW"
+                ),
+                draggable = true,
+                extra = "SW",
+                onDrag = onCornerDrag
+            )
+
+            Marker(
+                position = ne,
+                icon = DefaultIcon(
+                    fillColor = Color.Red,
+                    label = "NE"
+                ),
+                draggable = true,
+                extra = "NE",
+                onDrag = onCornerDrag
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

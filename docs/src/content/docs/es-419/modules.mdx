@@ -1,0 +1,125 @@
+---
+title: Módulos
+---
+
+import BOMImplementationExample from '~/components/modules/BOMImplementationExample.astro';
+import ModuleConfigurationExample from '~/components/modules/ModuleConfigurationExample.astro';
+
+MapConductor está dividido en varios módulos de Gradle para que solo tengas que depender de lo que realmente necesitas. En esta página se resume cada módulo `mapconductor-xxx` en la versión v{BOM_MODULE_VERSION}.
+
+## Núcleo y BOM
+
+### `mapconductor-bom`
+
+Bill of Materials para todos los artefactos de MapConductor.
+
+- Alinea las versiones entre todos los módulos
+- Recomendado para todos los proyectos
+
+<BOMImplementationExample />
+
+### `mapconductor-core`
+
+Runtime central y abstracciones compartidas:
+
+- Tipos de geometría: `GeoPointInterface`, `GeoRectBounds`
+- Tipos de cámara: `MapCameraPositionInterface`, `VisibleRegion`
+- Abstracciones de mapa: `MapViewStateInterface`, `MapViewControllerInterface`, `MapViewBase`
+- Registro de plugins/capabilities: `MapServiceRegistry` (vía `LocalMapServiceRegistry`)
+- Primitivas de overlay: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
+
+Todos los demás módulos se construyen sobre `mapconductor-core`.
+
+## Integraciones de proveedores de mapas
+
+Los módulos específicos de cada SDK implementan la API unificada:
+
+### `mapconductor-for-googlemaps`
+
+- Composable `GoogleMapView`
+- `GoogleMapViewState`
+- Controladores de overlays específicos de Google Maps
+
+### `mapconductor-for-mapbox`
+
+- Composable `MapboxMapView`
+- `MapboxViewState`
+
+### `mapconductor-for-here`
+
+- Composable `HereMapView`
+- `HereViewState`
+
+### `mapconductor-for-arcgis`
+
+- Composable `ArcGISMapView`
+- `ArcGISMapViewState`
+
+### `mapconductor-for-maplibre`
+
+- Composable `MapLibreMapView`
+- `MapLibreViewState`
+
+Cada módulo de proveedor:
+
+- Implementa `MapViewStateInterface` y los bindings del controlador
+- Mapea la cámara y región visible específicas del proveedor a `MapCameraPositionInterface`
+- Expone controladores de overlays (marcador, polilínea, polígono, círculo y ground image cuando se soporta)
+
+## Módulos experimentales / utilitarios
+
+### `mapconductor-icons`
+
+Iconos de marcador implementados en Compose puro:
+
+- `CircleIcon`, `FlagIcon`
+- Estilos de burbuja de información (redonda, con cola, etc.)
+
+Útiles cuando necesitas una apariencia de marcadores consistente entre proveedores sin depender de drawables específicos del SDK.
+
+### `mapconductor-marker-strategy`
+
+Estrategias de renderizado de marcadores de alto nivel:
+
+- Estrategias espaciales / similares a clustering
+- Abstracciones para conjuntos de marcadores controlados de forma remota
+
+Diseñado para funcionar con cualquier módulo de proveedor a través de interfaces compartidas y capabilities registradas por el proveedor (ver [Map Service Registry](/es-419/core/service-registry/)).
+
+### `mapconductor-marker-native-strategy`
+
+Estrategias aceleradas de forma nativa para conjuntos muy grandes de marcadores:
+
+- Enfocadas en el rendimiento a gran escala
+- Normalmente se usan junto con `mapconductor-marker-strategy`
+
+## Aplicaciones de ejemplo
+
+### `example-app`
+
+Aplicación de demostración que muestra:
+
+- Uso básico del mapa y cambio de proveedor
+- Manejo de cámara y región visible (`VisibleRegionPage`, `ZoomCalibrationPage`)
+- Polilíneas, polígonos, círculos y ground images
+- Burbujas de información e iconos de marcador personalizados
+
+### `simple-map-app`
+
+Ejemplo mínimo para pruebas rápidas de integración y depuración.
+
+## Cómo elegir módulos
+
+Configuraciones típicas:
+
+<ModuleConfigurationExample
+  comment="Mínimo: solo Google Maps"
+  modules={["core", "for-googlemaps"]}
+/>
+
+<ModuleConfigurationExample
+  comment="Varios proveedores con iconos y estrategias"
+  modules={["core", "for-googlemaps", "for-mapbox", "icons", "marker-strategy"]}
+/>
+
+Utiliza esta página como mapa de alto nivel. La información detallada de la API para cada área (núcleo, componentes, estados, módulos experimentales) puede migrarse desde las secciones existentes de mdBook (`docs/src/core`, `docs/src/components`, etc.).

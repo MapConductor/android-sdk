@@ -1,4 +1,4 @@
-package com.mapconductor.example
+﻿package com.mapconductor.example
 
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Box
@@ -14,23 +14,27 @@ import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
+import com.mapconductor.example.pages.heatmaplayer.HeatmapLayerPage
 import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
 import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
+import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
-import com.mapconductor.example.pages.marker.postoffice.PostOfficeMapPage
+import com.mapconductor.example.pages.marker.postoffice.PostOfficePage
+import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapPage as PostOfficeClusterMapPage
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
+import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
 import com.mapconductor.example.ui.sidebar.SidebarItem
@@ -65,8 +69,8 @@ fun DemoAppScreen(initPage: String = "map") {
         remember {
             val baseicon = AppCompatResources.getDrawable(context, R.drawable.postoffice)!!
             ImageIcon(
-                drawable = baseicon,
-                scale = 0.3f,
+                image = baseicon,
+                scale = 0.5f,
             )
         }
 
@@ -105,6 +109,10 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "VisibleRegion",
             ),
             SidebarItem(
+                id = "map-camerasync",
+                title = "Camera Sync",
+            ),
+            SidebarItem(
                 id = "marker-basic",
                 title = "Marker",
             ),
@@ -115,6 +123,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "marker-postoffice",
                 title = "Bunch of Markers",
+            ),
+            SidebarItem(
+                id = "marker-postoffice-cluster",
+                title = "Marker Clustering",
             ),
             SidebarItem(
                 id = "circle",
@@ -143,6 +155,14 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "polygon-geodesic",
                 title = "Geodesic polygons",
+            ),
+            SidebarItem(
+                id = "raster-layer",
+                title = "Raster Layer",
+            ),
+            SidebarItem(
+                id = "heatmap-overlay",
+                title = "Heatmap overlay",
             ),
         )
 
@@ -194,6 +214,11 @@ fun DemoAppScreen(initPage: String = "map") {
 //                            onToggleSidebar = navigationViewModel::toggleSidebar,
 //                        )
                     }
+                    "map-camerasync" -> {
+                        CameraSyncPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "map-flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
@@ -211,7 +236,13 @@ fun DemoAppScreen(initPage: String = "map") {
                         )
                     }
                     "marker-postoffice" -> {
-                        PostOfficeMapPage(
+                        PostOfficePage(
+                            postOfficeIcon = postOfficeIcon,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "marker-postoffice-cluster" -> {
+                        PostOfficeClusterMapPage(
                             postOfficeIcon = postOfficeIcon,
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
@@ -249,6 +280,16 @@ fun DemoAppScreen(initPage: String = "map") {
                     "groundImage" -> {
                         GroundImageMapPage(
                             groundImageResources = groundImageResources,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "raster-layer" -> {
+                        RasterLayerMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "heatmap-overlay" -> {
+                        HeatmapLayerPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

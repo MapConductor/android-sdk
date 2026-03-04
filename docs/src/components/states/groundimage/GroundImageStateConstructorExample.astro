@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `GroundImageState(
+    bounds: GeoRectBounds,
+    image: Drawable,
+    opacity: Float = 1.0f,
+    id: String? = null,
+    extra: Serializable? = null
+)`;
+---
+
+<Code code={code} lang="kotlin" />

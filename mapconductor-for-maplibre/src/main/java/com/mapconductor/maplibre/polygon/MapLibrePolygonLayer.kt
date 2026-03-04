@@ -1,6 +1,6 @@
 package com.mapconductor.maplibre.polygon
 
-import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.maplibre.MapLibreActualPolygon
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.layers.FillLayer
@@ -32,7 +32,7 @@ class MapLibrePolygonLayer(
         }
 
     fun draw(
-        entities: List<PolygonEntity<MapLibreActualPolygon>>,
+        entities: List<PolygonEntityInterface<MapLibreActualPolygon>>,
         style: org.maplibre.android.maps.Style,
     ) {
         val features: List<Feature> =

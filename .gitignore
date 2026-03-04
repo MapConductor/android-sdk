@@ -27,3 +27,6 @@ compose-map-story/
 slides/
 *.secrets
 act.env
+.gradle-user-home
+arcgis-heatmap-issue.txt
+session.txt

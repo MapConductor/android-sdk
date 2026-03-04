@@ -1,0 +1,100 @@
+---
+title: "PolygonState"
+---
+
+import PolygonStateConstructorExample from '~/components/states/polygon/PolygonStateConstructorExample.astro';
+import PolygonStateMethodsExample from '~/components/states/polygon/PolygonStateMethodsExample.astro';
+import PolygonStateBasicExample from '~/components/states/polygon/PolygonStateBasicExample.astro';
+import EditablePolygonExampleComposable from '~/components/states/polygon/EditablePolygonExampleComposable.astro';
+import ZonePolygonsExample from '~/components/states/polygon/ZonePolygonsExample.astro';
+import ComplexPolygonExampleComposable from '~/components/states/polygon/ComplexPolygonExampleComposable.astro';
+import PolygonEventTypesExample from '~/components/states/polygon/PolygonEventTypesExample.astro';
+
+`PolygonState` manages the configuration and behavior of polygon (filled area) overlays on the map. It provides reactive properties for vertices, stroke, fill, and geodesic options.
+
+## Constructor
+
+<PolygonStateConstructorExample />
+
+## Properties
+
+### Core Properties
+- **`id: String`**: Unique identifier (auto-generated if not provided)
+- **`points: List<GeoPointInterface>`**: List of vertices defining the polygon (should be closed)
+- **`extra: Serializable?`**: Additional data attached to the polygon
+
+### Visual Properties
+- **`strokeColor: Color`**: Border color
+- **`strokeWidth: Dp`**: Border width
+- **`fillColor: Color`**: Interior fill color
+- **`geodesic: Boolean`**: Whether to draw geodesic edges
+
+## Methods
+
+<PolygonStateMethodsExample
+  commentForCopy="Create a modified copy"
+  commentForFingerPrint="Change detection"
+  commentForAsFlow="Reactive updates"
+/>
+
+## Usage Examples
+
+### Basic Polygon
+
+<PolygonStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+  commentForClosingPolygon="Close the polygon"
+/>
+
+### Editable Polygon
+
+<EditablePolygonExampleComposable
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  polygonClickedLog="Polygon clicked at: ${event.clicked}"
+  commentForVertexMarkers="Vertex markers (excluding closing point)"
+  vertexExtraPrefix="vertex_"
+/>
+
+### Zone Polygons
+
+<ZonePolygonsExample
+  restrictedZoneExtra="Restricted Zone"
+  parkingZoneExtra="Parking Zone"
+  safeZoneExtra="Safe Zone"
+/>
+
+### Complex Shapes
+
+<ComplexPolygonExampleComposable
+  commentForStarPolygon="Star polygon"
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusDegrees={0.01}
+  innerRadiusDegrees={0.005}
+  commentForClosingPolygon="Close the polygon"
+  extraLabel="Star shape"
+/>
+
+## Event Handling
+
+Polygon events provide both the state and click location:
+
+<PolygonEventTypesExample />
+
+## Best Practices
+
+1. **Close the Polygon**: Ensure the first and last points are the same
+2. **Vertex Order**: Use a consistent order (clockwise/counterclockwise)
+3. **Performance**: Avoid overly complex polygons with many vertices
+4. **Visual Design**: Use appropriate fill transparency for map visibility
+5. **Validation**: Ensure polygons form valid geometries

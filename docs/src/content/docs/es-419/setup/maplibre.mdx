@@ -1,0 +1,143 @@
+---
+title: Configuración de MapLibre
+---
+
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import AppGradleTabs from '~/components/setup/maplibre/AppGradleTabs.astro';
+import SettingsGradleTabs from '~/components/setup/maplibre/SettingsGradleTabs.astro';
+import MapLibreStyleExamples from '~/components/setup/maplibre/MapLibreStyleExamples.astro';
+import TestMapLibreComposable from '~/components/setup/maplibre/TestMapLibreComposable.astro';
+
+# Configuración de MapLibre
+
+En esta sección se explica cómo configurar MapLibre Native Android junto con MapConductor.
+
+:::tip
+MapConductor proporciona una capa de API unificada sobre los SDKs de mapas existentes. Debes configurar el SDK de MapLibre Native Android de forma independiente antes de usar la integración de MapLibre de MapConductor.
+:::
+
+## Requisitos previos
+
+- Entorno de desarrollo Android
+- URL del servidor de teselas (por ejemplo, OpenStreetMap, Maptiler o un servidor auto-hospedado)
+- URL o configuración del estilo JSON
+
+## Pasos de configuración
+
+### 1. Selección del servidor de teselas
+
+MapLibre es una biblioteca de mapas de código abierto que requiere un servidor de teselas. Algunas opciones:
+
+**Opciones gratuitas / comunitarias:**
+- [Teselas de OpenStreetMap](https://wiki.openstreetmap.org/wiki/Raster_tile_providers): gratis, pero requiere atribución.
+- [Protomaps](https://protomaps.com/): datos abiertos con opciones de auto-hospedado.
+
+**Proveedores comerciales:**
+- [Maptiler](https://www.maptiler.com/): ofrece nivel gratuito.
+- [Stadia Maps](https://stadiamaps.com/): ofrece nivel gratuito.
+- [MapTiler Cloud](https://cloud.maptiler.com/): nivel gratuito generoso.
+
+**Auto-hospedado:**
+- Ejecuta tu propio servidor de teselas con herramientas como [tileserver-gl](https://github.com/maptiler/tileserver-gl).
+
+### 2. Configuración de Gradle
+
+Añade las dependencias en el `build.gradle.kts` o `build.gradle` de tu app:
+
+<AppGradleTabs
+  maplibreSdkComment="MapLibre Native Android SDK"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
+
+El SDK de MapLibre está disponible en Maven Central, que debería estar configurado ya en tu `settings.gradle.kts` o `settings.gradle`:
+
+<SettingsGradleTabs />
+
+### 3. Configuración de AndroidManifest
+
+Añade los permisos necesarios en tu `AndroidManifest.xml`:
+
+<AndroidManifestExample
+  metaDataEntries={[]}
+  permissions={[
+    {name: "android.permission.INTERNET", comment: "Añade permiso de internet para la carga de teselas"},
+    {name: "android.permission.ACCESS_COARSE_LOCATION"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
+
+### 4. Configuración de estilo
+
+MapLibre requiere un JSON de estilo para definir cómo se ve el mapa. Puedes usar un estilo alojado o uno personalizado.
+
+<MapLibreStyleExamples
+  demoTitle="Estilo de demostración"
+  hostedTitle="Uso de estilo alojado"
+  osmTitle="Uso de estilo OpenStreetMap"
+  osmComment="Ejemplo usando el estilo OSM Liberty"
+/>
+
+## Verificación
+
+Para verificar la configuración de MapLibre:
+
+1. Compila y ejecuta la app.
+2. Comprueba que las teselas del mapa se cargan correctamente.
+3. Prueba las interacciones de mapa (zoom, desplazamiento, rotación).
+4. Verifica que se muestre la atribución si tu proveedor de teselas lo requiere.
+
+<TestMapLibreComposable comment="Si esta pantalla se muestra correctamente, tu configuración es válida" />
+
+![Resultado de TestMapLibre](~/assets/setup/basic-setup-maplibre.png)
+
+## Solución de problemas
+
+### Problemas comunes
+
+**El mapa no se muestra (pantalla en blanco)**  
+
+- Verifica que la URL del estilo sea accesible y correcta.
+- Comprueba la conectividad a internet para la carga de teselas.
+- Asegúrate de que el JSON de estilo sea válido.
+- Revisa Logcat en busca de errores de red o de análisis.
+
+**Las teselas no se cargan**  
+
+- Verifica que la URL del servidor de teselas sea correcta.
+- Comprueba los límites de tasa de servicios de teselas gratuitos.
+- Si usas proveedores comerciales, asegúrate de que el API key sea válido.
+- Revisa que los permisos de red estén concedidos.
+
+**Atribución ausente**  
+
+- La mayoría de los proveedores de teselas requieren que se muestre atribución.
+- Revisa los términos de servicio de tu proveedor.
+- Añade el texto de atribución correspondiente en la interfaz de tu aplicación.
+
+**Errores de compilación**  
+
+- Verifica que la versión del SDK de MapLibre sea compatible.
+- Asegúrate de que el repositorio Maven Central esté configurado.
+- Comprueba posibles conflictos de dependencias con otros SDKs de mapas.
+
+## Requisitos de atribución
+
+Muchos servidores de teselas requieren atribución. Ejemplos comunes:
+
+- **OpenStreetMap**: "© OpenStreetMap contributors"
+- **Maptiler**: "© MapTiler © OpenStreetMap contributors"
+- **Stadia Maps**: revisa sus requisitos específicos.
+
+Asegúrate de mostrar las atribuciones requeridas en la interfaz de tu aplicación según los términos de tu proveedor de teselas.
+
+## Consejos de rendimiento
+
+- Utiliza teselas vectoriales siempre que sea posible para mejorar el rendimiento y reducir el tamaño de las descargas.
+- Considera el uso de caché de teselas para escenarios sin conexión.
+- Usa niveles de zoom adecuados para tu caso de uso.
+- Supervisa el uso de red si utilizas conexiones de datos de pago.
+
+## Próximos pasos
+
+Una vez configurado correctamente MapLibre, puedes utilizar el componente `MapLibreMapView` de MapConductor con la API unificada.

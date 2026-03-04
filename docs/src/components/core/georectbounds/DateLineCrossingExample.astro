@@ -1,0 +1,33 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  southWestLatitude?: number;
+  southWestLongitude?: number;
+  northEastLatitude?: number;
+  northEastLongitude?: number;
+  pointLatitude?: number;
+  pointLongitude?: number;
+}
+
+const {
+  southWestLatitude = 20.0,
+  southWestLongitude = 170.0,
+  northEastLatitude = 40.0,
+  northEastLongitude = -170.0,
+  pointLatitude = 30.0,
+  pointLongitude = 175.0
+} = Astro.props;
+
+const code = `// Bounds crossing the date line
+val pacificBounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(${southWestLatitude}, ${southWestLongitude}),  // West of date line
+    northEast = GeoPoint.fromLatLong(${northEastLatitude}, ${northEastLongitude})  // East of date line
+)
+
+val pointInPacific = GeoPoint.fromLatLong(${pointLatitude}, ${pointLongitude})
+val containsPoint = pacificBounds.contains(pointInPacific) // true`;
+---
+
+<Code code={code} lang="kotlin" />
+

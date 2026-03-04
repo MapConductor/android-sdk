@@ -1,0 +1,55 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForBasic?: string;
+  commentForAerial?: string;
+  commentForPadded?: string;
+  latitude?: number;
+  longitude?: number;
+  basicZoom?: number;
+  aerialZoom?: number;
+  aerialBearing?: number;
+  aerialTilt?: number;
+  paddedZoom?: number;
+  paddingTop?: number;
+  paddingLeft?: number;
+  paddingBottom?: number;
+  paddingRight?: number;
+}
+
+const {
+  commentForBasic = "Basic camera position",
+  commentForAerial = "Camera with bearing and tilt",
+  commentForPadded = "Camera with padding for UI elements",
+  latitude = 37.7749,
+  longitude = -122.4194,
+  basicZoom = 15.0,
+  aerialZoom = 18.0,
+  aerialBearing = 45.0,
+  aerialTilt = 60.0,
+  paddedZoom = 14.0,
+  paddingTop = 100.0,
+  paddingLeft = 50.0,
+  paddingBottom = 200.0,
+  paddingRight = 50.0
+} = Astro.props;
+
+const code = `// ${commentForBasic}
+val sanFrancisco = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+    zoom = ${basicZoom}
+)
+
+// ${commentForAerial}
+val aerialView = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+    zoom = ${aerialZoom},
+    bearing = ${aerialBearing},  // Northeast direction
+    tilt = ${aerialTilt}      // Angled view
+)
+`;
+---
+
+<Code code={code} lang="kotlin" />
+

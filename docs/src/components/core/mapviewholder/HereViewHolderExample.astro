@@ -1,0 +1,40 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForAccessApis?: string;
+  commentForUseFeatures?: string;
+  commentForSearchResults?: string;
+  commentForRouting?: string;
+}
+
+const {
+  commentForAccessApis = "Access native HERE SDK APIs",
+  commentForUseFeatures = "Use HERE specific features",
+  commentForSearchResults = "Handle HERE search results",
+  commentForRouting = "Configure and use routing"
+} = Astro.props;
+
+const code = `typealias HereViewHolder = MapViewHolderInterface<MapView, MapScene>
+
+// ${commentForAccessApis}
+hereHolder?.let { holder ->
+    val hereMapView: MapView = holder.mapView
+    val mapScene: MapScene = holder.map
+
+    // ${commentForUseFeatures}
+    val searchEngine = SearchEngine()
+    val textQuery = TextQuery("coffee shops", geoCoordinates)
+
+    searchEngine.search(textQuery) { searchError, searchResults ->
+        // ${commentForSearchResults}
+    }
+
+    // HERE routing
+    val routingEngine = RoutingEngine()
+    // ${commentForRouting}
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

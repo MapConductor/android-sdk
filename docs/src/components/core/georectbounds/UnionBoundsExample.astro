@@ -1,0 +1,42 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  firstSouthWestLatitude?: number;
+  firstSouthWestLongitude?: number;
+  firstNorthEastLatitude?: number;
+  firstNorthEastLongitude?: number;
+  secondSouthWestLatitude?: number;
+  secondSouthWestLongitude?: number;
+  secondNorthEastLatitude?: number;
+  secondNorthEastLongitude?: number;
+  commentForCombinedBounds?: string;
+}
+
+const {
+  firstSouthWestLatitude = 37.7649,
+  firstSouthWestLongitude = -122.4294,
+  firstNorthEastLatitude = 37.7749,
+  firstNorthEastLongitude = -122.4194,
+  secondSouthWestLatitude = 37.7749,
+  secondSouthWestLongitude = -122.4194,
+  secondNorthEastLatitude = 37.7849,
+  secondNorthEastLongitude = -122.4094,
+  commentForCombinedBounds = "Contains both areas"
+} = Astro.props;
+
+const code = `val bounds1 = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(${firstSouthWestLatitude}, ${firstSouthWestLongitude}),
+    northEast = GeoPoint.fromLatLong(${firstNorthEastLatitude}, ${firstNorthEastLongitude})
+)
+
+val bounds2 = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(${secondSouthWestLatitude}, ${secondSouthWestLongitude}),
+    northEast = GeoPoint.fromLatLong(${secondNorthEastLatitude}, ${secondNorthEastLongitude})
+)
+
+val combinedBounds = bounds1.union(bounds2) // ${commentForCombinedBounds}`;
+---
+
+<Code code={code} lang="kotlin" />
+

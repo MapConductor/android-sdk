@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
@@ -23,14 +23,14 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { PolygonGeodesicPageViewModelImpl() }
+    val viewModel = remember { PolygonGeodesicPageViewModel() }
 
     val points =
         listOf(
-            GeoPointImpl.fromLongLat(23.66, 56.42),
-            GeoPointImpl.fromLongLat(13.39, 2.95),
-            GeoPointImpl.fromLongLat(-87.82, 38.58),
-            GeoPointImpl.fromLongLat(23.66, 56.42),
+            GeoPoint.fromLongLat(23.66, 56.42),
+            GeoPoint.fromLongLat(13.39, 2.95),
+            GeoPoint.fromLongLat(-87.82, 38.58),
+            GeoPoint.fromLongLat(23.66, 56.42),
         )
 
     val polylineState =
@@ -42,6 +42,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
                 fillColor = Color.Green.copy(alpha = 0.5f),
                 geodesic = false,
                 zIndex = 0,
+                onClick = viewModel::onPolygonClicked,
             )
         }
 
@@ -54,6 +55,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
                 fillColor = Color.Blue.copy(alpha = 0.5f),
                 geodesic = true,
                 zIndex = 1,
+                onClick = viewModel::onPolygonClicked,
             )
         }
 
@@ -68,7 +70,6 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
         mapViewState.value?.let {
             MapViewContainer(
                 state = it,
-                onPolygonClick = viewModel::onPolygonClicked,
             ) {
                 Polygon(polylineState)
                 Polygon(geodesicPolylineState)

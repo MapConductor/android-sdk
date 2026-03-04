@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForFromLatLong?: string;
+  commentForFromLongLat?: string;
+  commentForFrom?: string;
+  commentForConstructor?: string;
+  latitude?: number;
+  longitude?: number;
+  altitude?: number;
+}
+
+const {
+  commentForFromLatLong = "Standard creation - latitude first (common pattern)",
+  commentForFromLongLat = "Alternative - longitude first",
+  commentForFrom = "From existing GeoPointInterface",
+  commentForConstructor = "Direct constructor",
+  latitude = 37.7749,
+  longitude = -122.4194,
+  altitude = 100.0
+} = Astro.props;
+
+const code = `// ${commentForFromLatLong}
+GeoPoint.fromLatLong(${latitude}, ${longitude})
+
+// ${commentForFromLongLat}
+GeoPoint.fromLongLat(${longitude}, ${latitude})
+
+// ${commentForFrom}
+GeoPoint.from(existingGeoPoint)
+
+// ${commentForConstructor}
+GeoPoint(latitude = ${latitude}, longitude = ${longitude}, altitude = ${altitude})`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,49 +1,54 @@
 package com.mapconductor.core.polyline
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 abstract class PolylineController<ActualPolyline>(
-    val polylineManager: PolylineManager<ActualPolyline>,
-    open val renderer: PolylineOverlayRenderer<ActualPolyline>,
+    val polylineManager: PolylineManagerInterface<ActualPolyline>,
+    open val renderer: PolylineOverlayRendererInterface<ActualPolyline>,
     override var clickListener: OnPolylineEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         PolylineState,
-        PolylineEntity<ActualPolyline>,
+        PolylineEntityInterface<ActualPolyline>,
         PolylineEvent,
     > {
     override val zIndex: Int = 5
     val semaphore = Semaphore(1)
-    private var currentCameraPosition: MapCameraPositionImpl? = null
+    private var currentCameraPosition: MapCameraPosition? = null
+
+    fun dispatchClick(event: PolylineEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
+    }
 
     override suspend fun add(data: List<PolylineState>) {
         semaphore.withPermit {
-            val modifiedEntities = mutableListOf<PolylineEntity<ActualPolyline>>()
+            val modifiedEntities = mutableListOf<PolylineEntityInterface<ActualPolyline>>()
             val previous = polylineManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<PolylineOverlayRenderer.AddParams>()
-            val updated = mutableListOf<PolylineOverlayRenderer.ChangeParams<ActualPolyline>>()
-            val removed = mutableListOf<PolylineEntity<ActualPolyline>>()
+            val added = mutableListOf<PolylineOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<PolylineOverlayRendererInterface.ChangeParamsInterface<ActualPolyline>>()
+            val removed = mutableListOf<PolylineEntityInterface<ActualPolyline>>()
 
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     val prevEntity = polylineManager.getEntity(state.id)!!
                     updated.add(
-                        object : PolylineOverlayRenderer.ChangeParams<ActualPolyline> {
-                            override val current: PolylineEntity<ActualPolyline> =
-                                PolylineEntityImpl(
+                        object : PolylineOverlayRendererInterface.ChangeParamsInterface<ActualPolyline> {
+                            override val current: PolylineEntityInterface<ActualPolyline> =
+                                PolylineEntity(
                                     state = state,
                                     polyline = prevEntity.polyline,
                                 )
-                            override val prev: PolylineEntity<ActualPolyline> = prevEntity
+                            override val prev: PolylineEntityInterface<ActualPolyline> = prevEntity
                         },
                     )
                     previous.remove(state.id)
                 } else {
                     added.add(
-                        object : PolylineOverlayRenderer.AddParams {
+                        object : PolylineOverlayRendererInterface.AddParamsInterface {
                             override val state: PolylineState = state
                         },
                     )
@@ -68,7 +73,7 @@ abstract class PolylineController<ActualPolyline>(
                 actualPolylines.forEachIndexed { index, polyline ->
                     polyline?.let {
                         val entity =
-                            PolylineEntityImpl<ActualPolyline>(
+                            PolylineEntity<ActualPolyline>(
                                 polyline = polyline,
                                 state = added[index].state,
                             )
@@ -86,7 +91,7 @@ abstract class PolylineController<ActualPolyline>(
                     polyline?.let {
                         val params = updated[index]
                         val entity =
-                            PolylineEntityImpl<ActualPolyline>(
+                            PolylineEntity<ActualPolyline>(
                                 state = params.current.state,
                                 polyline = polyline,
                             )
@@ -110,20 +115,20 @@ abstract class PolylineController<ActualPolyline>(
 
             val polyline = prevEntity.polyline
             val entity =
-                PolylineEntityImpl(
+                PolylineEntity(
                     polyline = polyline,
                     state = state,
                 )
             val polylineParams =
-                object : PolylineOverlayRenderer.ChangeParams<ActualPolyline> {
-                    override val current: PolylineEntity<ActualPolyline> = entity
-                    override val prev: PolylineEntity<ActualPolyline> = prevEntity
+                object : PolylineOverlayRendererInterface.ChangeParamsInterface<ActualPolyline> {
+                    override val current: PolylineEntityInterface<ActualPolyline> = entity
+                    override val prev: PolylineEntityInterface<ActualPolyline> = prevEntity
                 }
             val polylines = renderer.onChange(listOf(polylineParams))
 
             polylines[0]?.let {
                 val entity =
-                    PolylineEntityImpl<ActualPolyline>(
+                    PolylineEntity<ActualPolyline>(
                         polyline = it,
                         state = state,
                     )
@@ -135,20 +140,20 @@ abstract class PolylineController<ActualPolyline>(
 
     override suspend fun clear() {
         semaphore.withPermit {
-            val entities: List<PolylineEntity<ActualPolyline>> = polylineManager.allEntities()
+            val entities: List<PolylineEntityInterface<ActualPolyline>> = polylineManager.allEntities()
             renderer.onRemove(entities)
             renderer.onPostProcess()
             polylineManager.clear()
         }
     }
 
-    override fun find(position: GeoPoint): PolylineEntity<ActualPolyline>? =
+    override fun find(position: GeoPointInterface): PolylineEntityInterface<ActualPolyline>? =
         polylineManager.find(position, currentCameraPosition)?.entity
 
-    fun findWithClosestPoint(position: GeoPoint): PolylineHitResult<ActualPolyline>? =
+    fun findWithClosestPoint(position: GeoPointInterface): PolylineHitResult<ActualPolyline>? =
         polylineManager.find(position, currentCameraPosition)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {
         currentCameraPosition = mapCameraPosition
     }
 

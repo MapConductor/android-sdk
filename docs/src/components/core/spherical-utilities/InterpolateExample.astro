@@ -1,0 +1,56 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForWaypoints?: string;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForWaypoints = "Create waypoints along the great circle route",
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `val start = GeoPoint.fromLatLong(37.7749, -122.4194)
+val end = GeoPoint.fromLatLong(40.7128, -74.0060)
+
+// ${commentForWaypoints}
+val waypoints = (0..10).map { i ->
+    val fraction = i / 10.0
+    Spherical.interpolate(start, end, fraction)
+}
+
+// Use in a route animation
+@Composable
+fun AnimatedRoute() {
+    var currentWaypoint by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (currentWaypoint < waypoints.size - 1) {
+            delay(1000)
+            currentWaypoint++
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Show route
+        Polyline(
+            points = waypoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 3.dp
+        )
+
+        // Moving marker
+        if (currentWaypoint < waypoints.size) {
+            Marker(
+                position = waypoints[currentWaypoint],
+                icon = DefaultIcon(fillColor = Color.Red)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

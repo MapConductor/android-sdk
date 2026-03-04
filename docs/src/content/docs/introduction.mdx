@@ -1,0 +1,104 @@
+---
+title: Introduction
+---
+
+import BasicMapExample from '~/components/introduction/BasicMapExample.astro';
+import ProviderStateExamples from '~/components/introduction/ProviderStateExamples.astro';
+
+# MapConductor Android SDK Documentation
+
+MapConductor is a unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and MapLibre. This documentation covers the public API components available through Maven distribution for **v{BOM_MODULE_VERSION}**.
+
+## Overview
+
+The MapConductor SDK allows you to use a single API to work with different map providers. The SDK automatically handles provider-specific implementations while providing a consistent interface for your application.
+
+### Supported Map Providers
+
+- **Google Maps**: `GoogleMapViewState` / `GoogleMapView`
+- **Mapbox**: `MapboxViewState` / `MapboxMapView`
+- **HERE Maps**: `HereViewState` / `HereMapView`
+- **ArcGIS**: `ArcGISMapViewState` / `ArcGISMapView`
+- **MapLibre**: `MapLibreViewState` / `MapLibreMapView`
+
+### Core Classes
+
+The SDK provides fundamental geographic classes:
+
+- **GeoPointInterface**: Represents geographic coordinates (latitude, longitude, altitude)
+- **GeoRectBounds**: Defines rectangular geographic areas with southwest/northeast corners
+- **MapCameraPositionInterface**: Represents camera position (target, zoom, bearing, tilt, paddings)
+
+### Key Components
+
+The SDK provides the following core components:
+
+1. **Map View Components**: Provider-specific map view components (GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView)
+2. **Marker**: Point markers with customizable icons and interactions
+3. **Circle**: Circular overlays with styling options
+4. **Polyline**: Line segments connecting multiple points
+5. **Polygon**: Filled shapes with stroke and fill styling
+6. **GroundImage**: Image overlays positioned geographically (Google Maps only)
+
+## Getting Started
+
+To use MapConductor in your project:
+
+### 1. Installation
+
+See the [Get Started](/get-started) page for complete dependency information and version details.
+
+### 2. SDK-Specific Setup
+
+:::tip
+MapConductor provides a unified API layer on top of existing map SDKs. You must set up each map SDK independently before using MapConductor's integration.
+:::
+
+Each map provider requires its own SDK setup with API keys, permissions, and configuration:
+
+- **[Google Maps Setup](/setup/google-maps)** – Configure Google Maps SDK with API keys and permissions
+- **[Mapbox Setup](/setup/mapbox)** – Set up Mapbox access tokens and style configuration
+- **[HERE Maps Setup](/setup/here-maps)** – Configure HERE SDK with API keys and licensing
+- **[ArcGIS Maps Setup](/setup/arcgis)** – Set up ArcGIS SDK with API keys and licensing
+- **[MapLibre Setup](/setup/maplibre/)** – Configure tiles and style information
+
+You only need to configure the SDKs you plan to use in your application.
+
+### 3. Basic Usage
+
+Create a map view with a marker and a circle:
+
+<BasicMapExample />
+
+![a marker with a circle are drew on the map](~/assets/introduction/basic-googlemaps-example.png)
+
+### 4. Switching Map Providers
+
+To switch between map providers, simply change the `MapViewStateInterface` implementation:
+
+<ProviderStateExamples />
+
+The rest of your code remains the same – all components work consistently across providers.
+
+## What's New in v{BOM_MODULE_VERSION}
+
+Compared to v1.1.0, v{BOM_MODULE_VERSION} includes:
+
+- Fixed a bug where InfoBubble display position was not recalculated when moving the map's visible region
+
+## What's New in v1.1.0
+
+Compared to v1.0.0, v1.1.0 includes:
+
+- Unified camera move event handling (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) across all providers
+- Improved `MapViewStateInterface` camera position handling and `VisibleRegion` integration
+- Refactored marker controller interfaces for clearer provider integrations
+- Expanded example app with advanced camera control and `VisibleRegion` usage examples
+
+## Related Documentation
+
+- [Get Started](/get-started/)
+- [Modules Overview](/modules/)
+- [SDK Version Compatibility](/sdk-version-compatibility/)
+- [Provider Compatibility](/provider-compatibility/)
+

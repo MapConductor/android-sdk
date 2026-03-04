@@ -2,7 +2,7 @@
 agp = "8.10.1"
 
 core = "1.6.1"
-kotlin = "2.0.21"
+kotlin = "2.2.21"
 
 coreKtx = "1.15.0"
 appcompat = "1.7.0"
@@ -17,9 +17,10 @@ lifecycleViewmodelCompose = "2.9.0"
 
 # https://developer.android.com/develop/ui/compose/bom/bom-mapping
 
-# gradle.propertiesのkotlinCompilerExtensionVersionと一致させる
+# gradle.properties?kotlinCompilerExtensionVersion??????
 compose = "1.8.1"
 composeBom = "2025.05.00"
+okhttp = "5.3.2"
 runner = "1.6.2"
 
 mapboxAndroid = "11.14.3"
@@ -27,7 +28,6 @@ playServicesMaps = "19.2.0"
 
 arcgisMapsKotlin = "200.7.0"
 vectordrawable = "1.2.0"
-firebaseBom = "34.2.0"
 ktLint = "13.1.0"
 uiToolingPreviewAndroid = "1.9.1"
 uiToolingPreview = "1.9.1"
@@ -38,9 +38,13 @@ mapLibreSdk = "12.0.0"
 mapLibreAnnotation = "3.0.2"
 runtime = "1.9.3"
 runtimeVersion = "1.9.5"
+materialVersion = "1.10.0"
+jts = "1.20.0"
+uiGraphics = "1.10.2"
+foundation = "1.10.2"
 
 [libraries]
-# Android 基本
+# Android ??
 androidx-core = { module = "androidx.test:core", version.ref = "core" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -53,7 +57,7 @@ androidx-lifecycle-common-java8 = { group = "androidx.lifecycle", name = "lifecy
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 
-# Jetpack Compose（with BOM）
+# Jetpack Compose?with BOM?
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation" }
@@ -72,6 +76,7 @@ mapconductor-arcgis = { module = "com.mapconductor:for-arcgis" }
 mapconductor-maplibre = { module = "com.mapconductor:for-maplibre" }
 mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
 mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
+mapconductor-marker-clustering = { module = "com.mapconductor:marker-clustering" }
 
 # Mapbox
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
@@ -81,6 +86,7 @@ maplibre-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "mapLibre
 maplibre-annotation = { module = "org.maplibre.gl:android-plugin-annotation-v9", version.ref = "mapLibreAnnotation"}
 
 # Google Maps
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 
 # ArcGIS
@@ -89,23 +95,25 @@ arcgis-maps-kotlin-toolkit-bom = { group = "com.esri", name = "arcgis-maps-kotli
 arcgis-maps-kotlin-toolkit-geoview-compose = { group = "com.esri", name = "arcgis-maps-kotlin-toolkit-geoview-compose" }
 arcgis-maps-kotlin-toolkit-authentication = { group = "com.esri", name = "arcgis-maps-kotlin-toolkit-authentication" }
 
-# テスト用
+
+# ????
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "vectordrawable" }
 
-# Firebase
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
-
 net-sf-geographiclib = { group = "net.sf.geographiclib", name="GeographicLib-Java", version.ref="geographiclib"}
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
+material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
+jts-core = { group = "org.locationtech.jts", name = "jts-core", version.ref = "jts" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 jlleitschuh-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktLint"}

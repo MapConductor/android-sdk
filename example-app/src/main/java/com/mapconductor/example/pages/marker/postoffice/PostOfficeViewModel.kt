@@ -1,24 +1,14 @@
 package com.mapconductor.example.pages.marker.postoffice
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.googlemaps.GoogleMapActualMarker
-import com.mapconductor.googlemaps.GoogleMapViewState
-import com.mapconductor.here.HereActualMarker
-import com.mapconductor.here.HereViewState
-import com.mapconductor.mapbox.MapboxActualMarker
-import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.maplibre.MapLibreActualMarker
-import com.mapconductor.maplibre.MapLibreViewState
-import com.mapconductor.marker.strategy.SimpleMarkerStrategy
-import com.mapconductor.marker.strategy.spatial.RemoteSpatialMarkerStrategy
+import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.postoffice.PostOffice
+import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,48 +17,38 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-interface PostOfficeViewModel {
-    val initCameraPosition: MapCameraPositionImpl
+interface PostOfficeViewModelInterface {
+    val initCameraPosition: MapCameraPosition
     val selectedMarker: StateFlow<MarkerState?>
     val markerList: StateFlow<List<MarkerState>>
-    val mapViewState: StateFlow<MapViewState<*>?>
+    val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val isMapLoaded: StateFlow<Boolean>
     val isDataLoading: StateFlow<Boolean>
+    val markerTiling: MarkerTilingOptions
 
-    val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?>
-
-    fun onMapViewChanged(mapViewState: MapViewState<*>)
+    fun onMapViewChanged(mapViewState: MapViewStateInterface<*>)
 
     fun onMarkerClick(clicked: MarkerState)
 
-    fun onMapClick(clicked: GeoPointImpl)
+    fun onMapClick(clicked: GeoPoint)
 
-    fun onMapLoaded(mapViewState: MapViewState<*>)
+    fun onMapLoaded(mapViewState: MapViewStateInterface<*>)
 
     fun onInfoClick(postOffice: PostOffice)
 
     fun loadPostOfficeData()
 }
 
-data class Strategies(
-    val google: MarkerRenderingStrategy<GoogleMapActualMarker>,
-    val mapbox: MarkerRenderingStrategy<MapboxActualMarker>,
-    val here: MarkerRenderingStrategy<HereActualMarker>,
-    val arcgis: MarkerRenderingStrategy<ArcGISActualMarker>,
-    val maplibre: MarkerRenderingStrategy<MapLibreActualMarker>,
-)
-
-class PostOfficeViewModelImpl(
-    private val strategies: Strategies,
+class PostOfficeViewModel(
     private val postOfficeIcon: ImageIcon,
     private val dataLoader: PostOfficeDataLoader,
     private val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : ViewModel(),
-    PostOfficeViewModel {
+    PostOfficeViewModelInterface {
     override val initCameraPosition =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position =
-                GeoPointImpl.fromLatLong(
+                GeoPoint.fromLatLong(
                     latitude = 35.68049,
                     longitude = 139.76669,
                 ),
@@ -80,29 +60,44 @@ class PostOfficeViewModelImpl(
     private val _markerList: MutableStateFlow<List<MarkerState>> = MutableStateFlow(emptyList())
     override val markerList: StateFlow<List<MarkerState>> = _markerList.asStateFlow()
 
+    override val markerTiling: MarkerTilingOptions =
+        MarkerTilingOptions.Default.copy(
+            iconScaleCallback = { _, zoom ->
+                if (zoom > 12.0) {
+                    return@copy 1.3
+                } else if (zoom > 10.0) {
+                    return@copy 1.0
+                } else if (zoom > 8.0) {
+                    return@copy 0.8
+                } else if (zoom > 5.0) {
+                    return@copy 0.5
+                } else {
+                    return@copy 0.2
+                }
+            },
+        )
+
     private val _isMapLoaded: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isMapLoaded: StateFlow<Boolean> = _isMapLoaded.asStateFlow()
 
     private val _isDataLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isDataLoading: StateFlow<Boolean> = _isDataLoading.asStateFlow()
 
-    private var _mapViewState: MutableStateFlow<MapViewState<*>?> = MutableStateFlow(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    private var _mapViewState: MutableStateFlow<MapViewStateInterface<*>?> = MutableStateFlow(null)
+    override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
     private var _selectedMarker: MutableStateFlow<MarkerState?> = MutableStateFlow(null)
     override val selectedMarker: StateFlow<MarkerState?> = _selectedMarker.asStateFlow()
 
-    private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategy<Any>?> =
-        MutableStateFlow(null)
-    override val renderingStrategy: StateFlow<MarkerRenderingStrategy<Any>?> = _renderingStrategy.asStateFlow()
+    private var cameraPosition: MapCameraPosition = initCameraPosition
 
     override fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
         coroutine.launch {
             _isDataLoading.value = true
-            sleep(3000)
             val postOffices = dataLoader.loadAllPostOffices()
+            sleep(1000)
 
             val markerStates =
                 postOffices.map { it ->
@@ -111,11 +106,12 @@ class PostOfficeViewModelImpl(
                         id = it.hashCode().toString(),
                         icon = postOfficeIcon,
                         extra = it,
+                        onClick = this@PostOfficeViewModel::onMarkerClick,
                     )
                 }
             _markerList.value = markerStates
+            sleep(6000)
             _isDataLoading.value = false
-            sleep(1000)
         }
     }
 
@@ -130,47 +126,40 @@ class PostOfficeViewModelImpl(
         this._selectedMarker.value = clicked
     }
 
-    override fun onMapClick(clicked: GeoPointImpl) {
+    override fun onMapClick(clicked: GeoPoint) {
         this._selectedMarker.value = null
     }
 
-    override fun onMapLoaded(mapViewState: MapViewState<*>) {
+    override fun onMapLoaded(mapViewState: MapViewStateInterface<*>) {
         coroutine.launch {
             _isMapLoaded.value = true
+            _mapViewState.value?.moveCameraTo(
+                cameraPosition = cameraPosition,
+            )
         }
     }
 
     override fun onInfoClick(postOffice: PostOffice) {
         _mapViewState.value?.moveCameraTo(
             cameraPosition =
-                MapCameraPositionImpl(
+                MapCameraPosition(
                     position = postOffice.position,
                     zoom = 18.0,
                     tilt = 30.0,
                 ),
-            durationMills = 2000,
+            durationMillis = 2000,
         )
     }
 
-    override fun onMapViewChanged(mapViewState: MapViewState<*>) {
-        renderingStrategy.value?.clear()
+    override fun onMapViewChanged(mapViewState: MapViewStateInterface<*>) {
+        cameraPosition = mapViewState.cameraPosition
+
         this._selectedMarker.value = null
         _mapViewState.value = mapViewState
         _isMapLoaded.value = false
-        _renderingStrategy.value =
-            when (mapViewState) {
-                is GoogleMapViewState -> strategies.google
-                is MapboxViewState -> strategies.mapbox
-                is HereViewState -> strategies.here
-                is ArcGISMapViewState -> strategies.arcgis
-                is MapLibreViewState -> strategies.maplibre
-                else -> SimpleMarkerStrategy<Any>()
-            } as MarkerRenderingStrategy<Any>?
     }
 
     override fun onCleared() {
         super.onCleared()
-        // Clean up remote strategy if it's being used
-        (renderingStrategy as? RemoteSpatialMarkerStrategy<*>)?.destroy()
     }
 }

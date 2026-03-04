@@ -1,0 +1,77 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForLatOffsetNote?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForLatOffsetNote = "This is simplified - actual calculation would consider Earth's curvature"
+} = Astro.props;
+
+const code = `@Composable
+fun InteractiveCircleExample() {
+    var centerPosition by remember {
+        mutableStateOf(GeoPoint.fromLatLong(37.7749, -122.4194))
+    }
+    var radiusMeters by remember { mutableStateOf(1000.0) }
+
+    // Calculate edge marker position
+    val edgePosition = remember(centerPosition, radiusMeters) {
+        // Calculate a point that's 'radiusMeters' meters away from center
+        // ${commentForLatOffsetNote}
+        val latOffset = radiusMeters / 111000.0 // Rough meters per degree latitude
+        GeoPoint.fromLatLong(
+            centerPosition.latitude + latOffset,
+            centerPosition.longitude
+        )
+    }
+
+    val circleState = CircleState(
+        center = centerPosition,
+        radiusMeters = radiusMeters,
+        strokeColor = Color.Blue,
+        fillColor = Color.Blue.copy(alpha = 0.3f),
+        clickable = true,
+        onClick = { circleEvent ->
+            println("Circle clicked at: ${'${'}circleEvent.clicked}")
+        }
+    )
+
+    val centerMarker = MarkerState(
+        position = centerPosition,
+        icon = DefaultIcon(
+            fillColor = Color.Blue,
+            label = "C"
+        ),
+        draggable = false
+    )
+
+    val edgeMarker = MarkerState(
+        position = edgePosition,
+        icon = DefaultIcon(
+            fillColor = Color.Green,
+            label = "E"
+        ),
+        draggable = true,
+        onDrag = { markerState ->
+            // Calculate new radius based on edge marker position
+            val distance = calculateDistance(centerPosition, markerState.position)
+            radiusMeters = distance
+        }
+    )
+
+    // ${commentForMapViewUsage}
+    MapView(
+        state = mapViewState
+    ) {
+        Circle(circleState)
+        Marker(centerMarker)
+        Marker(edgeMarker)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

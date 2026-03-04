@@ -1,0 +1,114 @@
+---
+title: "MarkerState"
+---
+
+import MarkerStateConstructorExample from '~/components/states/marker/MarkerStateConstructorExample.astro';
+import MarkerStateMethodsExample from '~/components/states/marker/MarkerStateMethodsExample.astro';
+import MarkerStateBasicExample from '~/components/states/marker/MarkerStateBasicExample.astro';
+import MarkerStateCustomExample from '~/components/states/marker/MarkerStateCustomExample.astro';
+import DynamicMarkerExampleComposable from '~/components/states/marker/DynamicMarkerExampleComposable.astro';
+import AnimatedMarkerExampleComposable from '~/components/states/marker/AnimatedMarkerExampleComposable.astro';
+import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/MarkerStateAdvancedExamplesComposable.astro';
+
+`MarkerState` is a state class for managing marker position, appearance, and interaction settings. It provides Compose-style reactive updates and efficient diff detection.
+
+## Constructor
+
+<MarkerStateConstructorExample />
+
+`MarkerState` accepts `onClick` / `onDragStart` / `onDrag` / `onDragEnd` / `onAnimateStart` / `onAnimateEnd` in its constructor so each state can handle its own events.
+
+## Properties
+
+### Core Properties
+
+- **`id: String`**: Unique ID for the marker (auto-generated if not provided)
+- **`position: GeoPointInterface`**: Current marker position
+- **`extra: Serializable?`**: Additional data attached to the marker
+
+### Visual Properties
+
+- **`icon: MarkerIconInterface?`**: Marker icon (uses the default icon if not specified)
+- **`clickable: Boolean`**: Whether the marker responds to click events
+- **`draggable: Boolean`**: Whether the user can drag the marker
+
+### Interaction Properties
+
+- **`onClick: (MarkerState) -> Unit`**: Called when the marker is clicked
+- **`onDragStart: (MarkerState) -> Unit`**: Called when dragging starts
+- **`onDrag: (MarkerState) -> Unit`**: Called continuously during dragging
+- **`onDragEnd: (MarkerState) -> Unit`**: Called when dragging ends
+- **`onAnimateStart: (MarkerState) -> Unit`**: Called when animation starts
+- **`onAnimateEnd: (MarkerState) -> Unit`**: Called when animation ends
+
+## Key Methods
+
+<MarkerStateMethodsExample />
+
+You can create a new `MarkerState` by changing only some properties, and generate a fingerprint (snapshot) for diff detection.
+
+## Usage Examples
+
+### Basic MarkerState
+
+<MarkerStateBasicExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  extraLabel="San Francisco marker"
+/>
+
+![Result](~/assets/state/marker-state/marker-state-basic-example.jpg)
+
+### Customized MarkerState
+
+<MarkerStateCustomExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  markerLabel="SF"
+  extraLabel="Draggable San Francisco marker"
+  markerClickLog="Clicked marker: ${markerState.extra}"
+  markerDragLog="Marker dragged to: ${markerState.position}"
+/>
+
+**Log output**
+```
+Marker dragged to: GeoPoint(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+Marker dragged to: GeoPoint(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+...
+Clicked marker: Draggable San Francisco marker
+```
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/marker-state-custom-example.webm" type="video/webm" />
+ <source src="/state/marker-state/marker-state-custom-example.mp4" type="video/mp4" />
+</video>
+
+
+### Update MarkerState Dynamically
+
+<DynamicMarkerExampleComposable
+  initialLatitude={37.7749}
+  initialLongitude={-122.4194}
+  initialLabel="0"
+  initialExtra="Counter: 0"
+  counterExtraTemplate="Counter: $counter"
+  updateButtonLabel="Update marker ($counter)"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/dynamic-marker-example.webm" type="video/webm" />
+ <source src="/state/marker-state/dynamic-marker-example.mp4" type="video/mp4" />
+</video>
+
+### MarkerState with Position Animation
+
+<AnimatedMarkerExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={37.7849}
+  endLongitude={-122.4094}
+  markerLabel="Moving"
+  extraLabel="Animated marker"
+/>
+
+![Result](/state/marker-state/animated-marker-example.gif)

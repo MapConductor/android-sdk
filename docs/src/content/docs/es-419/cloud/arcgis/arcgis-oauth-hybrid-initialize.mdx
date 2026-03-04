@@ -1,0 +1,43 @@
+---
+title: "ArcGISOAuthHybridInitialize"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import ArcGISOAuthHybridInitialize from '~/components/cloud/arcgis/ArcGISOAuthHybridInitialize.astro';
+import ArcGISOAuthHybridInitializeExample from '~/components/cloud/arcgis/ArcGISOAuthHybridInitializeExample.astro';
+
+Usando `ArcGISOAuthHybridInitialize`, puede mostrar contenido de ArcGIS Online iniciando sesión con OAuth2.
+
+## Función ArcGISOAuthHybridInitialize
+
+Intenta la autenticación con Application Credentials y automáticamente recurre al inicio de sesión del usuario si falla.
+Espera hasta que se complete la autenticación.
+
+<ArcGISOAuthHybridInitialize />
+
+## Parámetros
+
+- **`authenticatorState`**: AuthenticatorState que gestiona el estado de autenticación
+- **`portalUrl`**: URL del Portal de ArcGIS
+- **`redirectUrl`**: URI de redirección OAuth
+- **`clientId`**: ID de cliente OAuth
+- **`clientSecret`**: Secreto de cliente OAuth. Si se omite, se mostrará un diálogo de inicio de sesión.
+
+## Ejemplo de uso de ArcGISOAuthHybridInitialize
+
+Mostrando contenido privado administrado en Portal especificando ClientID y ClientSecret.
+
+<ArcGISOAuthHybridInitializeExample
+  commentCameraPosition="Posición de la cámara del mapa"
+  commentAuthStateAndScope="Estado de autenticación y CoroutineScope (para procesamiento secuencial como await)"
+  commentAwaitStyleExecution="Ejecutar secuencialmente como await"
+  commentWaitForSceneLoad="Esperar a que termine de cargar WebScene"
+  commentSceneViewWebSceneOnly="SceneView solo admite WebScene"
+  commentAdditionalLayerExample="Ejemplo de capa adicional (opcional)"
+  commentAuthenticatorUI="IU de autenticación (para inicio de sesión de usuario). Se usa como respaldo para autenticación híbrida."
+/>
+
+<video width="720" height="480" controls>
+ <source src="/cloud/arcgis/arcgis-oauth-hybrid-initialize.webm" type="video/webm" />
+ <source src="/cloud/arcgis/arcgis-oauth-hybrid-initialize.mp4" type="video/mp4" />
+</video>

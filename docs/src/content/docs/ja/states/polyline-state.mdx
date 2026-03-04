@@ -1,0 +1,94 @@
+---
+title: "PolylineState（ポリライン状態）"
+---
+
+import PolylineStateConstructorExample from '~/components/states/polyline/PolylineStateConstructorExample.astro';
+import PolylineStateMethodsExample from '~/components/states/polyline/PolylineStateMethodsExample.astro';
+import PolylineStateBasicExample from '~/components/states/polyline/PolylineStateBasicExample.astro';
+import DynamicPolylineExampleComposable from '~/components/states/polyline/DynamicPolylineExampleComposable.astro';
+import GeodesicPolylineExample from '~/components/states/polyline/GeodesicPolylineExample.astro';
+import RouteExampleComposable from '~/components/states/polyline/RouteExampleComposable.astro';
+import PolylineEventTypesExample from '~/components/states/polyline/PolylineEventTypesExample.astro';
+
+`PolylineState` は、地図上のポリライン（線分）の構成と動作を管理します。点、スタイル、測地線オプションのためのリアクティブなプロパティを提供します。
+
+## コンストラクタ
+
+<PolylineStateConstructorExample />
+
+## プロパティ
+
+### 基本プロパティ
+- **`id: String`**: 一意の識別子（指定されていない場合は自動生成）
+- **`points: List<GeoPointInterface>`**: 線を定義する地理座標のリスト
+- **`extra: Serializable?`**: ポリラインに付加される追加データ
+
+### ビジュアルプロパティ
+- **`strokeColor: Color`**: 線の色
+- **`strokeWidth: Dp`**: 線の太さ
+- **`geodesic: Boolean`**: 測地線（地球の曲率に従う線）を描画するかどうか
+
+## メソッド
+
+<PolylineStateMethodsExample
+  commentForCopy="変更されたコピーを作成"
+  commentForFingerPrint="変更検知"
+  commentForAsFlow="リアクティブ更新"
+/>
+
+## 使用例
+
+### 基本的なポリライン
+
+<PolylineStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7949}
+  thirdLongitude={-122.3994}
+/>
+
+### 動的なポリライン
+
+<DynamicPolylineExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+/>
+
+### 測地線ポリライン
+
+<GeodesicPolylineExample
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={40.7128}
+  endLongitude={-74.006}
+  commentForStartPoint="サンフランシスコ"
+  commentForEndPoint="ニューヨーク"
+  commentForGeodesic="地球の曲率に従う"
+  extraLabel="Cross-country route"
+/>
+
+### 複数セグメントのルート
+
+<RouteExampleComposable
+  highwaySegmentExtra="Highway segment"
+  localRoadSegmentExtra="Local road segment"
+  walkingPathExtra="Walking path"
+/>
+
+## イベント処理
+
+ポリラインイベントは状態とクリック位置の両方を提供します：
+
+<PolylineEventTypesExample />
+
+## ベストプラクティス
+
+1. **点の密度**: 詳細とパフォーマンスのバランスを取る - 過度な点は避けてください
+2. **測地線**: 長距離ルートの場合は正確な経路を示すために測地線を使用してください
+3. **色分け**: 異なる色を使用してルートタイプを区別してください
+4. **太さの階層**: ストロークの太さを使用して重要度を示してください
+5. **パフォーマンス**: 異なるズームレベルで複雑なポリラインの簡略化を検討してください

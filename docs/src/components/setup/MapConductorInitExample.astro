@@ -1,0 +1,41 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  lat?: number;
+  long?: number;
+  zoom?: number;
+  provider?: string;
+  comment?: string;
+}
+
+const {
+  lat = 35.0,
+  long = 135.0,
+  zoom = 12.0,
+  provider = "Google",
+  comment = "Marker / Circle / Polyline などを追加",
+} = Astro.props;
+
+const providerLower = provider.toLowerCase();
+const stateFunction = `remember${provider}MapViewStateInterface`;
+const viewComponent = `${provider}MapView`;
+
+const code = `@Composable
+fun MyMap() {
+    val cameraPosition = MapCameraPosition(
+        position = GeoPoint.fromLatLong(${lat}, ${long}),
+        zoom = ${zoom},
+    )
+
+    val mapViewState = ${stateFunction}(
+        cameraPosition = cameraPosition,
+    )
+
+    ${viewComponent}(state = mapViewState) {
+        // ${comment}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

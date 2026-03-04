@@ -1,0 +1,19 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `import com.mapconductor.marker.nativestrategy.NativeMarkerManager
+import com.mapconductor.core.geocell.HexGeocell
+
+// Create native marker manager
+val nativeManager = NativeMarkerManager<ActualMarker>(
+    hexGeocell = HexGeocell.defaultGeocell()
+)
+
+// Use like standard MarkerManager
+nativeManager.registerEntity(markerEntity)
+val nearestMarker = nativeManager.findNearest(position)
+val markersInBounds = nativeManager.findMarkersInBounds(bounds)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  firstLatitude?: number;
+  firstLongitude?: number;
+  secondLatitude?: number;
+  secondLongitude?: number;
+  thirdLatitude?: number;
+  thirdLongitude?: number;
+}
+
+const {
+  firstLatitude = 37.7749,
+  firstLongitude = -122.4194,
+  secondLatitude = 37.7849,
+  secondLongitude = -122.4094,
+  thirdLatitude = 37.7949,
+  thirdLongitude = -122.3994
+} = Astro.props;
+
+const code = `val polylineState = PolylineState(
+    points = listOf(
+        GeoPoint.fromLatLong(${firstLatitude}, ${firstLongitude}),
+        GeoPoint.fromLatLong(${secondLatitude}, ${secondLongitude}),
+        GeoPoint.fromLatLong(${thirdLatitude}, ${thirdLongitude})
+    ),
+    strokeColor = Color.Blue,
+    strokeWidth = 3.dp
+)
+
+MapView(state = mapViewState) {
+    Polyline(polylineState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />

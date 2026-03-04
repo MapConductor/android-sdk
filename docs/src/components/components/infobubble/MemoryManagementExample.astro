@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForClearOnNavigate?: string;
+  commentForClearInfoBubble?: string;
+}
+
+const {
+  commentForClearOnNavigate = "Clear selected marker when navigating away",
+  commentForClearInfoBubble = "Clear the InfoBubble"
+} = Astro.props;
+
+const code = `// ${commentForClearOnNavigate}
+DisposableEffect(Unit) {
+    onDispose {
+        selectedMarker = null // ${commentForClearInfoBubble}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

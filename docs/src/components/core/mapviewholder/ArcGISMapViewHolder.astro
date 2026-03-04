@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `typealias ArcGISMapViewHolder = MapViewHolderInterface<WrapSceneView, SceneView>
+
+class ArcGISMapViewHolder(
+    override val mapView: WrapSceneView,
+    override val map: SceneView,
+) : MapViewHolderInterface<WrapSceneView, SceneView> {
+    fun toScreenOffset(position: GeoPointInterface): Offset?
+    suspend fun fromScreenOffset(offset: Offset): GeoPoint?
+}`;
+---
+
+<Code code={code} lang="kotlin" />

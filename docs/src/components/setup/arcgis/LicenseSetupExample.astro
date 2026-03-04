@@ -1,0 +1,18 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForLocation?: string;
+  commentForUsage?: string;
+}
+
+const {
+  commentForLocation = "In your Application class or MainActivity",
+  commentForUsage = "Optional for basic use",
+} = Astro.props;
+
+const code = `// ${commentForLocation}
+// ArcGISEnvironment.setLicense("your_license_key_here") // ${commentForUsage}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,114 @@
+---
+title: "MarkerState"
+---
+
+import MarkerStateConstructorExample from '~/components/states/marker/MarkerStateConstructorExample.astro';
+import MarkerStateMethodsExample from '~/components/states/marker/MarkerStateMethodsExample.astro';
+import MarkerStateBasicExample from '~/components/states/marker/MarkerStateBasicExample.astro';
+import MarkerStateCustomExample from '~/components/states/marker/MarkerStateCustomExample.astro';
+import DynamicMarkerExampleComposable from '~/components/states/marker/DynamicMarkerExampleComposable.astro';
+import AnimatedMarkerExampleComposable from '~/components/states/marker/AnimatedMarkerExampleComposable.astro';
+import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/MarkerStateAdvancedExamplesComposable.astro';
+
+`MarkerState` es una clase de estado para gestionar la posición, apariencia y configuración de interacción de los marcadores. Ofrece actualizaciones reactivas compatibles con Compose y un mecanismo eficiente de detección de diferencias.
+
+## Constructor
+
+<MarkerStateConstructorExample />
+
+`MarkerState` recibe `onClick` / `onDragStart` / `onDrag` / `onDragEnd` / `onAnimateStart` / `onAnimateEnd` en el constructor para que cada estado gestione sus propios eventos.
+
+## Propiedades
+
+### Propiedades básicas
+
+- **`id: String`**: ID único del marcador (se genera automáticamente si no se proporciona)
+- **`position: GeoPointInterface`**: Posición actual del marcador
+- **`extra: Serializable?`**: Datos adicionales asociados al marcador
+
+### Propiedades visuales
+
+- **`icon: MarkerIconInterface?`**: Icono del marcador (usa el icono por defecto si no se especifica)
+- **`clickable: Boolean`**: Indica si el marcador responde a eventos de clic
+- **`draggable: Boolean`**: Indica si el usuario puede arrastrar el marcador
+
+### Propiedades de interacción
+
+- **`onClick: (MarkerState) -> Unit`**: Se llama cuando se hace clic en el marcador
+- **`onDragStart: (MarkerState) -> Unit`**: Se llama cuando comienza el arrastre
+- **`onDrag: (MarkerState) -> Unit`**: Se llama continuamente durante el arrastre
+- **`onDragEnd: (MarkerState) -> Unit`**: Se llama cuando termina el arrastre
+- **`onAnimateStart: (MarkerState) -> Unit`**: Se llama cuando empieza la animación
+- **`onAnimateEnd: (MarkerState) -> Unit`**: Se llama cuando termina la animación
+
+## Métodos principales
+
+<MarkerStateMethodsExample />
+
+Puedes crear un nuevo `MarkerState` cambiando solo algunas propiedades y generar un fingerprint (snapshot) para la detección de diferencias.
+
+## Ejemplos de uso
+
+### MarkerState básico
+
+<MarkerStateBasicExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  extraLabel="Marcador de San Francisco"
+/>
+
+![Resultado](~/assets/state/marker-state/marker-state-basic-example.jpg)
+
+### MarkerState personalizado
+
+<MarkerStateCustomExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  markerLabel="SF"
+  extraLabel="Marcador de San Francisco arrastrable"
+  markerClickLog="Marcador pulsado: ${markerState.extra}"
+  markerDragLog="Marcador arrastrado a: ${markerState.position}"
+/>
+
+**Salida del log**
+```
+Marcador arrastrado a: GeoPoint(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+Marcador arrastrado a: GeoPoint(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+...
+Marcador pulsado: Marcador de San Francisco arrastrable
+```
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/marker-state-custom-example.webm" type="video/webm" />
+ <source src="/state/marker-state/marker-state-custom-example.mp4" type="video/mp4" />
+</video>
+
+
+### Actualizar MarkerState de forma dinámica
+
+<DynamicMarkerExampleComposable
+  initialLatitude={37.7749}
+  initialLongitude={-122.4194}
+  initialLabel="0"
+  initialExtra="Contador: 0"
+  counterExtraTemplate="Contador: $counter"
+  updateButtonLabel="Actualizar marcador ($counter)"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/dynamic-marker-example.webm" type="video/webm" />
+ <source src="/state/marker-state/dynamic-marker-example.mp4" type="video/mp4" />
+</video>
+
+### MarkerState con animación de posición
+
+<AnimatedMarkerExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={37.7849}
+  endLongitude={-122.4094}
+  markerLabel="En movimiento"
+  extraLabel="Marcador animado"
+/>
+
+![Resultado](/state/marker-state/animated-marker-example.gif)

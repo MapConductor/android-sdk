@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class PolylineEvent(
+    val state: PolylineState,
+    val clicked: GeoPointInterface
+)
+
+typealias OnPolylineEventHandler = (PolylineEvent) -> Unit`;
+---
+
+<Code code={code} lang="kotlin" />
+

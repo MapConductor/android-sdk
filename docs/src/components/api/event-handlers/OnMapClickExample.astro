@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForPrint?: string;
+}
+
+const {
+  commentForPrint = "Map clicked at:"
+} = Astro.props;
+
+const code = `MapView(
+    ...
+    onMapClick = { geoPoint ->
+        println("${commentForPrint} \${geoPoint.latitude}, \${geoPoint.longitude}")
+    }
+) {
+    ...
+}`;
+---
+
+<Code code={code} lang="kotlin"  />

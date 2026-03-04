@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  aarVersion?: string;
+}
+
+const {
+  aarVersion = "{HERE_EXPLORER_SDK_VERSION}",
+} = Astro.props;
+
+
+const code = `libs/heresdk-explore-android-${aarVersion}.aar`;
+---
+
+<Code code={code} lang="text" />
+

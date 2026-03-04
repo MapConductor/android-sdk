@@ -1,0 +1,56 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(state = mapViewState) {
+    // Default icon with different scales
+    Marker(
+        position = GeoPoint.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(scale = 0.7f, label = "Small")
+    )
+
+    Marker(
+        position = GeoPoint.fromLatLong(37.7849, -122.4094),
+        icon = DefaultIcon(scale = 1.0f, label = "Normal")
+    )
+
+    Marker(
+        position = GeoPoint.fromLatLong(37.7949, -122.3994),
+        icon = DefaultIcon(scale = 1.4f, label = "Large")
+    )
+
+    // Custom colored marker
+    Marker(
+        position = GeoPoint.fromLatLong(37.7649, -122.4294),
+        icon = DefaultIcon(
+            fillColor = Color.Yellow,
+            strokeColor = Color.Black,
+            strokeWidth = 2.dp,
+            label = "Custom"
+        )
+    )
+
+    // Drawable icon marker
+    val context = LocalContext.current
+    AppCompatResources.getDrawable(context, R.drawable.custom_icon)?.let { drawable ->
+        Marker(
+            position = GeoPoint.fromLatLong(37.7549, -122.4394),
+            icon = DrawableDefaultIcon(
+                backgroundDrawable = drawable,
+                scale = 1.2f
+            )
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

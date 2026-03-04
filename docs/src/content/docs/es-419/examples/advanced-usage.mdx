@@ -1,0 +1,22 @@
+---
+title: "Advanced Usage"
+---
+
+import AdvancedMapExample from '~/components/examples/advanced-usage/AdvancedMapExample.astro';
+
+Esta página muestra ejemplos avanzados que combinan varios overlays, eventos de cámara y gestión de estado reactiva.
+
+## Combinando marcadores, círculos y polilíneas
+
+<AdvancedMapExample
+  commentForMarkerClick="Marker: \${markerState.extra}"
+  polylinePoints={[
+    {lat: 37.7749, long: -122.4194},
+    {lat: 37.7849, long: -122.4094},
+    {lat: 37.7949, long: -122.3994}
+  ]}
+  polylineStrokeColor="Color.Red"
+  polylineStrokeWidth="3.dp"
+/>
+
+![Ejemplo de Marker, Circle y Polyline](/img/examples/marker-circle-polyline.jpg)

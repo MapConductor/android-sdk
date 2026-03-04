@@ -1,0 +1,59 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicLoadingExample() {
+    val mapViewState = rememberGoogleMapViewState()
+    var currentBounds by remember { mutableStateOf<GeoRectBounds?>(null) }
+    var loadedMarkers by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    val strategy = remember {
+        DefaultMarkerStrategy<GoogleMapActualMarker>(
+            expandMargin = 0.3  // Larger margin for preloading
+        )
+    }
+
+    // Load markers dynamically based on viewport
+    LaunchedEffect(currentBounds) {
+        currentBounds?.let { bounds ->
+            val newMarkers = fetchMarkersForBounds(bounds) // Your API call
+
+            newMarkers.forEach { markerData ->
+                if (markerData.id !in loadedMarkers) {
+                    val entity = MarkerEntityInterface(
+                        state = MarkerState(
+                            id = markerData.id,
+                            position = markerData.position,
+                            icon = DefaultIcon()
+                        )
+                    )
+
+                    strategy.markerManager.registerEntity(entity)
+                    loadedMarkers = loadedMarkers + markerData.id
+                }
+            }
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    GoogleMapView(
+        state = mapViewState,
+        onCameraMove = { cameraPosition ->
+            currentBounds = cameraPosition.visibleRegion?.bounds
+        }
+    ) {
+        // Strategy manages dynamic marker loading
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

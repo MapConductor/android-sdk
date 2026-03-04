@@ -1,10 +1,10 @@
 package com.mapconductor.core.polyline
 
-import com.mapconductor.core.map.MapViewHolder
+import com.mapconductor.core.map.MapViewHolderInterface
 import kotlinx.coroutines.CoroutineScope
 
-abstract class AbstractPolylineOverlayRenderer<ActualPolyline> : PolylineOverlayRenderer<ActualPolyline> {
-    abstract val holder: MapViewHolder<*, *>
+abstract class AbstractPolylineOverlayRenderer<ActualPolyline> : PolylineOverlayRendererInterface<ActualPolyline> {
+    abstract val holder: MapViewHolderInterface<*, *>
     abstract val coroutine: CoroutineScope
 
     override suspend fun onPostProcess() {
@@ -15,19 +15,19 @@ abstract class AbstractPolylineOverlayRenderer<ActualPolyline> : PolylineOverlay
 
     abstract suspend fun updatePolylineProperties(
         polyline: ActualPolyline,
-        current: PolylineEntity<ActualPolyline>,
-        prev: PolylineEntity<ActualPolyline>,
+        current: PolylineEntityInterface<ActualPolyline>,
+        prev: PolylineEntityInterface<ActualPolyline>,
     ): ActualPolyline?
 
-    abstract suspend fun removePolyline(entity: PolylineEntity<ActualPolyline>)
+    abstract suspend fun removePolyline(entity: PolylineEntityInterface<ActualPolyline>)
 
-    override suspend fun onAdd(data: List<PolylineOverlayRenderer.AddParams>): List<ActualPolyline?> =
+    override suspend fun onAdd(data: List<PolylineOverlayRendererInterface.AddParamsInterface>): List<ActualPolyline?> =
         data.map { params ->
             createPolyline(params.state)
         }
 
     override suspend fun onChange(
-        data: List<PolylineOverlayRenderer.ChangeParams<ActualPolyline>>,
+        data: List<PolylineOverlayRendererInterface.ChangeParamsInterface<ActualPolyline>>,
     ): List<ActualPolyline?> =
         data.map { params ->
             updatePolylineProperties(
@@ -37,7 +37,7 @@ abstract class AbstractPolylineOverlayRenderer<ActualPolyline> : PolylineOverlay
             )
         }
 
-    override suspend fun onRemove(data: List<PolylineEntity<ActualPolyline>>) {
+    override suspend fun onRemove(data: List<PolylineEntityInterface<ActualPolyline>>) {
         data.forEach { entity ->
             removePolyline(entity)
         }

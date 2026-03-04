@@ -1,0 +1,57 @@
+---
+title: "ArcGISMapViewHolder"
+---
+
+import ArcGISMapViewHolder from '~/components/core/mapviewholder/ArcGISMapViewHolder.astro';
+import ArcGISMapViewHolderAccess from '~/components/core/mapviewholder/ArcGISMapViewHolderAccess.astro';
+import ArcGISMapViewHolderExample from '~/components/core/mapviewholder/ArcGISMapViewHolderExample.astro';
+
+
+## Overview
+
+To access ArcGIS SDK-specific features, use the `ArcGISMapViewHolder`.
+The definition of `ArcGISMapViewHolder` is as follows:
+
+<ArcGISMapViewHolder />
+
+### Properties
+
+- **`mapView: WrapSceneView`**: WrapSceneView to wrap the SceneView
+- **`map: SceneView`**: ArcGISScene class for manipulating the MapView
+
+### Methods
+
+- **`toScreenOffset(position: GeoPointInterface): Offset?`**: Returns the position on the map indicated by GeoPointInterface as a Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffsetSync(offset: Offset): GeoPoint?`**: Returns the GeoPointInterface position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPoint?`**: Returns the GeoPointInterface position on the map for the position specified by Dp value with the top-left of the MapView as (0,0)
+
+
+## Getting ArcGISMapViewHolder
+
+`ArcGISMapViewHolder` can be obtained through `getMapViewHolder()` after the map is initialized.
+
+<ArcGISMapViewHolderAccess />
+
+
+### Sample
+
+<ArcGISMapViewHolderExample
+  commentCameraPosition="Map camera position"
+  commentAuthenticatorState="Set up AuthenticatorState"
+  commentViewHolderVariable="Hold ViewHolder"
+  commentTrafficLayer="Display traffic information layer"
+  commentAuthenticatorStateParam="AuthenticatorState to display login dialog"
+  commentPortalUrl="ArcGIS portal URL"
+  commentRedirectUrl="OAuth2 application redirect URL"
+  commentClientId="OAuth2 application client ID"
+  commentOptional="(Optional)"
+  commentClientSecret="OAuth2 application client secret"
+  commentClientSecretOmit="If omitted, login dialog will be displayed"
+  commentGetViewHolder="Get ViewHolder"
+  commentAuthenticatorUI="Authentication UI (for user login). Used as fallback for hybrid authentication."
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-arcgis.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-arcgis.mp4" type="video/mp4" />
+</video>

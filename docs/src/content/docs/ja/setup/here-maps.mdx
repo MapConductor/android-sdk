@@ -2,7 +2,13 @@
 title: HERE Maps セットアップ
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import HereAarPathExample from '~/components/setup/here-maps/HereAarPathExample.astro';
+import AppGradleTabs from '~/components/setup/here-maps/AppGradleTabs.astro';
+import TestHereComposable from '~/components/setup/here-maps/TestHereComposable.astro';
 
 # HERE Maps セットアップ
 
@@ -30,12 +36,11 @@ MapConductor は既存の地図 SDK 上に統一された API レイヤーを提
 
 ### 2. HERE SDK のインストール
 
-1. HERE SDK Explore Android（例：`4.23.2.0.210004`）をダウンロードします
+1. HERE SDK Explore Android（例：`{HERE_EXPLORER_SDK_VERSION}`）をダウンロードします
 2. AAR ファイルをプロジェクトの `libs/` ディレクトリに配置します:
 
-   ```text
-   libs/heresdk-explore-android-4.23.2.0.210004.aar
-   ```
+   <HereAarPathExample
+    aarVerion="{HERE_EXPLORER_SDK_VERSION}" />
 
 3. AAR ファイル名が Gradle で参照するものと一致していることを確認してください。
 
@@ -43,81 +48,11 @@ MapConductor は既存の地図 SDK 上に統一された API レイヤーを提
 
 プロジェクトのルート `build.gradle.kts` または `build.gradle` に Secrets Gradle Plugin を追加します:
 
-<Tabs>
-<TabItem label="Kotlin (build.gradle.kts)">
-
-```kotlin
-// (root)/build.gradle.kts
-plugins {
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (build.gradle)">
-
-```groovy
-// (root)/build.gradle
-plugins {
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
-}
-```
-
-</TabItem>
-</Tabs>
+<SecretsPluginRootGradleTabs />
 
 次に、アプリの `build.gradle.kts` または `build.gradle` に依存関係を追加し、プラグインを適用します:
 
-<Tabs>
-<TabItem label="Kotlin (build.gradle.kts)">
-
-```kotlin
-// App build.gradle.kts
-plugins {
-    // ... other plugins
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
-}
-
-dependencies {
-    // HERE SDK (local AAR)
-    implementation(
-        files("${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar")
-    )
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
-
-    // MapConductor modules (versions managed by BOM)
-    implementation("com.mapconductor:core")
-    implementation("com.mapconductor:for-here")
-}
-```
-
-</TabItem>
-<TabItem label="Groovy (build.gradle)">
-
-```groovy
-// App build.gradle
-plugins {
-    // ... other plugins
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
-}
-
-dependencies {
-    // HERE SDK (local AAR)
-    implementation files("${rootProject.projectDir}/libs/heresdk-explore-android-4.23.2.0.210004.aar")
-
-    // MapConductor BOM for version management (v{BOM_MODULE_VERSION})
-    implementation platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}")
-
-    // MapConductor modules (versions managed by BOM)
-    implementation "com.mapconductor:core"
-    implementation "com.mapconductor:for-here"
-}
-```
-
-</TabItem>
-</Tabs>
+<AppGradleTabs />
 
 Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み取り、`AndroidManifest.xml` に値を注入するために使用できます。
 
@@ -125,23 +60,17 @@ Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み
 
 `AndroidManifest.xml` に HERE API キーのプレースホルダーを追加します:
 
-```xml
-<!-- AndroidManifest.xml -->
-<application>
-    <!-- HERE API Credentials -->
-    <meta-data
-        android:name="HERE_ACCESS_KEY_ID"
-        android:value="${HERE_ACCESS_KEY_ID}" />
-    <meta-data
-        android:name="HERE_ACCESS_KEY_SECRET"
-        android:value="${HERE_ACCESS_KEY_SECRET}" />
-
-    <!-- Add internet and location permissions -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-</application>
-```
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "HERE_ACCESS_KEY_ID", value: "${HERE_ACCESS_KEY_ID}", comment: "HERE Access Key ID"},
+    {name: "HERE_ACCESS_KEY_SECRET", value: "${HERE_ACCESS_KEY_SECRET}", comment: "HERE Access Key Secret"}
+  ]}
+  permissions={[
+    {name: "android.permission.INTERNET", comment: "Add internet and location permissions"},
+    {name: "android.permission.ACCESS_COARSE_LOCATION"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
 
 ### 5. API 認証情報の設定
 
@@ -149,20 +78,17 @@ Secrets Gradle Plugin は自動的に `secrets.properties` ファイルを読み
 - Secrets Gradle Plugin は、このファイルの実際の値で `AndroidManifest.xml` の `${HERE_ACCESS_KEY_ID}` と `${HERE_ACCESS_KEY_SECRET}` を自動的に置き換えます。
 - CI/CD ビルドの場合は、環境変数または他の安全な方法を使用してこれらの値を提供できます。
 
-```properties
-# secrets.properties
-HERE_ACCESS_KEY_ID=your_actual_here_access_key_id
-HERE_ACCESS_KEY_SECRET=your_actual_here_access_key_secret
-```
+<SecretsPropertiesExample
+  entries={[
+    {key: "HERE_ACCESS_KEY_ID", value: "your_actual_here_access_key_id"},
+    {key: "HERE_ACCESS_KEY_SECRET", value: "your_actual_here_access_key_secret"}
+  ]}
+/>
 
 :::caution
 `secrets.properties` ファイルや HERE SDK AAR を公開バージョン管理にコミットしないでください。
 `.gitignore` に追加すると、不注意でコミットすることを避けることができます。
-```
-# .gitignore
-secrets.properties
-libs/heresdk-*.aar
-```
+<GitignoreExample entries={["secrets.properties", "libs/heresdk-*.aar"]} />
 :::
 
 ## 検証
@@ -173,16 +99,8 @@ HERE Maps のセットアップを確認するには:
 2. HERE マップが正しく表示されることを確認します
 3. マップ操作と HERE 固有の機能をテストします
 
-```kotlin
-@Composable
-fun TestHERE() {
-    val mapState = rememberHereMapViewState()
+<TestHereComposable commentForVerification="もし地図が表示されれば、セットアップが正しくできています" />
 
-    HereMapView(state = mapState) {
-        // If this displays correctly, your setup is working
-    }
-}
-```
 ![TestHEREの実行結果](~/assets/setup/basic-setup-here.png)
 
 ## トラブルシューティング

@@ -1,0 +1,12 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class CircleEvent(
+    val state: CircleState,
+    val clicked: GeoPointInterface
+)
+
+typealias OnCircleEventHandler = (CircleEvent) -> Unit`;
+---
+
+<Code code={code} lang="kotlin" />

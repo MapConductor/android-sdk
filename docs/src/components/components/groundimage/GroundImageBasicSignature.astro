@@ -1,0 +1,14 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MapViewScope.GroundImage(
+    bounds: GeoRectBounds,
+    image: Drawable,
+    opacity: Float = 0.5f,
+    id: String? = null,
+    extra: Serializable? = null
+)`;
+---
+
+<Code code={code} lang="kotlin" />

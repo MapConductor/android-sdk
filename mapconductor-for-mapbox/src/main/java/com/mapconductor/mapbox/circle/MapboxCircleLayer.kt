@@ -7,7 +7,7 @@ import com.mapbox.maps.extension.style.expressions.generated.Expression.Companio
 import com.mapbox.maps.extension.style.layers.generated.circleLayer
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
-import com.mapconductor.core.circle.CircleEntity
+import com.mapconductor.core.circle.CircleEntityInterface
 import com.mapconductor.core.projection.Earth
 import com.mapconductor.mapbox.MapboxActualCircle
 
@@ -21,6 +21,7 @@ class MapboxCircleLayer(
         const val FILL_COLOR = "fillColor"
         const val STROKE_COLOR = "strokeColor"
         const val STROKE_WIDTH = "strokeWidth"
+        const val Z_INDEX = "zIndex"
     }
 
     companion object {
@@ -79,11 +80,14 @@ class MapboxCircleLayer(
             circleStrokeWidth(
                 get { literal(Prop.STROKE_WIDTH) },
             )
+            circleSortKey(
+                get { literal(Prop.Z_INDEX) },
+            )
         }
 
     val source: GeoJsonSource = geoJsonSource(sourceId)
 
-    fun draw(entities: List<CircleEntity<MapboxActualCircle>>) {
+    fun draw(entities: List<CircleEntityInterface<MapboxActualCircle>>) {
         val features = entities.map { it.circle }
         source.featureCollection(
             FeatureCollection.fromFeatures(features),

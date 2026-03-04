@@ -1,0 +1,50 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForWeatherStation?: string;
+  commentForDirectionArrow?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForWeatherStation = "Weather station icon with bottom center anchor",
+  commentForDirectionArrow = "Direction arrow with center anchor"
+} = Astro.props;
+
+const code = `@Composable
+fun ImageIconExamples() {
+    val context = LocalContext.current
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // ${commentForWeatherStation}
+        AppCompatResources.getDrawable(context, R.drawable.weather_station)?.let { icon ->
+            Marker(
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
+                icon = ImageDefaultIcon(
+                    drawable = icon,
+                    anchor = Offset(0.5f, 1.0f), // Bottom center
+                    debug = false
+                )
+            )
+        }
+
+        // ${commentForDirectionArrow}
+        AppCompatResources.getDrawable(context, R.drawable.direction_arrow)?.let { icon ->
+            Marker(
+                position = GeoPoint.fromLatLong(37.7849, -122.4094),
+                icon = ImageDefaultIcon(
+                    drawable = icon,
+                    anchor = Offset(0.5f, 0.5f), // Center
+                    debug = true // Shows anchor point
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

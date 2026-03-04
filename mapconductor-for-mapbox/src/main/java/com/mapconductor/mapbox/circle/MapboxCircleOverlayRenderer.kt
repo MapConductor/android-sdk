@@ -4,11 +4,12 @@ import com.google.gson.JsonObject
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.style.sources.removeGeoJSONSourceFeatures
+import com.mapconductor.core.calculateZIndex
 import com.mapconductor.core.circle.AbstractCircleOverlayRenderer
-import com.mapconductor.core.circle.CircleEntity
-import com.mapconductor.core.circle.CircleManager
+import com.mapconductor.core.circle.CircleEntityInterface
+import com.mapconductor.core.circle.CircleManagerInterface
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.mapbox.MapboxActualCircle
 import com.mapconductor.mapbox.MapboxMapViewHolder
 import com.mapconductor.mapbox.toMapboxColorString
@@ -24,17 +25,17 @@ class MapboxCircleOverlayRenderer(
             sourceId = "circles-source",
             layerId = "circles-layer",
         ),
-    val circleManager: CircleManager<MapboxActualCircle>,
+    val circleManager: CircleManagerInterface<MapboxActualCircle>,
     override val holder: MapboxMapViewHolder,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractCircleOverlayRenderer<MapboxActualCircle>() {
-    override suspend fun removeCircle(entity: CircleEntity<MapboxActualCircle>) {
+    override suspend fun removeCircle(entity: CircleEntityInterface<MapboxActualCircle>) {
         val featureIds = listOf("circle-${entity.state.id}")
         layer.source.removeGeoJSONSourceFeatures(featureIds)
     }
 
     override suspend fun createCircle(state: CircleState): MapboxActualCircle? {
-        val centerPoint = GeoPointImpl.from(state.center).toPoint()
+        val centerPoint = GeoPoint.from(state.center).toPoint()
         val latitudeCorrection =
             if (state.geodesic) {
                 cos(Math.toRadians(centerPoint.latitude()))
@@ -49,6 +50,7 @@ class MapboxCircleOverlayRenderer(
                 addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                addProperty(MapboxCircleLayer.Prop.Z_INDEX, state.zIndex ?: calculateZIndex(state.center))
             },
             "circle-${state.id}",
         )
@@ -56,11 +58,11 @@ class MapboxCircleOverlayRenderer(
 
     override suspend fun updateCircleProperties(
         circle: MapboxActualCircle,
-        current: CircleEntity<MapboxActualCircle>,
-        prev: CircleEntity<MapboxActualCircle>,
+        current: CircleEntityInterface<MapboxActualCircle>,
+        prev: CircleEntityInterface<MapboxActualCircle>,
     ): MapboxActualCircle? {
         val state = current.state
-        val centerPoint = GeoPointImpl.from(state.center).toPoint()
+        val centerPoint = GeoPoint.from(state.center).toPoint()
         val latitudeCorrection =
             if (state.geodesic) {
                 cos(Math.toRadians(centerPoint.latitude()))
@@ -75,6 +77,7 @@ class MapboxCircleOverlayRenderer(
                 addProperty(MapboxCircleLayer.Prop.FILL_COLOR, state.fillColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_COLOR, state.strokeColor.toMapboxColorString())
                 addProperty(MapboxCircleLayer.Prop.STROKE_WIDTH, state.strokeWidth.value)
+                addProperty(MapboxCircleLayer.Prop.Z_INDEX, state.zIndex ?: calculateZIndex(state.center))
             },
             "circle-${state.id}",
         )
@@ -87,7 +90,7 @@ class MapboxCircleOverlayRenderer(
         }
     }
 
-    private fun getAllCircleEntities(): List<CircleEntity<MapboxActualCircle>> {
+    private fun getAllCircleEntities(): List<CircleEntityInterface<MapboxActualCircle>> {
         // This would need access to the polyline manager
         // For now, we'll implement a simple workaround
         return circleManager.allEntities()

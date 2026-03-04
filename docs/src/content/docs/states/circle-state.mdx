@@ -1,0 +1,85 @@
+---
+title: "CircleState"
+---
+
+import CircleStateConstructorExample from '~/components/states/circle/CircleStateConstructorExample.astro';
+import CircleStateMethodsExample from '~/components/states/circle/CircleStateMethodsExample.astro';
+import CircleStateBasicExample from '~/components/states/circle/CircleStateBasicExample.astro';
+import InteractiveCircleExampleComposable from '~/components/states/circle/InteractiveCircleExampleComposable.astro';
+import MultipleCirclesZIndexExample from '~/components/states/circle/MultipleCirclesZIndexExample.astro';
+import CircleEventTypesExample from '~/components/states/circle/CircleEventTypesExample.astro';
+
+`CircleState` manages the configuration and behavior of circular overlays on the map. It provides reactive properties for center position, radiusMeters, styling, and interaction settings.
+
+## Constructor
+
+<CircleStateConstructorExample />
+
+## Properties
+
+### Core Properties
+- **`id: String`**: Unique identifier (auto-generated if not provided)
+- **`center: GeoPointInterface`**: Geographic center of the circle
+- **`radiusMeters: Double`**: radiusMeters in meters
+- **`clickable: Boolean`**: Whether the circle responds to click events
+- **`extra: Serializable?`**: Additional data attached to the circle
+
+### Visual Properties
+- **`strokeColor: Color`**: Border color
+- **`strokeWidth: Dp`**: Border width
+- **`fillColor: Color`**: Interior fill color
+- **`zIndex: Int?`**: Drawing order (higher values drawn on top)
+
+## Methods
+
+<CircleStateMethodsExample
+  commentForCopy="Create a modified copy"
+  commentForFingerPrint="Change detection"
+  commentForAsFlow="Reactive updates"
+/>
+
+## Usage Examples
+
+### Basic Circle
+
+<CircleStateBasicExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  radiusMeters={1000.0}
+/>
+
+### Interactive Circle
+
+<InteractiveCircleExampleComposable
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  initialRadiusMeters={500.0}
+  minRadiusForSlider={100.0}
+  maxRadiusForSlider={2000.0}
+  circleClickLog="Circle clicked at: ${event.clicked}"
+/>
+
+### Multiple Circles with Z-Index
+
+<MultipleCirclesZIndexExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  outerRadiusMeters={1000.0}
+  innerRadiusMeters={500.0}
+  outerZIndex={1}
+  innerZIndex={2}
+/>
+
+## Event Handling
+
+Circle events provide both the state and click location:
+
+<CircleEventTypesExample />
+
+## Best Practices
+
+1. **Radius Units**: Always specify radius in meters for consistency
+2. **Color Alpha**: Use alpha transparency for better map visibility
+3. **Z-Index**: Use z-index to control overlapping circles
+4. **Performance**: Avoid creating too many large circles
+5. **Reactivity**: Update properties directly for efficient re-rendering

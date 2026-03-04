@@ -1,0 +1,49 @@
+---
+title: "MapboxMapViewHolder"
+---
+
+import MapboxMapViewHolder from '~/components/core/mapviewholder/MapboxMapViewHolder.astro';
+import MapboxMapViewHolderAccess from '~/components/core/mapviewholder/MapboxMapViewHolderAccess.astro';
+import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
+
+
+## 概要
+
+Mapbox SDK固有の機能にアクセスするためには、`MapboxMapViewHolder`を使います。
+`MapboxMapViewHolder`の定義は次のとおりです。
+
+<MapboxMapViewHolder />
+
+### プロパティ
+
+- **`mapView: MapView`**: MapboxViewコンポーネント内部で生成したMapView
+- **`map: Mapbox`**: MapViewを操作するためのMapboxクラス
+
+### メソッド
+
+- **`toScreenOffset(position: GeoPointInterface): Offset?`**: GeoPointで示す地図上の位置を、MapView左上を(0,0)としたDp値で返します
+- **`fromScreenOffsetSync(offset: Offset): GeoPoint?`**: MapView左上を(0,0)としたDp値で指定した位置の、地図上でのGeoPoint位置を返します
+- **`fromScreenOffset(coordinate: ScreenCoordinate): GeoPoint?`**: MapView左上を(0,0)としたScreenCoordinate値で指定した位置の、地図上でのGeoPoint位置を返します
+- **`fromScreenOffset(offset: Offset): GeoPoint?`**: MapView左上を(0,0)としたDp値で指定した位置の、地図上でのGeoPoint位置を返します
+
+
+## MapboxMapViewHolderの取得
+
+`MapboxMapViewHolder`は、地図の初期化後に `getMapViewHolder()`を通じて取得できます。
+
+<MapboxMapViewHolderAccess />
+
+
+### サンプル
+
+<MapboxMapViewHolderExample
+  commentPermissionLogic="位置情報アクセス許可後の処理（例: Maps SDK の LocationComponent を有効化してデバイスの位置を表示）"
+  commentExplanationNeeded="位置情報アクセス権限を取得するための説明を表示"
+  commentPermissionDenied="ユーザーが権限を拒否した"
+  commentGetViewHolder="ViewHolderの取得"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-mapbox-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-mapbox-example.mp4" type="video/mp4" />
+</video>

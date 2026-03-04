@@ -4,16 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.mapconductor.arcgis.ArcGISMapViewHolder
 import com.mapconductor.arcgis.from
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.BaseMapViewSaver
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapPaddings
-import com.mapconductor.core.map.MapPaddingsImpl
+import com.mapconductor.core.map.MapPaddingsInterface
 import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.map.MapViewStateImpl
+import com.mapconductor.core.map.MapViewStateInterface
 import java.util.UUID
 import android.app.Activity
 import android.content.Context
@@ -23,52 +22,55 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface ArcGISMapViewState : MapViewState<ArcGISDesignType>
+interface ArcGISMapViewStateInterface : MapViewStateInterface<ArcGISDesignTypeInterface>
 
-class ArcGISMapViewStateImpl(
+class ArcGISMapViewState(
     override val id: String,
-    mapDesignType: ArcGISDesignType,
-    cameraPosition: MapCameraPositionImpl = MapCameraPositionImpl.Default,
-) : MapViewStateImpl<ArcGISDesignType>(),
-    ArcGISMapViewState {
-    private var _cameraPosition: MapCameraPositionImpl = cameraPosition
-    override val cameraPosition: MapCameraPositionImpl
+    mapDesignType: ArcGISDesignTypeInterface,
+    cameraPosition: MapCameraPosition = MapCameraPosition.Default,
+) : MapViewState<ArcGISDesignTypeInterface>(),
+    ArcGISMapViewStateInterface {
+    private var _cameraPosition: MapCameraPosition = cameraPosition
+    override val cameraPosition: MapCameraPosition
         get() = _cameraPosition
 
     // Map padding
-    private val _padding = MutableStateFlow(MapPaddingsImpl.Zeros)
-    val padding: StateFlow<MapPaddings> = _padding.asStateFlow()
+    private val _padding = MutableStateFlow(MapPaddings.Zeros)
+    val padding: StateFlow<MapPaddingsInterface> = _padding.asStateFlow()
 
-    private var controller: ArcGISMapViewController? = null
-    private var _mapDesignType: ArcGISDesignType = mapDesignType
+    private var controller: ArcGISMapViewControllerInterface? = null
+    private var _mapDesignType: ArcGISDesignTypeInterface = mapDesignType
 
-    override var mapDesignType: ArcGISDesignType
+    override var mapDesignType: ArcGISDesignTypeInterface
         set(value) {
             _mapDesignType = value
             this.controller?.setMapDesignType(value)
         }
         get() = _mapDesignType
 
-    internal fun setController(controller: ArcGISMapViewController) {
+    internal fun setController(controller: ArcGISMapViewControllerInterface) {
         this.controller = controller
         controller.setMapDesignType(_mapDesignType)
-        controller.moveCamera(cameraPosition)
     }
 
-    internal fun onMapDesignTypeChange(value: ArcGISDesignType) {
+    internal fun clearController() {
+        this.controller = null
+    }
+
+    internal fun onMapDesignTypeChange(value: ArcGISDesignTypeInterface) {
         _mapDesignType = value
     }
 
     override fun moveCameraTo(
-        cameraPosition: MapCameraPositionImpl,
-        durationMills: Long?,
+        cameraPosition: MapCameraPosition,
+        durationMillis: Long?,
     ) {
         controller?.let { ctrl ->
-            val dstCameraPosition = MapCameraPositionImpl.Companion.from(cameraPosition)
-            if (durationMills == null || durationMills == 0L) {
+            val dstCameraPosition = MapCameraPosition.Companion.from(cameraPosition)
+            if (durationMillis == null || durationMillis == 0L) {
                 ctrl.moveCamera(dstCameraPosition)
             } else {
-                ctrl.animateCamera(dstCameraPosition, durationMills)
+                ctrl.animateCamera(dstCameraPosition, durationMillis)
             }
             return@let
         }
@@ -76,28 +78,28 @@ class ArcGISMapViewStateImpl(
     }
 
     override fun moveCameraTo(
-        position: GeoPointImpl,
-        durationMills: Long?,
+        position: GeoPoint,
+        durationMillis: Long?,
     ) {
         val currentPosition = this.cameraPosition
         val newPosition =
             currentPosition.copy(
                 position = position,
             )
-        this.moveCameraTo(newPosition, durationMills)
+        this.moveCameraTo(newPosition, durationMillis)
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun getMapViewHolder(): ArcGISMapViewHolder? = controller?.holder as? ArcGISMapViewHolder
 
-    internal fun updateCameraPosition(cameraPosition: MapCameraPositionImpl) {
+    internal fun updateCameraPosition(cameraPosition: MapCameraPosition) {
         this._cameraPosition = cameraPosition
     }
 }
 
-class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewStateImpl>() {
+class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewState>() {
     override fun saveMapDesign(
-        state: ArcGISMapViewStateImpl,
+        state: ArcGISMapViewState,
         bundle: Bundle,
     ) {
         bundle.putString("id", state.mapDesignType.id)
@@ -106,9 +108,9 @@ class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewStateImpl>() {
     override fun createState(
         stateId: String,
         mapDesignBundle: Bundle?,
-        cameraPosition: MapCameraPositionImpl,
-    ): ArcGISMapViewStateImpl =
-        ArcGISMapViewStateImpl(
+        cameraPosition: MapCameraPosition,
+    ): ArcGISMapViewState =
+        ArcGISMapViewState(
             id = stateId,
             mapDesignType =
                 ArcGISDesign.Create(
@@ -117,14 +119,14 @@ class ArcGISMapViewSaver : BaseMapViewSaver<ArcGISMapViewStateImpl>() {
             cameraPosition = cameraPosition,
         )
 
-    override fun getStateId(state: ArcGISMapViewStateImpl): String = state.id
+    override fun getStateId(state: ArcGISMapViewState): String = state.id
 }
 
 @Composable
 fun rememberArcGISMapViewState(
     mapDesign: ArcGISDesign = ArcGISDesign.Streets,
-    cameraPosition: MapCameraPosition = MapCameraPositionImpl.Default,
-): ArcGISMapViewStateImpl {
+    cameraPosition: MapCameraPositionInterface = MapCameraPosition.Default,
+): ArcGISMapViewState {
     val stateId by rememberSaveable {
         val uuid = UUID.randomUUID().toString()
         mutableStateOf(uuid)
@@ -134,10 +136,10 @@ fun rememberArcGISMapViewState(
             stateSaver = ArcGISMapViewSaver().createSaver(),
         ) {
             mutableStateOf(
-                ArcGISMapViewStateImpl(
+                ArcGISMapViewState(
                     id = stateId,
                     mapDesignType = mapDesign,
-                    cameraPosition = MapCameraPositionImpl.from(cameraPosition),
+                    cameraPosition = MapCameraPosition.from(cameraPosition),
                 ),
             )
         }

@@ -1,0 +1,50 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForCustomDrawable?: string;
+  commentForCustomBorder?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForCustomDrawable = "Custom drawable marker",
+  commentForCustomBorder = "Drawable with custom border"
+} = Astro.props;
+
+const code = `@Composable
+fun DrawableIconExamples() {
+    val context = LocalContext.current
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // ${commentForCustomDrawable}
+        AppCompatResources.getDrawable(context, R.drawable.custom_marker)?.let { drawable ->
+            Marker(
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
+                icon = DrawableDefaultIcon(
+                    backgroundDrawable = drawable,
+                    scale = 1.0f
+                )
+            )
+        }
+
+        // ${commentForCustomBorder}
+        AppCompatResources.getDrawable(context, R.drawable.pin_icon)?.let { drawable ->
+            Marker(
+                position = GeoPoint.fromLatLong(37.7849, -122.4094),
+                icon = DrawableDefaultIcon(
+                    backgroundDrawable = drawable,
+                    scale = 1.5f,
+                    strokeColor = Color.Yellow,
+                    strokeWidth = 3.dp
+                )
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

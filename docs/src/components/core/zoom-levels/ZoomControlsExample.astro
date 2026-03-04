@@ -1,0 +1,69 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  labelCity?: string;
+  labelStreet?: string;
+  labelBuilding?: string;
+  labelZoomLevel?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  labelCity = "City",
+  labelStreet = "Street",
+  labelBuilding = "Building",
+  labelZoomLevel = "Zoom Level"
+} = Astro.props;
+
+const code = `@Composable
+fun ZoomControls() {
+    var currentZoom by remember { mutableStateOf(15.0) }
+    val center = GeoPoint.fromLatLong(37.7749, -122.4194)
+
+    Column {
+        // Zoom level display
+        Text("${labelZoomLevel}: ${'$'}{String.format("%.1f", currentZoom)}")
+
+        // Zoom controls
+        Row {
+            Button(
+                onClick = { currentZoom = (currentZoom + 1).coerceAtMost(21.0) }
+            ) {
+                Text("+")
+            }
+
+            Button(
+                onClick = { currentZoom = (currentZoom - 1).coerceAtLeast(0.0) }
+            ) {
+                Text("-")
+            }
+        }
+
+        // Preset zoom buttons
+        Row {
+            Button(onClick = { currentZoom = 12.0 }) { Text("${labelCity}") }
+            Button(onClick = { currentZoom = 15.0 }) { Text("${labelStreet}") }
+            Button(onClick = { currentZoom = 18.0 }) { Text("${labelBuilding}") }
+        }
+
+        // ${commentForMapViewUsage}
+        MapView(
+            state = mapViewState,
+            cameraPosition = MapCameraPosition(
+                position = center,
+                zoom = currentZoom
+            )
+        ) {
+            Marker(
+                position = center,
+                icon = DefaultMarkerIcon(fillColor = Color.Red)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

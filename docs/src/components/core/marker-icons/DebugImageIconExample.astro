@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `Marker(
+    position = position,
+    icon = ImageDefaultIcon(
+        drawable = customDrawable,
+        anchor = Offset(0.5f, 1.0f),
+        debug = true // Shows anchor point and bounds
+    )
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

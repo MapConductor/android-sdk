@@ -8,25 +8,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.marker.MarkerRenderingStrategy
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.core.marker.Markers
 import com.mapconductor.example.MapViewContainer
+import com.mapconductor.postoffice.PostOffice
+import com.mapconductor.postoffice.PostOfficeInfoView
 
 @Composable
 fun PostOfficeMapComponent(
     modifier: Modifier = Modifier,
-    mapViewState: MapViewState<*>,
-    renderingStrategy: MarkerRenderingStrategy<*>?,
+    mapViewState: MapViewStateInterface<*>,
+    markerTiling: MarkerTilingOptions? = null,
     selectedMarker: MarkerState?,
     markers: List<MarkerState> = emptyList<MarkerState>(),
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
     onInfoWndClick: ((PostOffice) -> Unit)? = null,
 ) {
     val darkTheme: Boolean = isSystemInDarkTheme()
@@ -36,13 +36,12 @@ fun PostOfficeMapComponent(
 
     MapViewContainer(
         modifier = modifier,
-        renderingStrategy = renderingStrategy,
         state = mapViewState,
+        markerTiling = markerTiling,
         onMapLoaded = onMapLoaded,
         onMapClick = onMapClick,
-        onMarkerClick = onMarkerClick,
     ) {
-        markers.forEach { markerState -> Marker(markerState) }
+        Markers(markers)
 
         selectedMarker?.let {
             InfoBubble(

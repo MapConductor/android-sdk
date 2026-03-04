@@ -1,0 +1,47 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(state = mapViewState) {
+    // Solid red circle
+    Circle(
+        center = GeoPoint.fromLatLong(37.7749, -122.4194),
+        radiusMeters = 500.0,
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
+        fillColor = Color.Red.copy(alpha = 0.2f),
+        extra = "Red zone"
+    )
+
+    // Blue circle with thick border
+    Circle(
+        center = GeoPoint.fromLatLong(37.7849, -122.4194),
+        radiusMeters = 750.0,
+        strokeColor = Color.Blue,
+        strokeWidth = 5.dp,
+        fillColor = Color.Transparent,
+        extra = "Blue boundary"
+    )
+
+    // Green circle with pattern
+    Circle(
+        center = GeoPoint.fromLatLong(37.7649, -122.4194),
+        radiusMeters = 300.0,
+        strokeColor = Color.Green,
+        strokeWidth = 2.dp,
+        fillColor = Color.Green.copy(alpha = 0.4f),
+        extra = "Green area"
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

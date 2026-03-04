@@ -1,0 +1,128 @@
+---
+title: Configuración de ArcGIS Maps
+---
+
+import SecretsPluginRootGradleTabs from '~/components/setup/common/SecretsPluginRootGradleTabs.astro';
+import AndroidManifestExample from '~/components/setup/common/AndroidManifestExample.astro';
+import SecretsPropertiesExample from '~/components/setup/common/SecretsPropertiesExample.astro';
+import GitignoreExample from '~/components/setup/common/GitignoreExample.astro';
+import SettingsGradleTabs from '~/components/setup/arcgis/SettingsGradleTabs.astro';
+import AppGradleTabs from '~/components/setup/arcgis/AppGradleTabs.astro';
+import TestArcGISComposable from '~/components/setup/arcgis/TestArcGISComposable.astro';
+import LicenseSetupExample from '~/components/setup/arcgis/LicenseSetupExample.astro';
+
+Esta sección describe los pasos para configurar el SDK de ArcGIS Maps junto con MapConductor.
+
+:::tip
+MapConductor proporciona una capa de API unificada sobre los SDKs de mapas existentes. Debes configurar el SDK de ArcGIS Maps de forma independiente antes de usar la integración de ArcGIS de MapConductor.
+:::
+
+## Requisitos previos
+
+- Entorno de desarrollo Android
+- Cuenta de desarrollador de ArcGIS
+- Clave de API de ArcGIS
+
+## Pasos de configuración
+
+### 1. Configuración en ArcGIS Developer Dashboard
+
+1. Crea una cuenta de [desarrollador de ArcGIS](https://developers.arcgis.com/)
+2. Accede al [ArcGIS Developer Dashboard](https://developers.arcgis.com/dashboard)
+3. Crea una nueva aplicación o selecciona una existente
+4. Genera una clave de API con los ámbitos adecuados
+5. Guarda la clave de API para usarla en tu aplicación
+
+### 2. Configuración de Gradle
+
+Asegúrate de que el repositorio Maven de Esri esté configurado (este repositorio ya lo incluye en `settings.gradle.kts`):
+
+<SettingsGradleTabs />
+
+Añade el Secrets Gradle Plugin en el `build.gradle.kts` o `build.gradle` de la raíz del proyecto:
+
+<SecretsPluginRootGradleTabs />
+
+Después, añade las dependencias y aplica el plugin en el `build.gradle.kts` o `build.gradle` del módulo de la app:
+
+<AppGradleTabs
+  otherPluginsComment="... otros plugins"
+  arcgisSdkComment="ArcGIS Maps SDK"
+  bomComment="BOM de MapConductor para la gestión de versiones (v{BOM_MODULE_VERSION})"
+  modulesComment="Módulos de MapConductor (versiones gestionadas por el BOM)"
+/>
+
+El Secrets Gradle Plugin lee automáticamente el archivo `secrets.properties` y puede inyectar sus valores en `AndroidManifest.xml` en tiempo de compilación.
+
+### 3. Configuración de AndroidManifest
+
+Añade el marcador de posición de la clave de API de ArcGIS en tu `AndroidManifest.xml`:
+
+<AndroidManifestExample
+  metaDataEntries={[
+    {name: "ARCGIS_API_KEY", value: "${ARCGIS_API_KEY}", comment: "ArcGIS API Key"}
+  ]}
+  permissions={[
+    {name: "android.permission.INTERNET", comment: "Añade permisos de internet y ubicación"},
+    {name: "android.permission.ACCESS_COARSE_LOCATION"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]}
+/>
+
+### 4. Configuración de la clave de API
+
+Añade la clave de API real en tu archivo `secrets.properties`. El Secrets Gradle Plugin reemplaza automáticamente `${ARCGIS_API_KEY}` en `AndroidManifest.xml` por el valor real.
+
+<SecretsPropertiesExample
+  entries={[
+    {key: "ARCGIS_API_KEY", value: "your_actual_arcgis_api_key_here"}
+  ]}
+/>
+
+:::caution
+No debes subir tu archivo `secrets.properties` al control de versiones. Añádelo a `.gitignore` para evitar commits accidentales.
+<GitignoreExample entries={["secrets.properties"]} />
+:::
+
+### 5. Configuración de licencia
+
+El SDK de ArcGIS requiere una configuración de licencia adecuada. Configura la licencia en tu aplicación:
+
+<LicenseSetupExample />
+
+## Verificación
+
+Para verificar tu configuración de ArcGIS:
+
+1. Compila y ejecuta la app
+2. Comprueba que el mapa de ArcGIS se muestre correctamente
+3. Prueba las funcionalidades GIS específicas (si las usas)
+4. Verifica que la autenticación funcione correctamente
+
+<TestArcGISComposable comment="Si esta pantalla se muestra correctamente, tu configuración es válida" />
+
+![Resultado de TestArcGIS](~/assets/setup/basic-setup-arcgis.png)
+
+## Solución de problemas
+
+### Problemas comunes
+
+**El mapa no se carga**
+
+- Verifica que la clave de API en `secrets.properties` sea correcta
+- Comprueba que la clave de API tenga los ámbitos adecuados en el panel de ArcGIS
+
+**Errores de licencia**
+
+- Asegúrate de que `ArcGISEnvironment.setApiKey()` se llame antes de usar el mapa
+- Para apps de producción, configura la licencia según la documentación de Esri
+
+**Errores de compilación**
+
+- Verifica que las coordenadas del SDK de ArcGIS coincidan con la configuración de tu proyecto
+- Asegúrate de usar el BOM para la gestión de versiones
+- Comprueba que las dependencias del toolkit de Compose estén incluidas
+
+## Próximos pasos
+
+Una vez que el SDK de ArcGIS Maps esté configurado correctamente, puedes usar el componente `ArcGISMapView` de MapConductor con la API unificada.

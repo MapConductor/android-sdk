@@ -1,0 +1,156 @@
+---
+title: "MapViewHolderInterface"
+---
+
+import MapViewHolderInterface from '~/components/core/mapviewholder/MapViewHolderInterface.astro';
+import MapViewHolderAccessExample from '~/components/core/mapviewholder/MapViewHolderAccessExample.astro';
+import GoogleMapViewHolderExample from '~/components/core/mapviewholder/GoogleMapViewHolderExample.astro';
+import MapboxMapViewHolderExample from '~/components/core/mapviewholder/MapboxMapViewHolderExample.astro';
+import HereViewHolderExample from '~/components/core/mapviewholder/HereViewHolderExample.astro';
+import ArcGISMapViewHolderExample from '~/components/core/mapviewholder/ArcGISMapViewHolderExample.astro';
+import CustomStyledMapExample from '~/components/core/mapviewholder/CustomStyledMapExample.astro';
+import AnalyticsIntegrationExample from '~/components/core/mapviewholder/AnalyticsIntegrationExample.astro';
+import PerformanceOptimizedMapExample from '~/components/core/mapviewholder/PerformanceOptimizedMapExample.astro';
+import ThirdPartyIntegrationExample from '~/components/core/mapviewholder/ThirdPartyIntegrationExample.astro';
+import LifecycleAwareMapExample from '~/components/core/mapviewholder/LifecycleAwareMapExample.astro';
+import NullSafetyAccessExample from '~/components/core/mapviewholder/NullSafetyAccessExample.astro';
+import SafeNativeAccessExample from '~/components/core/mapviewholder/SafeNativeAccessExample.astro';
+
+`MapViewHolderInterface` は、MapConductor の統一 API でカバーされていない特定の地図SDK機能が必要な高度なユースケースのために、ネイティブ地図 SDK インスタンスへのアクセスを提供します。MapConductor は共通のインターフェースを提供しますが、すべてのネイティブ機能を完全にラップするわけではなく、MapViewHolderInterface がこのギャップを埋めます。
+
+## 概要
+
+MapConductor は地図SDK間で統一された API を提供することを目指していますが、完全な機能パリティは必ずしも可能ではありません。MapViewHolderInterface を使用すると、開発者は地図SDK固有の機能が必要な場合に、基盤となるネイティブ地図インスタンスにアクセスできます。
+
+<MapViewHolderInterface />
+
+## MapViewHolderInterface へのアクセス
+
+各地図SDKの `MapViewStateInterface` 実装は、その特定の `MapViewHolderInterface` へのアクセスを提供します:
+
+<MapViewHolderAccessExample />
+
+## 地図SDK固有の実装
+
+### Google Maps
+
+<GoogleMapViewHolderExample
+  commentCameraPosition="地図のカメラ位置"
+  commentRecompose="mutableStateOfにすることで、mapStyleが変化したら 再描画"
+  commentGetViewHolder="ViewHolderの取得"
+  commentNormalMap="通常のGoogle Maps"
+  commentSimplifiedMap="地図を簡略化したデザイン"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-googlemaps-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-googlemaps-example.mp4" type="video/mp4" />
+</video>
+
+
+### Mapbox
+
+<MapboxMapViewHolderExample
+  commentPermissionLogic="位置情報アクセス許可後の処理（例: Maps SDK の LocationComponent を有効化してデバイスの位置を表示）"
+  commentExplanationNeeded="位置情報アクセス権限を取得するための説明を表示"
+  commentPermissionDenied="ユーザーが権限を拒否した"
+  commentGetViewHolder="ViewHolderの取得"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-mapbox-example.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-mapbox-example.mp4" type="video/mp4" />
+</video>
+
+### HERE Maps
+
+<HereViewHolderExample
+  commentForAccessApis="ネイティブ HERE SDK API にアクセス"
+  commentForUseFeatures="HERE 固有の機能を使用"
+  commentForSearchResults="HERE 検索結果を処理"
+  commentForRouting="ルーティングを設定して使用"
+/>
+
+### ArcGIS
+
+<ArcGISMapViewHolderExample
+  commentForAccessApis="ネイティブ ArcGIS API にアクセス"
+  commentForUseFeatures="ArcGIS 固有の機能を使用"
+  commentForAnalysis="分析を設定して使用"
+/>
+
+## 一般的なユースケース
+
+### カスタムスタイリング
+
+<CustomStyledMapExample
+  commentForInitWait="地図の初期化を待つ"
+  commentForApplyStyle="カスタム地図スタイルを適用"
+  commentForConfigureUi="地図 UI を設定"
+  commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+/>
+
+### 高度な分析
+
+<AnalyticsIntegrationExample
+  commentForTrackEvents="カスタム地図イベントを追跡"
+  commentForTrackStyle="スタイル変更を追跡"
+/>
+
+### パフォーマンス最適化
+
+<PerformanceOptimizedMapExample
+  commentForPerformanceSettings="HERE 固有のパフォーマンス設定"
+  commentForOptimizeUseCase="特定のユースケースのために最適化"
+  commentForLevelOfDetail="カスタム詳細レベル設定"
+/>
+
+### サードパーティサービスとの統合
+
+<ThirdPartyIntegrationExample
+  commentForIntegration="ArcGIS Online サービスと統合"
+  commentForQueryResults="フィーチャークエリ結果を処理"
+/>
+
+## ライフサイクル管理
+
+### 地図ライフサイクルイベント
+
+<LifecycleAwareMapExample commentForLifecycle="地図ライフサイクルイベントを処理" />
+
+## エラー処理と安全性
+
+### Null 安全性
+
+<NullSafetyAccessExample
+  commentForSafeAccess="ネイティブ API に安全にアクセス"
+  commentForUnavailable="地図がまだ初期化されていないか利用できない"
+/>
+
+### 初期化タイミング
+
+<SafeNativeAccessExample
+  commentForPolling="地図が準備できるまでポーリング"
+  commentForConfigureFeatures="ネイティブ機能を設定"
+/>
+
+## ベストプラクティス
+
+1. **初期化チェック**: ネイティブ API にアクセスする前に、`getMapViewHolder()` が非 null を返すことを常に確認
+2. **ライフサイクル認識**: ネイティブ API を使用する際は、地図のライフサイクルイベントを適切に処理
+3. **エラー処理**: 地図SDK API が例外をスローする可能性があるため、ネイティブ API 呼び出しを try-catch ブロックでラップ
+4. **ドキュメント**: ネイティブ API の使用については、各地図SDKの公式ドキュメントを参照
+5. **テスト**: ネイティブ API を使用する際は、すべてのターゲット地図SDKで徹底的にテスト
+6. **フォールバック**: ネイティブ機能が利用できない場合のフォールバック動作を提供
+7. **バージョン互換性**: ネイティブ API の使用が、ターゲットとしている SDK バージョンと互換性があることを確認
+
+## 制限と考慮事項
+
+1. **プラットフォーム依存性**: ネイティブ API の使用は、特定の地図SDKにコードを結び付けます
+2. **メンテナンスオーバーヘッド**: 地図SDK API の変更により、ネイティブ API の使用を更新する必要があります
+3. **テストの複雑性**: 地図SDK固有のコードパスをカバーするため、より複雑なテストが必要
+4. **機能パリティ**: すべての地図SDKが同等のネイティブ機能をサポートしているわけではありません
+5. **MapConductor 統合**: ネイティブの変更は MapConductor の状態管理と統合されない可能性があります
+
+MapViewHolderInterface は高度なユースケースのための強力なエスケープハッチですが、MapConductor の統一 API アプローチの利点を維持するために慎重に使用する必要があります。
+

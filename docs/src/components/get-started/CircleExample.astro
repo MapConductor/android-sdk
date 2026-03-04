@@ -1,0 +1,52 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  markerLabel?: string;
+  markerLat?: number;
+  markerLong?: number;
+  radiusMeters?: number;
+  strokeWidth?: string;
+  commentMarker?: string;
+  commentDrawCircle?: string;
+  commentRadiusUnit?: string;
+  commentStrokeUnit?: string;
+}
+
+const {
+  markerLabel = "TT",
+  markerLat = 35.6586,
+  markerLong = 139.7454,
+  radiusMeters = 1000.0,
+  strokeWidth = "3.dp",
+  commentMarker = "マーカー",
+  commentDrawCircle = "東京タワーの周りに半径1kmの円を描画",
+  commentRadiusUnit = "メートル単位",
+  commentStrokeUnit = "Dp単位"
+} = Astro.props;
+
+const code = `import androidx.compose.ui.graphics.Color
+
+GoogleMapView(
+    modifier = modifier.fillMaxSize(),
+    state = mapViewState
+) {
+    // ${commentMarker}
+    Marker(
+        position = GeoPoint.fromLatLong(${markerLat}, ${markerLong}),
+        icon = DefaultIcon(label = "${markerLabel}"),
+        extra = "tokyo_tower"
+    )
+
+    // ${commentDrawCircle}
+    Circle(
+        center = GeoPoint.fromLatLong(${markerLat}, ${markerLong}),
+        radiusMeters = ${radiusMeters},  // ${commentRadiusUnit}
+        strokeColor = Color.Blue,
+        strokeWidth = ${strokeWidth},  // ${commentStrokeUnit}
+        fillColor = Color.Blue.copy(alpha = 0.2f)
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,48 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  markerLabel?: string;
+  extraLabel?: string;
+  markerClickLog?: string;
+  markerDragLog?: string;
+}
+
+const {
+  latitude = 37.7749,
+  longitude = -122.4194,
+  markerLabel = "SF",
+  extraLabel = "Draggable San Francisco marker",
+  markerClickLog = "Clicked marker: ${markerState.extra}",
+  markerDragLog = "Marker dragged to: ${markerState.position}"
+} = Astro.props;
+
+const code = `val customMarkerState = MarkerState(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+    icon = DefaultIcon(
+        fillColor = Color.Blue,
+        label = "${markerLabel}",
+        scale = 1.2f
+    ),
+    clickable = true,
+    draggable = true,
+    extra = "${extraLabel}",
+    onClick = { markerState ->
+        println("${markerClickLog}")
+        markerState.animate(MarkerAnimation.Bounce)
+    },
+    onDrag = { markerState ->
+        println("${markerDragLog}")
+    }
+)
+
+MapView(
+    state = mapViewState
+) {
+    Marker(customMarkerState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />

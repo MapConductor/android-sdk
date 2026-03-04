@@ -1,0 +1,11 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `interface GeoPointInterface {
+    val latitude: Double
+    val longitude: Double
+    val altitude: Double?
+}`;
+---
+
+<Code code={code} lang="kotlin" />

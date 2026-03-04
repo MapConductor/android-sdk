@@ -1,0 +1,25 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForUsage?: string;
+  commentForUse?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+const {
+  commentForUsage = "Usage example",
+  commentForUse = "Use the point",
+  latitude = 37.7749,
+  longitude = -122.4194
+} = Astro.props;
+
+const code = `// ${commentForUsage}
+val point = GeoPoint.fromLatLong(${latitude}, ${longitude})
+if (point.isValid()) {
+    // ${commentForUse}
+}`;
+---
+
+<Code code={code} lang="kotlin" />

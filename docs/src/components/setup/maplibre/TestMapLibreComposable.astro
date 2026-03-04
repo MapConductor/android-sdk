@@ -1,0 +1,35 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  comment?: string;
+}
+
+const {
+  comment = "もし地図が表示されれば、セットアップが正しくできています"
+} = Astro.props;
+
+const code = `@Composable
+fun TestMapLibre() {
+    val state = rememberMapLibreMapViewState(
+        cameraPosition =
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(0.0, 0.0),
+                zoom = 3.0,
+            ),
+        mapDesign = MapLibreDesignType(
+            "basic map",
+            "https://api.maptiler.com/maps/base-v4/style.json?key=API_KEY_FOR_MAPTILER",
+        ),
+    )
+
+    MapLibreMapView(
+        modifier = modifier,
+        state = state,
+    ) {
+        // ${comment}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

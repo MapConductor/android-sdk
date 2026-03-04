@@ -1,0 +1,115 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  locationName?: string;
+  locationDescription?: string;
+  locationRating?: number;
+  latitude?: number;
+  longitude?: number;
+  markerLabel?: string;
+  markerId?: string;
+  zoomLevel?: number;
+  markerFillColorExpr?: string;
+}
+
+const {
+  locationName = "Golden Gate Park",
+  locationDescription = "A large urban park with gardens, museums, and recreational areas.",
+  locationRating = 4.5,
+  latitude = 37.7694,
+  longitude = -122.4862,
+  markerLabel = "🌳",
+  markerId = "park-marker",
+  zoomLevel = 13.0,
+  markerFillColorExpr = "Color.Green"
+} = Astro.props;
+
+const code = `data class LocationInfo(
+    val name: String,
+    val description: String,
+    val rating: Float,
+    val imageUrl: String? = null
+) : java.io.Serializable
+
+@Composable
+fun RichContentBubbleExample() {
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+    val center = GeoPoint.fromLatLong(${latitude}, ${longitude})
+    val camera = MapCameraPosition(position = center, zoom = ${zoomLevel})
+    val mapViewState = rememberHereMapViewState(cameraPosition = camera)
+    val onMarkerClick: OnMarkerEventHandler = { markerState ->
+        selectedMarker = markerState
+    }
+
+    HereMapView(
+        modifier = modifier,
+        state = mapViewState,
+        onMapClick = { selectedMarker = null }
+    ) {
+        val locationInfo = LocationInfo(
+            name = "${locationName}",
+            description = "${locationDescription}",
+            rating = ${locationRating}f
+        )
+
+        val markerState = MarkerState(
+            position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+            icon = DefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
+            extra = locationInfo,
+            id = "${markerId}",
+            onClick = onMarkerClick
+        )
+
+        Marker(markerState)
+
+        selectedMarker?.let { marker ->
+            val info = marker.extra as? LocationInfo
+            info?.let {
+                InfoBubble(
+                    marker = marker,
+                    bubbleColor = MaterialTheme.colorScheme.background,
+                    borderColor = Color.Gray,
+                    contentPadding = 16.dp,
+                    cornerRadius = 12.dp
+                ) {
+                    Column(modifier = Modifier.width(200.dp)) {
+                        Text(
+                            text = info.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = info.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            repeat(5) { index ->
+                                Icon(
+                                    Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = if (index < info.rating.toInt()) Color.Yellow else Color.Gray,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Text(
+                                text = " \${info.rating}/5",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,114 @@
+---
+title: "MarkerState（マーカー状態）"
+---
+
+import MarkerStateConstructorExample from '~/components/states/marker/MarkerStateConstructorExample.astro';
+import MarkerStateMethodsExample from '~/components/states/marker/MarkerStateMethodsExample.astro';
+import MarkerStateBasicExample from '~/components/states/marker/MarkerStateBasicExample.astro';
+import MarkerStateCustomExample from '~/components/states/marker/MarkerStateCustomExample.astro';
+import DynamicMarkerExampleComposable from '~/components/states/marker/DynamicMarkerExampleComposable.astro';
+import AnimatedMarkerExampleComposable from '~/components/states/marker/AnimatedMarkerExampleComposable.astro';
+import MarkerStateAdvancedExamplesComposable from '~/components/states/marker/MarkerStateAdvancedExamplesComposable.astro';
+
+`MarkerState` はマーカーの位置や見た目、インタラクション設定を管理するための状態クラスです。Compose らしいリアクティブな更新と、効率的な差分検知の仕組みを提供します。
+
+## コンストラクタ
+
+<MarkerStateConstructorExample />
+
+`MarkerState` は `onClick` / `onDragStart` / `onDrag` / `onDragEnd` / `onAnimateStart` / `onAnimateEnd` をコンストラクタで受け取り、各イベントを State 単位で処理できます。
+
+## プロパティ
+
+### 基本プロパティ
+
+- **`id: String`**: マーカーの一意な ID（未指定の場合は自動生成）
+- **`position: GeoPointInterface`**: 現在のマーカー位置
+- **`extra: Serializable?`**: 追加情報など、任意の付帯データ
+
+### 表示に関するプロパティ
+
+- **`icon: MarkerIconInterface?`**: マーカーのアイコン（未指定の場合はデフォルトアイコン）
+- **`clickable: Boolean`**: マーカーがクリックイベントに反応するかどうか
+- **`draggable: Boolean`**: マーカーをユーザーがドラッグできるかどうか
+
+### インタラクション関連のプロパティ
+
+- **`onClick: (MarkerState) -> Unit`**: マーカーがクリックされたときに呼び出されるコールバック
+- **`onDragStart: (MarkerState) -> Unit`**: ドラッグ開始時に呼び出されるコールバック
+- **`onDrag: (MarkerState) -> Unit`**: ドラッグ中に継続的に呼び出されるコールバック
+- **`onDragEnd: (MarkerState) -> Unit`**: ドラッグ終了時に呼び出されるコールバック
+- **`onAnimateStart: (MarkerState) -> Unit`**: アニメーション開始時に呼び出されるコールバック
+- **`onAnimateEnd: (MarkerState) -> Unit`**: アニメーション終了時に呼び出されるコールバック
+
+## 主なメソッド
+
+<MarkerStateMethodsExample />
+
+既存の状態を元に、一部プロパティだけを変えた新しい `MarkerState` を生成したり、差分検知のためのフィンガープリント（スナップショット）を生成したりできます。
+
+## 利用例
+
+### 基本的な MarkerState
+
+<MarkerStateBasicExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  extraLabel="サンフランシスコのマーカー"
+/>
+
+![実行結果](~/assets/state/marker-state/marker-state-basic-example.jpg)
+
+### カスタマイズした MarkerState
+
+<MarkerStateCustomExample
+  latitude={37.7749}
+  longitude={-122.4194}
+  markerLabel="SF"
+  extraLabel="ドラッグ可能なサンフランシスコのマーカー"
+  markerClickLog="クリックされたマーカー: ${markerState.extra}"
+  markerDragLog="マーカーがドラッグされました: ${markerState.position}"
+/>
+
+**実行結果のログ**
+```
+マーカーがドラッグされました: GeoPoint(latitude=37.781026576871554, longitude=-122.41839353250903, altitude=0.0)
+マーカーがドラッグされました: GeoPoint(latitude=37.78035405874677, longitude=-122.41897685009974, altitude=0.0)
+...
+クリックされたマーカー: ドラッグ可能なサンフランシスコのマーカー
+```
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/marker-state-custom-example.webm" type="video/webm" />
+ <source src="/state/marker-state/marker-state-custom-example.mp4" type="video/mp4" />
+</video>
+
+
+### 動的に MarkerState を更新する
+
+<DynamicMarkerExampleComposable
+  initialLatitude={37.7749}
+  initialLongitude={-122.4194}
+  initialLabel="0"
+  initialExtra="カウンター: 0"
+  counterExtraTemplate="カウンター: $counter"
+  updateButtonLabel="マーカーを更新 ($counter)"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/state/marker-state/dynamic-marker-example.webm" type="video/webm" />
+ <source src="/state/marker-state/dynamic-marker-example.mp4" type="video/mp4" />
+</video>
+
+### 位置をアニメーションさせる MarkerState
+
+<AnimatedMarkerExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={37.7849}
+  endLongitude={-122.4094}
+  markerLabel="移動中"
+  extraLabel="アニメーションするマーカー"
+/>
+
+![実行結果](/state/marker-state/animated-marker-example.gif)

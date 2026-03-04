@@ -12,37 +12,36 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 
 class ImageIcon(
-    drawable: Drawable,
+    image: Drawable,
     override val iconSize: Dp = Settings.Default.iconSize,
     override val scale: Float = 1.0f,
     override val anchor: Offset = Offset(0.5f, 0.5f),
     override val infoAnchor: Offset = Offset(0.5f, 0.5f),
     override val debug: Boolean = false,
 ) : AndroidDrawableIcon(
-        drawable = drawable,
+        drawable = image,
     ) {
-    private fun getDrawableIdentity(): Any =
+    private fun getDrawableIdentity(): Int =
         when (drawable) {
             is BitmapDrawable -> {
                 val bmp = drawable.bitmap
                 if (bmp == null || bmp.isRecycled) {
-                    "BMP_NULL_${drawable.hashCode()}"
+                    0
                 } else {
-                    try {
-                        val w = bmp.width
-                        val h = bmp.height
-                        val buffer = IntArray(w * h)
-                        bmp.getPixels(buffer, 0, w, 0, 0, w, h)
-                        // Combine dimensions and content for stability
-                        "BMP_${w}x${h}_${buffer.contentHashCode()}"
-                    } catch (e: Exception) {
-                        "BMP_ERR_${drawable.hashCode()}"
-                    }
+                    // Fast identity: generationId changes when bitmap pixels change.
+                    // Avoid hashing bitmap contents, which is extremely expensive and makes large
+                    // marker sets slow to add.
+                    var result = 17
+                    result = 31 * result + bmp.width
+                    result = 31 * result + bmp.height
+                    result = 31 * result + bmp.generationId
+                    result = 31 * result + System.identityHashCode(bmp)
+                    result
                 }
             }
-            is ColorDrawable -> "COLOR_${drawable.color}"
-            is GradientDrawable -> "GRADIENT_${drawable.hashCode()}"
-            else -> "${drawable::class.java.name}_${drawable.hashCode()}"
+            is ColorDrawable -> drawable.color
+            is GradientDrawable -> System.identityHashCode(drawable.constantState ?: drawable)
+            else -> System.identityHashCode(drawable.constantState ?: drawable)
         }
 
     override fun equals(other: Any?): Boolean {
@@ -58,7 +57,7 @@ class ImageIcon(
     }
 
     override fun hashCode(): Int {
-        var result = getDrawableIdentity().hashCode()
+        var result = getDrawableIdentity()
         result = 31 * result + iconSize.hashCode()
         result = 31 * result + scale.hashCode()
         result = 31 * result + anchor.hashCode()

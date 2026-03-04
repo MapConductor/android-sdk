@@ -1,23 +1,23 @@
 package com.mapconductor.core.polygon
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.map.MapOverlay
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.mapconductor.core.ChildCollector
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.map.MapOverlayInterface
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalPolygonCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, PolygonState>>> {
+    compositionLocalOf<ChildCollector<PolygonState>> {
         error("Polygon must be under the <MapView />")
     }
 
 class PolygonOverlay(
     override val flow: StateFlow<MutableMap<String, PolygonState>>,
-) : MapOverlay<PolygonState> {
+) : MapOverlayInterface<PolygonState> {
     override suspend fun render(
         data: MutableMap<String, PolygonState>,
-        controller: MapViewController,
+        controller: MapViewControllerInterface,
     ) {
-        (controller as? PolygonCapable)?.compositionPolygons(data.values.toList())
+        (controller as? PolygonCapableInterface)?.compositionPolygons(data.values.toList())
     }
 }

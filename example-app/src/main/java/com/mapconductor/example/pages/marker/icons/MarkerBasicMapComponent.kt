@@ -19,14 +19,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.R
 import com.mapconductor.icons.CircleIcon
@@ -41,24 +42,24 @@ import android.graphics.drawable.BitmapDrawable
 
 @Composable
 fun MarkerBasicMapComponent(
-    mapViewState: MapViewState<*>,
+    mapViewState: MapViewStateInterface<*>,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     var selected by remember { mutableStateOf<MarkerState?>(null) }
     val darkTheme: Boolean = isSystemInDarkTheme()
     val bubbleColor = if (darkTheme) Color.Black else Color.White
+    val onMarkerClick: OnMarkerEventHandler = { selected = it }
 
     MapViewContainer(
         modifier = modifier,
         state = mapViewState,
         onMapClick = { selected = null },
-        onMarkerClick = { selected = it },
     ) {
         Marker(
-            position = GeoPointImpl.fromLatLong(0.018, 0.004),
+            position = GeoPoint.fromLatLong(0.018, 0.004),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 0.7f,
                     label = "0.7",
                     debug = true,
@@ -74,9 +75,9 @@ fun MarkerBasicMapComponent(
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(0.018, 0.006),
+            position = GeoPoint.fromLatLong(0.018, 0.006),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 1.0f,
                     label = "1.0",
                     debug = true,
@@ -91,9 +92,9 @@ fun MarkerBasicMapComponent(
                 """.trimIndent(),
         )
         Marker(
-            position = GeoPointImpl.fromLatLong(0.018, 0.009),
+            position = GeoPoint.fromLatLong(0.018, 0.009),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 1.4f,
                     label = "1.4",
                     debug = true,
@@ -109,9 +110,9 @@ fun MarkerBasicMapComponent(
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(0.018, 0.013),
+            position = GeoPoint.fromLatLong(0.018, 0.013),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     scale = 2.1f,
                     label = "2.1",
                     debug = true,
@@ -127,13 +128,13 @@ fun MarkerBasicMapComponent(
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(0.014, 0.004),
+            position = GeoPoint.fromLatLong(0.014, 0.004),
             extra = "DefaultIcon()",
         )
         Marker(
-            position = GeoPointImpl.fromLatLong(0.014, 0.008),
+            position = GeoPoint.fromLatLong(0.014, 0.008),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     fillColor = Color.Yellow,
                     strokeColor = Color.Black,
                     strokeWidth = 2.dp,
@@ -148,9 +149,9 @@ fun MarkerBasicMapComponent(
                 """.trimIndent(),
         )
         Marker(
-            position = GeoPointImpl.fromLatLong(0.014, 0.012),
+            position = GeoPoint.fromLatLong(0.014, 0.012),
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     fillColor =
                         Color(
                             red = 0x2E,
@@ -189,7 +190,7 @@ fun MarkerBasicMapComponent(
 
         AppCompatResources.getDrawable(context, R.drawable.human)?.let { icon ->
             Marker(
-                position = GeoPointImpl.fromLatLong(0.01, 0.004),
+                position = GeoPoint.fromLatLong(0.01, 0.004),
                 icon =
                     DrawableDefaultIcon(
                         backgroundDrawable = icon,
@@ -205,7 +206,7 @@ fun MarkerBasicMapComponent(
 
         AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)?.let { icon ->
             Marker(
-                position = GeoPointImpl.fromLatLong(0.01, 0.006),
+                position = GeoPoint.fromLatLong(0.01, 0.006),
                 icon =
                     DrawableDefaultIcon(
                         backgroundDrawable = icon,
@@ -225,10 +226,10 @@ fun MarkerBasicMapComponent(
 
         AppCompatResources.getDrawable(context, R.drawable.wmo_00_clear)?.let { icon ->
             Marker(
-                position = GeoPointImpl.fromLatLong(0.01, 0.009),
+                position = GeoPoint.fromLatLong(0.01, 0.009),
                 icon =
                     ImageIcon(
-                        drawable = icon,
+                        image = icon,
                         debug = true,
                         anchor = Offset(0.5f, 1.0f),
                     ),
@@ -245,10 +246,10 @@ fun MarkerBasicMapComponent(
 
         createMarkerWithLabelIcon(context, "Label")?.let {
             Marker(
-                position = GeoPointImpl.fromLatLong(0.01, 0.012),
+                position = GeoPoint.fromLatLong(0.01, 0.012),
                 icon =
                     ImageIcon(
-                        drawable = it,
+                        image = it,
                         anchor = Offset(0.5f, 1.0f),
                     ),
                 extra =
@@ -273,7 +274,7 @@ fun MarkerBasicMapComponent(
         }
 
         Marker(
-            position = GeoPointImpl.fromLatLong(0.006, 0.004),
+            position = GeoPoint.fromLatLong(0.006, 0.004),
             icon =
                 CircleIcon(
                     fillColor = Color.Blue,
@@ -291,7 +292,7 @@ fun MarkerBasicMapComponent(
         )
 
         Marker(
-            position = GeoPointImpl.fromLatLong(0.006, 0.007),
+            position = GeoPoint.fromLatLong(0.006, 0.007),
             icon =
                 FlagIcon(
                     fillColor = Color.Green,
@@ -310,7 +311,7 @@ fun MarkerBasicMapComponent(
 
         ContextCompat.getDrawable(context, com.mapconductor.core.R.drawable.default_marker)?.let {
             Marker(
-                position = GeoPointImpl.fromLatLong(0.006, 0.012),
+                position = GeoPoint.fromLatLong(0.006, 0.012),
                 icon =
                     RoundInfoBubbleIcon(
                         iconDrawable = it,
@@ -333,7 +334,7 @@ fun MarkerBasicMapComponent(
 
         AppCompatResources.getDrawable(context, R.drawable.wmo_00_clear)?.let { icon ->
             Marker(
-                position = GeoPointImpl.fromLatLong(0.000, 0.004),
+                position = GeoPoint.fromLatLong(0.000, 0.004),
                 icon =
                     RightTailInfoBubbleIcon(
                         iconDrawable = icon,

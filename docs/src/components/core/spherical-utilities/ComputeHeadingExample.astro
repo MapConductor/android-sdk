@@ -1,0 +1,32 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForBearingUsage?: string;
+}
+
+const {
+  commentForBearingUsage = "Calculate the initial bearing (direction) from one point to another"
+} = Astro.props;
+
+const code = `val start = GeoPoint.fromLatLong(37.7749, -122.4194)
+val destination = GeoPoint.fromLatLong(40.7128, -74.0060)
+
+val bearing = Spherical.computeHeading(start, destination)
+println("Head ${'$'}{bearing.toInt()}° from San Francisco to reach New York") // ${commentForBearingUsage}
+
+// Convert to compass direction
+val compassDirection = when {
+    bearing >= -22.5 && bearing < 22.5 -> "North"
+    bearing >= 22.5 && bearing < 67.5 -> "Northeast"
+    bearing >= 67.5 && bearing < 112.5 -> "East"
+    bearing >= 112.5 && bearing < 157.5 -> "Southeast"
+    bearing >= 157.5 || bearing < -157.5 -> "South"
+    bearing >= -157.5 && bearing < -112.5 -> "Southwest"
+    bearing >= -112.5 && bearing < -67.5 -> "West"
+    else -> "Northwest"
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

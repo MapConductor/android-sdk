@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// District and neighborhood level
+val districtLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(37.7749, -122.4194),
+    zoom = 13.0  // Shows districts
+)
+
+val neighborhoodLevel = MapCameraPosition(
+    position = GeoPoint.fromLatLong(37.7749, -122.4194),
+    zoom = 15.0  // Shows neighborhoods and major streets
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

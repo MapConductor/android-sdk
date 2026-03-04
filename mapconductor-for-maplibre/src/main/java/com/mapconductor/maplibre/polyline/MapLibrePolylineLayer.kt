@@ -1,6 +1,6 @@
 package com.mapconductor.maplibre.polyline
 
-import com.mapconductor.core.polyline.PolylineEntity
+import com.mapconductor.core.polyline.PolylineEntityInterface
 import com.mapconductor.maplibre.MapLibreActualPolyline
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.layers.LineLayer
@@ -40,7 +40,7 @@ class MapLibrePolylineLayer(
         }
 
     fun draw(
-        entities: List<PolylineEntity<MapLibreActualPolyline>>,
+        entities: List<PolylineEntityInterface<MapLibreActualPolyline>>,
         style: org.maplibre.android.maps.Style,
     ) {
         val features: List<Feature> = entities.flatMap { it.polyline }

@@ -1,0 +1,28 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `suspend fun batchNativeOperations(nativeManager: NativeMarkerManager<ActualMarker>) {
+    val markersBatch = generateMarkerBatch(10000) // 10,000 markers
+
+    // Efficient batch registration
+    withContext(Dispatchers.Default) {
+        markersBatch.forEach { markerData ->
+            val entity = MarkerEntityInterface(
+                state = MarkerState(
+                    id = markerData.id,
+                    position = markerData.position,
+                    icon = DefaultIcon()
+                )
+            )
+            nativeManager.registerEntity(entity)
+        }
+    }
+
+    // Verify registration
+    val totalMarkers = nativeManager.allEntities().size
+    println("Registered ${'$'}totalMarkers markers in native index")
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,51 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// Before: Basic marker management
+@Composable
+fun BasicMarkers() {
+    MapView(state = mapViewState) {
+        markers.forEach { markerData ->
+            Marker(
+                position = markerData.position,
+                icon = DefaultIcon()
+            )
+        }
+    }
+}
+
+// After: Strategy-based management
+@Composable
+fun StrategyMarkers() {
+    val strategy = remember { DefaultMarkerStrategy<ActualMarker>() }
+
+    LaunchedEffect(markers) {
+        markers.forEach { markerData ->
+            val entity = MarkerEntityInterface(
+                state = MarkerState(
+                    id = markerData.id,
+                    position = markerData.position,
+                    icon = DefaultIcon()
+                )
+            )
+            strategy.markerManager.registerEntity(entity)
+        }
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Strategy handles all marker rendering
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

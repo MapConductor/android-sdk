@@ -1,0 +1,49 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewReplacement?: string;
+  logPolygonClicked?: string;
+  logVerticesLabel?: string;
+  logClickLocationLabel?: string;
+  logExtraDataLabel?: string;
+  logApproxAreaLabel?: string;
+  extraLabel?: string;
+}
+
+const {
+  commentForMapViewReplacement = 'Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView',
+  logPolygonClicked = 'Polygon clicked:',
+  logVerticesLabel = '  Vertices: ${polygon.points.size}',
+  logClickLocationLabel = '  Click location: ${clickPoint}',
+  logExtraDataLabel = '  Extra data: ${polygon.extra}',
+  logApproxAreaLabel = '  Approximate area: $area sq meters',
+  extraLabel = 'Interactive polygon',
+} = Astro.props;
+
+const code = `// ${commentForMapViewReplacement}
+MapView(
+    state = mapViewState
+) {
+    Polygon(
+        points = polygonPoints,
+        strokeColor = Color.Green,
+        fillColor = Color.Green.copy(alpha = 0.3f),
+        extra = "${extraLabel}",
+        onClick = { polygonEvent ->
+            val polygon = polygonEvent.state
+            val clickPoint = polygonEvent.clicked
+
+            println("${logPolygonClicked}")
+            println("${logVerticesLabel}")
+            println("${logClickLocationLabel}")
+            println("${logExtraDataLabel}")
+
+            val area = calculatePolygonArea(polygon.points)
+            println("${logApproxAreaLabel}")
+        }
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

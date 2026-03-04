@@ -5,13 +5,13 @@ import com.arcgismaps.mapping.symbology.PictureMarkerSymbol
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualMarker
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,15 +26,15 @@ class ArcGISMarkerRenderer(
         coroutine = coroutine,
     ) {
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<Graphic>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<Graphic>,
+        position: GeoPoint,
     ) {
         coroutine.launch {
             markerEntity.marker?.geometry = position.toPoint(holder.map.scene?.spatialReference)
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<Graphic?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<Graphic?> {
         return withContext(coroutine.coroutineContext) {
             val results =
                 data
@@ -57,7 +57,7 @@ class ArcGISMarkerRenderer(
                         val marker =
                             Graphic(
                                 geometry =
-                                    GeoPointImpl
+                                    GeoPoint
                                         .from(params.state.position)
                                         .toPoint(holder.map.scene?.spatialReference),
                                 symbol = pictureSymbolFuture,
@@ -72,7 +72,7 @@ class ArcGISMarkerRenderer(
         }
     }
 
-    override suspend fun onRemove(data: List<MarkerEntity<ArcGISActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntityInterface<ArcGISActualMarker>>) {
         coroutine.launch {
             val elements = data.map { params -> params.marker }
             markerLayer.graphics.removeAll(elements)
@@ -84,7 +84,7 @@ class ArcGISMarkerRenderer(
     }
 
     override suspend fun onChange(
-        data: List<MarkerOverlayRenderer.ChangeParams<ArcGISActualMarker>>,
+        data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<ArcGISActualMarker>>,
     ): List<ArcGISActualMarker?> =
         withContext(coroutine.coroutineContext) {
             val results =
@@ -110,7 +110,7 @@ class ArcGISMarkerRenderer(
                                 }
                             Graphic(
                                 geometry =
-                                    GeoPointImpl
+                                    GeoPoint
                                         .from(params.current.state.position)
                                         .toPoint(holder.map.scene?.spatialReference),
                                 symbol = pictureSymbolFuture,
@@ -140,7 +140,7 @@ class ArcGISMarkerRenderer(
                     }
 
                     marker.geometry =
-                        GeoPointImpl.from(params.current.state.position).toPoint()
+                        GeoPoint.from(params.current.state.position).toPoint()
                     // Always set visibility explicitly like Google Maps (remove conditional check)
                     marker.isVisible = params.current.visible
 

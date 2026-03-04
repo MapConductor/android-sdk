@@ -1,0 +1,96 @@
+---
+title: "Zoom Levels"
+---
+
+import ZoomLevelExamples from '~/components/core/zoom-levels/ZoomLevelExamples.astro';
+import GlobalScaleExamples from '~/components/core/zoom-levels/GlobalScaleExamples.astro';
+import RegionalScaleExamples from '~/components/core/zoom-levels/RegionalScaleExamples.astro';
+import MetropolitanScaleExamples from '~/components/core/zoom-levels/MetropolitanScaleExamples.astro';
+import NeighborhoodScaleExamples from '~/components/core/zoom-levels/NeighborhoodScaleExamples.astro';
+import StreetScaleExamples from '~/components/core/zoom-levels/StreetScaleExamples.astro';
+import BuildingScaleExamples from '~/components/core/zoom-levels/BuildingScaleExamples.astro';
+import ContentBasedZoomExample from '~/components/core/zoom-levels/ContentBasedZoomExample.astro';
+import ZoomControlsExample from '~/components/core/zoom-levels/ZoomControlsExample.astro';
+import PerformanceAdaptiveZoomExample from '~/components/core/zoom-levels/PerformanceAdaptiveZoomExample.astro';
+import ContextAwareZoomExample from '~/components/core/zoom-levels/ContextAwareZoomExample.astro';
+import AnimateToZoomExample from '~/components/core/zoom-levels/AnimateToZoomExample.astro';
+import ResponsiveZoomExample from '~/components/core/zoom-levels/ResponsiveZoomExample.astro';
+import ZoomLevelTesterExample from '~/components/core/zoom-levels/ZoomLevelTesterExample.astro';
+
+MapConductor uses zoom levels to control the scale and detail of the map display. The zoom level system approximately follows Google Maps conventions but may vary slightly between map providers due to their underlying implementation differences.
+
+## Understanding Zoom Levels
+
+Zoom levels in MapConductor are represented as `Double` values, typically ranging from 0 to 21, where:
+
+- **Higher numbers** = More zoomed in (more detail, smaller area)
+- **Lower numbers** = More zoomed out (less detail, larger area)
+- **Fractional values** = Smooth interpolation between integer levels
+
+<ZoomLevelExamples />
+
+## Zoom Level Reference
+
+### Global Scale (0-5)
+
+<GlobalScaleExamples />
+
+**Use Cases:**
+- Global data visualization
+- Continental overview
+- Flight tracking applications
+- World weather maps
+
+### Regional Scale (6-9)
+
+<RegionalScaleExamples />
+
+**Use Cases:**
+- National statistics
+- State-level data
+- Regional weather
+- Transportation networks
+
+### Metropolitan Scale (10-12)
+
+<MetropolitanScaleExamples />
+
+**Use Cases:**
+- City planning
+- Public transportation
+- Delivery zones
+- District boundaries
+
+### Neighborhood Scale (13-15)
+
+<NeighborhoodScaleExamples />
+
+**Use Cases:**
+- Local business directories
+- School districts
+- Neighborhood services
+- Real estate search
+
+### Street Scale (16-18)
+
+<StreetScaleExamples />
+
+**Use Cases:**
+- Navigation applications
+- Address lookup
+- Street-level services
+- Walking directions
+
+### Building Scale (19-21)
+
+<BuildingScaleExamples />
+
+**Use Cases:**
+- Building inspection
+- Asset management
+- Indoor mapping
+- Detailed surveying
+
+## Provider Variations
+
+While MapConductor normalizes zoom levels across providers, there can be subtle differences:

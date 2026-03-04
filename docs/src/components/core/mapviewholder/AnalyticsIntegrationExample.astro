@@ -1,0 +1,48 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForTrackEvents?: string;
+  commentForTrackStyle?: string;
+}
+
+const {
+  commentForTrackEvents = "Track custom map events",
+  commentForTrackStyle = "Track style changes"
+} = Astro.props;
+
+const code = `@Composable
+fun AnalyticsIntegration() {
+    val mapViewState = remember { MapboxViewState() }
+
+    LaunchedEffect(mapViewState) {
+        mapViewState.getMapViewHolder()?.let { holder ->
+            val mapboxMap = holder.map
+
+            // ${commentForTrackEvents}
+            mapboxMap.addOnMapClickListener { point ->
+                Analytics.track("map_click", mapOf(
+                    "lat" to point.latitude,
+                    "lng" to point.longitude,
+                    "zoom" to mapboxMap.cameraPosition.zoom
+                ))
+                true
+            }
+
+            // ${commentForTrackStyle}
+            mapboxMap.addOnStyleLoadedListener {
+                Analytics.track("style_loaded", mapOf(
+                    "style_id" to mapboxMap.style?.styleURI
+                ))
+            }
+        }
+    }
+
+    MapboxMapView(state = mapViewState) {
+        // Your MapConductor components
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

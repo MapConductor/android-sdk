@@ -1,0 +1,117 @@
+---
+title: イントロダクション
+---
+
+import BasicMapExample from '~/components/introduction/BasicMapExample.astro';
+import ProviderStateExamples from '~/components/introduction/ProviderStateExamples.astro';
+
+# MapConductor Android SDK ドキュメント
+
+MapConductor は、Google Maps、Mapbox、HERE、ArcGIS、そして MapLibre を含む複数の地図SDKに対して、共通の API を提供する統一地図 SDK です。このドキュメントでは、Maven から配布される **v{BOM_MODULE_VERSION}** 向けの公開 API コンポーネントについて説明します。
+
+## 概要
+
+MapConductor SDK を使うと、単一の API で複数の地図SDKを扱えるようになります。各地図SDK固有の実装は SDK 側で吸収され、アプリケーションからは一貫したインターフェースで操作できます。
+
+### サポートされている地図SDK
+
+- **Google Maps**: `GoogleMapViewState` / `GoogleMapView`
+- **Mapbox**: `MapboxViewState` / `MapboxMapView`
+- **HERE Maps**: `HereViewState` / `HereMapView`
+- **ArcGIS**: `ArcGISMapViewState` / `ArcGISMapView`
+- **MapLibre**: `MapLibreViewState` / `MapLibreMapView`
+
+### コアクラス
+
+SDK は、以下のような基本的な地理情報クラスを提供します。
+
+- **GeoPointInterface**: 緯度・経度・高度を表す地理座標
+- **GeoRectBounds**: 南西・北東の2点で表される矩形の地理範囲
+- **MapCameraPositionInterface**: カメラ位置（ターゲット、ズーム、方位、傾き、パディング）
+
+### 主なコンポーネント
+
+SDK は次のようなコアコンポーネントを提供します。
+
+1. **マップビューコンポーネント**: 地図SDK別のマップビュー（GoogleMapView, MapboxMapView, HereMapView, ArcGISMapView, MapLibreMapView）
+2. **Marker**: カスタマイズ可能なアイコンやインタラクションを持つポイントマーカー
+3. **Circle**: スタイル指定可能な円形オーバーレイ
+4. **Polyline**: 複数点を結ぶ線分
+5. **Polygon**: 枠線と塗りつぶしを持つ多角形
+6. **GroundImage**: 地理座標に配置する画像オーバーレイ（Google Maps のみ対応）
+
+## はじめに
+
+MapConductor をプロジェクトで利用するには、次のステップに従います。
+
+### 1. インストール
+
+依存関係やバージョンの詳細は、[チュートリアル](/ja/get-started/) を参照してください。
+
+### 2. 各地図 SDK のセットアップ
+
+> **重要**: MapConductor は既存の地図 SDK の上に統一 API レイヤーを提供するライブラリです。そのため、MapConductor を利用する前に、各地図 SDK を個別にセットアップする必要があります。
+
+各地図SDKは、それぞれ API キー、パーミッション、設定などの準備が必要です。
+
+- **[Google Maps のセットアップ](/ja/setup/google-maps)** – Google Maps SDK の API キーやパーミッションの設定
+- **[Mapbox のセットアップ](/ja/setup/mapbox)** – Mapbox のアクセストークンやスタイル設定
+- **[HERE Maps のセットアップ](/ja/setup/here-maps)** – HERE SDK の API キーやライセンス設定
+- **[ArcGIS のセットアップ](/ja/setup/arcgis)** – ArcGIS SDK の API キーやライセンス設定
+- **[MapLibre のセットアップ](/ja/setup/maplibre/)** – タイルやスタイル情報の設定
+
+利用する地図 SDK だけをセットアップすればかまいません。
+
+### 3. 基本的な使い方
+
+マップビューを作成し、マーカーと円を表示する例です。
+
+<BasicMapExample
+  stateComment="// 利用する地図 SDK に置き換えてください"
+  stateCommentLines={[
+    "// - Google Maps -> rememberGoogleMapViewState",
+    "// - Mapbox -> rememberMapboxViewState",
+    "// ... など",
+  ]}
+  viewComment="// MapView も利用する地図SDKに応じて切り替えます"
+  viewCommentLines={[
+    "// - Google Maps -> GoogleMapView",
+    "// - Mapbox -> MapboxMapView",
+    "// ... など",
+  ]}
+  markerComment="// マーカーを追加"
+  circleComment="// 円を追加"
+/>
+
+![マーカーと円が描画された地図](~/assets/introduction/basic-googlemaps-example.png)
+
+### 4. マップ地図SDKの切り替え
+
+マップ地図SDKを切り替えるには、`MapViewStateInterface` の実装を変更するだけです。
+
+<ProviderStateExamples />
+
+その他のコードは共通で、すべてのコンポーネントを地図SDK間で同じように扱えます。
+
+## v{BOM_MODULE_VERSION} での主な変更点
+
+v1.1.0 と比較した v{BOM_MODULE_VERSION} の主な改善点は次のとおりです。
+
+- 地図の表示範囲を移動させたときにInfoBubbleの表示位置が再計算されないバグを修正
+
+## v1.1.0 での主な変更点
+
+v1.0.0 と比較した v1.1.0 の主な改善点は次のとおりです。
+
+- 各地図SDKでカメラ移動イベント (`onCameraMoveStart`, `onCameraMove`, `onCameraMoveEnd`) を統一
+- `MapViewStateInterface` のカメラ位置と `VisibleRegion` 連携の改善
+- マーカーコントローラのインターフェースを整理し、地図SDK実装を明確化
+- 例示アプリに高度なカメラ制御と `VisibleRegion` の利用例を追加
+
+## 関連ドキュメント
+
+- [チュートリアル](/ja/get-started/)
+- [モジュール構成](/ja/modules/)
+- [SDK バージョン互換性](/ja/sdk-version-compatibility/)
+- [地図SDK互換性](/ja/provider-compatibility/)
+

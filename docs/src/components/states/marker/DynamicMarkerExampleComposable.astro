@@ -1,0 +1,68 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  initialLatitude?: number;
+  initialLongitude?: number;
+  initialLabel?: string;
+  initialExtra?: string;
+  counterExtraTemplate?: string;
+  updateButtonLabel?: string;
+}
+
+const {
+  initialLatitude = 37.7749,
+  initialLongitude = -122.4194,
+  initialLabel = "1",
+  initialExtra = "Counter: 1",
+  counterExtraTemplate = "Counter: $counter",
+  updateButtonLabel = "Update Marker ($counter)"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicMarkerExample() {
+    val colors = listOf(
+        Color.Red,
+        Color.Blue,
+        Color.Yellow,
+        Color.Green,
+        Color.Cyan,
+        Color.Magenta,
+        Color.White,
+    )
+    var markerState by remember {
+        mutableStateOf(
+            MarkerState(
+                position = GeoPoint.fromLatLong(${initialLatitude}, ${initialLongitude}),
+                icon = DefaultIcon(fillColor = Color.Red, label = "${initialLabel}"),
+                extra = "${initialExtra}"
+            )
+        )
+    }
+
+    var counter by remember { mutableStateOf(0) }
+
+    Column {
+        Button(
+            onClick = {
+                counter++
+                markerState = markerState.copy(
+                    icon = DefaultIcon(
+                        fillColor = colors[counter % colors.size],
+                        label = counter.toString()
+                    ),
+                    extra = "${counterExtraTemplate}"
+                )
+            }
+        ) {
+            Text("${updateButtonLabel}")
+        }
+
+        MapView(state = mapViewState) {
+            Marker(markerState)
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

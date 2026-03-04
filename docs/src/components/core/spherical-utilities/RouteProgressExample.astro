@@ -1,0 +1,87 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun RouteProgress() {
+    val route = listOf(
+        GeoPoint.fromLatLong(37.7749, -122.4194),
+        GeoPoint.fromLatLong(37.7849, -122.4094),
+        GeoPoint.fromLatLong(37.7949, -122.3994)
+    )
+
+    var currentPosition by remember { mutableStateOf(route.first()) }
+    val totalDistance = Spherical.computeLength(route)
+
+    // Calculate progress along route
+    fun calculateProgress(position: GeoPointInterface): Double {
+        var distanceToPosition = 0.0
+        var minDistanceToRoute = Double.MAX_VALUE
+        var bestSegmentProgress = 0.0
+
+        // Find closest point on route
+        for (i in 0 until route.size - 1) {
+            val segmentStart = route[i]
+            val segmentEnd = route[i + 1]
+            val segmentLength = Spherical.computeDistanceBetween(segmentStart, segmentEnd)
+
+            // Find closest point on this segment
+            var closestFraction = 0.0
+            var minSegmentDistance = Double.MAX_VALUE
+
+            for (fraction in 0..100) {
+                val testFraction = fraction / 100.0
+                val testPoint = Spherical.interpolate(segmentStart, segmentEnd, testFraction)
+                val distance = Spherical.computeDistanceBetween(position, testPoint)
+
+                if (distance < minSegmentDistance) {
+                    minSegmentDistance = distance
+                    closestFraction = testFraction
+                }
+            }
+
+            if (minSegmentDistance < minDistanceToRoute) {
+                minDistanceToRoute = minSegmentDistance
+                bestSegmentProgress = distanceToPosition + (segmentLength * closestFraction)
+            }
+
+            distanceToPosition += segmentLength
+        }
+
+        return bestSegmentProgress / totalDistance
+    }
+
+    val progress = calculateProgress(currentPosition)
+
+    Column {
+        Text("Route Progress: ${'$'}{(progress * 100).toInt()}%")
+        LinearProgressIndicator(progress = progress.toFloat())
+
+        // ${commentForMapViewUsage}
+        MapView(state = mapViewState) {
+            // Show route
+            Polyline(
+                points = route,
+                strokeColor = Color.Blue,
+                strokeWidth = 4.dp
+            )
+
+            // Current position
+            Marker(
+                position = currentPosition,
+                icon = DefaultIcon(fillColor = Color.Red, label = "Current")
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

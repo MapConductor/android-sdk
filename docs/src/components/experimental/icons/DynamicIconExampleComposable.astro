@@ -1,0 +1,55 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  commentForColorPicker?: string;
+  commentForSizeSlider?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForColorPicker = "Color picker",
+  commentForSizeSlider = "Size slider"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicIconExample() {
+    var iconColor by remember { mutableStateOf(Color.Red) }
+    var iconSize by remember { mutableStateOf(32.dp) }
+
+    val dynamicIcon = CircleIcon(
+        fillColor = iconColor,
+        strokeColor = Color.White,
+        iconSize = iconSize
+    )
+
+    Column {
+        // ${commentForColorPicker}
+        Row {
+            Button(onClick = { iconColor = Color.Red }) { Text("Red") }
+            Button(onClick = { iconColor = Color.Blue }) { Text("Blue") }
+            Button(onClick = { iconColor = Color.Green }) { Text("Green") }
+        }
+
+        // ${commentForSizeSlider}
+        Slider(
+            value = iconSize.value,
+            onValueChange = { iconSize = it.dp },
+            valueRange = 16f..64f
+        )
+        Text("Size: ${'$'}{iconSize.value.toInt()}dp")
+
+        // ${commentForMapViewUsage}
+        MapView(state = mapViewState) {
+            Marker(
+                position = GeoPoint.fromLatLong(37.7749, -122.4194),
+                icon = dynamicIcon
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,29 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForBubbleAppears?: string;
+  commentForContentPlaceholder?: string;
+  commentForBubbleDisappears?: string;
+  commentForAutoNull?: string;
+}
+
+const {
+  commentForBubbleAppears = "Bubble appears when component is composed",
+  commentForContentPlaceholder = "Content",
+  commentForBubbleDisappears = "Bubble disappears when component is removed from composition",
+  commentForAutoNull = "This automatically happens when selectedMarker becomes null"
+} = Astro.props;
+
+const code = `// ${commentForBubbleAppears}
+selectedMarker?.let { marker ->
+    InfoBubble(marker = marker) {
+        // ${commentForContentPlaceholder}
+    }
+}
+
+// ${commentForBubbleDisappears}
+// ${commentForAutoNull}`;
+---
+
+<Code code={code} lang="kotlin" />

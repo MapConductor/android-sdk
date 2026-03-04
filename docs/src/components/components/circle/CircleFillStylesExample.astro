@@ -1,0 +1,27 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// Solid fill
+Circle(
+    center = center,
+    radiusMeters = 500.0,
+    fillColor = Color.Red
+)
+
+// Semi-transparent fill
+Circle(
+    center = center,
+    radiusMeters = 500.0,
+    fillColor = Color.Red.copy(alpha = 0.5f)
+)
+
+// No fill
+Circle(
+    center = center,
+    radiusMeters = 500.0,
+    fillColor = Color.Transparent
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

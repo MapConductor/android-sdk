@@ -1,0 +1,57 @@
+---
+title: "ArcGISMapViewHolder"
+---
+
+import ArcGISMapViewHolder from '~/components/core/mapviewholder/ArcGISMapViewHolder.astro';
+import ArcGISMapViewHolderAccess from '~/components/core/mapviewholder/ArcGISMapViewHolderAccess.astro';
+import ArcGISMapViewHolderExample from '~/components/core/mapviewholder/ArcGISMapViewHolderExample.astro';
+
+
+## Descripción General
+
+Para acceder a las funciones específicas del SDK de ArcGIS, use el `ArcGISMapViewHolder`.
+La definición de `ArcGISMapViewHolder` es la siguiente:
+
+<ArcGISMapViewHolder />
+
+### Propiedades
+
+- **`mapView: WrapSceneView`**: WrapSceneView para envolver el SceneView
+- **`map: SceneView`**: Clase ArcGISScene para manipular el MapView
+
+### Métodos
+
+- **`toScreenOffset(position: GeoPointInterface): Offset?`**: Devuelve la posición en el mapa indicada por GeoPointInterface como un valor Dp con la parte superior izquierda del MapView como (0,0)
+- **`fromScreenOffsetSync(offset: Offset): GeoPoint?`**: Devuelve la posición GeoPointInterface en el mapa para la posición especificada por el valor Dp con la parte superior izquierda del MapView como (0,0)
+- **`fromScreenOffset(offset: Offset): GeoPoint?`**: Devuelve la posición GeoPointInterface en el mapa para la posición especificada por el valor Dp con la parte superior izquierda del MapView como (0,0)
+
+
+## Obtener ArcGISMapViewHolder
+
+El `ArcGISMapViewHolder` se puede obtener a través de `getMapViewHolder()` después de que se inicializa el mapa.
+
+<ArcGISMapViewHolderAccess />
+
+
+### Ejemplo
+
+<ArcGISMapViewHolderExample
+  commentCameraPosition="Posición de la cámara del mapa"
+  commentAuthenticatorState="Configurar AuthenticatorState"
+  commentViewHolderVariable="Mantener ViewHolder"
+  commentTrafficLayer="Mostrar capa de información de tráfico"
+  commentAuthenticatorStateParam="AuthenticatorState para mostrar diálogo de inicio de sesión"
+  commentPortalUrl="URL del portal de ArcGIS"
+  commentRedirectUrl="URL de redirección de la aplicación OAuth2"
+  commentClientId="ID de cliente de la aplicación OAuth2"
+  commentOptional="(Opcional)"
+  commentClientSecret="Secreto de cliente de la aplicación OAuth2"
+  commentClientSecretOmit="Si se omite, se mostrará el diálogo de inicio de sesión"
+  commentGetViewHolder="Obtener ViewHolder"
+  commentAuthenticatorUI="IU de autenticación (para inicio de sesión de usuario). Se usa como respaldo para autenticación híbrida."
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewholder/map-view-holder-arcgis.webm" type="video/webm" />
+ <source src="/mapviewholder/map-view-holder-arcgis.mp4" type="video/mp4" />
+</video>

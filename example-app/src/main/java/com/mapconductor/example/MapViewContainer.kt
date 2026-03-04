@@ -2,165 +2,100 @@ package com.mapconductor.example
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.mapconductor.arcgis.ArcGISActualMarker
 import com.mapconductor.arcgis.map.ArcGISMapView
-import com.mapconductor.arcgis.map.ArcGISMapViewStateImpl
+import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.core.MapViewScope
-import com.mapconductor.core.circle.OnCircleEventHandler
-import com.mapconductor.core.groundimage.OnGroundImageEventHandler
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler
-import com.mapconductor.core.marker.MarkerRenderingStrategy
-import com.mapconductor.core.marker.OnMarkerEventHandler
-import com.mapconductor.core.polygon.OnPolygonEventHandler
-import com.mapconductor.core.polyline.OnPolylineEventHandler
-import com.mapconductor.googlemaps.GoogleMapActualMarker
+import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.googlemaps.GoogleMapView
-import com.mapconductor.googlemaps.GoogleMapViewStateImpl
-import com.mapconductor.here.HereActualMarker
+import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapView
-import com.mapconductor.here.HereViewStateImpl
-import com.mapconductor.mapbox.MapboxActualMarker
+import com.mapconductor.here.HereViewState
 import com.mapconductor.mapbox.MapboxMapView
-import com.mapconductor.mapbox.MapboxViewStateImpl
-import com.mapconductor.maplibre.MapLibreActualMarker
+import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.maplibre.MapLibreMapView
-import com.mapconductor.maplibre.MapLibreViewStateImpl
+import com.mapconductor.maplibre.MapLibreViewState
 
 @Composable
+@Suppress("DEPRECATION")
 fun MapViewContainer(
     modifier: Modifier = Modifier,
-    renderingStrategy: MarkerRenderingStrategy<*>? = null,
-    state: MapViewState<*>? = null,
+    state: MapViewStateInterface<*>? = null,
+    markerTiling: MarkerTilingOptions? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onCameraMoveStart: OnCameraMoveHandler? = null,
     onCameraMove: OnCameraMoveHandler? = null,
     onCameraMoveEnd: OnCameraMoveHandler? = null,
-    onMarkerClick: OnMarkerEventHandler? = null,
-    onMarkerDragStart: OnMarkerEventHandler? = null,
-    onMarkerDrag: OnMarkerEventHandler? = null,
-    onMarkerDragEnd: OnMarkerEventHandler? = null,
-    onMarkerAnimateStart: OnMarkerEventHandler? = null,
-    onMarkerAnimateEnd: OnMarkerEventHandler? = null,
-    onCircleClick: OnCircleEventHandler? = null,
-    onPolylineClick: OnPolylineEventHandler? = null,
-    onPolygonClick: OnPolygonEventHandler? = null,
-    onGroundImageClick: OnGroundImageEventHandler? = null,
     content: (@Composable MapViewScope.() -> Unit)? = null,
 ) {
     @Suppress("UNCHECKED_CAST")
     when (state) {
-        is GoogleMapViewStateImpl ->
+        is GoogleMapViewState ->
             GoogleMapView(
                 modifier = modifier,
-                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<GoogleMapActualMarker>?,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
-                onGroundImageClick = onGroundImageClick,
                 content = content,
             )
 
-        is HereViewStateImpl ->
+        is HereViewState ->
             HereMapView(
                 modifier = modifier,
-                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<HereActualMarker>?,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
-        is MapboxViewStateImpl ->
+        is MapboxViewState ->
             MapboxMapView(
                 modifier = modifier,
-                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapboxActualMarker>?,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
-        is ArcGISMapViewStateImpl ->
+        is ArcGISMapViewState ->
             ArcGISMapView(
                 modifier = modifier,
-                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<ArcGISActualMarker>?,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 
-        is MapLibreViewStateImpl ->
+        is MapLibreViewState ->
             MapLibreMapView(
                 modifier = modifier,
-                markerRenderingStrategy = renderingStrategy as? MarkerRenderingStrategy<MapLibreActualMarker>?,
                 state = state,
+                markerTiling = markerTiling,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onCameraMoveStart = onCameraMoveStart,
                 onCameraMove = onCameraMove,
                 onCameraMoveEnd = onCameraMoveEnd,
-                onMarkerClick = onMarkerClick,
-                onMarkerDragStart = onMarkerDragStart,
-                onMarkerDrag = onMarkerDrag,
-                onMarkerDragEnd = onMarkerDragEnd,
-                onMarkerAnimateStart = onMarkerAnimateStart,
-                onMarkerAnimateEnd = onMarkerAnimateEnd,
-                onCircleClick = onCircleClick,
-                onPolylineClick = onPolylineClick,
-                onPolygonClick = onPolygonClick,
                 content = content,
             )
 

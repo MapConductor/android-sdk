@@ -1,0 +1,94 @@
+---
+title: "PolylineState"
+---
+
+import PolylineStateConstructorExample from '~/components/states/polyline/PolylineStateConstructorExample.astro';
+import PolylineStateMethodsExample from '~/components/states/polyline/PolylineStateMethodsExample.astro';
+import PolylineStateBasicExample from '~/components/states/polyline/PolylineStateBasicExample.astro';
+import DynamicPolylineExampleComposable from '~/components/states/polyline/DynamicPolylineExampleComposable.astro';
+import GeodesicPolylineExample from '~/components/states/polyline/GeodesicPolylineExample.astro';
+import RouteExampleComposable from '~/components/states/polyline/RouteExampleComposable.astro';
+import PolylineEventTypesExample from '~/components/states/polyline/PolylineEventTypesExample.astro';
+
+`PolylineState` gestiona la configuración y el comportamiento de polilíneas (segmentos de línea) en el mapa. Proporciona propiedades reactivas para puntos, estilo y opciones geodésicas.
+
+## Constructor
+
+<PolylineStateConstructorExample />
+
+## Propiedades
+
+### Propiedades básicas
+- **`id: String`**: Identificador único (se genera automáticamente si no se proporciona).
+- **`points: List<GeoPointInterface>`**: Lista de coordenadas geográficas que definen la línea.
+- **`extra: Serializable?`**: Datos adicionales asociados a la polilínea.
+
+### Propiedades visuales
+- **`strokeColor: Color`**: Color de la línea.
+- **`strokeWidth: Dp`**: Grosor de la línea.
+- **`geodesic: Boolean`**: Indica si se dibujan líneas geodésicas que siguen la curvatura de la Tierra.
+
+## Métodos
+
+<PolylineStateMethodsExample
+  commentForCopy="Crear una copia modificada"
+  commentForFingerPrint="Detección de cambios"
+  commentForAsFlow="Actualizaciones reactivas"
+/>
+
+## Ejemplos de uso
+
+### Polilínea básica
+
+<PolylineStateBasicExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7949}
+  thirdLongitude={-122.3994}
+/>
+
+### Polilínea dinámica
+
+<DynamicPolylineExampleComposable
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+/>
+
+### Polilínea geodésica
+
+<GeodesicPolylineExample
+  startLatitude={37.7749}
+  startLongitude={-122.4194}
+  endLatitude={40.7128}
+  endLongitude={-74.006}
+  commentForStartPoint="San Francisco"
+  commentForEndPoint="Nueva York"
+  commentForGeodesic="Sigue la curvatura de la Tierra"
+  extraLabel="Ruta de costa a costa"
+/>
+
+### Ruta con múltiples segmentos
+
+<RouteExampleComposable
+  highwaySegmentExtra="Tramo de autopista"
+  localRoadSegmentExtra="Tramo de carretera local"
+  walkingPathExtra="Tramo peatonal"
+/>
+
+## Manejo de eventos
+
+Los eventos de polilínea proporcionan tanto el estado como la posición del clic:
+
+<PolylineEventTypesExample />
+
+## Buenas prácticas
+
+1. **Densidad de puntos**: Equilibra detalle y rendimiento; evita listas de puntos excesivamente densas.
+2. **Geodésicas para rutas largas**: Usa polilíneas geodésicas para rutas de larga distancia.
+3. **Codificación por color**: Usa colores distintos para diferenciar tipos de rutas.
+4. **Jerarquía de grosores**: Usa el grosor de la línea para indicar importancia.
+5. **Rendimiento**: Considera simplificar polilíneas complejas según el nivel de zoom.

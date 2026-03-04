@@ -1,48 +1,53 @@
 package com.mapconductor.core.polygon
 
-import com.mapconductor.core.controller.OverlayController
-import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.controller.OverlayControllerInterface
+import com.mapconductor.core.features.GeoPointInterface
+import com.mapconductor.core.map.MapCameraPosition
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
 abstract class PolygonController<ActualPolygon>(
-    val polygonManager: PolygonManager<ActualPolygon>,
-    open val renderer: PolygonOverlayRenderer<ActualPolygon>,
+    val polygonManager: PolygonManagerInterface<ActualPolygon>,
+    open val renderer: PolygonOverlayRendererInterface<ActualPolygon>,
     override var clickListener: OnPolygonEventHandler? = null,
-) : OverlayController<
+) : OverlayControllerInterface<
         PolygonState,
-        PolygonEntity<ActualPolygon>,
+        PolygonEntityInterface<ActualPolygon>,
         PolygonEvent,
     > {
     override val zIndex: Int = 3
     val semaphore = Semaphore(1)
 
+    fun dispatchClick(event: PolygonEvent) {
+        event.state.onClick?.invoke(event)
+        clickListener?.invoke(event)
+    }
+
     override suspend fun add(data: List<PolygonState>) {
         semaphore.withPermit {
-            val modifiedEntities = mutableListOf<PolygonEntity<ActualPolygon>>()
+            val modifiedEntities = mutableListOf<PolygonEntityInterface<ActualPolygon>>()
             val previous = polygonManager.allEntities().map { it.state.id }.toMutableSet()
-            val added = mutableListOf<PolygonOverlayRenderer.AddParams>()
-            val updated = mutableListOf<PolygonOverlayRenderer.ChangeParams<ActualPolygon>>()
-            val removed = mutableListOf<PolygonEntity<ActualPolygon>>()
+            val added = mutableListOf<PolygonOverlayRendererInterface.AddParamsInterface>()
+            val updated = mutableListOf<PolygonOverlayRendererInterface.ChangeParamsInterface<ActualPolygon>>()
+            val removed = mutableListOf<PolygonEntityInterface<ActualPolygon>>()
 
             data.forEach { state ->
                 if (previous.contains(state.id)) {
                     val prevEntity = polygonManager.getEntity(state.id)!!
                     updated.add(
-                        object : PolygonOverlayRenderer.ChangeParams<ActualPolygon> {
-                            override val current: PolygonEntity<ActualPolygon> =
-                                PolygonEntityImpl(
+                        object : PolygonOverlayRendererInterface.ChangeParamsInterface<ActualPolygon> {
+                            override val current: PolygonEntityInterface<ActualPolygon> =
+                                PolygonEntity(
                                     state = state,
                                     polygon = prevEntity.polygon,
                                 )
-                            override val prev: PolygonEntity<ActualPolygon> = prevEntity
+                            override val prev: PolygonEntityInterface<ActualPolygon> = prevEntity
                         },
                     )
                     previous.remove(state.id)
                 } else {
                     added.add(
-                        object : PolygonOverlayRenderer.AddParams {
+                        object : PolygonOverlayRendererInterface.AddParamsInterface {
                             override val state: PolygonState = state
                         },
                     )
@@ -67,7 +72,7 @@ abstract class PolygonController<ActualPolygon>(
                 actualPolygons.forEachIndexed { index, polygon ->
                     polygon?.let {
                         val entity =
-                            PolygonEntityImpl<ActualPolygon>(
+                            PolygonEntity<ActualPolygon>(
                                 polygon = polygon,
                                 state = added[index].state,
                             )
@@ -84,7 +89,7 @@ abstract class PolygonController<ActualPolygon>(
                     polygon?.let {
                         val params = updated[index]
                         val entity =
-                            PolygonEntityImpl<ActualPolygon>(
+                            PolygonEntity<ActualPolygon>(
                                 state = params.current.state,
                                 polygon = polygon,
                             )
@@ -108,20 +113,20 @@ abstract class PolygonController<ActualPolygon>(
 
             val polygon = prevEntity.polygon
             val entity =
-                PolygonEntityImpl(
+                PolygonEntity(
                     polygon = polygon,
                     state = state,
                 )
             val polygonParams =
-                object : PolygonOverlayRenderer.ChangeParams<ActualPolygon> {
-                    override val current: PolygonEntity<ActualPolygon> = entity
-                    override val prev: PolygonEntity<ActualPolygon> = prevEntity
+                object : PolygonOverlayRendererInterface.ChangeParamsInterface<ActualPolygon> {
+                    override val current: PolygonEntityInterface<ActualPolygon> = entity
+                    override val prev: PolygonEntityInterface<ActualPolygon> = prevEntity
                 }
             val polygons = renderer.onChange(listOf(polygonParams))
 
             polygons[0]?.let {
                 val entity =
-                    PolygonEntityImpl<ActualPolygon>(
+                    PolygonEntity<ActualPolygon>(
                         polygon = it,
                         state = state,
                     )
@@ -132,15 +137,17 @@ abstract class PolygonController<ActualPolygon>(
 
     override suspend fun clear() {
         semaphore.withPermit {
-            val entities: List<PolygonEntity<ActualPolygon>> = polygonManager.allEntities()
+            val entities: List<PolygonEntityInterface<ActualPolygon>> = polygonManager.allEntities()
             renderer.onRemove(entities)
             polygonManager.clear()
         }
     }
 
-    override fun find(position: GeoPoint): PolygonEntity<ActualPolygon>? = polygonManager.find(position)
+    override fun find(position: GeoPointInterface): PolygonEntityInterface<ActualPolygon>? =
+        polygonManager
+            .find(position)
 
-    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPositionImpl) {}
+    override suspend fun onCameraChanged(mapCameraPosition: MapCameraPosition) {}
 
     override fun destroy() {
         // No native resources to clean up for polygons

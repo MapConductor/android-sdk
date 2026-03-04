@@ -1,0 +1,89 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMarkerSimulation?: string;
+  firstMarkerLatitude?: number;
+  firstMarkerLongitude?: number;
+  secondMarkerLatitude?: number;
+  secondMarkerLongitude?: number;
+  thirdMarkerLatitude?: number;
+  thirdMarkerLongitude?: number;
+  fourthMarkerLatitude?: number;
+  fourthMarkerLongitude?: number;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMarkerSimulation = "Simulate calculating viewport from visible markers",
+  firstMarkerLatitude = 37.7749,
+  firstMarkerLongitude = -122.4194,
+  secondMarkerLatitude = 37.7849,
+  secondMarkerLongitude = -122.4094,
+  thirdMarkerLatitude = 37.7649,
+  thirdMarkerLongitude = -122.4294,
+  fourthMarkerLatitude = 37.7949,
+  fourthMarkerLongitude = -122.3994,
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `@Composable
+fun ViewportBoundsExample() {
+    var viewportBounds by remember { mutableStateOf<GeoRectBounds?>(null) }
+
+    // ${commentForMarkerSimulation}
+    val markers = remember {
+        listOf(
+            GeoPoint.fromLatLong(${firstMarkerLatitude}, ${firstMarkerLongitude}),
+            GeoPoint.fromLatLong(${secondMarkerLatitude}, ${secondMarkerLongitude}),
+            GeoPoint.fromLatLong(${thirdMarkerLatitude}, ${thirdMarkerLongitude}),
+            GeoPoint.fromLatLong(${fourthMarkerLatitude}, ${fourthMarkerLongitude})
+        )
+    }
+
+    LaunchedEffect(markers) {
+        val bounds = GeoRectBounds()
+        markers.forEach { marker ->
+            bounds.extend(marker)
+        }
+        viewportBounds = bounds
+    }
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        // Show all markers
+        markers.forEach { position ->
+            Marker(
+                position = position,
+                icon = DefaultIcon(fillColor = Color.Blue)
+            )
+        }
+
+        // Show viewport bounds as a polygon
+        viewportBounds?.let { bounds ->
+            if (!bounds.isEmpty) {
+                val sw = bounds.southWest!!
+                val ne = bounds.northEast!!
+
+                val boundsPolygon = listOf(
+                    sw,
+                    GeoPoint.fromLatLong(sw.latitude, ne.longitude),
+                    ne,
+                    GeoPoint.fromLatLong(ne.latitude, sw.longitude),
+                    sw // Close the polygon
+                )
+
+                Polygon(
+                    points = boundsPolygon,
+                    strokeColor = Color.Red,
+                    strokeWidth = 2.dp,
+                    fillColor = Color.Red.copy(alpha = 0.1f)
+                )
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

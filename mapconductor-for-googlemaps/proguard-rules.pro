@@ -8,7 +8,6 @@
 
 # Keep Google Maps specific implementations
 -keep class com.mapconductor.googlemaps.GoogleMapViewController { *; }
--keep class com.mapconductor.googlemaps.GoogleMapViewControllerImpl { *; }
 -keep class com.mapconductor.googlemaps.GoogleMapView { *; }
 
 # Keep marker, circle, polyline implementations

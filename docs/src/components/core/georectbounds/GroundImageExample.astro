@@ -1,0 +1,44 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+  southWestLatitude?: number;
+  southWestLongitude?: number;
+  northEastLatitude?: number;
+  northEastLongitude?: number;
+  overlayOpacity?: number;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  southWestLatitude = 37.7649,
+  southWestLongitude = -122.4294,
+  northEastLatitude = 37.7849,
+  northEastLongitude = -122.4094,
+  overlayOpacity = 0.7
+} = Astro.props;
+
+const code = `@Composable
+fun GroundImageExample() {
+    val imageBounds = GeoRectBounds(
+        southWest = GeoPoint.fromLatLong(${southWestLatitude}, ${southWestLongitude}),
+        northEast = GeoPoint.fromLatLong(${northEastLatitude}, ${northEastLongitude})
+    )
+
+    // ${commentForMapViewUsage}
+    MapView(state = mapViewState) {
+        val context = LocalContext.current
+        AppCompatResources.getDrawable(context, R.drawable.overlay_image)?.let { drawable ->
+            GroundImage(
+                bounds = imageBounds,
+                image = drawable,
+                opacity = ${overlayOpacity}f
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

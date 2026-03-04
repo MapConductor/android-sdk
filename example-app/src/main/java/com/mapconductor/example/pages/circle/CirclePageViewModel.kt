@@ -10,10 +10,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.circle.CircleEvent
 import com.mapconductor.core.circle.CircleState
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.core.spherical.calculatePositionAtDistance
@@ -22,12 +22,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface CirclePageViewModel {
-    val initCameraPosition: MapCameraPositionImpl
-    val mapViewState: StateFlow<MapViewState<*>?>
+interface CirclePageViewModelInterface {
+    val initCameraPosition: MapCameraPosition
+    val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
-    val circleCenter: GeoPointImpl
+    val circleCenter: GeoPoint
     val radiusMeters: Double
     val centerMarker: MarkerState
     val edgeMarker: MarkerState
@@ -35,11 +35,11 @@ interface CirclePageViewModel {
     var fillOpacity: Float
     var strokeWidth: Float
 
-    fun onMapViewChanged(state: MapViewState<*>)
+    fun onMapViewChanged(state: MapViewStateInterface<*>)
 
     fun onMarkerClick(clicked: MarkerState)
 
-    fun onMapClick(clicked: GeoPointImpl)
+    fun onMapClick(clicked: GeoPoint)
 
     fun onCircleClick(event: CircleEvent)
 
@@ -50,9 +50,9 @@ interface CirclePageViewModel {
     fun removeToast(toastMessage: ToastMessage)
 }
 
-class CirclePageViewModelImpl :
+class CirclePageViewModel :
     ViewModel(),
-    CirclePageViewModel {
+    CirclePageViewModelInterface {
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
     private val colors: List<Color> =
@@ -69,9 +69,9 @@ class CirclePageViewModelImpl :
     override var strokeWidth by mutableStateOf(3.0f)
 
     override val initCameraPosition =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position =
-                GeoPointImpl.fromLatLong(
+                GeoPoint.fromLatLong(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
@@ -81,14 +81,14 @@ class CirclePageViewModelImpl :
             paddings = null,
         )
 
-    override val circleCenter = GeoPointImpl.fromLatLong(21.382314, -157.933097)
+    override val circleCenter = GeoPoint.fromLatLong(21.382314, -157.933097)
 
     override val centerMarker =
         MarkerState(
             id = "center_marker",
             position = circleCenter,
             icon =
-                DefaultIcon(
+                DefaultMarkerIcon(
                     fillColor = Color.Red,
                     strokeColor = Color.White,
                     label = "C",
@@ -107,12 +107,15 @@ class CirclePageViewModelImpl :
                         bearingDegrees = 90.0, // East
                     ),
                 icon =
-                    DefaultIcon(
+                    DefaultMarkerIcon(
                         fillColor = Color.Green,
                         strokeColor = Color.White,
                         label = "E",
                     ),
                 draggable = true,
+                onDragStart = this::onMarkerMove,
+                onDrag = this::onMarkerMove,
+                onDragEnd = this::onMarkerMove,
             ),
         )
     override val edgeMarker: MarkerState
@@ -131,12 +134,13 @@ class CirclePageViewModelImpl :
                 strokeColor = Color.Blue.copy(alpha = 0.5f),
                 strokeWidth = strokeWidth.dp,
                 fillColor = this.colors[0].copy(alpha = fillOpacity),
+                onClick = this::onCircleClick,
             )
 
-    private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
+    override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
-    override fun onMapViewChanged(state: MapViewState<*>) {
+    override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         mapViewState.value?.cameraPosition?.let {
             state.moveCameraTo(it)
         }
@@ -144,10 +148,10 @@ class CirclePageViewModelImpl :
     }
 
     override fun onMarkerClick(clicked: MarkerState) {
-        showToast("${clicked.icon?.let { (it as? DefaultIcon)?.label } ?: "Marker"} clicked")
+        showToast("${clicked.icon?.let { (it as? DefaultMarkerIcon)?.label } ?: "Marker"} clicked")
     }
 
-    override fun onMapClick(clicked: GeoPointImpl) {
+    override fun onMapClick(clicked: GeoPoint) {
         showToast("Map clicked at: ${clicked.toUrlValue()}")
     }
 

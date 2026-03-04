@@ -1,0 +1,25 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `// ${commentForMapViewUsage}
+MapView(state = mapViewState) {
+    Circle(
+        center = GeoPoint.fromLatLong(37.7749, -122.4194),
+        radiusMeters = 1000.0, // 1km radius
+        strokeColor = Color.Blue,
+        fillColor = Color.Blue.copy(alpha = 0.3f),
+        id = "downtown-area"
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

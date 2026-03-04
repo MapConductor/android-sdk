@@ -1,0 +1,21 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `MarkerState(
+    position: GeoPointInterface,
+    id: String? = null,
+    extra: Serializable? = null,
+    icon: MarkerIconInterface? = null,
+    animation: MarkerAnimation? = null,
+    clickable: Boolean = true,
+    draggable: Boolean = false,
+    onClick: OnMarkerEventHandler? = null,
+    onDragStart: OnMarkerEventHandler? = null,
+    onDrag: OnMarkerEventHandler? = null,
+    onDragEnd: OnMarkerEventHandler? = null,
+    onAnimateStart: OnMarkerEventHandler? = null,
+    onAnimateEnd: OnMarkerEventHandler? = null,
+)`;
+---
+
+<Code code={code} lang="kotlin" />

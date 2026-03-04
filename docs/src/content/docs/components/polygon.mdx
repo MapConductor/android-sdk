@@ -1,0 +1,105 @@
+---
+title: "Polygon"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BasicPolygonExample from '~/components/components/polygon/BasicPolygonExample.astro';
+import InteractivePolygonExample from '~/components/components/polygon/InteractivePolygonExample.astro';
+import MultiplePolygonsExample from '~/components/components/polygon/MultiplePolygonsExample.astro';
+import DynamicPolygonExample from '~/components/components/polygon/DynamicPolygonExample.astro';
+import ComplexPolygonExample from '~/components/components/polygon/ComplexPolygonExample.astro';
+import PolygonEventHandlingExample from '~/components/components/polygon/PolygonEventHandlingExample.astro';
+import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicSignature.astro';
+import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
+import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
+import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+import GeodesicPolygonComparisonExample from '~/components/components/polygon/GeodesicPolygonComparisonExample.astro';
+
+A polygon is a closed shape that defines an area with customizable stroke and fill properties. Polygons are useful for representing zones, regions, boundaries, or area-based features.
+
+## Composable Functions
+
+<Tabs>
+<TabItem label="Basic Polygon">
+
+<PolygonBasicSignature />
+</TabItem>
+<TabItem label="Polygon with State">
+
+<PolygonStateSignature />
+</TabItem>
+</Tabs>
+
+## Parameters
+
+- **`points`**: List of geographic coordinates defining the polygon vertices (`List<GeoPointInterface>`)
+- **`id`**: Optional unique identifier for the polygon (`String?`)
+- **`strokeColor`**: Color of the polygon boundary (default: `Color.Black`)
+- **`strokeWidth`**: Width of the boundary line (default: `1.dp`)
+- **`fillColor`**: Fill color of the polygon interior (default: `Color.Transparent`)
+- **`geodesic`**: Whether to draw geodesic edges (default: `false`)
+- **`extra`**: Additional data attached to the polygon (`Serializable?`)
+
+## Usage Examples
+
+### Basic Polygon
+
+<BasicPolygonExample
+  commentForMapViewReplacement="Replace MapView with your chosen provider, such as GoogleMapView or MapboxMapView"
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+/>
+![](~/assets/polygon/basic-polygon-example.png)
+
+### Interactive Polygon with Vertex Markers
+
+<InteractivePolygonExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  fourthLatitude={37.7649}
+  fourthLongitude={-122.4094}
+  vertexPrefix="Vertex "
+  polygonClickedLog="Polygon clicked at: ${polygonEvent.clicked}"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/polygon/interactive-polygon-example.webm" type="video/webm" />
+ <source src="/polygon/interactive-polygon-example.mp4" type="video/mp4" />
+</video>
+
+### Geodesic vs Standard Polygon
+
+<GeodesicPolygonComparisonExample
+  centerLatitude={30.0}
+  centerLongitude={0.0}
+  zoomLevel={2.0}
+  point1Longitude={23.66}
+  point1Latitude={56.42}
+  point2Longitude={13.39}
+  point2Latitude={2.95}
+  point3Longitude={-87.82}
+  point3Latitude={38.58}
+  point4Longitude={23.66}
+  point4Latitude={56.42}
+  mapLoadedMessage="Map loaded and ready"
+  commentForMapClickClear="Clear selection when the map is clicked"
+  markerDragStartMessagePrefix="Started dragging marker"
+  markerDragMessagePrefix="Dragging marker to"
+  markerDragEndMessagePrefix="Finished dragging marker"
+  commentForInteractiveMarkers="Interactive content with markers"
+  commentForSelectedMarkerInfo="Show information for the selected marker"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/polygon/geodesic-polygon.webm" type="video/webm" />
+ <source src="/polygon/geodesic-polygon.mp4" type="video/mp4" />
+</video>
+

@@ -1,24 +1,24 @@
 package com.mapconductor.core.marker
 
 import androidx.compose.runtime.compositionLocalOf
-import com.mapconductor.core.controller.MapViewController
-import com.mapconductor.core.map.MapOverlay
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.mapconductor.core.ChildCollector
+import com.mapconductor.core.controller.MapViewControllerInterface
+import com.mapconductor.core.map.MapOverlayInterface
 import kotlinx.coroutines.flow.StateFlow
 
 val LocalMarkerCollector =
-    compositionLocalOf<MutableStateFlow<MutableMap<String, MarkerState>>> {
+    compositionLocalOf<ChildCollector<MarkerState>> {
         error("Marker must be under the <MapView />")
     }
 
 class MarkerOverlay(
     override val flow: StateFlow<MutableMap<String, MarkerState>>,
-) : MapOverlay<MarkerState> {
+) : MapOverlayInterface<MarkerState> {
     override suspend fun render(
         data: MutableMap<String, MarkerState>,
-        controller: MapViewController,
+        controller: MapViewControllerInterface,
     ) {
-        (controller as? MarkerCapable)?.let { markerController ->
+        (controller as? MarkerCapableInterface)?.let { markerController ->
             markerController.compositionMarkers(data.values.toList())
         }
     }

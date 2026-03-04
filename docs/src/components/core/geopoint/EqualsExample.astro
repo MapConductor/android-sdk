@@ -1,0 +1,29 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForTolerance?: string;
+  latitude1?: number;
+  longitude1?: number;
+  altitude1?: number;
+  latitude2?: number;
+  longitude2?: number;
+  altitude2?: number;
+}
+
+const {
+  commentForTolerance = "Within tolerance",
+  latitude1 = 37.7749,
+  longitude1 = -122.4194,
+  altitude1 = 100.0,
+  latitude2 = 37.77490001,
+  longitude2 = -122.41940001,
+  altitude2 = 100.00000001
+} = Astro.props;
+
+const code = `val point1 = GeoPoint(${latitude1}, ${longitude1}, ${altitude1})
+val point2 = GeoPoint(${latitude2}, ${longitude2}, ${altitude2})
+val isEqual = point1 == point2 // true（${commentForTolerance}）`;
+---
+
+<Code code={code} lang="kotlin" />

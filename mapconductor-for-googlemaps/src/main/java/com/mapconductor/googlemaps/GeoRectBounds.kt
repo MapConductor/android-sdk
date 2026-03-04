@@ -2,7 +2,7 @@ package com.mapconductor.googlemaps
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 
 fun GeoRectBounds.toLatLngBounds(): LatLngBounds? {
@@ -17,6 +17,6 @@ fun GeoRectBounds.toLatLngBounds(): LatLngBounds? {
 
 fun LatLngBounds.toGeoRectBounds(): GeoRectBounds =
     GeoRectBounds(
-        southWest = GeoPointImpl(southwest.latitude, southwest.longitude),
-        northEast = GeoPointImpl(northeast.latitude, northeast.longitude),
+        southWest = GeoPoint(southwest.latitude, southwest.longitude),
+        northEast = GeoPoint(northeast.latitude, northeast.longitude),
     )

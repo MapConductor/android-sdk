@@ -1,0 +1,101 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentPermissionLogic?: string;
+  commentExplanationNeeded?: string;
+  commentPermissionDenied?: string;
+  commentGetViewHolder?: string;
+}
+
+const {
+  commentPermissionLogic = "Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location",
+  commentExplanationNeeded = "Display an explanation to obtain the location access permissions",
+  commentPermissionDenied = "User denied the permission",
+  commentGetViewHolder = "ViewHolderの取得"
+} = Astro.props;
+
+const code = `
+class MainActivity : ComponentActivity() {
+    lateinit var permissionsManager: PermissionsManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            // ${commentPermissionLogic}
+        } else {
+            permissionsManager = PermissionsManager(this.permissionsListener)
+            permissionsManager.requestLocationPermissions(this)
+        }
+
+        setContent {
+            MapConductorSDKTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    BasicMapExample(
+                        modifier =
+                            Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
+                    )
+                }
+            }
+        }
+    }
+
+    var permissionsListener: PermissionsListener = object : PermissionsListener {
+        override fun onExplanationNeeded(permissionsToExplain: List<String>) {
+            // ${commentExplanationNeeded}
+        }
+
+        override fun onPermissionResult(granted: Boolean) {
+            if (granted) {
+                // ${commentPermissionLogic}
+            } else {
+                // ${commentPermissionDenied}
+            }
+        }
+    }
+}
+
+@Composable
+fun BasicMapExample(modifier: Modifier = Modifier) {
+    val mapViewState = rememberMapboxMapViewState(
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(35.706400, 139.763635),
+            zoom = 13.0
+        ),
+    )
+
+    // ${commentGetViewHolder}
+    var mapboxMapViewHolder by remember { mutableStateOf<MapboxMapViewHolder?>(null) }
+    LaunchedEffect(mapboxMapViewHolder) {
+        mapboxMapViewHolder?.let { holder ->
+            with(holder.mapView) {
+                location.locationPuck = createDefault2DPuck(withBearing = true)
+                location.enabled = true
+                location.pulsingEnabled = true
+                location.puckBearing = PuckBearing.COURSE
+                location.puckBearingEnabled = true
+                viewport.transitionTo(
+                    targetState = viewport.makeFollowPuckViewportState(),
+                    transition = viewport.makeImmediateViewportTransition()
+                )
+            }
+        }
+    }
+
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier,
+        onMapLoaded = {
+            mapboxMapViewHolder = mapViewState.getMapViewHolder()
+        }
+    ) {}
+}
+`;
+---
+
+<Code code={code} lang="kotlin" />
+

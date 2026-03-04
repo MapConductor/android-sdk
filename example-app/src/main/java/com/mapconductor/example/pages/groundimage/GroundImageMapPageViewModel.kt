@@ -5,13 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.groundimage.GroundImageEvent
 import com.mapconductor.core.groundimage.GroundImageState
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
-import com.mapconductor.core.marker.DefaultIcon
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
+import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.toast.ToastMessage
 import android.graphics.drawable.Drawable
@@ -19,9 +19,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface GroundImageMapPageViewModel {
-    val initCameraPosition: MapCameraPositionImpl
-    val mapViewState: StateFlow<MapViewState<*>?>
+interface GroundImageMapPageViewModelInterface {
+    val initCameraPosition: MapCameraPosition
+    val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val messages: StateFlow<List<ToastMessage>>
 
     val markers: List<MarkerState>
@@ -30,7 +30,7 @@ interface GroundImageMapPageViewModel {
     var opacity: Float
     val groundImageState: GroundImageState
 
-    fun onMapViewChanged(state: MapViewState<*>)
+    fun onMapViewChanged(state: MapViewStateInterface<*>)
 
     fun onGroundImageClick(clicked: GroundImageEvent)
 
@@ -41,14 +41,14 @@ interface GroundImageMapPageViewModel {
     fun removeToast(toastMessage: ToastMessage)
 }
 
-class GroundImageMapPageViewModelImpl(
+class GroundImageMapPageViewModel(
     override val imageResources: GroundImageResources,
 ) : ViewModel(),
-    GroundImageMapPageViewModel {
+    GroundImageMapPageViewModelInterface {
     override val initCameraPosition =
-        MapCameraPositionImpl(
+        MapCameraPosition(
             position =
-                GeoPointImpl.fromLatLong(
+                GeoPoint.fromLatLong(
                     latitude = 40.7430785,
                     longitude = -74.175995,
                 ),
@@ -58,10 +58,10 @@ class GroundImageMapPageViewModelImpl(
             paddings = null,
         )
 
-    private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
+    override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
-    override fun onMapViewChanged(state: MapViewState<*>) {
+    override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         mapViewState.value?.cameraPosition?.let {
             state.moveCameraTo(it)
         }
@@ -72,14 +72,14 @@ class GroundImageMapPageViewModelImpl(
     override val messages: StateFlow<List<ToastMessage>> = _messages.asStateFlow()
 
     private var southWestPosition by mutableStateOf(
-        GeoPointImpl(
+        GeoPoint(
             latitude = 40.712216,
             longitude = -74.22655,
         ),
     )
 
     private var northEastPosition by mutableStateOf(
-        GeoPointImpl(
+        GeoPoint(
             latitude = 40.773941,
             longitude = -74.12544,
         ),
@@ -118,25 +118,27 @@ class GroundImageMapPageViewModelImpl(
                     id = "south_west",
                     position = southWestPosition,
                     icon =
-                        DefaultIcon(
+                        DefaultMarkerIcon(
                             fillColor = Color.Blue,
                             strokeColor = Color.White,
                             label = swLabel,
                             labelTextColor = Color.White,
                         ),
                     draggable = true,
+                    onDrag = this::onMarkerDrag,
                 ),
                 MarkerState(
                     id = "north_east",
                     position = northEastPosition,
                     icon =
-                        DefaultIcon(
+                        DefaultMarkerIcon(
                             fillColor = Color.Red,
                             strokeColor = Color.White,
                             label = neLabel,
                             labelTextColor = Color.White,
                         ),
                     draggable = true,
+                    onDrag = this::onMarkerDrag,
                 ),
             )
         }
@@ -147,8 +149,8 @@ class GroundImageMapPageViewModelImpl(
 
     private var bounds by mutableStateOf(
         GeoRectBounds(
-            southWest = GeoPointImpl.from(southWestPosition),
-            northEast = GeoPointImpl.from(northEastPosition),
+            southWest = southWestPosition,
+            northEast = northEastPosition,
         ),
     )
 
@@ -159,6 +161,7 @@ class GroundImageMapPageViewModelImpl(
                 bounds = bounds,
                 image = image,
                 opacity = opacity,
+                onClick = this::onGroundImageClick,
             )
 
     override fun onGroundImageClick(clicked: GroundImageEvent) {
@@ -174,8 +177,8 @@ class GroundImageMapPageViewModelImpl(
     override fun onMarkerDrag(dragged: MarkerState) {
         // Update the internal position based on which marker was dragged
         when (dragged.id) {
-            "south_west" -> southWestPosition = GeoPointImpl.from(dragged.position)
-            "north_east" -> northEastPosition = GeoPointImpl.from(dragged.position)
+            "south_west" -> southWestPosition = GeoPoint.from(dragged.position)
+            "north_east" -> northEastPosition = GeoPoint.from(dragged.position)
         }
 
         // Update bounds using the new positions

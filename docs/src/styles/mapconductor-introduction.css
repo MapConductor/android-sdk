@@ -1,0 +1,8 @@
+.introduction  {
+    display: flex;
+    align-content: flex-start;
+    align-items: flex-start;
+}
+.introduction img {
+    margin-right: 1em;
+}

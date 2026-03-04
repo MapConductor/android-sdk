@@ -1,0 +1,39 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  metaDataEntries?: Array<{name: string, value: string, comment?: string}>;
+  permissions?: Array<{name: string, comment?: string}>;
+}
+
+const {
+  metaDataEntries = [
+    {name: "com.google.android.geo.API_KEY", value: "${GOOGLE_MAPS_API_KEY}", comment: "Google Maps API Key"}
+  ],
+  permissions = [
+    {name: "android.permission.ACCESS_COARSE_LOCATION", comment: "Add location permissions"},
+    {name: "android.permission.ACCESS_FINE_LOCATION"}
+  ]
+} = Astro.props;
+
+const metaDataCode = metaDataEntries.map(entry => {
+  const comment = entry.comment ? `    <!-- ${entry.comment} -->\n` : '';
+  return `${comment}    <meta-data
+        android:name="${entry.name}"
+        android:value="${entry.value}" />`;
+}).join('\n\n');
+
+const permissionsCode = permissions.map((perm, index) => {
+  const comment = perm.comment && index === 0 ? `    <!-- ${perm.comment} -->\n` : '';
+  return `${comment}    <uses-permission android:name="${perm.name}" />`;
+}).join('\n');
+
+const code = `<!-- AndroidManifest.xml -->
+<application>
+${metaDataCode}
+
+${permissionsCode}
+</application>`;
+---
+
+<Code code={code} lang="xml" />

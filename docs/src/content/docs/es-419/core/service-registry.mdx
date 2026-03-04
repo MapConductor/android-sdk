@@ -1,0 +1,42 @@
+---
+title: "Map Service Registry"
+---
+
+MapConductor ofrece un mecanismo ligero de “plugins” llamado `MapServiceRegistry`.
+Permite que módulos de funcionalidades (como clustering/estrategias de marcadores) se integren con cualquier proveedor sin forzar que el `MapViewController` del proveedor implemente interfaces específicas.
+
+## Cómo funciona (Android)
+
+- Cada `MapView` puede proporcionar un registro con alcance del mapa.
+- `MapViewBase` lo expone mediante el CompositionLocal `LocalMapServiceRegistry`.
+- Los módulos de funcionalidades resuelven capabilities desde el registro en tiempo de ejecución.
+
+## MarkerRenderingSupport
+
+El clustering y el renderizado por estrategia requieren un renderer/controller específico del proveedor.
+Los proveedores lo exponen con:
+
+- `MarkerRenderingSupport<ActualMarker>`
+- `MarkerRenderingSupportKey` (clave del registro)
+
+Los módulos de proveedor incluidos ya registran `MarkerRenderingSupportKey`, por lo que `mapconductor-marker-clustering` funciona sin herencia.
+
+## Integración con un proveedor propio (Android)
+
+Registra `MarkerRenderingSupport` en un `MutableMapServiceRegistry` y pásalo a `MapViewBase`.
+
+```kotlin
+val serviceRegistry =
+  remember {
+    MutableMapServiceRegistry().apply {
+      put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
+    }
+  }
+
+MapViewBase(
+  state = state,
+  /* ... */
+  serviceRegistry = serviceRegistry,
+)
+```
+

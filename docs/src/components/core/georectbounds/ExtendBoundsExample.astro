@@ -1,0 +1,49 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForUsage?: string;
+  commentForStartEmpty?: string;
+  commentForBoundsGrow?: string;
+  commentForFinalBounds?: string;
+  firstPointLatitude?: number;
+  firstPointLongitude?: number;
+  secondPointLatitude?: number;
+  secondPointLongitude?: number;
+  thirdPointLatitude?: number;
+  thirdPointLongitude?: number;
+}
+
+const {
+  commentForUsage = "Usage",
+  commentForStartEmpty = "Start empty",
+  commentForBoundsGrow = "Bounds grow to include each point",
+  commentForFinalBounds = "Final bounds",
+  firstPointLatitude = 37.7749,
+  firstPointLongitude = -122.4194,
+  secondPointLatitude = 37.7849,
+  secondPointLongitude = -122.4094,
+  thirdPointLatitude = 37.7649,
+  thirdPointLongitude = -122.4294
+} = Astro.props;
+
+const code = `fun extend(point: GeoPointInterface)
+
+// ${commentForUsage}
+val bounds = GeoRectBounds() // ${commentForStartEmpty}
+
+val points = listOf(
+    GeoPoint.fromLatLong(${firstPointLatitude}, ${firstPointLongitude}),
+    GeoPoint.fromLatLong(${secondPointLatitude}, ${secondPointLongitude}),
+    GeoPoint.fromLatLong(${thirdPointLatitude}, ${thirdPointLongitude})
+)
+
+points.forEach { point ->
+    bounds.extend(point) // ${commentForBoundsGrow}
+}
+
+println("${commentForFinalBounds}: $bounds")`;
+---
+
+<Code code={code} lang="kotlin" />
+

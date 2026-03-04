@@ -12,7 +12,7 @@ import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 
-interface MarkerIcon {
+interface MarkerIconInterface {
     val scale: Float
     val anchor: Offset
     val iconSize: Dp
@@ -22,7 +22,7 @@ interface MarkerIcon {
     fun toBitmapIcon(): BitmapIcon
 }
 
-abstract class AbstractMarkerIcon : MarkerIcon {
+abstract class AbstractMarkerIcon : MarkerIconInterface {
     abstract override val scale: Float
     abstract override val anchor: Offset
     abstract override val iconSize: Dp

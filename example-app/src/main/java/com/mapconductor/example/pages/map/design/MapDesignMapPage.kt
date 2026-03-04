@@ -21,25 +21,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.map.ArcGISDesignType
-import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.arcgis.map.ArcGISDesignTypeInterface
+import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 import com.mapconductor.googlemaps.GoogleMapDesignType
-import com.mapconductor.googlemaps.GoogleMapViewState
+import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 import com.mapconductor.here.HereMapDesignType
-import com.mapconductor.here.HereViewState
+import com.mapconductor.here.HereViewStateInterface
 import com.mapconductor.mapbox.MapboxDesignType
-import com.mapconductor.mapbox.MapboxViewState
-import com.mapconductor.maplibre.MapLibreDesignType
-import com.mapconductor.maplibre.MapLibreViewState
+import com.mapconductor.mapbox.MapboxViewStateInterface
+import com.mapconductor.maplibre.MapLibreDesign
+import com.mapconductor.maplibre.MapLibreViewStateInterface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapDesignMapPage(onToggleSidebar: () -> Unit = {}) {
-    val viewModel = remember { MapDesignPageViewModelImpl() }
+    val viewModel = remember { MapDesignPageViewModel() }
 
     DemoMapPageScaffold(
         menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
@@ -80,7 +80,7 @@ fun MapDesignMapPage(onToggleSidebar: () -> Unit = {}) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapDesignTypeSelector(
-    state: MapViewState<*>,
+    state: MapViewStateInterface<*>,
     mapDesignOptions: List<MapDesignOption>,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -93,25 +93,25 @@ fun MapDesignTypeSelector(
         selectedLabel = mapDesignOption.label
         expanded = false
         when (state) {
-            is GoogleMapViewState -> {
+            is GoogleMapViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as GoogleMapDesignType
             }
-            is HereViewState -> {
+            is HereViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as HereMapDesignType
             }
-            is ArcGISMapViewState -> {
+            is ArcGISMapViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
-                state.mapDesignType = mapDesignOption.design as ArcGISDesignType
+                state.mapDesignType = mapDesignOption.design as ArcGISDesignTypeInterface
             }
-            is MapboxViewState -> {
+            is MapboxViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as MapboxDesignType
             }
-            is MapLibreViewState -> {
+            is MapLibreViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
-                state.mapDesignType = mapDesignOption.design as MapLibreDesignType
+                state.mapDesignType = mapDesignOption.design as MapLibreDesign
             }
             else -> throw IllegalArgumentException("Not implemented yet")
         }

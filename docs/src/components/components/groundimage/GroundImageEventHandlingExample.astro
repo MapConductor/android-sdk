@@ -1,0 +1,30 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun GroundImageEventHandlingExample(overlayImage: Drawable) {
+    val mapViewState = rememberGoogleMapViewState()
+
+    GoogleMapView(
+        state = mapViewState
+    ) {
+        val imageBounds = GeoRectBounds(
+            northWest = GeoPoint.fromLatLong(37.8, -122.5),
+            southEast = GeoPoint.fromLatLong(37.7, -122.4)
+        )
+
+        GroundImage(
+            bounds = imageBounds,
+            image = overlayImage,
+            opacity = 0.7f,
+            extra = "Base map overlay",
+            onClick = { groundImageEvent ->
+                println("Ground image clicked at: \${groundImageEvent.clicked}")
+                println("Ground image: \${groundImageEvent.state}")
+            }
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

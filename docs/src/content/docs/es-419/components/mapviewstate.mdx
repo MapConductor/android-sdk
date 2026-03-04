@@ -1,0 +1,102 @@
+---
+title: "MapViewStateInterface"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CameraControlExample from '~/components/components/mapviewstate/CameraControlExample.astro';
+import MapDesignSwitchExample from '~/components/components/mapviewstate/MapDesignSwitchExample.astro';
+import MoveCameraToGeoPointSignature from '~/components/components/mapviewstate/MoveCameraToGeoPointSignature.astro';
+import MoveCameraToCameraPositionSignature from '~/components/components/mapviewstate/MoveCameraToCameraPositionSignature.astro';
+import MapViewStateEventHandlingExample from '~/components/components/mapviewstate/MapViewStateEventHandlingExample.astro';
+
+`MapViewStateInterface` es un componente principal que gestiona la inicialización del mapa, la posición de la cámara y el estado general del mapa.
+Cada SDK de mapa tiene su propia implementación, pero MapConductor proporciona una API unificada en todos los proveedores.
+
+## Implementaciones de SDK de Mapa
+
+MapConductor admite 5 SDKs de mapa, cada uno con su propia implementación de `MapViewStateInterface`:
+
+- `GoogleMapViewState` - Google Maps
+- `MapboxViewState` - Mapbox Map
+- `HereViewState` - HERE Map
+- `ArcGISMapViewState` - ArcGIS Map
+- `MapLibreViewState` - MapLibre Map
+
+## Propiedades Principales
+
+### Estado de Inicialización
+
+- **`isInitialized: StateFlow<InitState>`**: Rastrea el estado de inicialización del mapa
+  - `NotStarted`: La inicialización del mapa no ha comenzado
+  - `Initializing`: El mapa se está inicializando actualmente
+  - `Initialized`: El mapa está listo para usar
+  - `Failed`: La inicialización falló
+
+### Gestión de Cámara
+
+- **`cameraPosition: MapCameraPosition`**: Posición de cámara actual y posición de cámara inicial cuando se carga el mapa
+
+### Diseño de Mapa
+
+- **`mapDesignType: ActualMapDesignType`**: Estilo/diseño del mapa (específico del proveedor)
+
+### Movimiento de Cámara
+
+<Tabs>
+<TabItem label="Movimiento Simple">
+- `moveCameraTo(GeoPoint, Long?)`
+
+    <MoveCameraToGeoPointSignature />
+
+    - Mueve la cámara a la posición especificada. Los ángulos de zoom y inclinación se mantienen desde el momento en que se llama a `moveCameraTo`.
+    - Cuando se especifica `durationMillis` en milisegundos, la cámara se mueve con animación.
+</TabItem>
+<TabItem label="Movimiento con Opciones de Cámara">
+- `moveCameraTo(MapCameraPosition, Long?)`
+
+    <MoveCameraToCameraPositionSignature />
+
+    - Mueve la cámara usando `MapCameraPosition`. Se pueden especificar zoom e inclinación al mismo tiempo. Las propiedades que se omiten mantienen sus valores desde cuando se llamó a `moveCameraTo`.
+    - Cuando se especifica `durationMillis` en milisegundos, la cámara se mueve con animación.
+</TabItem>
+</Tabs>
+
+## Ejemplos de Uso
+
+### Control de Cámara
+
+<CameraControlExample />
+
+<video width="720" height="480" controls>
+ <source src="/mapviewstate/camera-control-example.webm" type="video/webm" />
+ <source src="/mapviewstate/camera-control-example.mp4" type="video/mp4" />
+</video>
+
+### Cambio de Diseño de Mapa
+
+<MapDesignSwitchExample />
+
+<video width="720" height="480" controls>
+ <source src="/mapviewstate/map-design-example.webm" type="video/webm" />
+ <source src="/mapviewstate/map-design-example.mp4" type="video/mp4" />
+</video>
+
+## Manejo de Eventos
+
+`MapViewStateInterface` funciona con el componente de proveedor de mapa elegido para proporcionar manejo de eventos integral:
+
+<MapViewStateEventHandlingExample
+  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
+  commentForMapContent="Contenido del mapa"
+  mapLoadedMessage="Mapa cargado exitosamente"
+  mapClickPrefix="Mapa clickeado en"
+/>
+
+## Mejores Prácticas
+
+1. **Inicialización del Estado**: Inicializar MapViewStateInterface con posición de cámara y límites apropiados
+2. **Animación de Cámara**: Usar duraciones de animación razonables para experiencia de usuario fluida (500ms - 3000ms)
+3. **Estabilidad del Estado**: Usar `remember` para mantener el estado entre recomposiciones
+4. **Actualizaciones Reactivas**: Usar StateFlow para actualizaciones reactivas del estado de inicialización
+5. **Manejo de Errores**: Verificar el estado de inicialización antes de realizar operaciones de cámara
+6. **Gestión de Memoria**: Limpiar escuchadores cuando el mapa ya no sea necesario

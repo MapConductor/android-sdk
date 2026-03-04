@@ -1,49 +1,49 @@
 package com.mapconductor.core.polygon
 
-import com.mapconductor.core.createInterpolatePoints
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.normalizeLng
+import com.mapconductor.core.spherical.createInterpolatePoints
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-interface PolygonManager<ActualPolygon> {
-    fun registerEntity(entity: PolygonEntity<ActualPolygon>)
+interface PolygonManagerInterface<ActualPolygon> {
+    fun registerEntity(entity: PolygonEntityInterface<ActualPolygon>)
 
-    fun removeEntity(id: String): PolygonEntity<ActualPolygon>?
+    fun removeEntity(id: String): PolygonEntityInterface<ActualPolygon>?
 
-    fun getEntity(id: String): PolygonEntity<ActualPolygon>?
+    fun getEntity(id: String): PolygonEntityInterface<ActualPolygon>?
 
     fun hasEntity(id: String): Boolean
 
-    fun allEntities(): List<PolygonEntity<ActualPolygon>>
+    fun allEntities(): List<PolygonEntityInterface<ActualPolygon>>
 
     fun clear()
 
-    fun find(position: GeoPoint): PolygonEntity<ActualPolygon>?
+    fun find(position: GeoPointInterface): PolygonEntityInterface<ActualPolygon>?
 }
 
-class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
-    private val entities = mutableMapOf<String, PolygonEntity<ActualPolygon>>()
+class PolygonManager<ActualPolygon> : PolygonManagerInterface<ActualPolygon> {
+    private val entities = mutableMapOf<String, PolygonEntityInterface<ActualPolygon>>()
 
-    override fun registerEntity(entity: PolygonEntity<ActualPolygon>) {
+    override fun registerEntity(entity: PolygonEntityInterface<ActualPolygon>) {
         entities[entity.state.id] = entity
     }
 
-    override fun removeEntity(id: String): PolygonEntity<ActualPolygon>? = entities.remove(id)
+    override fun removeEntity(id: String): PolygonEntityInterface<ActualPolygon>? = entities.remove(id)
 
-    override fun getEntity(id: String): PolygonEntity<ActualPolygon>? = entities[id]
+    override fun getEntity(id: String): PolygonEntityInterface<ActualPolygon>? = entities[id]
 
     override fun hasEntity(id: String): Boolean = entities.containsKey(id)
 
-    override fun allEntities(): List<PolygonEntity<ActualPolygon>> = entities.values.toList()
+    override fun allEntities(): List<PolygonEntityInterface<ActualPolygon>> = entities.values.toList()
 
     override fun clear() {
         entities.clear()
     }
 
-    override fun find(position: GeoPoint): PolygonEntity<ActualPolygon>? {
+    override fun find(position: GeoPointInterface): PolygonEntityInterface<ActualPolygon>? {
         val testX = normalizeLng(position.longitude)
         val testY = position.latitude
 
@@ -66,7 +66,25 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
                 if (ring.first() != ring.last()) ring + ring.first() else ring
 
             if (pointInPolygonWindingNumber(testX, testY, closedRing)) {
-                return entity
+                // Exclude holes: if the point is inside any hole, treat it as outside.
+                val holes = state.holes
+                var inHole = false
+                for (hole in holes) {
+                    if (hole.size < 3) continue
+                    val holeRing =
+                        try {
+                            if (state.geodesic) createInterpolatePoints(hole) else hole
+                        } catch (_: Exception) {
+                            hole
+                        }
+                    val closedHole =
+                        if (holeRing.first() != holeRing.last()) holeRing + holeRing.first() else holeRing
+                    if (pointInPolygonWindingNumber(testX, testY, closedHole)) {
+                        inHole = true
+                        break
+                    }
+                }
+                if (!inHole) return entity
             }
         }
         return null
@@ -75,7 +93,7 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
     private fun pointInPolygonWindingNumber(
         testX: Double,
         testY: Double,
-        ring: List<GeoPoint>,
+        ring: List<GeoPointInterface>,
     ): Boolean {
         if (ring.size < 3) return false
 
@@ -152,7 +170,7 @@ class PolygonManagerImpl<ActualPolygon> : PolygonManager<ActualPolygon> {
     }
 
     private fun unwrapLongitudesAround(
-        points: List<GeoPoint>,
+        points: List<GeoPointInterface>,
         refLng: Double,
     ): List<Pair<Double, Double>> {
         if (points.isEmpty()) return emptyList()

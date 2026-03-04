@@ -1,0 +1,51 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MultipleGroundImagesExample() {
+    val context = LocalContext.current
+
+    MapView(state = mapViewState) {
+        // ベース衛星画像（低い不透明度）
+        AppCompatResources.getDrawable(context, R.drawable.satellite_base)?.let { drawable ->
+            GroundImage(
+                bounds = GeoRectBounds(
+                    southwest = GeoPoint.fromLatLong(37.7549, -122.4394),
+                    northeast = GeoPoint.fromLatLong(37.7949, -122.3994)
+                ),
+                image = drawable,
+                opacity = 0.3f,
+                extra = "Satellite base"
+            )
+        }
+
+        // 気象オーバーレイ（中程度の不透明度）
+        AppCompatResources.getDrawable(context, R.drawable.weather_overlay)?.let { drawable ->
+            GroundImage(
+                bounds = GeoRectBounds(
+                    southwest = GeoPoint.fromLatLong(37.7649, -122.4294),
+                    northeast = GeoPoint.fromLatLong(37.7849, -122.4094)
+                ),
+                image = drawable,
+                opacity = 0.6f,
+                extra = "Weather data"
+            )
+        }
+
+        // 交通オーバーレイ（高い不透明度）
+        AppCompatResources.getDrawable(context, R.drawable.traffic_overlay)?.let { drawable ->
+            GroundImage(
+                bounds = GeoRectBounds(
+                    southwest = GeoPoint.fromLatLong(37.7699, -122.4244),
+                    northeast = GeoPoint.fromLatLong(37.7799, -122.4144)
+                ),
+                image = drawable,
+                opacity = 0.8f,
+                extra = "Traffic data"
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,0 +1,59 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun DynamicGroundImageExample() {
+    var selectedImageResource by remember { mutableStateOf(R.drawable.overlay1) }
+    var isVisible by remember { mutableStateOf(true) }
+
+    val context = LocalContext.current
+    val imageDrawable = AppCompatResources.getDrawable(context, selectedImageResource)
+
+    val bounds = GeoRectBounds(
+        southwest = GeoPoint.fromLatLong(37.7649, -122.4294),
+        northeast = GeoPoint.fromLatLong(37.7849, -122.4094)
+    )
+
+    Column {
+        Row {
+            Button(onClick = { selectedImageResource = R.drawable.overlay1 }) {
+                Text("Image 1")
+            }
+            Button(onClick = { selectedImageResource = R.drawable.overlay2 }) {
+                Text("Image 2")
+            }
+            Button(onClick = { selectedImageResource = R.drawable.overlay3 }) {
+                Text("Image 3")
+            }
+        }
+
+        Switch(
+            checked = isVisible,
+            onCheckedChange = { isVisible = it },
+            modifier = Modifier.padding(16.dp)
+        )
+
+        MapView(state = mapViewState) {
+            if (isVisible && imageDrawable != null) {
+                GroundImage(
+                    bounds = bounds,
+                    image = imageDrawable,
+                    opacity = 0.7f,
+                    extra = "Dynamic overlay"
+                )
+            }
+
+            Marker(
+                position = bounds.southwest,
+                icon = DefaultIcon(fillColor = Color.Green, label = "SW", scale = 0.6f)
+            )
+            Marker(
+                position = bounds.northeast,
+                icon = DefaultIcon(fillColor = Color.Red, label = "NE", scale = 0.6f)
+            )
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

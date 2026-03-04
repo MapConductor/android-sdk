@@ -1,0 +1,168 @@
+---
+title: "GeoPointInterface（地理座標）"
+---
+
+import GeoPointInterface from '~/components/core/geopoint/GeoPointInterface.astro';
+import GeoPointImpl from '~/components/core/geopoint/GeoPointImpl.astro';
+import GeoPointFactoryMethods from '~/components/core/geopoint/GeoPointFactoryMethods.astro';
+import BasicMarkerExample from '~/components/core/geopoint/BasicMarkerExample.astro';
+import AltitudeExample from '~/components/core/geopoint/AltitudeExample.astro';
+import ValidationExample from '~/components/core/geopoint/ValidationExample.astro';
+import NormalizationExample from '~/components/core/geopoint/NormalizationExample.astro';
+import WrapExample from '~/components/core/geopoint/WrapExample.astro';
+import EqualsExample from '~/components/core/geopoint/EqualsExample.astro';
+import ToUrlValueExample from '~/components/core/geopoint/ToUrlValueExample.astro';
+
+`GeoPointInterface` は、緯度・経度・高度（オプション）を持つ地理座標を表します。
+
+## インターフェースと実装
+
+### GeoPointInterface インターフェース
+
+GeoPointInterfaceは、以下のプロパティを持ちます。ユニットテストなどに用います。
+
+<GeoPointInterface />
+
+### GeoPoint
+
+GeoPointクラスは、GeoPointInterfaceを実装したクラスです。
+
+<GeoPointImpl />
+
+## 生成メソッド
+
+### ファクトリーメソッド
+
+GeoPointクラスは、下記のファクトリーメソッドを提供します。
+開発者の使いやすいメソッドを選択することができます。
+
+<GeoPointFactoryMethods
+  commentForFromLatLong="緯度,経度の順で値を指定"
+  commentForFromLongLat="経度,緯度の順で値を指定"
+  commentForFrom="GeoPointInterfaceを持つオブジェクトから生成"
+  commentForConstructor="コンスタントに値を直接渡して生成"
+  latitude={37.7749}
+  longitude={-122.4194}
+  altitude={100.0}
+/>
+
+### 使用例
+
+<BasicMarkerExample
+  commentForPosition="基本的なマーカー配置"
+  commentForMapView="MapViewContainer を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
+  latitude={37.7749}
+  longitude={-122.4194}
+  label="SF"
+/>
+
+
+## 座標系
+
+### 緯度（Latitude）
+- **範囲**: -90.0 から 90.0 度
+- **-90.0**: 南極
+- **0.0**: 赤道
+- **90.0**: 北極
+
+### 経度（Longitude）
+- **範囲**: -180.0 から 180.0 度
+- **-180.0**: 国際日付変更線（西側）
+- **0.0**: 本初子午線（グリニッジ）
+- **180.0**: 国際日付変更線（東側）
+
+
+## 検証と正規化
+
+### 検証
+
+`isValid()` 拡張関数は、GeoPointの座標が有効な範囲内にあるかをチェックします。
+
+- **緯度**: -90.0 〜 90.0 の範囲内
+- **経度**: -180.0 〜 180.0 の範囲内
+
+両方の条件を満たす場合に `true` を返します。
+
+<ValidationExample
+  commentForUsage="使用例"
+  commentForUse="ポイントを使用"
+  latitude={37.7749}
+  longitude={-122.4194}
+/>
+
+### 正規化
+
+座標を有効な範囲に収めるために、2つのメソッドが用意されています。
+
+#### normalize()
+
+`normalize()` 拡張関数は、座標を有効な範囲にクランプします。
+
+- **緯度**: -90.0 〜 90.0 にクランプ
+- **経度**: -180.0 〜 180.0 に正規化（モジュロ演算）
+- **高度**: null の場合は 0.0 に変換
+
+<NormalizationExample
+  commentForUsage="使用例"
+  commentForInvalid="無効な座標"
+  commentForValid="有効な範囲にクランプされる"
+  invalidLatitude={100.0}
+  invalidLongitude={200.0}
+/>
+
+#### wrap()
+
+`wrap()` メソッドは、極を越えた座標を適切に折り返します。
+
+- **緯度が90度を超えた場合**: -90度から折り返し、経度を180度反転
+- **緯度が-90度を下回った場合**: 90度から折り返し、経度を180度反転
+- **経度**: -180.0 〜 180.0 に正規化
+
+<WrapExample
+  commentForExample="例: 極を越えた座標"
+  commentForOverflow="緯度が90度を超えている"
+  latitude={95.0}
+  longitude={10.0}
+/>
+
+`normalize()` と `wrap()` の違いは、極を越えた場合の処理です。`normalize()` は単純にクランプするのに対し、`wrap()` は地球儀上で実際に極を越えた場合の座標を計算します。
+
+## 比較
+
+### equals()
+
+`GeoPoint` の `equals()` メソッドは、浮動小数点の誤差を考慮した比較を行います。
+
+- **許容誤差**: 1e-7（約0.00000001度、約1.1cm）
+- **比較対象**: 緯度、経度、高度のすべて
+
+<EqualsExample
+  commentForTolerance="許容誤差内"
+  latitude1={37.7749}
+  longitude1={-122.4194}
+  altitude1={100.0}
+  latitude2={37.77490001}
+  longitude2={-122.41940001}
+  altitude2={100.00000001}
+/>
+
+この誤差許容により、浮動小数点演算による微小な差異を無視して比較できます。
+
+## ユーティリティメソッド
+
+### toUrlValue()
+
+`toUrlValue()` メソッドは、緯度と経度をURL用の文字列に変換します。
+
+- **形式**: `"緯度,経度"`
+- **精度**: デフォルトは6桁（約11cm）、指定可能
+
+<ToUrlValueExample
+  commentForDefault="デフォルト精度（6桁）"
+  commentForCustom="カスタム精度（3桁）"
+  latitude={37.7749}
+  longitude={-122.4194}
+  precision={3}
+/>
+
+Google Maps や Mapbox などの地図サービスのURLパラメータに使用できます。

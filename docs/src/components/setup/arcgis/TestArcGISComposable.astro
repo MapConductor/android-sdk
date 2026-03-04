@@ -1,0 +1,31 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  comment?: string;
+}
+
+const {
+  comment = "もし地図が表示されれば、セットアップが正しくできています"
+} = Astro.props;
+
+const code = `@Composable
+fun TestArcGIS() {
+    val state = rememberArcGISMapViewState(
+        cameraPosition =
+            MapCameraPosition(
+                position = GeoPoint.fromLatLong(0.0, 0.0),
+                zoom = 5.0,
+            ),
+    )
+
+    ArcGISMapView(
+        modifier = modifier,
+        state = state,
+    ) {
+        // ${comment}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

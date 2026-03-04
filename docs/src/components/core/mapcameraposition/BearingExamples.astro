@@ -1,0 +1,49 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  bearingNorth?: number;
+  bearingEast?: number;
+  bearingRoute?: number;
+  northUpComment?: string;
+  eastUpComment?: string;
+  followingBearingComment?: string;
+  routeComment?: string;
+}
+
+const {
+  latitude = 37.7749,
+  longitude = -122.4194,
+  bearingNorth = 0.0,
+  bearingEast = 90.0,
+  bearingRoute = 135.0,
+  northUpComment = "North-up (default)",
+  eastUpComment = "Southeast",
+  followingBearingComment = "Southeast",
+  routeComment = "Southeast"
+} = Astro.props;
+
+const code = `// ${northUpComment}
+val northUp = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+    bearing = ${bearingNorth}
+)
+
+// ${eastUpComment}
+val eastUp = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+    bearing = ${bearingEast}
+)
+
+// ${followingBearingComment}
+val routeBearing = MapCameraPosition(
+    position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+    bearing = ${bearingRoute},  // ${routeComment}
+    zoom = 18.0
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,0 +1,39 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  demoTitle?: string;
+  hostedTitle?: string;
+  osmTitle?: string;
+  osmComment?: string;
+}
+
+const {
+  demoTitle = "デモ用スタイル",
+  hostedTitle = "ホストされたスタイルの使用",
+  osmTitle = "OpenStreetMap スタイルの使用",
+  osmComment = "Example using OSM Liberty style"
+} = Astro.props;
+
+const demoStyleCode = `val mapDesign = MapLibreDesignType.DemoTiles`;
+
+const hostedStyleCode = `val mapDesign = MapLibreDesignType(
+    "basic map",
+    "https://api.maptiler.com/maps/base-v4/style.json?key=YOUR_API_KEY",
+)`;
+
+const osmStyleCode = `// ${osmComment}
+val mapDesign = MapLibreDesignType(
+    "OpenStreetMap",
+    "https://tiles.openfreemap.org/styles/liberty",
+)`;
+---
+
+<section>
+  <h4>{demoTitle}</h4>
+  <Code code={demoStyleCode} lang="kotlin" />
+  <h4>{hostedTitle}</h4>
+  <Code code={hostedStyleCode} lang="kotlin" />
+  <h4>{osmTitle}</h4>
+  <Code code={osmStyleCode} lang="kotlin" />
+</section>

@@ -3,6 +3,17 @@ title: "Polygon"
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import BasicPolygonExample from '~/components/components/polygon/BasicPolygonExample.astro';
+import InteractivePolygonExample from '~/components/components/polygon/InteractivePolygonExample.astro';
+import MultiplePolygonsExample from '~/components/components/polygon/MultiplePolygonsExample.astro';
+import DynamicPolygonExample from '~/components/components/polygon/DynamicPolygonExample.astro';
+import ComplexPolygonExample from '~/components/components/polygon/ComplexPolygonExample.astro';
+import PolygonEventHandlingExample from '~/components/components/polygon/PolygonEventHandlingExample.astro';
+import PolygonBasicSignature from '~/components/components/polygon/PolygonBasicSignature.astro';
+import PolygonStateSignature from '~/components/components/polygon/PolygonStateSignature.astro';
+import PolygonFillStyleExamples from '~/components/components/polygon/PolygonFillStyleExamples.astro';
+import PolygonStrokeStyleExamples from '~/components/components/polygon/PolygonStrokeStyleExamples.astro';
+import GeodesicPolygonComparisonExample from '~/components/components/polygon/GeodesicPolygonComparisonExample.astro';
 
 ポリゴンは、カスタマイズ可能なストロークと塗りつぶしプロパティを持つエリアを定義する閉じた形状です。ゾーン、地域、境界、またはエリアベースの機能を表現するのに便利です。
 
@@ -11,41 +22,17 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 <Tabs>
 <TabItem label="基本的な Polygon">
 
-```kotlin
-@Composable
-fun Polygon(
-    points: List<GeoPoint>,
-    id: String? = null,
-    strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 1.dp,
-    fillColor: Color = Color.Transparent,
-    geodesic: Boolean = false,
-    extra: Serializable? = null
-)
-```
+<PolygonBasicSignature />
 </TabItem>
 <TabItem label="State を利用した Polygon">
 
-```kotlin
-PolygonState(
-    points: List<GeoPoint>,
-    id: String? = null,
-    strokeColor: Color = Color.Black,
-    strokeWidth: Dp = 1.dp,
-    fillColor: Color = Color.Transparent,
-    geodesic: Boolean = false,
-    extra: Serializable? = null
-)
-
-@Composable
-fun Polygon(state: PolygonState)
-```
+<PolygonStateSignature />
 </TabItem>
 </Tabs>
 
 ## パラメータ
 
-- **`points`**: ポリゴンの頂点を定義する地理座標のリスト（`List<GeoPoint>`）
+- **`points`**: ポリゴンの頂点を定義する地理座標のリスト（`List<GeoPointInterface>`）
 - **`id`**: ポリゴンのオプションの一意識別子（`String?`）
 - **`strokeColor`**: ポリゴンの境界線の色（デフォルト: `Color.Black`）
 - **`strokeWidth`**: 境界線の幅（デフォルト: `1.dp`）
@@ -57,361 +44,62 @@ fun Polygon(state: PolygonState)
 
 ### 基本的な Polygon
 
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    val trianglePoints = listOf(
-        GeoPointImpl.fromLatLong(37.7749, -122.4194), // ポイント 1
-        GeoPointImpl.fromLatLong(37.7849, -122.4094), // ポイント 2
-        GeoPointImpl.fromLatLong(37.7749, -122.3994), // ポイント 3
-        GeoPointImpl.fromLatLong(37.7749, -122.4194)  // ポリゴンを閉じる
-    )
-
-    Polygon(
-        points = trianglePoints,
-        strokeColor = Color.Blue,
-        strokeWidth = 2.dp,
-        fillColor = Color.Blue.copy(alpha = 0.3f)
-    )
-}
-```
+<BasicPolygonExample
+  commentForMapViewReplacement="MapView を GoogleMapView、MapboxMapView などに置き換えてください"
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7749}
+  thirdLongitude={-122.3994}
+/>
+![](~/assets/polygon/basic-polygon-example.png)
 
 ### 頂点マーカー付きのインタラクティブな Polygon
 
-サンプルアプリのパターンに基づいた例:
+<InteractivePolygonExample
+  firstLatitude={37.7749}
+  firstLongitude={-122.4194}
+  secondLatitude={37.7849}
+  secondLongitude={-122.4094}
+  thirdLatitude={37.7799}
+  thirdLongitude={-122.3994}
+  fourthLatitude={37.7649}
+  fourthLongitude={-122.4094}
+  vertexPrefix="Vertex "
+  polygonClickedLog="Polygon がクリックされました: ${polygonEvent.clicked}"
+/>
 
-```kotlin
-@Composable
-fun InteractivePolygonExample() {
-    var vertices by remember {
-        mutableStateOf(
-            listOf(
-                GeoPointImpl.fromLatLong(37.7749, -122.4194),
-                GeoPointImpl.fromLatLong(37.7849, -122.4094),
-                GeoPointImpl.fromLatLong(37.7799, -122.3994),
-                GeoPointImpl.fromLatLong(37.7649, -122.4094)
-            )
-        )
-    }
+<video width="720" height="480" controls>
+ <source src="/polygon/interactive-polygon-example.webm" type="video/webm" />
+ <source src="/polygon/interactive-polygon-example.mp4" type="video/mp4" />
+</video>
 
-    // 最初のポイントを最後に追加してポリゴンを閉じる
-    val closedVertices = vertices + vertices.first()
 
-    val polygonState = PolygonState(
-        points = closedVertices,
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        fillColor = Color.Red.copy(alpha = 0.2f),
-        geodesic = false
-    )
+### 測地線ポリゴン vs 標準線ポリゴン
 
-    val vertexMarkers = vertices.mapIndexed { index, point ->
-        MarkerState(
-            position = point,
-            icon = DefaultIcon(
-                fillColor = Color.Red,
-                strokeColor = Color.White,
-                label = "${index + 1}",
-                scale = 0.8f
-            ),
-            draggable = true,
-            extra = "Vertex $index"
-        )
-    }
+<GeodesicPolygonComparisonExample
+  centerLatitude={30.0}
+  centerLongitude={0.0}
+  zoomLevel={2.0}
+  point1Longitude={23.66}
+  point1Latitude={56.42}
+  point2Longitude={13.39}
+  point2Latitude={2.95}
+  point3Longitude={-87.82}
+  point3Latitude={38.58}
+  point4Longitude={23.66}
+  point4Latitude={56.42}
+  mapLoadedMessage="地図の読み込みが完了しました"
+  commentForMapClickClear="地図クリックで選択解除"
+  markerDragStartMessagePrefix="マーカーのドラッグを開始"
+  markerDragMessagePrefix="マーカーをドラッグ中"
+  markerDragEndMessagePrefix="マーカーのドラッグが終了"
+  commentForInteractiveMarkers="インタラクティブなマーカーを持つ地図コンテンツ"
+  commentForSelectedMarkerInfo="選択されたマーカーの情報を表示"
+/>
 
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(
-        state = mapViewState,
-        onMarkerDrag = { markerState ->
-            val vertexIndex = markerState.extra.toString().substringAfter("Vertex ").toIntOrNull()
-            vertexIndex?.let { index ->
-                vertices = vertices.toMutableList().apply {
-                    if (index < size) {
-                        set(index, markerState.position)
-                    }
-                }
-            }
-        },
-        onPolygonClick = { polygonEvent ->
-            println("Polygon clicked at: ${polygonEvent.clicked}")
-        }
-    ) {
-        // ポリゴンを描画
-        Polygon(polygonState)
-
-        // 頂点マーカーを描画
-        vertexMarkers.forEach { marker ->
-            Marker(marker)
-        }
-    }
-}
-```
-
-### 異なるスタイルの複数の Polygon
-
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-    // ソリッドな塗りつぶしのポリゴン
-    Polygon(
-        points = listOf(
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7849, -122.4194),
-            GeoPointImpl.fromLatLong(37.7849, -122.4094),
-            GeoPointImpl.fromLatLong(37.7749, -122.4094),
-            GeoPointImpl.fromLatLong(37.7749, -122.4194)
-        ),
-        strokeColor = Color.Blue,
-        strokeWidth = 2.dp,
-        fillColor = Color.Blue.copy(alpha = 0.4f),
-        extra = "Blue zone"
-    )
-
-    // 境界線のみのポリゴン
-    Polygon(
-        points = listOf(
-            GeoPointImpl.fromLatLong(37.7649, -122.4194),
-            GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            GeoPointImpl.fromLatLong(37.7749, -122.4094),
-            GeoPointImpl.fromLatLong(37.7649, -122.4094),
-            GeoPointImpl.fromLatLong(37.7649, -122.4194)
-        ),
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
-        fillColor = Color.Transparent,
-        extra = "Red boundary"
-    )
-
-    // 半透明のポリゴン
-    Polygon(
-        points = listOf(
-            GeoPointImpl.fromLatLong(37.7549, -122.4194),
-            GeoPointImpl.fromLatLong(37.7649, -122.4194),
-            GeoPointImpl.fromLatLong(37.7649, -122.4094),
-            GeoPointImpl.fromLatLong(37.7549, -122.4094),
-            GeoPointImpl.fromLatLong(37.7549, -122.4194)
-        ),
-        strokeColor = Color.Green,
-        strokeWidth = 1.dp,
-        fillColor = Color.Green.copy(alpha = 0.2f),
-        extra = "Green area"
-    )
-}
-```
-
-### 複雑なポリゴン形状
-
-```kotlin
-@Composable
-fun ComplexPolygonExample() {
-    // 星形のポリゴン
-    val starPoints = remember {
-        val centerLat = 37.7749
-        val centerLng = -122.4194
-        val outerRadius = 0.01
-        val innerRadius = 0.005
-
-        buildList {
-            for (i in 0 until 10) {
-                val angle = (i * 36.0) * Math.PI / 180.0
-                val radiusMeters = if (i % 2 == 0) outerRadius else innerRadius
-                val lat = centerLat + radiusMeters * cos(angle)
-                val lng = centerLng + radiusMeters * sin(angle)
-                add(GeoPointImpl.fromLatLong(lat, lng))
-            }
-            // ポリゴンを閉じる
-            add(first())
-        }
-    }
-
-    // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(state = mapViewState) {
-        Polygon(
-            points = starPoints,
-            strokeColor = Color.Magenta,
-            strokeWidth = 2.dp,
-            fillColor = Color.Magenta.copy(alpha = 0.3f),
-            extra = "Star polygon"
-        )
-
-        // 中心マーカー
-        Marker(
-            position = GeoPointImpl.fromLatLong(37.7749, -122.4194),
-            icon = DefaultIcon(
-                fillColor = Color.Magenta,
-                label = "⭐"
-            )
-        )
-    }
-}
-```
-
-### 動的なポリゴン作成
-
-```kotlin
-@Composable
-fun DynamicPolygonExample() {
-    var polygonPoints by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
-    var isCreating by remember { mutableStateOf(false) }
-
-    Column {
-        Row {
-            Button(
-                onClick = {
-                    isCreating = !isCreating
-                    if (!isCreating && polygonPoints.isNotEmpty()) {
-                        // ポリゴンを閉じる
-                        polygonPoints = polygonPoints + polygonPoints.first()
-                    }
-                }
-            ) {
-                Text(if (isCreating) "Finish Polygon" else "Create Polygon")
-            }
-
-            Button(
-                onClick = { polygonPoints = emptyList() }
-            ) {
-                Text("Clear")
-            }
-        }
-
-        Text("Points: ${polygonPoints.size}")
-
-        // MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(
-            state = mapViewState,
-            onMapClick = { geoPoint ->
-                if (isCreating) {
-                    polygonPoints = polygonPoints + geoPoint
-                }
-            }
-        ) {
-            if (polygonPoints.size >= 3) {
-                val displayPoints = if (isCreating) polygonPoints
-                                  else polygonPoints // すでに閉じている
-
-                Polygon(
-                    points = displayPoints,
-                    strokeColor = Color.Purple,
-                    strokeWidth = 2.dp,
-                    fillColor = if (isCreating)
-                        Color.Purple.copy(alpha = 0.1f)
-                    else
-                        Color.Purple.copy(alpha = 0.3f)
-                )
-            }
-
-            // 頂点マーカーを表示
-            polygonPoints.forEachIndexed { index, point ->
-                Marker(
-                    position = point,
-                    icon = DefaultIcon(
-                        fillColor = if (index == 0) Color.Green
-                                  else if (index == polygonPoints.size - 1 && !isCreating) Color.Red
-                                  else Color.Blue,
-                        label = "${index + 1}",
-                        scale = 0.7f
-                    )
-                )
-            }
-        }
-    }
-}
-```
-
-## イベント処理
-
-Polygon のインタラクションは、マップ地図SDKコンポーネントで処理されます:
-
-```kotlin
-// MapView を GoogleMapView、MapboxMapView などのマップ地図SDKに置き換えてください
-MapView(
-    state = mapViewState,
-    onPolygonClick = { polygonEvent ->
-        val polygon = polygonEvent.state
-        val clickPoint = polygonEvent.clicked
-
-        println("Polygon clicked:")
-        println("  Vertices: ${polygon.points.size}")
-        println("  Click location: ${clickPoint}")
-        println("  Extra data: ${polygon.extra}")
-
-        // 面積を計算（簡略化）
-        val area = calculatePolygonArea(polygon.points)
-        println("  Approximate area: $area sq meters")
-    }
-) {
-    Polygon(
-        points = polygonPoints,
-        strokeColor = Color.Green,
-        fillColor = Color.Green.copy(alpha = 0.3f),
-        extra = "Interactive polygon"
-    )
-}
-```
-
-## スタイルオプション
-
-### 塗りつぶしのバリエーション
-
-```kotlin
-// ソリッドな塗りつぶし
-Polygon(
-    points = points,
-    fillColor = Color.Red
-)
-
-// 半透明の塗りつぶし
-Polygon(
-    points = points,
-    fillColor = Color.Red.copy(alpha = 0.5f)
-)
-
-// 塗りつぶしなし（境界線のみ）
-Polygon(
-    points = points,
-    fillColor = Color.Transparent
-)
-
-// グラデーションのような効果を持つ複数のポリゴン
-Polygon(points = points, fillColor = Color.Blue.copy(alpha = 0.1f))
-Polygon(points = smallerPoints, fillColor = Color.Blue.copy(alpha = 0.2f))
-```
-
-### ストロークのバリエーション
-
-```kotlin
-// 細い境界線
-Polygon(
-    points = points,
-    strokeColor = Color.Black,
-    strokeWidth = 1.dp
-)
-
-// 太い境界線
-Polygon(
-    points = points,
-    strokeColor = Color.Black,
-    strokeWidth = 5.dp
-)
-
-// 境界線なし
-Polygon(
-    points = points,
-    strokeColor = Color.Transparent,
-    strokeWidth = 0.dp
-)
-```
-
-## ベストプラクティス
-
-1. **ポリゴンを閉じる**: 常に最後のポイントが最初のポイントと等しいことを確認して、ポリゴンを適切に閉じてください
-2. **頂点の順序**: 予測可能な結果を得るために、一貫した頂点の順序（時計回りまたは反時計回り）を使用してください
-3. **パフォーマンス**: 数百の頂点を持つ過度に複雑なポリゴンは避けてください
-4. **視覚的な明瞭さ**: 良好な視認性を得るために適切な色と透明度を使用してください
-5. **インタラクティブなフィードバック**: ポリゴンがクリック可能な場合は、視覚的なフィードバックを提供してください
-6. **穴の処理**: 異なる色を持つ重なり合うポリゴンを使用して穴をシミュレートしてください
-7. **測地線エッジ**: 大きなポリゴンには、地球の曲率を考慮するために測地線エッジを使用してください
-8. **状態管理**: ポリゴンの頂点データを効率的に管理し、更新をリアクティブに処理してください
-9. **検証**: 有効な形状を形成することを確認するためにポリゴンのジオメトリを検証してください
-10. **エラー処理**: 3つ未満の頂点を持つポリゴンなどのエッジケースを処理してください
+<video width="720" height="480" controls>
+ <source src="/polygon/geodesic-polygon.webm" type="video/webm" />
+ <source src="/polygon/geodesic-polygon.mp4" type="video/mp4" />
+</video>

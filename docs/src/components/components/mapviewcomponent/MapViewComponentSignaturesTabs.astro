@@ -1,0 +1,78 @@
+---
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+const googleMapsCode = `GoogleMapView(
+    state: GoogleMapViewState,
+    modifier: Modifier = Modifier,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    content: (@Composable () -> Unit)? = null
+)`;
+
+
+const mapboxCode = `MapboxMapView(
+    state: MapboxViewState,
+    modifier: Modifier = Modifier,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    content: (@Composable () -> Unit)? = null
+)`;
+
+
+const hereMapCode = `HereMapView(
+    state: HereViewState,
+    modifier: Modifier = Modifier,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    content: (@Composable () -> Unit)? = null
+)`;
+
+const mapLibreCode = `MapLibreMapView(
+    state: MapLibreViewState,
+    modifier: Modifier = Modifier,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    content: (@Composable () -> Unit)? = null
+)`;
+
+const arcGISMapCode = `ArcGISMapView(
+    state: ArcGISMapViewState,
+    modifier: Modifier = Modifier,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    content: (@Composable () -> Unit)? = null
+)`;
+---
+
+<Tabs>
+  <TabItem label="GoogleMaps">
+    <Code code={googleMapsCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Mapbox">
+    <Code code={mapboxCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="ArcGIS">
+    <Code code={arcGISMapCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="Here">
+    <Code code={hereMapCode} lang="kotlin" />
+  </TabItem>
+  <TabItem label="MapLibreCode">
+    <Code code={mapLibreCode} lang="kotlin" />
+  </TabItem>
+</Tabs>

@@ -1,0 +1,112 @@
+---
+title: "イベントハンドラ"
+---
+
+import MapViewEventHandlersSignature from '~/components/api/event-handlers/MapViewEventHandlersSignature.astro';
+import OnMapLoadedSignature from '~/components/api/event-handlers/OnMapLoadedSignature.astro';
+import OnMapLoadedExample from '~/components/api/event-handlers/OnMapLoadedExample.astro';
+import OnMapClickSignature from '~/components/api/event-handlers/OnMapClickSignature.astro';
+import OnMapClickExample from '~/components/api/event-handlers/OnMapClickExample.astro';
+import OnMarkerClickSignature from '~/components/api/event-handlers/OnMarkerClickSignature.astro';
+import OnMarkerClickExample from '~/components/api/event-handlers/OnMarkerClickExample.astro';
+import OnMarkerDragSignatures from '~/components/api/event-handlers/OnMarkerDragSignatures.astro';
+import OnMarkerDragExample from '~/components/api/event-handlers/OnMarkerDragExample.astro';
+import OnMarkerAnimateSignatures from '~/components/api/event-handlers/OnMarkerAnimateSignatures.astro';
+import OnCircleClickSignature from '~/components/api/event-handlers/OnCircleClickSignature.astro';
+import CircleEventDataClass from '~/components/api/event-handlers/CircleEventDataClass.astro';
+import OnCircleClickExample from '~/components/api/event-handlers/OnCircleClickExample.astro';
+import OnPolylineClickSignature from '~/components/api/event-handlers/OnPolylineClickSignature.astro';
+import PolylineEventDataClass from '~/components/api/event-handlers/PolylineEventDataClass.astro';
+import OnPolylineClickExample from '~/components/api/event-handlers/OnPolylineClickExample.astro';
+
+MapConductor は、マップとそのコンポーネントに対するユーザーインタラクションのイベント処理を包括的に提供します。
+マップのイベントは MapView コンポーネントで処理し、オーバーレイのイベントは各 State に設定します。
+
+<MapViewEventHandlersSignature />
+
+## マップイベント
+
+### マップ初期化
+
+- マップの読み込みが完了し、インタラクションの準備ができたときに呼び出されます。
+
+<OnMapLoadedSignature />
+
+-  例
+
+<OnMapLoadedExample commentForPrint="Map loaded" />
+
+### マップインタラクション
+
+- ユーザーがマップ（オーバーレイではない部分）をタップしたときに呼び出されます。
+
+<OnMapClickSignature />
+
+**イベントデータ**: `GeoPointInterface` - タップされた地理座標
+
+-  例
+
+<OnMapClickExample commentForPrint="Map clicked at:" />
+
+## マーカーイベント
+
+すべてのマーカーイベントは、マーカーの現在の状態を含む `MarkerState` オブジェクトを受け取ります。
+
+### クリックイベント
+
+- マーカーがタップされたときに呼び出されます。
+
+<OnMarkerClickSignature />
+
+-  例
+
+<OnMarkerClickExample commentForPrint="Marker clicked at:" />
+
+### ドラッグイベント
+
+- **`onDragStart`**: ドラッグ開始時に呼び出されます
+- **`onDrag`**: ドラッグ中に継続的に呼び出されます
+- **`onDragEnd`**: ドラッグ終了時に呼び出されます
+
+<OnMarkerDragSignatures />
+
+<OnMarkerDragExample
+  commentForDragStart="Drag started:"
+  commentForDragEnd="Drag ended:"
+/>
+
+### アニメーションイベント
+
+- マーカーアニメーションの開始時と終了時に呼び出されます。
+
+<OnMarkerAnimateSignatures />
+
+## オーバーレイイベント
+
+### 円イベント
+
+- 円がタップされたときに呼び出されます。
+
+<OnCircleClickSignature />
+
+**イベントデータ**: `CircleEvent`
+
+<CircleEventDataClass />
+
+- 例
+
+<OnCircleClickExample commentForPrint="A circle clicked at:" />
+
+### ポリラインイベント
+
+- ポリラインがタップされたときに呼び出されます。
+
+<OnPolylineClickSignature />
+
+**イベントデータ**: `PolylineEvent`
+
+<PolylineEventDataClass />
+
+- 例
+
+<OnPolylineClickExample commentForPrint="A polyline clicked at:" />

@@ -10,15 +10,14 @@ import android.graphics.drawable.Drawable
 
 @Composable
 fun MapViewScope.GroundImage(state: GroundImageState) {
-    LaunchedEffect(state.fingerPrint()) {
-        val newMap = groundImageFlow.value.toMutableMap()
-        newMap.set(state.id, state)
-        groundImageFlow.value = newMap
+    val collector = LocalGroundImageCollector.current
+    LaunchedEffect(state) {
+        collector.add(state)
     }
 
     DisposableEffect(state.id) {
         onDispose {
-            groundImageRemoveSharedFlow.tryEmit(state.id)
+            collector.remove(state.id)
         }
     }
 }
@@ -28,16 +27,20 @@ fun MapViewScope.GroundImage(
     bounds: GeoRectBounds,
     image: Drawable,
     opacity: Float = 0.5f,
+    tileSize: Int = GroundImageTileProvider.DEFAULT_TILE_SIZE,
     id: String? = null,
     extra: Serializable? = null,
+    onClick: OnGroundImageEventHandler? = null,
 ) {
     val state =
         GroundImageState(
             bounds = bounds,
             image = image,
             opacity = opacity,
+            tileSize = tileSize,
             id = id,
             extra = extra,
+            onClick = onClick,
         )
     GroundImage(state)
 }

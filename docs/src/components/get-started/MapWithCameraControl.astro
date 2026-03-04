@@ -1,0 +1,101 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  button1Label?: string;
+  button1Lat?: number;
+  button1Long?: number;
+  button1Zoom?: number;
+  button2Label?: string;
+  button2Lat?: number;
+  button2Long?: number;
+  button2Zoom?: number;
+  marker1Label?: string;
+  marker2Label?: string;
+  commentButtons?: string;
+  commentMap?: string;
+}
+
+const {
+  button1Label = "Tokyo Tower",
+  button1Lat = 35.6586,
+  button1Long = 139.7454,
+  button1Zoom = 15.0,
+  button2Label = "Sky Tree",
+  button2Lat = 35.7101,
+  button2Long = 139.8107,
+  button2Zoom = 15.0,
+  marker1Label = "TT",
+  marker2Label = "ST",
+  commentButtons = "ボタン",
+  commentMap = "地図"
+} = Astro.props;
+
+const code = `import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+
+@Composable
+fun MapWithCameraControl(modifier: Modifier = Modifier) {
+    val marker1 = GeoPoint.fromLatLong(${button1Lat}, ${button1Long})
+    val marker2 = GeoPoint.fromLatLong(${button2Lat}, ${button2Long})
+
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = MapCameraPosition(
+            position = marker1,
+            zoom = 12.0
+        )
+    )
+
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // ${commentButtons}
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPosition(
+                            position = marker1,
+                            zoom = ${button1Zoom}
+                        ),
+                        durationMillis = 1000
+                    )
+                }
+            }) {
+                Text("${button1Label}")
+            }
+
+            Button(onClick = {
+                scope.launch {
+                    mapViewState.moveCameraTo(
+                        MapCameraPosition(
+                            position = marker2,
+                            zoom = ${button2Zoom}
+                        ),
+                        durationMillis = 1000
+                    )
+                }
+            }) {
+                Text("${button2Label}")
+            }
+        }
+
+        // 地図
+        GoogleMapView(
+            modifier = Modifier.fillMaxSize(),
+            state = mapViewState
+        ) {
+            Marker(position = marker1, icon = DefaultIcon(label = "${marker1Label}"))
+            Marker(position = marker2, icon = DefaultIcon(label = "${marker2Label}"))
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

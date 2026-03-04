@@ -1,0 +1,26 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `fun setAnimation(animation: MarkerAnimation?)
+
+fun copy(
+    id: String? = this.id,
+    position: GeoPointInterface = this.position,
+    extra: Serializable? = this.extra,
+    icon: MarkerIconInterface? = this.icon,
+    clickable: Boolean? = this.clickable,
+    draggable: Boolean? = this.draggable,
+    onClick: OnMarkerEventHandler? = this.onClick,
+    onDragStart: OnMarkerEventHandler? = this.onDragStart,
+    onDrag: OnMarkerEventHandler? = this.onDrag,
+    onDragEnd: OnMarkerEventHandler? = this.onDragEnd,
+    onAnimateStart: OnMarkerEventHandler? = this.onAnimateStart,
+    onAnimateEnd: OnMarkerEventHandler? = this.onAnimateEnd
+): MarkerState
+
+fun asFlow(): Flow<MarkerFingerPrint>
+
+fun fingerPrint(): MarkerFingerPrint`;
+---
+
+<Code code={code} lang="kotlin" />

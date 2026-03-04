@@ -1,0 +1,58 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun DynamicPolylineExample() {
+    val center = GeoPoint.fromLatLong(53.566853, 9.988269)
+
+    val camera = MapCameraPosition(position = center, zoom = 14.0)
+    val mapViewState = rememberMapLibreMapViewState(cameraPosition = camera)
+
+    var points by remember { mutableStateOf<List<GeoPointInterface>>(emptyList()) }
+    var isDrawing by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        Row {
+            Button(onClick = { isDrawing = !isDrawing }) {
+                Text(if (isDrawing) "Stop Drawing" else "Start Drawing")
+            }
+            Button(onClick = { points = emptyList() }) {
+                Text("Clear")
+            }
+        }
+
+        MapLibreMapView(
+            state = mapViewState,
+            onMapClick = { geoPoint ->
+                if (isDrawing) {
+                    points = points + geoPoint
+                }
+            }
+        ) {
+            if (points.isNotEmpty()) {
+                Polyline(
+                    points = points,
+                    strokeColor = Color.Red,
+                    strokeWidth = 3.dp
+                )
+
+                points.forEachIndexed { index, point ->
+                    Marker(
+                        position = point,
+                        icon = DefaultIcon(
+                            fillColor = if (index == 0) Color.Green
+                            else if (index == points.size - 1) Color.Red
+                            else Color.Blue,
+                            label = "\${index + 1}",
+                            scale = 0.8f
+                        )
+                    )
+                }
+            }
+        }
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

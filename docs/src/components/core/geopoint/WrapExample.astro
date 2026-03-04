@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForExample?: string;
+  commentForOverflow?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+const {
+  commentForExample = "Example: Coordinates beyond poles",
+  commentForOverflow = "Latitude exceeds 90 degrees",
+  latitude = 95.0,
+  longitude = 10.0
+} = Astro.props;
+
+const code = `// ${commentForExample}
+val point = GeoPoint(${latitude}, ${longitude}) // ${commentForOverflow}
+val wrapped = point.wrap() // 緯度: -85.0, 経度: 190.0 → -170.0`;
+---
+
+<Code code={code} lang="kotlin" />

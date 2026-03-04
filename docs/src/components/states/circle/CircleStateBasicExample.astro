@@ -1,0 +1,28 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  radiusMeters?: number;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  radiusMeters = 1000.0
+} = Astro.props;
+
+const code = `val circleState = CircleState(
+    center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
+    radiusMeters = ${radiusMeters},
+    strokeColor = Color.Blue,
+    fillColor = Color.Blue.copy(alpha = 0.3f)
+)
+
+MapView(state = mapViewState) {
+    Circle(circleState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />

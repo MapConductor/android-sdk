@@ -1,0 +1,336 @@
+---
+title: Tutorial
+description: Tutorial práctico para aprender a usar MapConductor Android SDK
+---
+
+import DependencyConfigTabs from '~/components/get-started/DependencyConfigTabs.astro';
+import AndroidVersionConfigTabs from '~/components/sdk-version-compatibility/AndroidVersionConfigTabs.astro';
+import MyFirstMap from '~/components/get-started/MyFirstMap.astro';
+import MapWithMarkers from '~/components/get-started/MapWithMarkers.astro';
+import MarkerCustomization from '~/components/get-started/MarkerCustomization.astro';
+import CircleExample from '~/components/get-started/CircleExample.astro';
+import PolylineExample from '~/components/get-started/PolylineExample.astro';
+import InteractiveMap from '~/components/get-started/InteractiveMap.astro';
+import MarkerClickInteraction from '~/components/get-started/MarkerClickInteraction.astro';
+import MapWithCameraControl from '~/components/get-started/MapWithCameraControl.astro';
+import CameraMoveEvents from '~/components/get-started/CameraMoveEvents.astro';
+import SDKSwitchComparison from '~/components/get-started/SDKSwitchComparison.astro';
+import CompleteSample from '~/components/get-started/CompleteSample.astro';
+
+# Tutorial de MapConductor
+
+En este tutorial aprenderás a usar MapConductor Android SDK para mostrar un mapa, añadir marcadores y figuras, y manejar interacciones de usuario.
+
+## Qué aprenderás
+
+- Cómo instalar y configurar el SDK de MapConductor
+- Cómo mostrar un mapa
+- Cómo añadir marcadores, círculos y polilíneas
+- Cómo manejar eventos de tap/clic
+- Cómo controlar la posición de la cámara
+- Cómo cambiar entre distintos SDK de mapas
+
+## Requisitos previos
+
+- Android Studio instalado
+- Conocimientos básicos de Jetpack Compose
+- Conocimientos básicos de Kotlin
+
+## Paso 1: Configuración del proyecto
+
+### 1-1. Añadir dependencias
+
+Añade las dependencias de MapConductor en `build.gradle.kts` o `build.gradle` del módulo:
+
+<DependencyConfigTabs
+  bomVersion="{BOM_MODULE_VERSION}"
+  googleMapsIncluded={true}
+  mapboxIncluded={false}
+  hereIncluded={false}
+  arcgisIncluded={false}
+  maplibreIncluded={false}
+  commentBOM="Usar BOM para unificar versiones"
+  commentCore="Módulo principal (requerido)"
+  commentGoogleMaps="Si utilizas Google Maps"
+  commentOrMapbox="O si utilizas Mapbox"
+  commentOrHere="O si utilizas HERE Maps"
+  commentOrArcGIS="O si utilizas ArcGIS"
+  commentOrMapLibre="O si utilizas MapLibre"
+/>
+
+### 1-2. Configuración de Android
+
+Añade la siguiente configuración en `build.gradle.kts` o `build.gradle`:
+
+<AndroidVersionConfigTabs
+  targetSdk="{ANDROID_TARGET_SDK_VERSION}"
+  minSdk="{ANDROID_MIN_SDK_VERSION}"
+  javaVersion="{JAVA_VERSION}"
+  kotlinVersion="{KOTLIN_VERSION}"
+  composeVersion="{JETPACK_COMPOSE_BOM_VERSION}"
+/>
+
+### 1-3. Configuración del SDK de mapas
+
+> **Importante**: MapConductor proporciona una capa de API unificada sobre los SDK de mapas existentes. Antes de usar MapConductor, debes configurar cada SDK de mapas individualmente.
+
+Cada SDK de mapas requiere sus propias claves API, permisos y configuración:
+
+- **[Configuración de Google Maps](/es-419/setup/google-maps)** – Claves API y permisos
+- **[Configuración de Mapbox](/es-419/setup/mapbox)** – Token de acceso y configuración de estilo
+- **[Configuración de HERE Maps](/es-419/setup/here-maps)** – Claves API y licencias
+- **[Configuración de ArcGIS](/es-419/setup/arcgis)** – Claves API y licencias
+- **[Configuración de MapLibre](/es-419/setup/maplibre/)** – Configuración de tiles y estilos
+
+## Paso 2: Mostrar un mapa simple
+
+Empecemos con la forma más simple de mostrar un mapa centrado en Tokio.
+
+<MyFirstMap
+  lat={35.6812}
+  long={139.7671}
+  zoom={12.0}
+  commentTokyoCoords="Coordenadas de Tokio"
+  commentInitialCamera="Posición inicial de la cámara"
+  commentStateManagement="Gestión de estado"
+  commentMapDisplay="Mostrar mapa"
+/>
+
+![Resultado del mapa](~/assets/get-started/my-first-map.png)
+Nota: El estilo de demostración se ha modificado del predeterminado para mayor claridad
+
+¡Eso es! Ahora tienes un mapa centrado en Tokio mostrado en tu aplicación.
+
+## Paso 3: Añadir marcadores
+
+Añadamos marcadores al mapa.
+
+<MapWithMarkers
+  marker1Label="Tokyo Tower"
+  marker1Lat={35.6586}
+  marker1Long={139.7454}
+  marker2Label="Sky Tree"
+  marker2Lat={35.7101}
+  marker2Long={139.8107}
+  initialLat={35.6586}
+  initialLong={139.7454}
+  zoom={11.0}
+  commentCoords="Coordenadas"
+  commentInitialPosition="Posición inicial"
+  commentMarkerClicked="Manejar clic en marcador"
+  commentAddMarkers="Añadir marcadores"
+/>
+
+![Mapa con marcadores](~/assets/get-started/map-with-markers.png)
+Nota: El estilo de demostración se ha modificado del predeterminado para mayor claridad
+
+### Personalizar marcadores
+
+Puedes personalizar marcadores con colores y estilos:
+
+<MarkerCustomization
+  label="TT"
+  lat={35.6586}
+  long={139.7454}
+  commentAnchorInfo="Información de anclaje"
+/>
+
+## Paso 4: Añadir círculos y polilíneas
+
+### 4-1. Añadir círculos
+
+Dibujemos un círculo alrededor de un marcador.
+
+<CircleExample
+  markerLabel="TT"
+  markerLat={35.6586}
+  markerLong={139.7454}
+  radiusMeters={1000.0}
+  strokeWidth="3.dp"
+  commentMarker="Marcador"
+  commentDrawCircle="Dibujar círculo"
+  commentRadiusUnit="Radio (metros)"
+  commentStrokeUnit="Ancho de trazo (dp)"
+/>
+
+![Marcador con círculo](~/assets/get-started/marker-with-circle.png)
+Nota: El estilo de demostración se ha modificado del predeterminado para mayor claridad
+
+### 4-2. Añadir polilíneas
+
+Ahora dibujemos una línea que conecte dos puntos.
+
+<PolylineExample
+  marker1Label="TT"
+  marker1Lat={35.6586}
+  marker1Long={139.7454}
+  marker2Label="ST"
+  marker2Lat={35.7101}
+  marker2Long={139.8107}
+  strokeWidth="5.dp"
+  commentMarker="Marcadores"
+  commentDrawLine="Dibujar línea"
+/>
+
+![Marcador con polilínea](~/assets/get-started/marker-with-polyline.png)
+Nota: El estilo de demostración se ha modificado del predeterminado para mayor claridad
+
+## Paso 5: Manejar interacciones de usuario
+
+### 5-1. Eventos de clic en el mapa
+
+Puedes manejar cuándo los usuarios tocan el mapa:
+
+<InteractiveMap
+  lat={35.6812}
+  long={139.7671}
+  zoom={12.0}
+  clickLabelIcon="!"
+  commentMapClicked="Mapa tocado"
+  commentClickPosition="Posición tocada"
+  commentShowMarker="Mostrar marcador"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/get-started/interactive-map1.webm" type="video/webm" />
+ <source src="/get-started/interactive-map1.mp4" type="video/mp4" />
+</video>
+Nota: El estilo de demostración se ha modificado del predeterminado para mayor claridad
+
+### 5-2. Eventos de clic en marcadores
+
+Maneja clics en marcadores y dispara animaciones:
+
+<MarkerClickInteraction
+  marker1Label="TT"
+  marker1Lat={35.6586}
+  marker1Long={139.7454}
+  marker2Label="ST"
+  marker2Lat={35.7101}
+  marker2Long={139.8107}
+  commentMarkerClicked="Manejar clic en marcador"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/get-started/interactive-map2.webm" type="video/webm" />
+ <source src="/get-started/interactive-map2.mp4" type="video/mp4" />
+</video>
+Nota: El estilo de demostración se ha modificado del predeterminado para mayor claridad
+
+## Paso 6: Controlar la cámara
+
+### 6-1. Mover la cámara a una ubicación específica
+
+Usa botones para mover la cámara a diferentes ubicaciones:
+
+<MapWithCameraControl
+  button1Label="Tokyo Tower"
+  button1Lat={35.6586}
+  button1Long={139.7454}
+  button1Zoom={15.0}
+  button2Label="Sky Tree"
+  button2Lat={35.7101}
+  button2Long={139.8107}
+  button2Zoom={15.0}
+  marker1Label="TT"
+  marker2Label="ST"
+  commentButtons="Botones"
+  commentMap="Mapa"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/get-started/manipulate-camera.webm" type="video/webm" />
+ <source src="/get-started/manipulate-camera.mp4" type="video/mp4" />
+</video>
+
+### 6-2. Monitorear eventos de movimiento de cámara
+
+Escucha eventos de movimiento de cámara:
+
+<CameraMoveEvents
+  commentMarkers="Marcadores etc."
+  cameraMoveStartMessage="Movimiento de cámara iniciado"
+  cameraMoveMessage="Posición de cámara: "
+  cameraMoveEndMessage="Movimiento de cámara finalizado"
+/>
+
+## Paso 7: Cambiar entre SDKs de mapas
+
+La ventaja más grande de MapConductor es la capacidad de cambiar proveedores de mapas con cambios mínimos de código.
+
+### Cambiar de Google Maps a Mapbox
+
+<SDKSwitchComparison
+  commentComponents="Marcadores y otros componentes"
+  commentComponentsNoChange="Marcadores y otros componentes (¡sin cambios!)"
+  beforeLabel="Antes (Google Maps)"
+  afterLabel="Después (Mapbox)"
+/>
+
+¡Los marcadores, círculos, polilíneas y otros componentes funcionan con **exactamente el mismo código**!
+
+### Tabla de referencia de SDKs de mapas
+
+| SDK de mapas | MapViewStateInterface | MapView |
+|--------------|--------------|---------|
+| Google Maps | `rememberGoogleMapViewState` | `GoogleMapView` |
+| Mapbox | `rememberMapboxViewState` | `MapboxMapView` |
+| HERE Maps | `rememberHereMapViewState` | `HereMapView` |
+| ArcGIS | `rememberArcGISMapViewState` | `ArcGISMapView` |
+| MapLibre | `rememberMapLibreViewState` | `MapLibreMapView` |
+
+## Código de ejemplo completo
+
+Aquí está el código de ejemplo completo que combina todo lo que has aprendido:
+
+<CompleteSample
+  marker1Label="TT"
+  marker1Lat={35.6586}
+  marker1Long={139.7454}
+  marker2Label="ST"
+  marker2Lat={35.7101}
+  marker2Long={139.8107}
+  centerLat={35.6812}
+  centerLong={139.7671}
+  circleRadiusMeters={1000.0}
+  commentPositions="Información de posición"
+  commentClickedPosition="Guardar posición tocada"
+  commentControlButtons="Botones de control"
+  commentMap="Mapa"
+  commentMarkers="Marcadores"
+  commentClickedMarker="Marcador para posición tocada"
+  commentCircle="Círculo"
+  commentPolyline="Polilínea"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/get-started/complete-example.webm" type="video/webm" />
+ <source src="/get-started/complete-example.mp4" type="video/mp4" />
+</video>
+
+## Próximos pasos
+
+Has aprendido los conceptos básicos del SDK de MapConductor. Para aprender más, consulta:
+
+- [Módulos](/es-419/modules/) – Descripciones detalladas de módulos
+- [Compatibilidad de proveedores](/es-419/provider-compatibility/) – Matriz de compatibilidad de características
+- [Compatibilidad de versiones de SDK](/es-419/sdk-version-compatibility/) – Versiones de SDK soportadas
+
+## Solución de problemas
+
+### Mapa no se muestra
+
+- Verifica que tu clave API esté configurada correctamente
+- Comprueba tu conexión a Internet
+- Verifica que los permisos requeridos estén añadidos en `AndroidManifest.xml`
+
+### Errores de compilación
+
+- Verifica que `minSdk` esté configurado en 26 o superior
+- Comprueba que las versiones de Kotlin y Compose son compatibles
+- Verifica que las dependencias se hayan añadido correctamente
+
+### Los marcadores no son clicables
+
+- Verifica que `MarkerState.onClick` esté configurado
+- Asegúrate de que los marcadores tengan la propiedad `extra` configurada

@@ -3,15 +3,16 @@ package com.mapconductor.here.marker
 import com.here.sdk.core.Metadata
 import com.here.sdk.mapview.MapMarker
 import com.mapconductor.core.calculateZIndex
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.marker.AbstractMarkerOverlayRenderer
-import com.mapconductor.core.marker.MarkerEntity
-import com.mapconductor.core.marker.MarkerOverlayRenderer
+import com.mapconductor.core.marker.MarkerEntityInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
 import com.mapconductor.here.HereActualMarker
 import com.mapconductor.here.HereViewHolder
 import com.mapconductor.here.toAnchor2D
 import com.mapconductor.here.toGeoCoordinates
 import com.mapconductor.here.toMapImage
+import java.io.Serializable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,28 +27,34 @@ class HereMarkerRenderer(
         holder = holder,
         coroutine = coroutine,
     ) {
+    private fun resolveDrawOrder(state: com.mapconductor.core.marker.MarkerState): Int =
+        (state.zIndex ?: calculateZIndex(state.position)).toInt()
+
     override fun setMarkerPosition(
-        markerEntity: MarkerEntity<HereActualMarker>,
-        position: GeoPointImpl,
+        markerEntity: MarkerEntityInterface<HereActualMarker>,
+        position: GeoPoint,
     ) {
         coroutine.launch {
             markerEntity.marker?.coordinates = position.toGeoCoordinates()
         }
     }
 
-    override suspend fun onAdd(data: List<MarkerOverlayRenderer.AddParams>): List<HereActualMarker?> {
+    override suspend fun onAdd(data: List<MarkerOverlayRendererInterface.AddParamsInterface>): List<HereActualMarker?> {
         val markers =
             data.map { params ->
                 val marker =
                     MapMarker(
-                        GeoPointImpl.from(params.state.position).toGeoCoordinates(),
+                        GeoPoint.from(params.state.position).toGeoCoordinates(),
                         params.bitmapIcon.toMapImage(),
                         params.bitmapIcon.toAnchor2D(),
                     ).apply {
-                        drawOrder = calculateZIndex(params.state.position).toInt()
+                        drawOrder = resolveDrawOrder(params.state)
                         metadata =
                             Metadata().apply {
-                                setString("id", params.state.id)
+                                // Always include MapConductor marker id
+                                setString("mc:id", params.state.id)
+                                // Optional user-defined extras from MarkerState.extra
+                                putExtras(params.state.extra)
                             }
                     }
                 return@map marker
@@ -59,7 +66,7 @@ class HereMarkerRenderer(
         return markers
     }
 
-    override suspend fun onRemove(data: List<MarkerEntity<HereActualMarker>>) {
+    override suspend fun onRemove(data: List<MarkerEntityInterface<HereActualMarker>>) {
         coroutine.launch {
             val markers: List<HereActualMarker> = data.mapNotNull { params -> params.marker }
             if (markers.isNotEmpty()) {
@@ -73,9 +80,9 @@ class HereMarkerRenderer(
     }
 
     override suspend fun onChange(
-        changes: List<MarkerOverlayRenderer.ChangeParams<HereActualMarker>>,
+        data: List<MarkerOverlayRendererInterface.ChangeParamsInterface<HereActualMarker>>,
     ): List<HereActualMarker?> =
-        changes.mapNotNull { params ->
+        data.mapNotNull { params ->
             val prevFinger = params.prev.fingerPrint
             val currFinger = params.current.fingerPrint
             if (!params.current.visible) return@mapNotNull null
@@ -86,9 +93,36 @@ class HereMarkerRenderer(
                 marker.anchor = params.bitmapIcon.toAnchor2D()
             }
             marker.coordinates =
-                GeoPointImpl.from(params.current.state.position).toGeoCoordinates()
+                GeoPoint.from(params.current.state.position).toGeoCoordinates()
+            marker.drawOrder = resolveDrawOrder(params.current.state)
 
             // Hereはマーカーを再作成しなくてよいので、同じマーカーのインスタンスを返す
             marker
         }
+}
+
+// Convert MarkerState.extra into HERE Metadata entries.
+// Supports Map<String, Any?> by best-effort type mapping; otherwise stores value as string under key "mc:extra".
+private fun Metadata.putExtras(extra: Serializable?) {
+    if (extra == null) return
+    when (extra) {
+        is Map<*, *> -> {
+            extra.forEach { (k, v) ->
+                val key = k?.toString() ?: return@forEach
+                when (v) {
+                    null -> setString(key, "null")
+                    is String -> setString(key, v)
+                    is Int -> setInteger(key, v)
+                    is Long -> setInteger(key, v.toInt())
+                    is Float -> setDouble(key, v.toDouble())
+                    is Double -> setDouble(key, v)
+                    is Boolean -> setString(key, v.toString())
+                    else -> setString(key, v.toString())
+                }
+            }
+        }
+        else -> {
+            setString("mc:extra", extra.toString())
+        }
+    }
 }

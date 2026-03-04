@@ -4,7 +4,7 @@ import com.mapbox.geojson.FeatureCollection
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.get
 import com.mapbox.maps.extension.style.layers.generated.fillLayer
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
-import com.mapconductor.core.polygon.PolygonEntity
+import com.mapconductor.core.polygon.PolygonEntityInterface
 import com.mapconductor.mapbox.MapboxActualPolygon
 
 class MapboxPolygonLayer(
@@ -32,7 +32,7 @@ class MapboxPolygonLayer(
             )
         }
 
-    fun draw(entities: List<PolygonEntity<MapboxActualPolygon>>) {
+    fun draw(entities: List<PolygonEntityInterface<MapboxActualPolygon>>) {
         val features =
             entities
                 .sortedBy { it.state.zIndex }

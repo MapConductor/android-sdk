@@ -2,9 +2,9 @@
 
 import androidx.compose.ui.geometry.Offset
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.projection.Projection
+import com.mapconductor.core.projection.ProjectionInterface
 import com.mapconductor.core.projection.WebMercator
 import kotlin.math.PI
 import kotlin.math.abs
@@ -46,7 +46,7 @@ enum class Direction6(
 
 data class HexCell(
     val coord: HexCoord,
-    val centerLatLng: GeoPoint,
+    val centerLatLng: GeoPointInterface,
     val centerXY: Offset,
     val id: String,
 ) {
@@ -65,20 +65,20 @@ data class HexCellWithDistance(
  * @param baseHexSideLength The side length of hexagons in meters at zoom level 0
  *                          This is the actual edge length of the hexagon, not the radius
  */
-class HexGeocellImpl(
-    override val projection: Projection,
+class HexGeocell(
+    override val projection: ProjectionInterface,
     // IMPORTANT: This is now the side length, not radius!
     // Use values like:
     // - 100-1000m for high zoom levels (15-18)
     // - 1000-10000m for medium zoom levels (10-15)
     // - 10000-100000m for low zoom levels (5-10)
     override val baseHexSideLength: Int = 1000,
-) : HexGeocell {
+) : HexGeocellInterface {
     /**
      * Convert lat/lng to hexagonal coordinate
      */
     override fun latLngToHexCoord(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
     ): HexCoord {
         val hexSideLength = adjustedHexSideLength(position.latitude, zoom)
@@ -90,7 +90,7 @@ class HexGeocellImpl(
      * Convert lat/lng to hex cell with all computed properties
      */
     override fun latLngToHexCell(
-        position: GeoPoint,
+        position: GeoPointInterface,
         zoom: Double,
     ): HexCell {
         val coord = latLngToHexCoord(position, zoom)
@@ -107,7 +107,7 @@ class HexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): GeoPoint {
+    ): GeoPointInterface {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
         return projection.unproject(center)
@@ -128,7 +128,7 @@ class HexGeocellImpl(
         coord: HexCoord,
         latHint: Double,
         zoom: Double,
-    ): List<GeoPoint> {
+    ): List<GeoPointInterface> {
         val hexSideLength = adjustedHexSideLength(latHint, zoom)
         val center = hexCenterXY(coord, hexSideLength)
 
@@ -180,7 +180,7 @@ class HexGeocellImpl(
     /**
      * Compute geographic centroid considering Earth's curvature (improved version)
      */
-    private fun computeGeographicCentroid(points: List<GeoPoint>): GeoPoint {
+    private fun computeGeographicCentroid(points: List<GeoPointInterface>): GeoPointInterface {
         if (points.size == 1) return points[0]
 
         // Use spherical coordinates for better accuracy
@@ -205,12 +205,12 @@ class HexGeocellImpl(
         val centralSquareRoot = sqrt(x * x + y * y)
         val centralLat = atan2(z, centralSquareRoot) * 180 / PI
 
-        return object : GeoPoint {
+        return object : GeoPointInterface {
             override val latitude: Double = centralLat
             override val longitude: Double = centralLng
             override val altitude: Double? = null
 
-            override fun wrap(): GeoPoint = GeoPointImpl(latitude, longitude, altitude ?: 0.0).wrap()
+            override fun wrap(): GeoPointInterface = GeoPoint(latitude, longitude, altitude ?: 0.0).wrap()
         }
     }
 
@@ -307,8 +307,8 @@ class HexGeocellImpl(
     }
 
     companion object {
-        fun defaultGeocell(): HexGeocell =
-            HexGeocellImpl(
+        fun defaultGeocell(): HexGeocellInterface =
+            HexGeocell(
                 projection = WebMercator,
                 baseHexSideLength = 100000, // 100km - 中ズームレベルに適した値
             )

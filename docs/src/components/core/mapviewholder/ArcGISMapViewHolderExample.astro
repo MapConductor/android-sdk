@@ -1,0 +1,98 @@
+
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+    commentCameraPosition?: string;
+    commentAuthenticatorState?: string;
+    commentViewHolderVariable?: string;
+    commentTrafficLayer?: string;
+    commentAuthenticatorStateParam?: string;
+    commentPortalUrl?: string;
+    commentRedirectUrl?: string;
+    commentClientId?: string;
+    commentOptional?: string;
+    commentClientSecret?: string;
+    commentClientSecretOmit?: string;
+    commentGetViewHolder?: string;
+    commentAuthenticatorUI?: string;
+}
+
+const {
+    commentCameraPosition = '地図のカメラ位置',
+    commentAuthenticatorState = 'AuthenticatorStateを設定',
+    commentViewHolderVariable = 'ViewHolderの保持',
+    commentTrafficLayer = '交通情報のレイヤーを表示',
+    commentAuthenticatorStateParam = 'ログインダイアログを表示する AuthenticatorState',
+    commentPortalUrl = 'ArcGISポータルのURL',
+    commentRedirectUrl = 'OAuth2アプリケーションのリダイレクトURL',
+    commentClientId = 'OAuth2アプリケーションのクライアントID',
+    commentOptional = '(オプション)',
+    commentClientSecret = 'OAuth2アプリケーションのクライアントシークレット',
+    commentClientSecretOmit = '省略した場合はログインダイアログが表示されます',
+    commentGetViewHolder = 'ViewHolderの取得',
+    commentAuthenticatorUI = '認証UI（ユーザーログイン用）。ハイブリッド認証のフォールバックで使用されます。',
+} = Astro.props;
+
+const code = `@Composable
+fun BasicMapExample(
+    modifier: Modifier = Modifier
+) {
+    // ${commentCameraPosition}
+    val mapViewState = rememberArcGISMapViewState(
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint.fromLatLong(40.40195, -3.68698),
+            zoom = 8.0
+        ),
+    )
+
+    // ${commentAuthenticatorState}
+    val authenticatorState = remember { AuthenticatorState() }
+
+    // ${commentViewHolderVariable}
+    var arcGisMapViewHolder by remember { mutableStateOf<ArcGISMapViewHolder?>(null) }
+
+    LaunchedEffect(arcGisMapViewHolder) {
+        // ${commentTrafficLayer}
+        arcGisMapViewHolder?.let { holder ->
+            val trafficLayer =
+                ArcGISMapImageLayer("https://traffic.arcgis.com/arcgis/rest/services/World/Traffic/MapServer")
+            holder.map.scene!!.operationalLayers.add(trafficLayer)
+        }
+    }
+
+    ArcGISMapView(
+        state = mapViewState,
+        modifier = modifier.fillMaxSize(),
+        sdkInitialize = { context ->
+            ArcGISOAuthHybridInitialize(
+                // ${commentAuthenticatorStateParam}
+                authenticatorState = authenticatorState
+
+                // ${commentPortalUrl}
+                portalUrl = "https://(your).maps.arcgis.com/",
+
+                // ${commentRedirectUrl}
+                redirectUrl = "(application redirectUrl)",
+
+                // ${commentClientId}
+                clientId = "(application clientId)",
+
+                // ${commentOptional}
+                // ${commentClientSecret}
+                // ${commentClientSecretOmit}
+                clientSecret = "(application client secret)",
+            )
+        },
+        onMapLoaded = {
+            // ${commentGetViewHolder}
+            arcGisMapViewHolder = mapViewState.getMapViewHolder()
+        }
+    ) {}
+
+    // ${commentAuthenticatorUI}
+    Authenticator(authenticatorState = authenticatorState)
+}`;
+---
+
+<Code code={code} lang="kotlin" />

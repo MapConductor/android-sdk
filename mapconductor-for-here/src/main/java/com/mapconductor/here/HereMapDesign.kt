@@ -1,9 +1,9 @@
 package com.mapconductor.here
 
 import com.here.sdk.mapview.MapScheme
-import com.mapconductor.core.map.MapDesignType
+import com.mapconductor.core.map.MapDesignTypeInterface
 
-typealias HereMapDesignType = MapDesignType<MapScheme>
+typealias HereMapDesignType = MapDesignTypeInterface<MapScheme>
 
 sealed class HereMapDesign(
     override val id: MapScheme,

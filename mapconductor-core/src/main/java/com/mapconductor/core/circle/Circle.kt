@@ -7,14 +7,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.ComponentState
+import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.marker.MarkerState
 import java.io.Serializable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class CircleState(
-    center: GeoPoint,
+    center: GeoPointInterface,
     radiusMeters: Double,
     geodesic: Boolean = true,
     clickable: Boolean = true,
@@ -30,7 +31,8 @@ class CircleState(
     id: String? = null,
     zIndex: Int? = null,
     extra: Serializable? = null,
-) {
+    onClick: OnCircleEventHandler? = null,
+) : ComponentState {
     var center by mutableStateOf(center)
     var clickable by mutableStateOf(clickable)
     var radiusMeters by mutableStateOf(radiusMeters)
@@ -40,8 +42,9 @@ class CircleState(
     var fillColor by mutableStateOf(fillColor)
     var extra by mutableStateOf(extra)
     var zIndex by mutableStateOf<Int?>(zIndex)
+    var onClick by mutableStateOf(onClick)
 
-    val id =
+    override val id =
         (
             id ?: circleId(
                 listOf(
@@ -80,7 +83,7 @@ class CircleState(
     fun asFlow(): Flow<CircleFingerPrint> = snapshotFlow { fingerPrint() }.distinctUntilChanged()
 
     fun copy(
-        center: GeoPoint = this.center,
+        center: GeoPointInterface = this.center,
         radiusMeters: Double = this.radiusMeters,
         geodesic: Boolean = this.geodesic,
         strokeColor: Color = this.strokeColor,
@@ -95,6 +98,7 @@ class CircleState(
         id: String? = this.id,
         zIndex: Int? = this.zIndex,
         extra: Serializable? = this.extra,
+        onClick: OnCircleEventHandler? = this.onClick,
     ): CircleState =
         CircleState(
             center = center,
@@ -107,6 +111,7 @@ class CircleState(
             id = id,
             zIndex = zIndex,
             extra = extra,
+            onClick = onClick,
         )
 
     override fun equals(other: Any?): Boolean {
@@ -143,7 +148,7 @@ data class CircleFingerPrint(
 
 data class CircleEvent(
     val state: CircleState,
-    val clicked: GeoPoint,
+    val clicked: GeoPointInterface,
 )
 
 typealias OnCircleEventHandler = (CircleEvent) -> Unit

@@ -1,6 +1,6 @@
 package com.mapconductor.core.marker
 
-interface MarkerEntity<ActualMarker> {
+interface MarkerEntityInterface<ActualMarker> {
     var marker: ActualMarker?
     val state: MarkerState
     val fingerPrint: MarkerFingerPrint
@@ -8,11 +8,11 @@ interface MarkerEntity<ActualMarker> {
     var isRendered: Boolean
 }
 
-class MarkerEntityImpl<ActualMarker>(
+class MarkerEntity<ActualMarker>(
     override var marker: ActualMarker?,
     override val state: MarkerState,
     override var visible: Boolean = true,
     override var isRendered: Boolean = false,
-) : MarkerEntity<ActualMarker> {
+) : MarkerEntityInterface<ActualMarker> {
     override val fingerPrint: MarkerFingerPrint = state.fingerPrint()
 }

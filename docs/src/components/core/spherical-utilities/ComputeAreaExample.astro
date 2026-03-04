@@ -1,0 +1,24 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val polygonPoints = listOf(
+    GeoPoint.fromLatLong(37.7749, -122.4194),
+    GeoPoint.fromLatLong(37.7849, -122.4094),
+    GeoPoint.fromLatLong(37.7849, -122.4294),
+    GeoPoint.fromLatLong(37.7749, -122.4294),
+    GeoPoint.fromLatLong(37.7749, -122.4194)  // Close the polygon
+)
+
+val area = Spherical.computeArea(polygonPoints)
+val areaKm2 = area / 1_000_000  // Convert to square kilometers
+
+println("Polygon area: ${'$'}{areaKm2.toInt()} km²")
+
+// Signed area tells you orientation
+val signedArea = Spherical.computeSignedArea(polygonPoints)
+val orientation = if (signedArea > 0) "Counter-clockwise" else "Clockwise"
+println("Polygon orientation: ${'$'}orientation")`;
+---
+
+<Code code={code} lang="kotlin" />
+

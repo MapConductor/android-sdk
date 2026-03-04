@@ -8,7 +8,6 @@
 
 # Keep ArcGIS specific implementations
 -keep class com.mapconductor.arcgis.ArcGISMapViewController { *; }
--keep class com.mapconductor.arcgis.ArcGISMapViewControllerImpl { *; }
 -keep class com.mapconductor.arcgis.ArcGISMapView { *; }
 
 # Keep marker, circle, polyline implementations

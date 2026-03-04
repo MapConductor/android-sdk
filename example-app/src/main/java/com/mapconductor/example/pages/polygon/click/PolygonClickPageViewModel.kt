@@ -1,33 +1,33 @@
 package com.mapconductor.example.pages.polygon.click
 
 import androidx.lifecycle.ViewModel
-import com.mapconductor.core.features.GeoPointImpl
-import com.mapconductor.core.map.MapCameraPositionImpl
-import com.mapconductor.core.map.MapViewState
+import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-interface PolygonClickPageViewModel {
-    val initCameraPosition: MapCameraPositionImpl
-    val mapViewState: StateFlow<MapViewState<*>?>
+interface PolygonClickPageViewModelInterface {
+    val initCameraPosition: MapCameraPosition
+    val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val markerState: StateFlow<MarkerState?>
     val message: StateFlow<String>
 
-    fun onMapViewChanged(state: MapViewState<*>)
+    fun onMapViewChanged(state: MapViewStateInterface<*>)
 
-    fun onMapClicked(clicked: GeoPointImpl)
+    fun onMapClicked(clicked: GeoPoint)
 
     fun onPolygonClicked(event: PolygonEvent)
 }
 
-class PolygonClickPageViewModelImpl :
+class PolygonClickPageViewModel :
     ViewModel(),
-    PolygonClickPageViewModel {
-    private val _mapViewState = MutableStateFlow<MapViewState<*>?>(null)
-    override val mapViewState: StateFlow<MapViewState<*>?> = _mapViewState.asStateFlow()
+    PolygonClickPageViewModelInterface {
+    private val _mapViewState = MutableStateFlow<MapViewStateInterface<*>?>(null)
+    override val mapViewState: StateFlow<MapViewStateInterface<*>?> = _mapViewState.asStateFlow()
 
     private val _markerState = MutableStateFlow<MarkerState?>(null)
     override val markerState: StateFlow<MarkerState?> = _markerState.asStateFlow()
@@ -36,16 +36,16 @@ class PolygonClickPageViewModelImpl :
     override val message: StateFlow<String> = _message.asStateFlow()
 
     override val initCameraPosition =
-        MapCameraPositionImpl(
-            position = GeoPointImpl(36.73030, -120.24512),
+        MapCameraPosition(
+            position = GeoPoint(36.73030, -120.24512),
             zoom = 5.0,
         )
 
-    override fun onMapViewChanged(state: MapViewState<*>) {
+    override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         _mapViewState.value = state
     }
 
-    override fun onMapClicked(clicked: GeoPointImpl) {
+    override fun onMapClicked(clicked: GeoPoint) {
         _message.value = "Outside"
 
         _markerState.value =
@@ -56,7 +56,7 @@ class PolygonClickPageViewModelImpl :
     }
 
     override fun onPolygonClicked(event: PolygonEvent) {
-        val latLng = GeoPointImpl.from(event.clicked).toUrlValue()
+        val latLng = GeoPoint.from(event.clicked).toUrlValue()
         _message.value = "Inside\n$latLng"
 
         _markerState.value =

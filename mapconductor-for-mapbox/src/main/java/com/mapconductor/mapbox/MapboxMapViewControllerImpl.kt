@@ -1,14 +1,10 @@
 package com.mapconductor.mapbox
 
-import MapboxMapViewController
+import MapboxMapViewControllerInterface
 import androidx.compose.ui.geometry.Offset
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
-import com.mapbox.maps.CameraChanged
-import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.ScreenCoordinate
-import com.mapbox.maps.StyleLoaded
-import com.mapbox.maps.StyleLoadedCallback
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.addLayerAbove
 import com.mapbox.maps.extension.style.layers.addLayerBelow
@@ -29,51 +25,121 @@ import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.circle.OnCircleEventHandler
 import com.mapconductor.core.controller.BaseMapViewController
 import com.mapconductor.core.features.GeoRectBounds
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.groundimage.GroundImageEvent
+import com.mapconductor.core.groundimage.GroundImageState
+import com.mapconductor.core.groundimage.OnGroundImageEventHandler
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.VisibleRegion
+import com.mapconductor.core.marker.MarkerEventControllerInterface
+import com.mapconductor.core.marker.MarkerOverlayRendererInterface
+import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.core.marker.MarkerTileRasterLayerCallback
 import com.mapconductor.core.marker.OnMarkerEventHandler
+import com.mapconductor.core.marker.StrategyMarkerController
 import com.mapconductor.core.polygon.OnPolygonEventHandler
 import com.mapconductor.core.polygon.PolygonEvent
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.core.polyline.OnPolylineEventHandler
 import com.mapconductor.core.polyline.PolylineEvent
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.mapbox.circle.MapboxCircleController
+import com.mapconductor.mapbox.groundimage.MapboxGroundImageController
+import com.mapconductor.mapbox.marker.DefaultMapboxMarkerEventController
 import com.mapconductor.mapbox.marker.MapboxMarkerController
+import com.mapconductor.mapbox.marker.MapboxMarkerEventControllerInterface
+import com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer
+import com.mapconductor.mapbox.marker.MarkerDragLayer
+import com.mapconductor.mapbox.marker.MarkerLayer
+import com.mapconductor.mapbox.marker.StrategyMapboxMarkerEventController
 import com.mapconductor.mapbox.polygon.MapboxPolygonConductor
 import com.mapconductor.mapbox.polyline.MapboxPolylineController
+import com.mapconductor.mapbox.raster.MapboxRasterLayerController
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 import android.animation.Animator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 typealias MapboxMapDesignTypeChangeHandler = (MapboxDesignType) -> Unit
 
-internal class MapboxMapViewControllerImpl(
+internal class MapboxMapViewController(
     override val holder: MapboxMapViewHolder,
     private val markerController: MapboxMarkerController,
     private val polylineController: MapboxPolylineController,
     private val polygonController: MapboxPolygonConductor,
+    private val groundImageController: MapboxGroundImageController,
     private val circleController: MapboxCircleController,
+    private val rasterLayerController: MapboxRasterLayerController,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
     val backCoroutine: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) : BaseMapViewController(),
-    MapboxMapViewController,
-    CameraChangedCallback,
-    StyleLoadedCallback,
+    MapboxMapViewControllerInterface,
     OnMapClickListener,
     OnMapLongClickListener,
     OnMoveListener {
     // Track created z-indexed polygon layers to manage add/remove without enumerating style layers
     private val polygonZLayers: MutableSet<Int> = mutableSetOf()
+    private val markerEventControllers = mutableListOf<MapboxMarkerEventControllerInterface>()
+    private var activeDragController: MapboxMarkerEventControllerInterface? = null
+
+    private val cameraUpdateToken = AtomicInteger(0)
+
+    private var markerClickListener: OnMarkerEventHandler? = null
+    private var markerDragStartListener: OnMarkerEventHandler? = null
+    private var markerDragListener: OnMarkerEventHandler? = null
+    private var markerDragEndListener: OnMarkerEventHandler? = null
+    private var markerAnimateStartListener: OnMarkerEventHandler? = null
+    private var markerAnimateEndListener: OnMarkerEventHandler? = null
 
     init {
         setupListeners()
         registerController(markerController)
         registerController(polygonController)
         registerController(polylineController)
+        registerController(groundImageController)
         registerController(circleController)
+        registerController(rasterLayerController)
+        registerMarkerEventController(DefaultMapboxMarkerEventController(markerController))
+
+        markerController.setRasterLayerCallback(
+            MarkerTileRasterLayerCallback { state ->
+                if (state != null) {
+                    rasterLayerController.upsert(state)
+                } else {
+                    val markerTileLayers =
+                        rasterLayerController.rasterLayerManager
+                            .allEntities()
+                            .filter { it.state.id.startsWith("marker-tile-") }
+                    markerTileLayers.forEach { entity -> rasterLayerController.removeById(entity.state.id) }
+                }
+            },
+        )
+    }
+
+    private fun attachMarkerLayers(
+        style: com.mapbox.maps.Style,
+        renderer: com.mapconductor.mapbox.marker.MapboxMarkerOverlayRenderer,
+    ) {
+        try {
+            style.addSource(renderer.markerLayer.source)
+        } catch (_: Exception) {
+        }
+        try {
+            style.addLayer(renderer.markerLayer.layer)
+        } catch (_: Exception) {
+        }
+        try {
+            style.addSource(renderer.dragLayer.source)
+        } catch (_: Exception) {
+        }
+        try {
+            style.addLayer(renderer.dragLayer.layer)
+        } catch (_: Exception) {
+        }
     }
 
     private fun attachOverlaySourcesAndLayers(style: com.mapbox.maps.Style) {
@@ -93,15 +159,68 @@ internal class MapboxMapViewControllerImpl(
         ensurePolygonZLayers(style)
 
         // Marker + drag layers
-        style.addSource(markerController.renderer.markerLayer.source)
-        style.addLayer(markerController.renderer.markerLayer.layer)
-        style.addSource(markerController.renderer.dragLayer.source)
-        style.addLayer(markerController.renderer.dragLayer.layer)
+        attachMarkerLayers(style, markerController.renderer)
+        markerEventControllers
+            .map { it.renderer }
+            .filter { it != markerController.renderer }
+            .forEach { renderer -> attachMarkerLayers(style, renderer) }
     }
 
     fun setupListeners() {
-        holder.map.subscribeCameraChanged(this)
-        holder.map.subscribeStyleLoaded(this)
+        holder.map.subscribeCameraChanged {
+            val token = cameraUpdateToken.incrementAndGet()
+            backCoroutine.launch {
+                if (token != cameraUpdateToken.get()) return@launch
+                // Calculate camera position on background thread
+                val mapCameraPosition = getMapCameraPositionAsync() ?: return@launch
+                notifyMapCameraPosition(mapCameraPosition)
+                cameraMoveCallback?.invoke(mapCameraPosition)
+            }
+        }
+        holder.map.subscribeStyleLoaded {
+            mapLoadedCallback?.invoke()
+            mapLoadedCallback = null
+
+            holder.map.style?.let { style ->
+                // When style reloads, our runtime sources/layers/images are dropped.
+                // Reattach overlays and ensure marker images exist, then redraw.
+                attachOverlaySourcesAndLayers(style)
+                markerEventControllers.forEach { controller ->
+                    controller.renderer.ensureStyleImages(style)
+                    controller.renderer.redraw()
+                }
+                coroutine.launch {
+                    groundImageController.reapplyStyle()
+                    rasterLayerController.reapplyStyle()
+                }
+
+                // After style is ready, trigger an initial camera update
+                sendInitialCameraUpdate()
+
+                style.toMapDesignType().let { mapDesign ->
+                    this@MapboxMapViewController.mapDesignType = mapDesign
+                    mapDesignTypeChangeListener?.invoke(mapDesign)
+                }
+            }
+        }
+
+        holder.map.subscribeStyleImageMissing { evt ->
+            val missingId = evt.imageId
+            markerEventControllers.forEach { controller ->
+                controller.renderer.onStyleImageMissing(missingId)
+            }
+        }
+        holder.map.subscribeMapIdle {
+            coroutine.launch {
+                getMapCameraPosition()?.let { mapCameraPosition ->
+                    backCoroutine.launch {
+                        notifyMapCameraPosition(mapCameraPosition)
+                        cameraMoveEndCallback?.invoke(mapCameraPosition)
+                    }
+                }
+            }
+        }
+
         holder.map.removeOnMapClickListener(this)
         holder.map.addOnMapClickListener(this)
 
@@ -116,11 +235,17 @@ internal class MapboxMapViewControllerImpl(
         markerController.clear()
         polylineController.clear()
         polygonController.clear()
+        groundImageController.clear()
+        rasterLayerController.clear()
     }
 
     override suspend fun compositionMarkers(data: List<MarkerState>) = markerController.add(data)
 
     override suspend fun updateMarker(state: MarkerState) = markerController.update(state)
+
+    override suspend fun compositionGroundImages(data: List<GroundImageState>) = groundImageController.add(data)
+
+    override suspend fun updateGroundImage(state: GroundImageState) = groundImageController.update(state)
 
     override suspend fun compositionPolylines(data: List<PolylineState>) = polylineController.add(data)
 
@@ -140,18 +265,18 @@ internal class MapboxMapViewControllerImpl(
 
     override suspend fun updateCircle(state: CircleState) = circleController.update(state)
 
+    override suspend fun compositionRasterLayers(data: List<RasterLayerState>) = rasterLayerController.add(data)
+
+    override suspend fun updateRasterLayer(state: RasterLayerState) = rasterLayerController.update(state)
+
+    @Deprecated("Use CircleState.onClick instead.")
     override fun setOnCircleClickListener(listener: OnCircleEventHandler?) {
         this.circleController.clickListener = listener
     }
 
-    override fun run(cameraChanged: CameraChanged) {
-        coroutine.launch {
-            getMapCameraPosition(cameraChanged)?.let { mapCameraPosition ->
-                backCoroutine.launch {
-                    notifyMapCameraPosition(mapCameraPosition)
-                }
-            }
-        }
+    @Deprecated("Use GroundImageState.onClick instead.")
+    override fun setOnGroundImageClickListener(listener: OnGroundImageEventHandler?) {
+        this.groundImageController.clickListener = listener
     }
 
     override fun hasMarker(state: MarkerState): Boolean = this.markerController.markerManager.hasEntity(state.id)
@@ -166,7 +291,13 @@ internal class MapboxMapViewControllerImpl(
 
     override fun hasCircle(state: CircleState): Boolean = this.circleController.circleManager.hasEntity(state.id)
 
-    private fun getMapCameraPosition(cameraChanged: CameraChanged): MapCameraPositionImpl? {
+    override fun hasGroundImage(state: GroundImageState): Boolean =
+        this.groundImageController.groundImageManager.hasEntity(state.id)
+
+    override fun hasRasterLayer(state: RasterLayerState): Boolean =
+        this.rasterLayerController.rasterLayerManager.hasEntity(state.id)
+
+    private fun getMapCameraPosition(): MapCameraPosition? {
 //        val options = cameraChanged.toMapCameraPosition()
         val camera = holder.map.cameraState.toMapCameraPosition()
 
@@ -209,16 +340,24 @@ internal class MapboxMapViewControllerImpl(
         return mapCameraPosition
     }
 
-    override fun moveCamera(position: MapCameraPositionImpl) {
+    /**
+     * Async version of getMapCameraPosition that can be called from background threads.
+     * Uses withContext to ensure Mapbox SDK calls run on the main thread.
+     */
+    private suspend fun getMapCameraPositionAsync(): MapCameraPosition? =
+        withContext(Dispatchers.Main) {
+            getMapCameraPosition()
+        }
+
+    override fun moveCamera(position: MapCameraPosition) {
         val cameraOptions = position.toCameraOptions()
         coroutine.launch {
             holder.map.setCamera(cameraOptions)
-            cameraMoveEndCallback?.invoke(position)
         }
     }
 
     override fun animateCamera(
-        position: MapCameraPositionImpl,
+        position: MapCameraPosition,
         duration: Long,
     ) {
         val targetCamera = position.toCameraOptions()
@@ -236,7 +375,6 @@ internal class MapboxMapViewControllerImpl(
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
-                    cameraMoveEndCallback?.invoke(position)
                 }
 
                 override fun onAnimationCancel(animation: Animator) {
@@ -259,12 +397,14 @@ internal class MapboxMapViewControllerImpl(
 
     override fun onMapLongClick(point: Point): Boolean {
         val touchPosition = point.toGeoPoint()
-        markerController.find(touchPosition)?.let { entity ->
-            if (entity.state.draggable) {
-                markerController.selectedMarker = entity
-                markerController.markerManager.removeEntity(entity.state.id)
-                markerController.dragStartListener?.invoke(entity.state)
-                return true
+        markerEventControllers.forEach { controller ->
+            controller.find(touchPosition)?.let { entity ->
+                if (entity.state.draggable) {
+                    activeDragController = controller
+                    controller.setSelectedMarker(entity)
+                    controller.dispatchDragStart(entity.state)
+                    return true
+                }
             }
         }
 
@@ -275,9 +415,11 @@ internal class MapboxMapViewControllerImpl(
     override fun onMapClick(point: Point): Boolean {
         val touchPosition = point.toGeoPoint()
 
-        markerController.find(touchPosition)?.let { entity ->
-            markerController.clickListener?.invoke(entity.state)
-            return true
+        markerEventControllers.forEach { controller ->
+            controller.find(touchPosition)?.let { entity ->
+                controller.dispatchClick(entity.state)
+                return true
+            }
         }
 
         circleController.find(touchPosition)?.let { entity ->
@@ -286,7 +428,17 @@ internal class MapboxMapViewControllerImpl(
                     state = entity.state,
                     clicked = touchPosition,
                 )
-            circleController.clickListener?.invoke(event)
+            circleController.dispatchClick(event)
+            return true
+        }
+
+        groundImageController.find(touchPosition)?.let { entity ->
+            val event =
+                GroundImageEvent(
+                    state = entity.state,
+                    clicked = touchPosition,
+                )
+            groundImageController.dispatchClick(event)
             return true
         }
 
@@ -297,7 +449,7 @@ internal class MapboxMapViewControllerImpl(
                     clicked = hitResult.closestPoint,
                 )
             coroutine.launch {
-                polylineController.clickListener?.invoke(event)
+                polylineController.dispatchClick(event)
             }
             return true
         }
@@ -308,7 +460,7 @@ internal class MapboxMapViewControllerImpl(
                     state = polygonEntity.state,
                     clicked = touchPosition,
                 )
-            polygonController.clickListener?.invoke(event)
+            polygonController.dispatchClick(event)
             return true
         }
 
@@ -317,24 +469,22 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun onMove(detector: MoveGestureDetector): Boolean {
-        markerController.selectedMarker?.let { entity ->
+        val controller = activeDragController ?: return false
+        val entity = controller.getSelectedMarker() ?: return false
+        val screenCoordinate =
+            Offset(
+                detector.focalPoint.x,
+                detector.focalPoint.y,
+            )
 
-            val screenCoordinate =
-                Offset(
-                    detector.focalPoint.x,
-                    detector.focalPoint.y,
-                )
-
-            holder.fromScreenOffsetSync(screenCoordinate)?.let {
-                entity.state.position = it
-                markerController.renderer.dragLayer.updatePosition(it)
-                markerController.renderer.drawDragLayer()
-            }
-
-            markerController.dragListener?.invoke(entity.state)
-            return true
+        holder.fromScreenOffsetSync(screenCoordinate)?.let {
+            entity.state.position = it
+            controller.renderer.dragLayer.updatePosition(it)
+            controller.renderer.drawDragLayer()
         }
-        return false
+
+        controller.dispatchDrag(entity.state)
+        return true
     }
 
     override fun onMoveBegin(detector: MoveGestureDetector) {
@@ -342,47 +492,62 @@ internal class MapboxMapViewControllerImpl(
     }
 
     override fun onMoveEnd(detector: MoveGestureDetector) {
-        markerController.selectedMarker?.let { entity ->
-            val screenCoordinate =
-                ScreenCoordinate(
-                    detector.focalPoint.x.toDouble(),
-                    detector.focalPoint.y.toDouble(),
-                )
-            val point = holder.map.coordinateForPixel(screenCoordinate)
-            markerController.renderer.dragLayer.updatePosition(point.toGeoPoint())
-            markerController.selectedMarker = null
-            markerController.dragEndListener?.invoke(entity.state)
-        }
+        val controller = activeDragController ?: return
+        val entity = controller.getSelectedMarker() ?: return
+        val screenCoordinate =
+            ScreenCoordinate(
+                detector.focalPoint.x.toDouble(),
+                detector.focalPoint.y.toDouble(),
+            )
+        val point = holder.map.coordinateForPixel(screenCoordinate)
+        controller.renderer.dragLayer.updatePosition(point.toGeoPoint())
+        controller.setSelectedMarker(null)
+        controller.dispatchDragEnd(entity.state)
+        activeDragController = null
     }
 
+    @Deprecated("Use MarkerState.onDragStart instead.")
     override fun setOnMarkerDragStart(listener: OnMarkerEventHandler?) {
-        markerController.dragStartListener = listener
+        markerDragStartListener = listener
+        markerEventControllers.forEach { it.setDragStartListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onDrag instead.")
     override fun setOnMarkerDrag(listener: OnMarkerEventHandler?) {
-        markerController.dragListener = listener
+        markerDragListener = listener
+        markerEventControllers.forEach { it.setDragListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onDragEnd instead.")
     override fun setOnMarkerDragEnd(listener: OnMarkerEventHandler?) {
-        markerController.dragEndListener = listener
+        markerDragEndListener = listener
+        markerEventControllers.forEach { it.setDragEndListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onAnimateStart instead.")
     override fun setOnMarkerAnimateStart(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateStartListener = listener
+        markerAnimateStartListener = listener
+        markerEventControllers.forEach { it.setAnimateStartListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onAnimateEnd instead.")
     override fun setOnMarkerAnimateEnd(listener: OnMarkerEventHandler?) {
-        markerController.renderer.animateEndListener = listener
+        markerAnimateEndListener = listener
+        markerEventControllers.forEach { it.setAnimateEndListener(listener) }
     }
 
+    @Deprecated("Use MarkerState.onClick instead.")
     override fun setOnMarkerClickListener(listener: OnMarkerEventHandler?) {
-        markerController.clickListener = listener
+        markerClickListener = listener
+        markerEventControllers.forEach { it.setClickListener(listener) }
     }
 
+    @Deprecated("Use PolylineState.onClick instead.")
     override fun setOnPolylineClickListener(listener: OnPolylineEventHandler?) {
         polylineController.clickListener = listener
     }
 
+    @Deprecated("Use PolygonState.onClick instead.")
     override fun setOnPolygonClickListener(listener: OnPolygonEventHandler?) {
         polygonController.clickListener = listener
     }
@@ -399,28 +564,6 @@ internal class MapboxMapViewControllerImpl(
 
     override fun setMapDesignTypeChangeListener(listener: MapboxMapDesignTypeChangeHandler) {
         mapDesignTypeChangeListener = listener
-        listener(mapDesignType)
-    }
-
-    override fun run(styleLoaded: StyleLoaded) {
-        mapLoadedCallback?.invoke()
-        mapLoadedCallback = null
-
-        holder.map.style?.let { style ->
-            // When style reloads, our runtime sources/layers/images are dropped.
-            // Reattach overlays and ensure marker images exist, then redraw.
-            attachOverlaySourcesAndLayers(style)
-            markerController.renderer.ensureStyleImages(style)
-            markerController.renderer.redraw()
-
-            // After style is ready, trigger an initial camera update
-            sendInitialCameraUpdate()
-
-            style.toMapDesignType().let { mapDesign ->
-                this@MapboxMapViewControllerImpl.mapDesignType = mapDesign
-                mapDesignTypeChangeListener?.invoke(mapDesign)
-            }
-        }
     }
 
     private fun ensurePolygonZLayers(style: com.mapbox.maps.Style) {
@@ -537,5 +680,58 @@ internal class MapboxMapViewControllerImpl(
 
             backCoroutine.launch { notifyMapCameraPosition(mapCameraPosition) }
         }
+    }
+
+    internal fun registerMarkerEventController(controller: MapboxMarkerEventControllerInterface) {
+        if (markerEventControllers.contains(controller)) return
+        markerEventControllers.add(controller)
+        controller.setClickListener(markerClickListener)
+        controller.setDragStartListener(markerDragStartListener)
+        controller.setDragListener(markerDragListener)
+        controller.setDragEndListener(markerDragEndListener)
+        controller.setAnimateStartListener(markerAnimateStartListener)
+        controller.setAnimateEndListener(markerAnimateEndListener)
+
+        holder.map.style?.let { style ->
+            attachMarkerLayers(style, controller.renderer)
+            controller.renderer.ensureStyleImages(style)
+            controller.renderer.redraw()
+        }
+    }
+
+    fun createMarkerRenderer(
+        strategy: MarkerRenderingStrategyInterface<MapboxActualMarker>,
+    ): MarkerOverlayRendererInterface<MapboxActualMarker> {
+        val groupId = UUID.randomUUID().toString()
+        val markerLayer =
+            MarkerLayer(
+                sourceId = "markers-source-$groupId",
+                layerId = "markers-layer-$groupId",
+            )
+        val dragLayer =
+            MarkerDragLayer(
+                sourceId = "marker-drag-source-$groupId",
+                layerId = "marker-drag-layer-$groupId",
+            )
+        return MapboxMarkerOverlayRenderer(
+            holder = holder,
+            markerManager = strategy.markerManager,
+            markerLayer = markerLayer,
+            dragLayer = dragLayer,
+        )
+    }
+
+    fun createMarkerEventController(
+        controller: StrategyMarkerController<MapboxActualMarker>,
+        renderer: MarkerOverlayRendererInterface<MapboxActualMarker>,
+    ): MarkerEventControllerInterface<MapboxActualMarker> =
+        StrategyMapboxMarkerEventController(
+            controller = controller,
+            renderer = renderer as MapboxMarkerOverlayRenderer,
+        )
+
+    fun registerMarkerEventController(controller: MarkerEventControllerInterface<MapboxActualMarker>) {
+        val typed = controller as? MapboxMarkerEventControllerInterface ?: return
+        registerMarkerEventController(typed)
     }
 }

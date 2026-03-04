@@ -1,0 +1,80 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  southwestLatitude?: number;
+  southwestLongitude?: number;
+  northeastLatitude?: number;
+  northeastLongitude?: number;
+  extraLabel?: string;
+  southwestLabel?: string;
+  northeastLabel?: string;
+  commentForCornerMarkers?: string;
+}
+
+const {
+  southwestLatitude = 37.7649,
+  southwestLongitude = -122.4294,
+  northeastLatitude = 37.7849,
+  northeastLongitude = -122.4094,
+  extraLabel = "Floor plan",
+  southwestLabel = "SW",
+  northeastLabel = "NE",
+  commentForCornerMarkers = "角のマーカー"
+} = Astro.props;
+
+const code = `@Composable
+fun DynamicBoundsExample() {
+    var southwest by remember {
+        mutableStateOf(GeoPoint.fromLatLong(${southwestLatitude}, ${southwestLongitude}))
+    }
+    var northeast by remember {
+        mutableStateOf(GeoPoint.fromLatLong(${northeastLatitude}, ${northeastLongitude}))
+    }
+
+    val context = LocalContext.current
+    val drawable = AppCompatResources.getDrawable(context, R.drawable.floor_plan)
+
+    val groundImageState = drawable?.let {
+        GroundImageState(
+            bounds = GeoRectBounds(southwest = southwest, northeast = northeast),
+            image = it,
+            opacity = 0.8f,
+            extra = "${extraLabel}"
+        )
+    }
+    val onCornerMarkerDrag: (MarkerState) -> Unit = { markerState ->
+        when (markerState.extra) {
+            "${southwestLabel}" -> southwest = markerState.position
+            "${northeastLabel}" -> northeast = markerState.position
+        }
+    }
+
+    MapView(
+        state = mapViewState
+    ) {
+        groundImageState?.let { state ->
+            GroundImage(state)
+        }
+
+        // ${commentForCornerMarkers}
+        Marker(
+            position = southwest,
+            icon = DefaultIcon(fillColor = Color.Green, label = "${southwestLabel}"),
+            draggable = true,
+            extra = "${southwestLabel}",
+            onDrag = onCornerMarkerDrag
+        )
+
+        Marker(
+            position = northeast,
+            icon = DefaultIcon(fillColor = Color.Red, label = "${northeastLabel}"),
+            draggable = true,
+            extra = "${northeastLabel}",
+            onDrag = onCornerMarkerDrag
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

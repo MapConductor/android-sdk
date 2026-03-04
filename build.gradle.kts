@@ -1,9 +1,10 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+﻿// Top-level build file where you can add configuration options common to all sub-projects/modules.
 import java.util.Properties
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.jlleitschuh.ktlint) apply false
     id("com.gradleup.nmcp") version "0.0.8"
@@ -60,7 +61,7 @@ tasks.register("allLintChecks") {
     val lintTasks =
         modules
             .filter { it != "mapconductor-bom" }
-            .map { module ->
+            .flatMap { module ->
                 listOf(":$module:ktlintFormat", ":$module:lint")
             }
 
@@ -121,3 +122,4 @@ nmcp {
         // All publications from all subprojects will be published
     }
 }
+

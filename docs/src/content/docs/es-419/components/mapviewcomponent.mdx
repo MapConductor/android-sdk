@@ -1,0 +1,135 @@
+---
+title: "MapViewComponent"
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import GoogleMapsExample from '~/components/components/mapviewcomponent/GoogleMapsExample.astro';
+import MapboxExample from '~/components/components/mapviewcomponent/MapboxExample.astro';
+import AdvancedMapEventHandlingExample from '~/components/components/mapviewcomponent/AdvancedMapEventHandlingExample.astro';
+import MapViewComponentSignaturesTabs from '~/components/components/mapviewcomponent/MapViewComponentSignaturesTabs.astro';
+import ProviderIndependentMapContentExample from '~/components/components/mapviewcomponent/ProviderIndependentMapContentExample.astro';
+
+MapConductor proporciona componentes de vista de mapa específicos del proveedor de mapas que sirven como base para mostrar mapas en su aplicación. Cada SDK de mapa tiene su propia implementación, pero se mantiene una interfaz de API consistente en todos los proveedores.
+
+## Arquitectura de MapViewContainer
+
+MapConductor proporciona un componente MapViewContainer que envuelve el MapView proporcionado por el SDK del mapa.
+MapViewComponent es una capa conceptual; cuando se utiliza realmente, emplea el `XxxMapView` proporcionado por cada SDK de mapas (por ejemplo, `GoogleMapView`, `MapBoxView`, etc.).
+MapViewComponent contiene controles para gestionar MapView. Estos controles se pueden manipular a través de `MapViewStateInterface`.
+
+![Arquitectura de MapViewContainer](~/assets/mapviewcomponent/architecture.png)
+
+## Componentes Específicos del Proveedor de Mapas
+
+MapConductor admite múltiples SDKs de mapa, cada uno con un componente dedicado.
+Típicamente, se colocan múltiples objetos (marcadores, polilíneas, etc.) en un mapa, por lo que en lugar de configurar devoluciones de llamada de eventos en objetos individuales,
+se configuran devoluciones de llamada de mapa y cámara en el componente específico del proveedor de mapas, mientras que las superposiciones se configuran en cada State.
+
+Las devoluciones de llamada de eventos especiales específicas del proveedor aún no se admiten en v{BOM_MODULE_VERSION}.
+
+<MapViewComponentSignaturesTabs />
+
+
+## Parámetros Comunes
+
+Todos los componentes de vista de mapa comparten los siguientes parámetros:
+
+### Parámetros Principales
+
+- **`modifier`**: Modificador de Compose para estilo y diseño
+- **`state`**: Implementación de estado de vista de mapa específica del proveedor de mapas
+- **`content`**: Contenido Composable que contiene superposiciones de mapa (marcadores, círculos, etc.)
+
+### Controladores de Eventos
+
+- **`onMapLoaded`**: Se llama cuando el mapa ha terminado de cargar
+- **`onMapClick`**: Se llama cuando el usuario toca el mapa
+- **`onCameraMoveStart`**: Se llama al iniciar `moveCameraTo(dst, durationMs)`. No se llama cuando el usuario mueve el mapa de forma interactiva.
+- **`onCameraMove`**: Se llama cuando se mueve la cámara que muestra el mapa.
+- **`onCameraMoveEnd`**: Se llama cuando finaliza el movimiento de la cámara que muestra el mapa.
+
+### Parámetros Avanzados
+
+- **`sdkInitialize`**: Proceso de inicialización específico del SDK
+
+## Ejemplos de Uso
+
+<Tabs>
+  <TabItem label="Implementación de Google Maps">
+    <GoogleMapsExample/>
+    ![](~/assets/introduction/basic-googlemaps-example.png)
+  </TabItem>
+  <TabItem label="Implementación de Mapbox">
+    <MapboxExample />
+    ![](~/assets/introduction/basic-mapbox-example.png)
+  </TabItem>
+</Tabs>
+
+### Patrón Independiente del Proveedor de Mapas
+
+Aunque se requieren componentes específicos de mapa para cada SDK, puede crear contenido independiente del proveedor:
+
+<ProviderIndependentMapContentExample
+  markerLatitude={37.7749}
+  markerLongitude={-122.4194}
+  markerLabel="Punto"
+  markerExtra="Marcador común"
+  radiusMeters={500.0}
+  strokeColorExpr="Color.Green"
+  fillColorExpr="Color.Green.copy(alpha = 0.2f)"
+  commentForReusableContent="Contenido reutilizable"
+  commentForSameContentDifferentSdk="Mismo contenido, diferente SDK de mapa"
+/>
+
+### Manejo de Eventos Avanzado
+
+<AdvancedMapEventHandlingExample
+  centerLatitude={37.7749}
+  centerLongitude={-122.4194}
+  zoomLevel={13.0}
+  mapLoadedMessage="El mapa se cargó correctamente"
+  mapClickedPrefix="Mapa pulsado en"
+  cameraMoveStartMessage="El movimiento de la cámara ha comenzado"
+  cameraMovePrefix="Posición de la cámara"
+  cameraMoveEndMessage="El movimiento de la cámara ha finalizado"
+  markerClickedPrefix="Marcador pulsado"
+  centerMarkerLabel="Centro"
+  centerMarkerExtra="Marcador central"
+  clickedMarkerLabel="Clic"
+  clickedMarkerExtra="Punto pulsado"
+  commentForCenterMarkerAndCircle="Mostrar marcador y círculo"
+  commentForClickedMarker="Mostrar marcador en la posición pulsada"
+/>
+
+<video width="720" height="480" controls>
+ <source src="/mapviewcomponent/advanced-map-example.webm" type="video/webm" />
+ <source src="/mapviewcomponent/advanced-map-example.mp4" type="video/mp4" />
+</video>
+
+## Diferencias de SDK de Mapa
+
+Aunque la API es consistente en todos los SDKs de mapa, hay diferencias en las siguientes áreas:
+
+### Características Soportadas
+- **GroundImage**: Actualmente soportado en Google Maps y ArcGIS
+- **Animación de Marcador**: Disponible en Google Maps y Mapbox
+- **Estilo Personalizado**: Cada SDK de mapa tiene diferentes opciones de estilo de mapa
+
+### Características de Rendimiento
+- **Google Maps**: Excelente para uso general con excelente rendimiento de marcadores
+- **Mapbox**: Óptimo para estilo personalizado y conjuntos de datos grandes
+- **HERE Maps**: Optimizado para integración de servicios de ubicación
+- **ArcGIS**: Óptimo para aplicaciones GIS y empresariales
+
+### Integración de Plataforma
+Cada SDK de mapa puede tener diferentes requisitos respecto a claves de API, permisos y configuración de plataforma. Consulte la documentación de configuración específica del proveedor para más detalles.
+
+## Mejores Prácticas
+
+1. **Elegir el SDK Correcto**: Seleccionar basándose en las necesidades específicas de su aplicación (estilo, rendimiento, características)
+2. **Gestión Consistente del Estado**: Usar los mismos patrones de estado independientemente del SDK de mapa
+3. **Contenido Reutilizable**: Crear contenido Composable independiente del proveedor cuando sea posible
+4. **Manejo de Eventos**: Implementar manejo de eventos integral para mejor experiencia del usuario
+5. **Manejo de Errores**: Siempre manejar fallos de inicialización y proporcionar interfaz de usuario de respaldo
+6. **Rendimiento**: Considerar estrategias de renderizado personalizado para grandes conjuntos de marcadores
+7. **Pruebas**: Probar su aplicación con múltiples SDKs de mapa para asegurar compatibilidad

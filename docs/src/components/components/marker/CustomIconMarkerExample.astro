@@ -1,0 +1,30 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForMapViewUsage?: string;
+}
+
+const {
+  commentForMapViewUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
+} = Astro.props;
+
+const code = `${commentForMapViewUsage.startsWith("Replace") ? "// " + commentForMapViewUsage : commentForMapViewUsage}
+MapView(state = mapViewState) {
+    Marker(
+        position = GeoPoint.fromLatLong(37.7749, -122.4194),
+        icon = DefaultIcon(
+            scale = 1.5f,
+            label = "SF",
+            fillColor = Color.Blue,
+            strokeColor = Color.White,
+            strokeWidth = 2.dp
+        ),
+        extra = "San Francisco with custom icon",
+        id = "custom-sf-marker"
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

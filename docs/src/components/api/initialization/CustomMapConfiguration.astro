@@ -1,0 +1,76 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  functionName?: string;
+  mapViewStateImplType?: string;
+  mapViewType?: string;
+  latitude?: number;
+  longitude?: number;
+  zoom?: number;
+  bearing?: number;
+  tilt?: number;
+  mapDesignType?: string;
+  commentForCameraPosition?: string;
+  commentForMapDesign?: string;
+  commentForUsage?: string;
+  commentForMapContent?: string;
+}
+
+const {
+  functionName = "CustomMapConfiguration",
+  mapViewStateImplType = "GoogleMapViewState",
+  mapViewType = "GoogleMapView",
+  latitude = 37.7749,
+  longitude = -122.4194,
+  zoom = 12,
+  bearing = 45,
+  tilt = 30,
+  mapDesignType = "GoogleMapDesignType.SATELLITE",
+  commentForCameraPosition = "Set initial camera position",
+  commentForMapDesign = "Set map design/style",
+  commentForUsage = "Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView",
+  commentForMapContent = "Map content"
+} = Astro.props;
+
+const cameraCommentLine =
+  commentForCameraPosition && commentForCameraPosition.trim().length > 0
+    ? `            // ${commentForCameraPosition}\n`
+    : "";
+
+const mapDesignCommentLine =
+  commentForMapDesign && commentForMapDesign.trim().length > 0
+    ? `\n            // ${commentForMapDesign}\n`
+    : "\n";
+
+const usageCommentLine =
+  commentForUsage && commentForUsage.trim().length > 0
+    ? `    // ${commentForUsage}\n`
+    : "";
+
+const code = `@Composable
+fun ${functionName}() {
+    val mapViewState = remember {
+        ${mapViewStateImplType}().apply {
+${cameraCommentLine}            initCameraPosition = MapCameraPosition(
+                target = GeoPoint.fromLatLong(${latitude}, ${longitude}),
+                zoom = ${zoom}f,
+                bearing = ${bearing}f,
+                tilt = ${tilt}f
+            )${mapDesignCommentLine}            mapDesignType = ${mapDesignType}
+        }
+    }
+
+${usageCommentLine}    ${mapViewType}(
+        state = mapViewState,
+        onMapLoaded = {
+            println("Map loaded and ready")
+        }
+    ) {
+        // ${commentForMapContent}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

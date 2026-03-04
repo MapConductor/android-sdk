@@ -1,0 +1,25 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  navigationZoom?: number;
+  navigationTilt?: number;
+  commentForBearing?: string;
+}
+
+const {
+  navigationZoom = 18.0,
+  navigationTilt = 60.0,
+  commentForBearing = "Direction of travel"
+} = Astro.props;
+
+const code = `val navigationCamera = MapCameraPosition(
+    position = currentRoutePosition,
+    zoom = ${navigationZoom},
+    bearing = currentHeading,  // ${commentForBearing}
+    tilt = ${navigationTilt}               // Angled for street view
+)`;
+---
+
+<Code code={code} lang="kotlin" />
+

@@ -1,11 +1,11 @@
 package com.mapconductor.maplibre.polyline
 
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
-import com.mapconductor.core.polyline.PolylineEntity
-import com.mapconductor.core.polyline.PolylineManager
+import com.mapconductor.core.polyline.PolylineEntityInterface
+import com.mapconductor.core.polyline.PolylineManagerInterface
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.maplibre.MapLibreActualPolyline
-import com.mapconductor.maplibre.MapLibreMapViewHolder
+import com.mapconductor.maplibre.MapLibreMapViewHolderInterface
 import com.mapconductor.maplibre.createMapLibreLines
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,10 +13,17 @@ import kotlinx.coroutines.launch
 
 class MapLibrePolylineOverlayRenderer(
     val layer: MapLibrePolylineLayer,
-    val polylineManager: PolylineManager<MapLibreActualPolyline>,
-    override val holder: MapLibreMapViewHolder,
+    val polylineManager: PolylineManagerInterface<MapLibreActualPolyline>,
+    override val holder: MapLibreMapViewHolderInterface,
     override val coroutine: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) : AbstractPolylineOverlayRenderer<MapLibreActualPolyline>() {
+    private fun resolveZIndex(state: PolylineState): Int =
+        if (state.zIndex != 0) {
+            state.zIndex
+        } else {
+            (state.extra as? Int) ?: 0
+        }
+
     override suspend fun createPolyline(state: PolylineState): MapLibreActualPolyline? =
         createMapLibreLines(
             id = state.id,
@@ -24,13 +31,13 @@ class MapLibrePolylineOverlayRenderer(
             geodesic = state.geodesic,
             strokeColor = state.strokeColor,
             strokeWidth = state.strokeWidth,
-            zIndex = (state.extra as? Int) ?: 0,
+            zIndex = resolveZIndex(state),
         )
 
     override suspend fun updatePolylineProperties(
         polyline: MapLibreActualPolyline,
-        current: PolylineEntity<MapLibreActualPolyline>,
-        prev: PolylineEntity<MapLibreActualPolyline>,
+        current: PolylineEntityInterface<MapLibreActualPolyline>,
+        prev: PolylineEntityInterface<MapLibreActualPolyline>,
     ): MapLibreActualPolyline? {
         // Recreate features to apply updated properties
         return createMapLibreLines(
@@ -39,11 +46,11 @@ class MapLibrePolylineOverlayRenderer(
             geodesic = current.state.geodesic,
             strokeColor = current.state.strokeColor,
             strokeWidth = current.state.strokeWidth,
-            zIndex = (current.state.extra as? Int) ?: 0,
+            zIndex = resolveZIndex(current.state),
         )
     }
 
-    override suspend fun removePolyline(entity: PolylineEntity<MapLibreActualPolyline>) {
+    override suspend fun removePolyline(entity: PolylineEntityInterface<MapLibreActualPolyline>) {
         // Remove features by rewriting source without this entity
         // Actual removal is handled in onPostProcess by redrawing all remaining polylines
     }
@@ -59,7 +66,7 @@ class MapLibrePolylineOverlayRenderer(
         }
     }
 
-    private fun getAllPolylineEntities(): List<PolylineEntity<MapLibreActualPolyline>> {
+    private fun getAllPolylineEntities(): List<PolylineEntityInterface<MapLibreActualPolyline>> {
         // This would need access to the polyline manager
         // For now, we'll implement a simple workaround
         return polylineManager.allEntities()

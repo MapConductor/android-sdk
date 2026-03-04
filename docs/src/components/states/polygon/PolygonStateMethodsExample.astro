@@ -1,0 +1,21 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForCopy?: string;
+  commentForFingerPrint?: string;
+  commentForAsFlow?: string;
+}
+
+const {
+  commentForCopy = "変更されたコピーを作成",
+  commentForFingerPrint = "変更検知",
+  commentForAsFlow = "リアクティブ更新"
+} = Astro.props;
+
+const code = `fun copy(...): PolygonState // ${commentForCopy}
+fun fingerPrint(): PolygonFingerPrint // ${commentForFingerPrint}
+fun asFlow(): Flow<PolygonFingerPrint> // ${commentForAsFlow}`;
+---
+
+<Code code={code} lang="kotlin" />

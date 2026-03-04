@@ -1,0 +1,22 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForPrint?: string;
+}
+
+const {
+  commentForPrint = "Marker clicked at:"
+} = Astro.props;
+
+const code = `val markerState = MarkerState(
+    ...,
+    onClick = { marker ->
+        println("${commentForPrint} \${marker.position.latitude}, \${marker.position.longitude}")
+    },
+)
+
+Marker(markerState)`;
+---
+
+<Code code={code} lang="kotlin" />

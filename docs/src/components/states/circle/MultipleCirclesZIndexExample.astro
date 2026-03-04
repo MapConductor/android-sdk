@@ -1,0 +1,44 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLatitude?: number;
+  centerLongitude?: number;
+  outerRadiusMeters?: number;
+  innerRadiusMeters?: number;
+  outerZIndex?: number;
+  innerZIndex?: number;
+}
+
+const {
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  outerRadiusMeters = 1000.0,
+  innerRadiusMeters = 500.0,
+  outerZIndex = 1,
+  innerZIndex = 2
+} = Astro.props;
+
+const code = `val circles = listOf(
+    CircleState(
+        center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
+        radiusMeters = ${outerRadiusMeters},
+        fillColor = Color.Red.copy(alpha = 0.3f),
+        zIndex = ${outerZIndex}
+    ),
+    CircleState(
+        center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
+        radiusMeters = ${innerRadiusMeters},
+        fillColor = Color.Blue.copy(alpha = 0.5f),
+        zIndex = ${innerZIndex}
+    )
+)
+
+MapView(state = mapViewState) {
+    circles.forEach { circleState ->
+        Circle(circleState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

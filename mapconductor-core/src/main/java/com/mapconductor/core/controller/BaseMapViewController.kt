@@ -1,12 +1,12 @@
 package com.mapconductor.core.controller
 
 import com.mapconductor.core.map.InternalOnMapLoadedHandler
-import com.mapconductor.core.map.MapCameraPositionImpl
+import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler
 
-abstract class BaseMapViewController : MapViewController {
-    private var overlayControllers = mutableListOf<OverlayController<*, *, *>>()
+abstract class BaseMapViewController : MapViewControllerInterface {
+    private var overlayControllers = mutableListOf<OverlayControllerInterface<*, *, *>>()
     protected var cameraMoveStartCallback: OnCameraMoveHandler? = null
     protected var cameraMoveCallback: OnCameraMoveHandler? = null
     protected var cameraMoveEndCallback: OnCameraMoveHandler? = null
@@ -35,11 +35,16 @@ abstract class BaseMapViewController : MapViewController {
         this.mapLongClickCallback = listener
     }
 
-    protected fun registerController(controller: OverlayController<*, *, *>) {
+    protected fun registerController(controller: OverlayControllerInterface<*, *, *>) {
+        if (overlayControllers.contains(controller)) return
         overlayControllers.add(controller)
     }
 
-    protected suspend fun notifyMapCameraPosition(mapCameraPosition: MapCameraPositionImpl) {
+    override fun registerOverlayController(controller: OverlayControllerInterface<*, *, *>) {
+        registerController(controller)
+    }
+
+    protected suspend fun notifyMapCameraPosition(mapCameraPosition: MapCameraPosition) {
         overlayControllers.forEach {
             it.onCameraChanged(mapCameraPosition)
         }

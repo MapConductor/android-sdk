@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val origin = GeoPoint.fromLatLong(37.7749, -122.4194)
+
+// Points around the origin
+val north1km = Spherical.computeOffset(origin, 1000.0, 0.0)   // 1km north
+val east1km = Spherical.computeOffset(origin, 1000.0, 90.0)   // 1km east
+val south1km = Spherical.computeOffset(origin, 1000.0, 180.0) // 1km south
+val west1km = Spherical.computeOffset(origin, 1000.0, 270.0)  // 1km west
+
+// Create a square around the origin
+val squarePoints = listOf(north1km, east1km, south1km, west1km, north1km)`;
+---
+
+<Code code={code} lang="kotlin" />
+

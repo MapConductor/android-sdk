@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -30,8 +29,8 @@ import androidx.compose.ui.unit.dp
 data class IconItem<T>(
     val key: String,
     val label: String,
-    @DrawableRes val lightIconResId: Int,
-    @DrawableRes val darkIconResId: Int,
+    @field:DrawableRes val lightIconResId: Int,
+    @field:DrawableRes val darkIconResId: Int,
     val value: T,
 )
 
@@ -58,9 +57,9 @@ fun IconSelectMenu(
             readOnly = true,
             value = selected.label,
             onValueChange = {},
-            label = { Text("使用している地図SDK") },
+            label = { Text("Currently used") },
             trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "ドロップダウン")
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
             },
             leadingIcon = {
                 with(selected) {
@@ -81,8 +80,7 @@ fun IconSelectMenu(
             },
             modifier =
                 Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
-                    .fillMaxWidth(),
+                    .menuAnchor(MenuAnchorType.PrimaryEditable),
         )
 
         ExposedDropdownMenu(

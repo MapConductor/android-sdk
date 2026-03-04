@@ -7,13 +7,13 @@ import com.arcgismaps.mapping.symbology.SimpleLineSymbolStyle
 import com.arcgismaps.mapping.view.Graphic
 import com.arcgismaps.mapping.view.GraphicsOverlay
 import com.mapconductor.arcgis.ArcGISActualPolyline
-import com.mapconductor.arcgis.ArcGISMapViewHolder
+import com.mapconductor.arcgis.map.ArcGISMapViewHolder
 import com.mapconductor.arcgis.toArcGISColor
 import com.mapconductor.arcgis.toPoint
 import com.mapconductor.core.ResourceProvider
-import com.mapconductor.core.features.GeoPointImpl
+import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.polyline.AbstractPolylineOverlayRenderer
-import com.mapconductor.core.polyline.PolylineEntity
+import com.mapconductor.core.polyline.PolylineEntityInterface
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.Spherical
 import kotlin.collections.set
@@ -49,8 +49,8 @@ class ArcGISPolylineOverlayRenderer(
 
     override suspend fun updatePolylineProperties(
         polyline: ArcGISActualPolyline,
-        current: PolylineEntity<ArcGISActualPolyline>,
-        prev: PolylineEntity<ArcGISActualPolyline>,
+        current: PolylineEntityInterface<ArcGISActualPolyline>,
+        prev: PolylineEntityInterface<ArcGISActualPolyline>,
     ): ArcGISActualPolyline? =
         withContext(coroutine.coroutineContext) {
             val finger = current.fingerPrint
@@ -72,7 +72,7 @@ class ArcGISPolylineOverlayRenderer(
             polyline
         }
 
-    override suspend fun removePolyline(entity: PolylineEntity<ArcGISActualPolyline>) {
+    override suspend fun removePolyline(entity: PolylineEntityInterface<ArcGISActualPolyline>) {
         coroutine.launch {
             polylineLayer.graphics.remove(entity.polyline)
         }
@@ -83,12 +83,12 @@ class ArcGISPolylineOverlayRenderer(
             PolylineBuilder().also { builder ->
                 if (state.geodesic) {
                     state.points.forEach {
-                        builder.addPoint(GeoPointImpl.from(it).toPoint())
+                        builder.addPoint(GeoPoint.from(it).toPoint())
                     }
                     return@also
                 }
 
-                builder.addPoint(GeoPointImpl.from(state.points[0]).toPoint())
+                builder.addPoint(GeoPoint.from(state.points[0]).toPoint())
                 for (i in 1 until state.points.size) {
                     var fraction = 0.0
                     while (fraction <= 1.0) {
@@ -101,7 +101,7 @@ class ArcGISPolylineOverlayRenderer(
                         builder.addPoint(point.toPoint())
                         fraction += 0.01
                     }
-                    builder.addPoint(GeoPointImpl.from(state.points[i]).toPoint())
+                    builder.addPoint(GeoPoint.from(state.points[i]).toPoint())
                 }
             }
         return polylineBuilder.toGeometry()

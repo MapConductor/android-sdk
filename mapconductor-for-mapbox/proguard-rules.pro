@@ -8,7 +8,6 @@
 
 # Keep Mapbox specific implementations
 -keep class com.mapconductor.mapbox.MapboxMapViewController { *; }
--keep class com.mapconductor.mapbox.MapboxMapViewControllerImpl { *; }
 -keep class com.mapconductor.mapbox.MapboxMapView { *; }
 
 # Keep marker, circle, polyline implementations

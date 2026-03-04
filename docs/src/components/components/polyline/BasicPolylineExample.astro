@@ -1,0 +1,58 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  centerLat?: number;
+  centerLng?: number;
+  zoom?: number;
+  commentForMapViewUsage?: string;
+}
+
+const {
+  centerLat = 53.566853,
+  centerLng = 9.988269,
+  zoom = 14.0,
+  commentForMapViewUsage = "Replace MapboxMapView with GoogleMapView, HereMapView, etc"
+} = Astro.props;
+
+const code = `@Composable
+fun BasicPolylineExample(modifier: Modifier = Modifier) {
+    val center = GeoPoint.fromLatLong(${centerLat}, ${centerLng})
+
+    // 地図の作成
+    val camera =
+        MapCameraPosition(
+            position = center,
+            zoom = ${zoom},
+        )
+    val mapViewState =
+        rememberMapboxMapViewState(
+            cameraPosition = camera,
+        )
+    val routePoints = listOf(
+        GeoPoint.fromLatLong(53.561011,9.989448),
+        GeoPoint.fromLatLong(53.563203,9.985800),
+        GeoPoint.fromLatLong(53.564579,9.983525),
+        GeoPoint.fromLatLong(53.566873,9.980822),
+        GeoPoint.fromLatLong(53.567943,9.982152),
+        GeoPoint.fromLatLong(53.570186,9.984813),
+        GeoPoint.fromLatLong(53.572683,9.986143),
+        GeoPoint.fromLatLong(53.572658,9.988675),
+        GeoPoint.fromLatLong(53.572709,9.990392)
+    )
+
+    // ${commentForMapViewUsage}
+    MapboxMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        Polyline(
+            points = routePoints,
+            strokeColor = Color.Blue,
+            strokeWidth = 9.dp
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
@@ -73,6 +73,7 @@ android {
     packaging {
         resources {
             excludes += "META-INF/versions/9/previous-compilation-data.bin"
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
             excludes += "META-INF/*.kotlin_module"
             excludes += "META-INF/AL2.0"
             excludes += "META-INF/LGPL2.1"
@@ -103,11 +104,6 @@ android {
         targetCompatibility = JavaVersion.toVersion(project.property("javaVersion").toString())
     }
 
-    kotlinOptions {
-
-        jvmTarget = project.property("jvmTarget").toString()
-    }
-
     buildFeatures {
 
         compose = true
@@ -133,6 +129,16 @@ android {
 
             isIncludeAndroidResources = true
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(
+                project.property("jvmTarget").toString(),
+            ),
+        )
     }
 }
 
@@ -173,6 +179,8 @@ dependencies {
     // MapLibre SDK
     implementation(libs.maplibre.sdk)
     implementation(libs.maplibre.annotation)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.foundation)
 
     // Map Conductor
 //    implementation("com.mapconductor:core")
@@ -196,6 +204,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.maplibre)
     releaseImplementation(libs.mapconductor.marker.strategy)
     releaseImplementation(libs.mapconductor.marker.native.strategy)
+    releaseImplementation(libs.mapconductor.marker.clustering)
 
     debugImplementation(project(":mapconductor-core"))
     debugImplementation(project(":mapconductor-icons"))
@@ -204,8 +213,10 @@ dependencies {
     debugImplementation(project(":mapconductor-for-mapbox"))
     debugImplementation(project(":mapconductor-for-arcgis"))
     debugImplementation(project(":mapconductor-for-maplibre"))
-    debugImplementation(project(":mapconductor-marker-strategy"))
-    debugImplementation(project(":mapconductor-marker-native-strategy"))
+//    debugImplementation(project(":mapconductor-marker-strategy"))
+//    debugImplementation(project(":mapconductor-marker-native-strategy"))
+    debugImplementation(project(":mapconductor-marker-clustering"))
+    debugImplementation(project(":mapconductor-heatmap"))
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)

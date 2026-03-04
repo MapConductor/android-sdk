@@ -1,0 +1,62 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  markerLatitude?: number;
+  markerLongitude?: number;
+  markerLabel?: string;
+  markerExtra?: string;
+  radiusMeters?: number;
+  strokeColorExpr?: string;
+  fillColorExpr?: string;
+  commentForReusableContent?: string;
+  commentForSameContentDifferentSdk?: string;
+}
+
+const {
+  markerLatitude = 37.7749,
+  markerLongitude = -122.4194,
+  markerLabel = 'Point',
+  markerExtra = 'Common marker',
+  radiusMeters = 500.0,
+  strokeColorExpr = 'Color.Green',
+  fillColorExpr = 'Color.Green.copy(alpha = 0.2f)',
+  commentForReusableContent = 'Reusable content',
+  commentForSameContentDifferentSdk = 'Same content, different map SDK',
+} = Astro.props;
+
+const code = `@Composable
+fun MapContent() {
+    Marker(
+        position = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
+        icon = DefaultIcon(label = "${markerLabel}"),
+        extra = "${markerExtra}"
+    )
+
+    Circle(
+        center = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
+        radiusMeters = ${radiusMeters},
+        strokeColor = ${strokeColorExpr},
+        fillColor = ${fillColorExpr}
+    )
+}
+
+@Composable
+fun GoogleMapsScreen() {
+    val state = rememberGoogleMapViewState()
+    GoogleMapView(state = state) {
+        MapContent() // ${commentForReusableContent}
+    }
+}
+
+@Composable
+fun MapboxScreen() {
+    val state = remember { MapboxViewState() }
+    MapboxMapView(state = state) {
+        MapContent() // ${commentForSameContentDifferentSdk}
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
+

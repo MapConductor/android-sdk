@@ -1,0 +1,65 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForStarPolygon?: string;
+  centerLatitude?: number;
+  centerLongitude?: number;
+  outerRadius?: number;
+  innerRadius?: number;
+  extraLabel?: string;
+  markerLabel?: string;
+}
+
+const {
+  commentForStarPolygon = 'Star-shaped polygon',
+  centerLatitude = 37.7749,
+  centerLongitude = -122.4194,
+  outerRadius = 0.01,
+  innerRadius = 0.005,
+  extraLabel = 'Star polygon',
+  markerLabel = '⭐',
+} = Astro.props;
+
+const code = `@Composable
+fun ComplexPolygonExample() {
+    // ${commentForStarPolygon}
+    val starPoints = remember {
+        val centerLat = ${centerLatitude}
+        val centerLng = ${centerLongitude}
+        val outerRadius = ${outerRadius}
+        val innerRadius = ${innerRadius}
+
+        buildList {
+            for (i in 0 until 10) {
+                val angle = (i * 36.0) * Math.PI / 180.0
+                val radiusMeters = if (i % 2 == 0) outerRadius else innerRadius
+                val lat = centerLat + radiusMeters * cos(angle)
+                val lng = centerLng + radiusMeters * sin(angle)
+                add(GeoPoint.fromLatLong(lat, lng))
+            }
+            add(first())
+        }
+    }
+
+    MapView(state = mapViewState) {
+        Polygon(
+            points = starPoints,
+            strokeColor = Color.Magenta,
+            strokeWidth = 2.dp,
+            fillColor = Color.Magenta.copy(alpha = 0.3f),
+            extra = "${extraLabel}"
+        )
+
+        Marker(
+            position = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            icon = DefaultIcon(
+                fillColor = Color.Magenta,
+                label = "${markerLabel}"
+            )
+        )
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />
