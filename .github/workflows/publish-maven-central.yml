@@ -77,8 +77,8 @@ jobs:
 
           PUBLISHABLE_MODULES=(
             mapconductor-icons
-            mapconductor-marker-native-strategy
-            mapconductor-marker-strategy
+            mapconductor-marker-clustering
+            mapconductor-heatmap
             mapconductor-bom
             mapconductor-core
             mapconductor-for-arcgis
