@@ -24,10 +24,7 @@ val moduleInfo = mapOf(
     "for-maplibre" to getModuleVersion(":mapconductor-for-maplibre"),
     "icons" to getModuleVersion(":mapconductor-icons"),
     "heatmap" to getModuleVersion(":mapconductor-heatmap"),
-    "tile-server" to getModuleVersion(":mapconductor-tile-server"),
     "marker-clustering" to getModuleVersion(":mapconductor-marker-clustering"),
-    "marker-native-strategy" to getModuleVersion(":mapconductor-marker-native-strategy"),
-    "marker-strategy" to getModuleVersion(":mapconductor-marker-strategy")
 )
 
 // Function to get version from a module's gradle.properties or fallback to root version
