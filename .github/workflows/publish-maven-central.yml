@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Write gradle.properties
         run: |
@@ -85,6 +88,7 @@ jobs:
             android-for-googlemaps
             android-for-here
             android-for-mapbox
+            android-for-maplibre
           )
 
           GROUP_ID="com.mapconductor"
