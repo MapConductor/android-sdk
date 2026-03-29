@@ -47,10 +47,10 @@ jobs:
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > "$HOME/secring.gpg"
           gpg --batch --import "$HOME/secring.gpg"
 
-      - name: Install Android NDK $NDK_VERSION
-        uses: android-actions/setup-android@v3
-        with:
-          packages: "build-tools;36.0.0 ndk;${{ env.NDK_VERSION }} platform-tools platforms;android-35"
+      # - name: Install Android NDK $NDK_VERSION
+      #   uses: android-actions/setup-android@v3
+      #   with:
+      #     packages: "build-tools;36.0.0 ndk;${{ env.NDK_VERSION }} platform-tools platforms;android-35"
 
       - name: Fetch HERE SDK mock artifact
         run: |
