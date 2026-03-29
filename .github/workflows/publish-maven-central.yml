@@ -76,15 +76,15 @@ jobs:
           set -uo pipefail
 
           PUBLISHABLE_MODULES=(
-            mapconductor-icons
-            mapconductor-marker-clustering
-            mapconductor-heatmap
+            android-icons
+            android-marker-clustering
+            android-heatmap
             mapconductor-bom
-            mapconductor-core
-            mapconductor-for-arcgis
-            mapconductor-for-googlemaps
-            mapconductor-for-here
-            mapconductor-for-mapbox
+            android-sdk-core
+            android-for-arcgis
+            android-for-googlemaps
+            android-for-here
+            android-for-mapbox
           )
 
           GROUP_ID="com.mapconductor"

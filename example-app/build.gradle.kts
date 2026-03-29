@@ -207,14 +207,14 @@ dependencies {
     releaseImplementation(libs.mapconductor.marker.clustering)
 
     debugImplementation(project(":android-sdk-core"))
-    debugImplementation(project(":mapconductor-icons"))
+    debugImplementation(project(":android-icons"))
     debugImplementation(project(":android-for-googlemaps"))
     debugImplementation(project(":android-for-here"))
     debugImplementation(project(":android-for-mapbox"))
     debugImplementation(project(":android-for-arcgis"))
     debugImplementation(project(":android-for-maplibre"))
-    debugImplementation(project(":mapconductor-marker-clustering"))
-    debugImplementation(project(":mapconductor-heatmap"))
+    debugImplementation(project(":android-marker-clustering"))
+    debugImplementation(project(":android-heatmap"))
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)

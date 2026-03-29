@@ -71,14 +71,12 @@ tasks.register("allLintChecks") {
 // Publishing tasks for all modules
 val publishableModules = listOf(
     "mapconductor-bom",
-    "mapconductor-core",
-    "mapconductor-for-arcgis",
-    "mapconductor-for-googlemaps",
-    "mapconductor-for-here",
-    "mapconductor-for-mapbox",
-    "mapconductor-icons",
-    "mapconductor-marker-native-strategy",
-    "mapconductor-marker-strategy"
+    "android-core",
+    "android-for-arcgis",
+    "android-for-googlemaps",
+    "android-for-here",
+    "android-for-mapbox",
+    "android-icons"
 )
 
 tasks.register("publishAllLocal") {

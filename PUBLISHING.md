@@ -13,8 +13,6 @@ The following modules are configured for publishing:
 - `for-here` - HERE Maps implementation
 - `for-mapbox` - Mapbox implementation
 - `icons` - Reusable marker icon components
-- `marker-native-strategy` - High-performance C++ marker strategies
-- `marker-strategy` - Advanced marker rendering strategies
 
 ## Publishing Destinations
 
@@ -27,7 +25,7 @@ For local testing and development:
 ./gradlew publishAllLocal
 
 # Publish individual module
-./gradlew :mapconductor-core:publishToMavenLocal
+./gradlew :android-sdk-core:publishToMavenLocal
 ```
 
 Published artifacts will be available in `~/.m2/repository/com/mapconductor/`
@@ -59,7 +57,7 @@ export GITHUB_TOKEN=your-github-personal-access-token
 ./gradlew publishAllToGitHub
 
 # Publish individual module
-./gradlew :mapconductor-core:publishReleasePublicationToGitHubPackagesRepository
+./gradlew :android-sdk-core:publishReleasePublicationToGitHubPackagesRepository
 ```
 
 ### 3. Maven Central (Central Portal)
@@ -95,7 +93,7 @@ export OSSRH_PASSWORD=your-central-portal-password
 ./gradlew publishAllPublicationsToCentralPortal
 
 # For individual module submissions
-./gradlew :mapconductor-core:publishReleasePublicationToCentralPortal
+./gradlew :android-sdk-core:publishReleasePublicationToCentralPortal
 ```
 
 #### Verification
@@ -205,7 +203,7 @@ Check generated artifacts before publishing:
 ./gradlew build
 
 # Check artifacts in build/outputs/aar/
-ls mapconductor-core/build/outputs/aar/
+ls android-sdk-core/build/outputs/aar/
 ```
 
 ### Clean Build

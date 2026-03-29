@@ -161,5 +161,5 @@ dependencies {
         ),
     )
 
-    implementation(project(":mapconductor-heatmap"))
+    implementation(project(":android-heatmap"))
 }

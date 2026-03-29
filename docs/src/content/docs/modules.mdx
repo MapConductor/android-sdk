@@ -5,7 +5,7 @@ title: Modules Overview
 import BOMImplementationExample from '~/components/modules/BOMImplementationExample.astro';
 import ModuleConfigurationExample from '~/components/modules/ModuleConfigurationExample.astro';
 
-MapConductor is split into multiple Gradle modules so that you can depend only on what you need. This page summarizes each `mapconductor-xxx` module in v{BOM_MODULE_VERSION}.
+MapConductor is split into multiple Gradle modules so that you can depend only on what you need. This page summarizes each `android-xxx` module in v{BOM_MODULE_VERSION}.
 
 ## Core and BOM
 
@@ -18,7 +18,7 @@ Bill of Materials for all MapConductor artifacts.
 
 <BOMImplementationExample />
 
-### `mapconductor-core`
+### `android-sdk-core`
 
 Core runtime and shared abstractions:
 
@@ -28,34 +28,34 @@ Core runtime and shared abstractions:
 - Plugin / capability registry: `MapServiceRegistry` (via `LocalMapServiceRegistry`)
 - Overlay primitives: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
-All other modules build on top of `mapconductor-core`.
+All other modules build on top of `android-sdk-core`.
 
 ## Map Provider Integrations
 
 Provider-specific modules implement the unified APIs for each SDK:
 
-### `mapconductor-for-googlemaps`
+### `android-for-googlemaps`
 
 - `GoogleMapView` composable
 - `GoogleMapViewState`
 - Google Maps–specific overlay controllers
 
-### `mapconductor-for-mapbox`
+### `android-for-mapbox`
 
 - `MapboxMapView` composable
 - `MapboxViewState`
 
-### `mapconductor-for-here`
+### `android-for-here`
 
 - `HereMapView` composable
 - `HereViewState`
 
-### `mapconductor-for-arcgis`
+### `android-for-arcgis`
 
 - `ArcGISMapView` composable
 - `ArcGISMapViewState`
 
-### `mapconductor-for-maplibre`
+### `android-for-maplibre`
 
 - `MapLibreMapView` composable
 - `MapLibreViewState`
@@ -68,7 +68,7 @@ Each provider module:
 
 ## Experimental / Utility Modules
 
-### `mapconductor-icons`
+### `android-icons`
 
 Composable marker icons implemented in pure Compose:
 
@@ -76,22 +76,6 @@ Composable marker icons implemented in pure Compose:
 - Info bubble styles (round, tail, etc.)
 
 Useful when you want consistent marker visuals across providers without relying on provider-specific drawables.
-
-### `mapconductor-marker-strategy`
-
-High-level marker rendering strategies:
-
-- Spatial / clustering-like strategies
-- Abstractions for remote-driven marker sets
-
-Designed to work with any provider module via shared marker interfaces and provider-registered capabilities (see [Map Service Registry](/core/service-registry/)).
-
-### `mapconductor-marker-native-strategy`
-
-Native-accelerated strategies for very large marker sets:
-
-- Focus on performance at scale
-- Typically combined with `mapconductor-marker-strategy`
 
 ## Example Applications
 

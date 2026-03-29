@@ -25,3 +25,6 @@
 [submodule "android-marker-clustering"]
 	path = android-marker-clustering
 	url = https://github.com/MapConductor/android-marker-clustering.git
+[submodule "android-icons"]
+	path = android-icons
+	url = https://github.com/MapConductor/android-icons

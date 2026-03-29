@@ -18,7 +18,7 @@ Bill of Materials para todos los artefactos de MapConductor.
 
 <BOMImplementationExample />
 
-### `mapconductor-core`
+### `android-sdk-core`
 
 Runtime central y abstracciones compartidas:
 
@@ -28,34 +28,34 @@ Runtime central y abstracciones compartidas:
 - Registro de plugins/capabilities: `MapServiceRegistry` (vía `LocalMapServiceRegistry`)
 - Primitivas de overlay: `MarkerState`, `PolylineState`, `PolygonState`, `CircleState`, `GroundImageState`
 
-Todos los demás módulos se construyen sobre `mapconductor-core`.
+Todos los demás módulos se construyen sobre `android-sdk-core`.
 
 ## Integraciones de proveedores de mapas
 
 Los módulos específicos de cada SDK implementan la API unificada:
 
-### `mapconductor-for-googlemaps`
+### `android-for-googlemaps`
 
 - Composable `GoogleMapView`
 - `GoogleMapViewState`
 - Controladores de overlays específicos de Google Maps
 
-### `mapconductor-for-mapbox`
+### `android-for-mapbox`
 
 - Composable `MapboxMapView`
 - `MapboxViewState`
 
-### `mapconductor-for-here`
+### `android-for-here`
 
 - Composable `HereMapView`
 - `HereViewState`
 
-### `mapconductor-for-arcgis`
+### `android-for-arcgis`
 
 - Composable `ArcGISMapView`
 - `ArcGISMapViewState`
 
-### `mapconductor-for-maplibre`
+### `android-for-maplibre`
 
 - Composable `MapLibreMapView`
 - `MapLibreViewState`
@@ -68,7 +68,7 @@ Cada módulo de proveedor:
 
 ## Módulos experimentales / utilitarios
 
-### `mapconductor-icons`
+### `android-icons`
 
 Iconos de marcador implementados en Compose puro:
 
@@ -76,22 +76,6 @@ Iconos de marcador implementados en Compose puro:
 - Estilos de burbuja de información (redonda, con cola, etc.)
 
 Útiles cuando necesitas una apariencia de marcadores consistente entre proveedores sin depender de drawables específicos del SDK.
-
-### `mapconductor-marker-strategy`
-
-Estrategias de renderizado de marcadores de alto nivel:
-
-- Estrategias espaciales / similares a clustering
-- Abstracciones para conjuntos de marcadores controlados de forma remota
-
-Diseñado para funcionar con cualquier módulo de proveedor a través de interfaces compartidas y capabilities registradas por el proveedor (ver [Map Service Registry](/es-419/core/service-registry/)).
-
-### `mapconductor-marker-native-strategy`
-
-Estrategias aceleradas de forma nativa para conjuntos muy grandes de marcadores:
-
-- Enfocadas en el rendimiento a gran escala
-- Normalmente se usan junto con `mapconductor-marker-strategy`
 
 ## Aplicaciones de ejemplo
 

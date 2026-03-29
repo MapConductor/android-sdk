@@ -16,15 +16,15 @@ val libraryDescription = "Bill of Materials for MapConductor unified mapping lib
 
 // Module information with their project paths, artifact IDs, and versions
 val moduleInfo = mapOf(
-    "core" to getModuleVersion(":mapconductor-core"),
-    "for-arcgis" to getModuleVersion(":mapconductor-for-arcgis"),
-    "for-googlemaps" to getModuleVersion(":mapconductor-for-googlemaps"),
-    "for-here" to getModuleVersion(":mapconductor-for-here"),
-    "for-mapbox" to getModuleVersion(":mapconductor-for-mapbox"),
-    "for-maplibre" to getModuleVersion(":mapconductor-for-maplibre"),
-    "icons" to getModuleVersion(":mapconductor-icons"),
-    "heatmap" to getModuleVersion(":mapconductor-heatmap"),
-    "marker-clustering" to getModuleVersion(":mapconductor-marker-clustering"),
+    "core" to getModuleVersion(":android-sdk-core"),
+    "for-arcgis" to getModuleVersion(":android-for-arcgis"),
+    "for-googlemaps" to getModuleVersion(":android-for-googlemaps"),
+    "for-here" to getModuleVersion(":android-for-here"),
+    "for-mapbox" to getModuleVersion(":android-for-mapbox"),
+    "for-maplibre" to getModuleVersion(":android-for-maplibre"),
+    "icons" to getModuleVersion(":android-icons"),
+    "heatmap" to getModuleVersion(":android-heatmap"),
+    "marker-clustering" to getModuleVersion(":android-marker-clustering"),
 )
 
 // Function to get version from a module's gradle.properties or fallback to root version
