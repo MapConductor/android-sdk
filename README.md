@@ -109,7 +109,7 @@ This project follows KtLint conventions:
 | GroundImage         | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
 | Heatmap             | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
 | Marker Clustering   | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
-| RasterTileLayer     | &#x2610;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| RasterTileLayer     | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
 | VectorTileLayer     | &#x2610;    | &#x2610; | &#x2610; | &#x2610; | &#x2610; |
 
 
