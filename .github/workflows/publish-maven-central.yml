@@ -144,8 +144,18 @@ jobs:
             exit 0
           fi
 
+          # Read coreLibraryVersion from android-sdk-core/gradle.properties and inject
+          # as a Gradle project property so submodule build scripts can reference it
+          # regardless of variable declaration order in their build.gradle.kts.
+          CORE_LIBRARY_VERSION=$(grep '^libraryVersion=' android-sdk-core/gradle.properties | cut -d'=' -f2 | tr -d '\r')
+          if [[ -z "$CORE_LIBRARY_VERSION" ]]; then
+            echo "ERROR: Could not read libraryVersion from android-sdk-core/gradle.properties"
+            exit 1
+          fi
+          echo "Injecting coreLibraryVersion=${CORE_LIBRARY_VERSION}"
+
           echo "Publishing modules with tasks: ${publish_tasks[*]}"
-          ./gradlew --no-daemon "${publish_tasks[@]}"
+          ./gradlew --no-daemon -PcoreLibraryVersion="${CORE_LIBRARY_VERSION}" "${publish_tasks[@]}"
           gradle_exit=$?
           if [[ $gradle_exit -ne 0 ]]; then
             echo "Gradle publish failed with exit code $gradle_exit"
