@@ -1,0 +1,27 @@
+[submodule "android-sdk-core"]
+	path = android-sdk-core
+	url = https://github.com/MapConductor/android-sdk-core
+[submodule "android-for-arcgis"]
+	path = android-for-arcgis
+	url = https://github.com/MapConductor/android-for-arcgis
+[submodule "android-for-googlemaps"]
+	path = android-for-googlemaps
+	url = https://github.com/MapConductor/android-for-googlemaps
+[submodule "android-for-maplibre"]
+	path = android-for-maplibre
+	url = https://github.com/MapConductor/android-for-maplibre
+[submodule "android-for-mapbox"]
+	path = android-for-mapbox
+	url = https://github.com/MapConductor/android-for-mapbox
+[submodule "android-for-here"]
+	path = android-for-here
+	url = https://github.com/MapConductor/android-for-here
+[submodule "android-heatmap"]
+	path = android-heatmap
+	url = https://github.com/MapConductor/android-heatmap
+[submodule "android-sdk-icons"]
+	path = android-sdk-icons
+	url = https://github.com/MapConductor/android-sdk-icons
+[submodule "android-marker-clustering"]
+	path = android-marker-clustering
+	url = https://github.com/MapConductor/android-marker-clustering.git

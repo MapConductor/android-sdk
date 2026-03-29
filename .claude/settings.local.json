@@ -22,7 +22,13 @@
       "Bash(xargs jar tf:*)",
       "Bash(npm run build:*)",
       "WebFetch(domain:medium.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(do echo:*)",
+      "Read(//Users/masashi/android-sdk/$m/**)",
+      "Bash(done)",
+      "Bash(do)",
+      "Read(//Users/masashi/android-sdk/$module/**)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

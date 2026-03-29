@@ -127,31 +127,31 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime)
 
-    implementation(project(":mapconductor-core"))
+    implementation(project(":android-sdk-core"))
 
     // Google Maps SDK
     implementation(libs.play.services.maps)
-    implementation(project(":mapconductor-for-googlemaps"))
+    implementation(project(":android-for-googlemaps"))
 
     // Mapbox SDK
     implementation(libs.mapbox.android)
-    implementation(project(":mapconductor-for-mapbox"))
+    implementation(project(":android-for-mapbox"))
 //    implementation("com.mapbox.plugin:maps-locationcomponent:11.17.0")
 
     // MapLibre SDK
     implementation(libs.maplibre.sdk)
     implementation(libs.maplibre.annotation)
-    implementation(project(":mapconductor-for-maplibre"))
+    implementation(project(":android-for-maplibre"))
 
     // arcgis
-    implementation(project(":mapconductor-for-arcgis"))
+    implementation(project(":android-for-arcgis"))
     implementation(libs.arcgis.maps.kotlin)
     implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
     implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
     implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     // Here Maps SDK
-    implementation(project(":mapconductor-for-here"))
+    implementation(project(":android-for-here"))
     implementation(
         fileTree(
             mapOf(
@@ -161,7 +161,5 @@ dependencies {
         ),
     )
 
-//    implementation(project(":mapconductor-marker-strategy"))
-//    implementation(project(":mapconductor-marker-native-strategy"))
     implementation(project(":mapconductor-heatmap"))
 }

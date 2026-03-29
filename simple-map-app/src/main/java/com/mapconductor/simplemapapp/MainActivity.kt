@@ -21,27 +21,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mapconductor.arcgis.map.ArcGISMapView
+import com.mapconductor.arcgis.map.rememberArcGISMapViewState
+import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.groundimage.GroundImage
+import com.mapconductor.core.groundimage.GroundImageState
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPosition
+import com.mapconductor.core.marker.DefaultMarkerIcon
+import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.Markers
 import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
+import com.mapconductor.core.polyline.Polyline
+import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.googlemaps.GoogleMapDesign
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.heatmap.HeatmapOverlay
 import com.mapconductor.heatmap.HeatmapPoints
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.rememberHereMapViewState
 import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.rememberMapboxMapViewState
+import com.mapconductor.maplibre.MapLibreDesign
+import com.mapconductor.maplibre.MapLibreMapView
+import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.postoffice.HeatmapLayerPageViewModel
 import com.mapconductor.simplemapapp.postoffice.HeatmapLayerViewModelInterface
 import com.mapconductor.simplemapapp.postoffice.PostOfficeDataLoader
-import com.mapconductor.simplemapapp.postoffice.StarbucksHI_list
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 
 class MainActivity : ComponentActivity() {
@@ -49,10 +68,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val image = ContextCompat.getDrawable(this, R.drawable.overlayimg)!!
+
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MarkerExample(
+                    TokyoExample(
                         modifier =
                             Modifier
                                 .padding(innerPadding)
@@ -63,78 +84,232 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+val HND_AIR_PORT = GeoPoint.fromLatLong(35.548852, 139.784086)
+val SFO_AIR_PORT = GeoPoint.fromLatLong(37.615223, -122.389979)
+val HNL_AIR_PORT = GeoPoint.fromLatLong( 21.324513, -157.925074)
+val airpots = listOf(
+    HND_AIR_PORT,
+    HNL_AIR_PORT,
+    SFO_AIR_PORT
+)
+
+
+val goryokaku = listOf(
+    GeoPoint.fromLatLong(41.79883, 140.75675),
+    GeoPoint.fromLatLong(41.799240000000005, 140.75875000000002),
+    GeoPoint.fromLatLong(41.797650000000004, 140.75905),
+    GeoPoint.fromLatLong(41.79637, 140.76018000000002),
+    GeoPoint.fromLatLong(41.79567, 140.75845),
+    GeoPoint.fromLatLong(41.794470000000004, 140.75714000000002),
+    GeoPoint.fromLatLong(41.795010000000005, 140.75611),
+    GeoPoint.fromLatLong(41.79477000000001, 140.75484),
+    GeoPoint.fromLatLong(41.79576, 140.75475),
+    GeoPoint.fromLatLong(41.796150000000004, 140.75364000000002),
+    GeoPoint.fromLatLong(41.79744, 140.75454000000002),
+    GeoPoint.fromLatLong(41.79909000000001, 140.75465),
+    GeoPoint.fromLatLong(41.79883, 140.75673),
+)
 
 @Composable
-fun MarkerExample(modifier: Modifier = Modifier) {
+fun TokyoExample(modifier: Modifier = Modifier) {
     var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
 
+    val center = GeoPoint(
+        latitude = 35.6762,
+        longitude = 139.6503,
+    )
+
     val mapViewState =
-        rememberMapboxMapViewState(
+        rememberHereMapViewState(
             cameraPosition =
                 MapCameraPosition(
-                    position =
-                        GeoPoint(
-                            latitude = 21.282048,
-                            longitude = -157.713041,
-                        ),
-                    zoom = 11.0,
+                    position = center,
+                    zoom = 2.0,
                 ),
         )
-    val markers =
-        remember {
-            StarbucksHI_list.map { store ->
-                store.copy(
-                    draggable = true,
-                    onClick = {
-                        selectedMarker = it
-                    },
-                )
-            }
-        }
 
-    MapboxMapView(
+    val markerState = remember { MarkerState(
+        position = center,
+        icon = DefaultMarkerIcon().copy(
+            label = "Tokyo",
+        ),
+        onClick = {
+            selectedMarker = it
+        }
+    ) }
+
+    HereMapView(
         state = mapViewState,
         modifier = modifier,
     ) {
-        Markers(markers)
+        Marker(markerState)
 
         selectedMarker?.let {
             InfoBubble(
                 marker = it,
-                bubbleColor = Color.Black,
             ) {
-                Column {
-                    Text(
-                        text = GeoPoint.from(it.position).toUrlValue(),
-                        color = Color.White,
-                    )
-                    Button(
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                    Color(
-                                        red = 214,
-                                        green = 180,
-                                        blue = 255,
-                                    ),
-                                contentColor = Color.Black,
-                            ),
-                        onClick = {},
-                    ) {
-                        Text(
-                            text = "Change Icon Color",
-                        )
-                    }
-                }
+                Text("Hello, world!")
             }
         }
     }
 }
 
 @Composable
+fun MapviewExample(modifier: Modifier = Modifier) {
+    val initCameraPosition = MapCameraPosition(
+        position = GeoPoint(37.422198, -122.085377),
+        zoom = 18.0,
+        tilt = 60.0,
+        bearing = 30.0,
+    )
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initCameraPosition,
+    )
+
+    GoogleMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+    }
+}
+
+@Composable
+fun MarkerExample(modifier: Modifier = Modifier) {
+    var selectedMarker by remember { mutableStateOf<MarkerState?>(null) }
+
+    val initCameraPosition = MapCameraPosition(
+        position = GeoPoint(37.422198, -122.085377),
+        zoom = 18.0,
+    )
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initCameraPosition,
+    )
+    val markerState = remember { MarkerState(
+        position = GeoPoint(37.422198, -122.085377),
+        icon = DefaultMarkerIcon().copy(
+            label = "GoogleMaps"
+        ),
+        onClick = {
+            selectedMarker = it
+        },
+        ) }
+
+    GoogleMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+//        selectedMarker?.let {
+//            InfoBubble(
+//                marker = it,
+//            ) {
+//                Text("Hello, world!")
+//            }
+//        }
+
+        Marker(markerState)
+    }
+}
+
+@Composable
+fun PolylineExample(modifier: Modifier = Modifier) {
+    val initCameraPosition = MapCameraPosition(
+        position = GeoPoint(41.79,140.75),
+        zoom = 3.0,
+    )
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initCameraPosition,
+    )
+
+    val polylineState = remember { PolylineState(
+        points = airpots,
+        strokeColor = Color.Blue.copy(alpha = 0.5f),
+        strokeWidth = 4.dp,
+        geodesic = true,
+    ) }
+
+    GoogleMapView(mapViewState) {
+        Polyline(polylineState)
+    }
+}
+@Composable
+fun CirleExample(modifier: Modifier = Modifier) {
+    val initCameraPosition = MapCameraPosition(
+        position = GeoPoint(37.422198, -122.085377),
+        zoom = 17.0,
+    )
+    val mapViewState = rememberGoogleMapViewState(
+        cameraPosition = initCameraPosition,
+    )
+    val circleState = remember { CircleState(
+        center = GeoPoint(37.422198, -122.085377),
+        radiusMeters = 50.0,
+        fillColor = Color.Blue.copy(alpha = 0.5f),
+    )
+    }
+
+    GoogleMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        Circle(circleState)
+    }
+}
+
+@Composable
+fun PolygonExample(modifier: Modifier = Modifier) {
+    val initCameraPosition = MapCameraPosition(
+        position = GeoPoint(41.79,140.75),
+        zoom = 14.0,
+//        tilt = 60.0,
+//        bearing = 30.0,
+    )
+    val mapViewState = rememberHereMapViewState(
+        cameraPosition = initCameraPosition,
+    )
+
+    val polygonState = remember { PolygonState(
+        points = goryokaku,
+        strokeColor = Color.Blue.copy(alpha = 0.5f),
+        fillColor =  Color.Red.copy(alpha = 0.7f),
+    ) }
+
+    HereMapView(mapViewState) {
+        Polygon(polygonState)
+    }
+}
+
+@Composable
+fun GroundImageExample(modifier: Modifier = Modifier, image: Drawable) {
+    val initCameraPosition = MapCameraPosition(
+        position = GeoPoint(51.511649,-0.100761),
+        zoom = 11.0,
+    )
+    val mapViewState = rememberArcGISMapViewState(
+        cameraPosition = initCameraPosition,
+    )
+
+    val groundImageState = remember { GroundImageState(
+        bounds = GeoRectBounds(
+            southWest = GeoPoint.fromLatLong(51.476747, -0.167729),
+            northEast = GeoPoint.fromLatLong(51.546550,-0.033792),
+        ),
+        image = image,
+        opacity = 0.5f,
+    )
+    }
+
+    ArcGISMapView(
+        state = mapViewState,
+        modifier = modifier,
+    ) {
+        GroundImage(groundImageState)
+    }
+}
+
+@Composable
 fun HolePolygonExample(modifier: Modifier = Modifier) {
     val mapViewState =
-        rememberHereMapViewState(
+        rememberMapLibreMapViewState(
             cameraPosition =
                 MapCameraPosition(
                     position = GeoPoint(43.06050568387817, 141.35374551567804),
@@ -181,7 +356,7 @@ fun HolePolygonExample(modifier: Modifier = Modifier) {
 
 //    val polygonState2 = remember { tokyoPolygonState }
 
-    HereMapView(
+    MapLibreMapView(
         state = mapViewState,
         modifier = modifier,
     ) {
@@ -326,14 +501,14 @@ fun HeatmapExample(modifier: Modifier = Modifier) {
         }
     val mapViewState = rememberHereMapViewState(cameraPosition = camera)
 
-    HereMapView(
-        state = mapViewState,
-        modifier = modifier,
-    ) {
-        HeatmapOverlay(
-            trackPointUpdates = false,
-        ) {
-            HeatmapPoints(points)
-        }
-    }
+//    HereMapView(
+//        state = mapViewState,
+//        modifier = modifier,
+//    ) {
+//        HeatmapOverlay(
+//            trackPointUpdates = false,
+//        ) {
+//            HeatmapPoints(points)
+//        }
+//    }
 }
