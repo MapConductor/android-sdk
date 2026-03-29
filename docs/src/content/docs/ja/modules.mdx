@@ -77,6 +77,28 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 
 地図SDK固有の drawable に依存せずに、地図SDK間で一貫したマーカービジュアルが必要な場合に便利です。
 
+### `android-heatmap`
+
+地図実装非依存なヒートマップオーバーレイ:
+
+- `HeatmapOverlay` Composable
+- バッチ更新用の `HeatmapPoints`
+- 動的プロパティ変更のための `HeatmapOverlayState`
+- カスタム `HeatmapGradient` サポート
+
+タイルベースのラスターレイヤーを通じてすべての地図プロバイダで動作します。詳しくは [ヒートマップ](/ja/experimental/heatmap/) を参照してください。
+
+### `android-marker-clustering`
+
+すべての地図プロバイダに対応した自動マーカークラスタリング:
+
+- `MarkerClusterGroup` Composable
+- クラスタリング動作設定のための `MarkerClusterGroupState`
+- カスタム `clusterIconProvider` サポート
+- ズーム/パンアニメーション
+
+詳しくは [マーカークラスタリング](/ja/experimental/marker-clustering/) を参照してください。
+
 ## 例示アプリケーション
 
 ### `example-app`

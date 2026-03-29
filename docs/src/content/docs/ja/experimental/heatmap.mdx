@@ -1,0 +1,120 @@
+---
+title: "ヒートマップ"
+---
+
+`android-heatmap` モジュールは、MapConductor 用の地図実装非依存なヒートマップオーバーレイを提供します。
+タイルベースのラスターレイヤーとしてヒートマップデータをレンダリングするため、あらゆる地図プロバイダ（Google Maps、MapLibre、Mapbox、ArcGIS、HERE など）で動作します。
+
+## インストール
+
+```kotlin
+dependencies {
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:heatmap")
+
+    // 地図プロバイダを選択
+    implementation("com.mapconductor:for-googlemaps")
+}
+```
+
+## 基本的な使い方
+
+任意の `XxxMapView` のコンテンツブロック内に `HeatmapOverlay` を配置し、`HeatmapPoint` でポイントを追加します:
+
+```kotlin
+XxxMapView(...) {
+    HeatmapOverlay(
+        radiusPx = 20,
+        opacity = 0.7,
+    ) {
+        HeatmapPoint(
+            position = GeoPoint(latitude = 35.6762, longitude = 139.6503),
+            weight = 1.0,
+        )
+        HeatmapPoint(
+            position = GeoPoint(latitude = 35.6895, longitude = 139.6917),
+            weight = 2.5,
+        )
+    }
+}
+```
+
+## バッチポイント
+
+大規模なデータセットには、`HeatmapPoints` を使って一括更新します:
+
+```kotlin
+val pointStates: List<HeatmapPointState> = remember { buildPointList() }
+
+XxxMapView(...) {
+    HeatmapOverlay(radiusPx = 20) {
+        HeatmapPoints(pointStates)
+    }
+}
+```
+
+## 動的なステート管理
+
+`HeatmapOverlayState` を使うとランタイムでヒートマップのプロパティを変更できます:
+
+```kotlin
+val heatmapState = remember {
+    HeatmapOverlayState(
+        radiusPx = 20,
+        opacity = 0.7,
+        gradient = HeatmapGradient.DEFAULT,
+    )
+}
+
+// 動的に変更
+heatmapState.radiusPx = 30
+heatmapState.opacity = 0.5
+
+XxxMapView(...) {
+    HeatmapOverlay(state = heatmapState) {
+        HeatmapPoints(pointStates)
+    }
+}
+```
+
+## カスタムグラデーション
+
+```kotlin
+val gradient = HeatmapGradient(
+    listOf(
+        HeatmapGradientStop(position = 0.0, color = Color.argb(0, 0, 0, 255)),
+        HeatmapGradientStop(position = 0.5, color = Color.rgb(0, 255, 0)),
+        HeatmapGradientStop(position = 1.0, color = Color.rgb(255, 0, 0)),
+    )
+)
+
+val heatmapState = remember {
+    HeatmapOverlayState(gradient = gradient)
+}
+```
+
+## APIリファレンス
+
+### HeatmapOverlay
+
+| パラメータ | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `radiusPx` | `Int` | `20` | 各ポイントのぼかし半径（ピクセル） |
+| `opacity` | `Double` | `0.7` | レイヤーの不透明度（0.0〜1.0） |
+| `gradient` | `HeatmapGradient` | `HeatmapGradient.DEFAULT` | カラーグラデーション |
+| `maxIntensity` | `Double?` | `null` | 正規化の最大強度（null の場合は自動計算） |
+
+### HeatmapOverlayState
+
+| プロパティ | 型 | デフォルト |
+|---|---|---|
+| `radiusPx` | `Int` | `20` |
+| `opacity` | `Double` | `0.7` |
+| `gradient` | `HeatmapGradient` | `HeatmapGradient.DEFAULT` |
+| `maxIntensity` | `Double?` | `null` |
+| `weightProvider` | `(HeatmapPointState) -> Double` | `{ it.weight }` |
+
+### HeatmapGradient.DEFAULT
+
+位置 0.2 のグリーン（`#66E100`）→ 位置 1.0 のレッド（`#FF0000`）。

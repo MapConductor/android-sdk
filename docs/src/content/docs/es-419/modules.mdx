@@ -77,6 +77,28 @@ Iconos de marcador implementados en Compose puro:
 
 Útiles cuando necesitas una apariencia de marcadores consistente entre proveedores sin depender de drawables específicos del SDK.
 
+### `android-heatmap`
+
+Overlay de mapa de calor independiente de la implementación:
+
+- Composable `HeatmapOverlay`
+- `HeatmapPoints` para actualizaciones en lote
+- `HeatmapOverlayState` para cambios dinámicos de propiedades
+- Soporte de `HeatmapGradient` personalizado
+
+Funciona con cualquier proveedor de mapas mediante una capa raster basada en tiles. Ver [Heatmap](/es-419/experimental/heatmap/).
+
+### `android-marker-clustering`
+
+Agrupación automática de marcadores para todos los proveedores:
+
+- Composable `MarkerClusterGroup`
+- `MarkerClusterGroupState` para la configuración del comportamiento
+- Soporte de `clusterIconProvider` personalizado
+- Animaciones de zoom/paneo
+
+Ver [Marker Clustering](/es-419/experimental/marker-clustering/).
+
 ## Aplicaciones de ejemplo
 
 ### `example-app`

@@ -1,0 +1,111 @@
+---
+title: "Marker Clustering"
+---
+
+The `android-marker-clustering` module provides automatic marker clustering for MapConductor.
+It groups nearby markers into clusters as you zoom out, and expands them back into individual markers as you zoom in.
+Works with any map provider (Google Maps, MapLibre, Mapbox, ArcGIS, HERE, etc.).
+
+## Installation
+
+```kotlin
+dependencies {
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:marker-clustering")
+
+    // Choose your map provider
+    implementation("com.mapconductor:for-googlemaps")
+}
+```
+
+## Basic Usage
+
+Wrap your markers with `MarkerClusterGroup` inside any `XxxMapView` content block:
+
+```kotlin
+val markerStates: List<MarkerState> = remember { buildMarkerList() }
+
+XxxMapView(...) {
+    MarkerClusterGroup<ActualMarker>(
+        state = remember { MarkerClusterGroupState() },
+        markers = markerStates,
+    )
+}
+```
+
+> Replace `ActualMarker` with the map-specific marker type for your provider
+> (e.g. `Marker` for Google Maps, `Symbol` for MapLibre).
+
+## Configuring Cluster Behavior
+
+Use `MarkerClusterGroupState` to configure clustering behavior:
+
+```kotlin
+val clusterState = remember {
+    MarkerClusterGroupState<ActualMarker>(
+        clusterRadiusPx = 50.0,
+        minClusterSize = 2,
+        onClusterClick = { cluster ->
+            // handle cluster tap
+        },
+    )
+}
+
+XxxMapView(...) {
+    MarkerClusterGroup(
+        state = clusterState,
+        markers = markerStates,
+    )
+}
+```
+
+## Custom Cluster Icon
+
+Provide a `clusterIconProvider` lambda to render a custom icon for each cluster:
+
+```kotlin
+val clusterState = remember {
+    MarkerClusterGroupState<ActualMarker>(
+        clusterIconProvider = { count ->
+            DefaultMarkerIcon(
+                fillColor = Color.Blue,
+                label = count.toString(),
+                labelTextColor = Color.White,
+            )
+        },
+    )
+}
+```
+
+## Extra Content Inside a Cluster Group
+
+Add extra overlays alongside clustered markers using the `content` lambda:
+
+```kotlin
+XxxMapView(...) {
+    MarkerClusterGroup(
+        state = clusterState,
+        markers = markerStates,
+    ) {
+        // Additional composables rendered alongside the cluster group
+        Circle(circleState)
+    }
+}
+```
+
+## API Reference
+
+### MarkerClusterGroupState
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `clusterRadiusPx` | `Double` | `50.0` | Pixel radius within which markers are clustered |
+| `minClusterSize` | `Int` | `2` | Minimum number of markers to form a cluster |
+| `expandMargin` | `Double` | — | Extra margin when expanding clusters |
+| `clusterIconProvider` | `(Int) -> MarkerIconInterface` | Default circle badge | Returns an icon for the given cluster size |
+| `onClusterClick` | `((MarkerCluster) -> Unit)?` | `null` | Called when a cluster marker is tapped |
+| `enableZoomAnimation` | `Boolean` | `false` | Animate markers on zoom change |
+| `enablePanAnimation` | `Boolean` | `false` | Animate markers on pan |
+| `zoomAnimationDurationMillis` | `Long` | — | Duration of zoom animation |
+| `cameraIdleDebounceMillis` | `Long` | — | Debounce delay before re-clustering after camera stops |

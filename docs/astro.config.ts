@@ -151,17 +151,19 @@ export default defineConfig({
 				// 		{ slug: 'examples/advanced-usage' },
 				// 	],
 				// },
-				// {
-				// 	label: 'Experimental',
-				// 	translations: {
-				// 		ja: '実験的機能',
-				// 	},
-				// 	items: [
-				// 		{ slug: 'experimental/icons' },
-				// 		{ slug: 'experimental/marker-strategy' },
-				// 		{ slug: 'experimental/marker-native-strategy' },
-				// 	],
-				// },
+				{
+					label: 'Experimental',
+					translations: {
+						ja: '実験的機能',
+					},
+					items: [
+						{ slug: 'experimental/heatmap' },
+						{ slug: 'experimental/marker-clustering' },
+						{ slug: 'experimental/icons' },
+						{ slug: 'experimental/marker-strategy' },
+						{ slug: 'experimental/marker-native-strategy' },
+					],
+				},
 			],
 			plugins: [
 				starlightMermaid({

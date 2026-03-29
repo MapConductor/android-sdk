@@ -28,7 +28,9 @@
       "Bash(done)",
       "Bash(do)",
       "Read(//Users/masashi/android-sdk/$module/**)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(git stash:*)",
+      "Bash(ls /Users/masashi/android-sdk/mapconductor-for-*/README.md /Users/masashi/android-sdk/mapconductor-for-*/docs/)"
     ],
     "deny": [],
     "ask": []

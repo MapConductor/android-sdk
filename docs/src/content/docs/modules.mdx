@@ -77,6 +77,28 @@ Composable marker icons implemented in pure Compose:
 
 Useful when you want consistent marker visuals across providers without relying on provider-specific drawables.
 
+### `android-heatmap`
+
+Map-implementation-agnostic heatmap overlay:
+
+- `HeatmapOverlay` composable
+- `HeatmapPoints` for batch point updates
+- `HeatmapOverlayState` for dynamic property changes
+- Custom `HeatmapGradient` support
+
+Works with any map provider via a tile-based raster layer. See [Heatmap](/experimental/heatmap/).
+
+### `android-marker-clustering`
+
+Automatic marker clustering across all map providers:
+
+- `MarkerClusterGroup` composable
+- `MarkerClusterGroupState` for behavior configuration
+- Custom `clusterIconProvider` support
+- Zoom/pan animations
+
+See [Marker Clustering](/experimental/marker-clustering/).
+
 ## Example Applications
 
 ### `example-app`

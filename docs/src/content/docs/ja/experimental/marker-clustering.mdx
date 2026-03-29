@@ -1,0 +1,111 @@
+---
+title: "マーカークラスタリング"
+---
+
+`android-marker-clustering` モジュールは、MapConductor 用の自動マーカークラスタリングを提供します。
+ズームアウト時に近くのマーカーをクラスターにまとめ、ズームイン時に個別のマーカーとして展開します。
+あらゆる地図プロバイダ（Google Maps、MapLibre、Mapbox、ArcGIS、HERE など）で動作します。
+
+## インストール
+
+```kotlin
+dependencies {
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:marker-clustering")
+
+    // 地図プロバイダを選択
+    implementation("com.mapconductor:for-googlemaps")
+}
+```
+
+## 基本的な使い方
+
+任意の `XxxMapView` のコンテンツブロック内でマーカーを `MarkerClusterGroup` でラップします:
+
+```kotlin
+val markerStates: List<MarkerState> = remember { buildMarkerList() }
+
+XxxMapView(...) {
+    MarkerClusterGroup<ActualMarker>(
+        state = remember { MarkerClusterGroupState() },
+        markers = markerStates,
+    )
+}
+```
+
+> `ActualMarker` はお使いのプロバイダに合わせた地図固有のマーカー型に置き換えてください
+> （例: Google Maps の場合は `Marker`、MapLibre の場合は `Symbol`）。
+
+## クラスタリング動作の設定
+
+`MarkerClusterGroupState` でクラスタリングの動作を設定します:
+
+```kotlin
+val clusterState = remember {
+    MarkerClusterGroupState<ActualMarker>(
+        clusterRadiusPx = 50.0,
+        minClusterSize = 2,
+        onClusterClick = { cluster ->
+            // クラスタータップ時の処理
+        },
+    )
+}
+
+XxxMapView(...) {
+    MarkerClusterGroup(
+        state = clusterState,
+        markers = markerStates,
+    )
+}
+```
+
+## カスタムクラスターアイコン
+
+`clusterIconProvider` ラムダでクラスターのカスタムアイコンを描画します:
+
+```kotlin
+val clusterState = remember {
+    MarkerClusterGroupState<ActualMarker>(
+        clusterIconProvider = { count ->
+            DefaultMarkerIcon(
+                fillColor = Color.Blue,
+                label = count.toString(),
+                labelTextColor = Color.White,
+            )
+        },
+    )
+}
+```
+
+## クラスターグループ内の追加コンテンツ
+
+`content` ラムダを使って、クラスタリングされたマーカーと一緒に追加のオーバーレイを表示できます:
+
+```kotlin
+XxxMapView(...) {
+    MarkerClusterGroup(
+        state = clusterState,
+        markers = markerStates,
+    ) {
+        // クラスターグループと共にレンダリングされる追加のコンポーザブル
+        Circle(circleState)
+    }
+}
+```
+
+## APIリファレンス
+
+### MarkerClusterGroupState
+
+| プロパティ | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `clusterRadiusPx` | `Double` | `50.0` | マーカーをクラスター化するピクセル半径 |
+| `minClusterSize` | `Int` | `2` | クラスターを形成する最小マーカー数 |
+| `expandMargin` | `Double` | — | クラスター展開時の追加マージン |
+| `clusterIconProvider` | `(Int) -> MarkerIconInterface` | デフォルトの丸バッジ | クラスターサイズに応じたアイコンを返す |
+| `onClusterClick` | `((MarkerCluster) -> Unit)?` | `null` | クラスターマーカーがタップされたときに呼び出される |
+| `enableZoomAnimation` | `Boolean` | `false` | ズーム変更時にマーカーをアニメーションさせる |
+| `enablePanAnimation` | `Boolean` | `false` | パン時にマーカーをアニメーションさせる |
+| `zoomAnimationDurationMillis` | `Long` | — | ズームアニメーションの継続時間 |
+| `cameraIdleDebounceMillis` | `Long` | — | カメラ停止後に再クラスタリングするまでのデバウンス時間 |

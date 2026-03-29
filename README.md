@@ -1,35 +1,28 @@
 # MapConductor Android SDK
 
-A unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, and ArcGIS. Write once, deploy across all major mapping platforms.
+A unified mapping library that provides a common API for multiple map providers including Google Maps, Mapbox, HERE, ArcGIS, and MapLibre. Write once, deploy across all major mapping platforms.
 
 ## Features
 
-- **🗺️ Multi-Provider Support**: Seamlessly switch between Google Maps, Mapbox, HERE, and ArcGIS with a single API
-- **🎯 Unified Interface**: Common abstractions for markers, circles, polylines, polygons, and ground overlays
-- **⚡ High Performance**: Spatial indexing with hexagonal cells for efficient marker clustering
-- **🔄 Reactive State**: Built on Kotlin StateFlow for reactive UI updates
-- **🎨 Jetpack Compose**: Modern Android UI toolkit integration
+- **Multi-Provider Support**: Seamlessly switch between Google Maps, Mapbox, HERE, ArcGIS, and MapLibre with a single API
+- **Unified Interface**: Common abstractions for markers, circles, polylines, polygons, ground overlays, heatmaps, and marker clustering
+- **Reactive State**: Built on Kotlin StateFlow for reactive UI updates
+- **Jetpack Compose**: Modern Android UI toolkit integration
 
-## Architecture
+## Module Structure
 
-### Module Structure
-
-- **`mapconductor-bom`**: Version managemenet
-- **`core`**: Core abstractions and shared functionality
-- **`for-googlemaps`**: Google Maps implementation
-- **`for-mapbox`**: Mapbox implementation
-- **`for-here`**: HERE Maps implementation
-- **`for-arcgis`**: ArcGIS implementation
-- **`icons`**: Reusable marker icon components
-- **`example-app`**: Comprehensive demo application
-
-### Key Components
-
-- **MapViewControllerInterface**: Abstract controller interface for all map providers
-- **MapViewBase**: Generic Compose-based map view component
-- **Overlay Managers**: Separate managers for markers, circles, polylines, and polygons
-- **ProjectionInterface Utilities**: WebMercator and WGS84 coordinate transformations
-- **HexGeocellInterface**: Spatial indexing system for performance optimization
+| Module | Artifact | Description |
+|---|---|---|
+| `mapconductor-bom` | `com.mapconductor:mapconductor-bom` | Bill of Materials — aligns all module versions |
+| `android-sdk-core` | `com.mapconductor:core` | Core abstractions, geometry types, overlay states |
+| `android-for-googlemaps` | `com.mapconductor:for-googlemaps` | Google Maps implementation |
+| `android-for-mapbox` | `com.mapconductor:for-mapbox` | Mapbox implementation |
+| `android-for-here` | `com.mapconductor:for-here` | HERE Maps implementation |
+| `android-for-arcgis` | `com.mapconductor:for-arcgis` | ArcGIS implementation |
+| `android-for-maplibre` | `com.mapconductor:for-maplibre` | MapLibre implementation |
+| `android-icons` | `com.mapconductor:icons` | Composable marker icons (CircleIcon, FlagIcon, info bubbles) |
+| `android-heatmap` | `com.mapconductor:heatmap` | Map-provider-agnostic heatmap overlay |
+| `android-marker-clustering` | `com.mapconductor:marker-clustering` | Automatic marker clustering across all providers |
 
 ## Quick Start
 
@@ -42,37 +35,53 @@ git clone https://github.com/MapConductor/android-sdk.git
 
 Add `secrets.properties` to the project root from https://github.com/MapConductor/map-sdk-credentials/
 
-### 2. Basic Usage
+### 2. Add Dependencies
 
 ```kotlin
-@Composable
-fun MyMapScreen() {
-    GoogleMapView(
-        modifier = Modifier.fillMaxSize(),
-        onMapReady = { controller ->
-            // Add markers, circles, polylines, etc.
-        }
-    ) { mapState, controller ->
-        // Your map content here
-    }
+dependencies {
+    implementation(platform("com.mapconductor:mapconductor-bom:$version"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:for-googlemaps") // or your chosen provider
 }
 ```
 
-### 3. Switch Map Providers
+### 3. Basic Usage
 
-Simply change the map view component:
+```kotlin
+val mapState = rememberGoogleMapViewState(
+    initialCameraPosition = MapCameraPosition(
+        target = GeoPoint(35.6762, 139.6503),
+        zoom = 12.0,
+    )
+)
+
+GoogleMapView(
+    modifier = Modifier.fillMaxSize(),
+    state = mapState,
+) {
+    Marker(rememberMarkerState(position = GeoPoint(35.6762, 139.6503)))
+    Circle(rememberCircleState(center = GeoPoint(35.6762, 139.6503), radius = 500.0))
+}
+```
+
+### 4. Switch Map Providers
+
+Simply change the map view component — all overlays work unchanged:
 ```kotlin
 // Google Maps
-GoogleMapView { /* ... */ }
+GoogleMapView(state = googleMapState) { /* overlays */ }
 
 // Mapbox
-MapboxMapView { /* ... */ }
+MapboxMapView(state = mapboxState) { /* overlays */ }
 
 // HERE Maps
-HereMapView { /* ... */ }
+HereMapView(state = hereState) { /* overlays */ }
 
 // ArcGIS
-ArcGISMapView { /* ... */ }
+ArcGISMapView(state = arcgisState) { /* overlays */ }
+
+// MapLibre
+MapLibreMapView(state = maplibreState) { /* overlays */ }
 ```
 
 ## Development
@@ -88,18 +97,19 @@ This project follows KtLint conventions:
 ./gradlew allLintChecks
 ```
 
-
 ## Feature Implementation Status
 
-|                 | Google Maps | Mapbox   | Here     | ArcGIS   |
-|-----------------|-------------|----------|----------|----------|
-| Map             | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
-| Marker          | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
-| Circle          | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
-| Polyline        | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
-| Polygon         | &#x2611;    | &#x2611; | &#x2611; | &#x2611; |
-| GroundImage     | &#x2611;    | N/A      | N/A      | N/A      |
-| RasterTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610; |
-| VectorTileLayer | &#x2610;    | &#x2610; | &#x2610; | &#x2610; |
+|                     | Google Maps | Mapbox   | HERE     | ArcGIS   | MapLibre |
+|---------------------|-------------|----------|----------|----------|----------|
+| Map                 | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| Marker              | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| Circle              | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| Polyline            | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| Polygon             | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| GroundImage         | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| Heatmap             | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| Marker Clustering   | &#x2611;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| RasterTileLayer     | &#x2610;    | &#x2611; | &#x2611; | &#x2611; | &#x2611; |
+| VectorTileLayer     | &#x2610;    | &#x2610; | &#x2610; | &#x2610; | &#x2610; |
 
-Note that the click functionality of Polyline and Polygon classes are not implemented yet.
+
