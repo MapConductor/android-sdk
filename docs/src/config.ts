@@ -20,4 +20,4 @@ export const ANDROID_MIN_SDK_VERSION = '26';
 export const ANDROID_TARGET_SDK_VERSION = '35';
 export const JETPACK_COMPOSE_BOM_VERSION = '2025.05.00';
 export const JAVA_VERSION = '17';
-export const SECRETS_GRADLE_PLUGIN_VERSION = "2.0.2";
+export const SECRETS_GRADLE_PLUGIN_VERSION = "2.0.1";
