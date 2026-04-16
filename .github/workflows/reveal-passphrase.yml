@@ -1,0 +1,29 @@
+name: Reveal GPG_PASSPHRASE (encrypted)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reveal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Encrypt GPG_PASSPHRASE with RSA public key
+        run: |
+          cat > /tmp/temp_rsa.pub << 'PUBKEY'
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDkpmWhw3aaYp461jLjh+yxmY7xuOTcEnGl7CE8HF76uaTWll9ISbr2PC4j25QD2Jr6KWl/ckDbo17UbCGNtlObus3bauojlNdI1yAEHI0nM/5Y5+8Z0UPWkmtpVhoZ2WJknx7JnO5Rs273cUzRzWuOAhNYpvtt+l2i70NcXJcRIy6mKLD6rGNcLs48HSv7AYlwIPmYl+PxCSzMeNLH7XbpKVcaecOGdLeNB3hqg5c4oA7V9AnAJSxVNCb3qhSzAWlLiVZSq42LDw2seGo79L21eBa+BTxrA5ZbPS+j2NZWfMrCr8Kh7DBGpDfQiVfjvA++jvA1gCJzwN+k+oLQPSUJ masashi@masashis-MacBook-Air.local
+          PUBKEY
+
+          # SSH公開鍵をPEM形式に変換
+          ssh-keygen -e -f /tmp/temp_rsa.pub -m PKCS8 > /tmp/temp_rsa_pkcs8.pem
+
+          # GPG_PASSPHRASEを暗号化してbase64出力
+          ENCRYPTED=$(echo -n "${{ secrets.GPG_PASSPHRASE }}" \
+            | openssl pkeyutl -encrypt -pubin -inkey /tmp/temp_rsa_pkcs8.pem \
+            | base64 -w 0)
+
+          echo "=== Encrypted GPG_PASSPHRASE (base64) ==="
+          echo "$ENCRYPTED"
+          echo "========================================"
+          echo ""
+          echo "Decrypt with:"
+          echo "  echo '<above>' | base64 -d | openssl pkeyutl -decrypt -inkey ~/.ssh/temp_rsa"
