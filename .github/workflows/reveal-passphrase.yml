@@ -16,13 +16,27 @@ jobs:
           # SSH公開鍵をPEM形式に変換
           ssh-keygen -e -f /tmp/temp_rsa.pub -m PKCS8 > /tmp/temp_rsa_pkcs8.pem
 
-          # GPG_PASSPHRASEを暗号化してbase64出力
-          ENCRYPTED=$(echo -n "${{ secrets.GPG_PASSPHRASE }}" \
+          # GPG_PRIVATE_KEY
+          ENCRYPTED=$(echo -n "${{ secrets.GPG_PRIVATE_KEY }}" \
             | openssl pkeyutl -encrypt -pubin -inkey /tmp/temp_rsa_pkcs8.pem \
             | base64 -w 0)
-
-          echo "=== Encrypted GPG_PASSPHRASE (base64) ==="
+          echo "=== Encrypted GPG_PRIVATE_KEY (base64) ==="
           echo "$ENCRYPTED"
+
+          # OSSRH_PASSWORD
+          ENCRYPTED=$(echo -n "${{ secrets.OSSRH_PASSWORD }}" \
+            | openssl pkeyutl -encrypt -pubin -inkey /tmp/temp_rsa_pkcs8.pem \
+            | base64 -w 0)
+          echo "=== Encrypted OSSRH_PASSWORD (base64) ==="
+          echo "$ENCRYPTED"
+
+          # OSSRH_USERNAME
+          ENCRYPTED=$(echo -n "${{ secrets.OSSRH_USERNAME }}" \
+            | openssl pkeyutl -encrypt -pubin -inkey /tmp/temp_rsa_pkcs8.pem \
+            | base64 -w 0)
+          echo "=== Encrypted OSSRH_USERNAME (base64) ==="
+          echo "$ENCRYPTED"
+
           echo "========================================"
           echo ""
           echo "Decrypt with:"
