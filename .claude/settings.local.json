@@ -30,7 +30,10 @@
       "Read(//Users/masashi/android-sdk/$module/**)",
       "Bash(python3:*)",
       "Bash(git stash:*)",
-      "Bash(ls /Users/masashi/android-sdk/mapconductor-for-*/README.md /Users/masashi/android-sdk/mapconductor-for-*/docs/)"
+      "Bash(ls /Users/masashi/android-sdk/mapconductor-for-*/README.md /Users/masashi/android-sdk/mapconductor-for-*/docs/)",
+      "Read(//Users/masashi/Desktop/ios-sdk/ios-for-googlemaps/**)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && cat \"{}\"')",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && grep -E \"name:|url:\" \"{}\" | head -5')"
     ],
     "deny": [],
     "ask": []
