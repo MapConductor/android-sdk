@@ -1,73 +1,69 @@
 ---
 title: MapConductor Android SDK
 description: Un SDK de mapas unificado para Android que ofrece una API común para múltiples proveedores de mapas
-template: splash
-hero:
-  tagline: Usa una sola API para trabajar con Google Maps, Mapbox, HERE, ArcGIS y MapLibre en tu app Android
-  actions:
-    - text: Empezar
-      link: /es-419/introduction/
-      icon: right-arrow
-      variant: primary
-    - text: Ver en GitHub
-      link: https://github.com/MapConductor/android-sdk
-      icon: external
+head:
+  - tag: title
+    content: description
+template: doc
+editUrl: false
+lastUpdated: false
 ---
 
-import { CardGrid, Card } from '@astrojs/starlight/components';
-import QuickExampleTabs from '~/components/index/QuickExampleTabs.astro';
+import { CardGrid, Card } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import topBanner from "~/assets/top-banner.png";
+import QuickExampleTabs from "~/components/index/QuickExampleTabs.astro";
+import Features from "~/components/index/Features.astro";
+import MapConductorIntroduction from "~/components/index/MapConductorIntroduction.astro";
+import MitouAdvanced from "~/components/index/MitouAdvanced.astro";
+import TopCards from "~/components/index/TopCards.astro";
 
-## ¿Qué es MapConductor?
+<Image src={topBanner} alt="MapConductor — Un SDK de mapas unificado para Android que ofrece una API común para múltiples proveedores de mapas" />
 
-<CardGrid>
-  <Card title="API unificada" icon="puzzle">
-    Escribe el código relacionado con mapas una sola vez y cambia de proveedor cuando lo necesites. Incluso si pasas de Google Maps a Mapbox, no tendrás que reescribir grandes partes de tu base de código.
-  </Card>
-  <Card title="Optimizado para Jetpack Compose" icon="rocket">
-    Diseñado para el desarrollo moderno en Android, con una API pensada específicamente para Jetpack Compose.
-  </Card>
-  <Card title="Varios proveedores compatibles" icon="setting">
-    Ofrece un comportamiento consistente con Google Maps, Mapbox, HERE Maps, ArcGIS y MapLibre.
-  </Card>
-  <Card title="Código abierto" icon="github">
-    Proyecto de código abierto bajo licencia Apache 2.0, desarrollado por la comunidad.
-  </Card>
-</CardGrid>
+<TopCards
+  titleForUnifiedAPI="API unificada"
+  descriptionForUnifiedAPI="Escribe el código relacionado con mapas una sola vez y cambia de proveedor cuando lo necesites. Aunque migres de Google Maps a Mapbox, no tendrás que reescribir grandes partes de tu código."
 
-## Ejemplo rápido
+  titleForJetpackCompose="Optimizado para Android / Jetpack Compose"
+  descriptionForJetpackCompose="Diseñado para el desarrollo moderno en Android, con una API pensada específicamente para Jetpack Compose."
 
-Usar MapConductor es sencillo: combinas `rememberXxxxViewState` con `XxxxView`.
-La parte `Xxxx` cambia entre `GoogleMap`, `Mapbox` y otros proveedores.
-Si quieres cambiar a Mapbox, basta con sustituir `rememberGoogleMapViewState()` por `rememberMapboxMapViewState()`
-y `GoogleMapView` por `MapboxMapView`. El resto del código permanece igual.
+  titleForMultiProviders="Compatibilidad con iOS / SwiftUI"
+  descriptionForMultiProviders="También ofrece soporte para SwiftUI, dirigido a desarrolladores iOS."
 
-| SDK de mapas | hook `mapViewState`              | composable de mapa |
-|-------------|-----------------------------------|--------------------|
-| GoogleMaps  | `rememberGoogleMapViewState`      | `GoogleMapView`    |
-| Mapbox      | `rememberMapboxViewState`         | `MapboxMapView`    |
-| MapLibre    | `rememberMapLibreViewState`       | `MapLibreView`     |
-| HERE        | `rememberHereMapViewState`        | `HereMapView`      |
-| ArcGIS      | `rememberArcGISMapViewState`      | `ArcGISMapView`    |
+  titleForMultititleForOpenSourceProviders="Código abierto"
+  descriptionForOpenSource="Proyecto de código abierto publicado bajo la licencia Apache 2.0, desarrollado por la comunidad."
+/>
 
-<QuickExampleTabs
-  commentForInit="Posición inicial de la cámara en el mapa"
-  commentForMapViewState="Controla el estado visible del mapa a través de este mapViewState"
-  googleMapsAlt="Ejemplo con Google Maps"
-  mapboxAlt="Ejemplo con Mapbox"
-  hereAlt="Ejemplo con HERE"
+# Acerca de MapConductor
+<MapConductorIntroduction
+  text1="Al desarrollar una app de mapas en Android, ¿alguna vez pensaste: 'La parte del mapa se siente demasiado complicada. Ojalá pudiera escribirla con el familiar Jetpack Compose...'? MapConductor hace realidad ese deseo. Con la API que provee MapConductor, puedes expresar fácilmente lo que quieres que haga el mapa mediante UI declarativa."
+  text2="Se admiten múltiples SDKs de mapas: Google Maps, Mapbox, MapLibre, HERE, ArcGIS, todos operados de la misma manera."
+  text3="Incluso para funcionalidades que existen en un SDK de mapas pero no en otro, las hemos implementado nosotros mismos. Es decir, no solo agrupamos las APIs de cada SDK, sino que también construimos lo que falta."
+  text4="Funcionalidades avanzadas como el agrupamiento de marcadores y los mapas de calor también pueden integrarse en pocas líneas."
+  text5="¡Olvídate de tener que lidiar con una sección de mapas complicada en una app que por lo demás desarrollas con Jetpack Compose!"
 />
 
 ## Funcionalidades compatibles
 
-| Función    | Google Maps | Mapbox | HERE | ArcGIS | MapLibre |
-|-----------|-------------|--------|------|--------|----------|
-| Mapa      | ✓           | ✓      | ✓    | ✓      | ✓        |
-| Marcador  | ✓           | ✓      | ✓    | ✓      | ✓        |
-| Círculo   | ✓           | ✓      | ✓    | ✓      | ✓        |
-| Polilínea | ✓           | ✓      | ✓    | ✓      | ✓        |
-| Polígono  | ✓           | ✓      | ✓    | ✓      | ✓        |
-| GroundImage | ✓         | N/A    | N/A  | N/A    | N/A      |
-
-## Empezar
-
-Cuando estés listo para integrar MapConductor en tu app Android, consulta la [Introducción](/es-419/introduction/) y el [Tutorial](/es-419/get-started/).
+<Features
+  titleForUnifiedAPI="MapView con API unificada"
+  descriptionForUnifiedAPI="Soporta Google Maps, Mapbox, HERE Maps, ArcGIS y MapLibre con comportamiento consistente."
+  titleForMarker="Marcadores totalmente personalizables"
+  descriptionForMarker="Cambia fácilmente colores, grosor del borde, etiquetas y agrega imágenes a los marcadores."
+  titleForInfoBubble="InfoBubble escrito en Jetpack Compose"
+  descriptionForInfoBubble="Créalos igual que cualquier otro componente. Puedes incluir botones y más."
+  titleForMarkerCluster="MarkerCluster para agrupar marcadores"
+  descriptionForMarkerCluster="Un práctico MarkerCluster para agrupar muchos marcadores. Soporta visualización animada."
+  titleForCircle="Circle con radio en metros"
+  descriptionForCircle="Especifica el radio en metros para cualquier SDK de mapas (no disponible de forma nativa en algunos SDKs)."
+  titleForPolyline="Polyline para líneas rectas y curvas"
+  descriptionForPolyline="Personaliza colores y grosor, y obtén la posición donde se tocó la línea."
+  titleForPolygon="Polygon para rellenar áreas complejas"
+  descriptionForPolygon="Dibuja polígonos precisos que tienen en cuenta la curvatura de la Tierra simplemente configurando una propiedad."
+  titleForGroundImage="GroundImage para colocar imágenes en áreas específicas"
+  descriptionForGroundImage="Se ajusta automáticamente cuando el mapa se mueve o cambia la escala."
+  titleForHeatmap="HeatMap para visualizar densidad"
+  descriptionForHeatmap="Dibuja un mapa de calor con datos estadísticos como densidad o concentración en pocas líneas."
+  titleForRasterLayer="RasterLayer para mostrar otras imágenes de teselas"
+  descriptionForRasterLayer="Diseñado para soportar cambios de opacidad en todos los SDKs de mapas."
+/>
