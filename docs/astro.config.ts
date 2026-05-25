@@ -13,8 +13,14 @@ export default defineConfig({
 	integrations: [
 		postBuildIntegration(),
 		starlight({
-			title: 'MapConductor',
-			description: 'A unified map SDK for mobile developers',
+			title: {
+				en: "MapConductor — a unified Android maps SDK that lets you work with multiple map providers through a single API",
+				ja: "MapConductor(マップコンダクター) ♪ 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK",
+				"es-419": "MapConductor — Un SDK de mapas unificado para Android que ofrece una API común para múltiples proveedores de mapas",
+			},
+			markdown: {
+				headingLinks: false,
+			},
 			defaultLocale: 'root',
 			locales: {
 				root: {
