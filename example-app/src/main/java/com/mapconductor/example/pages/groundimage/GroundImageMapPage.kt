@@ -63,7 +63,7 @@ fun GroundImageMapPage(
             title = "GroundImage Example",
         ) {
             Column {
-                Text("opacity: ${"%.2f".format(sliderOpacity)}", color = Color.Black)
+                Text("opacity: ${"%.2f".format(sliderOpacity)}")
                 Slider(
                     value = sliderOpacity,
                     onValueChange = { newValue ->
@@ -85,14 +85,6 @@ fun GroundImageMapPage(
                     },
                     valueRange = 0.0f..1.0f, // スライダー範囲
                     steps = 0,
-                    colors =
-                        SliderDefaults.colors(
-                            thumbColor = Color.Black, // つまみの色
-                            activeTrackColor = Color.DarkGray, // 値までのトラック
-                            inactiveTrackColor = Color.LightGray, // 残りのトラック
-                            activeTickColor = Color.Black, // 有効ステップの目盛り
-                            inactiveTickColor = Color.White, // 無効ステップの目盛り
-                        ),
                 )
             }
         }

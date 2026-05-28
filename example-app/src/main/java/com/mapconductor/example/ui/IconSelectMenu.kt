@@ -38,7 +38,7 @@ data class IconItem<T>(
 @Composable
 fun IconSelectMenu(
     itemList: List<IconItem<*>>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(200.dp),
     selectedIndex: Int = 0,
     isDark: Boolean = isSystemInDarkTheme(),
     onSelect: (Int, IconItem<*>) -> Unit = { index, item ->

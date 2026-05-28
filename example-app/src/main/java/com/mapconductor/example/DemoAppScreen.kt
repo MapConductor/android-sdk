@@ -24,6 +24,7 @@ import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.map.tilt.TiltMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
@@ -79,6 +80,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "map-basic",
                 title = "Map",
+            ),
+            SidebarItem(
+                id = "tilt-map",
+                title = "Tilt Map",
             ),
             SidebarItem(
                 id = "simple-info-bubble",
@@ -290,6 +295,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "heatmap-overlay" -> {
                         HeatmapLayerPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "tilt-map" -> {
+                        TiltMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
