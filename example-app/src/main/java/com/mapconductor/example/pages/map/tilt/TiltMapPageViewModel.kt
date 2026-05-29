@@ -25,7 +25,6 @@ interface TiltMapPageViewModelInterface {
     val disableSlider: StateFlow<Boolean>
     var tilt: Double
     val mapViewState: StateFlow<MapViewStateInterface<*>?>
-    val polygons: List<PolygonState>
 
     fun onMapCameraMoveStart(point: GeoPoint)
     fun onMapCameraMoveEnd(point: GeoPoint)
@@ -37,35 +36,14 @@ class DistanceColorPair(
     val color: Color,
 )
 
-class TiltMapPageViewModel(
-    positions: List<DistanceColorPair>,
-) : ViewModel(), TiltMapPageViewModelInterface {
+class TiltMapPageViewModel() : ViewModel(), TiltMapPageViewModelInterface {
 
     override val initCameraPosition =
         MapCameraPosition(
-            position = GeoPoint(0.0, 1.0),
-            zoom = 13.0,
+            position = GeoPoint(25.197138729817727, 55.27429056548046),
+            zoom = 16.5,
         )
     private var currentPosition: MapCameraPosition = initCameraPosition
-
-    override val polygons: List<PolygonState> = positions.map {
-        val points = mutableListOf<GeoPoint>()
-        for (heading in 0 .. 360 step 45) {
-            points.add(
-                Spherical.computeOffset(
-                    origin = initCameraPosition.position,
-                    distance = it.distance,
-                    heading = heading.toDouble(),
-                )
-            )
-        }
-        PolygonState(
-            points = points,
-            fillColor = it.color.copy(alpha = 0.5f),
-            strokeColor = Color.White,
-            strokeWidth = 5.dp,
-        )
-    }
 
     private var _disableSlider: MutableStateFlow<Boolean> = MutableStateFlow<Boolean>(false)
 
