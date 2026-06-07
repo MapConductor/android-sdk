@@ -94,7 +94,7 @@ jobs:
               echo "  Already published (remote version ${remote_version}); skipping."
             else
               echo "  Will publish local version ${local_version} (remote='${remote_version}')."
-              publish_tasks+=(":${module}:publishReleasePublicationToCentralPortal")
+              publish_tasks+=(":${module}:publishAllPublicationsToCentralPortal")
             fi
           done
 

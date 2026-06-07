@@ -54,10 +54,6 @@ fun PostOfficePage(
         val isMapLoaded = viewModel.isMapLoaded.collectAsState().value
         val isDataLoading = viewModel.isDataLoading.collectAsState().value
 
-        LaunchedEffect(Unit) {
-            viewModel.loadPostOfficeData()
-        }
-
         DemoMapPageScaffold(
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),
             onToggleSidebar = onToggleSidebar,

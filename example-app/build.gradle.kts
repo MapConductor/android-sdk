@@ -1,4 +1,6 @@
-﻿plugins {
+﻿import java.util.Properties
+
+plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("org.jlleitschuh.gradle.ktlint")
@@ -45,13 +47,14 @@ android {
 
     buildTypes {
 
+        create("local") {
+            initWith(getByName("debug"))
+            isDebuggable = true
+            isMinifyEnabled = false
+        }
+
         debug {
             isMinifyEnabled = false
-
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
         }
 
         release {
@@ -62,6 +65,7 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
+                "proguard-rules-release.pro",
             )
 
             buildConfigField("String", "BUILD_CONFIG_VERSION", "\"release\"")
@@ -131,14 +135,14 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(
-            org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(
-                project.property("jvmTarget").toString(),
-            ),
-        )
-    }
+
+// Read libraryVersion from each module's gradle.properties for the 'local' build type
+fun localVersion(moduleDir: String): String {
+    val props = Properties()
+    val propsFile = rootProject.file("$moduleDir/gradle.properties")
+    if (!propsFile.exists()) return "1.0.0"
+    propsFile.inputStream().use { stream -> props.load(stream) }
+    return props.getProperty("libraryVersion") ?: "1.0.0"
 }
 
 dependencies {
@@ -156,7 +160,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
 
     // Google Maps SDK
-    implementation(libs.play.services.maps)
+//    implementation(libs.play.services.maps)
 
     // Here Maps SDK
     implementation(
@@ -169,19 +173,19 @@ dependencies {
     )
 
     // Mapbox SDK
-    implementation(libs.mapbox.android)
+//    implementation(libs.mapbox.android)
 
     // ArcGIS Maps for Kotlin - SDK dependency
-    implementation(libs.arcgis.maps.kotlin)
-    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
+//    implementation(libs.arcgis.maps.kotlin)
+//    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
+//    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
+//    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
 
     // MapLibre SDK
-    implementation(libs.maplibre.sdk)
-    implementation(libs.maplibre.annotation)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.foundation)
+//    implementation(libs.maplibre.sdk)
+//    implementation(libs.maplibre.annotation)
+//    implementation(libs.androidx.compose.ui.graphics)
+//    implementation(libs.androidx.compose.foundation)
 
     // Map Conductor
 //    implementation("com.mapconductor:core")
@@ -195,7 +199,7 @@ dependencies {
 
     // Use project dependency for debug, Maven artifact for release
     // Align versions in release via the project BOM
-    releaseImplementation(platform(project(":mapconductor-bom")))
+//    releaseImplementation(platform(project(":mapconductor-bom")))
     releaseImplementation(libs.mapconductor.core)
     releaseImplementation(libs.mapconductor.icons)
     releaseImplementation(libs.mapconductor.googlemaps)
@@ -212,10 +216,30 @@ dependencies {
     debugImplementation(project(":android-for-googlemaps"))
     debugImplementation(project(":android-for-here"))
     debugImplementation(project(":android-for-mapbox"))
-    debugImplementation(project(":android-for-arcgis"))
     debugImplementation(project(":android-for-maplibre"))
+    debugImplementation(project(":android-for-arcgis"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
+    // Map SDKs are `implementation` (not `api`) in library modules, so typealiases
+    // like GoogleMapActualMarker need the underlying type on the compile classpath explicitly
+//    debugImplementation(libs.play.services.maps)
+//    debugImplementation(libs.mapbox.android)
+//    debugImplementation(libs.maplibre.sdk)
+
+    // local build type: uses MavenLocal published artifacts (published by publishAllLocal)
+    // Map SDKs must be declared explicitly because published AARs expose them as runtime-only scope
+    "localImplementation"(libs.play.services.maps)
+    "localImplementation"(libs.mapbox.android)
+    "localImplementation"(libs.maplibre.sdk)
+    "localImplementation"("com.mapconductor:core:${localVersion("android-sdk-core")}")
+    "localImplementation"("com.mapconductor:icons:${localVersion("android-icons")}")
+    "localImplementation"("com.mapconductor:for-googlemaps:${localVersion("android-for-googlemaps")}")
+    "localImplementation"("com.mapconductor:for-here:${localVersion("android-for-here")}")
+    "localImplementation"("com.mapconductor:for-mapbox:${localVersion("android-for-mapbox")}")
+    "localImplementation"("com.mapconductor:for-arcgis:${localVersion("android-for-arcgis")}")
+    "localImplementation"("com.mapconductor:for-maplibre:${localVersion("android-for-maplibre")}")
+    "localImplementation"("com.mapconductor:marker-clustering:${localVersion("android-marker-clustering")}")
+    "localImplementation"("com.mapconductor:heatmap:${localVersion("android-heatmap")}")
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)

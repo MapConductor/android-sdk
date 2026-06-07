@@ -40,8 +40,8 @@ class TiltMapPageViewModel() : ViewModel(), TiltMapPageViewModelInterface {
 
     override val initCameraPosition =
         MapCameraPosition(
-            position = GeoPoint(25.197138729817727, 55.27429056548046),
-            zoom = 16.5,
+            position = GeoPoint(35.65850201733127, 139.7453577947025),
+            zoom = 18.0,
         )
     private var currentPosition: MapCameraPosition = initCameraPosition
 

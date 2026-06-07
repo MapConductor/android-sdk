@@ -9,9 +9,9 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
-import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +36,7 @@ interface PostOfficeViewModelInterface {
 
     fun onInfoClick(postOffice: PostOffice)
 
-    fun loadPostOfficeData()
+    // fun loadPostOfficeData()
 }
 
 class PostOfficeViewModel(
@@ -91,13 +91,12 @@ class PostOfficeViewModel(
 
     private var cameraPosition: MapCameraPosition = initCameraPosition
 
-    override fun loadPostOfficeData() {
+    fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
         coroutine.launch {
             _isDataLoading.value = true
             val postOffices = dataLoader.loadAllPostOffices()
-            sleep(1000)
 
             val markerStates =
                 postOffices.map { it ->
@@ -110,7 +109,6 @@ class PostOfficeViewModel(
                     )
                 }
             _markerList.value = markerStates
-            sleep(6000)
             _isDataLoading.value = false
         }
     }
@@ -136,6 +134,7 @@ class PostOfficeViewModel(
             _mapViewState.value?.moveCameraTo(
                 cameraPosition = cameraPosition,
             )
+            loadPostOfficeData()
         }
     }
 

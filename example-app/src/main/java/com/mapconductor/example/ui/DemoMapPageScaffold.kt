@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapbox.maps.MapLoaded
 import com.mapconductor.arcgis.map.ArcGISDesign
 import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.arcgis.map.rememberArcGISMapViewState
@@ -120,7 +121,7 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<
 fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapLibreViewState> {
     val mapLibreMapState =
         rememberMapLibreMapViewState(
-            mapDesign = MapLibreDesign.DemoTiles,
+            mapDesign = MapLibreDesign.OsmBright,
             cameraPosition = initCameraPosition,
         )
     return IconItem(
@@ -135,11 +136,11 @@ fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconIte
 @Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
+        GetGoogleMapViewItem(initCameraPosition),
         GetMapboxViewItem(initCameraPosition),
         GetHereViewItem(initCameraPosition),
         GetArcGISViewItem(initCameraPosition),
         GetMapLibreViewItem(initCameraPosition),
-        GetGoogleMapViewItem(initCameraPosition),
     )
 
 @Composable

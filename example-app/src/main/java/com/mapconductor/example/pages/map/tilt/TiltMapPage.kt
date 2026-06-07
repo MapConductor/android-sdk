@@ -2,6 +2,7 @@ package com.mapconductor.example.pages.map.tilt
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -72,11 +73,7 @@ fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
                         maxWidth = 600.dp,
                     ),
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-            ) {
-                Text("tilt: ${"%.2f".format(tilt)}")
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.padding(6.dp)) {
                 TiltCameraDiagram(
                     tilt = tilt,
                     modifier =
@@ -85,19 +82,22 @@ fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
                             .height(120.dp),
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Slider(
-                    value = viewModel.tilt.toFloat(),
-                    onValueChange = { newValue ->
+                Row {
+                    Text("tilt: ${"%.2f".format(tilt)}")
+                    Slider(
+                        value = viewModel.tilt.toFloat(),
+                        onValueChange = { newValue ->
                             coroutineScope.launch {
                                 delay(debounceMs)
                                 viewModel.tilt = newValue.toDouble()
                             }
-                    },
-                    onValueChangeFinished = {
-                    },
-                    valueRange = -90.0f..90.0f, // スライダー範囲
-                    steps = 0,
-                )
+                        },
+                        onValueChangeFinished = {
+                        },
+                        valueRange = -89.0f..89.0f, // スライダー範囲
+                        steps = 0,
+                    )
+                }
             }
         }
     }
@@ -112,7 +112,7 @@ private fun TiltCameraDiagram(
         val width = size.width
         val height = size.height
         val groundY = height * 0.78f
-        val originX = width * 0.38f
+        val originX = width * 0.5f
         val originY = groundY
         val baseCameraY = height * 0.22f
         val maxTilt = 90.0
@@ -122,10 +122,10 @@ private fun TiltCameraDiagram(
         val targetDistance =
             (altitudePx * tan(tiltRad))
                 .coerceAtMost(width * 0.44f)
-        val targetX = if (tilt < 0.0) originX + targetDistance else originX
+        val targetX = if (tilt < 0.0) originX - targetDistance else originX
         val targetY = groundY
-        val cameraX = if (tilt < 0.0) originX else originX - targetDistance
-        val cameraY = if (tilt < 0.0) baseCameraY else groundY - altitudePx
+        val cameraX = if (tilt > 0.0) originX + targetDistance else originX
+        val cameraY = baseCameraY
         val sightEndX =
             if (tilt == 0.0) {
                 cameraX
