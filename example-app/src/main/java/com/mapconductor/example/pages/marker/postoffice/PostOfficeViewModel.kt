@@ -9,6 +9,7 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
+import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -95,6 +96,7 @@ class PostOfficeViewModel(
         if (_markerList.value.isNotEmpty()) return
 
         coroutine.launch {
+            sleep(1000)
             _isDataLoading.value = true
             val postOffices = dataLoader.loadAllPostOffices()
 
