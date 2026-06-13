@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 DemoAppScreen(
-                    // initPage = "tilt-map",
+                    // initPage = "map-basic",
                     initPage = "startup",
                 )
             }

@@ -33,6 +33,7 @@ import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapP
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
+import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
@@ -162,6 +163,10 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Geodesic polygons",
             ),
             SidebarItem(
+                id = "polygon-hole",
+                title = "Hole polygon",
+            ),
+            SidebarItem(
                 id = "raster-layer",
                 title = "Raster Layer",
             ),
@@ -279,6 +284,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "polygon-geodesic" -> {
                         PolygonGeodesicPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "polygon-hole" -> {
+                        HolePolygonMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
