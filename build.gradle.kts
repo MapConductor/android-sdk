@@ -75,7 +75,7 @@ val publishableModules = listOf(
     "android-icons",
     "android-marker-clustering",
     "android-heatmap",
-//    "android-geojson-layer",
+    "android-geojson-layer",
     "android-for-arcgis",
     "android-for-googlemaps",
     "android-for-here",
@@ -115,5 +115,4 @@ tasks.register("publishAllToMavenCentral") {
 
     dependsOn(publishTasks)
 }
-
 
