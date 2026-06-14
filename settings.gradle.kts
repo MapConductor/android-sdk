@@ -11,9 +11,13 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven {
@@ -25,14 +29,16 @@ dependencyResolutionManagement {
             url = uri("https://esri.jfrog.io/artifactory/arcgis")
         }
 
-        maven {
-            name = "GithubPackages"
-            url = uri("https://maven.pkg.github.com/mapconductor/android-sdk")
-            credentials {
-                username = System.getenv("GPR_USER")
-                password = System.getenv("GPR_TOKEN")
+        if (System.getenv("GPR_USER") != null && System.getenv("GPR_TOKEN") != null) {
+            maven {
+                name = "GithubPackages"
+                url = uri("https://maven.pkg.github.com/mapconductor/android-sdk")
+                credentials {
+                    username = System.getenv("GPR_USER")
+                    password = System.getenv("GPR_TOKEN")
+                }
+                content { includeGroup("com.mapconductor") }
             }
-            content { includeGroup("com.mapconductor") }
         }
         flatDir {
             dirs(rootDir.resolve("libs"))

@@ -3,7 +3,6 @@
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -104,10 +103,6 @@ fun MarkerClusterMapPage(
         val mapViewState = viewModel.mapViewState.collectAsState().value
         val isMapLoaded = viewModel.isMapLoaded.collectAsState().value
         val isDataLoading = viewModel.isDataLoading.collectAsState().value
-
-        LaunchedEffect(Unit) {
-            viewModel.loadPostOfficeData()
-        }
 
         DemoMapPageScaffold(
             menuItems = DefaultMapViewItems(viewModel.initCameraPosition),

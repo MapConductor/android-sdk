@@ -10,9 +10,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType.Companion.PrimaryEditable
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -38,7 +38,7 @@ data class IconItem<T>(
 @Composable
 fun IconSelectMenu(
     itemList: List<IconItem<*>>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(200.dp),
     selectedIndex: Int = 0,
     isDark: Boolean = isSystemInDarkTheme(),
     onSelect: (Int, IconItem<*>) -> Unit = { index, item ->
@@ -80,7 +80,7 @@ fun IconSelectMenu(
             },
             modifier =
                 Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryEditable),
+                    .menuAnchor(PrimaryEditable),
         )
 
         ExposedDropdownMenu(

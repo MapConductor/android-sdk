@@ -11,18 +11,19 @@ A unified mapping library that provides a common API for multiple map providers 
 
 ## Module Structure
 
-| Module | Artifact | Description |
-|---|---|---|
-| `mapconductor-bom` | `com.mapconductor:mapconductor-bom` | Bill of Materials — aligns all module versions |
-| `android-sdk-core` | `com.mapconductor:core` | Core abstractions, geometry types, overlay states |
-| `android-for-googlemaps` | `com.mapconductor:for-googlemaps` | Google Maps implementation |
-| `android-for-mapbox` | `com.mapconductor:for-mapbox` | Mapbox implementation |
-| `android-for-here` | `com.mapconductor:for-here` | HERE Maps implementation |
-| `android-for-arcgis` | `com.mapconductor:for-arcgis` | ArcGIS implementation |
-| `android-for-maplibre` | `com.mapconductor:for-maplibre` | MapLibre implementation |
-| `android-icons` | `com.mapconductor:icons` | Composable marker icons (CircleIcon, FlagIcon, info bubbles) |
-| `android-heatmap` | `com.mapconductor:heatmap` | Map-provider-agnostic heatmap overlay |
-| `android-marker-clustering` | `com.mapconductor:marker-clustering` | Automatic marker clustering across all providers |
+| Module                      | Artifact                             | Description                                                  |
+|-----------------------------|--------------------------------------|--------------------------------------------------------------|
+| `mapconductor-bom`          | `com.mapconductor:mapconductor-bom`  | Bill of Materials — aligns all module versions               |
+| `android-sdk-core`          | `com.mapconductor:core`              | Core abstractions, geometry types, overlay states            |
+| `android-for-googlemaps`    | `com.mapconductor:for-googlemaps`    | Google Maps implementation                                   |
+| `android-for-mapbox`        | `com.mapconductor:for-mapbox`        | Mapbox implementation                                        |
+| `android-for-here`          | `com.mapconductor:for-here`          | HERE Maps implementation                                     |
+| `android-for-arcgis`        | `com.mapconductor:for-arcgis`        | ArcGIS implementation                                        |
+| `android-for-maplibre`      | `com.mapconductor:for-maplibre`      | MapLibre implementation                                      |
+| `android-icons`             | `com.mapconductor:icons`             | Composable marker icons (CircleIcon, FlagIcon, info bubbles) |
+| `android-heatmap`           | `com.mapconductor:heatmap`           | Map-provider-agnostic heatmap overlay                        |
+| `android-marker-clustering` | `com.mapconductor:marker-clustering` | Automatic marker clustering across all providers             |
+| `android-geojson-layer`     | `com.mapconductor:geojson-layer`     | Geojson layer across all providers                           |
 
 ## Quick Start
 

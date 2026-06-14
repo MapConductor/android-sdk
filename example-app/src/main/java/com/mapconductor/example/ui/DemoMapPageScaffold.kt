@@ -120,7 +120,7 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<
 fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapLibreViewState> {
     val mapLibreMapState =
         rememberMapLibreMapViewState(
-            mapDesign = MapLibreDesign.DemoTiles,
+            mapDesign = MapLibreDesign.OsmBright,
             cameraPosition = initCameraPosition,
         )
     return IconItem(

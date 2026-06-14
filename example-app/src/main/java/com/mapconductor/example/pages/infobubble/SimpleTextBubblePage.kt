@@ -55,6 +55,9 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapClick = { selectedMarker = null },
+                onMapLoaded = {
+                    selectedMarker = markerState
+                },
             ) {
                 Marker(markerState)
 

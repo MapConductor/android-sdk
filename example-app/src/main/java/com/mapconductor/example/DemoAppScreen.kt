@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
+import com.mapconductor.example.pages.geojson.basic.BasicGeoJSONMapPage
+import com.mapconductor.example.pages.geojson.layer.GeoJSONLayerMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.heatmaplayer.HeatmapLayerPage
@@ -19,11 +21,13 @@ import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
 import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
+import com.mapconductor.example.pages.map.arcgis2d.ArcGISMapView2DPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
+import com.mapconductor.example.pages.map.tilt.TiltMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
@@ -32,6 +36,7 @@ import com.mapconductor.example.pages.marker.postofficecluster.MarkerClusterMapP
 import com.mapconductor.example.pages.polygon.basic.PolygonMapPage
 import com.mapconductor.example.pages.polygon.click.PolygonClickPage
 import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
+import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
@@ -79,6 +84,14 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "map-basic",
                 title = "Map",
+            ),
+            SidebarItem(
+                id = "tilt-map",
+                title = "Tilt Map",
+            ),
+            SidebarItem(
+                id = "arcgis-map-2d",
+                title = "ArcGIS Map 2D",
             ),
             SidebarItem(
                 id = "simple-info-bubble",
@@ -157,12 +170,24 @@ fun DemoAppScreen(initPage: String = "map") {
                 title = "Geodesic polygons",
             ),
             SidebarItem(
+                id = "polygon-hole",
+                title = "Hole polygon",
+            ),
+            SidebarItem(
                 id = "raster-layer",
                 title = "Raster Layer",
             ),
             SidebarItem(
                 id = "heatmap-overlay",
                 title = "Heatmap overlay",
+            ),
+            SidebarItem(
+                id = "geojson-basic",
+                title = "Basic GeoJSON",
+            ),
+            SidebarItem(
+                id = "geojson-layer",
+                title = "GeoJSON Layer",
             ),
         )
 
@@ -277,6 +302,11 @@ fun DemoAppScreen(initPage: String = "map") {
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
+                    "polygon-hole" -> {
+                        HolePolygonMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
                     "groundImage" -> {
                         GroundImageMapPage(
                             groundImageResources = groundImageResources,
@@ -290,6 +320,26 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "heatmap-overlay" -> {
                         HeatmapLayerPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "geojson-basic" -> {
+                        BasicGeoJSONMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "geojson-layer" -> {
+                        GeoJSONLayerMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "tilt-map" -> {
+                        TiltMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "arcgis-map-2d" -> {
+                        ArcGISMapView2DPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
