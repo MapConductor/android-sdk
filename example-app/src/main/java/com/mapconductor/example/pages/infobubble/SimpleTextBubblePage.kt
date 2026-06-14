@@ -57,7 +57,7 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
                 onMapClick = { selectedMarker = null },
                 onMapLoaded = {
                     selectedMarker = markerState
-                }
+                },
             ) {
                 Marker(markerState)
 

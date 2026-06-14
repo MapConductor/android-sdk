@@ -25,32 +25,35 @@ import com.mapconductor.example.ui.MessageCard
 
 @Composable
 fun ArcGISMapView2DPage(onToggleSidebar: () -> Unit = {}) {
-    val initCameraPosition = remember {
-        MapCameraPosition(
-            position = GeoPoint(35.68162987878426, 139.76703394012318),
-            zoom = 0.0,
-            bearing = 127.0,
-        )
-    }
+    val initCameraPosition =
+        remember {
+            MapCameraPosition(
+                position = GeoPoint(35.68162987878426, 139.76703394012318),
+                zoom = 0.0,
+                bearing = 127.0,
+            )
+        }
 
-    val arcGISState = rememberArcGISMapViewState(
-        mapDesign = ArcGISDesign.Streets,
-        cameraPosition = initCameraPosition,
-    )
+    val arcGISState =
+        rememberArcGISMapViewState(
+            mapDesign = ArcGISDesign.Streets,
+            cameraPosition = initCameraPosition,
+        )
 
     var mapState by remember { mutableStateOf<ArcGISMapViewState?>(null) }
 
-    val menuItems = remember(arcGISState) {
-        listOf(
-            IconItem(
-                key = "arcgis2d",
-                label = "ArcGIS 2D",
-                lightIconResId = R.drawable.arcgis_logo_black,
-                darkIconResId = R.drawable.arcgis_logo_white,
-                value = arcGISState,
-            ),
-        )
-    }
+    val menuItems =
+        remember(arcGISState) {
+            listOf(
+                IconItem(
+                    key = "arcgis2d",
+                    label = "ArcGIS 2D",
+                    lightIconResId = R.drawable.arcgis_logo_black,
+                    darkIconResId = R.drawable.arcgis_logo_white,
+                    value = arcGISState,
+                ),
+            )
+        }
 
     DemoMapPageScaffold(
         menuItems = menuItems,
@@ -74,8 +77,7 @@ fun ArcGISMapView2DPage(onToggleSidebar: () -> Unit = {}) {
                         bottom = paddingValues.calculateBottomPadding() + 16.dp,
                         start = 16.dp,
                         end = 16.dp,
-                    )
-                    .sizeIn(maxWidth = 600.dp),
+                    ).sizeIn(maxWidth = 600.dp),
             title = "ArcGIS MapView 2D",
         ) {
             Text("Flat 2D map view using ArcGIS MapView (no 3D tilt or elevation).")

@@ -5,12 +5,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -22,28 +20,33 @@ import androidx.compose.ui.unit.dp
 @Composable
 private fun RowScope.TableCell(
     text: String,
-    weight: Float
+    weight: Float,
 ) {
     Text(
         text = text,
         Modifier
             .border(1.dp, Color.Black)
             .weight(weight)
-            .padding(8.dp)
+            .padding(8.dp),
     )
 }
 
 @Composable
-fun TableView(tableData: Map<String, Any?>, column1Weight: Float, column2Weight: Float) {
+fun TableView(
+    tableData: Map<String, Any?>,
+    column1Weight: Float,
+    column2Weight: Float,
+) {
     Column(
-        modifier = Modifier
-            .width(400.dp)
-            .heightIn(max = 300.dp)
-            .padding(0.dp)
-            .verticalScroll(rememberScrollState())
+        modifier =
+            Modifier
+                .width(400.dp)
+                .heightIn(max = 300.dp)
+                .padding(0.dp)
+                .verticalScroll(rememberScrollState()),
     ) {
         Row(
-            modifier = Modifier.background(Color.Gray)
+            modifier = Modifier.background(Color.Gray),
         ) {
             TableCell(text = "Column 1", weight = column1Weight)
             TableCell(text = "Column 2", weight = column2Weight)
@@ -52,7 +55,7 @@ fun TableView(tableData: Map<String, Any?>, column1Weight: Float, column2Weight:
         tableData.map {
             val (id, text) = it
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 TableCell(text = id.toString(), weight = column1Weight)
                 TableCell(text = text.toString(), weight = column2Weight)

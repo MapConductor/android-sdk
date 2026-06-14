@@ -12,7 +12,6 @@ import com.mapconductor.postoffice.PostOfficeDataLoader
 import java.lang.Thread.sleep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

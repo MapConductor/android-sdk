@@ -39,10 +39,9 @@ import com.mapconductor.geojson.GeoJSONLayer
 import com.mapconductor.geojson.GeoJSONLayerState
 import com.mapconductor.geojson.GeoJSONParser
 import com.mapconductor.utils.LoadingDialog
+import java.util.zip.ZipInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.zip.ZipInputStream
-
 
 private const val GEOJSON_ASSET = "N02-22_GML.zip"
 

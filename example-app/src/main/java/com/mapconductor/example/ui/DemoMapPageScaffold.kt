@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapbox.maps.MapLoaded
 import com.mapconductor.arcgis.map.ArcGISDesign
 import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.arcgis.map.rememberArcGISMapViewState

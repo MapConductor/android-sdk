@@ -26,11 +26,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.example.ui.MessageCard
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.tan
@@ -39,7 +37,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
-
     val coroutineScope = rememberCoroutineScope()
     val debounceMs = 80L
     val viewModel = remember { TiltMapPageViewModel() }
@@ -68,8 +65,7 @@ fun TiltMapPage(onToggleSidebar: () -> Unit = {}) {
                         bottom = paddingValues.calculateBottomPadding() + 16.dp,
                         start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
                         end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-                    )
-                    .sizeIn(
+                    ).sizeIn(
                         maxWidth = 600.dp,
                     ),
         ) {

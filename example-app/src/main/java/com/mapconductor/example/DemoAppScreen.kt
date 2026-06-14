@@ -21,12 +21,12 @@ import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
 import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
+import com.mapconductor.example.pages.map.arcgis2d.ArcGISMapView2DPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
-import com.mapconductor.example.pages.map.arcgis2d.ArcGISMapView2DPage
 import com.mapconductor.example.pages.map.tilt.TiltMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage

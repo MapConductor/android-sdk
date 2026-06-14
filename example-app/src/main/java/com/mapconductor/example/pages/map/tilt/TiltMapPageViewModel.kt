@@ -4,17 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.spherical.Spherical
-import kotlin.collections.flatten
-import kotlin.concurrent.timer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +20,9 @@ interface TiltMapPageViewModelInterface {
     val mapViewState: StateFlow<MapViewStateInterface<*>?>
 
     fun onMapCameraMoveStart(point: GeoPoint)
+
     fun onMapCameraMoveEnd(point: GeoPoint)
+
     fun onMapViewChanged(state: MapViewStateInterface<*>)
 }
 
@@ -36,14 +31,16 @@ class DistanceColorPair(
     val color: Color,
 )
 
-class TiltMapPageViewModel() : ViewModel(), TiltMapPageViewModelInterface {
-
+class TiltMapPageViewModel :
+    ViewModel(),
+    TiltMapPageViewModelInterface {
     override val initCameraPosition =
         MapCameraPosition(
-            position = GeoPoint(
-                latitude = 48.858140690309604,
-                longitude = 2.2945027576710344,
-            ),
+            position =
+                GeoPoint(
+                    latitude = 48.858140690309604,
+                    longitude = 2.2945027576710344,
+                ),
             zoom = 17.0,
             bearing = 270.0,
         )
@@ -76,14 +73,14 @@ class TiltMapPageViewModel() : ViewModel(), TiltMapPageViewModelInterface {
             if (_disableSlider.value) return
             _tilt = angle
 
-            currentPosition = currentPosition.copy(
-                tilt = angle,
-            )
+            currentPosition =
+                currentPosition.copy(
+                    tilt = angle,
+                )
             _cameraPosition.value = currentPosition
 
             mapViewState.value?.moveCameraTo(currentPosition)
         }
-
 
     override fun onMapCameraMoveStart(point: GeoPoint) {
         _disableSlider.value = true
