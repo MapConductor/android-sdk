@@ -135,7 +135,6 @@ android {
     }
 }
 
-
 // Read libraryVersion from each module's gradle.properties for the 'local' build type
 fun localVersion(moduleDir: String): String {
     val props = Properties()
@@ -172,31 +171,6 @@ dependencies {
         ),
     )
 
-    // Mapbox SDK
-//    implementation(libs.mapbox.android)
-
-    // ArcGIS Maps for Kotlin - SDK dependency
-//    implementation(libs.arcgis.maps.kotlin)
-//    implementation(platform(libs.arcgis.maps.kotlin.toolkit.bom))
-//    implementation(libs.arcgis.maps.kotlin.toolkit.geoview.compose)
-//    implementation(libs.arcgis.maps.kotlin.toolkit.authentication)
-
-    // MapLibre SDK
-//    implementation(libs.maplibre.sdk)
-//    implementation(libs.maplibre.annotation)
-//    implementation(libs.androidx.compose.ui.graphics)
-//    implementation(libs.androidx.compose.foundation)
-
-    // Map Conductor
-//    implementation("com.mapconductor:core")
-//    implementation("com.mapconductor:icons")
-//    implementation("com.mapconductor:for-googlemaps")
-//    implementation("com.mapconductor:for-here")
-//    implementation("com.mapconductor:for-mapbox")
-//    implementation("com.mapconductor:for-arcgis")
-//    implementation("com.mapconductor:marker-strategy")
-//    implementation("com.mapconductor:marker-native-strategy")
-
     // Use project dependency for debug, Maven artifact for release
     // Align versions in release via the project BOM
 //    releaseImplementation(platform(project(":mapconductor-bom")))
@@ -210,6 +184,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.marker.strategy)
     releaseImplementation(libs.mapconductor.marker.native.strategy)
     releaseImplementation(libs.mapconductor.marker.clustering)
+    releaseImplementation(libs.mapconductor.geojson)
 
     debugImplementation(project(":android-sdk-core"))
     debugImplementation(project(":android-icons"))
@@ -220,11 +195,7 @@ dependencies {
     debugImplementation(project(":android-for-arcgis"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
-    // Map SDKs are `implementation` (not `api`) in library modules, so typealiases
-    // like GoogleMapActualMarker need the underlying type on the compile classpath explicitly
-//    debugImplementation(libs.play.services.maps)
-//    debugImplementation(libs.mapbox.android)
-//    debugImplementation(libs.maplibre.sdk)
+    debugImplementation(project(":android-geojson-layer"))
 
     // local build type: uses MavenLocal published artifacts (published by publishAllLocal)
     // Map SDKs must be declared explicitly because published AARs expose them as runtime-only scope
@@ -240,6 +211,7 @@ dependencies {
     "localImplementation"("com.mapconductor:for-maplibre:${localVersion("android-for-maplibre")}")
     "localImplementation"("com.mapconductor:marker-clustering:${localVersion("android-marker-clustering")}")
     "localImplementation"("com.mapconductor:heatmap:${localVersion("android-heatmap")}")
+    "localImplementation"("com.mapconductor:geojson:${localVersion("android-geojson-layer")}")
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)
