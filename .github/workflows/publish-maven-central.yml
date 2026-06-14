@@ -82,6 +82,7 @@ jobs:
             android-icons
             android-marker-clustering
             android-heatmap
+            android-geojson-layer
             mapconductor-bom
             android-sdk-core
             android-for-arcgis

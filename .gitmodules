@@ -25,3 +25,6 @@
 [submodule "android-icons"]
 	path = android-icons
 	url = git@github.com:MapConductor/android-icons.git
+[submodule "android-geojson-layer"]
+	path = android-geojson-layer
+	url = git@github.com:MapConductor/android-geojson-layer.git
