@@ -41,17 +41,26 @@ git-claude-commit() {
 }
 
 no-any-change() {
-  TARGET_DIR=$1
-  SAVE_DIR=$(pwd)
-  
-  cd $TARGET_DIR
+  local target_dir=$1
+  local save_dir
+  save_dir=$(pwd)
 
-  if git diff --cached --quiet; then
-    cd $SAVE_DIR
+  cd "$target_dir"
+
+  if [[ -z "$(git status --porcelain)" ]]; then
+    cd "$save_dir"
   else
-    cd $SAVE_DIR
+    cd "$save_dir"
     return $FALSE
-  fi  
+  fi
+}
+
+has-staged-change() {
+  ! git diff --cached --quiet
+}
+
+has-unstaged-change() {
+  ! git diff --quiet || [[ -n "$(git ls-files --others --exclude-standard)" ]]
 }
 
 
@@ -61,31 +70,50 @@ ask-to-commit() {
   if [[ -z "${TARGET_DIR}" ]]; then
     return $FALSE
   fi
-  if [ -f ${TARGET_DIR} ]; then
-    TARGET_DIR=$(dirname $TARGET_DIR)
+  if [ -f "${TARGET_DIR}" ]; then
+    TARGET_DIR=$(dirname "$TARGET_DIR")
   fi
-  BASE_NAME=$(basename $TARGET_DIR)
+  BASE_NAME=$(basename "$TARGET_DIR")
 
-  if no-any-change $TARGET_DIR; then
-    echo "Notihng to commit at ${BASE_NAME}"
+  if no-any-change "$TARGET_DIR"; then
+    echo "Nothing to commit at ${BASE_NAME}"
     return $FALSE
   fi
 
-  cd $TARGET_DIR
+  cd "$TARGET_DIR"
   echo
   echo -e "${SEPARATOR_COLOR}---[ ${TARGET_DIR} ]--------------${RESET}"
   git status
   echo
 
+  if has-unstaged-change; then
+    read -n1 -p "${ASK_COLOR}Git add all unstaged changes at ${BASE_NAME}? (y/N):${RESET}" yn
+    echo
+    if [[ $yn = [yY] ]]; then
+      git add -A
+      git status
+      echo
+      git-claude-commit
+      cd "$SAVE_DIR"
+      return
+    fi
+  fi
+
+  if ! has-staged-change; then
+    echo "No staged changes at ${BASE_NAME}"
+    cd "$SAVE_DIR"
+    return $FALSE
+  fi
+
   read -n1 -p "${ASK_COLOR}Git commit at ${BASE_NAME} directory? (y/N):${RESET}" yn
   echo
   if [[ $yn = [yY] ]]; then
     git-claude-commit
-    cd $SAVE_DIR
+    cd "$SAVE_DIR"
   else
     echo "skip committing"
     echo $FALSE
-    cd $SAVE_DIR
+    cd "$SAVE_DIR"
   fi
 }
 
