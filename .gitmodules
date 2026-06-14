@@ -1,30 +1,30 @@
 [submodule "android-sdk-core"]
 	path = android-sdk-core
-	url = git@github.com:MapConductor/android-sdk-core.git
+	url = https://github.com/MapConductor/android-sdk-core.git
 [submodule "android-for-arcgis"]
 	path = android-for-arcgis
-	url = git@github.com:MapConductor/android-for-arcgis.git
+	url = https://github.com/MapConductor/android-for-arcgis.git
 [submodule "android-for-googlemaps"]
 	path = android-for-googlemaps
-	url = git@github.com:MapConductor/android-for-googlemaps.git
+	url = https://github.com/MapConductor/android-for-googlemaps.git
 [submodule "android-for-maplibre"]
 	path = android-for-maplibre
-	url = git@github.com:MapConductor/android-for-maplibre.git
+	url = https://github.com/MapConductor/android-for-maplibre.git
 [submodule "android-for-mapbox"]
 	path = android-for-mapbox
-	url = git@github.com:MapConductor/android-for-mapbox.git 
+	url = https://github.com/MapConductor/android-for-mapbox.git
 [submodule "android-for-here"]
 	path = android-for-here
-	url = git@github.com:MapConductor/android-for-here.git
+	url = https://github.com/MapConductor/android-for-here.git
 [submodule "android-heatmap"]
 	path = android-heatmap
-	url = git@github.com:MapConductor/android-heatmap.git
+	url = https://github.com/MapConductor/android-heatmap.git
 [submodule "android-marker-clustering"]
 	path = android-marker-clustering
-	url = git@github.com:MapConductor/android-marker-clustering.git
+	url = https://github.com/MapConductor/android-marker-clustering.git
 [submodule "android-icons"]
 	path = android-icons
-	url = git@github.com:MapConductor/android-icons.git
+	url = https://github.com/MapConductor/android-icons.git
 [submodule "android-geojson-layer"]
 	path = android-geojson-layer
-	url = git@github.com:MapConductor/android-geojson-layer.git
+	url = https://github.com/MapConductor/android-geojson-layer.git
