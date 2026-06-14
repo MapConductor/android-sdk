@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.jlleitschuh.ktlint) apply false
-    id("com.gradleup.nmcp") version "0.0.8"
+    id("com.gradleup.nmcp") version "1.5.0" apply false
 }
 
 buildscript {
@@ -71,12 +71,16 @@ tasks.register("allLintChecks") {
 // Publishing tasks for all modules
 val publishableModules = listOf(
     "mapconductor-bom",
-    "android-core",
+    "android-sdk-core",
+    "android-icons",
+    "android-marker-clustering",
+    "android-heatmap",
+    "android-geojson-layer",
     "android-for-arcgis",
     "android-for-googlemaps",
     "android-for-here",
     "android-for-mapbox",
-    "android-icons"
+    "android-for-maplibre"
 )
 
 tasks.register("publishAllLocal") {
@@ -110,14 +114,5 @@ tasks.register("publishAllToMavenCentral") {
     }
 
     dependsOn(publishTasks)
-}
-
-// Central Portal configuration
-nmcp {
-    publishAllProjectsProbablyBreakingProjectIsolation {
-        username = findProperty("ossrh.username") as String? ?: System.getenv("OSSRH_USERNAME")
-        password = findProperty("ossrh.password") as String? ?: System.getenv("OSSRH_PASSWORD")
-        // All publications from all subprojects will be published
-    }
 }
 

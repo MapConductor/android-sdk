@@ -33,7 +33,22 @@
       "Bash(ls /Users/masashi/android-sdk/mapconductor-for-*/README.md /Users/masashi/android-sdk/mapconductor-for-*/docs/)",
       "Read(//Users/masashi/Desktop/ios-sdk/ios-for-googlemaps/**)",
       "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && cat \"{}\"')",
-      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && grep -E \"name:|url:\" \"{}\" | head -5')"
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && grep -E \"name:|url:\" \"{}\" | head -5')",
+      "Bash(xargs ls *)",
+      "Bash(unzip *)",
+      "Bash(/Users/masashi/.cargo/bin/cargo new *)",
+      "Bash(/Users/masashi/.cargo/bin/cargo test *)",
+      "Bash(~/.cargo/bin/rustup target *)",
+      "Bash(~/.cargo/bin/cargo build *)",
+      "Bash(codex --version)",
+      "Bash(swift build *)",
+      "Bash(xcodebuild -workspace /Users/masashi/Desktop/ios-sdk/ios-sdk-core/Package.swift -scheme MapConductorCore -destination generic/platform=iOS build)",
+      "Bash(xcodebuild -project /Users/masashi/Desktop/ios-sdk/.swiftpm/xcode/package.xcworkspace build ONLY_ACTIVE_ARCH=YES -destination 'generic/platform=iOS Simulator')",
+      "Bash(xcodebuild -sdk iphonesimulator -scheme \"mapconductor-for-arcgis\" -destination \"generic/platform=iOS Simulator\" build)",
+      "Bash(xcodebuild -scheme \"ios-sdk-core\" -destination \"generic/platform=iOS Simulator\" build)",
+      "Bash(xcodebuild -list)",
+      "Bash(xcodebuild -scheme MapConductorSampleApp -destination \"generic/platform=iOS Simulator\" build)",
+      "Bash(xcodebuild -workspace MapConductorSampleApp.xcworkspace -scheme MapConductorSampleApp -destination 'generic/platform=iOS Simulator' build)"
     ],
     "deny": [],
     "ask": []

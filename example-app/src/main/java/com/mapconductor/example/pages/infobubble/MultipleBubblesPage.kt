@@ -32,6 +32,7 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
         MapCameraPosition(
             position = GeoPoint.fromLatLong(37.7749, -122.4194),
             zoom = 15.0,
+            tilt = 45.0,
         )
     var selectedMarkers by remember { mutableStateOf(setOf<String>()) }
     var mapViewState by remember { mutableStateOf<MapViewStateInterface<Any>?>(null) }
@@ -81,6 +82,9 @@ fun MultipleBubblesPage(onToggleSidebar: () -> Unit = {}) {
             MapViewContainer(
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
+                onMapLoaded = {
+                    selectedMarkers = markerStates.map { it.id }.toSet()
+                },
                 onMapClick = {
                     selectedMarkers = emptySet() // Clear all selections
                 },

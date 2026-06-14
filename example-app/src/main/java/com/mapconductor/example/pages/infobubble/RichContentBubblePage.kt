@@ -86,6 +86,9 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
             MapViewContainer(
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
+                onMapLoaded = {
+                    selectedMarker = markerState
+                },
                 onMapClick = { selectedMarker = null },
             ) {
                 Marker(markerState)

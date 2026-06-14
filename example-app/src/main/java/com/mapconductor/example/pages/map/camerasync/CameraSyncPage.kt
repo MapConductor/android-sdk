@@ -24,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -207,362 +208,364 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
         return target?.let { isCloseToTarget(camera, it) } ?: false
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+    Scaffold { paddingValues ->
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Toggle sidebar",
-                    modifier =
-                        Modifier
-                            .clickable(onClick = onToggleSidebar)
-                            .size(32.dp)
-                            .padding(end = 4.dp),
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
-
-                Text(
-                    text = "Camera Sync",
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-
-        @OptIn(ExperimentalLayoutApi::class)
-        FlowRow(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            maxLines = 2,
-        ) {
-            locations.forEach { location ->
-                Button(
-                    onClick = {
-                        val now = SystemClock.uptimeMillis()
-                        val position =
-                            MapCameraPosition(
-                                position = location.center,
-                                zoom = location.zoom,
-                                bearing = 0.0,
-                                tilt = 0.0,
-                            )
-                        currentLeftState.moveCameraTo(position, durationMillis = 1000)
-                        currentRightState.moveCameraTo(position, durationMillis = 1000)
-                        leftCameraPosition = position
-                        rightCameraPosition = position
-                        // Both maps will emit camera callbacks; treat them as programmatic during the animation.
-                        markProgrammaticMove(ActiveMapPane.Left, position, now)
-                        markProgrammaticMove(ActiveMapPane.Right, position, now)
-                        programmaticLeftUntilMs = now + 1000L + programmaticTtlMs
-                        programmaticRightUntilMs = now + 1000L + programmaticTtlMs
-                    },
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(text = location.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Toggle sidebar",
+                        modifier =
+                            Modifier
+                                .clickable(onClick = onToggleSidebar)
+                                .size(32.dp)
+                                .padding(end = 4.dp),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+
+                    Text(
+                        text = "Camera Sync",
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
-        }
 
-        HorizontalDivider(modifier = Modifier.padding(top = 10.dp))
-
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val stackVertically = maxHeight > maxWidth
-
-            if (stackVertically) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    CameraSyncMapPane(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        menuContent = {
-                            IconSelectMenu(
-                                itemList = leftMenuItems,
-                                selectedIndex = leftSelectedIndex,
-                                onSelect = { index, _ -> leftSelectedIndex = index },
-                            )
+            @OptIn(ExperimentalLayoutApi::class)
+            FlowRow(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxLines = 2,
+            ) {
+                locations.forEach { location ->
+                    Button(
+                        onClick = {
+                            val now = SystemClock.uptimeMillis()
+                            val position =
+                                MapCameraPosition(
+                                    position = location.center,
+                                    zoom = location.zoom,
+                                    bearing = 0.0,
+                                    tilt = 0.0,
+                                )
+                            currentLeftState.moveCameraTo(position, durationMillis = 1000)
+                            currentRightState.moveCameraTo(position, durationMillis = 1000)
+                            leftCameraPosition = position
+                            rightCameraPosition = position
+                            // Both maps will emit camera callbacks; treat them as programmatic during the animation.
+                            markProgrammaticMove(ActiveMapPane.Left, position, now)
+                            markProgrammaticMove(ActiveMapPane.Right, position, now)
+                            programmaticLeftUntilMs = now + 1000L + programmaticTtlMs
+                            programmaticRightUntilMs = now + 1000L + programmaticTtlMs
                         },
-                        mapViewState = leftState,
-                        label = "Source Camera",
-                        cameraPosition = leftCameraPosition,
-                        onCameraMove = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                // Ignore feedback from programmatic moves (but stop ignoring if the user deviates).
-                                if (programmaticLeftKey != null) {
-                                    if (now > programmaticLeftUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Left)
-                                    } else {
-                                        val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
-                                        ) {
-                                            leftCameraPosition = position
-                                            return@launch
-                                        }
-                                        clearProgrammaticMove(ActiveMapPane.Left)
-                                    }
-                                }
-
-                                if (now - lastLeftMoveSyncAtMs < moveSyncIntervalMs) return@launch
-                                lastLeftMoveSyncAtMs = now
-
-                                leftCameraPosition = position
-                                rightCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Right, position, now)
-                                currentRightState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        onCameraMoveEnd = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticLeftKey != null) {
-                                    if (now > programmaticLeftUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Left)
-                                    } else {
-                                        val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
-                                        ) {
-                                            leftCameraPosition = position
-                                            return@launch
-                                        }
-                                        clearProgrammaticMove(ActiveMapPane.Left)
-                                    }
-                                }
-                                leftCameraPosition = position
-                                rightCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Right, position, now)
-                                currentRightState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        boundsPolylines = boundsPolylines,
-                        referenceRectangles = referenceRectangles,
-                    )
-
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .background(MaterialTheme.colorScheme.outline),
-                    )
-
-                    CameraSyncMapPane(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        menuContent = {
-                            IconSelectMenu(
-                                itemList = rightMenuItems,
-                                selectedIndex = rightSelectedIndex,
-                                onSelect = { index, _ -> rightSelectedIndex = index },
-                            )
-                        },
-                        mapViewState = rightState,
-                        label = "Synced Camera",
-                        cameraPosition = rightCameraPosition,
-                        onCameraMove = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticRightKey != null) {
-                                    if (now > programmaticRightUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Right)
-                                    } else {
-                                        val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
-                                        ) {
-                                            rightCameraPosition = position
-                                            return@launch
-                                        }
-                                        clearProgrammaticMove(ActiveMapPane.Right)
-                                    }
-                                }
-
-                                if (now - lastRightMoveSyncAtMs < moveSyncIntervalMs) return@launch
-                                lastRightMoveSyncAtMs = now
-
-                                rightCameraPosition = position
-                                leftCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Left, position, now)
-                                currentLeftState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        onCameraMoveEnd = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticRightKey != null) {
-                                    if (now > programmaticRightUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Right)
-                                    } else {
-                                        val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
-                                        ) {
-                                            rightCameraPosition = position
-                                            return@launch
-                                        }
-                                        clearProgrammaticMove(ActiveMapPane.Right)
-                                    }
-                                }
-                                rightCameraPosition = position
-                                leftCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Left, position, now)
-                                currentLeftState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        boundsPolylines = boundsPolylines,
-                        referenceRectangles = referenceRectangles,
-                    )
+                    ) {
+                        Text(text = location.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 }
-            } else {
-                Row(modifier = Modifier.fillMaxSize()) {
-                    CameraSyncMapPane(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        menuContent = {
-                            IconSelectMenu(
-                                itemList = leftMenuItems,
-                                selectedIndex = leftSelectedIndex,
-                                onSelect = { index, _ -> leftSelectedIndex = index },
-                            )
-                        },
-                        mapViewState = leftState,
-                        label = "Source Camera",
-                        cameraPosition = leftCameraPosition,
-                        onCameraMove = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticLeftKey != null) {
-                                    if (now > programmaticLeftUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Left)
-                                    } else {
-                                        val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
-                                        ) {
-                                            leftCameraPosition = position
-                                            return@launch
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(top = 10.dp))
+
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val stackVertically = maxHeight > maxWidth
+
+                if (stackVertically) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        CameraSyncMapPane(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            menuContent = {
+                                IconSelectMenu(
+                                    itemList = leftMenuItems,
+                                    selectedIndex = leftSelectedIndex,
+                                    onSelect = { index, _ -> leftSelectedIndex = index },
+                                )
+                            },
+                            mapViewState = leftState,
+                            label = "Source Camera",
+                            cameraPosition = leftCameraPosition,
+                            onCameraMove = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    // Ignore feedback from programmatic moves (but stop ignoring if the user deviates).
+                                    if (programmaticLeftKey != null) {
+                                        if (now > programmaticLeftUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Left)
+                                        } else {
+                                            val age = now - programmaticLeftSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                            ) {
+                                                leftCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Left)
                                         }
-                                        clearProgrammaticMove(ActiveMapPane.Left)
                                     }
+
+                                    if (now - lastLeftMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                    lastLeftMoveSyncAtMs = now
+
+                                    leftCameraPosition = position
+                                    rightCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                    currentRightState.moveCameraTo(position, durationMillis = 0)
                                 }
-
-                                if (now - lastLeftMoveSyncAtMs < moveSyncIntervalMs) return@launch
-                                lastLeftMoveSyncAtMs = now
-
-                                leftCameraPosition = position
-                                rightCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Right, position, now)
-                                currentRightState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        onCameraMoveEnd = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticLeftKey != null) {
-                                    if (now > programmaticLeftUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Left)
-                                    } else {
-                                        val age = now - programmaticLeftSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Left, position, now)
-                                        ) {
-                                            leftCameraPosition = position
-                                            return@launch
+                            },
+                            onCameraMoveEnd = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticLeftKey != null) {
+                                        if (now > programmaticLeftUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Left)
+                                        } else {
+                                            val age = now - programmaticLeftSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                            ) {
+                                                leftCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Left)
                                         }
-                                        clearProgrammaticMove(ActiveMapPane.Left)
                                     }
+                                    leftCameraPosition = position
+                                    rightCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                    currentRightState.moveCameraTo(position, durationMillis = 0)
                                 }
-                                leftCameraPosition = position
-                                rightCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Right, position, now)
-                                currentRightState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        boundsPolylines = boundsPolylines,
-                        referenceRectangles = referenceRectangles,
-                    )
+                            },
+                            boundsPolylines = boundsPolylines,
+                            referenceRectangles = referenceRectangles,
+                        )
 
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxHeight()
-                                .width(1.dp)
-                                .background(MaterialTheme.colorScheme.outline),
-                    )
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(MaterialTheme.colorScheme.outline),
+                        )
 
-                    CameraSyncMapPane(
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                        menuContent = {
-                            IconSelectMenu(
-                                itemList = rightMenuItems,
-                                selectedIndex = rightSelectedIndex,
-                                onSelect = { index, _ -> rightSelectedIndex = index },
-                            )
-                        },
-                        mapViewState = rightState,
-                        label = "Synced Camera",
-                        cameraPosition = rightCameraPosition,
-                        onCameraMove = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticRightKey != null) {
-                                    if (now > programmaticRightUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Right)
-                                    } else {
-                                        val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
-                                        ) {
-                                            rightCameraPosition = position
-                                            return@launch
+                        CameraSyncMapPane(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            menuContent = {
+                                IconSelectMenu(
+                                    itemList = rightMenuItems,
+                                    selectedIndex = rightSelectedIndex,
+                                    onSelect = { index, _ -> rightSelectedIndex = index },
+                                )
+                            },
+                            mapViewState = rightState,
+                            label = "Synced Camera",
+                            cameraPosition = rightCameraPosition,
+                            onCameraMove = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticRightKey != null) {
+                                        if (now > programmaticRightUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Right)
+                                        } else {
+                                            val age = now - programmaticRightSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                            ) {
+                                                rightCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Right)
                                         }
-                                        clearProgrammaticMove(ActiveMapPane.Right)
                                     }
+
+                                    if (now - lastRightMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                    lastRightMoveSyncAtMs = now
+
+                                    rightCameraPosition = position
+                                    leftCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                    currentLeftState.moveCameraTo(position, durationMillis = 0)
                                 }
-
-                                if (now - lastRightMoveSyncAtMs < moveSyncIntervalMs) return@launch
-                                lastRightMoveSyncAtMs = now
-
-                                rightCameraPosition = position
-                                leftCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Left, position, now)
-                                currentLeftState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        onCameraMoveEnd = { position ->
-                            mainScope.launch {
-                                val now = SystemClock.uptimeMillis()
-                                if (programmaticRightKey != null) {
-                                    if (now > programmaticRightUntilMs) {
-                                        clearProgrammaticMove(ActiveMapPane.Right)
-                                    } else {
-                                        val age = now - programmaticRightSinceMs
-                                        if (age <= programmaticGraceMs ||
-                                            isProgrammaticMove(ActiveMapPane.Right, position, now)
-                                        ) {
-                                            rightCameraPosition = position
-                                            return@launch
+                            },
+                            onCameraMoveEnd = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticRightKey != null) {
+                                        if (now > programmaticRightUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Right)
+                                        } else {
+                                            val age = now - programmaticRightSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                            ) {
+                                                rightCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Right)
                                         }
-                                        clearProgrammaticMove(ActiveMapPane.Right)
                                     }
+                                    rightCameraPosition = position
+                                    leftCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                    currentLeftState.moveCameraTo(position, durationMillis = 0)
                                 }
-                                rightCameraPosition = position
-                                leftCameraPosition = position
-                                markProgrammaticMove(ActiveMapPane.Left, position, now)
-                                currentLeftState.moveCameraTo(position, durationMillis = 0)
-                            }
-                        },
-                        boundsPolylines = boundsPolylines,
-                        referenceRectangles = referenceRectangles,
-                    )
+                            },
+                            boundsPolylines = boundsPolylines,
+                            referenceRectangles = referenceRectangles,
+                        )
+                    }
+                } else {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        CameraSyncMapPane(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            menuContent = {
+                                IconSelectMenu(
+                                    itemList = leftMenuItems,
+                                    selectedIndex = leftSelectedIndex,
+                                    onSelect = { index, _ -> leftSelectedIndex = index },
+                                )
+                            },
+                            mapViewState = leftState,
+                            label = "Source Camera",
+                            cameraPosition = leftCameraPosition,
+                            onCameraMove = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticLeftKey != null) {
+                                        if (now > programmaticLeftUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Left)
+                                        } else {
+                                            val age = now - programmaticLeftSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                            ) {
+                                                leftCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Left)
+                                        }
+                                    }
+
+                                    if (now - lastLeftMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                    lastLeftMoveSyncAtMs = now
+
+                                    leftCameraPosition = position
+                                    rightCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                    currentRightState.moveCameraTo(position, durationMillis = 0)
+                                }
+                            },
+                            onCameraMoveEnd = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticLeftKey != null) {
+                                        if (now > programmaticLeftUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Left)
+                                        } else {
+                                            val age = now - programmaticLeftSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Left, position, now)
+                                            ) {
+                                                leftCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Left)
+                                        }
+                                    }
+                                    leftCameraPosition = position
+                                    rightCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Right, position, now)
+                                    currentRightState.moveCameraTo(position, durationMillis = 0)
+                                }
+                            },
+                            boundsPolylines = boundsPolylines,
+                            referenceRectangles = referenceRectangles,
+                        )
+
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxHeight()
+                                    .width(1.dp)
+                                    .background(MaterialTheme.colorScheme.outline),
+                        )
+
+                        CameraSyncMapPane(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            menuContent = {
+                                IconSelectMenu(
+                                    itemList = rightMenuItems,
+                                    selectedIndex = rightSelectedIndex,
+                                    onSelect = { index, _ -> rightSelectedIndex = index },
+                                )
+                            },
+                            mapViewState = rightState,
+                            label = "Synced Camera",
+                            cameraPosition = rightCameraPosition,
+                            onCameraMove = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticRightKey != null) {
+                                        if (now > programmaticRightUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Right)
+                                        } else {
+                                            val age = now - programmaticRightSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                            ) {
+                                                rightCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Right)
+                                        }
+                                    }
+
+                                    if (now - lastRightMoveSyncAtMs < moveSyncIntervalMs) return@launch
+                                    lastRightMoveSyncAtMs = now
+
+                                    rightCameraPosition = position
+                                    leftCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                    currentLeftState.moveCameraTo(position, durationMillis = 0)
+                                }
+                            },
+                            onCameraMoveEnd = { position ->
+                                mainScope.launch {
+                                    val now = SystemClock.uptimeMillis()
+                                    if (programmaticRightKey != null) {
+                                        if (now > programmaticRightUntilMs) {
+                                            clearProgrammaticMove(ActiveMapPane.Right)
+                                        } else {
+                                            val age = now - programmaticRightSinceMs
+                                            if (age <= programmaticGraceMs ||
+                                                isProgrammaticMove(ActiveMapPane.Right, position, now)
+                                            ) {
+                                                rightCameraPosition = position
+                                                return@launch
+                                            }
+                                            clearProgrammaticMove(ActiveMapPane.Right)
+                                        }
+                                    }
+                                    rightCameraPosition = position
+                                    leftCameraPosition = position
+                                    markProgrammaticMove(ActiveMapPane.Left, position, now)
+                                    currentLeftState.moveCameraTo(position, durationMillis = 0)
+                                }
+                            },
+                            boundsPolylines = boundsPolylines,
+                            referenceRectangles = referenceRectangles,
+                        )
+                    }
                 }
             }
         }

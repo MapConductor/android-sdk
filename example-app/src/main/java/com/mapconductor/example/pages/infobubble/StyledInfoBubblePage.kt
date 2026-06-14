@@ -104,7 +104,7 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
                 modifier = Modifier.fillMaxSize(),
                 state = mapViewState,
                 onMapLoaded = {
-                    println("地図の読み込みが完了しました")
+                    selectedMarker = markerState1
                 },
                 onMapClick = { geoPoint ->
                     selectedMarker = null // 地図クリックで選択解除
