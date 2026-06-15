@@ -2,6 +2,7 @@ plugins {
     id("java-platform")
     id("maven-publish")
     id("signing")
+    id("com.gradleup.nmcp") version "1.5.0"
 }
 
 // Publishing configuration
@@ -24,6 +25,7 @@ val moduleInfo = mapOf(
     "for-maplibre" to getModuleVersion(":android-for-maplibre"),
     "icons" to getModuleVersion(":android-icons"),
     "heatmap" to getModuleVersion(":android-heatmap"),
+    "geojson" to getModuleVersion(":android-geojson-layer"),
     "marker-clustering" to getModuleVersion(":android-marker-clustering"),
 )
 

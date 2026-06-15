@@ -1,10 +1,10 @@
 [versions]
-agp = "8.13.2"
+agp = "9.2.1"
 
 core = "1.7.0"
-kotlin = "2.3.20"
+kotlin = "2.4.0"
 
-coreKtx = "1.15.0"
+coreKtx = "1.19.0"
 appcompat = "1.7.1"
 
 junit = "4.13.2"
@@ -12,37 +12,33 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 
 lifecycleRuntimeKtx = "2.10.0"
-activityCompose = "1.10.0"
+activityCompose = "1.13.0"
 lifecycleViewmodelCompose = "2.10.0"
 
 # https://developer.android.com/develop/ui/compose/bom/bom-mapping
 
 # gradle.properties?kotlinCompilerExtensionVersion??????
-compose = "1.10.6"
-composeBom = "2026.03.01"
+compose = "1.11.2"
+composeBom = "2026.05.01"
 okhttp = "5.3.2"
 runner = "1.7.0"
 
-mapboxAndroid = "11.14.3"
+mapboxAndroid = "11.24.3"
 playServicesMaps = "20.0.0"
 
 arcgisMapsKotlin = "200.7.0"
 vectordrawable = "1.2.0"
 ktLint = "14.2.0"
-uiToolingPreviewAndroid = "1.9.1"
-uiToolingPreview = "1.9.1"
-uiTooling = "1.9.1"
 geographiclib = "2.1"
-material = "1.10.0"
-mapLibreSdk = "13.0.2"
+mapLibreSdk = "13.2.0"
 mapLibreAnnotation = "3.0.2"
-runtime = "1.10.6"
-runtimeVersion = "1.10.6"
-materialVersion = "1.13.0"
+runtime = "1.11.2"
+runtimeVersion = "1.11.2"
+materialVersion = "1.14.0"
 jts = "1.20.0"
-coroutines = "1.10.2"
-uiGraphics = "1.10.6"
-foundation = "1.10.6"
+coroutines = "1.11.0"
+uiGraphics = "1.11.2"
+foundation = "1.11.2"
 
 [libraries]
 # Android ??
@@ -80,6 +76,7 @@ mapconductor-maplibre = { module = "com.mapconductor:for-maplibre" }
 mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
 mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
 mapconductor-marker-clustering = { module = "com.mapconductor:marker-clustering" }
+mapconductor-geojson = { module = "com.mapconductor:geojson" }
 
 # Mapbox
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }

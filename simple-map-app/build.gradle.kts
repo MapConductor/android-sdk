@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jlleitschuh.gradle.ktlint")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
@@ -16,12 +15,12 @@ ktlint {
 
 android {
     namespace = "com.mapconductor.simplemapapp"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.mapconductor.simplemapapp"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -42,7 +41,7 @@ android {
             isMinifyEnabled = false
 
             proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
+                getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
         }
@@ -100,15 +99,6 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(
-            org.jetbrains.kotlin.gradle.dsl.JvmTarget
-                .fromTarget("11"),
-        )
-    }
-}
-
 secrets {
     propertiesFileName = "secrets.properties"
     defaultPropertiesFileName = "local.defaults.properties"
@@ -162,4 +152,6 @@ dependencies {
     )
 
     implementation(project(":android-heatmap"))
+
+    implementation(project(":android-geojson-layer"))
 }

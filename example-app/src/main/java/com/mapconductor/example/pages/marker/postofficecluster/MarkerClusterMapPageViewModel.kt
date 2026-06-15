@@ -36,8 +36,6 @@ interface MarkerClusterMapPageViewModelInterface {
     fun onMapLoaded(mapViewState: MapViewStateInterface<*>)
 
     fun onInfoClick(postOffice: PostOffice)
-
-    fun loadPostOfficeData()
 }
 
 class MarkerClusterMapPageViewModel(
@@ -78,13 +76,13 @@ class MarkerClusterMapPageViewModel(
         MutableStateFlow(null)
     override val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?> = _renderingStrategy.asStateFlow()
 
-    override fun loadPostOfficeData() {
+    fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
         viewModelScope.launch(Dispatchers.Default) {
             _isDataLoading.value = true
             try {
-                delay(3000)
+                delay(1000)
                 val postOffices = dataLoader.loadAllPostOffices()
 
                 val markerStates =
@@ -98,7 +96,6 @@ class MarkerClusterMapPageViewModel(
                         )
                     }
                 _markerList.value = markerStates
-                delay(3000)
             } catch (t: Throwable) {
                 _markerList.value = emptyList()
             } finally {
@@ -128,6 +125,7 @@ class MarkerClusterMapPageViewModel(
             _mapViewState.value?.moveCameraTo(
                 cameraPosition = cameraPosition,
             )
+            loadPostOfficeData()
         }
     }
 

@@ -19,7 +19,7 @@ jobs:
       ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -82,6 +82,7 @@ jobs:
             android-icons
             android-marker-clustering
             android-heatmap
+            android-geojson-layer
             mapconductor-bom
             android-sdk-core
             android-for-arcgis
@@ -134,7 +135,7 @@ jobs:
               echo "  Already published (remote version ${remote_version}); skipping."
             else
               echo "  Will publish local version ${local_version} (remote='${remote_version}')."
-              publish_tasks+=(":${module}:publishReleasePublicationToCentralPortal")
+              publish_tasks+=(":${module}:publishAllPublicationsToCentralPortal")
             fi
           done
 

@@ -64,7 +64,7 @@ class CirclePageViewModel :
             Color.LightGray,
             Color.Magenta,
         )
-    private var tapIdx = 0
+    private var tapIdx by mutableStateOf(0)
     override var fillOpacity by mutableStateOf(0.3f)
     override var strokeWidth by mutableStateOf(3.0f)
 
@@ -130,10 +130,10 @@ class CirclePageViewModel :
             CircleState(
                 id = "circle",
                 center = circleCenter,
-                radiusMeters = radiusMeters, // Initial radius
+                radiusMeters = radiusMeters,
                 strokeColor = Color.Blue.copy(alpha = 0.5f),
                 strokeWidth = strokeWidth.dp,
-                fillColor = this.colors[0].copy(alpha = fillOpacity),
+                fillColor = colors[tapIdx].copy(alpha = fillOpacity),
                 onClick = this::onCircleClick,
             )
 
@@ -156,18 +156,12 @@ class CirclePageViewModel :
     }
 
     override fun onCircleClick(event: CircleEvent) {
-        this.tapIdx = (this.tapIdx + 1) % this.colors.size
-        event.state.fillColor = this.colors[this.tapIdx].copy(alpha = fillOpacity)
+        tapIdx = (tapIdx + 1) % colors.size
         showToast("Circle clicked - Radius: ${radiusMeters.toInt()}m")
     }
 
     override fun onMarkerMove(dragged: MarkerState) {
         _edgeMarker.value.position = dragged.position
-
-        // Update circle radius
-        circleState.radiusMeters = radiusMeters // haversineDistance(circleCenter, _edgeMarker.value.position)
-
-//        showToast("Radius updated: ${radiusMeters.toInt()}m")
     }
 
     override fun showToast(text: String) {

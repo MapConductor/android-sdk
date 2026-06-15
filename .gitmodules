@@ -12,7 +12,7 @@
 	url = git@github.com:MapConductor/android-for-maplibre.git
 [submodule "android-for-mapbox"]
 	path = android-for-mapbox
-	url = git@github.com:MapConductor/android-for-mapbox.git 
+	url = git@github.com:MapConductor/android-for-mapbox.git
 [submodule "android-for-here"]
 	path = android-for-here
 	url = git@github.com:MapConductor/android-for-here.git
@@ -25,3 +25,6 @@
 [submodule "android-icons"]
 	path = android-icons
 	url = git@github.com:MapConductor/android-icons.git
+[submodule "android-geojson-layer"]
+	path = android-geojson-layer
+	url = git@github.com:MapConductor/android-geojson-layer.git

@@ -36,7 +36,7 @@ interface PostOfficeViewModelInterface {
 
     fun onInfoClick(postOffice: PostOffice)
 
-    fun loadPostOfficeData()
+    // fun loadPostOfficeData()
 }
 
 class PostOfficeViewModel(
@@ -91,13 +91,13 @@ class PostOfficeViewModel(
 
     private var cameraPosition: MapCameraPosition = initCameraPosition
 
-    override fun loadPostOfficeData() {
+    fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
 
         coroutine.launch {
+            sleep(1000)
             _isDataLoading.value = true
             val postOffices = dataLoader.loadAllPostOffices()
-            sleep(1000)
 
             val markerStates =
                 postOffices.map { it ->
@@ -110,7 +110,6 @@ class PostOfficeViewModel(
                     )
                 }
             _markerList.value = markerStates
-            sleep(6000)
             _isDataLoading.value = false
         }
     }
@@ -136,6 +135,7 @@ class PostOfficeViewModel(
             _mapViewState.value?.moveCameraTo(
                 cameraPosition = cameraPosition,
             )
+            loadPostOfficeData()
         }
     }
 

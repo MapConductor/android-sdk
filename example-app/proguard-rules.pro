@@ -56,10 +56,3 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
-
-# Remove logging in release builds
--assumenosideeffects class android.util.Log {
-    public static *** d(...);
-    public static *** v(...);
-    public static *** i(...);
-}
