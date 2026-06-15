@@ -25,7 +25,7 @@ val moduleInfo = mapOf(
     "for-maplibre" to getModuleVersion(":android-for-maplibre"),
     "icons" to getModuleVersion(":android-icons"),
     "heatmap" to getModuleVersion(":android-heatmap"),
-    "geojson" to getModuleVersion(":android-geojson-layer"),
+    "geojson-layer" to getModuleVersion(":android-geojson-layer"),
     "marker-clustering" to getModuleVersion(":android-marker-clustering"),
 )
 
