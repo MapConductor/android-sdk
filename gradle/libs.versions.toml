@@ -20,11 +20,7 @@ lifecycleViewmodelCompose = "2.10.0"
 # gradle.properties?kotlinCompilerExtensionVersion??????
 compose = "1.11.2"
 composeBom = "2026.05.01"
-<<<<<<< HEAD
 okhttp = "5.4.0"
-=======
-okhttp = "5.3.2"
->>>>>>> b6e42dde98a8f4d60f94fdd25f3738d99ef35059
 runner = "1.7.0"
 
 mapboxAndroid = "11.24.3"
@@ -34,11 +30,7 @@ arcgisMapsKotlin = "200.7.0"
 vectordrawable = "1.2.0"
 ktLint = "14.2.0"
 geographiclib = "2.1"
-<<<<<<< HEAD
 mapLibreSdk = "13.3.0"
-=======
-mapLibreSdk = "13.2.0"
->>>>>>> b6e42dde98a8f4d60f94fdd25f3738d99ef35059
 mapLibreAnnotation = "3.0.2"
 runtime = "1.11.2"
 runtimeVersion = "1.11.2"
