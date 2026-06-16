@@ -131,3 +131,10 @@ signing {
         sign(publishing.publications["release"])
     }
 }
+
+nmcp {
+    publishAllPublicationsToCentralPortal {
+        username.set(findProperty("ossrh_username") as String? ?: System.getenv("OSSRH_USERNAME") ?: "")
+        password.set(findProperty("ossrh_password") as String? ?: System.getenv("OSSRH_PASSWORD") ?: "")
+    }
+}
