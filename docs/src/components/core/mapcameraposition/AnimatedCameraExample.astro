@@ -58,7 +58,7 @@ fun AnimatedCameraExample() {
         locations.forEachIndexed { index, location ->
             Marker(
                 position = location,
-                icon = DefaultIcon(
+                icon = ColorDefaultIcon(
                     fillColor = if (index == currentIndex) Color.Red else Color.Gray,
                     label = when (index) {
                         0 -> "SF"

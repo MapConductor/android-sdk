@@ -1,0 +1,20 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun ArcGISMapView2D(
+    state: ArcGISMapViewState,
+    modifier: Modifier = Modifier,
+    markerTiling: MarkerTilingOptions? = null,
+    sdkInitialize: (suspend (android.content.Context) -> Boolean)? = null,
+    onMapLoaded: OnMapLoadedHandler? = null,
+    onCameraMoveStart: OnCameraMoveHandler? = null,
+    onCameraMove: OnCameraMoveHandler? = null,
+    onCameraMoveEnd: OnCameraMoveHandler? = null,
+    onMapClick: OnMapEventHandler? = null,
+    onMapLongClick: OnMapEventHandler? = null,
+    content: (@Composable ArcGISMapViewScope.() -> Unit)? = null,
+)`;
+---
+
+<Code code={code} lang="kotlin" />

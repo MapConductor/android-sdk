@@ -91,8 +91,8 @@ fun MapWithCameraControl(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize(),
             state = mapViewState
         ) {
-            Marker(position = marker1, icon = DefaultIcon(label = "${marker1Label}"))
-            Marker(position = marker2, icon = DefaultIcon(label = "${marker2Label}"))
+            Marker(position = marker1, icon = ColorDefaultIcon(label = "${marker1Label}"))
+            Marker(position = marker2, icon = ColorDefaultIcon(label = "${marker2Label}"))
         }
     }
 }`;

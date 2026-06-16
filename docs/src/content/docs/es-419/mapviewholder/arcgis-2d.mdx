@@ -1,0 +1,57 @@
+---
+title: ArcGISMapView2D (vista plana 2D)
+head:
+  - tag: meta
+    attrs:
+      name: description
+      content: ArcGISMapView2D de MapConductor Android SDK - Composable de vista de mapa plana 2D de ArcGIS
+---
+
+import ArcGISMapView2DSignature from '~/components/api/mapviewholder/ArcGISMapView2DSignature.astro';
+import ArcGISMapView2DVsArcGISMapView from '~/components/api/mapviewholder/ArcGISMapView2DVsArcGISMapView.astro';
+import ArcGISMapView2DBasicExample from '~/components/api/mapviewholder/ArcGISMapView2DBasicExample.astro';
+
+`ArcGISMapView2D` es un Composable que muestra una vista de mapa plana 2D de ArcGIS.
+Mientras que el `ArcGISMapView` estándar se basa en un `SceneView` 3D, `ArcGISMapView2D` usa el `MapView` 2D de ArcGIS.
+
+## Descripción general
+
+Úsalo cuando necesites un mapa de ArcGIS especializado para visualización 2D. `ArcGISMapViewState` puede compartirse con el `ArcGISMapView` estándar y se crea con `rememberArcGISMapViewState()`.
+
+## Firma del Composable
+
+`ArcGISMapView2D` se proporciona en el módulo `android-for-arcgis`.
+
+<ArcGISMapView2DSignature />
+
+## Diferencias con ArcGISMapView
+
+<ArcGISMapView2DVsArcGISMapView />
+
+- Usa un `MapView` 2D en lugar de un `SceneView` 3D
+- `tilt` siempre queda fijo en `0`, por lo que no hay inclinación 3D
+- No muestra edificios 3D ni otro contenido 3D
+- Está especializado para mapas 2D y es liviano para pantallas que no necesitan visualización 3D
+- `ArcGISMapViewState` puede compartirse con el `ArcGISMapView` estándar
+
+## Uso básico
+
+<ArcGISMapView2DBasicExample />
+
+## Parámetros
+
+- **`state`**: `ArcGISMapViewState`. Mantiene la posición de cámara, el diseño del mapa, el controlador y otros estados.
+- **`modifier`**: `Modifier` de Compose. Se usa para ajustes de layout como tamaño, márgenes y fondo.
+- **`markerTiling`**: `MarkerTilingOptions?`. Configuración de visualización de marcadores basada en mosaicos.
+- **`sdkInitialize`**: Función suspend usada para reemplazar el proceso de inicialización del SDK de ArcGIS.
+- **`onMapLoaded`**: Se llama cuando el mapa terminó de cargar.
+- **`onCameraMoveStart`**: Se llama cuando inicia el movimiento de la cámara.
+- **`onCameraMove`**: Se llama mientras la cámara se mueve.
+- **`onCameraMoveEnd`**: Se llama cuando termina el movimiento de la cámara.
+- **`onMapClick`**: Se llama cuando el usuario toca una parte del mapa que no es un overlay.
+- **`onMapLongClick`**: Se llama cuando el usuario mantiene presionada una parte del mapa que no es un overlay.
+- **`content`**: Bloque Composable de `ArcGISMapViewScope` para colocar contenido del mapa, como marcadores, polilíneas y polígonos.
+
+## Notas
+
+En `ArcGISMapView2D`, `tilt` siempre queda fijo en `0`. Aunque se especifique `tilt` en `MapCameraPosition`, el `MapView` 2D lo ignora y no se realiza visualización 3D ni visualización tridimensional de edificios.

@@ -16,7 +16,7 @@ fun BasicMarkers() {
         markers.forEach { markerData ->
             Marker(
                 position = markerData.position,
-                icon = DefaultIcon()
+                icon = ColorDefaultIcon()
             )
         }
     }
@@ -33,7 +33,7 @@ fun StrategyMarkers() {
                 state = MarkerState(
                     id = markerData.id,
                     position = markerData.position,
-                    icon = DefaultIcon()
+                    icon = ColorDefaultIcon()
                 )
             )
             strategy.markerManager.registerEntity(entity)

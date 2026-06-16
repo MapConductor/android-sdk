@@ -1,0 +1,23 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForLargeFile?: string;
+  commentForStream?: string;
+}
+
+const {
+  commentForLargeFile = "大容量 GeoJSON ファイルのパース",
+  commentForStream = "1フィーチャずつ処理（メモリ効率が良い）"
+} = Astro.props;
+
+const code = `// ${commentForLargeFile}
+val features = GeoJSONParser.parseStream(assets.open("data.geojson"))
+
+// ${commentForStream}
+GeoJSONParser.streamParse(assets.open("large-data.geojson")) { feature ->
+    // 1件ずつ処理
+}`;
+---
+
+<Code code={code} lang="kotlin" />

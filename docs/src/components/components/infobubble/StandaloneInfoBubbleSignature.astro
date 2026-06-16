@@ -1,0 +1,16 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MapViewScope.InfoBubble(
+    position: GeoPoint,
+    bubbleColor: Color = Color.White,
+    borderColor: Color = Color.Black,
+    contentPadding: Dp = 8.dp,
+    cornerRadius: Dp = 4.dp,
+    tailSize: Dp = 8.dp,
+    content: @Composable () -> Unit,
+)`;
+---
+
+<Code code={code} lang="kotlin" />

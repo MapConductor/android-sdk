@@ -58,6 +58,7 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 ### `android-for-arcgis`
 
 - `ArcGISMapView` Composable
+- `ArcGISMapView2D` Composable（詳しくは [ArcGISMapView2D（2D フラットビュー）](/ja/mapviewholder/arcgis-2d/) を参照してください）
 - `ArcGISMapViewState`
 
 ### `android-for-maplibre`
@@ -92,6 +93,17 @@ MapConductor は複数の Gradle モジュールに分割されているため�
 - カスタム `HeatmapGradient` サポート
 
 タイルベースのラスターレイヤーを通じてすべての地図プロバイダで動作します。詳しくは [ヒートマップ](/ja/experimental/heatmap/) を参照してください。
+
+### `android-geojson-layer`
+
+地図実装非依存な GeoJSON レイヤー:
+
+- `GeoJSONLayer` Composable
+- 静的データ向けの `GeoJSONFeature`
+- Compose state と連携する `GeoJSONFeatureState`
+- `GeoJSONParser` による一括パースとストリームパース
+
+タイルベースのラスターレイヤーを通じてすべての地図プロバイダで動作します。詳しくは [GeoJSON レイヤー](/ja/experimental/geojson-layer/) を参照してください。
 
 ### `android-marker-clustering`
 

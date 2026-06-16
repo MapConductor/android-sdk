@@ -1,0 +1,15 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val layerState = remember {
+    GeoJSONLayerState(
+        strokeColor = Color.rgb(255, 87, 34),      // オレンジ
+        fillColor = Color.argb(100, 255, 87, 34),  // 半透明オレンジ
+        strokeWidth = 3f,
+        pointRadius = 12f,
+        opacity = 0.9f,
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

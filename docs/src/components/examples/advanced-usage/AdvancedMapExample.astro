@@ -60,7 +60,7 @@ fun AdvancedMapScreen() {
         // ${commentMarker}
         Marker(
             position = GeoPoint.fromLatLong(${centerLat}, ${centerLong}),
-            icon = DefaultIcon(label = "${markerLabel}"),
+            icon = ColorDefaultIcon(label = "${markerLabel}"),
             onClick = { markerState ->
                 println("${commentForMarkerClick}")
             }

@@ -39,7 +39,7 @@ fun DynamicPolylineExample() {
                 points.forEachIndexed { index, point ->
                     Marker(
                         position = point,
-                        icon = DefaultIcon(
+                        icon = ColorDefaultIcon(
                             fillColor = if (index == 0) Color.Green
                             else if (index == points.size - 1) Color.Red
                             else Color.Blue,

@@ -68,7 +68,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
                 id = "marker1",
                 position = GeoPoint.fromLatLong(${marker1Latitude}, ${marker1Longitude}),
                 icon =
-                    DefaultIcon(
+                    ColorDefaultIcon(
                         fillColor = Color.Blue,
                         infoAnchor = Offset(0.5f, 0.25f),
                         label = "1",
@@ -87,7 +87,7 @@ fun RightInfoBubbleMapExample(modifier: Modifier = Modifier) {
                 id = "marker2",
                 position = GeoPoint.fromLatLong(${marker2Latitude}, ${marker2Longitude}),
                 icon =
-                    DefaultIcon(
+                    ColorDefaultIcon(
                         fillColor = Color.Red,
                         infoAnchor = Offset(0.5f, 0.25f),
                         label = "2",

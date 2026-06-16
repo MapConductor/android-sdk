@@ -1,0 +1,14 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `dependencies {
+    implementation(platform("com.mapconductor:mapconductor-bom:{BOM_MODULE_VERSION}"))
+    implementation("com.mapconductor:core")
+    implementation("com.mapconductor:geojson-layer")
+
+    // 使用する地図 SDK を選択
+    implementation("com.mapconductor:for-googlemaps")
+}`;
+---
+
+<Code code={code} lang="kotlin" />

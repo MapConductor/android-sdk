@@ -1,0 +1,14 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MapViewScope.GeoJSONLayer(
+    state: GeoJSONLayerState = remember { GeoJSONLayerState() },
+    features: List<GeoJSONFeature> = emptyList(),
+    tileSize: Int = 512,
+    disableTileServerCache: Boolean = false,
+    content: @Composable () -> Unit = {},
+)`;
+---
+
+<Code code={code} lang="kotlin" />

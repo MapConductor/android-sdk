@@ -20,7 +20,7 @@ MapView(state = mapViewState) {
     // Custom colored marker with label
     Marker(
         position = GeoPoint.fromLatLong(37.7849, -122.4094),
-        icon = DefaultIcon(
+        icon = ColorDefaultIcon(
             scale = 1.2f,
             label = "SF",
             fillColor = Color.Blue,
@@ -32,7 +32,7 @@ MapView(state = mapViewState) {
     // Small marker with custom styling
     Marker(
         position = GeoPoint.fromLatLong(37.7649, -122.4294),
-        icon = DefaultIcon(
+        icon = ColorDefaultIcon(
             scale = 0.8f,
             fillColor = Color.Green,
             labelTextColor = Color.Black,

@@ -1,0 +1,57 @@
+---
+title: ArcGISMapView2D（2D フラットビュー）
+head:
+  - tag: meta
+    attrs:
+      name: description
+      content: MapConductor Android SDKのArcGISMapView2D — ArcGISの2DフラットマップビューComposable
+---
+
+import ArcGISMapView2DSignature from '~/components/api/mapviewholder/ArcGISMapView2DSignature.astro';
+import ArcGISMapView2DVsArcGISMapView from '~/components/api/mapviewholder/ArcGISMapView2DVsArcGISMapView.astro';
+import ArcGISMapView2DBasicExample from '~/components/api/mapviewholder/ArcGISMapView2DBasicExample.astro';
+
+`ArcGISMapView2D` は ArcGIS の 2D フラット地図ビューを表示する Composable です。
+通常の `ArcGISMapView` が 3D `SceneView` ベースであるのに対し、`ArcGISMapView2D` は ArcGIS の 2D `MapView` を使用します。
+
+## 概要
+
+2D 表示に特化した ArcGIS マップが必要な場合に使用します。`ArcGISMapViewState` は通常の `ArcGISMapView` と共用でき、`rememberArcGISMapViewState()` で生成します。
+
+## Composable シグネチャ
+
+`ArcGISMapView2D` は `android-for-arcgis` モジュールで提供されます。
+
+<ArcGISMapView2DSignature />
+
+## ArcGISMapView との違い
+
+<ArcGISMapView2DVsArcGISMapView />
+
+- 3D `SceneView` の代わりに 2D `MapView` を使用します
+- `tilt` は常に `0` に固定され、3D 傾斜はありません
+- 建物などの 3D 表示は行いません
+- 2D マップに特化しており、3D 表示が不要な画面で軽量に扱えます
+- `ArcGISMapViewState` は通常の `ArcGISMapView` と共用できます
+
+## 基本的な使い方
+
+<ArcGISMapView2DBasicExample />
+
+## パラメータ
+
+- **`state`**: `ArcGISMapViewState`。カメラ位置、地図デザイン、コントローラなどを保持します。
+- **`modifier`**: Compose の `Modifier`。サイズ、余白、背景などのレイアウト指定に使います。
+- **`markerTiling`**: `MarkerTilingOptions?`。マーカー表示のタイル化設定です。
+- **`sdkInitialize`**: ArcGIS SDK の初期化処理を差し替えるための suspend 関数です。
+- **`onMapLoaded`**: 地図の読み込みが完了したときに呼び出されます。
+- **`onCameraMoveStart`**: カメラ移動が開始されたときに呼び出されます。
+- **`onCameraMove`**: カメラ移動中に呼び出されます。
+- **`onCameraMoveEnd`**: カメラ移動が終了したときに呼び出されます。
+- **`onMapClick`**: ユーザーがマップ上のオーバーレイではない部分をタップしたときに呼び出されます。
+- **`onMapLongClick`**: ユーザーがマップ上のオーバーレイではない部分を長押ししたときに呼び出されます。
+- **`content`**: マーカー、ポリライン、ポリゴンなどの地図コンテンツを配置する `ArcGISMapViewScope` の Composable ブロックです。
+
+## 注意事項
+
+`ArcGISMapView2D` では `tilt` は常に `0` に固定されます。`MapCameraPosition` に `tilt` を指定しても 2D `MapView` では無視され、3D 表示や建物の立体表示は行われません。

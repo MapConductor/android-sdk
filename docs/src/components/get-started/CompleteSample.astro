@@ -125,7 +125,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             // ${commentMarkers}
             Marker(
                 position = marker1,
-                icon = DefaultIcon(
+                icon = ColorDefaultIcon(
                     label = "${marker1Label}",
                     fillColor = Color.Red,
                 ),
@@ -135,7 +135,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
 
             Marker(
                 position = marker2,
-                icon = DefaultIcon(
+                icon = ColorDefaultIcon(
                     label = "${marker2Label}",
                     fillColor = Color.Blue
                 ),
@@ -147,7 +147,7 @@ fun CompleteSample(modifier: Modifier = Modifier) {
             clickedPosition?.let { position ->
                 Marker(
                     position = position,
-                    icon = DefaultIcon(
+                    icon = ColorDefaultIcon(
                         label = "!",
                         fillColor = Color.Green
                     ),

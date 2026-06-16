@@ -1,0 +1,26 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val state = rememberArcGISMapViewState(
+    mapDesign = ArcGISDesign.Streets,
+    cameraPosition = MapCameraPosition(
+        position = GeoPoint(35.68, 139.76),
+        zoom = 12.0,
+    )
+)
+
+ArcGISMapView2D(
+    state = state,
+    modifier = Modifier.fillMaxSize(),
+    onMapLoaded = {
+        println("2D マップ読み込み完了")
+    },
+    onMapClick = { geoPoint ->
+        println("タップ: \${geoPoint.latitude}, \${geoPoint.longitude}")
+    }
+) {
+    // マーカーや他のオーバーレイを配置できます
+}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -72,7 +72,7 @@ fun MultipleBubblesExample() {
             MarkerState(
                 id = "marker_\$index",
                 position = position,
-                icon = DefaultIcon(fillColor = color, label = "\${index + 1}"),
+                icon = ColorDefaultIcon(fillColor = color, label = "\${index + 1}"),
                 extra = name,
                 onClick = onMarkerClick
             )

@@ -81,7 +81,7 @@ fun AdvancedMapExample() {
         // ${commentForCenterMarkerAndCircle}
         Marker(
             position = center,
-            icon = DefaultIcon(label = "${centerMarkerLabel}", fillColor = ${centerMarkerFillColorExpr}),
+            icon = ColorDefaultIcon(label = "${centerMarkerLabel}", fillColor = ${centerMarkerFillColorExpr}),
             extra = "${centerMarkerExtra}",
             onClick = onMarkerClick
         )
@@ -97,7 +97,7 @@ fun AdvancedMapExample() {
         clickedPoint?.let { point ->
             Marker(
                 position = point,
-                icon = DefaultIcon(label = "${clickedMarkerLabel}", fillColor = ${clickedMarkerFillColorExpr}),
+                icon = ColorDefaultIcon(label = "${clickedMarkerLabel}", fillColor = ${clickedMarkerFillColorExpr}),
                 extra = "${clickedMarkerExtra}",
                 onClick = onMarkerClick
             )

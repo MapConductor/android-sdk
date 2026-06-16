@@ -4,11 +4,12 @@ import { Code } from '@astrojs/starlight/components';
 interface Props {
   centerLatitude?: number;
   centerLongitude?: number;
+  zoomLevel?: number;
   mapClickPrefix?: string;
   markerClickPrefix?: string;
   markerLabel?: string;
   markerExtra?: string;
-  circleRadiusMeters?: number;
+  circleRadiusMeters?: string;
   circleStrokeColorExpr?: string;
   circleFillColorExpr?: string;
 }
@@ -16,19 +17,25 @@ interface Props {
 const {
   centerLatitude = 37.7749,
   centerLongitude = -122.4194,
+  zoomLevel = 13.0,
   mapClickPrefix = 'Map clicked at',
   markerClickPrefix = 'Marker clicked',
   markerLabel = 'SF',
   markerExtra = 'San Francisco',
-  circleRadiusMeters = 1000.0,
+  circleRadiusMeters = '1000.0',
   circleStrokeColorExpr = 'Color.Blue',
   circleFillColorExpr = 'Color.Blue.copy(alpha = 0.3f)',
 } = Astro.props;
 
 const code = `@Composable
 fun GoogleMapsExample() {
-    val mapViewState = rememberGoogleMapViewState()
+    val center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude})
+    val camera = MapCameraPosition(position = center, zoom = ${zoomLevel})
 
+    // ↓↓↓ Use rememberGoogleMapViewState for Google Maps
+    val mapViewState = rememberGoogleMapViewState(cameraPosition = camera)
+    
+    // ↓↓↓ Use GoogleMapView for Google Maps
     GoogleMapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -37,7 +44,7 @@ fun GoogleMapsExample() {
     ) {
         Marker(
             position = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
-            icon = DefaultIcon(label = "${markerLabel}"),
+            icon = ColorDefaultIcon(label = "${markerLabel}"),
             extra = "${markerExtra}",
             onClick = { markerState ->
                 println("${markerClickPrefix}: \${markerState.extra}")

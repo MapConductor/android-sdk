@@ -1,0 +1,12 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `@Composable
+fun MapViewScope.InfoBubbleCustom(
+    marker: MarkerState,
+    tailOffset: Offset,
+    content: @Composable () -> Unit,
+)`;
+---
+
+<Code code={code} lang="kotlin" />

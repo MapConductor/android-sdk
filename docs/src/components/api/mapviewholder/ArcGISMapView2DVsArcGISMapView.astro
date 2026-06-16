@@ -1,0 +1,17 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `// 3D ビュー（デフォルト ArcGISMapView）
+ArcGISMapView(
+    state = state,
+    modifier = Modifier.fillMaxSize(),
+) { }
+
+// 2D フラットビュー（ArcGISMapView2D）
+ArcGISMapView2D(
+    state = state,
+    modifier = Modifier.fillMaxSize(),
+) { }`;
+---
+
+<Code code={code} lang="kotlin" />

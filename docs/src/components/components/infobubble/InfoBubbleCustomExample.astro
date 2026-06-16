@@ -1,0 +1,29 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForTailOffset?: string;
+  commentForMarker?: string;
+}
+
+const {
+  commentForTailOffset = "右側中央を接続点にする",
+  commentForMarker = "マーカー"
+} = Astro.props;
+
+const code = `InfoBubbleCustom(
+    marker = markerState, // ${commentForMarker}
+    tailOffset = Offset(1f, 0.5f), // ${commentForTailOffset}
+) {
+    // カスタム形状の吹き出しを描画
+    Box(
+        modifier = Modifier
+            .background(Color.Yellow, RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        Text("カスタムバブル")
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

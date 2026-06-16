@@ -49,7 +49,7 @@ fun InteractiveMap(modifier: Modifier = Modifier) {
         clickedPosition?.let { position ->
             Marker(
                 position = position,
-                icon = DefaultIcon(label = "${clickLabelIcon}"),
+                icon = ColorDefaultIcon(label = "${clickLabelIcon}"),
                 extra = "clicked_marker"
             )
         }

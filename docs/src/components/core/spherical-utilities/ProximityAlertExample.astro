@@ -36,7 +36,7 @@ fun ProximityAlert() {
         // Target location
         Marker(
             position = targetLocation,
-            icon = DefaultIcon(
+            icon = ColorDefaultIcon(
                 fillColor = if (isNearTarget) Color.Green else Color.Red,
                 label = "Target"
             )
@@ -54,7 +54,7 @@ fun ProximityAlert() {
         userLocation?.let { location ->
             Marker(
                 position = location,
-                icon = DefaultIcon(fillColor = Color.Blue, label = "You")
+                icon = ColorDefaultIcon(fillColor = Color.Blue, label = "You")
             )
         }
     }

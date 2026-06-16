@@ -10,7 +10,7 @@ fun GeodesicPolylineExample(modifier: Modifier = Modifier) {
     var markers by remember { mutableStateOf<List<MarkerState>>(emptyList()) }
     val onPolylineClick: OnPolylineEventHandler = { polylineEvent ->
         markers = markers + MarkerState(
-            icon = DefaultIcon(fillColor = polylineEvent.state.strokeColor),
+            icon = ColorDefaultIcon(fillColor = polylineEvent.state.strokeColor),
             position = polylineEvent.clicked
         )
     }

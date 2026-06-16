@@ -26,7 +26,7 @@ const {
 const code = `// ${commentForBottomAnchorIntro}
 val markerWithBottomAnchor = MarkerState(
     position = position,
-    icon = ImageDefaultIcon(
+    icon = ImageColorDefaultIcon(
         drawable = customIcon,
         anchor = Offset(${bottomAnchorX}f, ${bottomAnchorY}f) // ${commentForBottomAnchorAnchor}
     )
@@ -35,7 +35,7 @@ val markerWithBottomAnchor = MarkerState(
 // ${commentForCenterAnchorIntro}
 val markerWithCenterAnchor = MarkerState(
     position = position,
-    icon = ImageDefaultIcon(
+    icon = ImageColorDefaultIcon(
         drawable = customIcon,
         anchor = Offset(${centerAnchorX}f, ${centerAnchorY}f) // ${commentForCenterAnchorAnchor}
     )

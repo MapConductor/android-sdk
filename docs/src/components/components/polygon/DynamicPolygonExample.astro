@@ -49,7 +49,7 @@ fun DynamicPolygonExample() {
             polygonPoints.forEachIndexed { index, point ->
                 Marker(
                     position = point,
-                    icon = DefaultIcon(
+                    icon = ColorDefaultIcon(
                         fillColor = if (index == 0) Color.Green
                                   else if (index == polygonPoints.size - 1 && !isCreating) Color.Red
                                   else Color.Blue,

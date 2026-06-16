@@ -46,7 +46,7 @@ fun InteractivePolylineExample() {
         MarkerState(
             id = "marker-\${index}",
             position = point,
-            icon = DefaultIcon(label = "\${index + 1}", scale = 0.7f),
+            icon = ColorDefaultIcon(label = "\${index + 1}", scale = 0.7f),
             draggable = true,
             extra = index,
             onDrag = onWaypointDrag

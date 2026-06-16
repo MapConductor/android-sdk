@@ -25,7 +25,7 @@ fun ClickToAddMarkersExample() {
         onMapClick = { geoPoint ->
             val newMarker = MarkerState(
                 position = geoPoint,
-                icon = DefaultIcon(
+                icon = ColorDefaultIcon(
                     label = "\${markers.size + 1}",
                     fillColor = ${fillColor}
                 ),

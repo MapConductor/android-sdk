@@ -13,7 +13,7 @@ const code = `${commentForMapViewUsage.startsWith("Replace") ? "// " + commentFo
 MapView(state = mapViewState) {
     Marker(
         position = GeoPoint.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(
+        icon = ColorDefaultIcon(
             scale = 1.5f,
             label = "SF",
             fillColor = Color.Blue,

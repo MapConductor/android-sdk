@@ -1,0 +1,101 @@
+---
+title: Capa GeoJSON
+head:
+  - tag: meta
+    attrs:
+      name: description
+      content: Capa GeoJSON de MapConductor Android SDK - módulo para mostrar datos GeoJSON con cualquier proveedor de mapas
+---
+
+import GeoJSONLayerInstall from '~/components/experimental/geojson/GeoJSONLayerInstall.astro';
+import GeoJSONLayerSignature from '~/components/experimental/geojson/GeoJSONLayerSignature.astro';
+import GeoJSONLayerStateSignature from '~/components/experimental/geojson/GeoJSONLayerStateSignature.astro';
+import GeoJSONFeatureSignature from '~/components/experimental/geojson/GeoJSONFeatureSignature.astro';
+import GeoJSONGeometryTypes from '~/components/experimental/geojson/GeoJSONGeometryTypes.astro';
+import GeoJSONParserSignature from '~/components/experimental/geojson/GeoJSONParserSignature.astro';
+import GeoJSONBasicExample from '~/components/experimental/geojson/GeoJSONBasicExample.astro';
+import GeoJSONParserExample from '~/components/experimental/geojson/GeoJSONParserExample.astro';
+import GeoJSONClickExample from '~/components/experimental/geojson/GeoJSONClickExample.astro';
+import GeoJSONFeatureStateExample from '~/components/experimental/geojson/GeoJSONFeatureStateExample.astro';
+import GeoJSONStyleExample from '~/components/experimental/geojson/GeoJSONStyleExample.astro';
+
+`android-geojson-layer` es un módulo independiente para mostrar datos GeoJSON sin depender de la implementación del mapa.
+Como se renderiza como una capa ráster basada en mosaicos, puede usarse con cualquier SDK de mapas, incluidos Google Maps, Mapbox, MapLibre, ArcGIS y HERE.
+
+## Instalación
+
+<GeoJSONLayerInstall />
+
+## Uso básico
+
+Crea una lista de objetos `GeoJSONFeature` y pásala a `GeoJSONLayer` dentro del bloque content de cualquier `MapView`.
+
+<GeoJSONBasicExample />
+
+## Referencia de API
+
+### Composable GeoJSONLayer
+
+<GeoJSONLayerSignature />
+
+- **`state`**: El `GeoJSONLayerState` que administra el estado de visualización, los estilos y el manejo de clics de la capa.
+- **`features`**: Una lista de objetos `GeoJSONFeature` para renderizar como datos estáticos o por lote.
+- **`tileSize`**: El tamaño de mosaico de la capa ráster.
+- **`disableTileServerCache`**: Especifica si se deshabilita la caché del lado del servidor de mosaicos.
+- **`content`**: Un bloque para colocar features que funcionan con el estado de Compose, como `GeoJSONFeatureState`.
+
+### GeoJSONLayerState
+
+<GeoJSONLayerStateSignature />
+
+`processClick(geoPoint)` se llama desde el manejador de clics del mapa para ejecutar hit testing de features. Cuando se encuentra una feature objetivo, llama a `onClick` y devuelve `true`.
+
+### Parámetros de GeoJSONLayerState
+
+- **`opacity`**: La opacidad de toda la capa.
+- **`strokeColor`**: El color predeterminado de líneas y contornos de polígonos.
+- **`fillColor`**: El color predeterminado de relleno de polígonos.
+- **`strokeWidth`**: El valor predeterminado del ancho de línea.
+- **`pointRadius`**: El radio predeterminado para Point / MultiPoint.
+- **`visible`**: Especifica si la capa está visible.
+- **`minZoom`**: El nivel de zoom mínimo en el que se muestra la capa.
+- **`maxZoom`**: El nivel de zoom máximo en el que se muestra la capa.
+- **`onClick`**: Callback que se invoca cuando el hit testing encuentra una feature.
+
+### GeoJSONFeature
+
+<GeoJSONFeatureSignature />
+
+`GeoJSONFeature` es adecuado para datos estáticos o datos cargados por lote. Al renderizar datasets grandes, es más eficiente pasar los datos al parámetro `features` de `GeoJSONLayer`.
+
+## Tipos de geometría
+
+<GeoJSONGeometryTypes />
+
+En `Polygon`, `rings[0]` se trata como el anillo exterior y `rings[1..]` como huecos. Usa `LonLat(longitude, latitude)` para especificar coordenadas.
+
+## Parseo de archivos grandes
+
+`GeoJSONParser` proporciona un método para parsear un InputStream completo de una vez y también parseo en streaming que procesa una feature a la vez.
+
+<GeoJSONParserSignature />
+
+<GeoJSONParserExample />
+
+## Eventos de clic / hit testing
+
+Llamar a `GeoJSONLayerState.processClick()` desde el manejador `onMapClick` de `MapView` permite encontrar features GeoJSON en la posición tocada.
+
+<GeoJSONClickExample />
+
+## Features reactivas (GeoJSONFeatureState)
+
+`GeoJSONFeatureState` es una feature que se coloca dentro del bloque `content` de `GeoJSONLayer` y admite actualizaciones de estado de Compose. Es útil para una pequeña cantidad de features que cambian con frecuencia, pero para datasets grandes se recomienda pasar objetos `GeoJSONFeature` mediante el parámetro `features`.
+
+<GeoJSONFeatureStateExample />
+
+## Personalización de estilos
+
+Los estilos predeterminados de toda la capa pueden especificarse con `GeoJSONLayerState`. Si se configura `strokeColor` o `fillColor` en una `GeoJSONFeature` individual, el estilo específico de esa feature tiene prioridad.
+
+<GeoJSONStyleExample />

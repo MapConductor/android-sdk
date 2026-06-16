@@ -1,0 +1,13 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `object GeoJSONParser {
+    // InputStream 全体をパースして List<GeoJSONFeature> を返す
+    fun parseStream(inputStream: InputStream): List<GeoJSONFeature>
+    
+    // 1フィーチャずつコールバック — 大容量ファイル（10MB+）向け
+    fun streamParse(inputStream: InputStream, onFeature: (GeoJSONFeature) -> Unit)
+}`;
+---
+
+<Code code={code} lang="kotlin" />

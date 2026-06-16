@@ -6,18 +6,12 @@ interface Props {
   centerLongitude?: number;
   zoomLevel?: number;
   mapClickPrefix?: string;
+  markerClickPrefix?: string;
   markerLabel?: string;
   markerExtra?: string;
-  markerLatitude?: number;
-  markerLongitude?: number;
-  polylinePoint1Latitude?: number;
-  polylinePoint1Longitude?: number;
-  polylinePoint2Latitude?: number;
-  polylinePoint2Longitude?: number;
-  polylinePoint3Latitude?: number;
-  polylinePoint3Longitude?: number;
-  polylineStrokeColorExpr?: string;
-  polylineStrokeWidthDp?: number;
+  circleRadiusMeters?: string;
+  circleStrokeColorExpr?: string;
+  circleFillColorExpr?: string;
 }
 
 const {
@@ -25,26 +19,23 @@ const {
   centerLongitude = -122.4194,
   zoomLevel = 13.0,
   mapClickPrefix = 'Map clicked at',
-  markerLabel = 'MB',
-  markerExtra = 'Mapbox marker',
-  markerLatitude = 37.7749,
-  markerLongitude = -122.4194,
-  polylinePoint1Latitude = 37.7749,
-  polylinePoint1Longitude = -122.4194,
-  polylinePoint2Latitude = 37.7849,
-  polylinePoint2Longitude = -122.4094,
-  polylinePoint3Latitude = 37.7949,
-  polylinePoint3Longitude = -122.3994,
-  polylineStrokeColorExpr = 'Color.Red',
-  polylineStrokeWidthDp = 3,
+  markerClickPrefix = 'Marker clicked',
+  markerLabel = 'SF',
+  markerExtra = 'San Francisco',
+  circleRadiusMeters = '1000.0',
+  circleStrokeColorExpr = 'Color.Blue',
+  circleFillColorExpr = 'Color.Blue.copy(alpha = 0.3f)',
 } = Astro.props;
 
 const code = `@Composable
 fun MapboxExample() {
     val center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude})
     val camera = MapCameraPosition(position = center, zoom = ${zoomLevel})
+
+    // ↓↓↓ Use rememberMapboxMapViewState for MapBox
     val mapViewState = rememberMapboxMapViewState(cameraPosition = camera)
 
+    // ↓↓↓ Use MapboxMapView for MapBox
     MapboxMapView(
         state = mapViewState,
         onMapClick = { geoPoint ->
@@ -52,19 +43,19 @@ fun MapboxExample() {
         }
     ) {
         Marker(
-            position = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
-            icon = DefaultIcon(label = "${markerLabel}"),
-            extra = "${markerExtra}"
+            position = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            icon = ColorDefaultIcon(label = "${markerLabel}"),
+            extra = "${markerExtra}",
+            onClick = { markerState ->
+                println("${markerClickPrefix}: \${markerState.extra}")
+            }
         )
 
-        Polyline(
-            points = listOf(
-                GeoPoint.fromLatLong(${polylinePoint1Latitude}, ${polylinePoint1Longitude}),
-                GeoPoint.fromLatLong(${polylinePoint2Latitude}, ${polylinePoint2Longitude}),
-                GeoPoint.fromLatLong(${polylinePoint3Latitude}, ${polylinePoint3Longitude})
-            ),
-            strokeColor = ${polylineStrokeColorExpr},
-            strokeWidth = ${polylineStrokeWidthDp}.dp
+        Circle(
+            center = GeoPoint.fromLatLong(${centerLatitude}, ${centerLongitude}),
+            radiusMeters = ${circleRadiusMeters},
+            strokeColor = ${circleStrokeColorExpr},
+            fillColor = ${circleFillColorExpr}
         )
     }
 }`;

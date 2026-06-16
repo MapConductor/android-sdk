@@ -60,7 +60,7 @@ fun DynamicBoundsExample() {
         // ${commentForCornerMarkers}
         Marker(
             position = southwest,
-            icon = DefaultIcon(fillColor = Color.Green, label = "${southwestLabel}"),
+            icon = ColorDefaultIcon(fillColor = Color.Green, label = "${southwestLabel}"),
             draggable = true,
             extra = "${southwestLabel}",
             onDrag = onCornerMarkerDrag
@@ -68,7 +68,7 @@ fun DynamicBoundsExample() {
 
         Marker(
             position = northeast,
-            icon = DefaultIcon(fillColor = Color.Red, label = "${northeastLabel}"),
+            icon = ColorDefaultIcon(fillColor = Color.Red, label = "${northeastLabel}"),
             draggable = true,
             extra = "${northeastLabel}",
             onDrag = onCornerMarkerDrag

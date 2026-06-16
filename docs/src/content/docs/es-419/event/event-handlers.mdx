@@ -4,7 +4,7 @@ head:
   - tag: meta
     attrs:
       name: description
-      content: Manejadores de eventos de mapa y superposiciones, incluidos onMapClick, onMarkerClick y onDragEnd en MapConductor Android SDK.
+      content: Manejadores de eventos de MapConductor Android SDK - eventos de mapa y overlays como onMapClick, onMarkerClick y onDragEnd
 ---
 
 import MapViewEventHandlersSignature from '~/components/api/event-handlers/MapViewEventHandlersSignature.astro';
@@ -12,6 +12,8 @@ import OnMapLoadedSignature from '~/components/api/event-handlers/OnMapLoadedSig
 import OnMapLoadedExample from '~/components/api/event-handlers/OnMapLoadedExample.astro';
 import OnMapClickSignature from '~/components/api/event-handlers/OnMapClickSignature.astro';
 import OnMapClickExample from '~/components/api/event-handlers/OnMapClickExample.astro';
+import OnMapLongClickSignature from '~/components/api/event-handlers/OnMapLongClickSignature.astro';
+import OnMapLongClickExample from '~/components/api/event-handlers/OnMapLongClickExample.astro';
 import OnMarkerClickSignature from '~/components/api/event-handlers/OnMarkerClickSignature.astro';
 import OnMarkerClickExample from '~/components/api/event-handlers/OnMarkerClickExample.astro';
 import OnMarkerDragSignatures from '~/components/api/event-handlers/OnMarkerDragSignatures.astro';
@@ -24,8 +26,8 @@ import OnPolylineClickSignature from '~/components/api/event-handlers/OnPolyline
 import PolylineEventDataClass from '~/components/api/event-handlers/PolylineEventDataClass.astro';
 import OnPolylineClickExample from '~/components/api/event-handlers/OnPolylineClickExample.astro';
 
-MapConductor proporciona un sistema completo de manejo de eventos para las interacciones de usuario con el mapa y sus componentes.
-Los eventos del mapa se gestionan en el componente MapView, mientras que los eventos de overlays se configuran en sus State.
+MapConductor ofrece manejo integral de eventos para las interacciones del usuario con el mapa y sus componentes.
+Los eventos del mapa se manejan en el componente MapView, y los eventos de overlays se configuran en cada State.
 
 <MapViewEventHandlersSignature />
 
@@ -33,58 +35,68 @@ Los eventos del mapa se gestionan en el componente MapView, mientras que los eve
 
 ### Inicialización del mapa
 
-- Se llama cuando el mapa ha terminado de cargarse y está listo para recibir interacciones.
+- Se llama cuando el mapa terminó de cargar y está listo para la interacción.
 
 <OnMapLoadedSignature />
 
-- Ejemplo:
+-  Ejemplo
 
-<OnMapLoadedExample commentForPrint="Map loaded" />
+<OnMapLoadedExample commentForPrint="Mapa cargado" />
 
-### Interacción con el mapa
+### Interacciones del mapa
 
-- Se llama cuando el usuario toca el mapa (pero no sobre un overlay).
+- Se llama cuando el usuario toca el mapa (una parte que no es un overlay).
 
 <OnMapClickSignature />
 
-**Datos del evento**: `GeoPointInterface` – coordenadas geográficas donde se hizo tap.
-
-- Ejemplo:
-
-<OnMapClickExample commentForPrint="Map clicked at:" />
-
-## Eventos de marcadores
-
-Todos los eventos de marcador reciben un objeto `MarkerState` con el estado actual del marcador.
-
-### Eventos de clic
-
-- Se llama cuando el usuario toca un marcador.
-
-<OnMarkerClickSignature />
-
-**Datos del evento**: `MarkerState` – estado del marcador clicado.
+**Datos del evento**: `GeoPointInterface` - coordenadas geográficas tocadas
 
 -  Ejemplo
 
-<OnMarkerClickExample commentForPrint="Marker clicked at:" />
+<OnMapClickExample commentForPrint="Mapa tocado en:" />
+
+### onMapLongClick
+
+- Se llama cuando el usuario mantiene presionado el mapa (una parte que no es un overlay).
+
+<OnMapLongClickSignature />
+
+**Datos del evento**: `GeoPointInterface` - coordenadas geográficas mantenidas presionadas
+
+-  Ejemplo
+
+<OnMapLongClickExample commentForPrint="Pulsación larga en:" />
+
+## Eventos de marcador
+
+Todos los eventos de marcador reciben un objeto `MarkerState` que contiene el estado actual del marcador.
+
+### Evento de clic
+
+- Se llama cuando se toca un marcador.
+
+<OnMarkerClickSignature />
+
+-  Ejemplo
+
+<OnMarkerClickExample commentForPrint="Marcador tocado en:" />
 
 ### Eventos de arrastre
 
-- `onDragStart`: se llama cuando el usuario comienza a arrastrar un marcador.
-- `onDrag`: se llama mientras el marcador se está arrastrando.
-- `onDragEnd`: se llama cuando el usuario suelta el marcador.
+- **`onDragStart`**: Se llama cuando inicia el arrastre
+- **`onDrag`**: Se llama continuamente durante el arrastre
+- **`onDragEnd`**: Se llama cuando termina el arrastre
 
 <OnMarkerDragSignatures />
 
 <OnMarkerDragExample
-  commentForDragStart="Drag started:"
-  commentForDragEnd="Drag ended:"
+  commentForDragStart="Arrastre iniciado:"
+  commentForDragEnd="Arrastre finalizado:"
 />
 
 ### Eventos de animación
 
-- Se llama cuando comienza y termina una animación de marcador.
+- Se llama cuando las animaciones del marcador inician y terminan.
 
 <OnMarkerAnimateSignatures />
 
@@ -92,7 +104,7 @@ Todos los eventos de marcador reciben un objeto `MarkerState` con el estado actu
 
 ### Eventos de círculo
 
-- Se llama cuando el usuario toca un círculo.
+- Se llama cuando se toca un círculo.
 
 <OnCircleClickSignature />
 
@@ -102,11 +114,11 @@ Todos los eventos de marcador reciben un objeto `MarkerState` con el estado actu
 
 - Ejemplo
 
-<OnCircleClickExample commentForPrint="A circle clicked at:" />
+<OnCircleClickExample commentForPrint="Círculo tocado en:" />
 
 ### Eventos de polilínea
 
-- Se llama cuando el usuario toca una polilínea.
+- Se llama cuando se toca una polilínea.
 
 <OnPolylineClickSignature />
 
@@ -116,4 +128,4 @@ Todos los eventos de marcador reciben un objeto `MarkerState` con el estado actu
 
 - Ejemplo
 
-<OnPolylineClickExample commentForPrint="A polyline clicked at:" />
+<OnPolylineClickExample commentForPrint="Polilínea tocada en:" />

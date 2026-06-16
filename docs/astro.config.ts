@@ -13,11 +13,7 @@ export default defineConfig({
 	integrations: [
 		postBuildIntegration(),
 		starlight({
-			title: {
-				en: "MapConductor — a unified Android maps SDK that lets you work with multiple map providers through a single API",
-				ja: "MapConductor(マップコンダクター) ♪ 複数の地図プロバイダを単一のAPIで扱えるAndroid向け統一地図SDK",
-				"es-419": "MapConductor — Un SDK de mapas unificado para Android que ofrece una API común para múltiples proveedores de mapas",
-			},
+			title: "MapConductor",
 			markdown: {
 				headingLinks: false,
 			},
@@ -114,18 +110,15 @@ export default defineConfig({
 						{ slug: 'states/groundimage-state' },
 					],
 				},
-				// {
-				// 	label: 'Events',
-				// 	translations: {
-				// 		ja: 'イベント',
-				// 	},
-				// 	items: [
-				// 		{ slug: 'event/onMapLoaded' },
-				// 		// { slug: 'event/onCameraMoveStart' },
-				// 		// { slug: 'event/onCameraMove' },
-				// 		// { slug: 'event/onCameraMoveEnd' },
-				// 	],
-				// },
+				{
+					label: 'Events',
+					translations: {
+						ja: 'イベント',
+					},
+					items: [
+						{ slug: 'event/event-handlers' },
+					],
+				},
 				{
 					label: 'MapViewHolder',
 					items: [
@@ -134,6 +127,7 @@ export default defineConfig({
 						{ slug: 'mapviewholder/mapbox' },
 						{ slug: 'mapviewholder/here-maps' },
 						{ slug: 'mapviewholder/arcgis' },
+						{ slug: 'mapviewholder/arcgis-2d' },
 						{ slug: 'mapviewholder/maplibre' },
 					],
 				},
@@ -163,6 +157,7 @@ export default defineConfig({
 						ja: '実験的機能',
 					},
 					items: [
+						{ slug: 'experimental/geojson-layer' },
 						{ slug: 'experimental/heatmap' },
 						{ slug: 'experimental/marker-clustering' },
 						{ slug: 'experimental/icons' },

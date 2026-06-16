@@ -1,0 +1,18 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `sealed class GeoJSONGeometry {
+    data class Point(val longitude: Double, val latitude: Double)
+    data class MultiPoint(val points: List<Point>)
+    data class LineString(val coordinates: List<LonLat>)
+    data class MultiLineString(val lines: List<List<LonLat>>)
+    data class Polygon(val rings: List<List<LonLat>>)  // rings[0]=外周, rings[1..]=穴
+    data class MultiPolygon(val polygons: List<List<List<LonLat>>>)
+    data class GeometryCollection(val geometries: List<GeoJSONGeometry>)
+    object Empty
+}
+
+data class LonLat(val longitude: Double, val latitude: Double)`;
+---
+
+<Code code={code} lang="kotlin" />
