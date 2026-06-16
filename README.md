@@ -352,9 +352,7 @@ It is especially helpful when you want your application code to describe what sh
 
 Documentation is available at:
 
-```text
 https://docs-android.mapconductor.com/
-```
 
 The documentation includes:
 
