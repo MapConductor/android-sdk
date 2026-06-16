@@ -1,0 +1,101 @@
+---
+title: GeoJSON Layer
+head:
+  - tag: meta
+    attrs:
+      name: description
+      content: MapConductor Android SDK GeoJSON layer - a module for displaying GeoJSON data with any map provider
+---
+
+import GeoJSONLayerInstall from '~/components/experimental/geojson/GeoJSONLayerInstall.astro';
+import GeoJSONLayerSignature from '~/components/experimental/geojson/GeoJSONLayerSignature.astro';
+import GeoJSONLayerStateSignature from '~/components/experimental/geojson/GeoJSONLayerStateSignature.astro';
+import GeoJSONFeatureSignature from '~/components/experimental/geojson/GeoJSONFeatureSignature.astro';
+import GeoJSONGeometryTypes from '~/components/experimental/geojson/GeoJSONGeometryTypes.astro';
+import GeoJSONParserSignature from '~/components/experimental/geojson/GeoJSONParserSignature.astro';
+import GeoJSONBasicExample from '~/components/experimental/geojson/GeoJSONBasicExample.astro';
+import GeoJSONParserExample from '~/components/experimental/geojson/GeoJSONParserExample.astro';
+import GeoJSONClickExample from '~/components/experimental/geojson/GeoJSONClickExample.astro';
+import GeoJSONFeatureStateExample from '~/components/experimental/geojson/GeoJSONFeatureStateExample.astro';
+import GeoJSONStyleExample from '~/components/experimental/geojson/GeoJSONStyleExample.astro';
+
+`android-geojson-layer` is a standalone module for displaying GeoJSON data independently of any map implementation.
+Because it is rendered as a tile-based raster layer, it can be used with any map SDK, including Google Maps, Mapbox, MapLibre, ArcGIS, and HERE.
+
+## Installation
+
+<GeoJSONLayerInstall />
+
+## Basic Usage
+
+Create a list of `GeoJSONFeature` objects and pass it to `GeoJSONLayer` inside the content block of any `MapView`.
+
+<GeoJSONBasicExample />
+
+## API Reference
+
+### GeoJSONLayer Composable
+
+<GeoJSONLayerSignature />
+
+- **`state`**: The `GeoJSONLayerState` that manages the layer's display state, styles, and click handling.
+- **`features`**: A list of `GeoJSONFeature` objects to render as static or batch data.
+- **`tileSize`**: The tile size for the raster layer.
+- **`disableTileServerCache`**: Specifies whether to disable server-side tile caching.
+- **`content`**: A block for placing features that work with Compose state, such as `GeoJSONFeatureState`.
+
+### GeoJSONLayerState
+
+<GeoJSONLayerStateSignature />
+
+`processClick(geoPoint)` is called from the map click handler to run feature hit testing. When a target feature is found, it calls `onClick` and returns `true`.
+
+### GeoJSONLayerState Parameters
+
+- **`opacity`**: The opacity of the entire layer.
+- **`strokeColor`**: The default color for lines and polygon outlines.
+- **`fillColor`**: The default polygon fill color.
+- **`strokeWidth`**: The default stroke width.
+- **`pointRadius`**: The default radius for Point / MultiPoint.
+- **`visible`**: Specifies whether the layer is visible.
+- **`minZoom`**: The minimum zoom level at which the layer is displayed.
+- **`maxZoom`**: The maximum zoom level at which the layer is displayed.
+- **`onClick`**: A callback invoked when hit testing finds a feature.
+
+### GeoJSONFeature
+
+<GeoJSONFeatureSignature />
+
+`GeoJSONFeature` is suitable for static data or batch-loaded data. When rendering large datasets, it is more efficient to pass data to the `features` parameter of `GeoJSONLayer`.
+
+## Geometry Types
+
+<GeoJSONGeometryTypes />
+
+For `Polygon`, `rings[0]` is treated as the outer ring and `rings[1..]` as holes. Use `LonLat(longitude, latitude)` to specify coordinates.
+
+## Parsing Large Files
+
+`GeoJSONParser` provides both a method for parsing an entire InputStream at once and streaming parsing that processes one feature at a time.
+
+<GeoJSONParserSignature />
+
+<GeoJSONParserExample />
+
+## Click Events / Hit Testing
+
+Calling `GeoJSONLayerState.processClick()` from the `onMapClick` handler of `MapView` lets you find GeoJSON features at the tapped position.
+
+<GeoJSONClickExample />
+
+## Reactive Features (GeoJSONFeatureState)
+
+`GeoJSONFeatureState` is a feature placed inside the `content` block of `GeoJSONLayer` that supports Compose state updates. It is useful for a small number of frequently changing features, but for large datasets, passing `GeoJSONFeature` objects through the `features` parameter is recommended.
+
+<GeoJSONFeatureStateExample />
+
+## Style Customization
+
+Default styles for the entire layer can be specified with `GeoJSONLayerState`. If `strokeColor` or `fillColor` is set on an individual `GeoJSONFeature`, that feature-specific style takes precedence.
+
+<GeoJSONStyleExample />

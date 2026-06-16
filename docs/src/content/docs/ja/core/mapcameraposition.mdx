@@ -14,6 +14,8 @@ import CustomCameraPositionsExample from '~/components/core/mapcameraposition/Cu
 import ZoomLevelsExample from '~/components/core/mapcameraposition/ZoomLevelsExample.astro';
 import BearingExamples from '~/components/core/mapcameraposition/BearingExamples.astro';
 import TiltExamples from '~/components/core/mapcameraposition/TiltExamples.astro';
+import NegativeTiltExample from '~/components/core/mapcameraposition/NegativeTiltExample.astro';
+import NegativeTiltSdkNote from '~/components/core/mapcameraposition/NegativeTiltSdkNote.astro';
 import VisibleRegionDataClass from '~/components/core/mapcameraposition/VisibleRegionDataClass.astro';
 import VisibleRegionExample from '~/components/core/mapcameraposition/VisibleRegionExample.astro';
 import AnimatedCameraExample from '~/components/core/mapcameraposition/AnimatedCameraExample.astro';
@@ -132,6 +134,14 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
   angledComment="奥行きを出すための傾斜"
   streetLevelComment="ストリートレベルの最大傾斜"
 />
+
+#### 負の tilt 値 — 前方を見る
+
+`tilt` にマイナス値を指定すると、水平線より上方を向く仰角ビューになります。正の tilt は地面を見下ろす視点、負の tilt は `bearing` 方向の前方を見る視点として扱われます。
+
+<NegativeTiltExample />
+
+<NegativeTiltSdkNote />
 
 ## 可視領域
 

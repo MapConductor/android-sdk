@@ -78,7 +78,7 @@ fun MapView(modifier: Modifier = Modifier) {
     val onPolygonClick: OnPolygonEventHandler = { event ->
         marker = MarkerState(
             position = event.clicked,
-            icon = DefaultIcon(
+            icon = ColorDefaultIcon(
                 fillColor = event.state.fillColor,
                 strokeColor = Color.Red,
             ),

@@ -1,0 +1,16 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `data class GeoJSONFeature(
+    val id: String? = null,
+    val geometry: GeoJSONGeometry,
+    val properties: Map<String, Any?> = emptyMap(),
+    val strokeColor: Int? = null,   // nullの場合は GeoJSONLayerState のデフォルトを使用
+    val fillColor: Int? = null,
+    val strokeWidth: Float? = null,
+    val pointRadius: Float? = null,
+    val visible: Boolean = true,
+)`;
+---
+
+<Code code={code} lang="kotlin" />

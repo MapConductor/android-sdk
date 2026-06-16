@@ -56,7 +56,7 @@ fun RichContentBubbleExample() {
 
         val markerState = MarkerState(
             position = GeoPoint.fromLatLong(${latitude}, ${longitude}),
-            icon = DefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
+            icon = ColorDefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
             extra = locationInfo,
             id = "${markerId}",
             onClick = onMarkerClick

@@ -1,0 +1,38 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  commentForLookUp?: string;
+  commentForNormal?: string;
+  commentForArcGISNote?: string;
+}
+
+const {
+  latitude = 35.68,
+  longitude = 139.76,
+  commentForLookUp = "前方（水平線上方）を見る",
+  commentForNormal = "通常の俯瞰ビュー",
+  commentForArcGISNote = "ArcGIS はネイティブ対応"
+} = Astro.props;
+
+const code = `// ${commentForNormal}（従来の動作）
+MapCameraPosition(
+    position = GeoPoint(${latitude}, ${longitude}),
+    zoom = 15.0,
+    tilt = 60.0,   // 地面を60度の角度で見下ろす
+)
+
+// ${commentForLookUp}
+MapCameraPosition(
+    position = GeoPoint(${latitude}, ${longitude}),
+    zoom = 15.0,
+    tilt = -30.0,  // 水平線より30度上方を見る
+    bearing = 45.0,
+)
+
+// ${commentForArcGISNote}`;
+---
+
+<Code code={code} lang="kotlin" />

@@ -11,6 +11,10 @@ import SimpleInfoBubbleExample from '~/components/components/infobubble/SimpleIn
 import RichContentInfoBubbleExample from '~/components/components/infobubble/RichContentInfoBubbleExample.astro';
 import InteractiveBubbleExample from '~/components/components/infobubble/InteractiveBubbleExample.astro';
 import InfoBubbleSignature from '~/components/components/infobubble/InfoBubbleSignature.astro';
+import StandaloneInfoBubbleSignature from '~/components/components/infobubble/StandaloneInfoBubbleSignature.astro';
+import StandaloneInfoBubbleExample from '~/components/components/infobubble/StandaloneInfoBubbleExample.astro';
+import InfoBubbleCustomSignature from '~/components/components/infobubble/InfoBubbleCustomSignature.astro';
+import InfoBubbleCustomExample from '~/components/components/infobubble/InfoBubbleCustomExample.astro';
 import MultipleBubblesExample from '~/components/components/infobubble/MultipleBubblesExample.astro';
 import CustomPositioningExample from '~/components/components/infobubble/CustomPositioningExample.astro';
 import LifecycleManagementExample from '~/components/components/infobubble/LifecycleManagementExample.astro';
@@ -42,6 +46,18 @@ InfoBubble は、特定のマーカーの上に表示されます。InfoBubble�
 - **`cornerRadius`**: バブルの角丸の半径（デフォルト: 4dp）
 - **`tailSize`**: マーカーを指す吹き出しの尾のサイズ（デフォルト: 8dp）
 - **`content`**: バブル内に表示する Composable コンテンツ
+
+## マーカー不要の配置
+
+`InfoBubble` は `MarkerState` に紐付けず、地図上の任意の `GeoPoint` に直接配置することもできます。`position` が変更されるとバブルも移動し、地図のパンやズームにも追従します。
+
+<StandaloneInfoBubbleSignature />
+
+<StandaloneInfoBubbleExample
+  latitude={35.6812}
+  longitude={139.7671}
+  commentForLabel="ここに吹き出し"
+/>
 
 ## 基本的な使用方法
 
@@ -185,6 +201,20 @@ InfoBubble は自動的にライフサイクルを管理します:
 ### メモリ管理
 
 <MemoryManagementExample />
+
+## InfoBubbleCustom
+
+`InfoBubbleCustom` を使うと、尾を含む吹き出し全体を Composable として自由に描画できます。`tailOffset` には、バブル内のどの点をマーカーとの接続点にするかを `Offset(0f..1f, 0f..1f)` で指定します。
+
+- `Offset(1f, 0.5f)`: 右側中央を接続点にする
+- `Offset(0.5f, 1f)`: 下中央を接続点にする
+
+<InfoBubbleCustomSignature />
+
+<InfoBubbleCustomExample
+  commentForMarker="マーカー"
+  commentForTailOffset="右側中央を接続点にする"
+/>
 
 ## ベストプラクティス
 

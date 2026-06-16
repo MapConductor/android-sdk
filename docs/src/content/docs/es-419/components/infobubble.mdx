@@ -4,13 +4,17 @@ head:
   - tag: meta
     attrs:
       name: description
-      content: Muestra ventanas de información ancladas a marcadores usando InfoBubble en MapConductor Android SDK.
+      content: InfoBubble de MapConductor Android SDK - cómo mostrar ventanas de información personalizadas fijadas a marcadores
 ---
 
 import SimpleInfoBubbleExample from '~/components/components/infobubble/SimpleInfoBubbleExample.astro';
 import RichContentInfoBubbleExample from '~/components/components/infobubble/RichContentInfoBubbleExample.astro';
 import InteractiveBubbleExample from '~/components/components/infobubble/InteractiveBubbleExample.astro';
 import InfoBubbleSignature from '~/components/components/infobubble/InfoBubbleSignature.astro';
+import StandaloneInfoBubbleSignature from '~/components/components/infobubble/StandaloneInfoBubbleSignature.astro';
+import StandaloneInfoBubbleExample from '~/components/components/infobubble/StandaloneInfoBubbleExample.astro';
+import InfoBubbleCustomSignature from '~/components/components/infobubble/InfoBubbleCustomSignature.astro';
+import InfoBubbleCustomExample from '~/components/components/infobubble/InfoBubbleCustomExample.astro';
 import MultipleBubblesExample from '~/components/components/infobubble/MultipleBubblesExample.astro';
 import CustomPositioningExample from '~/components/components/infobubble/CustomPositioningExample.astro';
 import LifecycleManagementExample from '~/components/components/infobubble/LifecycleManagementExample.astro';
@@ -23,34 +27,46 @@ import ImplementationTipsExample from '~/components/components/infobubble/Implem
 import DebugModeExample from '~/components/components/infobubble/DebugModeExample.astro';
 import RightInfoBubbleMapExample from '~/components/components/infobubble/RightInfoBubbleMapExample.astro';
 
-Una InfoBubble es un componente que muestra contenido personalizado en un formato de callout adjunto a marcadores en un mapa. Proporciona un método para mostrar información detallada sobre marcadores.
+InfoBubble es un componente que muestra contenido personalizado en una burbuja tipo llamada fijada a un marcador en el mapa. Proporciona una forma de mostrar información detallada sobre un marcador.
 
-## Descripción General
+## Descripción general
 
-Una InfoBubble se muestra encima de un marcador específico. El contenido mostrado en la InfoBubble puede ser cualquier Composable, permitiendo diseños flexibles y personalizados.
+InfoBubble se muestra sobre un marcador específico. Como el contenido que se muestra dentro de InfoBubble puede proporcionarse como un Composable, puedes implementar el diseño que necesites.
 
-## Función Composable
+## Funciones Composable
 
 <InfoBubbleSignature />
 
 ## Parámetros
 
 - **`marker`**: El `MarkerState` al que se adjunta la burbuja
-- **`bubbleColor`**: Color de fondo de la burbuja (predeterminado: White)
-- **`borderColor`**: Color del borde de la burbuja (predeterminado: Black)
-- **`contentPadding`**: Espaciado interno alrededor del contenido (predeterminado: 8dp)
-- **`cornerRadius`**: Radio de las esquinas redondeadas de la burbuja (predeterminado: 4dp)
-- **`tailSize`**: Tamaño de la cola que apunta al marcador (predeterminado: 8dp)
+- **`bubbleColor`**: El color de fondo de la burbuja (predeterminado: White)
+- **`borderColor`**: El color del borde de la burbuja (predeterminado: Black)
+- **`contentPadding`**: Padding interno alrededor del contenido (predeterminado: 8dp)
+- **`cornerRadius`**: El radio de las esquinas de la burbuja (predeterminado: 4dp)
+- **`tailSize`**: El tamaño de la cola de la burbuja que apunta al marcador (predeterminado: 8dp)
 - **`content`**: Contenido Composable para mostrar dentro de la burbuja
 
-## Uso Básico
+## Ubicación sin marcador
 
-### Burbuja de Texto Simple
+`InfoBubble` también puede colocarse directamente en cualquier `GeoPoint` del mapa sin vincularse a un `MarkerState`. Cuando cambia `position`, la burbuja también se mueve y sigue el paneo y el zoom del mapa.
+
+<StandaloneInfoBubbleSignature />
+
+<StandaloneInfoBubbleExample
+  latitude={35.6812}
+  longitude={139.7671}
+  commentForLabel="Burbuja aquí"
+/>
+
+## Uso básico
+
+### Burbuja de texto simple
 
 <SimpleInfoBubbleExample />
 ![](~/assets/info-bubble/simple-info-bubble-example.png)
 
-### Burbuja con Estilo Personalizado
+### Burbuja con estilo personalizado
 
 <RichContentInfoBubbleExample
   locationName="Golden Gate Park"
@@ -65,7 +81,7 @@ Una InfoBubble se muestra encima de un marcador específico. El contenido mostra
 />
 ![](~/assets/info-bubble/rich-content-info-bubble-example.png)
 
-### Burbuja Interactiva con Acciones
+### Burbuja interactiva con acciones
 
 <InteractiveBubbleExample
   storeName="Coffee Shop"
@@ -81,16 +97,17 @@ Una InfoBubble se muestra encima de un marcador específico. El contenido mostra
   markerId="coffee-shop-marker"
   zoomLevel={16.0}
 />
+
 <video width="720" height="480" controls>
  <source src="/info-bubble/interactive-bubble-example.webm" type="video/webm" />
  <source src="/info-bubble/interactive-bubble-example.mp4" type="video/mp4" />
 </video>
 
-### Gestión de Múltiples Burbujas
+### Administración de varias burbujas
 
 <MultipleBubblesExample
-  commentForMapViewUsage="Reemplace MapView con el proveedor de mapas que elija, como GoogleMapView o MapboxMapView"
-  commentForTapToClose="Toque para cerrar"
+  commentForMapViewUsage="Reemplaza MapView por un SDK de mapas como GoogleMapView o MapboxMapView"
+  commentForTapToClose="Toca para cerrar"
   marker1Latitude={37.7749}
   marker1Longitude={-122.4194}
   marker1Name="Restaurant A"
@@ -110,9 +127,10 @@ Una InfoBubble se muestra encima de un marcador específico. El contenido mostra
  <source src="/info-bubble/multiple-bubbles-example.mp4" type="video/mp4" />
 </video>
 
-### Diseños Personalizados
 
-Para implementar un diseño personalizado, puede crear su propio componente basado en InfoBubble. El siguiente código y video muestran un ejemplo de una burbuja con una cola en el lado derecho.
+### Diseño personalizado
+
+Para implementar un diseño personalizado, puedes crear tu propio componente derivado de InfoBubble. El siguiente es un ejemplo de implementación detallado de una burbuja personalizada con una cola en el lado derecho.
 
 <RightInfoBubbleMapExample
   centerLatitude={37.7749}
@@ -122,14 +140,14 @@ Para implementar un diseño personalizado, puede crear su propio componente basa
   marker1Longitude={-122.4194}
   marker2Latitude={37.7849}
   marker2Longitude={-122.4094}
-  mapLoadedMessage="El mapa se cargó y está listo"
-  markerDragStartMessagePrefix="Comenzó a arrastrar el marcador"
-  markerDragMessagePrefix="Arrastrando el marcador a"
-  markerDragEndMessagePrefix="Finalizó el arrastre del marcador"
-  commentForMapClickClear="Borrar la selección al pulsar el mapa"
-  commentForInteractiveMarkers="Contenido de mapa con marcadores interactivos"
+  mapLoadedMessage="El mapa terminó de cargar"
+  markerDragStartMessagePrefix="Inicio del arrastre del marcador"
+  markerDragMessagePrefix="Arrastrando el marcador"
+  markerDragEndMessagePrefix="Fin del arrastre del marcador"
+  commentForMapClickClear="Toca el mapa para borrar la selección"
+  commentForInteractiveMarkers="Contenido del mapa con marcadores interactivos"
   commentForSelectedMarkerInfo="Mostrar información del marcador seleccionado"
-  commentForRightSideTailExample="Burbuja personalizada con cola en el lado derecho"
+  commentForRightSideTailExample="Ejemplo de burbuja personalizada con cola en el lado derecho"
 />
 
 <video width="720" height="480" controls>
@@ -137,77 +155,92 @@ Para implementar un diseño personalizado, puede crear su propio componente basa
  <source src="/info-bubble/right-info-bubble-map-example.mp4" type="video/mp4" />
 </video>
 
-## Posicionamiento y Comportamiento
 
-### Posicionamiento Automático
+## Ubicación y comportamiento
 
-La InfoBubble se posiciona automáticamente encima de su marcador asociado:
+### Ubicación automática
+
+InfoBubble se coloca automáticamente sobre el marcador asociado:
 
 - La cola de la burbuja apunta al centro del marcador
-- La burbuja ajusta su posición para permanecer visible en el viewport del mapa
-- La burbuja sigue al marcador mientras se realiza pan o zoom en el mapa
+- La burbuja ajusta su posición para mantenerse visible dentro del viewport del mapa
+- Cuando se panea o se aplica zoom al mapa, la burbuja sigue al marcador
 
-### Posicionamiento Personalizado
+### Ubicación personalizada
 
-Aunque InfoBubble maneja el posicionamiento automáticamente, puede influir en él a través del ancla del icono del marcador:
+InfoBubble maneja la ubicación automáticamente, pero puedes influir en ella mediante el anclaje del icono del marcador:
 
 <CustomPositioningExample />
 
-## Gestión del Ciclo de Vida
+## Administración del ciclo de vida
 
-La InfoBubble gestiona automáticamente su ciclo de vida:
+InfoBubble administra automáticamente su ciclo de vida:
 
 <LifecycleManagementExample />
 
-### Control Manual del Ciclo de Vida
+### Control manual del ciclo de vida
 
 <ManualLifecycleExample />
 
-## Estilo y Temas
+## Estilos y temas
 
-### Soporte de Modo Oscuro
+### Compatibilidad con modo oscuro
 
 <DarkModeInfoBubbleExample />
 
-### Tema Personalizado
+### Tema personalizado
 
 <CustomThemeExample />
 
-## Consideraciones de Rendimiento
+## Consideraciones de rendimiento
 
-### Actualizaciones Eficientes
+### Actualizaciones eficientes
 
 <EfficientUpdatesExample />
 
-### Gestión de Memoria
+### Administración de memoria
 
 <MemoryManagementExample />
 
-## Mejores Prácticas
+## InfoBubbleCustom
 
-### Directrices de Diseño
+Con `InfoBubbleCustom`, puedes dibujar libremente toda la burbuja, incluida su cola, como un Composable. `tailOffset` especifica qué punto dentro de la burbuja se usa como punto de conexión con el marcador mediante `Offset(0f..1f, 0f..1f)`.
 
-1. **Contenido Conciso**: La InfoBubble debe proporcionar información esencial sin abrumar al usuario
-2. **Tamaño Apropiado**: Limitar el ancho de la burbuja para mantener la legibilidad en dispositivos móviles
-3. **Acciones Claras**: Si se incluyen botones, aclarar su propósito
-4. **Objetivos táctiles**: Asegurar que los elementos interactivos cumplan con los tamaños mínimos de objetivo táctil
+- `Offset(1f, 0.5f)`: Usar el centro derecho como punto de conexión
+- `Offset(0.5f, 1f)`: Usar el centro inferior como punto de conexión
 
-### Experiencia del Usuario
+<InfoBubbleCustomSignature />
 
-1. **Comportamiento de Cierre**: Permitir que los usuarios cierren la burbuja tocando el mapa o marcadores
-2. **Estado de Carga**: Mostrar un indicador de carga para contenido que requiere solicitudes de red
-3. **Manejo de Errores**: Manejar datos faltantes o inválidos apropiadamente
-4. **Accesibilidad**: Proporcionar descripciones de contenido para lectores de pantalla
+<InfoBubbleCustomExample
+  commentForMarker="Marcador"
+  commentForTailOffset="Usar el centro derecho como punto de conexión"
+/>
 
-### Consejos de Implementación
+## Mejores prácticas
+
+### Guías de diseño
+
+1. **Contenido conciso**: InfoBubble debe proporcionar información esencial sin abrumar al usuario
+2. **Tamaño adecuado**: Limita el ancho de la burbuja para mantener la legibilidad en dispositivos móviles
+3. **Acciones claras**: Si incluyes botones, deja claro su propósito
+4. **Objetivos táctiles**: Asegúrate de que los elementos interactivos cumplan con el tamaño mínimo de objetivo táctil
+
+### Experiencia de usuario
+
+1. **Comportamiento de cierre**: Permite que los usuarios cierren la burbuja tocando el mapa o un marcador
+2. **Estados de carga**: Muestra un indicador de carga para el contenido que requiere solicitudes de red
+3. **Manejo de errores**: Maneja adecuadamente los datos faltantes o no válidos
+4. **Accesibilidad**: Proporciona descripciones del contenido para lectores de pantalla
+
+### Consejos de implementación
 
 <ImplementationTipsExample />
 
-## Solución de Problemas
+## Solución de problemas
 
-### Problemas Comunes
+### Problemas comunes
 
-1. **La burbuja no aparece**: Verificar que el marcador esté configurado correctamente y que la InfoBubble esté dentro de un MapViewScope
-2. **La burbuja no se cierra**: Verificar que el renderizado condicional responda adecuadamente a los cambios de estado
-3. **Degradación del rendimiento**: Limitar el número de burbujas mostradas simultáneamente y optimizar la composición del contenido
-4. **Problemas de diseño**: Usar restricciones de tamaño apropiadas y probar en diversos tamaños de pantalla
+1. **La burbuja no aparece**: Asegúrate de que el marcador esté configurado correctamente y de que InfoBubble esté dentro de MapViewScope
+2. **La burbuja no se cierra**: Verifica que el renderizado condicional responda correctamente a los cambios de estado
+3. **Bajo rendimiento**: Limita la cantidad de burbujas que se muestran al mismo tiempo y optimiza la composición del contenido
+4. **Problemas de layout**: Usa restricciones de tamaño adecuadas y prueba con distintos tamaños de pantalla

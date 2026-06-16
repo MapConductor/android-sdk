@@ -1,0 +1,43 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `val layerState = remember { GeoJSONLayerState() }
+val features = remember {
+    listOf(
+        GeoJSONFeature(
+            geometry = GeoJSONGeometry.Point(longitude = 139.76, latitude = 35.68),
+            properties = mapOf("name" to "東京駅"),
+        ),
+        GeoJSONFeature(
+            geometry = GeoJSONGeometry.LineString(
+                coordinates = listOf(
+                    LonLat(139.76, 35.68),
+                    LonLat(139.77, 35.69),
+                )
+            ),
+        ),
+        GeoJSONFeature(
+            geometry = GeoJSONGeometry.Polygon(
+                rings = listOf(
+                    listOf(
+                        LonLat(139.75, 35.67),
+                        LonLat(139.77, 35.67),
+                        LonLat(139.77, 35.69),
+                        LonLat(139.75, 35.69),
+                        LonLat(139.75, 35.67), // 始点と終点を同じにする
+                    )
+                )
+            ),
+        ),
+    )
+}
+
+MapView(...) {
+    GeoJSONLayer(
+        state = layerState,
+        features = features,
+    )
+}`;
+---
+
+<Code code={code} lang="kotlin" />

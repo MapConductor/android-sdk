@@ -53,7 +53,7 @@ fun BasicMapExample(modifier: Modifier = Modifier) {
         ${markerComment}
         Marker(
             position = sanFrancisco,
-            icon = DefaultIcon(label = "SF"),
+            icon = ColorDefaultIcon(label = "SF"),
             extra = "San Francisco marker",
             onClick = { markerState ->
                 println("Marker clicked: \${markerState.extra}")

@@ -1,0 +1,35 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForHitTest?: string;
+  commentForResult?: string;
+}
+
+const {
+  commentForHitTest = "タップ位置のフィーチャを検索",
+  commentForResult = "フィーチャが見つかった場合"
+} = Astro.props;
+
+const code = `val layerState = remember {
+    GeoJSONLayerState(
+        onClick = { feature, position ->
+            println("${commentForResult}: \${feature.properties["name"]}")
+        }
+    )
+}
+
+MapView(
+    onMapClick = { geoPoint ->
+        // ${commentForHitTest}
+        val handled = layerState.processClick(geoPoint)
+        if (!handled) {
+            // GeoJSON フィーチャ以外のタップ処理
+        }
+    }
+) {
+    GeoJSONLayer(state = layerState, features = features)
+}`;
+---
+
+<Code code={code} lang="kotlin" />

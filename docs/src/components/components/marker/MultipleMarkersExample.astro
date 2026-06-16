@@ -14,23 +14,23 @@ MapView(state = mapViewState) {
     // Default icon with different scales
     Marker(
         position = GeoPoint.fromLatLong(37.7749, -122.4194),
-        icon = DefaultIcon(scale = 0.7f, label = "Small")
+        icon = ColorDefaultIcon(scale = 0.7f, label = "Small")
     )
 
     Marker(
         position = GeoPoint.fromLatLong(37.7849, -122.4094),
-        icon = DefaultIcon(scale = 1.0f, label = "Normal")
+        icon = ColorDefaultIcon(scale = 1.0f, label = "Normal")
     )
 
     Marker(
         position = GeoPoint.fromLatLong(37.7949, -122.3994),
-        icon = DefaultIcon(scale = 1.4f, label = "Large")
+        icon = ColorDefaultIcon(scale = 1.4f, label = "Large")
     )
 
     // Custom colored marker
     Marker(
         position = GeoPoint.fromLatLong(37.7649, -122.4294),
-        icon = DefaultIcon(
+        icon = ColorDefaultIcon(
             fillColor = Color.Yellow,
             strokeColor = Color.Black,
             strokeWidth = 2.dp,

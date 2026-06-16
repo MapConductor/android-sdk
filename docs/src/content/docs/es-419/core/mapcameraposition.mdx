@@ -1,10 +1,10 @@
 ---
-title: MapCameraPositionInterface
+title: MapCameraPositionInterface (posición de cámara)
 head:
   - tag: meta
     attrs:
       name: description
-      content: MapCameraPosition — configura centro, zoom, inclinación y orientación del mapa en MapConductor Android SDK.
+      content: MapCameraPosition - cómo configurar el centro, zoom, inclinación y orientación del mapa en MapConductor Android SDK
 ---
 
 import MapCameraPositionInterface from '~/components/core/mapcameraposition/MapCameraPositionInterface.astro';
@@ -14,6 +14,8 @@ import CustomCameraPositionsExample from '~/components/core/mapcameraposition/Cu
 import ZoomLevelsExample from '~/components/core/mapcameraposition/ZoomLevelsExample.astro';
 import BearingExamples from '~/components/core/mapcameraposition/BearingExamples.astro';
 import TiltExamples from '~/components/core/mapcameraposition/TiltExamples.astro';
+import NegativeTiltExample from '~/components/core/mapcameraposition/NegativeTiltExample.astro';
+import NegativeTiltSdkNote from '~/components/core/mapcameraposition/NegativeTiltSdkNote.astro';
 import VisibleRegionDataClass from '~/components/core/mapcameraposition/VisibleRegionDataClass.astro';
 import VisibleRegionExample from '~/components/core/mapcameraposition/VisibleRegionExample.astro';
 import AnimatedCameraExample from '~/components/core/mapcameraposition/AnimatedCameraExample.astro';
@@ -22,7 +24,7 @@ import UserLocationCameraExample from '~/components/core/mapcameraposition/UserL
 import ShowMultiplePointsExample from '~/components/core/mapcameraposition/ShowMultiplePointsExample.astro';
 import NavigationCameraExample from '~/components/core/mapcameraposition/NavigationCameraExample.astro';
 
-`MapCameraPositionInterface` representa la posición, orientación y área visible de la cámara en el mapa. Define hacia dónde mira la cámara, cuánto mapa se ve y desde qué perspectiva.
+`MapCameraPositionInterface` representa la posición de vista de la cámara, su orientación y la región visible en el mapa. Define hacia dónde mira la cámara, qué parte del mapa se muestra y el punto de vista usado para mostrar el mapa.
 
 ## Interfaz e implementación
 
@@ -32,36 +34,36 @@ import NavigationCameraExample from '~/components/core/mapcameraposition/Navigat
 
 ### MapCameraPosition
 
-La implementación principal proporciona datos inmutables de la posición de la cámara:
+La implementación principal proporciona datos inmutables de posición de cámara:
 
 <MapCameraPositionImpl />
 
 ## Propiedades
 
-### Posición de la cámara
+### Posición de cámara
 
-- **`position: GeoPointInterface`**: Punto geográfico central de la vista de la cámara.
-- **`zoom: Double`**: Nivel de zoom (aproximadamente alineado con la escala de Google Maps).
-- **`bearing: Double`**: Rumbo en grados (0 = norte, 90 = este).
-- **`tilt: Double`**: Ángulo de inclinación en grados (0 = vista cenital, 90 = horizontal).
+- **`position: GeoPointInterface`**: El punto central geográfico de la vista de la cámara
+- **`zoom: Double`**: El nivel de zoom (sigue aproximadamente la escala de Google Maps)
+- **`bearing: Double`**: La orientación de brújula en grados (0 = norte, 90 = este)
+- **`tilt: Double`**: El ángulo de inclinación de la cámara en grados (0 = vista vertical hacia abajo, 90 = horizontal)
 
-### Configuración de la vista
+### Configuración de vista
 
-- **`paddings: MapPaddingsInterface?`**: Márgenes del viewport que afectan a la región visible. **Nota: esta propiedad aún no funciona en v{BOM_MODULE_VERSION}**.
-- **`visibleRegion: VisibleRegion?`**: `(Solo lectura)` Límites geográficos que realmente se ven en pantalla.
+- **`paddings: MapPaddingsInterface?`**: Padding del viewport que afecta la región visible
+- **`visibleRegion: VisibleRegion?`**: `(solo lectura)` Los límites geográficos que realmente se muestran en pantalla
 
-## Formas de creación
+## Métodos de creación
 
-### Posición por defecto
+### Posición predeterminada
 
-<DefaultCameraPositionExample commentForDefaultPosition="Posición de cámara por defecto en el origen" />
+<DefaultCameraPositionExample commentForDefaultPosition="Posición de cámara predeterminada en el origen" />
 
 ### Posición personalizada
 
 <CustomCameraPositionsExample
-  commentForBasic="Posición básica de la cámara"
-  commentForAerial="Cámara con rumbo e inclinación"
-  commentForPadded="Cámara con rellenos para dejar espacio a la UI"
+  commentForBasic="Posición de cámara básica"
+  commentForAerial="Cámara con orientación e inclinación"
+  commentForPadded="Cámara con padding para elementos de UI"
   latitude={37.7749}
   longitude={-122.4194}
   basicZoom={15.0}
@@ -72,13 +74,13 @@ La implementación principal proporciona datos inmutables de la posición de la 
 
 ## Niveles de zoom
 
-Los niveles de zoom de MapConductor se alinean aproximadamente con la escala de Google Maps, aunque pueden variar ligeramente según el proveedor:
+Los niveles de zoom de MapConductor siguen aproximadamente la escala de Google Maps, aunque pueden variar ligeramente entre SDKs de mapas:
 
-- **0-2**: Vista mundial, continentes visibles
+- **0-2**: Vista mundial, se muestran continentes
 - **3-5**: Nivel de país
 - **6-9**: Nivel de estado/región
 - **10-12**: Nivel de ciudad
-- **13-15**: Nivel de barrio/distrito
+- **13-15**: Nivel de distrito/barrio
 - **16-18**: Nivel de calle
 - **19-21**: Nivel de edificio (alto detalle)
 
@@ -90,18 +92,18 @@ Los niveles de zoom de MapConductor se alinean aproximadamente con la escala de 
   cityLatitude={37.7749}
   cityLongitude={-122.4194}
   cityZoom={12.0}
-  cityComment="Mostrar ciudad completa"
+  cityComment="Mostrar toda la ciudad"
   streetLatitude={37.7749}
   streetLongitude={-122.4194}
   streetZoom={17.0}
   streetComment="Mostrar calles individuales"
 />
 
-## Rumbo e inclinación
+## Orientación e inclinación
 
-### Rumbo (rotación)
+### Orientación (rotación)
 
-El rumbo rota el mapa alrededor del punto central:
+La orientación rota el mapa alrededor del punto central:
 
 <BearingExamples
   latitude={37.7749}
@@ -109,15 +111,15 @@ El rumbo rota el mapa alrededor del punto central:
   bearingNorth={0.0}
   bearingEast={90.0}
   bearingRoute={135.0}
-  northUpComment="Norte arriba (por defecto)"
+  northUpComment="Norte arriba (predeterminado)"
   eastUpComment="Este arriba"
-  followingBearingComment="Siguiendo el rumbo de la ruta"
+  followingBearingComment="Seguir la orientación de la ruta"
   routeComment="Sureste"
 />
 
-### Inclinación (perspectiva 3D)
+### Inclinación (vista 3D)
 
-La inclinación proporciona ángulos de vista en 3D:
+La inclinación proporciona un ángulo de visualización 3D:
 
 <TiltExamples
   latitude={37.7749}
@@ -128,39 +130,47 @@ La inclinación proporciona ángulos de vista en 3D:
   streetTilt={80.0}
   streetBearing={45.0}
   streetZoom={19.0}
-  topDownComment="Vista cenital (por defecto)"
-  angledComment="Ángulo ligero para dar profundidad"
-  streetLevelComment="Inclinación máxima para vista a nivel de calle"
+  topDownComment="Vista desde arriba (predeterminada)"
+  angledComment="Inclinación para dar profundidad"
+  streetLevelComment="Inclinación máxima a nivel de calle"
 />
+
+#### Valores negativos de `tilt` - mirar hacia adelante
+
+Cuando `tilt` se establece en un valor negativo, la cámara usa una vista elevada que mira hacia arriba por encima del horizonte. Un tilt positivo se trata como una vista que mira hacia abajo al suelo, mientras que un tilt negativo se trata como una vista que mira hacia adelante en la dirección de `bearing`.
+
+<NegativeTiltExample />
+
+<NegativeTiltSdkNote />
 
 ## Región visible
 
-La región visible describe el área geográfica real mostrada en pantalla teniendo en cuenta la posición de la cámara, el nivel de zoom, el rumbo, la inclinación y los márgenes del viewport.
+La región visible describe el área geográfica real que se muestra en pantalla después de considerar la posición de cámara, el nivel de zoom, la orientación, la inclinación y el padding del viewport.
 
 ### Clase VisibleRegion
 
 <VisibleRegionDataClass
-  boundsComment="Rectángulo delimitador general"
-  nearLeftComment="Esquina inferior izquierda (cerca de la cámara)"
-  nearRightComment="Esquina inferior derecha (cerca de la cámara)"
-  farLeftComment="Esquina superior izquierda (lejos de la cámara)"
-  farRightComment="Esquina superior derecha (lejos de la cámara)"
+  boundsComment="Rectángulo delimitador completo"
+  nearLeftComment="Esquina inferior izquierda (lado cercano a la cámara)"
+  nearRightComment="Esquina inferior derecha (lado cercano a la cámara)"
+  farLeftComment="Esquina superior izquierda (lado lejano a la cámara)"
+  farRightComment="Esquina superior derecha (lado lejano a la cámara)"
 />
 
 ### Propiedades
 
-- **`bounds: GeoRectBounds`**: Límites geográficos rectangulares que abarcan toda el área visible.
-- **`nearLeft: GeoPointInterface?`**: Coordenada geográfica de la esquina inferior izquierda de la región visible.
-- **`nearRight: GeoPointInterface?`**: Coordenada geográfica de la esquina inferior derecha.
-- **`farLeft: GeoPointInterface?`**: Coordenada geográfica de la esquina superior izquierda.
-- **`farRight: GeoPointInterface?`**: Coordenada geográfica de la esquina superior derecha.
+- **`bounds: GeoRectBounds`**: Límites geográficos del rectángulo que contiene toda la región visible. Este es el rectángulo delimitador más pequeño que contiene todo el contenido visible.
+- **`nearLeft: GeoPointInterface?`**: Coordenadas geográficas de la esquina inferior izquierda de la región visible. "near" se refiere al lado más cercano a la posición de la cámara.
+- **`nearRight: GeoPointInterface?`**: Coordenadas geográficas de la esquina inferior derecha de la región visible.
+- **`farLeft: GeoPointInterface?`**: Coordenadas geográficas de la esquina superior izquierda de la región visible. "far" se refiere al lado más lejano a la posición de la cámara.
+- **`farRight: GeoPointInterface?`**: Coordenadas geográficas de la esquina superior derecha de la región visible.
 
-### Uso de la región visible
+### Uso de VisibleRegion
 
 <VisibleRegionExample
-  commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView"
+  commentForMapViewUsage="Reemplaza MapView por el SDK de mapas que elijas, como GoogleMapView o MapboxMapView"
   commentForDisplayRegion="Mostrar información de la región visible"
-  commentForShowBounds="Mostrar límites como polígono"
+  commentForShowBounds="Mostrar los límites como un polígono"
 />
 
 <video width="720" height="480" controls>
@@ -168,12 +178,12 @@ La región visible describe el área geográfica real mostrada en pantalla tenie
  <source src="/mapcameraposition/visible-region-example.mp4" type="video/mp4" />
 </video>
 
-## Animación y transiciones
+## Animaciones y transiciones
 
 ### Movimiento suave de cámara
 
 <AnimatedCameraExample
-  commentForLocations="Animar entre múltiples ubicaciones"
+  commentForLocations="Animar entre varias ubicaciones"
   commentForAnimationInterval="Animar a la siguiente ubicación cada 5 segundos"
   animationIntervalMillis={5000}
   moveDurationMillis={1000}
@@ -186,7 +196,9 @@ La región visible describe el área geográfica real mostrada en pantalla tenie
 
 ### Control interactivo de cámara
 
-<CameraControlExample commentForMapViewUsage="Reemplace MapView con su proveedor de mapas elegido, como GoogleMapView, MapboxMapView" />
+<CameraControlExample
+  commentForMapViewUsage="Reemplaza MapView por el SDK de mapas que elijas, como GoogleMapView o MapboxMapView"
+/>
 
 <video width="720" height="480" controls>
  <source src="/mapcameraposition/camera-control-example.webm" type="video/webm" />

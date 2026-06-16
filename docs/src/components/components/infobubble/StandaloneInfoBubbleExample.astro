@@ -1,0 +1,27 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  commentForLabel?: string;
+}
+
+const {
+  latitude = 35.6812,
+  longitude = 139.7671,
+  commentForLabel = "ここに吹き出し"
+} = Astro.props;
+
+const code = `MapView(...) {
+    InfoBubble(
+        position = GeoPoint(${latitude}, ${longitude}),
+        bubbleColor = Color.White,
+        borderColor = Color.Blue,
+    ) {
+        Text("${commentForLabel}")
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

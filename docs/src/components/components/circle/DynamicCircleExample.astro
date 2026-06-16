@@ -48,7 +48,7 @@ fun DynamicCircleExample() {
             // Center marker
             Marker(
                 position = GeoPoint.fromLatLong(37.7749, -122.4194),
-                icon = DefaultIcon(
+                icon = ColorDefaultIcon(
                     fillColor = circleColor,
                     label = "${'${'}circleRadius.toInt()}m"
                 )

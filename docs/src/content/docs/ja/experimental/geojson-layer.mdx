@@ -1,0 +1,101 @@
+---
+title: GeoJSON レイヤー
+head:
+  - tag: meta
+    attrs:
+      name: description
+      content: MapConductor Android SDKのGeoJSONレイヤー — 任意の地図プロバイダでGeoJSONデータを表示するモジュール
+---
+
+import GeoJSONLayerInstall from '~/components/experimental/geojson/GeoJSONLayerInstall.astro';
+import GeoJSONLayerSignature from '~/components/experimental/geojson/GeoJSONLayerSignature.astro';
+import GeoJSONLayerStateSignature from '~/components/experimental/geojson/GeoJSONLayerStateSignature.astro';
+import GeoJSONFeatureSignature from '~/components/experimental/geojson/GeoJSONFeatureSignature.astro';
+import GeoJSONGeometryTypes from '~/components/experimental/geojson/GeoJSONGeometryTypes.astro';
+import GeoJSONParserSignature from '~/components/experimental/geojson/GeoJSONParserSignature.astro';
+import GeoJSONBasicExample from '~/components/experimental/geojson/GeoJSONBasicExample.astro';
+import GeoJSONParserExample from '~/components/experimental/geojson/GeoJSONParserExample.astro';
+import GeoJSONClickExample from '~/components/experimental/geojson/GeoJSONClickExample.astro';
+import GeoJSONFeatureStateExample from '~/components/experimental/geojson/GeoJSONFeatureStateExample.astro';
+import GeoJSONStyleExample from '~/components/experimental/geojson/GeoJSONStyleExample.astro';
+
+`android-geojson-layer` は、地図実装に依存せず GeoJSON データを表示するための独立モジュールです。
+タイルベースのラスターレイヤーとして描画するため、Google Maps、Mapbox、MapLibre、ArcGIS、HERE など、任意の地図 SDK で使用できます。
+
+## インストール
+
+<GeoJSONLayerInstall />
+
+## 基本的な使い方
+
+`GeoJSONFeature` のリストを作成し、任意の `MapView` の content ブロック内で `GeoJSONLayer` に渡します。
+
+<GeoJSONBasicExample />
+
+## API リファレンス
+
+### GeoJSONLayer Composable
+
+<GeoJSONLayerSignature />
+
+- **`state`**: レイヤーの表示状態、スタイル、クリック処理を管理する `GeoJSONLayerState` です。
+- **`features`**: 静的または一括データとして描画する `GeoJSONFeature` のリストです。
+- **`tileSize`**: ラスターレイヤーのタイルサイズです。
+- **`disableTileServerCache`**: タイルサーバー側のキャッシュを無効化するかどうかを指定します。
+- **`content`**: `GeoJSONFeatureState` など、Compose の状態と連動するフィーチャを配置するブロックです。
+
+### GeoJSONLayerState
+
+<GeoJSONLayerStateSignature />
+
+`processClick(geoPoint)` は、マップのクリックハンドラから呼び出してフィーチャのヒットテストを実行します。対象フィーチャが見つかると `onClick` を呼び出し、`true` を返します。
+
+### GeoJSONLayerState パラメータ
+
+- **`opacity`**: レイヤー全体の不透明度です。
+- **`strokeColor`**: 線やポリゴン外周のデフォルト色です。
+- **`fillColor`**: ポリゴン塗りつぶしのデフォルト色です。
+- **`strokeWidth`**: 線幅のデフォルト値です。
+- **`pointRadius`**: Point / MultiPoint の半径のデフォルト値です。
+- **`visible`**: レイヤーを表示するかどうかを指定します。
+- **`minZoom`**: レイヤーを表示する最小ズームレベルです。
+- **`maxZoom`**: レイヤーを表示する最大ズームレベルです。
+- **`onClick`**: ヒットテストでフィーチャが見つかったときに呼び出されるコールバックです。
+
+### GeoJSONFeature
+
+<GeoJSONFeatureSignature />
+
+`GeoJSONFeature` は静的データや一括ロードしたデータに適しています。大量データを描画する場合は、`GeoJSONLayer` の `features` パラメータに渡す方法が効率的です。
+
+## ジオメトリタイプ
+
+<GeoJSONGeometryTypes />
+
+`Polygon` の `rings[0]` は外周、`rings[1..]` は穴として扱われます。座標指定には `LonLat(longitude, latitude)` を使用します。
+
+## 大容量ファイルのパース
+
+`GeoJSONParser` は、InputStream 全体を一括でパースする方法と、1フィーチャずつ処理するストリームパースを提供します。
+
+<GeoJSONParserSignature />
+
+<GeoJSONParserExample />
+
+## クリックイベント / ヒットテスト
+
+`GeoJSONLayerState.processClick()` を `MapView` の `onMapClick` から呼び出すと、タップ位置にある GeoJSON フィーチャを検索できます。
+
+<GeoJSONClickExample />
+
+## リアクティブフィーチャ（GeoJSONFeatureState）
+
+`GeoJSONFeatureState` は `GeoJSONLayer` の `content` ブロック内に配置する、Compose の状態更新に対応したフィーチャです。頻繁に変化する少数のフィーチャには便利ですが、大量データには `features` パラメータで `GeoJSONFeature` を渡す方法を推奨します。
+
+<GeoJSONFeatureStateExample />
+
+## スタイルカスタマイズ
+
+レイヤー全体のデフォルトスタイルは `GeoJSONLayerState` で指定できます。個別の `GeoJSONFeature` に `strokeColor` や `fillColor` を設定した場合は、そのフィーチャ固有のスタイルが優先されます。
+
+<GeoJSONStyleExample />

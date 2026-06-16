@@ -29,7 +29,7 @@ const code = `@Composable
 fun MapContent() {
     Marker(
         position = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
-        icon = DefaultIcon(label = "${markerLabel}"),
+        icon = ColorDefaultIcon(label = "${markerLabel}"),
         extra = "${markerExtra}"
     )
 

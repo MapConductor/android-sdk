@@ -50,7 +50,7 @@ fun SimpleInfoBubbleExample() {
     ) {
         val markerState = MarkerState(
             position = center,
-            icon = DefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
+            icon = ColorDefaultIcon(fillColor = ${markerFillColorExpr}, label = "${markerLabel}"),
             extra = "${markerExtra}",
             id = "${markerId}",
             onClick = onMarkerClick

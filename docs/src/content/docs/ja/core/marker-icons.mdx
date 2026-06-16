@@ -8,8 +8,8 @@ head:
 ---
 
 import MarkerIconInterface from '~/components/core/marker-icons/MarkerIconInterface.astro';
-import DefaultIconSignature from '~/components/core/marker-icons/DefaultIconSignature.astro';
-import DefaultIconUsageExamples from '~/components/core/marker-icons/DefaultIconUsageExamples.astro';
+import ColorDefaultIconSignature from '~/components/core/marker-icons/ColorDefaultIconSignature.astro';
+import ColorDefaultIconUsageExamples from '~/components/core/marker-icons/ColorDefaultIconUsageExamples.astro';
 import DrawableDefaultIconSignature from '~/components/core/marker-icons/DrawableDefaultIconSignature.astro';
 import DrawableIconExamples from '~/components/core/marker-icons/DrawableIconExamples.astro';
 import ImageDefaultIconSignature from '~/components/core/marker-icons/ImageDefaultIconSignature.astro';
@@ -31,13 +31,13 @@ MapConductor は、地図上のマーカーの外観をカスタマイズする�
 
 ## アイコンタイプ
 
-### DefaultMarkerIcon (ColorDefaultIcon)
+### ColorDefaultIcon(DefaultMarkerIcon)
 
 カスタマイズ可能な外観とテキストラベルを持つ標準的な色付きマーカーアイコンです。
 
 > **注意**: `DefaultMarkerIcon` は `ColorDefaultIcon` のエイリアスです。
 
-<DefaultIconSignature />
+<ColorDefaultIconSignature />
 
 #### パラメータ
 
@@ -52,7 +52,7 @@ MapConductor は、地図上のマーカーの外観をカスタマイズする�
 
 #### 使用例
 
-<DefaultIconUsageExamples
+<ColorDefaultIconUsageExamples
   commentForMapViewUsage="MapView を GoogleMapView、MapboxMapView などの選択した地図SDKに置き換えてください"
 />
 
@@ -77,7 +77,7 @@ MapConductor は、地図上のマーカーの外観をカスタマイズする�
   commentForCustomBorder="カスタムボーダー付きドローアブル"
 />
 
-### ImageDefaultIcon
+### ImageColorDefaultIcon
 
 正確なアンカー位置制御を持つカスタム画像ドローアブルを使用します。
 

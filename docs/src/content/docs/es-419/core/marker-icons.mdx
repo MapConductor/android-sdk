@@ -8,8 +8,8 @@ head:
 ---
 
 import MarkerIconInterface from '~/components/core/marker-icons/MarkerIconInterface.astro';
-import DefaultIconSignature from '~/components/core/marker-icons/DefaultIconSignature.astro';
-import DefaultIconUsageExamples from '~/components/core/marker-icons/DefaultIconUsageExamples.astro';
+import ColorDefaultIconSignature from '~/components/core/marker-icons/ColorDefaultIconSignature.astro';
+import ColorDefaultIconUsageExamples from '~/components/core/marker-icons/ColorDefaultIconUsageExamples.astro';
 import DrawableDefaultIconSignature from '~/components/core/marker-icons/DrawableDefaultIconSignature.astro';
 import DrawableIconExamples from '~/components/core/marker-icons/DrawableIconExamples.astro';
 import ImageDefaultIconSignature from '~/components/core/marker-icons/ImageDefaultIconSignature.astro';
@@ -31,13 +31,13 @@ Interfaz base para todos los iconos de marcador:
 
 ## Tipos de icono
 
-### DefaultMarkerIcon (ColorDefaultMarkerIcon)
+### ColorDefaultIcon(DefaultMarkerIcon)
 
 Icono estándar de marcador coloreado con apariencia y texto personalizables.
 
 > **Nota**: `DefaultMarkerIcon` es un alias de `ColorDefaultIcon`.
 
-<DefaultIconSignature />
+<ColorDefaultIconSignature />
 
 #### Parámetros
 
@@ -52,7 +52,7 @@ Icono estándar de marcador coloreado con apariencia y texto personalizables.
 
 #### Ejemplos de uso
 
-<DefaultIconUsageExamples
+<ColorDefaultIconUsageExamples
   commentForMapViewUsage="Sustituye MapView por el proveedor de mapas que prefieras, como GoogleMapView o MapboxMapView"
 />
 
@@ -77,7 +77,7 @@ Usa un recurso `Drawable` como fondo del marcador, con superposiciones de estilo
   commentForCustomBorder="Drawable con borde personalizado"
 />
 
-### ImageDefaultIcon
+### ImageColorDefaultIcon
 
 Usa un drawable de imagen personalizado con control preciso del punto de anclaje.
 

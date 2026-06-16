@@ -17,7 +17,7 @@ fun DynamicIconExample() {
     // ${commentForMapViewUsage}
     MapView(state = mapViewState) {
         val icon = when (iconType) {
-            "default" -> DefaultIcon(
+            "default" -> ColorDefaultIcon(
                 fillColor = Color.Blue,
                 label = "D"
             )
@@ -25,12 +25,12 @@ fun DynamicIconExample() {
                 DrawableDefaultIcon(backgroundDrawable = it)
             }
             "image" -> AppCompatResources.getDrawable(context, R.drawable.location_icon)?.let {
-                ImageDefaultIcon(
+                ImageColorDefaultIcon(
                     drawable = it,
                     anchor = Offset(0.5f, 1.0f)
                 )
             }
-            else -> DefaultIcon()
+            else -> ColorDefaultIcon()
         }
 
         Marker(

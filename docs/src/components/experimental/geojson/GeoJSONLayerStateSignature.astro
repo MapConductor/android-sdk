@@ -1,0 +1,19 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+const code = `class GeoJSONLayerState(
+    opacity: Float = 1.0f,
+    strokeColor: Int = Color.argb(255, 30, 136, 229),  // 青系
+    fillColor: Int = Color.argb(128, 30, 136, 229),    // 半透明青系
+    strokeWidth: Float = 2f,
+    pointRadius: Float = 8f,
+    visible: Boolean = true,
+    minZoom: Int = 0,
+    maxZoom: Int = 22,
+    val onClick: ((feature: GeoJSONFeature, position: GeoPoint) -> Unit)? = null,
+) {
+    fun processClick(geoPoint: GeoPoint): Boolean
+}`;
+---
+
+<Code code={code} lang="kotlin" />

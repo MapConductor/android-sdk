@@ -64,7 +64,7 @@ fun InteractiveBubbleExample(modifier: Modifier = Modifier) {
 
         val markerState = MarkerState(
             position = GeoPoint.fromLatLong(${markerLatitude}, ${markerLongitude}),
-            icon = DefaultIcon(fillColor = Color(${markerColor}), label = "${markerLabel}"),
+            icon = ColorDefaultIcon(fillColor = Color(${markerColor}), label = "${markerLabel}"),
             extra = storeInfo,
             id = "${markerId}",
             onClick = onMarkerClick

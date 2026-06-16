@@ -34,7 +34,7 @@ fun DynamicMarkerExample() {
         mutableStateOf(
             MarkerState(
                 position = GeoPoint.fromLatLong(${initialLatitude}, ${initialLongitude}),
-                icon = DefaultIcon(fillColor = Color.Red, label = "${initialLabel}"),
+                icon = ColorDefaultIcon(fillColor = Color.Red, label = "${initialLabel}"),
                 extra = "${initialExtra}"
             )
         )
@@ -47,7 +47,7 @@ fun DynamicMarkerExample() {
             onClick = {
                 counter++
                 markerState = markerState.copy(
-                    icon = DefaultIcon(
+                    icon = ColorDefaultIcon(
                         fillColor = colors[counter % colors.size],
                         label = counter.toString()
                     ),

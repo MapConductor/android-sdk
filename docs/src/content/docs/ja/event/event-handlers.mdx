@@ -12,6 +12,8 @@ import OnMapLoadedSignature from '~/components/api/event-handlers/OnMapLoadedSig
 import OnMapLoadedExample from '~/components/api/event-handlers/OnMapLoadedExample.astro';
 import OnMapClickSignature from '~/components/api/event-handlers/OnMapClickSignature.astro';
 import OnMapClickExample from '~/components/api/event-handlers/OnMapClickExample.astro';
+import OnMapLongClickSignature from '~/components/api/event-handlers/OnMapLongClickSignature.astro';
+import OnMapLongClickExample from '~/components/api/event-handlers/OnMapLongClickExample.astro';
 import OnMarkerClickSignature from '~/components/api/event-handlers/OnMarkerClickSignature.astro';
 import OnMarkerClickExample from '~/components/api/event-handlers/OnMarkerClickExample.astro';
 import OnMarkerDragSignatures from '~/components/api/event-handlers/OnMarkerDragSignatures.astro';
@@ -52,6 +54,18 @@ MapConductor は、マップとそのコンポーネントに対するユーザ�
 -  例
 
 <OnMapClickExample commentForPrint="Map clicked at:" />
+
+### onMapLongClick
+
+- ユーザーがマップ（オーバーレイではない部分）を長押ししたときに呼び出されます。
+
+<OnMapLongClickSignature />
+
+**イベントデータ**: `GeoPointInterface` - 長押しされた地理座標
+
+-  例
+
+<OnMapLongClickExample commentForPrint="長押しした位置:" />
 
 ## マーカーイベント
 

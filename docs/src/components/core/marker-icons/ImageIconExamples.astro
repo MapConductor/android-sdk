@@ -23,7 +23,7 @@ fun ImageIconExamples() {
         AppCompatResources.getDrawable(context, R.drawable.weather_station)?.let { icon ->
             Marker(
                 position = GeoPoint.fromLatLong(37.7749, -122.4194),
-                icon = ImageDefaultIcon(
+                icon = ImageColorDefaultIcon(
                     drawable = icon,
                     anchor = Offset(0.5f, 1.0f), // Bottom center
                     debug = false
@@ -35,7 +35,7 @@ fun ImageIconExamples() {
         AppCompatResources.getDrawable(context, R.drawable.direction_arrow)?.let { icon ->
             Marker(
                 position = GeoPoint.fromLatLong(37.7849, -122.4094),
-                icon = ImageDefaultIcon(
+                icon = ImageColorDefaultIcon(
                     drawable = icon,
                     anchor = Offset(0.5f, 0.5f), // Center
                     debug = true // Shows anchor point

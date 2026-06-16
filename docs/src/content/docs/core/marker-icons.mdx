@@ -8,8 +8,8 @@ head:
 ---
 
 import MarkerIconInterface from '~/components/core/marker-icons/MarkerIconInterface.astro';
-import DefaultIconSignature from '~/components/core/marker-icons/DefaultIconSignature.astro';
-import DefaultIconUsageExamples from '~/components/core/marker-icons/DefaultIconUsageExamples.astro';
+import ColorDefaultIconSignature from '~/components/core/marker-icons/ColorDefaultIconSignature.astro';
+import ColorDefaultIconUsageExamples from '~/components/core/marker-icons/ColorDefaultIconUsageExamples.astro';
 import DrawableDefaultIconSignature from '~/components/core/marker-icons/DrawableDefaultIconSignature.astro';
 import DrawableIconExamples from '~/components/core/marker-icons/DrawableIconExamples.astro';
 import ImageDefaultIconSignature from '~/components/core/marker-icons/ImageDefaultIconSignature.astro';
@@ -31,13 +31,13 @@ The base interface for all marker icons:
 
 ## Icon Types
 
-### DefaultMarkerIcon (ColorDefaultMarkerIcon)
+### ColorDefaultIcon(DefaultMarkerIcon)
 
 The standard colored marker icon with customizable appearance and text labels.
 
 > **Note**: `DefaultMarkerIcon` is an alias for `ColorDefaultIcon`.
 
-<DefaultIconSignature />
+<ColorDefaultIconSignature />
 
 #### Parameters
 
@@ -52,7 +52,7 @@ The standard colored marker icon with customizable appearance and text labels.
 
 #### Usage Examples
 
-<DefaultIconUsageExamples
+<ColorDefaultIconUsageExamples
   commentForMapViewUsage="Replace MapView with your chosen map provider, such as GoogleMapView, MapboxMapView"
 />
 
@@ -77,7 +77,7 @@ Uses a drawable resource as the background for the marker, with optional styling
   commentForCustomBorder="Drawable with custom border"
 />
 
-### ImageDefaultIcon
+### ImageColorDefaultIcon
 
 Uses a custom image drawable with precise anchor positioning control.
 

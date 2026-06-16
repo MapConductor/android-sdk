@@ -4,7 +4,7 @@ head:
   - tag: meta
     attrs:
       name: description
-      content: Map and overlay event handlers including onMapClick, onMarkerClick, and onDragEnd in MapConductor Android SDK.
+      content: MapConductor Android SDK event handlers - map and overlay events such as onMapClick, onMarkerClick, and onDragEnd
 ---
 
 import MapViewEventHandlersSignature from '~/components/api/event-handlers/MapViewEventHandlersSignature.astro';
@@ -12,6 +12,8 @@ import OnMapLoadedSignature from '~/components/api/event-handlers/OnMapLoadedSig
 import OnMapLoadedExample from '~/components/api/event-handlers/OnMapLoadedExample.astro';
 import OnMapClickSignature from '~/components/api/event-handlers/OnMapClickSignature.astro';
 import OnMapClickExample from '~/components/api/event-handlers/OnMapClickExample.astro';
+import OnMapLongClickSignature from '~/components/api/event-handlers/OnMapLongClickSignature.astro';
+import OnMapLongClickExample from '~/components/api/event-handlers/OnMapLongClickExample.astro';
 import OnMarkerClickSignature from '~/components/api/event-handlers/OnMarkerClickSignature.astro';
 import OnMarkerClickExample from '~/components/api/event-handlers/OnMarkerClickExample.astro';
 import OnMarkerDragSignatures from '~/components/api/event-handlers/OnMarkerDragSignatures.astro';
@@ -25,7 +27,7 @@ import PolylineEventDataClass from '~/components/api/event-handlers/PolylineEven
 import OnPolylineClickExample from '~/components/api/event-handlers/OnPolylineClickExample.astro';
 
 MapConductor provides comprehensive event handling for user interactions with the map and its components.
-Map events are handled through the MapView component, while overlay events are configured on their State objects.
+Map events are handled on the MapView component, and overlay events are configured on each State.
 
 <MapViewEventHandlersSignature />
 
@@ -41,23 +43,35 @@ Map events are handled through the MapView component, while overlay events are c
 
 <OnMapLoadedExample commentForPrint="Map loaded" />
 
-### Map Interaction
+### Map Interactions
 
-- Called when the user taps on the map (not on any overlay).
+- Called when the user taps the map (an area that is not an overlay).
 
 <OnMapClickSignature />
 
-**Event Data**: `GeoPointInterface` - the geographic coordinates of the tap
+**Event data**: `GeoPointInterface` - geographic coordinate that was tapped
 
 -  Example
 
 <OnMapClickExample commentForPrint="Map clicked at:" />
 
+### onMapLongClick
+
+- Called when the user long-presses the map (an area that is not an overlay).
+
+<OnMapLongClickSignature />
+
+**Event data**: `GeoPointInterface` - geographic coordinate that was long-pressed
+
+-  Example
+
+<OnMapLongClickExample commentForPrint="Long-pressed at:" />
+
 ## Marker Events
 
-All marker events receive a `MarkerState` object containing the marker's current state.
+All marker events receive a `MarkerState` object that contains the marker's current state.
 
-### Click Events
+### Click Event
 
 - Called when a marker is tapped.
 
@@ -69,8 +83,8 @@ All marker events receive a `MarkerState` object containing the marker's current
 
 ### Drag Events
 
-- **`onDragStart`**: Called when dragging begins
-- **`onDrag`**: Called continuously during dragging
+- **`onDragStart`**: Called when dragging starts
+- **`onDrag`**: Called continuously while dragging
 - **`onDragEnd`**: Called when dragging ends
 
 <OnMarkerDragSignatures />
@@ -94,11 +108,11 @@ All marker events receive a `MarkerState` object containing the marker's current
 
 <OnCircleClickSignature />
 
-**Event Data**: `CircleEvent`
+**Event data**: `CircleEvent`
 
 <CircleEventDataClass />
 
-- example
+- Example
 
 <OnCircleClickExample commentForPrint="A circle clicked at:" />
 
@@ -108,10 +122,10 @@ All marker events receive a `MarkerState` object containing the marker's current
 
 <OnPolylineClickSignature />
 
-**Event Data**: `PolylineEvent`
+**Event data**: `PolylineEvent`
 
 <PolylineEventDataClass />
 
-- example
+- Example
 
 <OnPolylineClickExample commentForPrint="A polyline clicked at:" />

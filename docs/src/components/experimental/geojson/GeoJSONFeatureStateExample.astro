@@ -1,0 +1,37 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  commentForDynamic?: string;
+  commentForContent?: string;
+}
+
+const {
+  commentForDynamic = "動的に変化するフィーチャ（Compose state）",
+  commentForContent = "content ブロック内に GeoJSONFeatureState を配置"
+} = Astro.props;
+
+const code = `val featureState = remember {
+    GeoJSONFeatureState(
+        geometry = GeoJSONGeometry.Point(longitude = 139.76, latitude = 35.68),
+        properties = mapOf("name" to "動的ポイント"),
+    )
+}
+
+// ${commentForDynamic}
+LaunchedEffect(userLocation) {
+    featureState.geometry = GeoJSONGeometry.Point(
+        longitude = userLocation.longitude,
+        latitude = userLocation.latitude,
+    )
+}
+
+MapView(...) {
+    GeoJSONLayer(state = layerState) {
+        // ${commentForContent}
+        GeoJSONFeatureCompose(state = featureState)
+    }
+}`;
+---
+
+<Code code={code} lang="kotlin" />

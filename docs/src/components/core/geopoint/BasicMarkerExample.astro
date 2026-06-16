@@ -24,7 +24,7 @@ val sanFrancisco = GeoPoint.fromLatLong(${latitude}, ${longitude})
 MapViewContainer(state = mapViewState) {
     Marker(
         position = sanFrancisco,
-        icon = DefaultIcon(label = "${label}")
+        icon = ColorDefaultIcon(label = "${label}")
     )
 }`;
 ---

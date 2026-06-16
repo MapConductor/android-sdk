@@ -43,7 +43,7 @@ const code = `class CustomMarkerStrategy<ActualMarker>(
                 val addParams = markersToShow.map { entity ->
                     object : MarkerOverlayRendererInterface.AddParamsInterface {
                         override val state: MarkerState = entity.state
-                        override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: defaultIcon
+                        override val bitmapIcon: BitmapIcon = entity.state.icon?.toBitmapIcon() ?: ColorDefaultIcon
                     }
                 }
                 renderer.onAdd(addParams)

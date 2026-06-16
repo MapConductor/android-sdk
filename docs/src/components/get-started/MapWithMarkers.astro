@@ -66,14 +66,14 @@ fun MapWithMarkers(modifier: Modifier = Modifier) {
         // ${commentAddMarkers}
         Marker(
             position = marker1,
-            icon = DefaultIcon(label = "${marker1Label}"),
+            icon = ColorDefaultIcon(label = "${marker1Label}"),
             extra = "marker1",
             onClick = onMarkerClick
         )
 
         Marker(
             position = marker2,
-            icon = DefaultIcon(label = "${marker2Label}"),
+            icon = ColorDefaultIcon(label = "${marker2Label}"),
             extra = "marker2",
             onClick = onMarkerClick
         )

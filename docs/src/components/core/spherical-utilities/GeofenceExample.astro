@@ -45,7 +45,7 @@ fun GeofenceExample() {
         userLocation?.let { location ->
             Marker(
                 position = location,
-                icon = DefaultIcon(
+                icon = ColorDefaultIcon(
                     fillColor = if (insideGeofence) Color.Green else Color.Red,
                     label = if (insideGeofence) "${labelInside}" else "${labelOutside}"
                 )
