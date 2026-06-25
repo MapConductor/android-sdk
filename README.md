@@ -28,7 +28,7 @@ With MapConductor, you can:
 * Build provider-independent map features such as heatmaps and marker clustering
 * Keep your application code focused on map behavior, not SDK-specific differences
 
-![](./images/english-comic-why-map-conductor.jpg)
+![](./docs/src/assets/top-page/english-comic-why-map-conductor.jpg)
 
 ---
 
@@ -160,7 +160,7 @@ fun SimpleMapScreen(modifier: Modifier) {
 
 This example uses MapLibre Maps, but the map objects are written using MapConductor concepts. The same overlay logic can be adapted to other supported providers.
 
-![](./images/simple-map-screen.png)
+![](./docs/src/assets/top-page/simple-map-screen.png)
 
 ---
 

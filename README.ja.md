@@ -28,7 +28,7 @@ MapConductorを使うと、以下のことができます:
 * プロバイダーに依存しないヒートマップやマーカークラスタリングなどのマップ機能を構築する
 * アプリケーションコードをSDK固有の差異ではなくマップの挙動に集中させる
 
-![](./images/japanese-comic-why-map-conductor.jpg)
+![](./docs/src/assets/top-page/japanese-comic-why-map-conductor.jpg)
 
 ---
 
@@ -160,7 +160,7 @@ fun SimpleMapScreen(modifier: Modifier) {
 
 この例ではMapLibre Mapsを使用していますが、マップオブジェクトはMapConductorの概念を使って書かれています。同じオーバーレイのロジックを他のサポートされているプロバイダーに適用できます。
 
-![](./images/simple-map-screen.png)
+![](./docs/src/assets/top-page/simple-map-screen.png)
 
 ---
 
