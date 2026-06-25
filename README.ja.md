@@ -352,9 +352,7 @@ MapConductorは、以下のような方に役立ちます:
 
 ドキュメントは以下で利用できます:
 
-```text
-https://docs-android.mapconductor.com/
-```
+https://docs-android.mapconductor.com/ja/
 
 ドキュメントには以下が含まれます:
 

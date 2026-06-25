@@ -15,14 +15,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.mapconductor.core.circle.Circle
+import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.marker.Marker
+import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.geojson.GeoJSONFeature
 import com.mapconductor.geojson.GeoJSONLayer
 import com.mapconductor.geojson.GeoJSONLayerState
 import com.mapconductor.geojson.GeoJSONParser
+import com.mapconductor.googlemaps.GoogleMapView
+import com.mapconductor.googlemaps.rememberGoogleMapViewState
+import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
@@ -42,7 +49,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SimpleMap(modifier = Modifier.padding(innerPadding))
+                    SimpleMapScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -99,6 +106,37 @@ fun SimpleMap(modifier: Modifier) {
             onClick = {
                 Log.d("SimpleMap", "--->clicked")
             },
+        )
+    }
+}
+@Composable
+fun SimpleMapScreen(modifier: Modifier) {
+    val mapState = rememberMapLibreMapViewState(
+        cameraPosition = MapCameraPosition(
+            position = GeoPoint(35.6762, 139.6503),
+            zoom = 15.0,
+        ),
+        mapDesign = MapLibreDesign.OpenMapTiles,
+    )
+
+    MapLibreMapView(
+        modifier = modifier,
+        state = mapState,
+    ) {
+        Marker(
+            state = MarkerState(
+                position = GeoPoint(35.6762, 139.6503),
+            )
+        )
+
+        Circle(
+            state = CircleState(
+                center = GeoPoint(35.6762, 139.6503),
+                radiusMeters = 500.0,
+                fillColor = Color.Green.copy(alpha = 0.5f),
+                strokeColor = Color.Blue,
+                strokeWidth = 3.dp,
+            )
         )
     }
 }
