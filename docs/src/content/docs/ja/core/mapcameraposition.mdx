@@ -204,3 +204,33 @@ MapConductor のズームレベルは、おおよそ Google Maps のスケール
  <source src="/mapcameraposition/camera-control-example.webm" type="video/webm" />
  <source src="/mapcameraposition/camera-control-example.mp4" type="video/mp4" />
 </video>
+
+## バウンズへのフィット
+
+`fitBounds` を使うと、`GeoRectBounds` が画面内に収まるようにカメラを移動・ズームできます：
+
+```kotlin
+val bounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(37.7649, -122.4294),
+    northEast = GeoPoint.fromLatLong(37.7849, -122.4094)
+)
+mapViewState.fitBounds(bounds, padding = 32)
+```
+
+`padding` パラメーターは全辺にスクリーンスペースのインセット（ピクセル単位）を追加します。ズームレベルの計算は各プロバイダーがネイティブに行います。
+
+### 複数ポイントの表示
+
+マーカーやルートポイントを画面内に収めるには、バウンズを拡張してからフィットします：
+
+<ShowMultiplePointsExample commentForZoomCalculation="手動ズーム計算の代わりに fitBounds を使う" />
+
+上記の手動ズーム計算は `fitBounds` で置き換えられます：
+
+```kotlin
+val bounds = GeoRectBounds()
+allPoints.forEach { bounds.extend(it) }
+if (!bounds.isEmpty) {
+    mapViewState.fitBounds(bounds, padding = 48)
+}
+```

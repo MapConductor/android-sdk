@@ -146,3 +146,27 @@ The bounds can be dynamically extended to include new points:
 ### Equality Comparison
 
 <EqualsToExample commentForUsage="Usage" />
+
+## Fitting the Camera to Bounds
+
+To move and zoom the camera so a `GeoRectBounds` is fully visible, use `fitBounds`:
+
+```kotlin
+val bounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(37.7649, -122.4294),
+    northEast = GeoPoint.fromLatLong(37.7849, -122.4094)
+)
+mapViewState.fitBounds(bounds, padding = 32)
+```
+
+The `padding` parameter adds screen-space inset in pixels on all sides. Each provider calculates the resulting zoom level natively, so the exact zoom may differ slightly between providers.
+
+A common pattern is to build bounds from a set of points and then fit:
+
+```kotlin
+val bounds = GeoRectBounds()
+markers.forEach { bounds.extend(it.position) }
+if (!bounds.isEmpty) {
+    mapViewState.fitBounds(bounds, padding = 48)
+}
+```
