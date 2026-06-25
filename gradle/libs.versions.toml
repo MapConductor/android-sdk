@@ -11,15 +11,15 @@ junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 
-lifecycleRuntimeKtx = "2.10.0"
+lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
-lifecycleViewmodelCompose = "2.10.0"
+lifecycleViewmodelCompose = "2.11.0"
 
 # https://developer.android.com/develop/ui/compose/bom/bom-mapping
 
 # gradle.properties?kotlinCompilerExtensionVersion??????
-compose = "1.11.2"
-composeBom = "2026.05.01"
+compose = "1.11.3"
+composeBom = "2026.06.00"
 okhttp = "5.4.0"
 runner = "1.7.0"
 
@@ -32,13 +32,13 @@ ktLint = "14.2.0"
 geographiclib = "2.1"
 mapLibreSdk = "13.3.0"
 mapLibreAnnotation = "3.0.2"
-runtime = "1.11.2"
-runtimeVersion = "1.11.2"
+runtime = "1.11.3"
+runtimeVersion = "1.11.3"
 materialVersion = "1.14.0"
 jts = "1.20.0"
 coroutines = "1.11.0"
-uiGraphics = "1.11.2"
-foundation = "1.11.2"
+uiGraphics = "1.11.3"
+foundation = "1.11.3"
 
 [libraries]
 # Android ??

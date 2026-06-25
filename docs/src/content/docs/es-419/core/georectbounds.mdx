@@ -143,3 +143,27 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 ### Comparación de igualdad
 
 <EqualsToExample commentForUsage="Uso" />
+
+## Ajustar la cámara a los límites
+
+Para mover y hacer zoom de la cámara de modo que un `GeoRectBounds` sea completamente visible, usa `fitBounds`:
+
+```kotlin
+val bounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(37.7649, -122.4294),
+    northEast = GeoPoint.fromLatLong(37.7849, -122.4094)
+)
+mapViewState.fitBounds(bounds, padding = 32)
+```
+
+El parámetro `padding` agrega un margen en píxeles en todos los lados del espacio de pantalla. Cada proveedor calcula el nivel de zoom resultante de forma nativa, por lo que el zoom exacto puede diferir ligeramente entre proveedores.
+
+Un patrón común es construir límites desde un conjunto de puntos y luego ajustar:
+
+```kotlin
+val bounds = GeoRectBounds()
+markers.forEach { bounds.extend(it.position) }
+if (!bounds.isEmpty) {
+    mapViewState.fitBounds(bounds, padding = 48)
+}
+```

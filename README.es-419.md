@@ -28,7 +28,7 @@ Con MapConductor puedes:
 * Construir funciones de mapas independientes del proveedor, como mapas de calor y agrupamiento de marcadores
 * Mantener tu código de aplicación enfocado en el comportamiento del mapa, no en las diferencias específicas de cada SDK
 
-![](./images/es-419-comic-why-map-conductor.jpg)
+![](./docs/src/assets/top-page/es-419-comic-why-map-conductor.jpg)
 
 ---
 
@@ -160,7 +160,7 @@ fun SimpleMapScreen(modifier: Modifier) {
 
 Este ejemplo usa MapLibre Maps, pero los objetos del mapa están escritos usando conceptos de MapConductor. La misma lógica de superposiciones se puede adaptar a otros proveedores compatibles.
 
-![](./images/simple-map-screen.png)
+![](./docs/src/assets/top-page/simple-map-screen.png)
 
 ---
 

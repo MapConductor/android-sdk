@@ -204,3 +204,33 @@ La región visible describe el área geográfica real que se muestra en pantalla
  <source src="/mapcameraposition/camera-control-example.webm" type="video/webm" />
  <source src="/mapcameraposition/camera-control-example.mp4" type="video/mp4" />
 </video>
+
+## Ajustar a límites
+
+Usa `fitBounds` para mover y hacer zoom de la cámara de modo que un `GeoRectBounds` sea completamente visible:
+
+```kotlin
+val bounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(37.7649, -122.4294),
+    northEast = GeoPoint.fromLatLong(37.7849, -122.4094)
+)
+mapViewState.fitBounds(bounds, padding = 32)
+```
+
+El parámetro `padding` agrega un margen en píxeles en todos los lados del espacio de pantalla. Cada proveedor calcula el nivel de zoom resultante de forma nativa.
+
+### Mostrar múltiples puntos
+
+Para encuadrar un conjunto de marcadores o puntos de ruta, extiende los límites y luego ajusta:
+
+<ShowMultiplePointsExample commentForZoomCalculation="Usa fitBounds en lugar del cálculo manual de zoom" />
+
+La llamada a `fitBounds` reemplaza el cálculo manual de zoom mostrado arriba:
+
+```kotlin
+val bounds = GeoRectBounds()
+allPoints.forEach { bounds.extend(it) }
+if (!bounds.isEmpty) {
+    mapViewState.fitBounds(bounds, padding = 48)
+}
+```

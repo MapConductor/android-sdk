@@ -147,3 +147,27 @@ import EqualsToExample from '~/components/core/georectbounds/EqualsToExample.ast
 ### 等価性の比較
 
 <EqualsToExample commentForUsage="使用例" />
+
+## バウンズへのカメラフィット
+
+`GeoRectBounds` が画面内に収まるようにカメラを移動・ズームするには `fitBounds` を使用します：
+
+```kotlin
+val bounds = GeoRectBounds(
+    southWest = GeoPoint.fromLatLong(37.7649, -122.4294),
+    northEast = GeoPoint.fromLatLong(37.7849, -122.4094)
+)
+mapViewState.fitBounds(bounds, padding = 32)
+```
+
+`padding` パラメーターは全辺にスクリーンスペースのインセット（ピクセル単位）を追加します。ズームレベルの計算は各プロバイダーがネイティブに行うため、プロバイダー間で結果が若干異なる場合があります。
+
+複数のポイントからバウンズを構築してフィットする典型的なパターン：
+
+```kotlin
+val bounds = GeoRectBounds()
+markers.forEach { bounds.extend(it.position) }
+if (!bounds.isEmpty) {
+    mapViewState.fitBounds(bounds, padding = 48)
+}
+```
