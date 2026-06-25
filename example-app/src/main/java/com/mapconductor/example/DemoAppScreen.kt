@@ -25,6 +25,7 @@ import com.mapconductor.example.pages.map.arcgis2d.ArcGISMapView2DPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
+import com.mapconductor.example.pages.map.fitbounds.FitBoundsMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.tilt.TiltMapPage
@@ -112,6 +113,10 @@ fun DemoAppScreen(initPage: String = "map") {
             SidebarItem(
                 id = "map-flyTo",
                 title = "Move camera",
+            ),
+            SidebarItem(
+                id = "map-fitBounds",
+                title = "Fit Bounds",
             ),
             SidebarItem(
                 id = "map-design",
@@ -247,6 +252,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     "map-flyTo" -> {
                         FlyToMapPage(
                             icons = flyToMapPageIcons,
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "map-fitBounds" -> {
+                        FitBoundsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
