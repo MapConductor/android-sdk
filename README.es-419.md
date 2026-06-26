@@ -166,6 +166,8 @@ Este ejemplo usa MapLibre Maps, pero los objetos del mapa están escritos usando
 
 ## Cambiar de proveedor de mapas
 
+![](docs/src/assets/top-page/unified-map-view.png)
+
 Una de las ideas principales detrás de MapConductor es que tus superposiciones de mapa no deberían tener que reescribirse cuando cambias de proveedor de mapas.
 
 Por ejemplo:
