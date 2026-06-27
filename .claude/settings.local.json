@@ -51,7 +51,9 @@
       "Bash(xcodebuild -workspace MapConductorSampleApp.xcworkspace -scheme MapConductorSampleApp -destination 'generic/platform=iOS Simulator' build)",
       "Bash(git -C /Users/masashi/android-sdk/android-geojson-layer log --oneline bfa194c07a..e75c70bae)",
       "Bash(git -C /Users/masashi/android-sdk/android-geojson-layer log --oneline e75c70bae..bfa194c07a)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "WebFetch(domain:repo1.maven.org)",
+      "WebFetch(domain:central.sonatype.com)"
     ],
     "deny": [],
     "ask": []

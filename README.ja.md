@@ -166,6 +166,8 @@ fun SimpleMapScreen(modifier: Modifier) {
 
 ## マッププロバイダーの切り替え
 
+![](docs/src/assets/top-page/unified-map-view.png)
+
 MapConductorの主な考え方の1つは、マッププロバイダーを変更してもマップオーバーレイを書き直す必要がないということです。
 
 例:

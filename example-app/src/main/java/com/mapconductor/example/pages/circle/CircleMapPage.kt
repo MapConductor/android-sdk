@@ -28,12 +28,15 @@ fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
         onMapViewStateChanged = viewModel::onMapViewChanged,
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
+        val labelPosition = viewModel.labelPosition.collectAsState()
 
         CircleMapComponent(
             mapViewState = mapViewState.value,
             circleState = viewModel.circleState,
             centerMarker = viewModel.centerMarker,
             edgeMarker = viewModel.edgeMarker,
+            labelPosition = labelPosition.value,
+            onMapCameraMove = viewModel::onMapCameraMove,
         )
 
         MessageCard(

@@ -166,6 +166,8 @@ This example uses MapLibre Maps, but the map objects are written using MapConduc
 
 ## Switching Map Providers
 
+![](docs/src/assets/top-page/unified-map-view.png)
+
 One of the main ideas behind MapConductor is that your map overlays should not have to be rewritten when you change map providers.
 
 For example:
