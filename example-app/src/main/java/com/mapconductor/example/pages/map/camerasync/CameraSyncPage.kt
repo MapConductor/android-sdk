@@ -38,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mapconductor.compose.polygon.Polygon
@@ -742,8 +741,8 @@ private fun boundsPolyline(location: CameraLocationInfo): PolylineState {
         )
     return PolylineState(
         points = points,
-        strokeColor = Color.Red.toArgb(),
-        strokeWidth = 3f,
+        strokeColor = Color.Red,
+        strokeWidth = 3.dp,
         geodesic = true,
     )
 }
@@ -764,9 +763,9 @@ private fun referenceRectangles(locations: List<CameraLocationInfo>): List<Polyg
         PolygonState(
             points = points,
             id = "camera_sync_reference_$index",
-            strokeColor = Color.Blue.toArgb(),
-            strokeWidth = 2f,
-            fillColor = Color.Blue.copy(alpha = 0.1f).toArgb(),
+            strokeColor = Color.Blue,
+            strokeWidth = 2.dp,
+            fillColor = Color.Blue.copy(alpha = 0.1f),
             geodesic = false,
             zIndex = 1,
         )

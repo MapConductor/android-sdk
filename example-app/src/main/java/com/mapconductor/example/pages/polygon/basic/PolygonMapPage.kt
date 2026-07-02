@@ -69,8 +69,8 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
             ) {
                 Text("Stroke Width: ${String.format("%.1f", viewModel.strokeWidth)}dp")
                 Slider(
-                    value = viewModel.strokeWidth,
-                    onValueChange = { viewModel.strokeWidth = it },
+                    value = viewModel.strokeWidth.value,
+                    onValueChange = { viewModel.strokeWidth = it.dp },
                     valueRange = 0f..10f,
                     colors =
                         SliderDefaults.colors(),

@@ -3,7 +3,6 @@ package com.mapconductor.example.pages.polyline
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import com.mapconductor.compose.marker.Marker
 import com.mapconductor.compose.polyline.Polyline
 import com.mapconductor.core.map.MapViewStateInterface
@@ -29,7 +28,7 @@ fun PolylineClickMapComponent(
                 polylineState.copy(
                     id = "${polylineState.id}-straight",
                     geodesic = false,
-                    strokeColor = Color.Blue.toArgb(),
+                    strokeColor = Color.Blue,
                 ),
             )
 

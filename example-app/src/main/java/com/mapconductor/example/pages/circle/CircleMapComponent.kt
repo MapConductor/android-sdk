@@ -12,7 +12,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
@@ -33,6 +32,7 @@ fun CircleMapComponent(
     circleState: CircleState,
     centerMarker: MarkerState,
     edgeMarker: MarkerState,
+    polylineState: PolylineState?,
     labelPosition: IntOffset?,
     modifier: Modifier = Modifier,
     onMapCameraMove: OnCameraMoveHandler = { },
@@ -50,14 +50,9 @@ fun CircleMapComponent(
 
             // Radius line polygon from center (C) to edge (E)
             // Stable id prevents multiple polygons accumulating during rapid drag
-            Polyline(
-                PolylineState(
-                    points = listOf(centerMarker.position, edgeMarker.position),
-                    id = "circle-radius-line",
-                    strokeColor = Color.White.toArgb(),
-                    strokeWidth = 3f,
-                ),
-            )
+            polylineState?.let {
+                Polyline(it)
+            }
 
             // Center marker (not draggable)
             Marker(centerMarker)

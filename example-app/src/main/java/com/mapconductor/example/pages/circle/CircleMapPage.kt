@@ -29,11 +29,23 @@ fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
         val labelPosition = viewModel.labelPosition.collectAsState()
+        val polylineState = viewModel.polylineState.collectAsState()
+
+//        val polylineState = remember(centerMarker.position, edgeMarker.position) {
+//            PolylineState(
+//                points = listOf(centerMarker.position, edgeMarker.position),
+//                id = "circle-radius-line",
+//                strokeColor = Color.White.toArgb(),
+//                strokeWidth = 3f,
+//            )
+//        }
+
 
         CircleMapComponent(
             mapViewState = mapViewState.value,
             circleState = viewModel.circleState,
             centerMarker = viewModel.centerMarker,
+            polylineState = polylineState.value,
             edgeMarker = viewModel.edgeMarker,
             labelPosition = labelPosition.value,
             onMapCameraMove = viewModel::onMapCameraMove,

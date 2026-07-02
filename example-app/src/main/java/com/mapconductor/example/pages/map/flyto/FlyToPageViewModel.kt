@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mapconductor.core.features.GeoPoint
@@ -119,8 +119,8 @@ class FlyToPageViewModel(
                 PolylineState(
                     id = "honolulu_to_newyork",
                     points = listOf(honoluluLocation, newYorkLocation),
-                    strokeColor = Color.Green.copy(alpha = 0.7f).toArgb(),
-                    strokeWidth = 3f,
+                    strokeColor = Color.Green.copy(alpha = 0.7f),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
                 // Honolulu to Sydney
@@ -133,8 +133,8 @@ class FlyToPageViewModel(
                             green = 0f,
                             blue = 0f,
                             alpha = 0.7f,
-                        ).toArgb(),
-                    strokeWidth = 3f,
+                        ),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
                 // Tokyo to London
@@ -147,16 +147,16 @@ class FlyToPageViewModel(
                             green = 0f,
                             blue = 1.0f,
                             alpha = 0.7f,
-                        ).toArgb(),
-                    strokeWidth = 3f,
+                        ),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
                 // Tokyo to NewYork
                 PolylineState(
                     id = "tokyo_to_newyork",
                     points = listOf(tokyoLocation, newYorkLocation),
-                    strokeColor = Color.Blue.copy(alpha = 0.7f).toArgb(),
-                    strokeWidth = 3f,
+                    strokeColor = Color.Blue.copy(alpha = 0.7f),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
                 // Tokyo to Honolulu
@@ -169,8 +169,8 @@ class FlyToPageViewModel(
                             green = 0.35f,
                             blue = 0.12f,
                             alpha = 0.7f,
-                        ).toArgb(),
-                    strokeWidth = 3f,
+                        ),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
                 // London to New York
@@ -183,8 +183,8 @@ class FlyToPageViewModel(
                             green = 0f,
                             blue = 0f,
                             alpha = 0.7f,
-                        ).toArgb(),
-                    strokeWidth = 3f,
+                        ),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
                 // London to Sydney
@@ -192,8 +192,8 @@ class FlyToPageViewModel(
                     id = "london_to_sydney",
                     points = listOf(londonLocation, sydneyLocation),
                     strokeColor =
-                        Color.Magenta.copy(alpha = 0.7f).toArgb(),
-                    strokeWidth = 3f,
+                        Color.Magenta.copy(alpha = 0.7f),
+                    strokeWidth = 3.dp,
                     geodesic = geodesic,
                 ),
             )

@@ -1,8 +1,6 @@
 package com.mapconductor.example.pages.map.flyto
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.mapconductor.compose.marker.Marker
 import com.mapconductor.compose.polyline.Polyline

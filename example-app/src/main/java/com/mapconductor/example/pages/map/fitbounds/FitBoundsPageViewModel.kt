@@ -1,7 +1,7 @@
 package com.mapconductor.example.pages.map.fitbounds
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mapconductor.core.features.GeoPoint
@@ -111,9 +111,9 @@ class FitBoundsPageViewModel :
                     GeoPoint(maxLat, maxLon),
                     GeoPoint(maxLat, minLon),
                 ),
-            strokeColor = Color.Red.toArgb(),
-            strokeWidth = 2f,
-            fillColor = Color.Red.copy(alpha = 0.3f).toArgb(),
+            strokeColor = Color.Red,
+            strokeWidth = 2.dp,
+            fillColor = Color.Red.copy(alpha = 0.3f),
         )
     }
 }

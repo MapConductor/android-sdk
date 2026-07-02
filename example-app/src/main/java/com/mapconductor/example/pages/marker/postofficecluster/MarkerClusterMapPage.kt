@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -37,7 +38,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.PointF
 import android.graphics.Rect
 
 @Composable
@@ -59,7 +59,7 @@ fun MarkerClusterMapPage(
                     cache.getOrCreate(clusterCountLabel(count)) { label ->
                         ImageIcon(
                             image = drawClusterIcon(background = image, label = label).toDrawable(context.resources),
-                            anchor = PointF(0.5f, 0.5f),
+                            anchor = Offset(0.5f, 0.5f),
                         )
                     }
                 } ?: ColorDefaultIcon(label = clusterCountLabel(count))

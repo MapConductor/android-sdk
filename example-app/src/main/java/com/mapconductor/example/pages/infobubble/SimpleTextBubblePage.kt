@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.compose.marker.Marker
@@ -37,7 +36,7 @@ fun SimpleTextBubblePage(onToggleSidebar: () -> Unit = {}) {
         remember {
             MarkerState(
                 position = GeoPoint.fromLatLong(37.7749, -122.4194),
-                icon = DefaultMarkerIcon(fillColor = Color.Blue.toArgb(), label = "SF"),
+                icon = DefaultMarkerIcon(fillColor = Color.Blue, label = "SF"),
                 extra = "San Francisco - The Golden Gate City",
                 onClick = { it -> selectedMarker = it },
             )

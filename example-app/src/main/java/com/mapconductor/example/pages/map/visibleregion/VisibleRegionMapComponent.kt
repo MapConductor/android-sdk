@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -95,7 +94,7 @@ fun VisibleRegionMapComponent(
                         MarkerState(
                             id = "center_marker",
                             position = GeoPoint.fromLatLong(centerLat, centerLng),
-                            icon = ColorDefaultIcon(fillColor = Color.Red.toArgb(), label = "Center"),
+                            icon = ColorDefaultIcon(fillColor = Color.Red, label = "Center"),
                         ),
                     )
 
@@ -105,7 +104,7 @@ fun VisibleRegionMapComponent(
                             MarkerState(
                                 id = "near_left",
                                 position = point,
-                                icon = ColorDefaultIcon(fillColor = Color.Blue.toArgb(), label = "NL"),
+                                icon = ColorDefaultIcon(fillColor = Color.Blue, label = "NL"),
                             ),
                         )
                     }
@@ -115,7 +114,7 @@ fun VisibleRegionMapComponent(
                             MarkerState(
                                 id = "near_right",
                                 position = point,
-                                icon = ColorDefaultIcon(fillColor = Color.Green.toArgb(), label = "NR"),
+                                icon = ColorDefaultIcon(fillColor = Color.Green, label = "NR"),
                             ),
                         )
                     }
@@ -125,7 +124,7 @@ fun VisibleRegionMapComponent(
                             MarkerState(
                                 id = "far_left",
                                 position = point,
-                                icon = ColorDefaultIcon(fillColor = Color.Yellow.toArgb(), label = "FL"),
+                                icon = ColorDefaultIcon(fillColor = Color.Yellow, label = "FL"),
                             ),
                         )
                     }
@@ -135,7 +134,7 @@ fun VisibleRegionMapComponent(
                             MarkerState(
                                 id = "far_right",
                                 position = point,
-                                icon = ColorDefaultIcon(fillColor = Color.Magenta.toArgb(), label = "FR"),
+                                icon = ColorDefaultIcon(fillColor = Color.Magenta, label = "FR"),
                             ),
                         )
                     }
@@ -146,7 +145,7 @@ fun VisibleRegionMapComponent(
                             MarkerState(
                                 id = "southwest_corner",
                                 position = point,
-                                icon = ColorDefaultIcon(fillColor = Color.Black.toArgb(), label = "SW"),
+                                icon = ColorDefaultIcon(fillColor = Color.Black, label = "SW"),
                             ),
                         )
                     }
@@ -156,7 +155,7 @@ fun VisibleRegionMapComponent(
                             MarkerState(
                                 id = "northeast_corner",
                                 position = point,
-                                icon = ColorDefaultIcon(fillColor = Color.Black.toArgb(), label = "NE"),
+                                icon = ColorDefaultIcon(fillColor = Color.Black, label = "NE"),
                             ),
                         )
                     }
