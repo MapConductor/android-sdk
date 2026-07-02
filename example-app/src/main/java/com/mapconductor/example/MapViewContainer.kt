@@ -6,9 +6,9 @@ import com.mapconductor.arcgis.map.ArcGISMapView
 import com.mapconductor.arcgis.map.ArcGISMapViewState
 import com.mapconductor.compose.MapViewScope
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.map.OnCameraMoveHandler
-import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.OnCameraMoveHandler
+import com.mapconductor.core.OnMapEventHandler
+import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.GoogleMapViewState

@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.Color
 import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.compose.marker.Markers
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.OnMapEventHandler
+import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.MarkerTilingOptions
 import com.mapconductor.example.MapViewContainer

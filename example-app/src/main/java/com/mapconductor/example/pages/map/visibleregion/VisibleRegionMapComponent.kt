@@ -49,7 +49,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.map.OnMapLoadedHandler
+import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween

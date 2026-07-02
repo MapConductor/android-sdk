@@ -21,7 +21,7 @@ import com.mapconductor.compose.marker.Marker
 import com.mapconductor.compose.polyline.Polyline
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.map.OnCameraMoveHandler
+import com.mapconductor.core.OnCameraMoveHandler
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer
