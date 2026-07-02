@@ -1,11 +1,5 @@
 package com.mapconductor.example.pages.marker.postofficecluster
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.drawable.BitmapDrawable
 import androidx.collection.LruCache
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +8,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,7 +33,12 @@ import com.mapconductor.maplibre.MapLibreViewStateInterface
 import com.mapconductor.marker.clustering.MarkerClusterGroupState
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import com.mapconductor.utils.LoadingDialog
-import androidx.core.graphics.drawable.toDrawable
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.Rect
 
 @Composable
 fun MarkerClusterMapPage(
@@ -48,23 +47,25 @@ fun MarkerClusterMapPage(
 ) {
     val context = LocalContext.current
     val dataLoader = remember { PostOfficeDataLoader(context) }
-    val clusterIconProvider: (Int) -> MarkerIconInterface = remember(context) {
-        val bitmap = runCatching {
-            context.assets.open("cluster_red.png").use { BitmapFactory.decodeStream(it) }
-        }.getOrNull()
-        val cache = ClusterIconLruCache(maxSize = 128)
-        val provider: (Int) -> MarkerIconInterface = { count ->
-            bitmap?.let { image ->
-                cache.getOrCreate(clusterCountLabel(count)) { label ->
-                    ImageIcon(
-                        image = drawClusterIcon(background = image, label = label).toDrawable(context.resources),
-                        anchor = Offset(0.5f, 0.5f),
-                    )
-                }
-            } ?: ColorDefaultIcon(label = clusterCountLabel(count))
+    val clusterIconProvider: (Int) -> MarkerIconInterface =
+        remember(context) {
+            val bitmap =
+                runCatching {
+                    context.assets.open("cluster_red.png").use { BitmapFactory.decodeStream(it) }
+                }.getOrNull()
+            val cache = ClusterIconLruCache(maxSize = 128)
+            val provider: (Int) -> MarkerIconInterface = { count ->
+                bitmap?.let { image ->
+                    cache.getOrCreate(clusterCountLabel(count)) { label ->
+                        ImageIcon(
+                            image = drawClusterIcon(background = image, label = label).toDrawable(context.resources),
+                            anchor = PointF(0.5f, 0.5f),
+                        )
+                    }
+                } ?: ColorDefaultIcon(label = clusterCountLabel(count))
+            }
+            provider
         }
-        provider
-    }
     val googleClusterState =
         remember {
             MarkerClusterGroupState<GoogleMapActualMarker>(

@@ -10,11 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.marker.Marker
+import com.mapconductor.compose.polygon.Polygon
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
@@ -37,9 +38,9 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
         remember {
             PolygonState(
                 points = points,
-                strokeColor = Color.Yellow.copy(alpha = 0.3f),
-                strokeWidth = 3.dp,
-                fillColor = Color.Green.copy(alpha = 0.5f),
+                strokeColor = Color.Yellow.copy(alpha = 0.3f).toArgb(),
+                strokeWidth = 3f,
+                fillColor = Color.Green.copy(alpha = 0.5f).toArgb(),
                 geodesic = false,
                 zIndex = 0,
                 onClick = viewModel::onPolygonClicked,
@@ -50,9 +51,9 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
         remember {
             PolygonState(
                 points = points,
-                strokeColor = Color.Red.copy(alpha = 0.3f),
-                strokeWidth = 3.dp,
-                fillColor = Color.Blue.copy(alpha = 0.5f),
+                strokeColor = Color.Red.copy(alpha = 0.3f).toArgb(),
+                strokeWidth = 3f,
+                fillColor = Color.Blue.copy(alpha = 0.5f).toArgb(),
                 geodesic = true,
                 zIndex = 1,
                 onClick = viewModel::onPolygonClicked,

@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.mapconductor.core.info.InfoBubble
+import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
 import com.mapconductor.core.map.OnMapLoadedHandler

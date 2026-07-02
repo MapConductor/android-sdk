@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
@@ -70,8 +70,8 @@ class PolygonMapPageViewModel :
                 icon =
                     DefaultMarkerIcon(
                         scale = 0.7f,
-                        fillColor = Color.Yellow,
-                        strokeColor = Color.Black,
+                        fillColor = Color.Yellow.toArgb(),
+                        strokeColor = Color.Black.toArgb(),
                     ),
                 id = "vertex_$index",
                 draggable = true,
@@ -85,9 +85,9 @@ class PolygonMapPageViewModel :
             PolygonState(
                 points = polygonVertices,
                 id = "example_polygon",
-                strokeColor = Color.Red,
-                strokeWidth = strokeWidth.dp,
-                fillColor = Color.Blue.copy(alpha = fillOpacity),
+                strokeColor = Color.Red.toArgb(),
+                strokeWidth = strokeWidth,
+                fillColor = Color.Blue.copy(alpha = fillOpacity).toArgb(),
                 geodesic = false,
             )
 

@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.mapconductor.compose.marker.Marker
+import com.mapconductor.compose.polyline.Polyline
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer
 

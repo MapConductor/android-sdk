@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -18,14 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
+import com.mapconductor.compose.info.InfoBubble
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.ResourceProvider
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.DrawableDefaultIcon
 import com.mapconductor.core.marker.ImageIcon
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
@@ -38,6 +37,7 @@ import com.mapconductor.settings.MarkerIconSize
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PointF
 import android.graphics.drawable.BitmapDrawable
 
 @Composable
@@ -135,9 +135,9 @@ fun MarkerBasicMapComponent(
             position = GeoPoint.fromLatLong(0.014, 0.008),
             icon =
                 DefaultMarkerIcon(
-                    fillColor = Color.Yellow,
-                    strokeColor = Color.Black,
-                    strokeWidth = 2.dp,
+                    fillColor = Color.Yellow.toArgb(),
+                    strokeColor = Color.Black.toArgb(),
+                    strokeWidth = 2f,
                 ),
             extra =
                 """
@@ -157,16 +157,16 @@ fun MarkerBasicMapComponent(
                             red = 0x2E,
                             green = 0xF5,
                             blue = 0x27,
-                        ),
+                        ).toArgb(),
                     strokeColor =
                         Color(
                             red = 0xFC,
                             green = 0x22,
                             blue = 0x5C,
-                        ),
+                        ).toArgb(),
                     label = "AB",
-                    labelTextColor = Color.White,
-                    labelStrokeColor = Color.Black,
+                    labelTextColor = Color.White.toArgb(),
+                    labelStrokeColor = Color.Black.toArgb(),
                 ),
             extra =
                 """
@@ -210,14 +210,14 @@ fun MarkerBasicMapComponent(
                 icon =
                     DrawableDefaultIcon(
                         backgroundDrawable = icon,
-                        strokeColor = Color.Black,
+                        strokeColor = Color.Black.toArgb(),
                         scale = 1.5f,
                     ),
                 extra =
                     """
                     DrawableDefaultIcon(
                         backgroundDrawable = icon,
-                        strokeColor = Color.Black,
+                        strokeColor = Color.Black.toArgb(),
                         scale = 1.5f,
                     )
                     """.trimIndent(),
@@ -231,14 +231,14 @@ fun MarkerBasicMapComponent(
                     ImageIcon(
                         image = icon,
                         debug = true,
-                        anchor = Offset(0.5f, 1.0f),
+                        anchor = PointF(0.5f, 1.0f),
                     ),
                 extra =
                     """
                     ImageIcon(
                         drawable = icon,
                         debug = true,
-                        anchor = Offset(0.5f, 1.0f),
+                        anchor = PointF(0.5f, 1.0f),
                     )
                     """.trimIndent(),
             )
@@ -250,7 +250,7 @@ fun MarkerBasicMapComponent(
                 icon =
                     ImageIcon(
                         image = it,
-                        anchor = Offset(0.5f, 1.0f),
+                        anchor = PointF(0.5f, 1.0f),
                     ),
                 extra =
                     """
@@ -279,7 +279,7 @@ fun MarkerBasicMapComponent(
                 CircleIcon(
                     fillColor = Color.Blue,
                     strokeColor = Color.White,
-                    strokeWidth = 2.dp,
+                    strokeWidth = 2.dp.value,
                 ),
             extra =
                 """
@@ -297,7 +297,7 @@ fun MarkerBasicMapComponent(
                 FlagIcon(
                     fillColor = Color.Green,
                     strokeColor = Color.Gray,
-                    strokeWidth = 1.dp,
+                    strokeWidth = 1.dp.value,
                 ),
             extra =
                 """

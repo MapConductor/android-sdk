@@ -15,9 +15,7 @@ import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
 
 @Composable
-fun FitBoundsMapPage(
-    onToggleSidebar: () -> Unit = {},
-) {
+fun FitBoundsMapPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel: FitBoundsPageViewModelInterface = remember { FitBoundsPageViewModel() }
 
     DemoMapPageScaffold(
@@ -35,13 +33,14 @@ fun FitBoundsMapPage(
         )
 
         MessageCard(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(
-                    bottom = paddingValues.calculateBottomPadding() + 16.dp,
-                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
-                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
-                ),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(
+                        bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 16.dp,
+                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 16.dp,
+                    ),
             title = "Fit Bounds",
         ) {
             androidx.compose.material3.Text("マーカーをドラッグして範囲を指定し、ドロップすると fitBounds で地図が移動します。")

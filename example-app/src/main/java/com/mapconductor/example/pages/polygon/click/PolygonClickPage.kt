@@ -11,11 +11,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.info.InfoBubble
-import com.mapconductor.core.marker.Marker
-import com.mapconductor.core.polygon.Polygon
+import com.mapconductor.compose.info.InfoBubble
+import com.mapconductor.compose.marker.Marker
+import com.mapconductor.compose.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
@@ -45,9 +46,9 @@ fun PolygonClickPage(onToggleSidebar: () -> Unit = {}) {
                         val state =
                             PolygonState(
                                 points = points,
-                                strokeColor = Color.Red.copy(alpha = 0.7f),
-                                strokeWidth = 3.dp,
-                                fillColor = Color.Blue.copy(alpha = 0.4f),
+                                strokeColor = Color.Red.copy(alpha = 0.7f).toArgb(),
+                                strokeWidth = 3f,
+                                fillColor = Color.Blue.copy(alpha = 0.4f).toArgb(),
                                 onClick = viewModel::onPolygonClicked,
                             )
                         Polygon(state)

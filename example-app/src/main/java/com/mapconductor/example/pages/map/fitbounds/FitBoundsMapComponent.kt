@@ -2,12 +2,11 @@ package com.mapconductor.example.pages.map.fitbounds
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.compose.marker.Marker
+import com.mapconductor.compose.polygon.Polygon
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnMapEventHandler
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer
 

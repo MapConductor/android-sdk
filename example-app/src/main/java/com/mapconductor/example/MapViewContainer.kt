@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.map.ArcGISMapView
 import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.core.MapViewScope
+import com.mapconductor.compose.MapViewScope
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnCameraMoveHandler
 import com.mapconductor.core.map.OnMapEventHandler

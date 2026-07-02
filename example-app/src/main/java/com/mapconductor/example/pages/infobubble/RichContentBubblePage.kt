@@ -23,14 +23,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.info.InfoBubble
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
@@ -64,7 +65,7 @@ fun RichContentBubblePage(onToggleSidebar: () -> Unit = {}) {
                 )
             MarkerState(
                 position = GeoPoint.fromLatLong(37.7694, -122.4862),
-                icon = DefaultMarkerIcon(fillColor = Color.Green, label = "🌳"),
+                icon = DefaultMarkerIcon(fillColor = Color.Green.toArgb(), label = "🌳"),
                 extra = locationInfo,
                 onClick = { markerState -> selectedMarker = markerState },
             )

@@ -21,18 +21,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.info.InfoBubbleCustom
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubbleCustom
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.marker.OnMarkerEventHandler
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
+import android.graphics.PointF
 
 @Composable
 fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
@@ -63,8 +65,8 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
                 position = GeoPoint.fromLatLong(37.7749, -122.4194),
                 icon =
                     DefaultMarkerIcon(
-                        fillColor = Color.Blue,
-                        infoAnchor = Offset(0.5f, 0.25f),
+                        fillColor = Color.Blue.toArgb(),
+                        infoAnchor = PointF(0.5f, 0.25f),
                         label = "1",
                     ),
                 draggable = true,
@@ -82,8 +84,8 @@ fun StyledInfoBubblePage(onToggleSidebar: () -> Unit = {}) {
                 position = GeoPoint.fromLatLong(37.7849, -122.4094),
                 icon =
                     DefaultMarkerIcon(
-                        fillColor = Color.Red,
-                        infoAnchor = Offset(0.5f, 0.25f),
+                        fillColor = Color.Red.toArgb(),
+                        infoAnchor = PointF(0.5f, 0.25f),
                         label = "2",
                     ),
                 onClick = onMarkerClick,

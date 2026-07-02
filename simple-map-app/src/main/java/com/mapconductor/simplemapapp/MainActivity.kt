@@ -16,12 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.mapconductor.core.circle.Circle
+import com.mapconductor.compose.circle.Circle
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.info.InfoBubble
+import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.core.map.MapCameraPosition
-import com.mapconductor.core.marker.Marker
+import com.mapconductor.compose.marker.Marker
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.geojson.GeoJSONFeature
 import com.mapconductor.geojson.GeoJSONLayer

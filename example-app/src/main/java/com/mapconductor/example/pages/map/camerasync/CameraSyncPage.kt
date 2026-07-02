@@ -38,15 +38,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.polygon.Polygon
+import com.mapconductor.compose.polyline.Polyline
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
-import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
@@ -741,8 +742,8 @@ private fun boundsPolyline(location: CameraLocationInfo): PolylineState {
         )
     return PolylineState(
         points = points,
-        strokeColor = Color.Red,
-        strokeWidth = 3.dp,
+        strokeColor = Color.Red.toArgb(),
+        strokeWidth = 3f,
         geodesic = true,
     )
 }
@@ -763,9 +764,9 @@ private fun referenceRectangles(locations: List<CameraLocationInfo>): List<Polyg
         PolygonState(
             points = points,
             id = "camera_sync_reference_$index",
-            strokeColor = Color.Blue,
-            strokeWidth = 2.dp,
-            fillColor = Color.Blue.copy(alpha = 0.1f),
+            strokeColor = Color.Blue.toArgb(),
+            strokeWidth = 2f,
+            fillColor = Color.Blue.copy(alpha = 0.1f).toArgb(),
             geodesic = false,
             zIndex = 1,
         )

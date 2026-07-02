@@ -2,7 +2,7 @@ package com.mapconductor.example.pages.polyline
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
@@ -57,8 +57,8 @@ class PolylineClickPageViewModel :
             PolylineState(
                 id = "example_polyline",
                 points = polylinePoints,
-                strokeColor = Color.Red,
-                strokeWidth = 4.dp,
+                strokeColor = Color.Red.toArgb(),
+                strokeWidth = 4f,
                 geodesic = true,
                 onClick = this::onPolylineClicked,
             )

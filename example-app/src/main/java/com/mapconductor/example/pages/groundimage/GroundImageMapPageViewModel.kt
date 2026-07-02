@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoRectBounds
@@ -119,10 +120,10 @@ class GroundImageMapPageViewModel(
                     position = southWestPosition,
                     icon =
                         DefaultMarkerIcon(
-                            fillColor = Color.Blue,
-                            strokeColor = Color.White,
+                            fillColor = Color.Blue.toArgb(),
+                            strokeColor = Color.White.toArgb(),
                             label = swLabel,
-                            labelTextColor = Color.White,
+                            labelTextColor = Color.White.toArgb(),
                         ),
                     draggable = true,
                     onDrag = this::onMarkerDrag,
@@ -132,10 +133,10 @@ class GroundImageMapPageViewModel(
                     position = northEastPosition,
                     icon =
                         DefaultMarkerIcon(
-                            fillColor = Color.Red,
-                            strokeColor = Color.White,
+                            fillColor = Color.Red.toArgb(),
+                            strokeColor = Color.White.toArgb(),
                             label = neLabel,
-                            labelTextColor = Color.White,
+                            labelTextColor = Color.White.toArgb(),
                         ),
                     draggable = true,
                     onDrag = this::onMarkerDrag,

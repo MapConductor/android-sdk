@@ -12,18 +12,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import com.mapconductor.core.circle.Circle
+import com.mapconductor.compose.circle.Circle
+import com.mapconductor.compose.marker.Marker
+import com.mapconductor.compose.polyline.Polyline
 import com.mapconductor.core.circle.CircleState
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.map.OnCameraMoveHandler
-import com.mapconductor.core.marker.Marker
 import com.mapconductor.core.marker.MarkerState
-import com.mapconductor.core.polyline.Polyline
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.example.MapViewContainer
 
@@ -54,8 +54,8 @@ fun CircleMapComponent(
                 PolylineState(
                     points = listOf(centerMarker.position, edgeMarker.position),
                     id = "circle-radius-line",
-                    strokeColor = Color.White,
-                    strokeWidth = 3.dp,
+                    strokeColor = Color.White.toArgb(),
+                    strokeWidth = 3f,
                 ),
             )
 
@@ -68,23 +68,25 @@ fun CircleMapComponent(
             Box(modifier = Modifier.fillMaxSize()) {
                 labelPosition?.let { pos ->
                     Box(
-                        modifier = Modifier
-                            .onGloballyPositioned { labelSize = it.size }
-                            .offset {
-                                IntOffset(
-                                    pos.x - labelSize.width / 2,
-                                    pos.y - labelSize.height / 2
-                                )
-                            },
+                        modifier =
+                            Modifier
+                                .onGloballyPositioned { labelSize = it.size }
+                                .offset {
+                                    IntOffset(
+                                        pos.x - labelSize.width / 2,
+                                        pos.y - labelSize.height / 2,
+                                    )
+                                },
                     ) {
                         val labelText = "${circleState.radiusMeters.toInt()} m"
                         // White outline
                         BasicText(
                             text = labelText,
-                            style = TextStyle(
-                                color = Color.White,
-                                drawStyle = Stroke(width = 6f),
-                            ),
+                            style =
+                                TextStyle(
+                                    color = Color.White,
+                                    drawStyle = Stroke(width = 6f),
+                                ),
                         )
                         // Black fill
                         BasicText(

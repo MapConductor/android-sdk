@@ -28,3 +28,6 @@
 [submodule "android-geojson-layer"]
 	path = android-geojson-layer
 	url = git@github.com:MapConductor/android-geojson-layer.git
+[submodule "android-sdk-compose"]
+	path = android-sdk-compose
+	url = git@github.com:MapConductor/android-sdk-compose.git

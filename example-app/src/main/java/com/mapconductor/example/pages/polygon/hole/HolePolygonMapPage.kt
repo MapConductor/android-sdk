@@ -10,10 +10,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.polygon.Polygon
 import com.mapconductor.core.features.GeoPoint
-import com.mapconductor.core.polygon.Polygon
 import com.mapconductor.core.polygon.PolygonState
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
@@ -55,9 +56,9 @@ fun HolePolygonMapPage(onToggleSidebar: () -> Unit = {}) {
                             GeoPoint(43.049062034871525, 141.28690055130158),
                         ),
                     ),
-                fillColor = Color(0xCC787880),
-                strokeColor = Color.Red,
-                strokeWidth = 2.dp,
+                fillColor = Color(0xCC787880).toArgb(),
+                strokeColor = Color.Red.toArgb(),
+                strokeWidth = 2f,
             )
         }
 
