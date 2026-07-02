@@ -118,6 +118,7 @@ ask-to-commit() {
 }
 
 ask-to-commit "${ROOT_DIR}/android-sdk-core"
+ask-to-commit "${ROOT_DIR}/android-sdk-compose"
 ask-to-commit "${ROOT_DIR}/android-for-googlemaps"
 ask-to-commit "${ROOT_DIR}/android-for-arcgis"
 ask-to-commit "${ROOT_DIR}/android-for-here"
