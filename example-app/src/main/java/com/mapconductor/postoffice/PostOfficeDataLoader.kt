@@ -39,7 +39,6 @@ class PostOfficeDataLoader(
 
                 // Filter for zip files matching the pattern P30-13_*.zip
                 val zipFiles = assetFiles.filter { it.startsWith("P30-13_") && it.endsWith(".zip") }
-                Log.i(tag, "zipFiles=${zipFiles.size}")
 
                 zipFiles.forEach { zipFileName ->
                     try {
@@ -55,6 +54,7 @@ class PostOfficeDataLoader(
                         Log.w(tag, "Error loading $zipFileName", e)
                     }
                 }
+                Log.i(tag, "postOffices = ${postOffices.size}")
             } catch (e: Exception) {
                 Log.w(tag, "Error accessing assets", e)
             }

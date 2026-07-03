@@ -135,9 +135,9 @@ fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconIte
 @Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
+        GetArcGISViewItem(initCameraPosition),
         GetMapboxViewItem(initCameraPosition),
         GetHereViewItem(initCameraPosition),
-        GetArcGISViewItem(initCameraPosition),
         GetMapLibreViewItem(initCameraPosition),
         GetGoogleMapViewItem(initCameraPosition),
     )
