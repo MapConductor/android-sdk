@@ -15,12 +15,12 @@ ktlint {
 
 android {
     namespace = "com.mapconductor.simplemapapp"
-    compileSdk = 37
+    compileSdk = project.property("compileSdk").toString().toInt()
 
     defaultConfig {
         applicationId = "com.mapconductor.simplemapapp"
-        minSdk = 26
-        targetSdk = 37
+        minSdk = project.property("minSdk").toString().toInt()
+        targetSdk = project.property("targetSdk").toString().toInt()
         versionCode = 1
         versionName = "1.0"
 

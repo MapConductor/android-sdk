@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType.Companion.PrimaryNotEditable
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -123,7 +122,7 @@ fun MapDesignTypeSelector(
             onExpandedChange = { expanded = !expanded },
         ) {
             TextField(
-                modifier = Modifier.menuAnchor(PrimaryNotEditable),
+                modifier = Modifier.menuAnchor(),
                 value = selectedLabel,
                 onValueChange = {},
                 readOnly = true,

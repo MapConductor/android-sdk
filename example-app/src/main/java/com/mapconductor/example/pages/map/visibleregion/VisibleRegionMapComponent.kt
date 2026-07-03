@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -184,7 +183,6 @@ fun VisibleRegionInfoPanel(
     visibleRegionInfo: VisibleRegionInfo?,
 ) {
     val context = LocalContext.current
-    val clipboardManager = LocalClipboard.current
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     val copyData =
