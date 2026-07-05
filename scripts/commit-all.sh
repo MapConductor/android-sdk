@@ -123,11 +123,15 @@ ask-to-commit() {
   fi
 }
 
-ask-to-commit "${ROOT_DIR}/js-sdk-core"
-ask-to-commit "${ROOT_DIR}/js-sdk-react"
-ask-to-commit "${ROOT_DIR}/js-sdk-reactnative"
-ask-to-commit "${ROOT_DIR}/react-for-googlemaps"
-ask-to-commit "${ROOT_DIR}/react-for-maplibre"
-ask-to-commit "${ROOT_DIR}/reactnative-for-googlemaps"
-ask-to-commit "${ROOT_DIR}/reactnative-for-maplibre"
+ask-to-commit "${ROOT_DIR}/android-sdk-core"
+ask-to-commit "${ROOT_DIR}/android-sdk-compose"
+ask-to-commit "${ROOT_DIR}/android-for-googlemaps"
+ask-to-commit "${ROOT_DIR}/android-for-arcgis"
+ask-to-commit "${ROOT_DIR}/android-for-here"
+ask-to-commit "${ROOT_DIR}/android-for-maplibre"
+ask-to-commit "${ROOT_DIR}/android-for-mapbox"
+ask-to-commit "${ROOT_DIR}/android-heatmap"
+ask-to-commit "${ROOT_DIR}/android-icons"
+ask-to-commit "${ROOT_DIR}/android-geojson-layer"
+ask-to-commit "${ROOT_DIR}/android-marker-clustering"
 ask-to-commit "${ROOT_DIR}/"
