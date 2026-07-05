@@ -33,7 +33,13 @@ git-claude-commit() {
   if [ -n "$msg" ]; then
     echo -e "\ncommit message:\n$msg\n"
     git commit -m "$msg"
-    git push
+    local branch
+    branch=$(git branch --show-current)
+    if [ -z "$branch" ]; then
+      echo "Error: Failed to detect current branch."
+      return $FALSE
+    fi
+    git push -u origin "$branch"
   else
     echo "Error: Failed to generate commit message."
     return $FALSE
@@ -117,15 +123,11 @@ ask-to-commit() {
   fi
 }
 
-ask-to-commit "${ROOT_DIR}/android-sdk-core"
-ask-to-commit "${ROOT_DIR}/android-sdk-compose"
-ask-to-commit "${ROOT_DIR}/android-for-googlemaps"
-ask-to-commit "${ROOT_DIR}/android-for-arcgis"
-ask-to-commit "${ROOT_DIR}/android-for-here"
-ask-to-commit "${ROOT_DIR}/android-for-maplibre"
-ask-to-commit "${ROOT_DIR}/android-for-mapbox"
-ask-to-commit "${ROOT_DIR}/android-heatmap"
-ask-to-commit "${ROOT_DIR}/android-icons"
-ask-to-commit "${ROOT_DIR}/android-geojson-layer"
-ask-to-commit "${ROOT_DIR}/android-marker-clustering"
+ask-to-commit "${ROOT_DIR}/js-sdk-core"
+ask-to-commit "${ROOT_DIR}/js-sdk-react"
+ask-to-commit "${ROOT_DIR}/js-sdk-reactnative"
+ask-to-commit "${ROOT_DIR}/react-for-googlemaps"
+ask-to-commit "${ROOT_DIR}/react-for-maplibre"
+ask-to-commit "${ROOT_DIR}/reactnative-for-googlemaps"
+ask-to-commit "${ROOT_DIR}/reactnative-for-maplibre"
 ask-to-commit "${ROOT_DIR}/"
