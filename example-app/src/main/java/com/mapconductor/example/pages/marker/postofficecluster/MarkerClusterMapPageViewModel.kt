@@ -1,5 +1,8 @@
 ﻿package com.mapconductor.example.pages.marker.postofficecluster
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mapconductor.core.features.GeoPoint
@@ -26,6 +29,7 @@ interface MarkerClusterMapPageViewModelInterface {
     val isDataLoading: StateFlow<Boolean>
 
     val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?>
+    var debugHullPolygons: Boolean
 
     fun onMapViewChanged(mapViewState: MapViewStateInterface<*>)
 
@@ -75,6 +79,8 @@ class MarkerClusterMapPageViewModel(
     private val _renderingStrategy: MutableStateFlow<MarkerRenderingStrategyInterface<Any>?> =
         MutableStateFlow(null)
     override val renderingStrategy: StateFlow<MarkerRenderingStrategyInterface<Any>?> = _renderingStrategy.asStateFlow()
+
+    override var debugHullPolygons by mutableStateOf(false)
 
     fun loadPostOfficeData() {
         if (_markerList.value.isNotEmpty()) return
