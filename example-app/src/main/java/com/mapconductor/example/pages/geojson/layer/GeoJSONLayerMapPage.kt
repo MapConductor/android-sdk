@@ -117,7 +117,7 @@ private fun GeoJSONLayerMapComponent(mapViewState: MapViewStateInterface<*>?) {
         MapViewContainer(
             state = state,
             onMapClick = { clicked ->
-                if (!layerState.processClick(clicked)) {
+                if (!layerState.processClick(clicked, pixelTolerance = 10.0, zoom = state.cameraPosition.zoom)) {
                     tappedPosition = null
                     selectedFeature = null
                 }
