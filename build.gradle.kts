@@ -72,6 +72,7 @@ tasks.register("allLintChecks") {
 val publishableModules = listOf(
     "mapconductor-bom",
     "android-sdk-core",
+    "android-sdk-compose",
     "android-icons",
     "android-marker-clustering",
     "android-heatmap",

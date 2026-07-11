@@ -20,8 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.map.ArcGISDesignTypeInterface
-import com.mapconductor.arcgis.map.ArcGISMapViewStateInterface
+import com.mapconductor.arcgis.ArcGISDesignTypeInterface
+import com.mapconductor.arcgis.ArcGISMapViewStateInterface
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold

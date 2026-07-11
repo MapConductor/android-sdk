@@ -12,10 +12,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.map.ArcGISDesign
-import com.mapconductor.arcgis.map.ArcGISMapView2D
-import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.arcgis.map.rememberArcGISMapViewState
+import com.mapconductor.arcgis.ArcGISDesign
+import com.mapconductor.arcgis.ArcGISMapView2D
+import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.example.R

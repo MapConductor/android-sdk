@@ -28,9 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.mapconductor.arcgis.map.ArcGISDesign
-import com.mapconductor.arcgis.map.ArcGISMapViewState
-import com.mapconductor.arcgis.map.rememberArcGISMapViewState
+import com.mapconductor.arcgis.ArcGISDesign
+import com.mapconductor.arcgis.ArcGISMapViewState
+import com.mapconductor.arcgis.rememberArcGISMapViewState
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewState
 import com.mapconductor.core.map.MapViewStateInterface
