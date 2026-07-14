@@ -44,6 +44,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import android.util.Log
 
 @Composable
 fun MarkerClusterMapPage(
@@ -99,6 +100,9 @@ fun MarkerClusterMapPage(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
                 debugHullPolygons = debugHullPolygons,
+                onClusterClick = { cluster ->
+                    Log.d("cluster", "---->${cluster.count}")
+                }
             )
         }
     SideEffect {

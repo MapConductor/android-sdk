@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 DemoAppScreen(
-                    // initPage = "map-basic",
+//                     initPage = "marker-postoffice-cluster",
                     initPage = "startup",
                 )
             }

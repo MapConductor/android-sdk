@@ -49,7 +49,7 @@ import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
 
 @Composable
-fun GetGoogleMapViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<GoogleMapViewState> {
+fun googleMapViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<GoogleMapViewState> {
     val googleMapState =
         rememberGoogleMapViewState(
             mapDesign = GoogleMapDesign.Normal,
@@ -65,7 +65,7 @@ fun GetGoogleMapViewItem(initCameraPosition: MapCameraPositionInterface): IconIt
 }
 
 @Composable
-fun GetMapboxViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapboxViewState> {
+fun mapboxViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapboxViewState> {
     val mapboxMapState =
         rememberMapboxMapViewState(
             mapDesign = MapboxMapDesign.Standard,
@@ -81,7 +81,7 @@ fun GetMapboxViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<
 }
 
 @Composable
-fun GetHereViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<HereViewState> {
+fun hereViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<HereViewState> {
     val hereMapState =
         rememberHereMapViewState(
             mapDesign = HereMapDesign.NormalDay,
@@ -97,7 +97,7 @@ fun GetHereViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<He
 }
 
 @Composable
-fun GetArcGISViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<ArcGISMapViewState> {
+fun arcGISViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<ArcGISMapViewState> {
     val elevationSources =
         listOf(
             "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
@@ -117,7 +117,7 @@ fun GetArcGISViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<
 }
 
 @Composable
-fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapLibreViewState> {
+fun mapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapLibreViewState> {
     val mapLibreMapState =
         rememberMapLibreMapViewState(
             mapDesign = MapLibreDesign.OsmBright,
@@ -135,11 +135,11 @@ fun GetMapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconIte
 @Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
-        GetArcGISViewItem(initCameraPosition),
-        GetMapboxViewItem(initCameraPosition),
-        GetHereViewItem(initCameraPosition),
-        GetMapLibreViewItem(initCameraPosition),
-        GetGoogleMapViewItem(initCameraPosition),
+        mapLibreViewItem(initCameraPosition),
+        arcGISViewItem(initCameraPosition),
+        mapboxViewItem(initCameraPosition),
+        hereViewItem(initCameraPosition),
+        googleMapViewItem(initCameraPosition),
     )
 
 @Composable
