@@ -67,7 +67,7 @@ fun PolygonMapPage(onToggleSidebar: () -> Unit = {}) {
                 modifier = Modifier.padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Stroke Width: ${String.format("%.1f", viewModel.strokeWidth)}dp")
+                Text("Stroke Width: ${String.format("%.1f", viewModel.strokeWidth.value)}dp")
                 Slider(
                     value = viewModel.strokeWidth.value,
                     onValueChange = { viewModel.strokeWidth = it.dp },

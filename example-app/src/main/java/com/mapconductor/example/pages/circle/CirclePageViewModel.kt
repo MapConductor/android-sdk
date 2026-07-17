@@ -146,6 +146,7 @@ class CirclePageViewModel(
     }
 
     init {
+        updatePolylineState()
         viewModelScope.launch {
             markerDragFlow
                 .sample(50)
