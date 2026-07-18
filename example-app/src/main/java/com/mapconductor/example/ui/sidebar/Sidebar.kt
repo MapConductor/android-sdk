@@ -39,7 +39,7 @@ import androidx.compose.ui.zIndex
 
 @Composable
 fun OverlaySidebar(
-    items: List<SidebarItem>,
+    sections: List<SidebarSection>,
     selectedItemId: String,
     onItemClick: (SidebarItem) -> Unit,
     isVisible: Boolean,
@@ -125,14 +125,13 @@ fun OverlaySidebar(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                items.forEach { item ->
-                    SidebarItemView(
-                        item = item,
-                        isSelected = item.id == selectedItemId,
-                        isExpanded = true,
-                        onClick = {
-                            onItemClick(item)
-                            onToggleSidebar() // Close sidebar after selection
+                sections.forEach { section ->
+                    SidebarSectionView(
+                        section = section,
+                        selectedItemId = selectedItemId,
+                        onItemClick = {
+                            onItemClick(it)
+                            onToggleSidebar()
                         },
                     )
                 }
@@ -144,7 +143,7 @@ fun OverlaySidebar(
 // Keep the old component as well for backwards compatibility
 @Composable
 fun Sidebar(
-    items: List<SidebarItem>,
+    sections: List<SidebarSection>,
     selectedItemId: String,
     onItemClick: (SidebarItem) -> Unit,
     isExpanded: Boolean,
@@ -152,13 +151,37 @@ fun Sidebar(
     modifier: Modifier = Modifier,
 ) {
     OverlaySidebar(
-        items = items,
+        sections = sections,
         selectedItemId = selectedItemId,
         onItemClick = onItemClick,
         isVisible = isExpanded,
         onToggleSidebar = onToggleSidebar,
         modifier = modifier,
     )
+}
+
+@Composable
+private fun SidebarSectionView(
+    section: SidebarSection,
+    selectedItemId: String,
+    onItemClick: (SidebarItem) -> Unit,
+) {
+    Text(
+        text = section.title,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp),
+    )
+
+    section.items.forEach { item ->
+        SidebarItemView(
+            item = item,
+            isSelected = item.id == selectedItemId,
+            isExpanded = true,
+            onClick = { onItemClick(item) },
+        )
+    }
 }
 
 @Composable

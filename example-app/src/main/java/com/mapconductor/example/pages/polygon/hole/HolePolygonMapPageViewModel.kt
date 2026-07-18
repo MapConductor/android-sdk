@@ -1,6 +1,5 @@
 package com.mapconductor.example.pages.polygon.hole
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -37,8 +36,8 @@ class HolePolygonMapPageViewModel :
             zoom = 11.0,
         )
 
-    private val holes =
-        mutableStateListOf(
+    private var holes =
+        listOf(
             listOf(
                 GeoPoint(43.100869, 141.352909),
                 GeoPoint(43.044443, 141.411895),
@@ -51,42 +50,40 @@ class HolePolygonMapPageViewModel :
             ),
         )
 
-    override val polygonState: PolygonState
-        get() =
-            PolygonState(
-                id = "world-hole",
-                points = worldPoints,
-                holes = holes,
-                fillColor = Color(0xCC787880),
-                strokeColor = Color.Red,
-                strokeWidth = 2.dp,
-            )
+    override val polygonState =
+        PolygonState(
+            id = "world-hole",
+            points = worldPoints,
+            holes = holes,
+            fillColor = Color(0xCC787880),
+            strokeColor = Color.Red,
+            strokeWidth = 2.dp,
+        )
 
-    override val holeVertexMarkers: List<MarkerState>
-        get() =
-            holes.flatMapIndexed { holeIndex, hole ->
-                hole.mapIndexed { vertexIndex, point ->
-                    MarkerState(
-                        id = "hole-$holeIndex-$vertexIndex",
-                        position = point,
-                        draggable = true,
-                        clickable = false,
-                        extra = HoleVertex(holeIndex, vertexIndex),
-                        icon =
-                            ColorDefaultIcon(
-                                fillColor =
-                                    holeMarkerColors.getOrElse(holeIndex) {
-                                        Color(0xFF64748B)
-                                    },
-                                strokeColor = Color.White,
-                                label = "${holeIndex + 1}-${vertexIndex + 1}",
-                                labelTextColor = Color.White,
-                            ),
-                        onDrag = this::onMarkerDrag,
-                        onDragEnd = this::onMarkerDrag,
-                    )
-                }
+    override val holeVertexMarkers: List<MarkerState> =
+        holes.flatMapIndexed { holeIndex, hole ->
+            hole.mapIndexed { vertexIndex, point ->
+                MarkerState(
+                    id = "hole-$holeIndex-$vertexIndex",
+                    position = point,
+                    draggable = true,
+                    clickable = false,
+                    extra = HoleVertex(holeIndex, vertexIndex),
+                    icon =
+                        ColorDefaultIcon(
+                            fillColor =
+                                holeMarkerColors.getOrElse(holeIndex) {
+                                    Color(0xFF64748B)
+                                },
+                            strokeColor = Color.White,
+                            label = "${holeIndex + 1}-${vertexIndex + 1}",
+                            labelTextColor = Color.White,
+                        ),
+                    onDrag = this::onMarkerDrag,
+                    onDragEnd = this::onMarkerDrag,
+                )
             }
+        }
 
     override fun onMapViewChanged(state: MapViewStateInterface<*>) {
         _mapViewState.value = state
@@ -99,14 +96,21 @@ class HolePolygonMapPageViewModel :
         val hole = holes[vertex.holeIndex]
         if (vertex.vertexIndex !in hole.indices) return
 
-        holes[vertex.holeIndex] =
-            hole.mapIndexed { index, point ->
-                if (index == vertex.vertexIndex) {
-                    GeoPoint.from(dragged.position)
+        holes =
+            holes.mapIndexed { holeIndex, currentHole ->
+                if (holeIndex == vertex.holeIndex) {
+                    currentHole.mapIndexed { index, point ->
+                        if (index == vertex.vertexIndex) {
+                            GeoPoint.from(dragged.position)
+                        } else {
+                            point
+                        }
+                    }
                 } else {
-                    point
+                    currentHole
                 }
             }
+        polygonState.holes = holes
     }
 
     private data class HoleVertex(
