@@ -24,11 +24,11 @@ git-claude-commit() {
     return $FALSE
   fi
 
-  echo "Generating English commit message using Claude..."
+  echo "Generating English commit message using Codex..."
 
   local prompt="Analyze the following git diff and generate a clear, concise git commit message in English following Conventional Commits format (e.g., feat: add login feature). Output ONLY the final commit message text. Absolutely NO explanations, NO greetings, and NO markdown code blocks."
   local msg
-  msg=$(git diff --cached | claude -p "$prompt")
+  msg=$(git diff --cached | codex exec "$prompt")
 
   if [ -n "$msg" ]; then
     echo -e "\ncommit message:\n$msg\n"
