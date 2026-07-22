@@ -31,3 +31,6 @@
 [submodule "android-sdk-compose"]
 	path = android-sdk-compose
 	url = git@github.com:MapConductor/android-sdk-compose.git
+[submodule "android-for-tomtom"]
+	path = android-for-tomtom
+	url = ./android-for-tomtom

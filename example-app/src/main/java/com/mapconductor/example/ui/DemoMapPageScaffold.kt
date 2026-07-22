@@ -47,6 +47,9 @@ import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.tomtom.TomTomMapDesign
+import com.mapconductor.tomtom.TomTomMapViewState
+import com.mapconductor.tomtom.rememberTomTomMapViewState
 
 @Composable
 fun googleMapViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<GoogleMapViewState> {
@@ -133,6 +136,22 @@ fun mapLibreViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<M
 }
 
 @Composable
+fun tomtomViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<TomTomMapViewState> {
+    val tomtomMapState =
+        rememberTomTomMapViewState(
+            mapDesign = TomTomMapDesign.Standard,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "tomtom",
+        label = "TomTom",
+        lightIconResId = R.drawable.tomtom_logo,
+        darkIconResId = R.drawable.tomtom_logo,
+        value = tomtomMapState,
+    )
+}
+
+@Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         mapLibreViewItem(initCameraPosition),
@@ -140,6 +159,7 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
         mapboxViewItem(initCameraPosition),
         hereViewItem(initCameraPosition),
         googleMapViewItem(initCameraPosition),
+        tomtomViewItem(initCameraPosition),
     )
 
 @Composable

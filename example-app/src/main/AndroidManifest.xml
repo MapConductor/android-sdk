@@ -36,6 +36,10 @@
         <meta-data
             android:name="MAPBOX_ACCESS_TOKEN"
             android:value="${MAPBOX_ACCESS_TOKEN}" />
+
+        <meta-data
+            android:name="TOMTOM_API_KEY"
+            android:value="${TOMTOM_API_KEY}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

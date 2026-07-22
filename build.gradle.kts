@@ -81,7 +81,8 @@ val publishableModules = listOf(
     "android-for-googlemaps",
     "android-for-here",
     "android-for-mapbox",
-    "android-for-maplibre"
+    "android-for-maplibre",
+    "android-for-tomtom"
 )
 
 tasks.register("publishAllLocal") {

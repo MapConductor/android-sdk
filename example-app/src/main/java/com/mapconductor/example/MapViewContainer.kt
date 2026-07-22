@@ -18,6 +18,8 @@ import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.MapLibreViewState
+import com.mapconductor.tomtom.TomTomMapView
+import com.mapconductor.tomtom.TomTomMapViewState
 
 @Composable
 @Suppress("DEPRECATION")
@@ -93,6 +95,20 @@ fun MapViewContainer(
 
         is MapLibreViewState ->
             MapLibreMapView(
+                modifier = modifier,
+                state = state,
+                markerTiling = markerTiling,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMapLongClick = onMapLongClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
+                content = content,
+            )
+
+        is TomTomMapViewState ->
+            TomTomMapView(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,

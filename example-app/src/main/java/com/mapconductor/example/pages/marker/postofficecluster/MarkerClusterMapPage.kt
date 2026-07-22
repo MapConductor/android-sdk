@@ -100,6 +100,10 @@ fun MarkerClusterMapPage(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
                 debugHullPolygons = debugHullPolygons,
+                spiderfyMinZoom = 13.0,
+                prepareExpand = { appearing ->
+                    Log.d("cluster", "prepareExpand: ${appearing.size} markers appearing")
+                },
                 onClusterClick = { cluster ->
                     Log.d("cluster", "---->${cluster.count}")
                 }

@@ -38,7 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.mapconductor.compose.polygon.Polygon
 import com.mapconductor.compose.polyline.Polyline
@@ -86,9 +89,10 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     val leftMenuItems = DefaultMapViewItems(initCameraPosition)
     val rightMenuItems = DefaultMapViewItems(initCameraPosition)
 
-    // Default to Mapbox vs ArcGIS for zoom calibration (Google Maps may be unavailable in some dev setups).
-    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(0) } // Mapbox
-    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(1) } // Here
+    // Default to Google Maps vs TomTom for zoom calibration.
+    // Index order comes from DefaultMapViewItems: maplibre(0), arcgis(1), mapbox(2), here(3), google(4), tomtom(5).
+    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(4) } // Google Maps
+    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(5) } // TomTom
 
     @Suppress("UNCHECKED_CAST")
     val leftState = leftMenuItems[leftSelectedIndex].value as MapViewStateInterface<*>
@@ -585,10 +589,11 @@ private fun CameraSyncMapPane(
     boundsPolylines: List<PolylineState>,
     referenceRectangles: List<PolygonState>,
 ) {
+    var mapSize by remember { mutableStateOf(IntSize.Zero) }
     Box(modifier = modifier) {
         // Base: Map (full available size). Overlays are drawn on top to maximize map area.
         MapViewContainer(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().onSizeChanged { mapSize = it },
             state = mapViewState,
             onCameraMoveStart = { onCameraMoveStart?.invoke() },
             onCameraMove = { pos -> onCameraMove?.invoke(pos) },
@@ -619,6 +624,7 @@ private fun CameraSyncMapPane(
                     .padding(10.dp),
             label = label,
             position = cameraPosition,
+            mapSize = mapSize,
         )
     }
 }
@@ -628,8 +634,12 @@ private fun CameraInfoCard(
     modifier: Modifier,
     label: String,
     position: MapCameraPosition,
+    mapSize: IntSize,
 ) {
     val fmt = remember { Locale.US }
+    val density = LocalDensity.current
+    val widthDp = with(density) { mapSize.width.toDp().value }
+    val heightDp = with(density) { mapSize.height.toDp().value }
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
@@ -658,6 +668,10 @@ private fun CameraInfoCard(
             )
             Text(
                 text = "Alt: ${String.format(fmt, "%.0f m", position.position.altitude)}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "Size: ${String.format(fmt, "%.0f × %.0f dp", widthDp, heightDp)}",
                 style = MaterialTheme.typography.bodySmall,
             )
         }

@@ -22,6 +22,7 @@ okhttp = "5.3.2"
 runner = "1.7.0"
 
 mapboxAndroid = "11.24.3"
+tomtomMaps = "1.26.7"
 playServicesMaps = "20.0.0"
 
 arcgisMapsKotlin = "200.7.0"
@@ -73,6 +74,7 @@ mapconductor-geojson = { module = "com.mapconductor:geojson" }
 
 # Mapbox
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }
+tomtom-map-display = { module = "com.tomtom.sdk.maps:map-display", version.ref = "tomtomMaps" }
 
 # MapLibre
 maplibre-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "mapLibreSdk" }
