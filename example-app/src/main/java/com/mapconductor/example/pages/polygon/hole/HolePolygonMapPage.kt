@@ -30,7 +30,10 @@ fun HolePolygonMapPage(onToggleSidebar: () -> Unit = {}) {
         val mapViewState = viewModel.mapViewState.collectAsState()
 
         mapViewState.value?.let {
-            MapViewContainer(state = it) {
+            MapViewContainer(
+                state = it,
+                cameraRestriction = viewModel.cameraRestriction,
+            ) {
                 Polygon(viewModel.polygonState)
                 viewModel.holeVertexMarkers.forEach { marker ->
                     Marker(marker)
@@ -51,7 +54,8 @@ fun HolePolygonMapPage(onToggleSidebar: () -> Unit = {}) {
         ) {
             Text(
                 """
-                A world-covering polygon with two triangular holes near Sapporo.
+                A regional polygon covering the Sapporo area with two triangular holes.
+                Panning and zooming are restricted to the region (restrictBounds + min/max zoom).
                 Drag hole vertex markers to reshape the holes.
                 """.trimIndent(),
             )

@@ -71,6 +71,7 @@ mapconductor-marker-strategy = { module = "com.mapconductor:marker-strategy" }
 mapconductor-marker-native-strategy = { module = "com.mapconductor:marker-native-strategy" }
 mapconductor-marker-clustering = { module = "com.mapconductor:marker-clustering" }
 mapconductor-geojson = { module = "com.mapconductor:geojson" }
+mapconductor-kml = { module = "com.mapconductor:kml" }
 
 # Mapbox
 mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapboxAndroid" }

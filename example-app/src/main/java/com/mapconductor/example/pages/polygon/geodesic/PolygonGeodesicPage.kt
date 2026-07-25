@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.mapconductor.compose.info.InfoBubble
 import com.mapconductor.compose.marker.Marker
 import com.mapconductor.compose.polygon.Polygon
 import com.mapconductor.core.features.GeoPoint
@@ -66,6 +67,7 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
     ) { paddingValues ->
         val mapViewState = viewModel.mapViewState.collectAsState()
         val marker = viewModel.markerState.collectAsState()
+        val clickedLabel = viewModel.clickedLabel.collectAsState()
 
         mapViewState.value?.let {
             MapViewContainer(
@@ -76,6 +78,15 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
 
                 marker.value?.let { markerState ->
                     Marker(markerState)
+                    // クリックしたポリゴン（Linear/Geodesic）を InfoBubble で表示する（React と同じロジック）。
+                    clickedLabel.value?.let { label ->
+                        InfoBubble(
+                            bubbleColor = Color.White,
+                            marker = markerState,
+                        ) {
+                            Text(label)
+                        }
+                    }
                 }
             }
         }
@@ -94,9 +105,9 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
             Text(
                 """
                 Tap on the polygons!
-                This example shows the ability of the polygon click detection.
-                Place a green marker if you tap on the green polygon,
-                and place a blue marker on the blue polygon if you tap on it.
+                A marker drops at the tapped point (colored to match the polygon),
+                and an info bubble shows which polygon was clicked
+                (Linear Triangle or Geodesic Triangle).
                 """.trimIndent(),
             )
         }

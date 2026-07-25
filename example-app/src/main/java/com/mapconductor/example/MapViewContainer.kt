@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISMapView
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.compose.MapViewScope
+import com.mapconductor.core.map.CameraRestriction
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.OnCameraMoveHandler
 import com.mapconductor.core.OnMapEventHandler
@@ -27,6 +28,7 @@ fun MapViewContainer(
     modifier: Modifier = Modifier,
     state: MapViewStateInterface<*>? = null,
     markerTiling: MarkerTilingOptions? = null,
+    cameraRestriction: CameraRestriction? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
     onMapClick: OnMapEventHandler? = null,
     onMapLongClick: OnMapEventHandler? = null,
@@ -42,6 +44,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMapLongClick = onMapLongClick,
@@ -56,6 +59,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMapLongClick = onMapLongClick,
@@ -70,6 +74,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMapLongClick = onMapLongClick,
@@ -84,6 +89,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMapLongClick = onMapLongClick,
@@ -98,6 +104,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMapLongClick = onMapLongClick,
@@ -112,6 +119,7 @@ fun MapViewContainer(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
                 onMapLoaded = onMapLoaded,
                 onMapClick = onMapClick,
                 onMapLongClick = onMapLongClick,

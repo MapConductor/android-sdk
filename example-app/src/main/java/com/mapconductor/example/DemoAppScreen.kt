@@ -14,6 +14,7 @@ import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.geojson.basic.BasicGeoJSONMapPage
 import com.mapconductor.example.pages.geojson.layer.GeoJSONLayerMapPage
+import com.mapconductor.example.pages.kml.KMLMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.heatmaplayer.HeatmapLayerPage
@@ -158,6 +159,10 @@ fun DemoAppScreen(initPage: String = "map") {
                         SidebarItem(id = "geojson-basic", title = "Basic GeoJSON"),
                         SidebarItem(id = "geojson-layer", title = "GeoJSON Layer"),
                     ),
+            ),
+            SidebarSection(
+                title = "KML",
+                items = listOf(SidebarItem(id = "kml-layer", title = "KML Layer")),
             ),
         )
 
@@ -305,6 +310,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "geojson-layer" -> {
                         GeoJSONLayerMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "kml-layer" -> {
+                        KMLMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

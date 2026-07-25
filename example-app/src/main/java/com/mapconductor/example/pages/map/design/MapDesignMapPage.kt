@@ -34,6 +34,8 @@ import com.mapconductor.mapbox.MapboxDesignType
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.tomtom.TomTomMapDesignType
+import com.mapconductor.tomtom.TomTomMapViewStateInterface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,6 +113,10 @@ fun MapDesignTypeSelector(
             is MapLibreViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as MapLibreDesign
+            }
+            is TomTomMapViewStateInterface -> {
+                @Suppress("UNCHECKED_CAST")
+                state.mapDesignType = mapDesignOption.design as TomTomMapDesignType
             }
             else -> throw IllegalArgumentException("Not implemented yet")
         }

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
 import com.mapconductor.example.ui.MessageCard
+import com.mapconductor.tomtom.TomTomMapViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,11 +91,19 @@ fun RasterLayerMapPage(onToggleSidebar: () -> Unit = {}) {
                         )
                     }
                 }
-                Text("Opacity: ${String.format("%.1f", viewModel.opacity)}")
+                // TomTom はラスターの opacity をランタイムで変更する API が無く（変更＝スタイル全体の
+                // 再ロードでビューポートが空白化する）、ライブ調整に非対応。スライダーを無効化する。
+                val isTomTom = mapViewState.value is TomTomMapViewState
+                if (isTomTom) {
+                    Text("Opacity: not available for TomTom")
+                } else {
+                    Text("Opacity: ${String.format("%.1f", viewModel.opacity)}")
+                }
                 Slider(
                     value = viewModel.opacity,
                     onValueChange = { viewModel.opacity = it },
                     valueRange = 0f..1f,
+                    enabled = !isTomTom,
                     colors =
                         SliderDefaults.colors(),
                 )

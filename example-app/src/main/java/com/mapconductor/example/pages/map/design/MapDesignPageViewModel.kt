@@ -15,6 +15,8 @@ import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.tomtom.TomTomMapDesign
+import com.mapconductor.tomtom.TomTomMapViewStateInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -72,6 +74,9 @@ class MapDesignPageViewModel :
             }
             is MapLibreViewStateInterface -> {
                 _mapDesignOptions.value = mapLibreDesigns
+            }
+            is TomTomMapViewStateInterface -> {
+                _mapDesignOptions.value = tomTomMapDesigns
             }
         }
     }
@@ -205,5 +210,12 @@ class MapDesignPageViewModel :
 //                "OSM",
 //                "https://demotiles.maplibre.org/styles/osm-bright-gl-style/style.json",
 //            )),
+        )
+
+    private val tomTomMapDesigns =
+        listOf(
+            MapDesignOption(label = "Standard", design = TomTomMapDesign.Standard),
+            MapDesignOption(label = "Driving", design = TomTomMapDesign.Driving),
+            MapDesignOption(label = "Satellite", design = TomTomMapDesign.Satellite),
         )
 }

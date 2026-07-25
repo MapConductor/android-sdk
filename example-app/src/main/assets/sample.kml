@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>MapConductor KML Sample</name>
+
+    <Style id="redLine">
+      <LineStyle>
+        <color>ff0000ff</color>
+        <width>4</width>
+      </LineStyle>
+    </Style>
+
+    <Style id="bluePoly">
+      <LineStyle>
+        <color>ffcc6600</color>
+        <width>3</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>7fdd8800</color>
+        <fill>1</fill>
+        <outline>1</outline>
+      </PolyStyle>
+    </Style>
+
+    <Style id="greenPoint">
+      <IconStyle>
+        <color>ff00cc00</color>
+      </IconStyle>
+    </Style>
+
+    <StyleMap id="bluePolyMap">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#bluePoly</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#bluePoly</styleUrl>
+      </Pair>
+    </StyleMap>
+
+    <Placemark>
+      <name>Imperial Palace Area</name>
+      <description>A polygon with a hole near the Imperial Palace.</description>
+      <styleUrl>#bluePolyMap</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              139.744,35.688,0
+              139.762,35.688,0
+              139.762,35.676,0
+              139.744,35.676,0
+              139.744,35.688,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+        <innerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              139.750,35.685,0
+              139.756,35.685,0
+              139.756,35.680,0
+              139.750,35.680,0
+              139.750,35.685,0
+            </coordinates>
+          </LinearRing>
+        </innerBoundaryIs>
+      </Polygon>
+    </Placemark>
+
+    <Placemark>
+      <name>Chuo Line (approx.)</name>
+      <description>A red poly-line running east to west.</description>
+      <styleUrl>#redLine</styleUrl>
+      <LineString>
+        <coordinates>
+          139.700,35.700,0
+          139.730,35.695,0
+          139.770,35.690,0
+          139.810,35.700,0
+        </coordinates>
+      </LineString>
+    </Placemark>
+
+    <Placemark>
+      <name>Tokyo Station</name>
+      <description>A styled point placemark.</description>
+      <styleUrl>#greenPoint</styleUrl>
+      <ExtendedData>
+        <Data name="category">
+          <value>station</value>
+        </Data>
+      </ExtendedData>
+      <Point>
+        <coordinates>139.767,35.681,0</coordinates>
+      </Point>
+    </Placemark>
+
+    <Folder>
+      <name>Points of Interest</name>
+      <Placemark>
+        <name>Ginza</name>
+        <Point>
+          <coordinates>139.764,35.671,0</coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Akihabara</name>
+        <Point>
+          <coordinates>139.774,35.698,0</coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>

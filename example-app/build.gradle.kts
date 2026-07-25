@@ -180,6 +180,7 @@ dependencies {
     releaseImplementation(libs.mapconductor.marker.native.strategy)
     releaseImplementation(libs.mapconductor.marker.clustering)
     releaseImplementation(libs.mapconductor.geojson)
+    releaseImplementation(libs.mapconductor.kml)
 
     debugImplementation(project(":android-sdk-core"))
     debugImplementation(project(":android-icons"))
@@ -192,6 +193,7 @@ dependencies {
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-geojson-layer"))
+    debugImplementation(project(":android-kml"))
 
     // local build type: uses MavenLocal published artifacts (published by publishAllLocal)
     // Map SDKs must be declared explicitly because published AARs expose them as runtime-only scope
@@ -210,6 +212,7 @@ dependencies {
     "localImplementation"("com.mapconductor:marker-clustering:${localVersion("android-marker-clustering")}")
     "localImplementation"("com.mapconductor:heatmap:${localVersion("android-heatmap")}")
     "localImplementation"("com.mapconductor:geojson:${localVersion("android-geojson-layer")}")
+    "localImplementation"("com.mapconductor:kml:${localVersion("android-kml")}")
 
     implementation(libs.androidx.vectordrawable)
     testImplementation(libs.junit)

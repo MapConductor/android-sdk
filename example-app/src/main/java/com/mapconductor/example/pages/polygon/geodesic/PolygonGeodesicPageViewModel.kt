@@ -5,6 +5,7 @@ import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
+import com.mapconductor.core.marker.MarkerAnimation
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polygon.PolygonEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,9 @@ interface PolygonGeodesicPageViewModelInterface {
     val initCameraPosition: MapCameraPosition
     val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val markerState: StateFlow<MarkerState?>
+
+    /** クリックされたポリゴンのラベル（InfoBubble に表示）。 */
+    val clickedLabel: StateFlow<String?>
 
     fun onMapViewChanged(state: MapViewStateInterface<*>)
 
@@ -30,6 +34,12 @@ class PolygonGeodesicPageViewModel :
     private val _markerState = MutableStateFlow<MarkerState?>(null)
     override val markerState: StateFlow<MarkerState?> = _markerState.asStateFlow()
 
+    private val _clickedLabel = MutableStateFlow<String?>(null)
+    override val clickedLabel: StateFlow<String?> = _clickedLabel.asStateFlow()
+
+    // クリックのたびにマーカー id を変えて Drop アニメーションを再生させる（React と同じ）。
+    private var clickSequence = 0
+
     override val initCameraPosition =
         MapCameraPosition(
             position = GeoPoint(30.0, 0.0),
@@ -41,14 +51,19 @@ class PolygonGeodesicPageViewModel :
     }
 
     override fun onPolygonClicked(event: PolygonEvent) {
+        clickSequence += 1
+        // どちらのポリゴンがクリックされたかを geodesic フラグから判定して InfoBubble に表示する。
+        _clickedLabel.value = if (event.state.geodesic) "Geodesic Triangle" else "Linear Triangle"
         _markerState.value =
             MarkerState(
-                id = "clicked",
+                id = "polygon-geodesic-click-$clickSequence",
                 position = event.clicked,
                 icon =
                     DefaultMarkerIcon(
                         fillColor = event.state.fillColor,
+                        label = "P",
                     ),
+                animation = MarkerAnimation.Drop,
             )
     }
 }

@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.mapconductor.core.features.GeoPoint
+import com.mapconductor.core.features.GeoRectBounds
+import com.mapconductor.core.map.CameraRestriction
 import com.mapconductor.core.map.MapCameraPosition
 import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ColorDefaultIcon
@@ -15,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 interface HolePolygonMapPageViewModelInterface {
     val initCameraPosition: MapCameraPosition
+    val cameraRestriction: CameraRestriction
     val mapViewState: StateFlow<MapViewStateInterface<*>?>
     val polygonState: PolygonState
     val holeVertexMarkers: List<MarkerState>
@@ -36,6 +39,19 @@ class HolePolygonMapPageViewModel :
             zoom = 11.0,
         )
 
+    // 札幌周辺だけをカバーする。ビューポートをこの矩形の外へパン・ズームアウトできないよう
+    // restrictBounds（外周ポリゴンと一致）と minZoom/maxZoom で制限する。
+    override val cameraRestriction =
+        CameraRestriction(
+            bounds =
+                GeoRectBounds(
+                    southWest = GeoPoint(42.0, 140.0),
+                    northEast = GeoPoint(44.2, 142.8),
+                ),
+            minZoom = 9.0,
+            maxZoom = 16.0,
+        )
+
     private var holes =
         listOf(
             listOf(
@@ -52,8 +68,8 @@ class HolePolygonMapPageViewModel :
 
     override val polygonState =
         PolygonState(
-            id = "world-hole",
-            points = worldPoints,
+            id = "sapporo-hole",
+            points = outerPoints,
             holes = holes,
             fillColor = Color(0xCC787880),
             strokeColor = Color.Red,
@@ -119,18 +135,14 @@ class HolePolygonMapPageViewModel :
     ) : java.io.Serializable
 
     private companion object {
-        val worldPoints =
+        // 札幌周辺を広めにカバーする外周リング。restrictBounds と一致させることで、
+        // パンの端がポリゴンのカバー範囲と揃う。
+        val outerPoints =
             listOf(
-                GeoPoint(85.0, 90.0),
-                GeoPoint(85.0, 0.1),
-                GeoPoint(85.0, -90.0),
-                GeoPoint(85.0, -179.9),
-                GeoPoint(-85.0, -179.9),
-                GeoPoint(-85.0, -90.0),
-                GeoPoint(-85.0, 0.1),
-                GeoPoint(-85.0, 90.0),
-                GeoPoint(-85.0, 179.9),
-                GeoPoint(85.0, 179.9),
+                GeoPoint(44.2, 140.0),
+                GeoPoint(44.2, 142.8),
+                GeoPoint(42.0, 142.8),
+                GeoPoint(42.0, 140.0),
             )
 
         val holeMarkerColors =

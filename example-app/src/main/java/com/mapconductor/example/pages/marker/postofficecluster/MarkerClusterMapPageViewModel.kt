@@ -11,6 +11,7 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.ImageIcon
 import com.mapconductor.core.marker.MarkerRenderingStrategyInterface
 import com.mapconductor.core.marker.MarkerState
+import com.mapconductor.marker.clustering.MarkerCluster
 import com.mapconductor.postoffice.PostOffice
 import com.mapconductor.postoffice.PostOfficeDataLoader
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,8 @@ interface MarkerClusterMapPageViewModelInterface {
     fun onMapLoaded(mapViewState: MapViewStateInterface<*>)
 
     fun onInfoClick(postOffice: PostOffice)
+
+    fun onClusterClicked(cluster: MarkerCluster)
 }
 
 class MarkerClusterMapPageViewModel(
@@ -144,6 +147,24 @@ class MarkerClusterMapPageViewModel(
                     tilt = 30.0,
                 ),
             durationMillis = 2000,
+        )
+    }
+
+    // クラスターをクリックしたら、クラスター内マーカーの重心へズームインする（React と同じロジック）。
+    override fun onClusterClicked(cluster: MarkerCluster) {
+        val byId = _markerList.value.associateBy { it.id }
+        val positions = cluster.markerIds.mapNotNull { byId[it]?.position }
+        if (positions.isEmpty()) return
+        val lat = positions.sumOf { it.latitude } / positions.size
+        val lng = positions.sumOf { it.longitude } / positions.size
+        val currentZoom = _mapViewState.value?.cameraPosition?.zoom ?: 10.0
+        _mapViewState.value?.moveCameraTo(
+            cameraPosition =
+                MapCameraPosition(
+                    position = GeoPoint.fromLatLong(lat, lng),
+                    zoom = minOf(currentZoom + 2.0, 18.0),
+                ),
+            durationMillis = 600,
         )
     }
 
