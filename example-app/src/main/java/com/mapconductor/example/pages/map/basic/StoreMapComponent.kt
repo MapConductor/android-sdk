@@ -60,6 +60,7 @@ fun StoreMapComponent(
                     val storeIcon = info.store
                     state.copy(
                         icon = icons[storeIcon],
+                        draggable = true,
                     )
                 }
             }

@@ -30,10 +30,14 @@ import com.mapconductor.googlemaps.GoogleMapDesignType
 import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 import com.mapconductor.here.HereMapDesignType
 import com.mapconductor.here.HereViewStateInterface
+import com.mapconductor.longdo.LongdoMapDesignTypeInterface
+import com.mapconductor.longdo.LongdoViewStateInterface
 import com.mapconductor.mapbox.MapboxDesignType
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.maptiler.MapTilerMapDesignTypeInterface
+import com.mapconductor.maptiler.MapTilerViewStateInterface
 import com.mapconductor.tomtom.TomTomMapDesignType
 import com.mapconductor.tomtom.TomTomMapViewStateInterface
 
@@ -117,6 +121,12 @@ fun MapDesignTypeSelector(
             is TomTomMapViewStateInterface -> {
                 @Suppress("UNCHECKED_CAST")
                 state.mapDesignType = mapDesignOption.design as TomTomMapDesignType
+            }
+            is MapTilerViewStateInterface -> {
+                state.mapDesignType = mapDesignOption.design as MapTilerMapDesignTypeInterface
+            }
+            is LongdoViewStateInterface -> {
+                state.mapDesignType = mapDesignOption.design as LongdoMapDesignTypeInterface
             }
             else -> throw IllegalArgumentException("Not implemented yet")
         }

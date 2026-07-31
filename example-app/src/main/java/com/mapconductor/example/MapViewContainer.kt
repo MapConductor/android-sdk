@@ -15,10 +15,14 @@ import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapView
 import com.mapconductor.here.HereViewState
+import com.mapconductor.longdo.LongdoMapView
+import com.mapconductor.longdo.LongdoViewState
 import com.mapconductor.mapbox.MapboxMapView
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.MapLibreViewState
+import com.mapconductor.maptiler.MapTilerMapView
+import com.mapconductor.maptiler.MapTilerViewState
 import com.mapconductor.tomtom.TomTomMapView
 import com.mapconductor.tomtom.TomTomMapViewState
 
@@ -116,6 +120,36 @@ fun MapViewContainer(
 
         is TomTomMapViewState ->
             TomTomMapView(
+                modifier = modifier,
+                state = state,
+                markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMapLongClick = onMapLongClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
+                content = content,
+            )
+
+        is MapTilerViewState ->
+            MapTilerMapView(
+                modifier = modifier,
+                state = state,
+                markerTiling = markerTiling,
+                cameraRestriction = cameraRestriction,
+                onMapLoaded = onMapLoaded,
+                onMapClick = onMapClick,
+                onMapLongClick = onMapLongClick,
+                onCameraMoveStart = onCameraMoveStart,
+                onCameraMove = onCameraMove,
+                onCameraMoveEnd = onCameraMoveEnd,
+                content = content,
+            )
+
+        is LongdoViewState ->
+            LongdoMapView(
                 modifier = modifier,
                 state = state,
                 markerTiling = markerTiling,

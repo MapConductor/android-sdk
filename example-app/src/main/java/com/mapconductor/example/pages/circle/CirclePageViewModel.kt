@@ -20,7 +20,6 @@ import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
-import com.mapconductor.core.spherical.calculatePositionAtDistance
 import com.mapconductor.example.toast.ToastMessage
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -124,10 +123,10 @@ class CirclePageViewModel(
     override val edgeMarker: MarkerState = MarkerState(
         id = "edge_marker",
         position =
-            calculatePositionAtDistance(
-                center = circleCenter,
-                distanceMeters = 1000.0,
-                bearingDegrees = 90.0, // East
+            Spherical.computeOffset(
+                origin = circleCenter,
+                distance = 1000.0,
+                heading = 90.0, // East
             ),
         icon =
             DefaultMarkerIcon(

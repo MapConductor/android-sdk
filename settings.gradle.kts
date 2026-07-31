@@ -32,6 +32,10 @@ dependencyResolutionManagement {
             // TomTom Orbis Maps SDK repository
             url = uri("https://repositories.tomtom.com/artifactory/maven")
         }
+        maven {
+            // Longdo Map API3 SDK repository
+            url = uri("https://maven.longdo.com/artifactory/libs-release-public")
+        }
 
         if (System.getenv("GPR_USER") != null && System.getenv("GPR_TOKEN") != null) {
             maven {

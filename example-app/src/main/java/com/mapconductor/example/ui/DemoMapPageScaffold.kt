@@ -41,12 +41,18 @@ import com.mapconductor.googlemaps.rememberGoogleMapViewState
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereViewState
 import com.mapconductor.here.rememberHereMapViewState
+import com.mapconductor.longdo.LongdoDesign
+import com.mapconductor.longdo.LongdoViewState
+import com.mapconductor.longdo.rememberLongdoMapViewState
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewState
 import com.mapconductor.mapbox.rememberMapboxMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.maptiler.MapTilerDesign
+import com.mapconductor.maptiler.MapTilerViewState
+import com.mapconductor.maptiler.rememberMapTilerMapViewState
 import com.mapconductor.tomtom.TomTomMapDesign
 import com.mapconductor.tomtom.TomTomMapViewState
 import com.mapconductor.tomtom.rememberTomTomMapViewState
@@ -152,6 +158,38 @@ fun tomtomViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<Tom
 }
 
 @Composable
+fun maptilerViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapTilerViewState> {
+    val maptilerMapState =
+        rememberMapTilerMapViewState(
+            mapDesign = MapTilerDesign.Streets,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "maptiler",
+        label = "MapTiler",
+        lightIconResId = R.drawable.maptiler_logo,
+        darkIconResId = R.drawable.maptiler_logo,
+        value = maptilerMapState,
+    )
+}
+
+@Composable
+fun longdoViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<LongdoViewState> {
+    val longdoMapState =
+        rememberLongdoMapViewState(
+            mapDesign = LongdoDesign.Normal,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "longdo",
+        label = "Longdo",
+        lightIconResId = R.drawable.longdo_logo,
+        darkIconResId = R.drawable.longdo_logo,
+        value = longdoMapState,
+    )
+}
+
+@Composable
 fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<IconItem<out MapViewState<out Any>>> =
     listOf(
         mapLibreViewItem(initCameraPosition),
@@ -160,6 +198,8 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
         hereViewItem(initCameraPosition),
         googleMapViewItem(initCameraPosition),
         tomtomViewItem(initCameraPosition),
+        maptilerViewItem(initCameraPosition),
+        longdoViewItem(initCameraPosition),
     )
 
 @Composable

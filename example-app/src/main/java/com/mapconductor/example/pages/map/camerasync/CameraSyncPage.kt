@@ -89,10 +89,11 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     val leftMenuItems = DefaultMapViewItems(initCameraPosition)
     val rightMenuItems = DefaultMapViewItems(initCameraPosition)
 
-    // Default to Google Maps vs TomTom for zoom calibration.
-    // Index order comes from DefaultMapViewItems: maplibre(0), arcgis(1), mapbox(2), here(3), google(4), tomtom(5).
+    // Default to Google Maps vs Longdo for zoom calibration.
+    // Index order comes from DefaultMapViewItems:
+    // maplibre(0), arcgis(1), mapbox(2), here(3), google(4), tomtom(5), maptiler(6), longdo(7).
     var leftSelectedIndex by rememberSaveable { mutableIntStateOf(4) } // Google Maps
-    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(5) } // TomTom
+    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(7) } // Longdo
 
     @Suppress("UNCHECKED_CAST")
     val leftState = leftMenuItems[leftSelectedIndex].value as MapViewStateInterface<*>

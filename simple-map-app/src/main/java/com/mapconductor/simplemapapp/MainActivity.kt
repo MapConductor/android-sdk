@@ -27,6 +27,9 @@ import com.mapconductor.geojson.GeoJSONFeature
 import com.mapconductor.geojson.GeoJSONLayer
 import com.mapconductor.geojson.GeoJSONLayerState
 import com.mapconductor.geojson.GeoJSONParser
+import com.mapconductor.longdo.LongdoDesign
+import com.mapconductor.longdo.LongdoMapView
+import com.mapconductor.longdo.rememberLongdoMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
@@ -47,7 +50,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MapConductorSDKTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SimpleMapScreen(modifier = Modifier.padding(innerPadding))
+                    LongdoSimpleMapScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -107,6 +110,34 @@ fun SimpleMap(modifier: Modifier) {
         )
     }
 }
+@Composable
+fun LongdoSimpleMapScreen(modifier: Modifier) {
+    val mapState =
+        rememberLongdoMapViewState(
+            mapDesign = LongdoDesign.Normal,
+            cameraPosition =
+                MapCameraPosition(
+                    // Bangkok
+                    position = GeoPoint(13.7563, 100.5018),
+                    zoom = 12.0,
+                ),
+        )
+
+    LongdoMapView(
+        modifier = modifier,
+        state = mapState,
+        onMapLoaded = {
+            Log.d("LongdoMap", "---->loaded")
+        },
+        onMapClick = { point ->
+            Log.d("LongdoMap", "--->clicked $point")
+        },
+        onCameraMove = { camera ->
+            Log.d("LongdoMap", "--->camera ${camera.position} z=${camera.zoom}")
+        },
+    )
+}
+
 @Composable
 fun SimpleMapScreen(modifier: Modifier) {
     val mapState = rememberMapLibreMapViewState(

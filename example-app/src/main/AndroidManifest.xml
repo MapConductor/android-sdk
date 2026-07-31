@@ -17,7 +17,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.OverlayTest"
+        tools:replace="android:networkSecurityConfig"
         tools:targetApi="35">
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
 
         <meta-data
             android:name="HERE_ACCESS_KEY_ID"
@@ -40,6 +45,14 @@
         <meta-data
             android:name="TOMTOM_API_KEY"
             android:value="${TOMTOM_API_KEY}" />
+
+        <meta-data
+            android:name="MAPTILER_API_KEY"
+            android:value="${MAPTILER_API_KEY}" />
+
+        <meta-data
+            android:name="longdo.map.key"
+            android:value="${LONGDO_API_KEY}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

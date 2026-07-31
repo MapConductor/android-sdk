@@ -1,8 +1,10 @@
 package com.mapconductor.example.pages.polygon.geodesic
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,6 +27,7 @@ import com.mapconductor.example.ui.MessageCard
 @Composable
 fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
     val viewModel = remember { PolygonGeodesicPageViewModel() }
+    val isDarkTheme = isSystemInDarkTheme()
 
     val points =
         listOf(
@@ -81,10 +84,15 @@ fun PolygonGeodesicPage(onToggleSidebar: () -> Unit = {}) {
                     // クリックしたポリゴン（Linear/Geodesic）を InfoBubble で表示する（React と同じロジック）。
                     clickedLabel.value?.let { label ->
                         InfoBubble(
-                            bubbleColor = Color.White,
                             marker = markerState,
+                            bubbleColor = if (isDarkTheme) Color.Black else Color.White,
+                            borderColor = if (isDarkTheme) Color.Gray else Color.Black,
                         ) {
-                            Text(label)
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (isDarkTheme) Color.White else Color.Gray,
+                            )
                         }
                     }
                 }

@@ -20,6 +20,18 @@ secrets {
     defaultPropertiesFileName = "local.defaults.properties"
 }
 
+// The Longdo Map SDK (com.longdo.map:sdk3) bundles its own copy of gson inside the AAR, which
+// collides at dex time with the external gson pulled by Mapbox / MapLibre. Longdo is only wired
+// into the `debug` and `local` build types, so drop the external gson for those variants only
+// (release keeps the external gson because it does not include Longdo). The bundled gson is modern
+// enough (record + sql adapters) to satisfy Mapbox / MapLibre GeoJSON usage.
+configurations.configureEach {
+    val n = name.lowercase()
+    if (n.startsWith("debug") || n.startsWith("local")) {
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+}
+
 android {
     namespace = "com.mapconductor.example"
     compileSdk = project.property("compileSdk").toString().toInt()
@@ -38,6 +50,9 @@ android {
         versionCode = 6
         versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // TomTom Orbis SDK 2.x のプロダクトフレーバー次元を解決する（complete=オンライン地図）。
+        missingDimensionStrategy("tomtom-sdk-version", "complete")
     }
 
     buildTypes {
@@ -190,6 +205,8 @@ dependencies {
     debugImplementation(project(":android-for-maplibre"))
     debugImplementation(project(":android-for-arcgis"))
     debugImplementation(project(":android-for-tomtom"))
+    debugImplementation(project(":android-for-maptiler"))
+    debugImplementation(project(":android-for-longdo"))
     debugImplementation(project(":android-marker-clustering"))
     debugImplementation(project(":android-heatmap"))
     debugImplementation(project(":android-geojson-layer"))
@@ -209,6 +226,10 @@ dependencies {
     "localImplementation"("com.mapconductor:for-maplibre:${localVersion("android-for-maplibre")}")
     "localImplementation"(libs.tomtom.map.display)
     "localImplementation"("com.mapconductor:for-tomtom:${localVersion("android-for-tomtom")}")
+    "localImplementation"(libs.maptiler.sdk)
+    "localImplementation"("com.mapconductor:for-maptiler:${localVersion("android-for-maptiler")}")
+    "localImplementation"(libs.longdo.sdk)
+    "localImplementation"("com.mapconductor:for-longdo:${localVersion("android-for-longdo")}")
     "localImplementation"("com.mapconductor:marker-clustering:${localVersion("android-marker-clustering")}")
     "localImplementation"("com.mapconductor:heatmap:${localVersion("android-heatmap")}")
     "localImplementation"("com.mapconductor:geojson:${localVersion("android-geojson-layer")}")

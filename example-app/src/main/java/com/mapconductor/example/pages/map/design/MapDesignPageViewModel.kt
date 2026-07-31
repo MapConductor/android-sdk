@@ -11,10 +11,14 @@ import com.mapconductor.googlemaps.GoogleMapDesign
 import com.mapconductor.googlemaps.GoogleMapViewStateInterface
 import com.mapconductor.here.HereMapDesign
 import com.mapconductor.here.HereViewStateInterface
+import com.mapconductor.longdo.LongdoDesign
+import com.mapconductor.longdo.LongdoViewStateInterface
 import com.mapconductor.mapbox.MapboxMapDesign
 import com.mapconductor.mapbox.MapboxViewStateInterface
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreViewStateInterface
+import com.mapconductor.maptiler.MapTilerDesign
+import com.mapconductor.maptiler.MapTilerViewStateInterface
 import com.mapconductor.tomtom.TomTomMapDesign
 import com.mapconductor.tomtom.TomTomMapViewStateInterface
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,6 +81,12 @@ class MapDesignPageViewModel :
             }
             is TomTomMapViewStateInterface -> {
                 _mapDesignOptions.value = tomTomMapDesigns
+            }
+            is MapTilerViewStateInterface -> {
+                _mapDesignOptions.value = mapTilerDesigns
+            }
+            is LongdoViewStateInterface -> {
+                _mapDesignOptions.value = longdoMapDesigns
             }
         }
     }
@@ -217,5 +227,42 @@ class MapDesignPageViewModel :
             MapDesignOption(label = "Standard", design = TomTomMapDesign.Standard),
             MapDesignOption(label = "Driving", design = TomTomMapDesign.Driving),
             MapDesignOption(label = "Satellite", design = TomTomMapDesign.Satellite),
+        )
+
+    private val mapTilerDesigns =
+        listOf(
+            MapDesignOption(label = "Streets", design = MapTilerDesign.Streets),
+            MapDesignOption(label = "StreetsDark", design = MapTilerDesign.StreetsDark),
+            MapDesignOption(label = "StreetsLight", design = MapTilerDesign.StreetsLight),
+            MapDesignOption(label = "Basic", design = MapTilerDesign.Basic),
+            MapDesignOption(label = "Bright", design = MapTilerDesign.Bright),
+            MapDesignOption(label = "Satellite", design = MapTilerDesign.Satellite),
+            MapDesignOption(label = "Outdoor", design = MapTilerDesign.Outdoor),
+            MapDesignOption(label = "Winter", design = MapTilerDesign.Winter),
+            MapDesignOption(label = "Topo", design = MapTilerDesign.Topo),
+            MapDesignOption(label = "Toner", design = MapTilerDesign.Toner),
+            MapDesignOption(label = "Dataviz", design = MapTilerDesign.Dataviz),
+            MapDesignOption(label = "Backdrop", design = MapTilerDesign.Backdrop),
+            MapDesignOption(label = "Ocean", design = MapTilerDesign.Ocean),
+            MapDesignOption(label = "Landscape", design = MapTilerDesign.Landscape),
+            MapDesignOption(label = "Aquarelle", design = MapTilerDesign.Aquarelle),
+            MapDesignOption(label = "OpenStreetMap", design = MapTilerDesign.OpenStreetMap),
+        )
+
+    private val longdoMapDesigns =
+        listOf(
+            MapDesignOption(label = "Normal", design = LongdoDesign.Normal),
+            MapDesignOption(label = "Easy", design = LongdoDesign.Easy),
+            MapDesignOption(label = "Pastel", design = LongdoDesign.Pastel),
+            MapDesignOption(label = "PastelGray", design = LongdoDesign.PastelGray),
+            MapDesignOption(label = "Hard", design = LongdoDesign.Hard),
+            MapDesignOption(label = "Gray", design = LongdoDesign.Gray),
+            MapDesignOption(label = "Light", design = LongdoDesign.Light),
+            MapDesignOption(label = "Night", design = LongdoDesign.Night),
+            MapDesignOption(label = "Dark", design = LongdoDesign.Dark),
+            MapDesignOption(label = "Political", design = LongdoDesign.Political),
+            MapDesignOption(label = "Osm", design = LongdoDesign.Osm),
+            MapDesignOption(label = "Satellite", design = LongdoDesign.Satellite),
+            MapDesignOption(label = "Hybrid", design = LongdoDesign.Hybrid),
         )
 }
