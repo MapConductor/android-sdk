@@ -100,12 +100,12 @@ fun MarkerClusterMapPage(
                 enableZoomAnimation = true,
                 enablePanAnimation = true,
                 debugHullPolygons = debugHullPolygons,
-                spiderfyMinZoom = 13.0,
+//                spiderfyMinZoom = 18.0,
                 minClusterSize = 3,
                 clusterRadiusPx = 80.0,
-                prepareExpand = { appearing ->
-                    Log.d("cluster", "prepareExpand: ${appearing.size} markers appearing")
-                },
+//                prepareExpand = { appearing ->
+//                    Log.d("cluster", "prepareExpand: ${appearing.size} markers appearing")
+//                },
                 // クラスターをクリックしたら重心へズームインする（React と同じ）。
                 onClusterClick = viewModel::onClusterClicked,
             )

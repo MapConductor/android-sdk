@@ -99,7 +99,7 @@ class CirclePageViewModel(
                     latitude = 21.382314,
                     longitude = -157.933097,
                 ),
-            zoom = 12.0,
+            zoom = 3.0,
             bearing = 0.0,
             tilt = 0.0,
             paddings = null,
@@ -125,7 +125,7 @@ class CirclePageViewModel(
         position =
             Spherical.computeOffset(
                 origin = circleCenter,
-                distance = 1000.0,
+                distance = 5000000.0,
                 heading = 90.0, // East
             ),
         icon =
@@ -162,6 +162,7 @@ class CirclePageViewModel(
             _polylineState.emit(PolylineState(
                 points = listOf(centerMarker.position, edgeMarker.position),
                 id = "circle-radius-line",
+                geodesic = true,
                 strokeColor = Color.White,
                 strokeWidth = 3.dp,
             ))
@@ -191,6 +192,7 @@ class CirclePageViewModel(
             CircleState(
                 id = "circle",
                 center = circleCenter,
+                geodesic = true,
                 radiusMeters = radiusMeters,
                 strokeColor = Color.Blue.copy(alpha = 0.5f),
                 strokeWidth = strokeWidth.dp,
