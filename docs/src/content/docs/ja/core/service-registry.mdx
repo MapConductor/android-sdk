@@ -46,6 +46,20 @@ MapViewBase(
 
 ## iOS / SwiftUI 補足
 
-iOS でも同じ考え方で、SwiftUI `Environment` にレジストリを流し込みます（`EnvironmentValues.mapServiceRegistry`）。
-provider 側が capability を登録することで、機能側は provider 非依存のまま拡張できます。
+iOS にも同じレジストリがあります（`MapServiceKey` / `MapServiceRegistry` /
+`MutableMapServiceRegistry` / `MarkerRenderingSupportKey`）。レジストリの実体は状態オブジェクトが持ち、
+`MapViewState.serviceRegistry` から参照します。provider 側が capability を登録することで、
+機能側は provider 非依存のまま拡張できます。
+
+ただし SwiftUI の `Environment` では配りません。地図の中身は `@MapViewContentBuilder` が組み立てる
+`MapViewContent` という**値**であって、`MarkerClusterGroup` のようなオーバーレイ項目はビュー階層に
+入らないため `@Environment` を読めないからです。Compose と共通なのは「content クロージャが provider の
+`body` の**内側**で評価される」点で、provider がその呼び出しを main actor の動的スコープで包むことで
+`LocalMapServiceRegistry` と同じ可視範囲になります。
+
+```swift
+let mapContent = MapServiceRegistryScope.with(state.serviceRegistry) { content() }
+```
+
+追加モジュールは、自分の content が組み立てられているあいだに `MapServiceRegistryScope.current` を読みます。
 

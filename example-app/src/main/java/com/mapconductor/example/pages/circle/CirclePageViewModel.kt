@@ -18,6 +18,7 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.DefaultMarkerIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.polyline.PolylineState
+import com.mapconductor.core.spherical.Planar
 import com.mapconductor.core.spherical.Spherical
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween
 import com.mapconductor.example.toast.ToastMessage
@@ -172,7 +173,7 @@ class CirclePageViewModel(
     private fun updateLabelPosition() {
         mainScope.launch {
             mapViewState.value?.getMapViewHolder()?.let { holder ->
-                val midPoint = Spherical.linearInterpolate(
+                val midPoint = Planar.interpolate(
                     from = centerMarker.position,
                     to = edgeMarker.position,
                     fraction = 0.5,

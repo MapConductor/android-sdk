@@ -90,10 +90,14 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
     val rightMenuItems = DefaultMapViewItems(initCameraPosition)
 
     // Default to Google Maps vs Longdo for zoom calibration.
-    // Index order comes from DefaultMapViewItems:
-    // maplibre(0), arcgis(1), mapbox(2), here(3), google(4), tomtom(5), maptiler(6), longdo(7).
-    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(4) } // Google Maps
-    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(7) } // Longdo
+    // 添字直書きは DefaultMapViewItems の並びが変わるたびに壊れる（実際 arcgis2d を
+    // 挿入したときにずれた）ので、キーで引く。
+    val leftDefaultIndex =
+        remember(leftMenuItems) { leftMenuItems.indexOfFirst { it.key == "google" }.coerceAtLeast(0) }
+    val rightDefaultIndex =
+        remember(rightMenuItems) { rightMenuItems.indexOfFirst { it.key == "longdo" }.coerceAtLeast(0) }
+    var leftSelectedIndex by rememberSaveable { mutableIntStateOf(leftDefaultIndex) }
+    var rightSelectedIndex by rememberSaveable { mutableIntStateOf(rightDefaultIndex) }
 
     @Suppress("UNCHECKED_CAST")
     val leftState = leftMenuItems[leftSelectedIndex].value as MapViewStateInterface<*>
@@ -298,6 +302,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = leftState,
+                            providerKey = leftMenuItems[leftSelectedIndex].key,
                             label = "Source Camera",
                             cameraPosition = leftCameraPosition,
                             onCameraMove = { position ->
@@ -373,6 +378,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = rightState,
+                            providerKey = rightMenuItems[rightSelectedIndex].key,
                             label = "Synced Camera",
                             cameraPosition = rightCameraPosition,
                             onCameraMove = { position ->
@@ -441,6 +447,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = leftState,
+                            providerKey = leftMenuItems[leftSelectedIndex].key,
                             label = "Source Camera",
                             cameraPosition = leftCameraPosition,
                             onCameraMove = { position ->
@@ -515,6 +522,7 @@ fun CameraSyncPage(onToggleSidebar: () -> Unit = {}) {
                                 )
                             },
                             mapViewState = rightState,
+                            providerKey = rightMenuItems[rightSelectedIndex].key,
                             label = "Synced Camera",
                             cameraPosition = rightCameraPosition,
                             onCameraMove = { position ->
@@ -582,6 +590,9 @@ private fun CameraSyncMapPane(
     modifier: Modifier,
     menuContent: (@Composable () -> Unit)? = null,
     mapViewState: MapViewStateInterface<*>,
+    // このペインで選択中のプロバイダキー。ArcGIS は 2D / 3D が同じ状態型なので、
+    // これを渡さないと ArcGIS 2D を選んでも 3D（SceneView）が描かれてしまう。
+    providerKey: String,
     label: String,
     cameraPosition: MapCameraPosition,
     onCameraMoveStart: (() -> Unit)? = null,
@@ -596,6 +607,7 @@ private fun CameraSyncMapPane(
         MapViewContainer(
             modifier = Modifier.fillMaxSize().onSizeChanged { mapSize = it },
             state = mapViewState,
+            providerKey = providerKey,
             onCameraMoveStart = { onCameraMoveStart?.invoke() },
             onCameraMove = { pos -> onCameraMove?.invoke(pos) },
             onCameraMoveEnd = onCameraMoveEnd,

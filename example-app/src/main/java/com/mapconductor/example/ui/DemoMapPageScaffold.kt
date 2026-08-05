@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -157,6 +158,27 @@ fun tomtomViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<Tom
     )
 }
 
+/**
+ * ArcGIS の 2D（MapView）表示。3D（SceneView）と同じ [ArcGISMapViewState] を使うため、
+ * どちらを描画するかは [LocalSelectedProviderKey] を見て [com.mapconductor.example.MapViewContainer]
+ * が決める。状態は 2D/3D で別インスタンスにして、切り替え時に相互干渉しないようにする。
+ */
+@Composable
+fun arcGIS2DViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<ArcGISMapViewState> {
+    val arcGIS2DMapState =
+        rememberArcGISMapViewState(
+            mapDesign = ArcGISDesign.Streets,
+            cameraPosition = initCameraPosition,
+        )
+    return IconItem(
+        key = "arcgis2d",
+        label = "ArcGIS 2D",
+        lightIconResId = R.drawable.arcgis_logo_black,
+        darkIconResId = R.drawable.arcgis_logo_white,
+        value = arcGIS2DMapState,
+    )
+}
+
 @Composable
 fun maptilerViewItem(initCameraPosition: MapCameraPositionInterface): IconItem<MapTilerViewState> {
     val maptilerMapState =
@@ -194,6 +216,7 @@ fun DefaultMapViewItems(initCameraPosition: MapCameraPositionInterface): List<Ic
     listOf(
         mapLibreViewItem(initCameraPosition),
         arcGISViewItem(initCameraPosition),
+        arcGIS2DViewItem(initCameraPosition),
         mapboxViewItem(initCameraPosition),
         hereViewItem(initCameraPosition),
         googleMapViewItem(initCameraPosition),
@@ -210,56 +233,69 @@ fun DemoMapPageScaffold(
     onMapViewStateChanged: (MapViewStateInterface<*>) -> Unit = {},
     content: @Composable (BoxScope.(PaddingValues) -> Unit) = {},
 ) {
-    var selectedIndex by rememberSaveable { mutableIntStateOf(initSelect) }
+    // `--es provider <key>` が指定されていれば、そのプロバイダで開始する（UI テスト用）。
+    // 一致しなければ [initSelect] のまま。
+    val requestedIndex =
+        remember(menuItems) {
+            com.mapconductor.example.MainActivity.providerExtra
+                ?.let { key -> menuItems.indexOfFirst { it.key.equals(key, ignoreCase = true) } }
+                ?.takeIf { it >= 0 }
+                ?: initSelect
+        }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(requestedIndex) }
     LaunchedEffect(selectedIndex) {
         onMapViewStateChanged(menuItems.elementAt(selectedIndex).value)
     }
 
-    Scaffold { paddingValues ->
-        Box(
-            modifier =
-                Modifier.fillMaxSize().padding(
-                    start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-                    end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
-                    bottom = paddingValues.calculateBottomPadding(),
-                ),
-        ) {
-            content(paddingValues)
-
-            Card(
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalSelectedProviderKey provides menuItems.elementAt(selectedIndex).key,
+    ) {
+        Scaffold { paddingValues ->
+            Box(
                 modifier =
-                    Modifier
-                        .align(Alignment.TopEnd)
-                        .widthIn(max = 400.dp)
-                        .padding(
-                            top = paddingValues.calculateTopPadding(),
-                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
-                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
-                            bottom = paddingValues.calculateBottomPadding(),
-                        ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    Modifier.fillMaxSize().padding(
+                        start = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                        end = paddingValues.calculateStartPadding(layoutDirection = LayoutDirection.Ltr),
+                        bottom = paddingValues.calculateBottomPadding(),
+                    ),
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = "Open menu",
-                        modifier =
-                            Modifier
-                                .clickable(onClick = onToggleSidebar)
-                                .size(32.dp)
-                                .padding(end = 10.dp),
-                    )
+                content(paddingValues)
 
-                    IconSelectMenu(
-                        modifier = Modifier.wrapContentSize(),
-                        itemList = menuItems,
-                        selectedIndex = selectedIndex,
-                        onSelect = { index, _ ->
-                            selectedIndex = index
-                        },
-                    )
+                Card(
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .widthIn(max = 400.dp)
+                            .padding(
+                                top = paddingValues.calculateTopPadding(),
+                                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr) + 10.dp,
+                                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr) + 10.dp,
+                                bottom = paddingValues.calculateBottomPadding(),
+                            ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Open menu",
+                            modifier =
+                                Modifier
+                                    .clickable(onClick = onToggleSidebar)
+                                    .size(32.dp)
+                                    .padding(end = 10.dp),
+                        )
+
+                        IconSelectMenu(
+                            modifier = Modifier.wrapContentSize(),
+                            itemList = menuItems,
+                            selectedIndex = selectedIndex,
+                            onSelect = { index, _ ->
+                                selectedIndex = index
+                            },
+                        )
+                    }
                 }
             }
         }

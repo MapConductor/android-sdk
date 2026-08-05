@@ -14,7 +14,6 @@ import com.mapconductor.example.navigation.NavigationViewModel
 import com.mapconductor.example.pages.circle.CircleMapPage
 import com.mapconductor.example.pages.geojson.basic.BasicGeoJSONMapPage
 import com.mapconductor.example.pages.geojson.layer.GeoJSONLayerMapPage
-import com.mapconductor.example.pages.kml.KMLMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageMapPage
 import com.mapconductor.example.pages.groundimage.GroundImageResources
 import com.mapconductor.example.pages.heatmaplayer.HeatmapLayerPage
@@ -22,7 +21,7 @@ import com.mapconductor.example.pages.infobubble.MultipleBubblesPage
 import com.mapconductor.example.pages.infobubble.RichContentBubblePage
 import com.mapconductor.example.pages.infobubble.SimpleTextBubblePage
 import com.mapconductor.example.pages.infobubble.StyledInfoBubblePage
-import com.mapconductor.example.pages.map.arcgis2d.ArcGISMapView2DPage
+import com.mapconductor.example.pages.kml.KMLMapPage
 import com.mapconductor.example.pages.map.basic.StoreMapPage
 import com.mapconductor.example.pages.map.camerasync.CameraSyncPage
 import com.mapconductor.example.pages.map.design.MapDesignMapPage
@@ -30,6 +29,7 @@ import com.mapconductor.example.pages.map.fitbounds.FitBoundsMapPage
 import com.mapconductor.example.pages.map.flyto.FlyToMapIcons
 import com.mapconductor.example.pages.map.flyto.FlyToMapPage
 import com.mapconductor.example.pages.map.tilt.TiltMapPage
+import com.mapconductor.example.pages.map.uisettings.UISettingsMapPage
 import com.mapconductor.example.pages.map.visibleregion.VisibleRegionPage
 import com.mapconductor.example.pages.marker.animation.AnimationMapPage
 import com.mapconductor.example.pages.marker.icons.MarkerBasicPage
@@ -90,7 +90,7 @@ fun DemoAppScreen(initPage: String = "map") {
                     listOf(
                         SidebarItem(id = "map-basic", title = "Map"),
                         SidebarItem(id = "tilt-map", title = "Tilt Map"),
-                        SidebarItem(id = "arcgis-map-2d", title = "ArcGIS Map 2D"),
+                        SidebarItem(id = "ui-settings", title = "UI Settings"),
                         SidebarItem(id = "map-flyTo", title = "Move Camera"),
                         SidebarItem(id = "map-fitBounds", title = "Fit Bounds"),
                         SidebarItem(id = "map-design", title = "Map Design"),
@@ -193,6 +193,11 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "multiple-info-bubbles" -> {
                         MultipleBubblesPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    "ui-settings" -> {
+                        UISettingsMapPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
@@ -320,11 +325,6 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "tilt-map" -> {
                         TiltMapPage(
-                            onToggleSidebar = navigationViewModel::toggleSidebar,
-                        )
-                    }
-                    "arcgis-map-2d" -> {
-                        ArcGISMapView2DPage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }

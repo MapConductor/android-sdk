@@ -3,14 +3,16 @@ package com.mapconductor.example
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.mapconductor.arcgis.ArcGISMapView
+import com.mapconductor.arcgis.ArcGISMapView2D
 import com.mapconductor.arcgis.ArcGISMapViewState
 import com.mapconductor.compose.MapViewScope
-import com.mapconductor.core.map.CameraRestriction
-import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.OnCameraMoveHandler
 import com.mapconductor.core.OnMapEventHandler
 import com.mapconductor.core.OnMapLoadedHandler
+import com.mapconductor.core.map.CameraRestriction
+import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.core.marker.MarkerTilingOptions
+import com.mapconductor.example.ui.LocalSelectedProviderKey
 import com.mapconductor.googlemaps.GoogleMapView
 import com.mapconductor.googlemaps.GoogleMapViewState
 import com.mapconductor.here.HereMapView
@@ -31,6 +33,11 @@ import com.mapconductor.tomtom.TomTomMapViewState
 fun MapViewContainer(
     modifier: Modifier = Modifier,
     state: MapViewStateInterface<*>? = null,
+    // ArcGIS の 2D / 3D はどちらも ArcGISMapViewState を使うため、状態の型では描き分けられない。
+    // 既定では画面が選択中のプロバイダキー（[LocalSelectedProviderKey]）を見るが、
+    // Camera Sync のようにペインごとに別のプロバイダを選ぶ画面では CompositionLocal では
+    // 表現できないので、呼び出し側から明示的に渡せるようにしている。
+    providerKey: String = LocalSelectedProviderKey.current,
     markerTiling: MarkerTilingOptions? = null,
     cameraRestriction: CameraRestriction? = null,
     onMapLoaded: OnMapLoadedHandler? = null,
@@ -89,19 +96,35 @@ fun MapViewContainer(
             )
 
         is ArcGISMapViewState ->
-            ArcGISMapView(
-                modifier = modifier,
-                state = state,
-                markerTiling = markerTiling,
-                cameraRestriction = cameraRestriction,
-                onMapLoaded = onMapLoaded,
-                onMapClick = onMapClick,
-                onMapLongClick = onMapLongClick,
-                onCameraMoveStart = onCameraMoveStart,
-                onCameraMove = onCameraMove,
-                onCameraMoveEnd = onCameraMoveEnd,
-                content = content,
-            )
+            if (providerKey == "arcgis2d") {
+                ArcGISMapView2D(
+                    modifier = modifier,
+                    state = state,
+                    markerTiling = markerTiling,
+                    cameraRestriction = cameraRestriction,
+                    onMapLoaded = onMapLoaded,
+                    onMapClick = onMapClick,
+                    onMapLongClick = onMapLongClick,
+                    onCameraMoveStart = onCameraMoveStart,
+                    onCameraMove = onCameraMove,
+                    onCameraMoveEnd = onCameraMoveEnd,
+                    content = content,
+                )
+            } else {
+                ArcGISMapView(
+                    modifier = modifier,
+                    state = state,
+                    markerTiling = markerTiling,
+                    cameraRestriction = cameraRestriction,
+                    onMapLoaded = onMapLoaded,
+                    onMapClick = onMapClick,
+                    onMapLongClick = onMapLongClick,
+                    onCameraMoveStart = onCameraMoveStart,
+                    onCameraMove = onCameraMove,
+                    onCameraMoveEnd = onCameraMoveEnd,
+                    content = content,
+                )
+            }
 
         is MapLibreViewState ->
             MapLibreMapView(

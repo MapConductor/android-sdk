@@ -152,7 +152,7 @@ import GeofenceExample from '~/components/core/spherical-utilities/GeofenceExamp
 
 ## パフォーマンスの考慮事項
 
-1. **適切なメソッドを選択**: 短距離と頻繁な計算には `linearInterpolate` を使用
+1. **適切なメソッドを選択**: 短距離と頻繁な計算には `Planar.interpolate` を使用
 2. **結果をキャッシュ**: 可能な場合は計算された距離と方位角を保存
 3. **バッチ計算**: 複数の点をまとめて処理し、関数呼び出しのオーバーヘッドを削減
 4. **精度 vs パフォーマンス**: ユースケースに完全な球面精度が必要かどうかを検討

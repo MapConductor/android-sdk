@@ -25,6 +25,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
+/**
+ * 現在選択されているプロバイダの [IconItem.key]。
+ *
+ * ArcGIS は 2D（MapView）と 3D（SceneView）で同じ [com.mapconductor.arcgis.ArcGISMapViewState] を
+ * 使うため、状態の型だけではどちらを描画すべきか決められない。[DemoMapPageScaffold] が選択中の
+ * キーをここへ流し、[com.mapconductor.example.MapViewContainer] が読み取って描き分ける。
+ * これにより 29 個のページ側コードを変更せずに済む。
+ */
+val LocalSelectedProviderKey = androidx.compose.runtime.compositionLocalOf { "" }
+
 data class IconItem<T>(
     val key: String,
     val label: String,

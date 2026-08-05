@@ -49,10 +49,24 @@ MapViewBase(
 
 ## iOS / SwiftUI Note
 
-The iOS SDK mirrors the same idea using SwiftUI `Environment`:
+The iOS SDK has the same registry:
 
-- `EnvironmentValues.mapServiceRegistry`
-- `MarkerRenderingSupportKey<ActualMarker>`
+- `MapServiceKey` / `MapServiceRegistry` / `MutableMapServiceRegistry`
+- `MarkerRenderingSupportKey`
+- The registry itself lives on the state object, as `MapViewState.serviceRegistry`.
 
 Provider views register capabilities into the registry so feature modules can remain provider-agnostic.
+
+It is *not* delivered through SwiftUI `Environment`. Map content is a `MapViewContent`
+**value** assembled by `@MapViewContentBuilder`, so overlay items such as `MarkerClusterGroup`
+are never placed in the view hierarchy and cannot read an `@Environment`. What they do share
+with Compose is that the content closure runs *inside* the provider's `body`, so the provider
+wraps that call in a main-actor dynamic scope, which gives the same visibility window as
+`LocalMapServiceRegistry`:
+
+```swift
+let mapContent = MapServiceRegistryScope.with(state.serviceRegistry) { content() }
+```
+
+Add-on modules then read `MapServiceRegistryScope.current` while their content is being built.
 

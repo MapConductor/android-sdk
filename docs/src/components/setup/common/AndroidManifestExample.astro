@@ -16,11 +16,13 @@ const {
   ]
 } = Astro.props;
 
+// <uses-permission> is a child of <manifest>, while <meta-data> belongs inside
+// <application> — so the two lists are emitted at different nesting levels.
 const metaDataCode = metaDataEntries.map(entry => {
-  const comment = entry.comment ? `    <!-- ${entry.comment} -->\n` : '';
-  return `${comment}    <meta-data
-        android:name="${entry.name}"
-        android:value="${entry.value}" />`;
+  const comment = entry.comment ? `        <!-- ${entry.comment} -->\n` : '';
+  return `${comment}        <meta-data
+            android:name="${entry.name}"
+            android:value="${entry.value}" />`;
 }).join('\n\n');
 
 const permissionsCode = permissions.map((perm, index) => {
@@ -28,12 +30,17 @@ const permissionsCode = permissions.map((perm, index) => {
   return `${comment}    <uses-permission android:name="${perm.name}" />`;
 }).join('\n');
 
-const code = `<!-- AndroidManifest.xml -->
-<application>
-${metaDataCode}
+// A provider such as MapLibre needs no key injected, so <application> can be empty.
+const applicationBody = metaDataCode || '        <!-- ... -->';
 
+const code = `<!-- AndroidManifest.xml -->
+<manifest>
 ${permissionsCode}
-</application>`;
+
+    <application>
+${applicationBody}
+    </application>
+</manifest>`;
 ---
 
 <Code code={code} lang="xml" />
