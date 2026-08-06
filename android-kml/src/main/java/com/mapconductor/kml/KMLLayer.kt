@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.mapconductor.compose.MapViewScope
 import com.mapconductor.compose.raster.RasterLayer
-import com.mapconductor.core.ChildCollectorImpl
+import com.mapconductor.core.OverlayCollector
 import com.mapconductor.core.raster.RasterLayerSource
 import com.mapconductor.core.raster.RasterLayerState
 import com.mapconductor.core.raster.TileScheme
@@ -31,7 +31,7 @@ fun MapViewScope.KMLLayer(
 ) {
     val featureCollector =
         remember {
-            ChildCollectorImpl<KMLFeatureState, KMLFeatureFingerPrint>(
+            OverlayCollector<KMLFeatureState, KMLFeatureFingerPrint>(
                 fingerPrintOf = { it.fingerPrint() },
                 updateDebounce = Settings.Default.composeEventDebounce,
             )

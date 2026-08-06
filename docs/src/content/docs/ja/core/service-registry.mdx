@@ -12,11 +12,15 @@ MapConductor には、軽量な「プラグイン」機構として `MapServiceR
 
 ## 仕組み（Android）
 
-- 各 `MapView` が map-scoped なレジストリを提供します
+- レジストリの持ち主は地図の状態オブジェクトです（`MapViewState.serviceRegistry`）
 - `MapViewBase` が CompositionLocal の `LocalMapServiceRegistry` で公開します
 - 機能モジュール側はレジストリから capability を解決して利用します
 
 つまり、地図SDKモジュールが capability を「登録」し、機能モジュールがそれを「利用」することで分離を保ちます。
+
+持ち主が状態オブジェクトなのは Android / iOS / React で共通です（いずれも
+`MapViewState.serviceRegistry`）。地図インスタンスと寿命が一致し、かつ provider からも
+Compose の外のホスト（React Native / Cordova）からも名指しできる唯一のオブジェクトだからです。
 
 ## MarkerRenderingSupport
 
@@ -27,28 +31,42 @@ MapConductor には、軽量な「プラグイン」機構として `MapServiceR
 
 ## 独自地図SDKモジュールでの連携（Android）
 
-独自の地図SDKモジュールを実装する場合は、`MutableMapServiceRegistry` に `MarkerRenderingSupport` を登録し、それを `MapViewBase` に渡してください。
+独自の地図SDKモジュールを実装する場合は、`state.serviceRegistry` に `MarkerRenderingSupport` を
+登録してください。`MapViewBase` は状態オブジェクトから読むので、渡す引数はありません。
+`remember { MutableMapServiceRegistry() }` でレジストリを自作しないでください。
 
 ```kotlin
-val serviceRegistry =
-  remember {
-    MutableMapServiceRegistry().apply {
-      put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
-    }
-  }
+// 登録は content の合成より前（コントローラ生成時）に済ませる。
+// MarkerClusterGroup は未登録ならその場で return し、レジストリは Compose の state ではないので
+// 後から入れても再合成が走らない。
+state.serviceRegistry.put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
 
 MapViewBase(
   state = state,
   /* ... */
-  serviceRegistry = serviceRegistry,
 )
 ```
+
+状態オブジェクトは composable より長生きするので、ビューが消えるときに登録を取り下げます。
+`MarkerRenderingSupportKey` については `MapViewBase` が行います。
+
+```kotlin
+DisposableEffect(state) {
+  onDispose { state.serviceRegistry.remove(MarkerRenderingSupportKey) }
+}
+```
+
+`clear()` ではなく `remove()` を使うのは、同じ地図に登録された他の capability を巻き添えに
+しないためです。
+
+React Native / Cordova のような非 Compose ホストは状態オブジェクトを持たないため、
+`create*ViewController(serviceRegistry = …)` にレジストリを直接渡す形のままです。
 
 ## iOS / SwiftUI 補足
 
 iOS にも同じレジストリがあります（`MapServiceKey` / `MapServiceRegistry` /
 `MutableMapServiceRegistry` / `MarkerRenderingSupportKey`）。レジストリの実体は状態オブジェクトが持ち、
-`MapViewState.serviceRegistry` から参照します。provider 側が capability を登録することで、
+`MapViewState.serviceRegistry` から参照します（Android と同じです）。provider 側が capability を登録することで、
 機能側は provider 非依存のまま拡張できます。
 
 ただし SwiftUI の `Environment` では配りません。地図の中身は `@MapViewContentBuilder` が組み立てる

@@ -5,10 +5,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import com.mapconductor.compose.MapViewScope
-import com.mapconductor.core.ChildCollector
+import com.mapconductor.core.OverlayCollectorInterface
 
 val LocalKMLFeatureCollector =
-    compositionLocalOf<ChildCollector<KMLFeatureState>> {
+    compositionLocalOf<OverlayCollectorInterface<KMLFeatureState>> {
         error("KMLFeature must be placed inside a KMLLayer composable")
     }
 

@@ -33,13 +33,10 @@ import com.mapconductor.core.map.MapViewStateInterface
 import com.mapconductor.example.MapViewContainer
 import com.mapconductor.example.ui.DefaultMapViewItems
 import com.mapconductor.example.ui.DemoMapPageScaffold
-import com.mapconductor.example.ui.IconItem
 import com.mapconductor.example.ui.MessageCard
-import com.mapconductor.example.ui.mapLibreViewItem
 import com.mapconductor.geojson.GeoJSONFeature
 import com.mapconductor.geojson.GeoJSONLayer
 import com.mapconductor.geojson.GeoJSONLayerState
-import com.mapconductor.maplibre.MapLibreViewState
 import com.mapconductor.utils.LoadingDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

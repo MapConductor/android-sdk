@@ -44,11 +44,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapconductor.compose.marker.Marker
+import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.features.GeoPoint
 import com.mapconductor.core.features.GeoPointInterface
 import com.mapconductor.core.map.MapCameraPositionInterface
 import com.mapconductor.core.map.MapViewStateInterface
-import com.mapconductor.core.OnMapLoadedHandler
 import com.mapconductor.core.marker.ColorDefaultIcon
 import com.mapconductor.core.marker.MarkerState
 import com.mapconductor.core.spherical.WGS84Geodesic.computeDistanceBetween

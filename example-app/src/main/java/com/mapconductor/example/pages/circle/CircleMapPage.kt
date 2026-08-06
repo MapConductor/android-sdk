@@ -40,7 +40,6 @@ fun CircleMapPage(onToggleSidebar: () -> Unit = {}) {
 //            )
 //        }
 
-
         CircleMapComponent(
             mapViewState = mapViewState.value,
             circleState = viewModel.circleState,

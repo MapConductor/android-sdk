@@ -65,10 +65,8 @@ interface CirclePageViewModelInterface {
 @OptIn(FlowPreview::class)
 class CirclePageViewModel(
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main),
-) :
-    ViewModel(),
+) : ViewModel(),
     CirclePageViewModelInterface {
-
     private val markerDragFlow = MutableSharedFlow<GeoPointInterface>()
 
     private val _messages: MutableStateFlow<List<ToastMessage>> = MutableStateFlow(emptyList())
@@ -121,25 +119,26 @@ class CirclePageViewModel(
             draggable = false,
         )
 
-    override val edgeMarker: MarkerState = MarkerState(
-        id = "edge_marker",
-        position =
-            Spherical.computeOffset(
-                origin = circleCenter,
-                distance = 5000000.0,
-                heading = 90.0, // East
-            ),
-        icon =
-            DefaultMarkerIcon(
-                fillColor = Color.Green,
-                strokeColor = Color.White,
-                label = "E",
-            ),
-        draggable = true,
-        onDragStart = this::onMarkerMove,
-        onDrag = this::onMarkerMove,
-        onDragEnd = this::onMarkerMove,
-    )
+    override val edgeMarker: MarkerState =
+        MarkerState(
+            id = "edge_marker",
+            position =
+                Spherical.computeOffset(
+                    origin = circleCenter,
+                    distance = 5000000.0,
+                    heading = 90.0, // East
+                ),
+            icon =
+                DefaultMarkerIcon(
+                    fillColor = Color.Green,
+                    strokeColor = Color.White,
+                    label = "E",
+                ),
+            draggable = true,
+            onDragStart = this::onMarkerMove,
+            onDrag = this::onMarkerMove,
+            onDragEnd = this::onMarkerMove,
+        )
 
     override val radiusMeters by derivedStateOf {
         computeDistanceBetween(circleCenter, edgeMarker.position)
@@ -160,29 +159,33 @@ class CirclePageViewModel(
 
     private fun updatePolylineState() {
         viewModelScope.launch {
-            _polylineState.emit(PolylineState(
-                points = listOf(centerMarker.position, edgeMarker.position),
-                id = "circle-radius-line",
-                geodesic = true,
-                strokeColor = Color.White,
-                strokeWidth = 3.dp,
-            ))
+            _polylineState.emit(
+                PolylineState(
+                    points = listOf(centerMarker.position, edgeMarker.position),
+                    id = "circle-radius-line",
+                    geodesic = true,
+                    strokeColor = Color.White,
+                    strokeWidth = 3.dp,
+                ),
+            )
         }
     }
 
     private fun updateLabelPosition() {
         mainScope.launch {
             mapViewState.value?.getMapViewHolder()?.let { holder ->
-                val midPoint = Planar.interpolate(
-                    from = centerMarker.position,
-                    to = edgeMarker.position,
-                    fraction = 0.5,
-                )
-                holder.toScreenOffset(midPoint)?.let {
-                    _labelPosition.value = IntOffset(
-                        x = it.x.roundToInt(),
-                        y = it.y.roundToInt(),
+                val midPoint =
+                    Planar.interpolate(
+                        from = centerMarker.position,
+                        to = edgeMarker.position,
+                        fraction = 0.5,
                     )
+                holder.toScreenOffset(midPoint)?.let {
+                    _labelPosition.value =
+                        IntOffset(
+                            x = it.x.roundToInt(),
+                            y = it.y.roundToInt(),
+                        )
                 }
             }
         }

@@ -1,14 +1,14 @@
 package com.mapconductor.example.pages.geojson.layer
 
-import android.content.res.AssetManager
-import android.graphics.Color
 import com.mapconductor.geojson.GeoJSONFeature
 import com.mapconductor.geojson.GeoJSONParser
+import org.json.JSONArray
 import java.io.FilterInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.util.zip.ZipInputStream
-import org.json.JSONArray
+import android.content.res.AssetManager
+import android.graphics.Color
 
 data class ExampleGeoJSONLayerData(
     val features: List<GeoJSONFeature>,
@@ -70,7 +70,9 @@ class ExampleGeoJSONLayerLoader(
         return result
     }
 
-    private class NonClosingInputStream(input: InputStream) : FilterInputStream(input) {
+    private class NonClosingInputStream(
+        input: InputStream,
+    ) : FilterInputStream(input) {
         override fun close() = Unit
     }
 

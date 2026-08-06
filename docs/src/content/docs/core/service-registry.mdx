@@ -12,11 +12,15 @@ It lets feature modules (like marker clustering/strategies) integrate with any p
 
 ## How It Works (Android)
 
-- Each `MapView` can provide a map-scoped registry.
+- The registry belongs to the map state: `MapViewState.serviceRegistry`.
 - `MapViewBase` exposes it via the CompositionLocal `LocalMapServiceRegistry`.
 - Feature modules resolve capabilities from the registry at runtime.
 
 This keeps modules decoupled: provider modules “register” capabilities, and feature modules “use” them.
+
+The state is the owner on every platform — `MapViewState.serviceRegistry` in the Android, iOS and
+React SDKs alike — because the state is the one object whose lifetime matches the map instance and
+which both the provider and non-Compose hosts (React Native, Cordova) can name.
 
 ## Marker Rendering Support
 
@@ -30,22 +34,35 @@ Built-in provider modules register `MarkerRenderingSupportKey` automatically, so
 
 ## Custom Provider Integration (Android)
 
-If you are implementing your own provider module, register `MarkerRenderingSupport` into a `MutableMapServiceRegistry` and pass it to `MapViewBase`.
+If you are implementing your own provider module, register `MarkerRenderingSupport` into
+`state.serviceRegistry`. `MapViewBase` picks it up from the state — there is no registry parameter
+to pass, and you should not create one with `remember { MutableMapServiceRegistry() }`.
 
 ```kotlin
-val serviceRegistry =
-  remember {
-    MutableMapServiceRegistry().apply {
-      put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
-    }
-  }
+// Register while the controller is created, before the map content is composed:
+// MarkerClusterGroup returns early when the capability is missing, and the registry
+// is not Compose state, so filling it later does not trigger recomposition.
+state.serviceRegistry.put(MarkerRenderingSupportKey, myMarkerRenderingSupport)
 
 MapViewBase(
   state = state,
   /* ... */
-  serviceRegistry = serviceRegistry,
 )
 ```
+
+Because the state outlives the composable, take the capability back when the view goes away.
+`MapViewBase` already does this for `MarkerRenderingSupportKey`:
+
+```kotlin
+DisposableEffect(state) {
+  onDispose { state.serviceRegistry.remove(MarkerRenderingSupportKey) }
+}
+```
+
+Use `remove()` rather than `clear()` so other capabilities registered on the same map survive.
+
+Non-Compose hosts (React Native, Cordova) have no state object, so the
+`create*ViewController(serviceRegistry = …)` functions still take a registry directly.
 
 ## iOS / SwiftUI Note
 
@@ -53,7 +70,7 @@ The iOS SDK has the same registry:
 
 - `MapServiceKey` / `MapServiceRegistry` / `MutableMapServiceRegistry`
 - `MarkerRenderingSupportKey`
-- The registry itself lives on the state object, as `MapViewState.serviceRegistry`.
+- The registry lives on the state object, as `MapViewState.serviceRegistry` — same as Android.
 
 Provider views register capabilities into the registry so feature modules can remain provider-agnostic.
 

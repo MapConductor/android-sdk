@@ -41,6 +41,7 @@ import com.mapconductor.example.pages.polygon.geodesic.PolygonGeodesicPage
 import com.mapconductor.example.pages.polygon.hole.HolePolygonMapPage
 import com.mapconductor.example.pages.polyline.PolylineClickMapPage
 import com.mapconductor.example.pages.polyline.PolylineMapPage
+import com.mapconductor.example.pages.rasterlayer.RasterHeaderProbePage
 import com.mapconductor.example.pages.rasterlayer.RasterLayerMapPage
 import com.mapconductor.example.pages.startup.StartUpPage
 import com.mapconductor.example.ui.sidebar.Sidebar
@@ -300,6 +301,12 @@ fun DemoAppScreen(initPage: String = "map") {
                     }
                     "raster-layer" -> {
                         RasterLayerMapPage(
+                            onToggleSidebar = navigationViewModel::toggleSidebar,
+                        )
+                    }
+                    // 計測専用。サイドバーには出さない（RasterHeaderInstrumentedTest が使う）。
+                    "raster-header" -> {
+                        RasterHeaderProbePage(
                             onToggleSidebar = navigationViewModel::toggleSidebar,
                         )
                     }
