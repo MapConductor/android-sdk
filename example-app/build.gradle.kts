@@ -38,7 +38,11 @@ val secretPlaceholders: Map<String, Any> =
     Properties()
         .apply {
             listOf("local.defaults.properties", "secrets.properties").forEach { name ->
-                rootProject.file(name).takeIf { it.exists() }?.inputStream()?.use { load(it) }
+                rootProject
+                    .file(name)
+                    .takeIf { it.exists() }
+                    ?.inputStream()
+                    ?.use { load(it) }
             }
         }.entries
         .associate { it.key.toString() to (it.value as Any) }

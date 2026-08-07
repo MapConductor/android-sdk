@@ -33,13 +33,30 @@ import com.mapconductor.longdo.rememberLongdoMapViewState
 import com.mapconductor.maplibre.MapLibreDesign
 import com.mapconductor.maplibre.MapLibreMapView
 import com.mapconductor.maplibre.rememberMapLibreMapViewState
+import com.mapconductor.simplemapapp.docdemo.DocDemo
+import com.mapconductor.simplemapapp.docdemo.DocDemoLauncher
+import com.mapconductor.simplemapapp.docdemo.DocDemoScreen
 import com.mapconductor.simplemapapp.ui.theme.MapConductorSDKTheme
 import java.util.zip.ZipInputStream
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * The app the documentation-site recordings are shot with.
+ *
+ * Launched plain it lists the six pages whose video has not been shot; launched
+ * with a `demo` extra it goes straight into one, which is how the recording
+ * script starts a take without a tap being in frame:
+ *
+ *   adb shell am start -n com.mapconductor.simplemapapp/.MainActivity \
+ *       --es demo raster-layer
+ *
+ * See [DocDemo] for the slugs. The older single-map screens further down this
+ * file are left where they were — this activity just no longer opens one.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,13 +64,27 @@ class MainActivity : ComponentActivity() {
 
         // val image = ContextCompat.getDrawable(this, R.drawable.overlayimg)!!
 
+        // Read once from the launching intent rather than from Compose state:
+        // the activity is singleTask, so a second `am start` re-delivers here
+        // via onNewIntent and setIntent keeps this in step.
         setContent {
             MapConductorSDKTheme {
+                var picked by remember { mutableStateOf(DocDemo.bySlug(intent?.getStringExtra("demo"))) }
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LongdoSimpleMapScreen(modifier = Modifier.padding(innerPadding))
+                    val inner = Modifier.padding(innerPadding)
+                    when (val demo = picked) {
+                        null -> DocDemoLauncher(inner) { picked = it }
+                        else -> DocDemoScreen(demo, inner)
+                    }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        recreate()
     }
 }
 
@@ -110,6 +141,7 @@ fun SimpleMap(modifier: Modifier) {
         )
     }
 }
+
 @Composable
 fun LongdoSimpleMapScreen(modifier: Modifier) {
     val mapState =
@@ -140,32 +172,36 @@ fun LongdoSimpleMapScreen(modifier: Modifier) {
 
 @Composable
 fun SimpleMapScreen(modifier: Modifier) {
-    val mapState = rememberMapLibreMapViewState(
-        cameraPosition = MapCameraPosition(
-            position = GeoPoint(35.6762, 139.6503),
-            zoom = 15.0,
-        ),
-        mapDesign = MapLibreDesign.OpenMapTiles,
-    )
+    val mapState =
+        rememberMapLibreMapViewState(
+            cameraPosition =
+                MapCameraPosition(
+                    position = GeoPoint(35.6762, 139.6503),
+                    zoom = 15.0,
+                ),
+            mapDesign = MapLibreDesign.OpenMapTiles,
+        )
 
     MapLibreMapView(
         modifier = modifier,
         state = mapState,
     ) {
         Marker(
-            state = MarkerState(
-                position = GeoPoint(35.6762, 139.6503),
-            )
+            state =
+                MarkerState(
+                    position = GeoPoint(35.6762, 139.6503),
+                ),
         )
 
         Circle(
-            state = CircleState(
-                center = GeoPoint(35.6762, 139.6503),
-                radiusMeters = 500.0,
-                fillColor = Color.Green.copy(alpha = 0.5f),
-                strokeColor = Color.Blue,
-                strokeWidth = 3.dp,
-            )
+            state =
+                CircleState(
+                    center = GeoPoint(35.6762, 139.6503),
+                    radiusMeters = 500.0,
+                    fillColor = Color.Green.copy(alpha = 0.5f),
+                    strokeColor = Color.Blue,
+                    strokeWidth = 3.dp,
+                ),
         )
     }
 }
